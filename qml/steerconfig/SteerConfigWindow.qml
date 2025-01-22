@@ -12,14 +12,14 @@ import "../components"
 MoveablePopup {
 	id: steerConfigWindow
     closePolicy: Popup.NoAutoClose
-    height: 475 * theme.scaleHeight
+    height: pwmWindow.visible ? 700 * theme.scaleHeight : 500 * theme.scaleHeight
     modal: false
     visible: false
     width:400 * theme.scaleWidth
     x: settings.setWindow_steerSettingsLocation.x
     y: settings.setWindow_steerSettingsLocation.y
     function show (){
-		steerConfigWindow.visible = true
+        steerConfigWindow.visible = true
 	}
 
 	Rectangle{
@@ -83,11 +83,22 @@ MoveablePopup {
                     implicitHeight: 50 * theme.scaleHeight
                     implicitWidth: parent.width /4 - 4
                 }
-			}
+            }
+
+            WasBar{
+                id: wasbar
+                wasvalue: aog.steerAngleActual*10
+                width: 380 * theme.scaleWidth
+                visible: steerBtn.checked
+                anchors.top: buttonsTop.bottom
+                anchors.bottomMargin: 8 * theme.scaleHeight
+                anchors.topMargin: 8 * theme.scaleHeight
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
 
             Item{
                 id: slidersArea
-                anchors.top: buttonsTop.bottom
+                anchors.top: wasbar.bottom
                 anchors.right: parent.right
                 anchors.left: parent.left
                 anchors.bottom: angleInfo.top
@@ -97,7 +108,7 @@ MoveablePopup {
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 5 * theme.scaleHeight
                     anchors.left: parent.left
-                    anchors.leftMargin: 20 * theme.scaleWidth
+                    anchors.leftMargin: 50 * theme.scaleWidth
                     anchors.top: parent.top
                     anchors.topMargin: 5 * theme.scaleHeight
                     width: parent.width *.5
@@ -105,15 +116,18 @@ MoveablePopup {
                     /* Here, we just set which Sliders we want to see, and the
                       ColumnLayout takes care of the rest. No need for
                       4 ColumnLayouts*/
+                     //region WAStab
 
-                    //region WAStab
+
+
+
                     IconButtonTransparent { //was zero button
                         width: height*2
                         Layout.alignment: Qt.AlignCenter
                         icon.source: prefix + "/images/SteerCenter.png"
                         implicitHeight: parent.height /5 -20
-                        visible: false
-                        //visible: steerBtn.checked
+                        //visible: false
+                        visible: steerBtn.checked
                     }
 
                     SteerConfigSliderCustomized {
@@ -123,7 +137,7 @@ MoveablePopup {
                         width: 200 * theme.scaleWidth
                         from: -4000
                         leftText: utils.decimalRound(value / cpDegSlider.value, 2)
-                        onValueChanged: settings.setAS_wasOffset = value * cpDegSlider.value
+                        onValueChanged: settings.setAS_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
                         to: 4000
                         value: settings.setAS_wasOffset / cpDegSlider.value
                         visible: steerBtn.checked
@@ -133,7 +147,7 @@ MoveablePopup {
                         centerTopText: "Counts per Degree"
                         from: 1
                         leftText: value
-                        onValueChanged: settings.setAS_countsPerDegree = value
+                        onValueChanged: settings.setAS_countsPerDegree = value, aog.modules_send_252()
                         stepSize: 1
                         to: 255
                         value: Math.round(settings.setAS_countsPerDegree, 0)
@@ -145,7 +159,7 @@ MoveablePopup {
                         centerTopText: "AckerMann"
                         from: 1
                         leftText: value
-                        onValueChanged: settings.setAS_ackerman = value
+                        onValueChanged: settings.setAS_ackerman = value, aog.modules_send_252()
                         stepSize: 1
                         to: 200
                         value: Math.round(settings.setAS_ackerman, 0)
@@ -171,7 +185,7 @@ MoveablePopup {
                         centerTopText: "Proportional Gain"
                         from: 0
                         leftText: value
-                        onValueChanged: settings.setAS_Kp = value
+                        onValueChanged: settings.setAS_Kp = value, aog.modules_send_252()
                         stepSize: 1
                         to: 200
                         value: Math.round(settings.setAS_Kp, 0)
@@ -182,7 +196,7 @@ MoveablePopup {
                         centerTopText: "Maximum Limit"
                         from: 0
                         leftText: value
-                        onValueChanged: settings.setAS_highSteerPWM = value
+                        onValueChanged: settings.setAS_highSteerPWM = value, aog.modules_send_252()
                         stepSize: 1
                         to: 254
                         value: Math.round(settings.setAS_highSteerPWM, 0)
@@ -193,7 +207,7 @@ MoveablePopup {
                         centerTopText: "Minimum to Move"
                         from: 0
                         leftText: value
-                        onValueChanged: settings.setAS_minSteerPWM = value
+                        onValueChanged: settings.setAS_minSteerPWM = value, aog.modules_send_252()
                         stepSize: 1
                         to: 100
                         value: Math.round(settings.setAS_minSteerPWM, 0)
@@ -207,7 +221,7 @@ MoveablePopup {
                         id: stanleyAggressivenessSlider
                         centerTopText: "Agressiveness"
                         from: .1
-                        onValueChanged: settings.stanleyDistanceErrorGain = value
+                        onValueChanged: settings.stanleyDistanceErrorGain = value, aog.modules_send_252()
                         stepSize: .1
                         to: 4
                         leftText: Math.round(value * 100)/100
@@ -218,7 +232,7 @@ MoveablePopup {
                         id: overShootReductionSlider
                         centerTopText: "OverShoot Reduction"
                         from: .1
-                        onValueChanged: settings.stanleyHeadingErrorGain = value
+                        onValueChanged: settings.stanleyHeadingErrorGain = value, aog.modules_send_252()
                         stepSize: .1
                         to: 1.5
                         leftText: Math.round(value * 100) / 100
@@ -230,7 +244,7 @@ MoveablePopup {
                         centerTopText: "Integral"
                         from: 0
                         leftText: value
-                        onValueChanged: settings.stanleyIntegralGainAB = value /100
+                        onValueChanged: settings.stanleyIntegralGainAB = value /100, aog.modules_send_252()
                         stepSize: 1
                         to: 100
                         value: Math.round(settings.stanleyIntegralGainAB * 100, 0)
@@ -244,7 +258,7 @@ MoveablePopup {
                         id: acqLookAheadSlider
                         centerTopText: "Acquire Look Ahead"
                         from: 1
-                        onValueChanged: settings.setVehicle_goalPointLookAhead = value
+                        onValueChanged: settings.setVehicle_goalPointLookAhead = value, aog.modules_send_252()
                         stepSize: .1
                         leftText: Math.round(value * 100) / 100
                         to: 7
@@ -266,7 +280,7 @@ MoveablePopup {
                         id: lookAheadSpeedGainSlider
                         centerTopText: "Look Ahead Speed Gain"
                         from: .5
-                        onValueChanged: settings.setVehicle_goalPointLookAheadMult = value
+                        onValueChanged: settings.setVehicle_goalPointLookAheadMult = value, aog.modules_send_252()
                         stepSize: .1
                         to: 3
                         leftText: Math.round(value * 100) / 100
@@ -277,7 +291,7 @@ MoveablePopup {
                         id: ppIntegralSlider
                         centerTopText: "Integral"
                         from: 0
-                        onValueChanged: settings.purePursuitIntegralGainAB = value /100
+                        onValueChanged: settings.purePursuitIntegralGainAB = value /100, aog.modules_send_252()
                         stepSize: 1
                         to: 100
                         leftText: Math.round(value *100) / 100
@@ -307,7 +321,7 @@ MoveablePopup {
                 MouseArea{
                     id: angleInfoMouse
                     anchors.fill: parent
-                    onClicked: steerConfigSettings.show()
+                    onClicked: pwmWindow.visible = !pwmWindow.visible
 
                 }
                 RowLayout{
@@ -316,15 +330,16 @@ MoveablePopup {
                     spacing: 10 * theme.scaleWidth
 
                     Text {
-                        text: qsTr("Set: " + aog.steerAngleSetRounded)
+                        //text: qsTr("Set: " + aog.steerAngleSetRounded)
+                        text: qsTr("Set: " + aog.steerAngleSet)
                         Layout.alignment: Qt.AlignCenter
                     }
                     Text {
-                        text: qsTr("Act: " + aog.steerAngleActualRounded)
+                        text: qsTr("Act: " + Math.round(aog.steerAngleActual, 1))
                         Layout.alignment: Qt.AlignCenter
                     }
                     Text {
-                        property double err: aog.steerAngleActualRounded - aog.steerAngleSetRounded
+                        property double err: Math.round(aog.steerAngleActual, 1) - aog.steerAngleSet
                         id: errorlbl
                         Layout.alignment: Qt.AlignCenter
                         onErrChanged: err > 0 ? errorlbl.color = "red" : errorlbl.color = "darkgreen"
@@ -346,59 +361,65 @@ MoveablePopup {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 8 * theme.scaleHeight
             anchors.left: steerSlidersConfig.left
-            anchors.leftMargin: 8 * theme.scaleWidth
-            anchors.rightMargin: 8 * theme.scaleWidth
             anchors.top: steerSlidersConfig.bottom
             anchors.topMargin: 8 * theme.scaleHeight
             visible: false
             width: steerSlidersConfig.width
+            height: children
             RowLayout{
                 id: pwmRow
                 anchors.bottomMargin: 10 * theme.scaleHeight
                 anchors.left: parent.left
-                anchors.leftMargin: 10 * theme.scaleWidth
-                anchors.rightMargin: 10 * theme.scaleWidth
                 anchors.top: parent.top
                 anchors.topMargin: 10 * theme.scaleHeight
                 height: 50 * theme.scaleHeight
                 width: parent.width
                 IconButton{
-                    id: pwmSteer
+                    id: btnFreeDrive
                     border: 2
                     color3: "white"
                     icon.source: prefix + "/images/SteerDriveOff.png"
                     iconChecked: prefix + "/images/SteerDriveOn.png"
                     implicitHeight: parent.height
-                    implicitWidth: parent.width/4
+                    implicitWidth:  parent.width /4 - 4 * theme.scaleWidth
                     isChecked: false
+                    checkable: true
+                    onClicked: aog.btnFreeDrive()
                 }
                 IconButton{
+                    //id: btnSteerAngleDown
                     border: 2
                     color3: "white"
                     icon.source: prefix + "/images/SnapLeft.png"
                     implicitHeight: parent.height
-                    implicitWidth: parent.width/4
+                    implicitWidth:  parent.width /4 - 4 * theme.scaleWidth
+                    onClicked: aog.btnSteerAngleDown()
+                    enabled: btnFreeDrive.checked
                 }
                 IconButton{
+                    //id: btnSteerAngleUp
                     border: 2
                     color3: "white"
                     icon.source: prefix + "/images/SnapRight.png"
                     implicitHeight: parent.height
-                    implicitWidth: parent.width/4
+                    implicitWidth:  parent.width /4 - 4 * theme.scaleWidth
+                    onClicked: aog.btnSteerAngleUp()
+                    enabled: btnFreeDrive.checked
                 }
                 IconButton{
+                    //id: btnFreeDriveZero
                     border: 2
                     color3: "white"
                     icon.source: prefix + "/images/SteerZeroSmall.png"
-                    id: pwmZero
                     implicitHeight: parent.height
-                    implicitWidth: parent.width/4
+                    implicitWidth:  parent.width /4 - 4 * theme.scaleWidth
+                    onClicked: aog.btnFreeDriveZero()
                 }
             }
             Text{
                 anchors.left: pwmRow.left
                 anchors.top: pwmRow.bottom
-                text: qsTr("PWM: ")
+                text: qsTr("PWM: "+ aog.lblPWMDisplay)
             }
             Text{
                 anchors.right: pwmRow.right
@@ -408,7 +429,7 @@ MoveablePopup {
                 text: qsTr("0r +5")
             }
             IconButton{
-                id: steerRecord
+                id: btnStartSA
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 border: 2
@@ -418,16 +439,19 @@ MoveablePopup {
                 iconChecked: prefix + "/images/Stop.png"
                 isChecked: false
                 width: 75 * theme.scaleWidth
+                onClicked: aog.btnStartSA()
             }
             Text{
-                anchors.top: steerRecord.top
-                anchors.left: steerRecord.right
-                text: qsTr("Steer Angle: ")
+                anchors.top: btnStartSA.top
+                anchors.left: btnStartSA.right
+                //text: qsTr("Steer Angle: "+ aog.lblCalcSteerAngleInner)
+                Layout.alignment: Qt.AlignCenter
             }
             Text{
-                anchors.bottom: steerRecord.bottom
-                anchors.left: steerRecord.right
-                text: qsTr("Diameter: ")
+                anchors.bottom: btnStartSA.bottom
+                anchors.left: btnStartSA.right
+                //text: qsTr("Set: " + aog.lblDiameter)
+                Layout.alignment: Qt.AlignCenter
             }
         }
     }

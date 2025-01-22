@@ -64,15 +64,15 @@ Item {
     property variant rowCount: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
     property bool isContourBtnOn: false
     property bool btnIsContourLocked: false
-    property bool isAutoSteerBtnOn: false
+    property bool isBtnAutoSteerOn: false
     property bool isYouTurnBtnOn: false
 
     property bool loopbackConnected: true
 
     //loopbackConnected is true, unless the backend changes it to false
     onLoopbackConnectedChanged: closeAOG.open()
-//    onIsAutoSteerBtnOnChanged: {
-//        console.debug("isAutoSteerBtnOn is now in aog inface " + isAutoSteerBtnOn)
+//    onIsBtnAutoSteerOnChanged: {
+//        console.debug("isBtnAutoSteerOn is now in aog inface " + isBtnAutoSteerOn)
 //    }
 
     //General FormGPS information updated at GPS rate.
@@ -132,6 +132,7 @@ Item {
     property double steerAngleSet: 0
     property double steerAngleSetRounded: 0
     property double steerAngleActualRounded: 0
+    property double lblCalcSteerAngleInner: 0
     property double rawHz:0
     property double hz:0
     property double droppedSentences: 0
@@ -154,7 +155,7 @@ Item {
 
     onSteerAngleActualChanged: steerAngleActualRounded = Number(Math.round(steerAngleActual)).toLocaleString(Qt.locale(), 'f', 1)
     onSteerAngleSetChanged: steerAngleSetRounded = Number(Math.round((steerAngleSet) * .01)).toLocaleString(Qt.locale(), 'f', 1)
-
+    property int lblPWMDisplay: 0
     property point vehicle_xy: Qt.point(0,0)
     property rect vehicle_bounding_box: Qt.rect(0,0,0,0)
 
@@ -183,6 +184,8 @@ Item {
     property double currentABLine_heading: 0 //TODO delete or move to interfaces/LinesInterface.qml.  seems to be unused
 
     property int current_trackNum: 0
+
+    property int sensorData: -1
 
     //on-screen buttons
 
@@ -223,13 +226,23 @@ Item {
 
     signal modules_send_238()
 	signal modules_send_251()
+    signal modules_send_252()
     signal doBlockageMonitoring()
+
+
+
 
     signal sim_bump_speed(bool up)
     signal sim_zero_speed()
     signal sim_reset()
     signal sim_rotate()
     signal reset_direction()
+
+    signal btnSteerAngleUp()
+    signal btnSteerAngleDown()
+    signal btnFreeDrive()
+    signal btnFreeDriveZero()
+    signal btnStartSA()
 
     signal centerOgl()
 

@@ -176,7 +176,8 @@ void FormGPS::processSectionLookahead() {
     //qDebug() << "frame time after getting lock  " << swFrame.elapsed();
 
     if (property_displayShowBack)
-        grnPixelsWindow->setPixmap(QPixmap::fromImage(grnPix.mirrored()));
+        //grnPixelsWindow->setPixmap(QPixmap::fromImage(grnPix.mirrored()));
+        grnPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
 
     //determine where the tool is wrt to headland
     if (bnd.isHeadlandOn) bnd.WhereAreToolCorners(tool);
@@ -533,7 +534,7 @@ void FormGPS::processSectionLookahead() {
 
     //Checks the workswitch or steerSwitch if required
     if (ahrs.isAutoSteerAuto || mc.isRemoteWorkSystemOn)
-        mc.CheckWorkAndSteerSwitch(ahrs,isAutoSteerBtnOn);
+        mc.CheckWorkAndSteerSwitch(ahrs,isBtnAutoSteerOn);
 
     // check if any sections have changed status
     number = 0;
@@ -739,6 +740,52 @@ void FormGPS::processSectionLookahead() {
     //this is the end of the "frame". Now we wait for next NMEA sentence with a valid fix.
 }
 
+void FormGPS::processOverlapCount()
+{
+    if (isJobStarted)
+    {
+        int once = 0;
+        int twice = 0;
+        int more = 0;
+        int level = 0;
+        double total = 0;
+        double total2 = 0;
+
+        //50, 96, 112
+        for (int i = 0; i < 400 * 400; i++)
+        {
+
+            if (overPixels[i].red > 105)
+            {
+                more++;
+                level = overPixels[i].red;
+            }
+            else if (overPixels[i].red > 85)
+            {
+                twice++;
+                level = overPixels[i].red;
+            }
+            else if (overPixels[i].red > 50)
+            {
+                once++;
+            }
+        }
+        total = once + twice + more;
+        total2 = total + twice + more + more;
+
+        if (total2 > 0)
+        {
+            fd.actualAreaCovered = (total / total2 * (double)fd.workedAreaTotal);
+            fd.overlapPercent = ((1 - total / total2) * 100);
+        }
+        else
+        {
+            fd.actualAreaCovered = 0;
+            fd.overlapPercent = 0;
+        }
+    }
+}
+
 void FormGPS::tmrWatchdog_timeout()
 {
     //TODO: replace all this with individual timers for cleaner
@@ -855,7 +902,7 @@ void FormGPS::tmrWatchdog_timeout()
         worldGrid.isRateTrigger = true;
 
         //Make sure it is off when it should
-        if ((!ct.isContourBtnOn && trk.idx == -1 && isAutoSteerBtnOn)
+        if ((!ct.isContourBtnOn && trk.idx == -1 && isBtnAutoSteerOn)
             ) onStopAutoSteer();
 
     } //end every 1/2 second
@@ -1037,7 +1084,7 @@ void FormGPS::JobClose()
 
     //AutoSteer
     //btnAutoSteer.Enabled = false;
-    isAutoSteerBtnOn = false;
+    isBtnAutoSteerOn = false;
 
     //auto YouTurn shutdown
     yt.isYouTurnBtnOn = false;

@@ -97,6 +97,12 @@ public:
     QOffscreenSurface backSurface;
     QOpenGLFramebufferObject *backFBO = 0;
 
+    QSurfaceFormat zoomSurfaceFormat;
+    QOpenGLContext zoomOpenGLContext;
+    QOffscreenSurface zoomSurface;
+    QOpenGLFramebufferObject *zoomFBO = 0;
+
+
     /*******************
      * from FormGPS.cs *
      *******************/
@@ -120,11 +126,11 @@ public:
     int flagNumberPicked = 0;
 
     //bool for whether or not a job is active
-    bool /*isJobStarted = false,*/ isAreaOnRight = true /*, isAutoSteerBtnOn = false*/;
+    bool /*isJobStarted = false,*/ isAreaOnRight = true /*, isBtnAutoSteerOn = false*/;
 
     //this bool actually lives in the QML aog object.
     InterfaceProperty<AOGInterface,bool> isJobStarted = InterfaceProperty<AOGInterface,bool>("isJobStarted");
-    InterfaceProperty<AOGInterface,bool> isAutoSteerBtnOn = InterfaceProperty<AOGInterface,bool>("isAutoSteerBtnOn");
+    InterfaceProperty<AOGInterface,bool> isBtnAutoSteerOn = InterfaceProperty<AOGInterface,bool>("isBtnAutoSteerOn");
 
     //if we are saving a file
     bool isSavingFile = false, isLogElevation = false;
@@ -546,7 +552,9 @@ public:
     //data buffer for pixels read from off screen buffer
     //uchar grnPixels[80001];
     LookAheadPixels grnPixels[150001];
-    QImage grnPix;
+    LookAheadPixels *overPixels = new LookAheadPixels[160000]; //400x400
+    QImage grnPix; //for debugging purposes to show in a window
+    QImage overPix; //for debugging purposes to show in a window
 
     /*
     QOpenGLShaderProgram *simpleColorShader = 0;
@@ -640,6 +648,7 @@ public slots:
      *******************/
     void tmrWatchdog_timeout();
     void processSectionLookahead(); //called when section lookahead GL stuff is rendered
+    void processOverlapCount(); //called to calculate overlap stats
 
     void TimedMessageBox(int timeout, QString s1, QString s2);
 
@@ -705,7 +714,10 @@ public slots:
     //modules ui callback
     void modules_send_238();
 	void modules_send_251();
+    void modules_send_252();
     void doBlockageMonitoring();
+
+
 
     //boundary UI for recording new boundary
     void boundary_calculate_area();
@@ -777,6 +789,12 @@ public slots:
 
     void onDeleteAppliedArea_clicked();
 
+    void btnSteerAngleUp_clicked(); // steersetup
+    void btnSteerAngleDown_clicked();
+    void btnFreeDrive_clicked();
+    void btnFreeDriveZero_clicked();
+    void btnStartSA_clicked();
+
     /***************************
      * from OpenGL.Designer.cs *
      ***************************/
@@ -789,6 +807,8 @@ public slots:
 
     void oglBack_Paint();
     void openGLControlBack_Initialized();
+
+    void oglZoom_Paint();
 
     /***
      * UDPCOMM.Designer.cs

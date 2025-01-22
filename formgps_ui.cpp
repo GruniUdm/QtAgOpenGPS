@@ -44,9 +44,9 @@ void FormGPS::setupGui()
     rootContext()->setContextProperty("mainForm", this);
     rootContext()->setContextProperty("settings", &qml_settings);
 
-    rootContext()->setContextProperty("vehicleInterface", &vehicle);
     //populate vehicle_list property in vehicleInterface
     vehicle_update_list();
+    rootContext()->setContextProperty("vehicleInterface", &vehicle);
 
     rootContext()->setContextProperty("trk", &trk);
     rootContext()->setContextProperty("tram", &tram);
@@ -134,7 +134,7 @@ void FormGPS::setupGui()
     qmlblockage::set_aog_root(qmlItem(qml_root, "aog"));
 
     //initialize interface properties
-    isAutoSteerBtnOn = false;
+    isBtnAutoSteerOn = false;
     sentenceCounter = 0;
     manualBtnState = btnStates::Off;
     autoBtnState = btnStates::Off;
@@ -248,11 +248,21 @@ void FormGPS::setupGui()
     //React to UI setting hyd life settings
     connect(aog, SIGNAL(modules_send_238()), this, SLOT(modules_send_238()));
 	connect(aog, SIGNAL(modules_send_251()), this, SLOT(modules_send_251()));
+    connect(aog, SIGNAL(modules_send_252()), this, SLOT(modules_send_252()));
+
     connect(aog, SIGNAL(doBlockageMonitoring()), this, SLOT(doBlockageMonitoring()));
+
+
 
     connect(aog, SIGNAL(sim_bump_speed(bool)), &sim, SLOT(speed_bump(bool)));
     connect(aog, SIGNAL(sim_zero_speed()), &sim, SLOT(speed_zero()));
     connect(aog, SIGNAL(sim_reset()), &sim, SLOT(reset()));
+
+    connect(aog, SIGNAL(btnSteerAngleUp()), this, SLOT(btnSteerAngleUp_clicked()));
+    connect(aog, SIGNAL(btnSteerAngleDown()), this, SLOT(btnSteerAngleDown_clicked()));
+    connect(aog, SIGNAL(btnFreeDrive()), this, SLOT(btnFreeDrive_clicked()));
+    connect(aog, SIGNAL(btnFreeDriveZero()), this, SLOT(btnFreeDriveZero_clicked()));
+    connect(aog, SIGNAL(btnStartSA()), this, SLOT(btnStartSA_clicked()));
 
     //boundary signals and slots
     connect(&yt, SIGNAL(outOfBounds()),boundaryInterface,SLOT(setIsOutOfBoundsTrue()));
@@ -601,7 +611,7 @@ void FormGPS::onBtnAutoYouTurn_clicked(){
          //new direction so reset where to put turn diagnostic
          yt.ResetCreatedYouTurn(makeUTurnCounter);
 
-         if (!isAutoSteerBtnOn) return;
+         if (!isBtnAutoSteerOn) return;
          yt.isYouTurnBtnOn = true;
          yt.isTurnCreationTooClose = false;
          yt.isTurnCreationNotCrossingError = false;
@@ -648,6 +658,47 @@ void FormGPS::onBtnManUTurn_clicked(bool right)
 void FormGPS::onBtnLateral_clicked(bool right)
 {
    yt.BuildManualYouLateral(right, vehicle, trk);
+}
+
+void FormGPS::btnSteerAngleUp_clicked(){
+    vehicle.driveFreeSteerAngle++;
+    if (vehicle.driveFreeSteerAngle > 40) vehicle.driveFreeSteerAngle = 40;
+
+    qDebug()<<"btnSteerAngleUp_clicked";
+}
+void FormGPS::btnSteerAngleDown_clicked(){
+    vehicle.driveFreeSteerAngle--;
+    if (vehicle.driveFreeSteerAngle < -40) vehicle.driveFreeSteerAngle = -40;
+
+    qDebug()<<"btnSteerAngleDown_clicked";
+}
+void FormGPS::btnFreeDrive_clicked(){
+
+
+    if (vehicle.isInFreeDriveMode)
+    {
+        //turn OFF free drive mode
+        vehicle.isInFreeDriveMode = false;
+        vehicle.driveFreeSteerAngle = 0;
+    }
+    else
+    {
+        //turn ON free drive mode
+        vehicle.isInFreeDriveMode = true;
+        vehicle.driveFreeSteerAngle = 0;
+    }
+
+    qDebug()<<"btnFreeDrive_clicked";
+}
+void FormGPS::btnFreeDriveZero_clicked(){
+    if (vehicle.driveFreeSteerAngle == 0)
+        vehicle.driveFreeSteerAngle = 5;
+    else vehicle.driveFreeSteerAngle = 0;
+
+    qDebug()<<"btnFreeDriveZero_clicked";
+}
+void FormGPS::btnStartSA_clicked(){
+    qDebug()<<"btnStartSA_clicked";
 }
 
 void FormGPS::TimedMessageBox(int timeout, QString s1, QString s2)
@@ -716,6 +767,22 @@ void FormGPS::modules_send_251() {
 
 	qDebug() << p_251.pgn;
 	SendPgnToLoop(p_251.pgn);
+}
+
+void FormGPS::modules_send_252() {
+    //qDebug() << "Sending 252 message to AgIO";
+    p_252.pgn[p_252.gainProportional] = (int)property_setAS_Kp;
+    p_252.pgn[p_252.highPWM] = (int)property_setAS_highSteerPWM;
+    p_252.pgn[p_252.lowPWM] = (int)property_setAS_lowSteerPWM;
+    p_252.pgn[p_252.minPWM] = property_setAS_minSteerPWM;
+    p_252.pgn[p_252.countsPerDegree] = (int)property_setAS_countsPerDegree;
+    p_252.pgn[p_252.wasOffsetHi] = (char)((int)property_setAS_wasOffset >> 8);
+    p_252.pgn[p_252.wasOffsetLo] = (char)property_setAS_wasOffset;
+    p_252.pgn[p_252.ackerman] = (int)property_setAS_ackerman;
+
+
+    qDebug() << p_252.pgn;
+    SendPgnToLoop(p_252.pgn);
 }
 
 void FormGPS::headland_save() {
