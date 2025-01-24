@@ -102,6 +102,7 @@ MoveablePopup {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             legend.visible: true
+            legend.alignment: Qt.AlignBottom
             antialiasing: true
 
             LineSeries {
@@ -109,14 +110,14 @@ MoveablePopup {
                 name: lineName1
                 axisX: axisX
                 axisY: axisY
-                //useOpenGL: chartView.openGL
+                useOpenGL: chartView.openGL
             }
             LineSeries {
                 id: lineSeries2
                 name: lineName2
                 axisX: axisX
                 axisYRight: axisY
-                //useOpenGL: chartView.openGL
+                useOpenGL: chartView.openGL
             }
 
             ValueAxis {

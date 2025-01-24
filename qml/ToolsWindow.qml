@@ -68,8 +68,6 @@ import "wizards" as Wiz
             Comp.IconButtonTextBeside {
                 id: delAppliedArea
                 icon.source: prefix + "/images/TrashApplied.png"
-                width: 250
-                height: 50
                 text: qsTr("Delete Applied Area")
                 onClicked: aog.deleteAppliedArea()
             }
@@ -79,6 +77,7 @@ import "wizards" as Wiz
                 icon.source: prefix + "/images/Webcam.png"
                 text: qsTr("WebCam")
                 visible:settings.setFeature_isWebCamOn
+                onClicked: cam1.visible = !cam1.visible, toolsMenu.visible = false
             }
 
             Comp.IconButtonTextBeside {
@@ -210,4 +209,10 @@ import "wizards" as Wiz
     }
     //xval1 = (glm.toDegrees(mf.gpsHeading)).ToString("N1", CultureInfo.InvariantCulture);
     //xval2 = (glm.toDegrees(mf.imuCorrected)).ToString("N1", CultureInfo.InvariantCulture);
+
+    Wiz.Camera{
+    id: cam1
+    height: 300  * theme.scaleHeight
+    width: 400  * theme.scaleWidth
+    }
 }
