@@ -142,12 +142,17 @@ Item {
     property bool hydLiftDown: false
     property bool hydLiftIsOn: false
     property bool isHeadlandOn: false
+    property double imuCorrected:0
+
 
     onSteerAngleActualChanged: steerAngleActualRounded = Number(Math.round(steerAngleActual)).toLocaleString(Qt.locale(), 'f', 1)
     onSteerAngleSetChanged: steerAngleSetRounded = Number(Math.round((steerAngleSet) * .01)).toLocaleString(Qt.locale(), 'f', 1)
     property int lblPWMDisplay: 0
     property point vehicle_xy: Qt.point(0,0)
     property rect vehicle_bounding_box: Qt.rect(0,0,0,0)
+
+    property int lblmodeActualXTE: 0
+    property int lblmodeActualHeadingError: 0
 
     //onVehicle_xyChanged: console.log("vehicle xy is", vehicle_xy);
     //onVehicle_bounding_boxChanged: console.log("vehicle box is", vehicle_bounding_box);
