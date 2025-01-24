@@ -9,59 +9,48 @@ import "components" as Comp
 
 Drawer{
     id: hamburgerMenuRoot
-    width: 300
+    width: 270 * theme.scaleWidth
     height: mainWindow.height
     visible: false
     modal: true
+
     contentItem: Rectangle{
         id: hamburgerMenuContent
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.right: parent.right
+        anchors.fill: parent
         height: fieldMenu.height
-
         color: "black"
+
         Comp.ScrollViewExpandableColumn{
             id: hamburgerMenuColumn
             anchors.fill: parent
-            Comp.ButtonColor{
+
+            Comp.IconButtonTextBeside{
                 text: "Languages"
                 onClicked: console.log("")
-                width: 250
-                height: 50
                 visible: false//todo
             }
-            Comp.ButtonColor{
+            Comp.IconButtonTextBeside{
                 text: "Directories"
                 onClicked: console.log("")
-                width: 250
-                height: 50
                 visible: false//todo
             }
-            Comp.ButtonColor{
+            Comp.IconButtonTextBeside{
                 text: "Colors"
                 onClicked: console.log("")
-                width: 250
-                height: 50
             }
-            Comp.ButtonColor{
+            Comp.IconButtonTextBeside{
                 text: "Section Colors"
                 onClicked: console.log("")
-                width: 250
-                height: 50
             }
-            Comp.ButtonColor{
+            Comp.IconButtonTextBeside{
                 text: "Enter Sim Coords"
                 onClicked: {
                     console.log("showing")
                     hamburgerMenuRoot.visible = false
                     setSimCoords.show()
                 }
-                width: 250
-                height: 50
             }
-            Comp.ButtonColor{
+            Comp.IconButtonTextBeside{
                 text: "Simulator On"
                 property bool isChecked: settings.setMenu_isSimulatorOn
                 onIsCheckedChanged: {
@@ -73,35 +62,25 @@ Drawer{
                 onCheckedChanged: {
                     settings.setMenu_isSimulatorOn = checked
                 }
-                width: 250
-                height: 50
             }
-            Comp.ButtonColor{
+            Comp.IconButtonTextBeside{
                 text: "Reset All"
                 onClicked: console.log("")
-                width: 250
-                height: 50
                 visible: false//todo
             }
-            Comp.ButtonColor{
+            Comp.IconButtonTextBeside{
                 text: "HotKeys"
                 onClicked: console.log("")
-                width: 250
-                height: 50
                 visible: false//todo
             }
-            Comp.ButtonColor{
+            Comp.IconButtonTextBeside{
                 text: "About..."
                 onClicked: console.log("")
-                width: 250
-                height: 50
                 visible: false//todo
             }
-            Comp.ButtonColor{
+            Comp.IconButtonTextBeside{
                 text: "Help"
                 onClicked: console.log("")
-                width: 250
-                height: 50
                 visible: false//todo
             }
         }
