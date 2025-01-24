@@ -68,6 +68,7 @@ Rectangle{
             id: modulerows1
             from: 0
             to:255
+            editable: true
             boundValue: settings.setSeed_blockRow1
             onValueModified: settings.setSeed_blockRow1 = value
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -81,6 +82,7 @@ Rectangle{
             id: modulerows2
             from: 0
             to:255
+            editable: true
             boundValue: settings.setSeed_blockRow2
             onValueModified: settings.setSeed_blockRow2 = value
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -94,6 +96,7 @@ Rectangle{
             id: modulerows3
             from: 0
             to:255
+            editable: true
             boundValue: settings.setSeed_blockRow3
             onValueModified: settings.setSeed_blockRow3 = value
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -107,6 +110,7 @@ Rectangle{
             id: modulerows4
             from: 0
             to:255
+            editable: true
             boundValue: settings.setSeed_blockRow4
             onValueModified: settings.setSeed_blockRow4 = value
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -121,6 +125,7 @@ Rectangle{
             id: graincountMin
             from: 0
             to:10000
+            editable: true
             boundValue: settings.setSeed_blockCountMin
             onValueModified: settings.setSeed_blockCountMin = value
             anchors.bottomMargin: 10 * theme.scaleHeight
