@@ -150,6 +150,7 @@ Item {
     property int blockage_min2_i: 0
     property int blockage_max_i: 0
     property int blockage_blocked: 0;
+    property double imuCorrected:0
 
 
 
@@ -158,6 +159,9 @@ Item {
     property int lblPWMDisplay: 0
     property point vehicle_xy: Qt.point(0,0)
     property rect vehicle_bounding_box: Qt.rect(0,0,0,0)
+
+    property int lblmodeActualXTE: 0
+    property int lblmodeActualHeadingError: 0
 
     //onVehicle_xyChanged: console.log("vehicle xy is", vehicle_xy);
     //onVehicle_bounding_boxChanged: console.log("vehicle box is", vehicle_bounding_box);

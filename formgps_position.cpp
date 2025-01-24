@@ -1239,7 +1239,7 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("angVel", ahrs.angVel);
     aog->setProperty("isYouTurnRight", yt.isYouTurnRight);
     aog->setProperty("distancePivotToTurnLine", distancePivotToTurnLine);
-
+    aog->setProperty("lblimuCorrected", imuCorrected);
     aog->setProperty("vehicle_xy",vehicle.pivot_axle_xy);
     aog->setProperty("vehicle_bounding_box",vehicle.bounding_box);
 
@@ -1248,6 +1248,12 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("droppedSentences", udpWatchCounts);
     aog->setProperty("lblPWMDisplay", mc.pwmDisplay);
     aog->setProperty("steerAngleSet", vehicle.driveFreeSteerAngle);
+
+    aog->setProperty("lblmodeActualXTE", vehicle.modeActualXTE);
+    aog->setProperty("lblmodeActualHeadingError", vehicle.modeActualHeadingError);
+
+    aog->setProperty("lblmodeActualXTE", vehicle.modeActualXTE);
+    aog->setProperty("lblmodeActualHeadingError", vehicle.modeActualHeadingError);
 
     //TODO: access this in QML directly from trk.howManyPathsAway property
     aog->setProperty("current_trackNum", trk.getHowManyPathsAway());
