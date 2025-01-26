@@ -38,6 +38,13 @@ CTrack::CTrack(QObject* parent) : QAbstractListModel(parent)
     setIdx(-1);
 }
 
+CTrack::~CTrack()
+{
+    idx = -1;
+    gArr.clear();
+    reloadModel();
+}
+
 int CTrack::FindClosestRefTrack(Vec3 pivot, const CVehicle &vehicle)
 {
     if (idx < 0 || gArr.count() == 0) return -1;
@@ -508,7 +515,6 @@ QVariant CTrack::data(const QModelIndex &index, int role) const
     }
 
     const CTrk &trk = gArr.at(row);
-    qDebug() << row << role << trk.name;
     switch(role) {
     case RoleNames::index:
         return row;

@@ -117,7 +117,7 @@ qt_add_executable(QtAgOpenGPS
 )
 
 qt_add_qml_module(QtAgOpenGPS
-    URI qtagopengps.renderer
+    URI AOGRenderer
     VERSION 1.0
     QML_FILES qml/MainWindow.qml
     SOURCES

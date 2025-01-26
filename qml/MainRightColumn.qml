@@ -69,6 +69,17 @@ ColumnLayout {
         Layout.alignment: Qt.AlignCenter
         implicitWidth: theme.buttonSize
         implicitHeight: theme.buttonSize
+
+        onClicked: {
+            if (trk.idx > -1) {
+                var a = trk.idx
+                a += 1
+                if (a >= trk.rowCount())
+                    a = 0
+
+                tracksInterface.select(a)
+            }
+        }
     }
     Comp.IconButton{
         id: btnTrackCycleBk
@@ -76,6 +87,18 @@ ColumnLayout {
         Layout.alignment: Qt.AlignCenter
         implicitWidth: theme.buttonSize
         implicitHeight: theme.buttonSize
+
+        onClicked: {
+            if (trk.idx > -1) {
+                var a = trk.idx
+                a -= 1
+                if (a < 0)
+                    a = trk.rowCount() - 1
+
+                tracksInterface.select(a)
+            }
+        }
+
     }
     Comp.IconButton{
         id: btnAutoTrack
@@ -148,7 +171,7 @@ ColumnLayout {
         //Is remote activation of autosteer enabled? //todo. Eliminated in 6.3.3
         buttonText: (settings.setAS_isAutoSteerAutoOn === true ? "R" : "M")
         onClicked: {
-            if (checked && ((aog.currentABCurve > -1) || (aog.currentABLine > -1) || btnContour.isChecked)) {
+            if (checked && ((trk.idx > -1) || btnContour.isChecked)) {
                 console.debug("okay to turn on autosteer button.")
                 aog.isBtnAutoSteerOn = true;
             } else {
@@ -161,7 +184,7 @@ ColumnLayout {
             target: aog
             function onIsBtnAutoSteerOnChanged() {
                 //TODO: use track interface in trk
-                if (aog.isBtnAutoSteerOn && ((aog.currentABCurve > -1) || (aog.currentABLine > -1))) {
+                if (aog.isBtnAutoSteerOn && (trk.idx > -1)) {
                     btnAutoSteer.checked = true
                 } else {
                     //default to turning everything off
