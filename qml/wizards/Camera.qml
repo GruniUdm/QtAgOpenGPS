@@ -30,8 +30,8 @@ MoveablePopup {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         id: cam1Stream
-        width: 505
-        height: 336
+        width: 500
+        height: 300
         source: "rtsp://192.168.0.138:1945/"
         autoPlay: true
         opacity: 1.0
@@ -40,7 +40,7 @@ MoveablePopup {
     }
 
         Timer {
-            running: video.status == MediaPlayer.InvalidMedia; repeat: true; interval: 200;
+            running: cam1Stream.errorOccurred > 0; repeat: true; interval: 200;
             onTriggered: {
                 video.play()
             }
