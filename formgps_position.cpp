@@ -1249,8 +1249,9 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("lblPWMDisplay", mc.pwmDisplay);
     aog->setProperty("steerAngleSet", vehicle.driveFreeSteerAngle);
 
-    aog->setProperty("lblmodeActualXTE", vehicle.modeActualXTE);
-    aog->setProperty("lblmodeActualHeadingError", vehicle.modeActualHeadingError);
+    aog->setProperty("lblCalcSteerAngleInner", lblCalcSteerAngleInner);
+    aog->setProperty("lblCalcSteerAngleOuter", lblCalcSteerAngleOuter);
+    aog->setProperty("lblDiameter", lblDiameter);
 
     aog->setProperty("lblmodeActualXTE", vehicle.modeActualXTE);
     aog->setProperty("lblmodeActualHeadingError", vehicle.modeActualHeadingError);
