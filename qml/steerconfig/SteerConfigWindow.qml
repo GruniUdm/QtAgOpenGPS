@@ -10,12 +10,12 @@ import ".."
 import "../components"
 
 MoveablePopup {
-	id: steerConfigWindow
+    id: steerConfigWindow
     closePolicy: Popup.NoAutoClose
     height: pwmWindow.visible ? 700 * theme.scaleHeight : 500 * theme.scaleHeight
     modal: false
     visible: false
-    width:400 * theme.scaleWidth
+    width:350 * theme.scaleWidth
     x: settings.setWindow_steerSettingsLocation.x
     y: settings.setWindow_steerSettingsLocation.y
     function show (){
@@ -39,7 +39,7 @@ MoveablePopup {
             anchors.left: parent.left
             anchors.top: topLine.bottom
             height: 475 * theme.scaleHeight
-            width:400 * theme.scaleWidth
+            width: steerConfigWindow.width
             ButtonGroup {
 				buttons: buttonsTop.children
 			}
@@ -88,7 +88,7 @@ MoveablePopup {
             WasBar{
                 id: wasbar
                 wasvalue: aog.steerAngleActual*10
-                width: 380 * theme.scaleWidth
+                width: steerConfigWindow.width - 20 * theme.scaleWidth
                 visible: steerBtn.checked
                 anchors.top: buttonsTop.bottom
                 anchors.bottomMargin: 8 * theme.scaleHeight
@@ -108,10 +108,10 @@ MoveablePopup {
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 5 * theme.scaleHeight
                     anchors.left: parent.left
-                    anchors.leftMargin: 50 * theme.scaleWidth
+                    anchors.leftMargin: 15 * theme.scaleWidth
                     anchors.top: parent.top
                     anchors.topMargin: 5 * theme.scaleHeight
-                    width: parent.width * 0.5
+                    width: parent.width * 0.4
 
                     /* Here, we just set which Sliders we want to see, and the
                       ColumnLayout takes care of the rest. No need for
@@ -125,9 +125,11 @@ MoveablePopup {
                         width: height*2
                         Layout.alignment: Qt.AlignCenter
                         icon.source: prefix + "/images/SteerCenter.png"
-                        implicitHeight: parent.height /5 -20
+                        implicitHeight: parent.height /5 -20* theme.scaleHeight
                         //visible: false
                         visible: steerBtn.checked
+                        onClicked:  settings.setAS_wasOffset += cpDegSlider.value * -aog.steerAngleActual, aog.modules_send_252()
+
                     }
 
                     SteerConfigSliderCustomized {
@@ -137,7 +139,8 @@ MoveablePopup {
                         width: 200 * theme.scaleWidth
                         from: -4000
                         leftText: utils.decimalRound(value / cpDegSlider.value, 2)
-                        onValueChanged: settings.setAS_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
+                        //onValueChanged: settings.setAS_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
+                        onValueChanged: settings.setAS_wasOffset = value, aog.modules_send_252()
                         to: 4000
                         value: settings.setAS_wasOffset / cpDegSlider.value
                         visible: steerBtn.checked

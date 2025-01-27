@@ -166,7 +166,10 @@ Rectangle{
         id: back
         anchors.bottom: parent.bottom
         anchors.left: parent.left
-        anchors.margins: 20
+        anchors.topMargin: 20 * theme.scaleHeight
+        anchors.bottomMargin: 20 * theme.scaleHeight
+        anchors.rightMargin: 20 * theme.scaleHeight
+        anchors.leftMargin: 20 * theme.scaleHeight
         enabled: cboxIsBlockageOn.checked
         icon.source: prefix + "/images/back-button.png"
         onClicked: {
