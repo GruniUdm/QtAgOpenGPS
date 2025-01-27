@@ -78,6 +78,11 @@ MoveablePopup {
             height: 50 * theme.scaleHeight
             text: "   A"
             z: 2
+            onClicked: {xval1 > axismax ? axismax = (xval1 + 2) : 0
+                        xval2 > axismax ? axismax = (xval2 + 2) : 0
+                        xval1 < axismin ? axismin = (xval1 - 2) : 0
+                        xval2 < axismin ? axismin = (xval2 - 2) : 0
+            }
             }
 
             IconButtonTextBeside{

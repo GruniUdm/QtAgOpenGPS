@@ -537,7 +537,7 @@ Window {
 
             SimController{
                 id: simBarRect
-                z: 2
+                //z: 2
                 anchors.bottom: timeText.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottomMargin: 8
