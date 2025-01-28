@@ -28,6 +28,7 @@ Rectangle{
         modulerows2.boundValue = settings.setSeed_blockRow2
         modulerows3.boundValue = settings.setSeed_blockRow3
         modulerows4.boundValue = settings.setSeed_blockRow4
+        cboxIsBlockageOn.checked = settings.setSeed_blockageIsOn
 
 
         mandatory.visible = false
@@ -43,6 +44,7 @@ Rectangle{
         settings.setSeed_blockRow2 = modulerows2.value
         settings.setSeed_blockRow3 = modulerows3.value
         settings.setSeed_blockRow4 = modulerows4.value
+        settings.setSeed_blockageIsOn = cboxIsBlockageOn.checked
         settings.setSeed_numRows = Number(settings.setSeed_blockRow1 + settings.setSeed_blockRow2 + settings.setSeed_blockRow3 + settings.setSeed_blockRow4)
         blockageRows.setSizes()
         mandatory.visible = false
@@ -68,8 +70,10 @@ Rectangle{
             id: modulerows1
             from: 0
             to:255
+            editable: true
+            enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockRow1
-            onValueModified: settings.setSeed_blockRow1 = value
+            onValueModified: settings.setSeed_blockRow1 = value, mandatory.visible = true
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Rows on module 1: ")
@@ -81,8 +85,10 @@ Rectangle{
             id: modulerows2
             from: 0
             to:255
+            editable: true
+            enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockRow2
-            onValueModified: settings.setSeed_blockRow2 = value
+            onValueModified: settings.setSeed_blockRow2 = value, mandatory.visible = true
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Rows on module 2: ")
@@ -94,8 +100,10 @@ Rectangle{
             id: modulerows3
             from: 0
             to:255
+            editable: true
+            enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockRow3
-            onValueModified: settings.setSeed_blockRow3 = value
+            onValueModified: settings.setSeed_blockRow3 = value, mandatory.visible = true
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Rows on module 3: ")
@@ -107,8 +115,10 @@ Rectangle{
             id: modulerows4
             from: 0
             to:255
+            editable: true
+            enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockRow4
-            onValueModified: settings.setSeed_blockRow4 = value
+            onValueModified: settings.setSeed_blockRow4 = value, mandatory.visible = true
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Rows on module 4: ")
@@ -121,8 +131,10 @@ Rectangle{
             id: graincountMin
             from: 0
             to:10000
+            editable: true
+            enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockCountMin
-            onValueModified: settings.setSeed_blockCountMin = value
+            onValueModified: settings.setSeed_blockCountMin = value, mandatory.visible = true
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Grain countMin: ")
@@ -134,8 +146,10 @@ Rectangle{
             id: graincountMax
             from: 0
             to:10000
+            editable: true
+            enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockCountMax
-            onValueModified: settings.setSeed_blockCountMax = value
+            onValueModified: settings.setSeed_blockCountMax = value, mandatory.visible = true
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Grain countMax: ")
@@ -146,11 +160,17 @@ Rectangle{
 
 
     }
+
+
     IconButtonTransparent{
         id: back
         anchors.bottom: parent.bottom
         anchors.left: parent.left
-        anchors.margins: 20
+        anchors.topMargin: 20 * theme.scaleHeight
+        anchors.bottomMargin: 20 * theme.scaleHeight
+        anchors.rightMargin: 20 * theme.scaleHeight
+        anchors.leftMargin: 20 * theme.scaleHeight
+        enabled: cboxIsBlockageOn.checked
         icon.source: prefix + "/images/back-button.png"
         onClicked: {
             graincountMin.boundValue = 0
@@ -160,19 +180,36 @@ Rectangle{
             modulerows3.boundValue = 0
             modulerows4.boundValue = 0
             crops.currentIndex[0] = 0
+            mandatory.visible = true
 
         }
     }
     IconButtonTransparent{
+        id: loadSetBlockage
         anchors.bottom: parent.bottom
         anchors.left: back.right
         anchors.topMargin: 20 * theme.scaleHeight
         anchors.bottomMargin: 20 * theme.scaleHeight
         anchors.rightMargin: 20 * theme.scaleHeight
         anchors.leftMargin: 20 * theme.scaleHeight
+        enabled: cboxIsBlockageOn.checked
         icon.source: prefix + "/images/UpArrow64.png"
-        onClicked: load_settings()
+        onClicked: load_settings(), mandatory.visible = true
     }
+    IconButtonColor{
+        id: cboxIsBlockageOn
+        height: loadSetBlockage.height
+        anchors.bottom: parent.bottom
+        anchors.left: loadSetBlockage.right
+        anchors.topMargin: 20 * theme.scaleHeight
+        anchors.bottomMargin: 20 * theme.scaleHeight
+        anchors.rightMargin: 20 * theme.scaleHeight
+        anchors.leftMargin: 20 * theme.scaleHeight
+        icon.source: prefix + "/images/SwitchOff.png"
+        iconChecked: prefix + "/images/SwitchOn.png"
+        checkable: true
+        onClicked: mandatory.visible = true
+        }
     IconButtonTransparent{
         id: btnPinsSave
         anchors.right: mandatory.left

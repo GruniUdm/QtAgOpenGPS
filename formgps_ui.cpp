@@ -333,6 +333,12 @@ void FormGPS::setupGui()
     connect (tmrWatchdog, SIGNAL(timeout()),this,SLOT(tmrWatchdog_timeout()));
     tmrWatchdog->start(250); //fire every 50ms.
 
+    timer_tick = new QTimer(this);
+    timer_tick->setSingleShot(false);
+    timer_tick->setInterval(250);
+    connect(timer_tick, &QTimer::timeout, this, &FormGPS::Timer1_Tick);
+    timer_tick->start(250);
+
     //SIM
     connect_classes();
 
@@ -696,8 +702,29 @@ void FormGPS::btnFreeDriveZero_clicked(){
 
     qDebug()<<"btnFreeDriveZero_clicked";
 }
+
 void FormGPS::btnStartSA_clicked(){
-    qDebug()<<"btnStartSA_clicked";
+
+ qDebug()<<"btnStartSA_clicked";
+
+    if (!isSA)
+    {
+        isSA = true;
+        startFix = vehicle.pivotAxlePos;
+        dist = 0;
+        diameter = 0;
+        cntr = 0;
+        //lblDiameter.Text = "0";
+        lblCalcSteerAngleInner = "Drive Steady";
+        lblCalcSteerAngleOuter = "Consistent Steering Angle!!";
+
+    }
+    else
+    {
+        isSA = false;
+        lblCalcSteerAngleInner = "0.0 + °";
+        lblCalcSteerAngleOuter = "0.0 + °";
+    }
 }
 
 void FormGPS::TimedMessageBox(int timeout, QString s1, QString s2)
@@ -892,3 +919,104 @@ void FormGPS::onDeleteAppliedArea_clicked()
         }*/
     }
 }
+
+void FormGPS::Timer1_Tick()
+{
+    if (isSA)
+    {
+        dist = glm::Distance(startFix, vehicle.pivotAxlePos);
+        cntr++;
+        if (dist > diameter)
+        {
+            diameter = dist;
+            cntr = 0;
+        }
+        //lblDiameter = diameter.ToString("N2") + " m";
+        lblDiameter = locale.toString(diameter, 'g', 3) + tr(" m");
+        qDebug()<<"diameter ";
+        qDebug()<<diameter;
+        if (cntr > 9)
+        {
+            steerAngleRight = atan(vehicle.wheelbase / ((diameter - vehicle.trackWidth * 0.5) / 2));
+            steerAngleRight = glm::toDegrees(steerAngleRight);
+
+            //lblCalcSteerAngleInner = steerAngleRight.ToString("N1") + "°";
+            lblCalcSteerAngleInner = locale.toString(steerAngleRight, 'g', 3) + tr("°");
+            //lblDiameter.Text = diameter.ToString("N2") + " m";
+            lblDiameter = locale.toString(diameter, 'g', 3) + tr(" m");
+            isSA = false;
+        }
+    }
+/*
+    double actAng = mc.actualSteerAngleDegrees * 5;
+    if (actAng > 0)
+    {
+        if (actAng > 49) actAng = 49;
+        //CExtensionMethods.SetProgressNoAnimation(pbarRight, (int)actAng);
+        //pbarLeft = 0;
+    }
+    else
+    {
+        if (actAng < -49) actAng = -49;
+       // pbarRight = 0;
+       // CExtensionMethods.SetProgressNoAnimation(pbarLeft, (int)-actAng);
+    }
+
+    lblSteerAngle = SetSteerAngle;
+    lblSteerAngleActual = locale.toString(mc.actualSteerAngleDegrees, 'g', 1) + tr("°");
+    lblActualSteerAngleUpper = lblSteerAngleActual;
+    double err = (mc.actualSteerAngleDegrees - guidanceLineSteerAngle * 0.01);
+    lblError = abs(err).ToString("N1") + "\u00B0";
+    if (err > 0) lblError.ForeColor = Color.Red;
+    else lblError.ForeColor = Color.DarkGreen;
+
+    lblAV_Act.Text = mf.actAngVel.ToString("N1");
+    lblAV_Set.Text = mf.setAngVel.ToString("N1");
+
+    lblPWMDisplay.Text = mc.pwmDisplay.ToString();
+
+    counter++;
+
+    if (toSend && counter > 4)
+    {
+        p_252.pgn[p_252.countsPerDegree] = (char)hsbarCountsPerDegree;
+        p_252.pgn[p_252.ackerman] = (char)hsbarAckerman;
+
+        p_252.pgn[p_252.wasOffsetHi] = (char)(hsbarWasOffset.Value >> 8);
+        p_252.pgn[p_252.wasOffsetLo] = (char)(hsbarWasOffset.Value);
+
+        p_252.pgn[p_252.highPWM] = (char)hsbarHighSteerPWM;
+        p_252.pgn[p_252.lowPWM] = (char)(hsbarHighSteerPWM / 3);
+        p_252.pgn[p_252.gainProportional] = (char)hsbarProportionalGain;
+        p_252.pgn[p_252.minPWM] = (char)hsbarMinPWM;
+
+        SendPgnToLoop(p_252.pgn);
+        toSend = false;
+        counter = 0;
+    }
+
+    if (secondCntr++ > 2)
+    {
+        secondCntr = 0;
+
+        if (tabControl1.SelectedTab == tabPPAdv)
+        {
+            lblHoldAdv = vehicle.goalPointLookAheadHold.ToString("N1");
+            lblAcqAdv = (vehicle.goalPointLookAheadHold * mf.vehicle.goalPointAcquireFactor).ToString("N1");
+            lblDistanceAdv = vehicle.goalDistance.ToString("N1");
+            lblAcquirePP = lblAcqAdv.Text;
+        }
+    }
+
+    if (mc.sensorData != -1)
+    {
+        if (mc.sensorData < 0 || mc.sensorData > 255) mc.sensorData = 0;
+        //CExtensionMethods.SetProgressNoAnimation(pbarSensor, mc.sensorData);
+        //if (nudMaxCounts.Visible == false)
+            //lblPercentFS.Text = ((int)((double)mc.sensorData * 0.3921568627)).ToString() + "%";
+        else
+            //lblPercentFS.Text = mc.sensorData.ToString();
+    }
+    */
+}
+

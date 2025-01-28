@@ -786,13 +786,13 @@ Window{
                         height: 50 * theme.scaleHeight
                         anchors.left: parent.right
                         anchors.leftMargin: 10 * theme.scaleWidth
-                        from: .1
+                        from: 0.1
                         to: 10
                         boundValue: settings.setAS_guidanceLookAheadTime
                         onValueModified: settings.setAS_guidanceLookAheadTime = value
                         editable: true
                         text: qsTr("Seconds")
-                        decimals: 1
+                        decimals: 2
                     }
                 }
             }

@@ -10,12 +10,12 @@ import ".."
 import "../components"
 
 MoveablePopup {
-	id: steerConfigWindow
+    id: steerConfigWindow
     closePolicy: Popup.NoAutoClose
     height: pwmWindow.visible ? 700 * theme.scaleHeight : 500 * theme.scaleHeight
     modal: false
     visible: false
-    width:400 * theme.scaleWidth
+    width:350 * theme.scaleWidth
     x: settings.setWindow_steerSettingsLocation.x
     y: settings.setWindow_steerSettingsLocation.y
     function show (){
@@ -39,7 +39,7 @@ MoveablePopup {
             anchors.left: parent.left
             anchors.top: topLine.bottom
             height: 475 * theme.scaleHeight
-            width:400 * theme.scaleWidth
+            width: steerConfigWindow.width
             ButtonGroup {
 				buttons: buttonsTop.children
 			}
@@ -49,7 +49,7 @@ MoveablePopup {
                 anchors.top: parent.top
                 anchors.topMargin: 5
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: parent.width - 10
+                width: parent.width - 10 * theme.scaleWidth
 				IconButtonColor{
 					id: steerBtn
                     checkable: true
@@ -57,7 +57,7 @@ MoveablePopup {
                     colorChecked: "lightgray"
                     icon.source: prefix + "/images/Steer/ST_SteerTab.png"
                     implicitHeight: 50 * theme.scaleHeight
-                    implicitWidth: parent.width /4 - 4
+                    implicitWidth: parent.width /4 - 5 * theme.scaleWidth
                 }
 				IconButtonColor{
 					id: gainBtn
@@ -65,7 +65,7 @@ MoveablePopup {
                     colorChecked: "lightgray"
                     icon.source: prefix + "/images/Steer/ST_GainTab.png"
                     implicitHeight: 50 * theme.scaleHeight
-                    implicitWidth: parent.width /4 - 4
+                    implicitWidth: parent.width /4 - 5 * theme.scaleWidth
                 }
 				IconButtonColor{
 					id: stanleyBtn
@@ -73,7 +73,7 @@ MoveablePopup {
                     colorChecked: "lightgray"
                     icon.source: prefix + "/images/Steer/ST_StanleyTab.png"
                     implicitHeight: 50 * theme.scaleHeight
-                    implicitWidth: parent.width /4 - 4
+                    implicitWidth: parent.width /4 - 5 * theme.scaleWidth
                 }
 				IconButtonColor{
 					id: ppBtn
@@ -81,14 +81,14 @@ MoveablePopup {
                     colorChecked: "lightgray"
                     icon.source: prefix + "/images/Steer/Sf_PPTab.png"
                     implicitHeight: 50 * theme.scaleHeight
-                    implicitWidth: parent.width /4 - 4
+                    implicitWidth: parent.width /4 - 5 * theme.scaleWidth
                 }
             }
 
             WasBar{
                 id: wasbar
                 wasvalue: aog.steerAngleActual*10
-                width: 380 * theme.scaleWidth
+                width: steerConfigWindow.width - 20 * theme.scaleWidth
                 visible: steerBtn.checked
                 anchors.top: buttonsTop.bottom
                 anchors.bottomMargin: 8 * theme.scaleHeight
@@ -108,10 +108,10 @@ MoveablePopup {
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 5 * theme.scaleHeight
                     anchors.left: parent.left
-                    anchors.leftMargin: 50 * theme.scaleWidth
+                    anchors.leftMargin: 15 * theme.scaleWidth
                     anchors.top: parent.top
                     anchors.topMargin: 5 * theme.scaleHeight
-                    width: parent.width *.5
+                    width: parent.width * 0.4
 
                     /* Here, we just set which Sliders we want to see, and the
                       ColumnLayout takes care of the rest. No need for
@@ -125,9 +125,11 @@ MoveablePopup {
                         width: height*2
                         Layout.alignment: Qt.AlignCenter
                         icon.source: prefix + "/images/SteerCenter.png"
-                        implicitHeight: parent.height /5 -20
+                        implicitHeight: parent.height /5 -20* theme.scaleHeight
                         //visible: false
                         visible: steerBtn.checked
+                        onClicked:  settings.setAS_wasOffset += cpDegSlider.value * -aog.steerAngleActual, aog.modules_send_252()
+
                     }
 
                     SteerConfigSliderCustomized {
@@ -137,7 +139,8 @@ MoveablePopup {
                         width: 200 * theme.scaleWidth
                         from: -4000
                         leftText: utils.decimalRound(value / cpDegSlider.value, 2)
-                        onValueChanged: settings.setAS_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
+                        //onValueChanged: settings.setAS_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
+                        onValueChanged: settings.setAS_wasOffset = value, aog.modules_send_252()
                         to: 4000
                         value: settings.setAS_wasOffset / cpDegSlider.value
                         visible: steerBtn.checked
@@ -315,9 +318,12 @@ MoveablePopup {
             Rectangle{
                 id: angleInfo
                 anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
+                //anchors.left: parent.left
+                //anchors.right: parent.right
                 height: 50 * theme.scaleHeight
+                width: parent.width - 10 * theme.scaleWidth
+                anchors.horizontalCenter: parent.horizontalCenter
+
                 MouseArea{
                     id: angleInfoMouse
                     anchors.fill: parent
@@ -360,20 +366,24 @@ MoveablePopup {
             id: pwmWindow
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 8 * theme.scaleHeight
-            anchors.left: steerSlidersConfig.left
+            //anchors.left: steerSlidersConfig.left
             anchors.top: steerSlidersConfig.bottom
             anchors.topMargin: 8 * theme.scaleHeight
             visible: false
-            width: steerSlidersConfig.width
             height: children
+            width: steerConfigWindow.width-10 * theme.scaleWidth
+            anchors.horizontalCenter: parent.horizontalCenter
+
             RowLayout{
                 id: pwmRow
                 anchors.bottomMargin: 10 * theme.scaleHeight
-                anchors.left: parent.left
+                //anchors.left: parent.left
                 anchors.top: parent.top
                 anchors.topMargin: 10 * theme.scaleHeight
                 height: 50 * theme.scaleHeight
-                width: parent.width
+                width: parent.width - 10 * theme.scaleWidth
+                anchors.horizontalCenter: parent.horizontalCenter
+
                 IconButton{
                     id: btnFreeDrive
                     border: 2
@@ -381,7 +391,7 @@ MoveablePopup {
                     icon.source: prefix + "/images/SteerDriveOff.png"
                     iconChecked: prefix + "/images/SteerDriveOn.png"
                     implicitHeight: parent.height
-                    implicitWidth:  parent.width /4 - 4 * theme.scaleWidth
+                    implicitWidth:  parent.width /4 - 4
                     isChecked: false
                     checkable: true
                     onClicked: aog.btnFreeDrive()
@@ -392,7 +402,7 @@ MoveablePopup {
                     color3: "white"
                     icon.source: prefix + "/images/SnapLeft.png"
                     implicitHeight: parent.height
-                    implicitWidth:  parent.width /4 - 4 * theme.scaleWidth
+                    implicitWidth:  parent.width /4 - 5 * theme.scaleWidth
                     onClicked: aog.btnSteerAngleDown()
                     enabled: btnFreeDrive.checked
                 }
@@ -402,7 +412,7 @@ MoveablePopup {
                     color3: "white"
                     icon.source: prefix + "/images/SnapRight.png"
                     implicitHeight: parent.height
-                    implicitWidth:  parent.width /4 - 4 * theme.scaleWidth
+                    implicitWidth:  parent.width /4 - 5 * theme.scaleWidth
                     onClicked: aog.btnSteerAngleUp()
                     enabled: btnFreeDrive.checked
                 }
@@ -412,7 +422,7 @@ MoveablePopup {
                     color3: "white"
                     icon.source: prefix + "/images/SteerZeroSmall.png"
                     implicitHeight: parent.height
-                    implicitWidth:  parent.width /4 - 4 * theme.scaleWidth
+                    implicitWidth:  parent.width /4 - 5 * theme.scaleWidth
                     onClicked: aog.btnFreeDriveZero()
                 }
             }
@@ -437,20 +447,21 @@ MoveablePopup {
                 height: 75 * theme.scaleHeight
                 icon.source: prefix + "/images/BoundaryRecord.png"
                 iconChecked: prefix + "/images/Stop.png"
-                isChecked: false
+                isChecked: aog.startSA
+                checkable: true
                 width: 75 * theme.scaleWidth
                 onClicked: aog.btnStartSA()
             }
             Text{
                 anchors.top: btnStartSA.top
                 anchors.left: btnStartSA.right
-                //text: qsTr("Steer Angle: "+ aog.lblCalcSteerAngleInner)
+                text: qsTr("Steer Angle: "+ aog.lblCalcSteerAngleInner)
                 Layout.alignment: Qt.AlignCenter
             }
             Text{
                 anchors.bottom: btnStartSA.bottom
                 anchors.left: btnStartSA.right
-                //text: qsTr("Set: " + aog.lblDiameter)
+                text: qsTr("Diameter: " + aog.lblDiameter)
                 Layout.alignment: Qt.AlignCenter
             }
         }

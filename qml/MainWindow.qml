@@ -532,11 +532,12 @@ Window {
                 id: blockageData
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                visible: false
+                visible: (aog.blockageConnected & settings.setSeed_blockageIsOn) ? true : false
             }
 
             SimController{
                 id: simBarRect
+                //z: 2
                 anchors.bottom: timeText.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottomMargin: 8
@@ -576,7 +577,7 @@ Window {
             }
             Comp.BlockageRows {
                 id: blockageRows
-                visible: aog.blockageConnected ? true : false  // need connect with c++ Dim
+                visible: (aog.blockageConnected & settings.setSeed_blockageIsOn) ? true : false  // need connect with c++ Dim
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 8
