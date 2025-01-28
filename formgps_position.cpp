@@ -1252,6 +1252,7 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("lblCalcSteerAngleInner", lblCalcSteerAngleInner);
     aog->setProperty("lblCalcSteerAngleOuter", lblCalcSteerAngleOuter);
     aog->setProperty("lblDiameter", lblDiameter);
+    aog->setProperty("startSA", isSA);
 
     aog->setProperty("lblmodeActualXTE", vehicle.modeActualXTE);
     aog->setProperty("lblmodeActualHeadingError", vehicle.modeActualHeadingError);

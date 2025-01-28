@@ -447,7 +447,7 @@ MoveablePopup {
                 height: 75 * theme.scaleHeight
                 icon.source: prefix + "/images/BoundaryRecord.png"
                 iconChecked: prefix + "/images/Stop.png"
-                isChecked: false
+                isChecked: aog.startSA
                 checkable: true
                 width: 75 * theme.scaleWidth
                 onClicked: aog.btnStartSA()
@@ -461,7 +461,7 @@ MoveablePopup {
             Text{
                 anchors.bottom: btnStartSA.bottom
                 anchors.left: btnStartSA.right
-                text: qsTr("Set: " + aog.lblDiameter)
+                text: qsTr("Diameter: " + aog.lblDiameter)
                 Layout.alignment: Qt.AlignCenter
             }
         }

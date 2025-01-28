@@ -135,6 +135,7 @@ Item {
     property string lblCalcSteerAngleInner: "value"
     property string lblCalcSteerAngleOuter: "value"
     property string lblDiameter: "value"
+    property bool startSA: false
     property double rawHz:0
     property double hz:0
     property double droppedSentences: 0
