@@ -134,6 +134,16 @@ qt_add_qml_module(QtAgOpenGPS
     DEPENDENCIES Qt6::QtQuick
 )
 
+# show some of our mockup files in the project tree without compiling it
+set(qml_mockup_files
+    qml/AOG/qmldir
+    qml/MockSettings.qml
+    qml/MockTracks.qml
+    qml/MockVehicle.qml
+)
+
+add_custom_target(MockQML SOURCES ${qml_mockup_files})
+
 if(ANDROID)
     set(LOCAL_QML OFF)
 else()
