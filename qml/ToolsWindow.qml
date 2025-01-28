@@ -59,8 +59,6 @@ import "wizards" as Wiz
             Comp.IconButtonTextBeside {
                 id: delContourPaths
                 icon.source: prefix + "/images/TrashContourRef.png"
-                width: 250
-                height: 50
                 text: qsTr("Delete Contour Paths")
                 visible:settings.setFeature_isHideContourOn
             }

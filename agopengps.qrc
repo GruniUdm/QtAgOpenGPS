@@ -675,5 +675,6 @@
         <file>qml/TramIndicators.qml</file>
         <file>qml/wizards/ChartSteer.qml</file>
         <file>qml/wizards/Camera.qml</file>
+        <file>qml/wizards/PlayerMenuBar.qml</file>
     </qresource>
 </RCC>

@@ -2,12 +2,19 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 // On main GL
-import QtQuick 2.7
-import QtQuick.Controls 2.3
-import QtMultimedia 5.8
+//import QtQuick 2.7
+//import QtQuick.Controls 2.3
+//import QtMultimedia 5.8
+
+import QtQuick
+import QtQuick.Window
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtMultimedia
 
 import ".."
 import "../components"
+import "../wizards"
 
 MoveablePopup {
     id: camera
@@ -16,36 +23,44 @@ MoveablePopup {
     visible: false
     modal: false
     x: 400 * theme.scaleWidth
-
+/*
     TopLine{
         id: cameraTopLine
         titleText: qsTr("Cam1")
         onBtnCloseClicked:  camera.close()
     }
 
+*/
+    MediaPlayer {
+           id: mediaPlayer
+           videoOutput: videoOutput
+           audioOutput: AudioOutput {
+               id: audio
+               muted: playbackControl.muted
+               volume: playbackControl.volume
+           }
 
-    Video {
-        anchors.top: cameraTopLine.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        id: cam1Stream
-        width: 500
-        height: 300
-        source: "rtsp://192.168.0.138:1945/"
-        autoPlay: true
-        opacity: 1.0
-        fillMode: Image.Stretch
-        muted: true
-    }
+           onErrorOccurred: { mediaErrorText.text = mediaPlayer.errorString; mediaError.open() }
+       }
 
-        Timer {
-            running: cam1Stream.errorOccurred > 0; repeat: true; interval: 200;
-            onTriggered: {
-                video.play()
-            }
-        }
+       PlayerMenuBar {
+           id: menuBar
+           anchors.left: parent.left
+           anchors.right: parent.right
+           visible: true
+           mediaPlayer: mediaPlayer
+           videoOutput: videoOutput
+           onClosePlayer: camera.close(), mediaPlayer.stop()
+       }
 
+
+       VideoOutput {
+           id: videoOutput
+           anchors.top: menuBar.bottom
+           anchors.bottom: parent.bottom
+           anchors.left: parent.left
+           anchors.right: parent.right
+       }
 
 
 }
