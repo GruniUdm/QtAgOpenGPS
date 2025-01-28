@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import AOG
 
 RadioDelegate {
     id: trackDelegate
@@ -51,7 +52,7 @@ RadioDelegate {
                 color: trackDelegate.isVisible ? "green" : "red"
             }
             onClicked: {
-                tracksInterface.setVisible(trackDelegate.index, !trackDelegate.isVisible)
+                TracksInterface.setVisible(trackDelegate.index, !trackDelegate.isVisible)
             }
         }
     }

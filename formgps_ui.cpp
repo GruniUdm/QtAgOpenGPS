@@ -143,7 +143,7 @@ void FormGPS::setupGui()
 
     //hook up our AOGInterface properties
     QObject *aog = qmlItem(qml_root, "aog");
-    QObject *tracksInterface = qmlItem(qml_root, "tracksInterface");
+    QObject *tracksInterface = qml_root->property("tracksInterface").value<QObject *>();
     //QObject *vehicleInterface = qmlItem(qml_root, "vehicleInterface");
     QObject *fieldInterface = qmlItem(qml_root, "fieldInterface");
     QObject *boundaryInterface = qmlItem(qml_root, "boundaryInterface");

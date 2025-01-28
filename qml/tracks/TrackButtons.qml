@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Fusion
+import AOG
 import "../components" as Comp
 
 import ".."
@@ -33,7 +34,7 @@ Comp.TimedRectangle {
             icon.source: prefix + "/images/SwitchOff.png"
             Layout.alignment: Qt.AlignCenter
             onClicked: {
-                tracksInterface.select(-1);
+                TracksInterface.select(-1);
             }
         }
         Comp.IconButtonTransparent{

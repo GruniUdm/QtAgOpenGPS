@@ -5,6 +5,8 @@
 // Should be renamed to TracksInterface maybe?
 import QtQuick
 
+pragma Singleton
+
 Item {
     id: tracksInterface
 
