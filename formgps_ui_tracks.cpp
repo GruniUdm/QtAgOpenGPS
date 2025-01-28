@@ -15,12 +15,12 @@ void FormGPS::tracks_select(int index)
     trk.ABLine.isABValid = false;
     trk.curve.desList.clear();
 
-    FileSaveTracks();
+    FileSaveTracks(); //Do we really need to do this here?
 
     //We assume that QML will always pass us a valid index that is
     //visible, or -1
     trk.setIdx(index);
-    yt.ResetCreatedYouTurn(makeUTurnCounter);
+    yt.ResetCreatedYouTurn();
 }
 
 void FormGPS::tracks_start_new(int mode)
@@ -314,6 +314,15 @@ void FormGPS::tracks_changeName(int index, QString new_name)
 void FormGPS::tracks_setVisible(int index, bool isVisible)
 {
     trk.gArr[index].isVisible = isVisible;
+    trk.reloadModel();
+}
+
+void FormGPS::tracks_copy(int index, QString new_name)
+{
+    CTrk new_track = CTrk(trk.gArr[index]);
+    new_track.name = new_name;
+
+    trk.gArr.append(new_track);
     trk.reloadModel();
 }
 

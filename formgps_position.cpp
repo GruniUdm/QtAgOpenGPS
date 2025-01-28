@@ -731,7 +731,7 @@ void FormGPS::UpdateFixPosition()
             trk.SwitchToClosestRefTrack(vehicle.steerAxlePos, vehicle);
         }
 
-        trk.BuildCurrentLine(vehicle.pivotAxlePos,secondsSinceStart,isBtnAutoSteerOn,makeUTurnCounter,yt,vehicle,bnd,ahrs,gyd,pn);
+        trk.BuildCurrentLine(vehicle.pivotAxlePos,secondsSinceStart,isBtnAutoSteerOn,yt,vehicle,bnd,ahrs,gyd,pn);
     }
 
     // autosteer at full speed of updates
@@ -1073,20 +1073,19 @@ void FormGPS::UpdateFixPosition()
                 {
                     if (crossTrackError > 1000)
                     {
-                        yt.ResetCreatedYouTurn(makeUTurnCounter);
+                        yt.ResetCreatedYouTurn();
                     }
                     else
                     {
                         if (trk.getMode() == TrackMode::AB)
                         {
                             yt.BuildABLineDubinsYouTurn(yt.isYouTurnRight,vehicle,bnd,
-                                                        trk,makeUTurnCounter,secondsSinceStart);
+                                                        trk,secondsSinceStart);
                         }
                         else
                         {
                             yt.BuildCurveDubinsYouTurn(yt.isYouTurnRight, vehicle.pivotAxlePos,
-                                                        vehicle,bnd,trk,makeUTurnCounter,
-                                                        secondsSinceStart);
+                                                        vehicle,bnd,trk,secondsSinceStart);
                         }
                     }
 
@@ -1132,7 +1131,7 @@ void FormGPS::UpdateFixPosition()
             {
                 if (!yt.isYouTurnTriggered)
                 {
-                    yt.ResetCreatedYouTurn(makeUTurnCounter);
+                    yt.ResetCreatedYouTurn();
                     mc.isOutOfBounds = !bnd.IsPointInsideFenceArea(vehicle.pivotAxlePos);
                     isOutOfBounds = mc.isOutOfBounds;
                 }

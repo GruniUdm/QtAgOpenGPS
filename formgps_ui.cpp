@@ -176,6 +176,7 @@ void FormGPS::setupGui()
     connect(tracksInterface, SIGNAL(select(int)), this, SLOT(tracks_select(int)));
     connect(tracksInterface, SIGNAL(swapAB(int)), this, SLOT(tracks_swapAB(int)));
     connect(tracksInterface, SIGNAL(changeName(int,QString)), this, SLOT(tracks_changeName(int,QString)));
+    connect(tracksInterface, SIGNAL(copy(int,QString)), this, SLOT(tracks_copy(int,QString)));
     connect(tracksInterface, SIGNAL(delete_track(int)), this, SLOT(tracks_delete(int)));
     connect(tracksInterface, SIGNAL(setVisible(int,bool)), this, SLOT(tracks_setVisible(int,bool)));
     connect(tracksInterface, SIGNAL(ref_nudge(double)), this, SLOT(tracks_ref_nudge(double)));
@@ -607,13 +608,13 @@ void FormGPS::onBtnAutoYouTurn_clicked(){
      if (!yt.isYouTurnBtnOn)
      {
          //new direction so reset where to put turn diagnostic
-         yt.ResetCreatedYouTurn(makeUTurnCounter);
+         yt.ResetCreatedYouTurn();
 
          if (!isBtnAutoSteerOn) return;
          yt.isYouTurnBtnOn = true;
          yt.isTurnCreationTooClose = false;
          yt.isTurnCreationNotCrossingError = false;
-         yt.ResetYouTurn(makeUTurnCounter);
+         yt.ResetYouTurn();
          //mc.autoSteerData[mc.sdX] = 0;
 //         mc.machineControlData[mc.cnYouTurn] = 0;
 //         btnAutoYouTurn.Image = Properties.Resources.Youturn80;
@@ -623,10 +624,10 @@ void FormGPS::onBtnAutoYouTurn_clicked(){
          yt.isYouTurnBtnOn = false;
 //         yt.rowSkipsWidth = Properties.Vehicle.Default.set_youSkipWidth;
 //         btnAutoYouTurn.Image = Properties.Resources.YouTurnNo;
-         yt.ResetYouTurn(makeUTurnCounter);
+         yt.ResetYouTurn();
 
          //new direction so reset where to put turn diagnostic
-         yt.ResetCreatedYouTurn(makeUTurnCounter);
+         yt.ResetCreatedYouTurn();
 
          //mc.autoSteerData[mc.sdX] = 0;commented in aog
 //         mc.machineControlData[mc.cnYouTurn] = 0;
@@ -637,7 +638,7 @@ void FormGPS::onBtnSwapAutoYouTurnDirection_clicked()
      if (!yt.isYouTurnTriggered)
      {
          yt.isYouTurnRight = !yt.isYouTurnRight;
-         yt.ResetCreatedYouTurn(makeUTurnCounter);
+         yt.ResetCreatedYouTurn();
      }
      //else if (yt.isYouTurnBtnOn)
          //btnAutoYouTurn.PerformClick();
@@ -646,7 +647,7 @@ void FormGPS::onBtnSwapAutoYouTurnDirection_clicked()
 void FormGPS::onBtnManUTurn_clicked(bool right)
 {
     if (yt.isYouTurnTriggered) {
-        yt.ResetYouTurn(makeUTurnCounter);
+        yt.ResetYouTurn();
     }else {
         yt.isYouTurnTriggered = true;
         yt.BuildManualYouTurn( right, true, vehicle, trk);

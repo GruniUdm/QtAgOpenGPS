@@ -912,7 +912,7 @@ void FormGPS::tmrWatchdog_timeout()
         //reset the counter
         oneHalfSecondCounter++;
         oneSecondCounter++;
-        makeUTurnCounter++;
+        yt.makeUTurnCounter++;
 
         secondsSinceStart = stopwatch.elapsed() / 1000.0;
     }
@@ -940,7 +940,7 @@ void FormGPS::SwapDirection() {
     if (!yt.isYouTurnTriggered)
     {
         yt.isYouTurnRight = ! yt.isYouTurnRight;
-        yt.ResetCreatedYouTurn(makeUTurnCounter);
+        yt.ResetCreatedYouTurn();
     }
     else if (yt.isYouTurnBtnOn)
     {
@@ -1089,7 +1089,7 @@ void FormGPS::JobClose()
     //auto YouTurn shutdown
     yt.isYouTurnBtnOn = false;
 
-    yt.ResetYouTurn(makeUTurnCounter);
+    yt.ResetYouTurn();
 
     //reset acre and distance counters
     fd.workedAreaTotal = 0;

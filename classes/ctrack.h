@@ -47,6 +47,7 @@ public:
     double nudgeDistance;
 
     CTrk();
+    CTrk(const CTrk &orig);
 };
 
 class CTrack : public QAbstractListModel
@@ -112,7 +113,7 @@ public:
     void DrawTrackGoalPoint(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
 
     void BuildCurrentLine(Vec3 pivot,
-                          double secondsSinceStart, bool isBtnAutoSteerOn, int &makeUTurnCounter,
+                          double secondsSinceStart, bool isBtnAutoSteerOn,
                           CYouTurn &yt,
                           CVehicle &vehicle,
                           const CBoundary &bnd,
@@ -139,6 +140,9 @@ public:
     SETTER(bool, isAutoSnapped, setIsAutoSnapped)
     QObject *getModel() { return this;}
 
+    Q_INVOKABLE QString getTrackName(int index);
+    Q_INVOKABLE bool getTrackVisible(int index);
+
     // QML model interface
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     virtual QVariant data(const QModelIndex &index, int role) const override;
@@ -147,6 +151,8 @@ protected:
     // QML model interface
     virtual QHash<int, QByteArray> roleNames() const override;
 signals:
+    void resetCreatedYouTurn();
+
     void idxChanged();
     void modeChanged();
     void modelChanged();

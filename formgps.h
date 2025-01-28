@@ -188,7 +188,8 @@ private:
     int oneHalfSecondCounter = 0, oneHalfSecond = 0;
     int oneFifthSecondCounter = 0, oneFifthSecond = 0;
 
-    int makeUTurnCounter = 0;
+    //moved to CYouTurn
+    //int makeUTurnCounter = 0;
 
 
      /*******************
@@ -674,11 +675,14 @@ public slots:
     void tracks_changeName(int index, QString new_name);
     void tracks_swapAB(int index);
     void tracks_setVisible(int index, bool isVisible);
+    void tracks_copy(int index, QString new_name);
 
     void tracks_ref_nudge(double dist_m);
     void tracks_nudge_zero();
     void tracks_nudge_center();
     void tracks_nudge(double dist_m);
+
+
 
     /*
     //AB Lines in GUI. TODO: rename these, make them consistent
