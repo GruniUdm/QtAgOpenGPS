@@ -66,7 +66,7 @@ public:
      * Qt-specific things we need to keep track of *
      ***********************************************/
     QLocale locale;
-    QObject *qml_root;
+    QObject *mainWindow;
     QSignalMapper *sectionButtonsSignalMapper;
     QTimer *tmrWatchdog;
     QTimer timerSim;

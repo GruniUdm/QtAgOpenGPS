@@ -1172,7 +1172,7 @@ void FormGPS::UpdateFixPosition()
     //oglMain.MakeCurrent();
     //oglMain.Refresh();
 
-    AOGRendererInSG *renderer = qml_root->findChild<AOGRendererInSG *>("openglcontrol");
+    AOGRendererInSG *renderer = mainWindow->findChild<AOGRendererInSG *>("openglcontrol");
     renderer->update();
 
     //NOTE: Not sure here.
@@ -1191,7 +1191,7 @@ void FormGPS::UpdateFixPosition()
     //ahrs:  imuRoll
     //qDebug() << "frame time after processing a new position " << swFrame.elapsed();
 
-    QObject *aog = qmlItem(qml_root,"aog");
+    QObject *aog = qmlItem(mainWindow,"aog");
 
     aog->setProperty("latitude",pn.latitude);
     aog->setProperty("longitude",pn.longitude);

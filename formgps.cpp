@@ -715,7 +715,7 @@ void FormGPS::processSectionLookahead() {
     if (frameTimeRough > 50) frameTimeRough = 50;
     frameTime = frameTime * 0.90 + frameTimeRough * 0.1;
 
-    QObject *aog = qmlItem(qml_root, "aog");
+    QObject *aog = qmlItem(mainWindow, "aog");
     aog->setProperty("frameTime", frameTime);
 
     //TODO 5 hz sections

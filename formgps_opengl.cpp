@@ -37,10 +37,10 @@ QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
     QMatrix4x4 modelview;
     QMatrix4x4 projection;
 
-    int width = qmlItem(qml_root, "openglcontrol")->property("width").toReal();
-    int height = qmlItem(qml_root, "openglcontrol")->property("height").toReal();
-    double shiftX = qmlItem(qml_root,"openglcontrol")->property("shiftX").toDouble();
-    double shiftY = qmlItem(qml_root,"openglcontrol")->property("shiftY").toDouble();
+    int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
+    int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
+    double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
+    double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
 
     projection.setToIdentity();
 
@@ -91,10 +91,10 @@ QVector3D FormGPS::mouseClickToField(int mouseX, int mouseY)
     QMatrix4x4 modelview;
     QMatrix4x4 projection;
 
-    int width = qmlItem(qml_root, "openglcontrol")->property("width").toReal();
-    int height = qmlItem(qml_root, "openglcontrol")->property("height").toReal();
-    double shiftX = qmlItem(qml_root,"openglcontrol")->property("shiftX").toDouble();
-    double shiftY = qmlItem(qml_root,"openglcontrol")->property("shiftY").toDouble();
+    int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
+    int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
+    double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
+    double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
 
     projection.setToIdentity();
 
@@ -164,10 +164,10 @@ void FormGPS::oglMain_Paint()
     //if (newframe)
     //    qDebug() << "start of new frame render at " << swFrame.elapsed();
 
-    int width = qmlItem(qml_root, "openglcontrol")->property("width").toReal();
-    int height = qmlItem(qml_root, "openglcontrol")->property("height").toReal();
-    double shiftX = qmlItem(qml_root,"openglcontrol")->property("shiftX").toDouble();
-    double shiftY = qmlItem(qml_root,"openglcontrol")->property("shiftY").toDouble();
+    int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
+    int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
+    double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
+    double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
     //gl->glViewport(0,0,width,height);
     //qDebug() << width << height;
 

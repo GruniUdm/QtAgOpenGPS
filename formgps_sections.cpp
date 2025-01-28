@@ -319,7 +319,7 @@ void FormGPS::DoRemoteSwitches()
 void FormGPS::doBlockageMonitoring()
 {
     isConnectedBlockage = true;
-    QObject *aog = qmlItem(qml_root,"aog");
+    QObject *aog = qmlItem(mainWindow,"aog");
     aog->setProperty("blockageConnected", isConnectedBlockage);
     int k=0;
     int k1 = (int)property_setSeed_blockRow1;

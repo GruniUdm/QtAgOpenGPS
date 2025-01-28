@@ -101,37 +101,37 @@ void FormGPS::setupGui()
         assert(root_context.length() > 0);
     }
 
-    qml_root = root_context.first();
+    mainWindow = root_context.first();
 
-    qml_root->setProperty("visible",true);
+    mainWindow->setProperty("visible",true);
 
     //have to do this for each Interface and supported data type.
-    InterfaceProperty<AOGInterface, int>::set_qml_root(qmlItem(qml_root, "aog"));
-    InterfaceProperty<AOGInterface, uint>::set_qml_root(qmlItem(qml_root, "aog"));
-    InterfaceProperty<AOGInterface, bool>::set_qml_root(qmlItem(qml_root, "aog"));
-    InterfaceProperty<AOGInterface, double>::set_qml_root(qmlItem(qml_root, "aog"));
-    InterfaceProperty<AOGInterface, btnStates>::set_qml_root(qmlItem(qml_root, "aog"));
+    InterfaceProperty<AOGInterface, int>::set_qml_root(qmlItem(mainWindow, "aog"));
+    InterfaceProperty<AOGInterface, uint>::set_qml_root(qmlItem(mainWindow, "aog"));
+    InterfaceProperty<AOGInterface, bool>::set_qml_root(qmlItem(mainWindow, "aog"));
+    InterfaceProperty<AOGInterface, double>::set_qml_root(qmlItem(mainWindow, "aog"));
+    InterfaceProperty<AOGInterface, btnStates>::set_qml_root(qmlItem(mainWindow, "aog"));
 
-    InterfaceProperty<FieldInterface, int>::set_qml_root(qmlItem(qml_root, "fieldInterface"));
-    InterfaceProperty<FieldInterface, uint>::set_qml_root(qmlItem(qml_root, "fieldInterface"));
-    InterfaceProperty<FieldInterface, bool>::set_qml_root(qmlItem(qml_root, "fieldInterface"));
-    InterfaceProperty<FieldInterface, double>::set_qml_root(qmlItem(qml_root, "fieldInterface"));
-    InterfaceProperty<FieldInterface, btnStates>::set_qml_root(qmlItem(qml_root, "fieldInterface"));
+    InterfaceProperty<FieldInterface, int>::set_qml_root(qmlItem(mainWindow, "fieldInterface"));
+    InterfaceProperty<FieldInterface, uint>::set_qml_root(qmlItem(mainWindow, "fieldInterface"));
+    InterfaceProperty<FieldInterface, bool>::set_qml_root(qmlItem(mainWindow, "fieldInterface"));
+    InterfaceProperty<FieldInterface, double>::set_qml_root(qmlItem(mainWindow, "fieldInterface"));
+    InterfaceProperty<FieldInterface, btnStates>::set_qml_root(qmlItem(mainWindow, "fieldInterface"));
 
-    InterfaceProperty<BoundaryInterface, int>::set_qml_root(qmlItem(qml_root, "boundaryInterface"));
-    InterfaceProperty<BoundaryInterface, uint>::set_qml_root(qmlItem(qml_root, "boundaryInterface"));
-    InterfaceProperty<BoundaryInterface, bool>::set_qml_root(qmlItem(qml_root, "boundaryInterface"));
-    InterfaceProperty<BoundaryInterface, double>::set_qml_root(qmlItem(qml_root, "boundaryInterface"));
-    InterfaceProperty<BoundaryInterface, btnStates>::set_qml_root(qmlItem(qml_root, "boundaryInterface"));
+    InterfaceProperty<BoundaryInterface, int>::set_qml_root(qmlItem(mainWindow, "boundaryInterface"));
+    InterfaceProperty<BoundaryInterface, uint>::set_qml_root(qmlItem(mainWindow, "boundaryInterface"));
+    InterfaceProperty<BoundaryInterface, bool>::set_qml_root(qmlItem(mainWindow, "boundaryInterface"));
+    InterfaceProperty<BoundaryInterface, double>::set_qml_root(qmlItem(mainWindow, "boundaryInterface"));
+    InterfaceProperty<BoundaryInterface, btnStates>::set_qml_root(qmlItem(mainWindow, "boundaryInterface"));
 
-    InterfaceProperty<RecordedPathInterface, int>::set_qml_root(qmlItem(qml_root, "recordedPathInterface"));
-    InterfaceProperty<RecordedPathInterface, uint>::set_qml_root(qmlItem(qml_root, "recordedPathInterface"));
-    InterfaceProperty<RecordedPathInterface, bool>::set_qml_root(qmlItem(qml_root, "recordedPathInterface"));
-    InterfaceProperty<RecordedPathInterface, double>::set_qml_root(qmlItem(qml_root, "recordedPathInterface"));
-    InterfaceProperty<RecordedPathInterface, btnStates>::set_qml_root(qmlItem(qml_root, "recordedPathInterface"));
+    InterfaceProperty<RecordedPathInterface, int>::set_qml_root(qmlItem(mainWindow, "recordedPathInterface"));
+    InterfaceProperty<RecordedPathInterface, uint>::set_qml_root(qmlItem(mainWindow, "recordedPathInterface"));
+    InterfaceProperty<RecordedPathInterface, bool>::set_qml_root(qmlItem(mainWindow, "recordedPathInterface"));
+    InterfaceProperty<RecordedPathInterface, double>::set_qml_root(qmlItem(mainWindow, "recordedPathInterface"));
+    InterfaceProperty<RecordedPathInterface, btnStates>::set_qml_root(qmlItem(mainWindow, "recordedPathInterface"));
 
-    QMLSectionButtons::set_aog_root(qmlItem(qml_root, "aog"));
-    qmlblockage::set_aog_root(qmlItem(qml_root, "aog"));
+    QMLSectionButtons::set_aog_root(qmlItem(mainWindow, "aog"));
+    qmlblockage::set_aog_root(qmlItem(mainWindow, "aog"));
 
     //initialize interface properties
     isBtnAutoSteerOn = false;
@@ -142,17 +142,17 @@ void FormGPS::setupGui()
     isOutOfBounds = false;
 
     //hook up our AOGInterface properties
-    QObject *aog = qmlItem(qml_root, "aog");
-    QObject *tracksInterface = qml_root->property("tracksInterface").value<QObject *>();
-    //QObject *vehicleInterface = qmlItem(qml_root, "vehicleInterface");
-    QObject *fieldInterface = qmlItem(qml_root, "fieldInterface");
-    QObject *boundaryInterface = qmlItem(qml_root, "boundaryInterface");
+    QObject *aog = qmlItem(mainWindow, "aog");
+    QObject *tracksInterface = mainWindow->property("tracksInterface").value<QObject *>();
+    //QObject *vehicleInterface = qmlItem(mainWindow, "vehicleInterface");
+    QObject *fieldInterface = qmlItem(mainWindow, "fieldInterface");
+    QObject *boundaryInterface = qmlItem(mainWindow, "boundaryInterface");
 
     //react to UI changing this property
     connect(aog,SIGNAL(sectionButtonStateChanged()), &tool.sectionButtonState, SLOT(onStatesUpdated()));
     connect(aog,SIGNAL(rowCountChanged()), &tool.blockageRowState, SLOT(onRowsUpdated())); //Dim
 
-    openGLControl = qml_root->findChild<AOGRendererInSG *>("openglcontrol");
+    openGLControl = mainWindow->findChild<AOGRendererInSG *>("openglcontrol");
     //This is a bit hackish, but all rendering is done in this item, so
     //we have to give it a way of calling our initialize and draw functions
     openGLControl->setProperty("callbackObject",QVariant::fromValue((void *) this));
@@ -214,7 +214,7 @@ void FormGPS::setupGui()
     connect(aog,SIGNAL(swapAutoYouTurnDirection()), this, SLOT(onBtnSwapAutoYouTurnDirection_clicked()));
 
 
-    connect(qml_root, SIGNAL(save_everything()), this, SLOT(FileSaveEverythingBeforeClosingField()));
+    connect(mainWindow, SIGNAL(save_everything()), this, SLOT(FileSaveEverythingBeforeClosingField()));
     //connect(qml_root,SIGNAL(closing(QQuickCloseEvent *)), this, SLOT(fileSaveEverythingBeforeClosingField(QQuickCloseEvent *)));
 
 
@@ -283,7 +283,7 @@ void FormGPS::setupGui()
     headland_form.hdl = &hdl;
     headland_form.tool = &tool;
 
-    headland_form.connect_ui(qmlItem(qml_root, "headlandDesigner"));
+    headland_form.connect_ui(qmlItem(mainWindow, "headlandDesigner"));
     connect(&headland_form, SIGNAL(saveHeadland()),this,SLOT(headland_save()));
     connect(&headland_form, SIGNAL(timedMessageBox(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
 
@@ -292,7 +292,7 @@ void FormGPS::setupGui()
     headache_form.hdl = &hdl;
     headache_form.tool = &tool;
 
-    headache_form.connect_ui(qmlItem(qml_root, "headacheDesigner"));
+    headache_form.connect_ui(qmlItem(mainWindow, "headacheDesigner"));
     connect(&headache_form, SIGNAL(saveHeadland()),this,SLOT(headland_save()));
     connect(&headache_form, SIGNAL(timedMessageBox(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
     connect(&headache_form, SIGNAL(saveHeadlines()), this,SLOT(headlines_save()));
@@ -305,7 +305,7 @@ void FormGPS::setupGui()
             SLOT(onBtnPerimeter_clicked()));
     */
 
-    btnFlag = qmlItem(qml_root,"btnFlag");
+    btnFlag = qmlItem(mainWindow,"btnFlag");
     connect(btnFlag,SIGNAL(clicked()),this,
             SLOT(onBtnFlag_clicked()));
 
@@ -313,18 +313,18 @@ void FormGPS::setupGui()
     //Any objects we don't need to access later we can just store
     //temporarily
     QObject *temp;
-    temp = qmlItem(qml_root,"btnRedFlag");
+    temp = qmlItem(mainWindow,"btnRedFlag");
     connect(temp,SIGNAL(clicked()),this,SLOT(onBtnRedFlag_clicked()));
-    temp = qmlItem(qml_root,"btnGreenFlag");
+    temp = qmlItem(mainWindow,"btnGreenFlag");
     connect(temp,SIGNAL(clicked()),this,SLOT(onBtnGreenFlag_clicked()));
-    temp = qmlItem(qml_root,"btnYellowFlag");
+    temp = qmlItem(mainWindow,"btnYellowFlag");
     connect(temp,SIGNAL(clicked()),this,SLOT(onBtnYellowFlag_clicked()));
 
-    btnDeleteFlag = qmlItem(qml_root,"btnDeleteFlag");
+    btnDeleteFlag = qmlItem(mainWindow,"btnDeleteFlag");
     connect(btnDeleteFlag,SIGNAL(clicked()),this,SLOT(onBtnDeleteFlag_clicked()));
-    btnDeleteAllFlags = qmlItem(qml_root,"btnDeleteAllFlags");
+    btnDeleteAllFlags = qmlItem(mainWindow,"btnDeleteAllFlags");
     connect(btnDeleteAllFlags,SIGNAL(clicked()),this,SLOT(onBtnDeleteAllFlags_clicked()));
-    contextFlag = qmlItem(qml_root, "contextFlag");
+    contextFlag = qmlItem(mainWindow, "contextFlag");
 
     //txtDistanceOffABLine = qmlItem(qml_root,"txtDistanceOffABLine");
 
@@ -702,7 +702,7 @@ void FormGPS::btnStartSA_clicked(){
 void FormGPS::TimedMessageBox(int timeout, QString s1, QString s2)
 {
     qDebug() << "Timed message " << timeout << s1 << ", " << s2 << Qt::endl;
-    QObject *temp = qmlItem(qml_root, "timedMessage");
+    QObject *temp = qmlItem(mainWindow, "timedMessage");
     QMetaObject::invokeMethod(temp, "addMessage", Q_ARG(int, timeout), Q_ARG(QString, s1), Q_ARG(QString, s2));
 }
 
