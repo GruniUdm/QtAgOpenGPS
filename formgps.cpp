@@ -1163,6 +1163,7 @@ void FormGPS::FileSaveEverythingBeforeClosingField()
     FileSaveBoundary();
     FileSaveSections();
     FileSaveContour();
+    FileSaveTracks();
 
     ExportFieldAs_KML();
     //ExportFieldAs_ISOXMLv3()
