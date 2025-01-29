@@ -51,6 +51,13 @@ Rectangle{
 
         aog.doBlockageMonitoring()
     }
+    Label{
+        id: top
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.topMargin: 10
+        text: qsTr("Planter Monitor")
+    }
 
     GridLayout{
         flow: Grid.LeftToRight
