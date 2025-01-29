@@ -7,7 +7,7 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Effects
 import QtQuick.Dialogs
-import AOGRenderer
+import AOG
 
 import "interfaces" as Interfaces
 import "boundary" as Boundary
@@ -26,6 +26,8 @@ Window {
     }
     //We draw native opengl to this root object
     id: mainWindow
+    objectName: "mainWindow"
+
     height: theme.defaultHeight
     width: theme.defaultWidth
 
@@ -125,10 +127,8 @@ Window {
         id: aog
         objectName: "aog"
     }
-    Interfaces.TracksInterface {
-        objectName: "tracksInterface"
-        id: tracksInterface
-    }
+
+    property QtObject tracksInterface: TracksInterface
 
     Interfaces.FieldInterface {
         id: fieldInterface

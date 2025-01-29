@@ -51,6 +51,13 @@ Rectangle{
 
         aog.doBlockageMonitoring()
     }
+    Label{
+        id: top
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.topMargin: 10
+        text: qsTr("Planter Monitor")
+    }
 
     GridLayout{
         flow: Grid.LeftToRight
@@ -73,7 +80,10 @@ Rectangle{
             editable: true
             enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockRow1
-            onValueModified: settings.setSeed_blockRow1 = value, mandatory.visible = true
+            onValueModified: {
+                settings.setSeed_blockRow1 = value
+                mandatory.visible = true
+            }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Rows on module 1: ")
@@ -88,7 +98,10 @@ Rectangle{
             editable: true
             enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockRow2
-            onValueModified: settings.setSeed_blockRow2 = value, mandatory.visible = true
+            onValueModified: {
+                settings.setSeed_blockRow2 = value
+                mandatory.visible = true
+            }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Rows on module 2: ")
@@ -103,7 +116,10 @@ Rectangle{
             editable: true
             enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockRow3
-            onValueModified: settings.setSeed_blockRow3 = value, mandatory.visible = true
+            onValueModified: {
+                settings.setSeed_blockRow3 = value
+                mandatory.visible = true
+            }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Rows on module 3: ")
@@ -118,7 +134,10 @@ Rectangle{
             editable: true
             enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockRow4
-            onValueModified: settings.setSeed_blockRow4 = value, mandatory.visible = true
+            onValueModified:{
+                settings.setSeed_blockRow4 = value
+                mandatory.visible = true
+            }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Rows on module 4: ")
@@ -134,27 +153,44 @@ Rectangle{
             editable: true
             enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockCountMin
-            onValueModified: settings.setSeed_blockCountMin = value, mandatory.visible = true
+            onValueModified: {
+                settings.setSeed_blockCountMin = value
+                mandatory.visible = true
+            }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
-                text: qsTr("Grain countMin: ")
+                text: qsTr("Minimum ")
                 font.bold: true
                 anchors.top: parent.bottom
             }
+            Label{
+                anchors.left: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: utils.per_unit()
+            }
         }
         SpinBoxCustomized{
+            Layout.alignment: Qt.AlignRight
             id: graincountMax
             from: 0
             to:10000
             editable: true
             enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockCountMax
-            onValueModified: settings.setSeed_blockCountMax = value, mandatory.visible = true
+            onValueModified:{
+                settings.setSeed_blockCountMax = value
+                mandatory.visible = true
+            }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
-                text: qsTr("Grain countMax: ")
+                text: qsTr("Maximum ")
                 font.bold: true
                 anchors.top: parent.bottom
+            }
+            Label{
+                anchors.left: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: utils.per_unit()
             }
         }
 
@@ -194,7 +230,10 @@ Rectangle{
         anchors.leftMargin: 20 * theme.scaleHeight
         enabled: cboxIsBlockageOn.checked
         icon.source: prefix + "/images/UpArrow64.png"
-        onClicked: load_settings(), mandatory.visible = true
+        onClicked: {
+            load_settings()
+            mandatory.visible = true
+        }
     }
     IconButtonColor{
         id: cboxIsBlockageOn

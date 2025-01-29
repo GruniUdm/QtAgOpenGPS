@@ -318,7 +318,7 @@ void FormGPS::StartLoopbackServer()
 
     if(udpSocket) stopUDPServer();
 
-    QObject *aog = qmlItem(qml_root, "aog");
+    QObject *aog = qmlItem(mainWindow, "aog");
     udpSocket = new QUdpSocket(this); //should auto delete with the form
     //udpSocket->bind(QHostAddress::Any, port); //by default, bind to all interfaces.
 

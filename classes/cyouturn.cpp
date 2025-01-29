@@ -43,7 +43,6 @@ bool CYouTurn::BuildCurveDubinsYouTurn(bool isTurnLeft, Vec3 pivotPos,
                                        CVehicle &vehicle,
                                        const CBoundary &bnd,
                                        CTrack &trk,
-                                       int &makeUTurnCounter,
                                        int secondsSinceStart
                                        )
 {
@@ -61,18 +60,18 @@ bool CYouTurn::BuildCurveDubinsYouTurn(bool isTurnLeft, Vec3 pivotPos,
         //Albin turn
         if (turnOffset > (youTurnRadius * 2.0))
         {
-            return CreateCurveWideTurn(isTurnLeft, pivotPos, makeUTurnCounter, vehicle, bnd, trk, secondsSinceStart);
+            return CreateCurveWideTurn(isTurnLeft, pivotPos, vehicle, bnd, trk, secondsSinceStart);
         }
 
         //Ohmega turn
         else
         {
-            return CreateCurveOmegaTurn(isTurnLeft, pivotPos, makeUTurnCounter, vehicle, bnd, trk, secondsSinceStart);
+            return CreateCurveOmegaTurn(isTurnLeft, pivotPos, vehicle, bnd, trk, secondsSinceStart);
         }
     }
     else if (uTurnStyle == 1)
     {
-        return (KStyleTurnCurve(isTurnLeft, makeUTurnCounter,vehicle,trk,bnd));
+        return (KStyleTurnCurve(isTurnLeft, vehicle,trk,bnd));
     }
 
     //prgramming error if you got here
@@ -83,7 +82,6 @@ bool CYouTurn::BuildABLineDubinsYouTurn(bool isTurnLeft,
                                         CVehicle &vehicle,
                                         const CBoundary &bnd,
                                         CTrack &trk,
-                                        int &makeUTurnCounter,
                                         int secondsSinceStart)
 {
     double tool_toolWidth = property_setVehicle_toolWidth;
@@ -104,17 +102,17 @@ bool CYouTurn::BuildABLineDubinsYouTurn(bool isTurnLeft,
         //Wide turn
         if (turnOffset > (youTurnRadius * 2.0))
         {
-            return (CreateABWideTurn(isTurnLeft, makeUTurnCounter, vehicle, bnd, trk, secondsSinceStart));
+            return (CreateABWideTurn(isTurnLeft, vehicle, bnd, trk, secondsSinceStart));
         }
         //Small turn
         else
         {
-            return (CreateABOmegaTurn(isTurnLeft, makeUTurnCounter, vehicle, bnd, trk));
+            return (CreateABOmegaTurn(isTurnLeft, vehicle, bnd, trk));
         }
     }
     else if (uTurnStyle == 1)
     {
-        return (KStyleTurnAB(isTurnLeft, makeUTurnCounter,vehicle,trk.ABLine,bnd));
+        return (KStyleTurnAB(isTurnLeft, vehicle,trk.ABLine,bnd));
     }
 
     //prgramming error if you got here
@@ -122,7 +120,6 @@ bool CYouTurn::BuildABLineDubinsYouTurn(bool isTurnLeft,
 }
 
 bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
-                                    int makeUTurnCounter,
                                     CVehicle &vehicle,
                                     const CBoundary &bnd,
                                     const CTrack &trk,
@@ -356,7 +353,6 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
 }
 
 bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
-                                   int makeUTurnCounter,
                                    CVehicle &vehicle,
                                    const CBoundary &bnd,
                                    CTrack &trk,
@@ -750,7 +746,6 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
 }
 
 bool CYouTurn::CreateABOmegaTurn(bool isTurnLeft,
-                                 int makeUTurnCounter,
                                  CVehicle &vehicle,
                                  const CBoundary &bnd,
                                  const CTrack &trk)
@@ -876,7 +871,6 @@ bool CYouTurn::CreateABOmegaTurn(bool isTurnLeft,
 }
 
 bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
-                                int makeUTurnCounter,
                                 CVehicle &vehicle,
                                 const CBoundary &bnd,
                                 CTrack &trk,
@@ -1199,7 +1193,6 @@ bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
 }
 
 bool CYouTurn::KStyleTurnCurve(bool isTurnLeft,
-                               int &makeUTurnCounter,
                                CVehicle &vehicle,
                                const CTrack &track,
                                const CBoundary &bnd)
@@ -1419,7 +1412,6 @@ bool CYouTurn::KStyleTurnCurve(bool isTurnLeft,
 }
 
 bool CYouTurn::KStyleTurnAB(bool isTurnLeft,
-                            int &makeUTurnCounter,
                             CVehicle &vehicle,
                             const CABLine &ABLine,
                             const CBoundary &bnd)
@@ -2528,10 +2520,10 @@ void CYouTurn::YouTurnTrigger(CTrack &trk, CVehicle &vehicle)
 }
 
 //Normal copmpletion of youturn
-void CYouTurn::CompleteYouTurn(int &makeUTurnCounter)
+void CYouTurn::CompleteYouTurn()
 {
     isYouTurnTriggered = false;
-    ResetCreatedYouTurn(makeUTurnCounter);
+    ResetCreatedYouTurn();
     //mf.sounds.isBoundAlarming = false;
     emit turnOffBoundAlarm();
 }
@@ -2545,13 +2537,13 @@ void CYouTurn::Set_Alternate_skips()
 
 
 //something went seriously wrong so reset everything
-void CYouTurn::ResetYouTurn(int &makeUTurnCounter)
+void CYouTurn::ResetYouTurn()
 {
     //fix you turn
     isYouTurnTriggered = false;
     makeUTurnCounter = 0;
     ytList.clear();
-    ResetCreatedYouTurn(makeUTurnCounter);
+    ResetCreatedYouTurn();
     //mf.isBoundAlarming = false;
     emit turnOffBoundAlarm();
     isTurnCreationTooClose = false;
@@ -2559,12 +2551,12 @@ void CYouTurn::ResetYouTurn(int &makeUTurnCounter)
     emit uTurnReset(); //receiver will cancel pgn 239.uturn byte
 }
 
-void CYouTurn::ResetCreatedYouTurn(int &makeUturnCounter)
+void CYouTurn::ResetCreatedYouTurn()
 {
     youTurnPhase = 0;
     ytList.clear();
     pt3Phase = 0;
-    makeUturnCounter = 0;
+    makeUTurnCounter = 0;
     emit uTurnReset(); //ask receiver to cancel pgn 239 uturn byte
     isOutSameCurve = false;
     isGoingStraightThrough = false;
@@ -2720,8 +2712,7 @@ void CYouTurn::BuildManualYouTurn(bool isTurnRight,
 
 //determine distance from youTurn guidance line
 bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
-                                       CNMEA &pn,
-                                       int &makeUTurnCounter)
+                                       CNMEA &pn)
 {
     double maxSteerAngle = property_setVehicle_maxSteerAngle;
     double wheelbase = property_setVehicle_wheelbase;
@@ -2757,7 +2748,7 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
 
             if (minDistA > 16)
             {
-                CompleteYouTurn(makeUTurnCounter);
+                CompleteYouTurn();
                 return false;
             }
 
@@ -2778,13 +2769,13 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
             //return and reset if too far away or end of the line
             if (B >= ptCount - 8)
             {
-                CompleteYouTurn(makeUTurnCounter);
+                CompleteYouTurn();
                 return false;
             }
 
             if (uTurnStyle == 1 && pt3Phase == 0 && vehicle.isReverse)
             {
-                CompleteYouTurn(makeUTurnCounter);
+                CompleteYouTurn();
                 return false;
             }
 
@@ -2872,7 +2863,7 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
             if (distancePiv > 1 || (B >= ptCount - 1))
             {
                 {
-                    CompleteYouTurn(makeUTurnCounter);
+                    CompleteYouTurn();
                     return false;
                 }
             }
@@ -2926,13 +2917,13 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
 
                 if (i == ptCount - 1)//goalPointDistance is longer than remaining u-turn
                 {
-                    CompleteYouTurn(makeUTurnCounter);
+                    CompleteYouTurn();
                     return false;
                 }
 
                 if (uTurnStyle == 1 && pt3Phase == 0 && vehicle.isReverse)
                 {
-                    CompleteYouTurn(makeUTurnCounter);
+                    CompleteYouTurn();
                     return false;
                 }
             }
@@ -2973,7 +2964,7 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
     }
     else
     {
-        CompleteYouTurn(makeUTurnCounter);
+        CompleteYouTurn();
         return false;
     }
 }

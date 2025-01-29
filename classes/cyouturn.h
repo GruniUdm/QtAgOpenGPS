@@ -147,6 +147,8 @@ public:
 
     int onA;
 
+    int makeUTurnCounter  = 0; //moved from FormGPS to here
+
     //constructor
     explicit CYouTurn(QObject *parent = 0);
 
@@ -158,7 +160,6 @@ public:
                                  CVehicle &vehicle,
                                  const CBoundary &bnd,
                                  CTrack &trk,
-                                 int &makeUTurnCounter,
                                  int secondsSinceStart
                                  );
 
@@ -166,44 +167,41 @@ public:
                                   CVehicle &vehicle,
                                   const CBoundary &bnd,
                                   CTrack &trk,
-                                  int &makeUTurnCounter,
                                   int secondsSinceStart
                                   );
 
 
 private:
     bool CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
-                              int makeUTurnCounter,
                               CVehicle &vehicle,
                               const CBoundary &bnd,
                               const CTrack &trk,
                               int secondsSinceStart);
 
     bool CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
-                             int makeUTurnCounter,
                              CVehicle &vehicle,
                              const CBoundary &bnd,
                              CTrack &trk,
                              int secondsSinceStart
                              );
 
-    bool CreateABOmegaTurn(bool isTurnLeft,                              int makeUTurnCounter,
+    bool CreateABOmegaTurn(bool isTurnLeft,
                            CVehicle &vehicle,
                            const CBoundary &bnd,
                            const CTrack &track);
+
     bool CreateABWideTurn(bool isTurnLeft,
-                          int makeUTurnCounter,
                           CVehicle &vehicle,
                           const CBoundary &bnd,
                           CTrack &trk,
                           int secondsSinceStart);
 
-    bool KStyleTurnCurve(bool isTurnLeft, int &makeUTurnCounter,
+    bool KStyleTurnCurve(bool isTurnLeft,
                          CVehicle &vehicle,
                          const CTrack &trk,
                          const CBoundary &bnd);
 
-    bool KStyleTurnAB(bool isTurnLeft, int &makeUTurnCounter,
+    bool KStyleTurnAB(bool isTurnLeft,
                          CVehicle &vehicle,
                          const CABLine &ABLine,
                          const CBoundary &bnd);
@@ -265,14 +263,14 @@ public:
     void YouTurnTrigger(CTrack &trk, CVehicle &vehicle);
 
     //Normal copmpletion of youturn
-    void CompleteYouTurn(int &makeUTurnCounter);
+    void CompleteYouTurn();
 
     void Set_Alternate_skips();
 
     //something went seriously wrong so reset everything
-    void ResetYouTurn(int &makeUTurnCounter);
+    void ResetYouTurn();
 
-    void ResetCreatedYouTurn(int &makeUturnCounter);
+    void ResetCreatedYouTurn();
 
     void FailCreate();
 
@@ -287,7 +285,7 @@ public:
                             CTrack &trk);
 
     //determine distance from youTurn guidance line
-    bool DistanceFromYouTurnLine(CVehicle &v, CNMEA &pn, int &makeUTurnCounter);
+    bool DistanceFromYouTurnLine(CVehicle &v, CNMEA &pn);
 
     //Duh.... What does this do....
     void DrawYouTurn(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);

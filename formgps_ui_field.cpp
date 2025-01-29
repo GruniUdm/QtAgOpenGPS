@@ -11,7 +11,7 @@ void FormGPS::field_update_list() {
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
                             + "/" + QCoreApplication::applicationName() + "/Fields";
 
-    QObject *fieldInterface = qmlItem(qml_root, "fieldInterface");
+    QObject *fieldInterface = qmlItem(mainWindow, "fieldInterface");
 
     QDir fieldsDirectory(directoryName);
     fieldsDirectory.setFilter(QDir::Dirs);

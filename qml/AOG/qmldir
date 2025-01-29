@@ -1,0 +1,3 @@
+module AOG
+singleton TracksInterface 1.0 ../interfaces/TracksInterface.qml
+

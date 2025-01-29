@@ -22,6 +22,20 @@ CTrk::CTrk()
     heading = 3;
 }
 
+CTrk::CTrk(const CTrk &orig)
+{
+    curvePts = orig.curvePts;
+    heading = orig.heading;
+    name = orig.name;
+    isVisible = orig.isVisible;
+    ptA = orig.ptA;
+    ptB = orig.ptB;
+    endPtA = orig.endPtA;
+    endPtB = orig.endPtB;
+    mode = orig.mode;
+    nudgeDistance = orig.nudgeDistance;
+}
+
 CTrack::CTrack(QObject* parent) : QAbstractListModel(parent)
 {
     // Initialize role names
@@ -400,7 +414,6 @@ void CTrack::DrawTrackGoalPoint(QOpenGLFunctions *gl,
 
 void CTrack::BuildCurrentLine(Vec3 pivot, double secondsSinceStart,
                               bool isBtnAutoSteerOn,
-                              int &makeUTurnCounter,
                               CYouTurn &yt,
                               CVehicle &vehicle,
                               const CBoundary &bnd,
@@ -414,14 +427,14 @@ void CTrack::BuildCurrentLine(Vec3 pivot, double secondsSinceStart,
         {
             ABLine.BuildCurrentABLineList(pivot,secondsSinceStart,gArr[idx],yt,vehicle);
 
-            ABLine.GetCurrentABLine(pivot, vehicle.steerAxlePos,isBtnAutoSteerOn,vehicle,yt,ahrs,gyd,pn,makeUTurnCounter);
+            ABLine.GetCurrentABLine(pivot, vehicle.steerAxlePos,isBtnAutoSteerOn,vehicle,yt,ahrs,gyd,pn);
         }
         else
         {
             //build new current ref line if required
             curve.BuildCurveCurrentList(pivot, secondsSinceStart,vehicle,gArr[idx],bnd,yt);
 
-            curve.GetCurrentCurveLine(pivot, vehicle.steerAxlePos,isBtnAutoSteerOn,vehicle,gArr[idx],yt,ahrs,gyd,pn,makeUTurnCounter);
+            curve.GetCurrentCurveLine(pivot, vehicle.steerAxlePos,isBtnAutoSteerOn,vehicle,gArr[idx],yt,ahrs,gyd,pn);
         }
     }
     emit howManyPathsAwayChanged(); //notify QML property is changed
@@ -542,4 +555,14 @@ QVariant CTrack::data(const QModelIndex &index, int role) const
 QHash<int, QByteArray> CTrack::roleNames() const
 {
     return m_roleNames;
+}
+
+QString CTrack::getTrackName(int index)
+{
+    return gArr[index].name;
+}
+
+bool CTrack::getTrackVisible(int index)
+{
+    return gArr[index].isVisible;
 }

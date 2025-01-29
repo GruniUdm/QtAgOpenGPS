@@ -72,7 +72,7 @@ void FormGPS::onSimTimerTimeout()
         sim.DoSimTick(vehicle.guidanceLineSteerAngle * 0.01);
     } else {
         //TODO redirect through AOGInterface
-        qmlobject = qmlItem(qml_root, "simSteer");
+        qmlobject = qmlItem(mainWindow, "simSteer");
         double steerAngle = (qmlobject->property("value").toReal() - 300) * 0.1;
         sim.DoSimTick(steerAngle); //drive straight for now until UI
     }

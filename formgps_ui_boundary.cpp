@@ -20,8 +20,8 @@ void FormGPS::boundary_calculate_area() {
         area = fabs(area / 2);
     }
 
-    qmlItem(qml_root,"boundaryInterface")->setProperty("area", area);
-    qmlItem(qml_root,"boundaryInterface")->setProperty("pts", ptCount);
+    qmlItem(mainWindow,"boundaryInterface")->setProperty("area", area);
+    qmlItem(mainWindow,"boundaryInterface")->setProperty("pts", ptCount);
 }
 
 void FormGPS::boundary_update_list() {
@@ -36,7 +36,7 @@ void FormGPS::boundary_update_list() {
         bndMap["drive_through"] = b.isDriveThru;
         boundList.append(bndMap);
     }
-    qmlItem(qml_root,"boundaryInterface")->setProperty("boundary_list", boundList);
+    qmlItem(mainWindow,"boundaryInterface")->setProperty("boundary_list", boundList);
 }
 
 void FormGPS::boundary_start() {

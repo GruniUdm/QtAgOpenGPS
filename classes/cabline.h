@@ -106,7 +106,7 @@ public:
                           CYouTurn &yt,
                           const CAHRS &ahrs,
                           CGuidance &gyd,
-                          CNMEA &pn, int &makeUTurnCounter);
+                          CNMEA &pn);
     void DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                        const CCamera &camera);
 

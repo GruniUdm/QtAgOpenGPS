@@ -107,7 +107,7 @@ public:
                              CYouTurn &yt,
                              const CAHRS &ahrs,
                              CGuidance &gyd,
-                             CNMEA &pn, int &makeUTurnCounter);
+                             CNMEA &pn);
 
 
     void DrawCurveNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);

@@ -8,6 +8,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtQml.Models
+import AOG
 import "../components"
 import ".."
 
@@ -138,7 +139,7 @@ MoveablePopup {
                     trackPickerDialog.visible = false
                     if (trackView.currentIndex > -1 && trackView.trackVisible) {
                         console.debug("Activating track ", trackView.currentIndex)
-                        tracksInterface.select(trackView.currentIndex)
+                        TracksInterface.select(trackView.currentIndex)
                     }
                     trackPickerDialog.visible = false
                 }
