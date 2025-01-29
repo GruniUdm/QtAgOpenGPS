@@ -214,15 +214,13 @@ qt_add_executable(QtAgOpenGPS
 
 #Add the QML module
 qt_add_qml_module(QtAgOpenGPS
-     URI AOGRenderer
-     VERSION 1.0
-     QML_FILES qml/MainWindow.qml
-     SOURCES
+    URI AOG
+    VERSION 1.0
+    QML_FILES ${qml_interfaces_singletons}
+    SOURCES
         aogrenderer.cpp
         aogrenderer.h
-     DEPENDENCIES Qt6::QtQuick
- )
-
+)
 
 if(NOT ANDROID)
     set_target_properties(QtAgOpenGPS PROPERTIES
