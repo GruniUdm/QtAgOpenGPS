@@ -296,4 +296,5 @@ void QMLSettings::setupKeys() {
     addKey(QString("setSeed_blockRow4"),QString("seed/blockRow4"),"double");
     addKey(QString("setSeed_numRows"),QString("seed/numRows"),"double");
     addKey(QString("setSeed_blockageIsOn"),QString("seed/blockageIsOn"),"bool");
+    addKey(QString("setCam_CamLink"),QString("cam/camLink"),"QString");
 }

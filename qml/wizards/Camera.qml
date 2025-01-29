@@ -23,6 +23,8 @@ MoveablePopup {
     visible: false
     modal: false
     x: 400 * theme.scaleWidth
+    onOpened: menuBar.autoload = true
+
 /*
     TopLine{
         id: cameraTopLine

@@ -299,4 +299,5 @@ Item {
     property double setSeed_blockRow4: 0
     property double setSeed_numRows: 32
     property bool setSeed_blockageIsOn: false
+    property string setCam_CamLink: "rtsp://192.168.0.138:1945"
 }
