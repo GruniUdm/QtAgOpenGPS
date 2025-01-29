@@ -20,6 +20,7 @@ class CCamera;
 class CAHRS;
 class CGuidance;
 class CTrk;
+class CWorldGrid;
 
 class CABLines
 {
@@ -111,7 +112,7 @@ public:
                        const CCamera &camera);
 
     void DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
-                     bool isFontOn,
+                     bool isFontOn, bool isRateMapOn,
                      const CTrk &track,
                      CYouTurn &yt,
                      const CCamera &camera,

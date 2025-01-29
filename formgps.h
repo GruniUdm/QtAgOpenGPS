@@ -372,7 +372,6 @@ public:
 
     //guidance line look ahead
     double guidanceLookAheadTime = 2;
-    Vec2 guidanceLookPos;
 
     //for heading or Atan2 as camera
     QString headingFromSource, headingFromSourceBak;

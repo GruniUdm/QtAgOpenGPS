@@ -9,6 +9,7 @@
 #include "cahrs.h"
 #include "cguidance.h"
 #include "ctrack.h"
+#include "cworldgrid.h"
 #include "aogproperty.h"
 #include <QOpenGLFunctions>
 #include <QColor>
@@ -20,7 +21,8 @@
 
 CABLine::CABLine(QObject *parent) : QObject(parent)
 {
-    abLength = property_setAB_lineLength;
+    //abLength = property_setAB_lineLength; ?
+    abLength = 2000;
 }
 
 void CABLine::BuildCurrentABLineList(Vec3 pivot,
@@ -336,6 +338,7 @@ void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 
 void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                           bool isFontOn,
+                          bool isRateMapOn,
                           const CTrk &track,
                           CYouTurn &yt,
                           const CCamera &camera,

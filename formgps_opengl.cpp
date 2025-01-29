@@ -383,7 +383,7 @@ void FormGPS::oglMain_Paint()
             else// draw the current and reference AB Lines or CurveAB Ref and line
             {
                 //when switching lines, draw the ghost
-                trk.DrawTrack(gl, projection*modelview, isFontOn, yt, camera, gyd);
+                trk.DrawTrack(gl, projection*modelview, isFontOn, worldGrid.isRateMap, yt, camera, gyd);
             }
 
             //if (recPath.isRecordOn)

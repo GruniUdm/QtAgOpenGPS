@@ -16,6 +16,7 @@
 #include "ccamera.h"
 #include "cahrs.h"
 #include "cguidance.h"
+#include "cworldgrid.h"
 
 CTrk::CTrk()
 {
@@ -379,14 +380,14 @@ void CTrack::DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCa
 
 void CTrack::DrawTrack(QOpenGLFunctions *gl,
                        const QMatrix4x4 &mvp,
-                       bool isFontOn,
+                       bool isFontOn, bool isRateMapOn,
                        CYouTurn &yt,
                        const CCamera &camera,
                        const CGuidance &gyd)
 {
     if (idx >= 0) {
         if (gArr[idx].mode == TrackMode::AB)
-            ABLine.DrawABLines(gl, mvp, isFontOn,gArr[idx], yt, camera, gyd);
+            ABLine.DrawABLines(gl, mvp, isFontOn, isRateMapOn, gArr[idx], yt, camera, gyd);
         else if (gArr[idx].mode == TrackMode::Curve)
             curve.DrawCurve(gl, mvp, isFontOn, gArr[idx], yt, camera);
     }
@@ -559,12 +560,22 @@ QHash<int, QByteArray> CTrack::roleNames() const
 
 QString CTrack::getTrackName(int index)
 {
+    if (index < 0) return "";
     return gArr[index].name;
 }
 
 bool CTrack::getTrackVisible(int index)
 {
+    if (index < 0) return false;
+
     return gArr[index].isVisible;
+}
+
+double CTrack::getTrackNudge(int index)
+{
+    if (index < 0) return 0;
+
+    return gArr[index].nudgeDistance;
 }
 
 void CTrack::select(int index)

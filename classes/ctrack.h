@@ -21,7 +21,6 @@ class CNMEA;
 class CCamera;
 class CTram;
 
-
 enum TrackMode {
     None = 0,
     AB = 2,
@@ -108,8 +107,9 @@ public:
     void DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera);
     void DrawTrack(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                    bool isFontOn,
-                   CYouTurn &yt, const CCamera &camera
-                   , const CGuidance &gyd);
+                   bool isRateMapOn,
+                   CYouTurn &yt, const CCamera &camera,
+                   const CGuidance &gyd);
     void DrawTrackGoalPoint(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
 
     void BuildCurrentLine(Vec3 pivot,
@@ -154,6 +154,7 @@ public:
 
     Q_INVOKABLE QString getTrackName(int index);
     Q_INVOKABLE bool getTrackVisible(int index);
+    Q_INVOKABLE double getTrackNudge(int index);
 
     // QML model interface
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
