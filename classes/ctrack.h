@@ -124,6 +124,18 @@ public:
     void ResetCurveLine();
     void AddPathPoint(Vec3 point); //add point while building new curve or AB Line
 
+    void NudgeTrack(double dist);
+    void NudgeDistanceReset();
+    void SnapToPivot();
+    void NudgeRefTrack(double dist);
+
+    void reloadModel() {
+        //force QML to reload the model to reflect changes
+        //that may have been made in C++ code.
+        beginResetModel();
+        endResetModel();
+        emit modelChanged(); //not sure if this is necessary
+    }
 
     //getters and setters for properties
     QString getNewName(void);
@@ -152,6 +164,7 @@ protected:
     virtual QHash<int, QByteArray> roleNames() const override;
 signals:
     void resetCreatedYouTurn();
+    void saveTracks();
 
     void idxChanged();
     void modeChanged();
@@ -166,18 +179,34 @@ signals:
     void countChanged();
 
 public slots:
-    void reloadModel() {
-        //force QML to reload the model to reflect changes
-        //that may have been made in C++ code.
-        beginResetModel();
-        endResetModel();
-        emit modelChanged(); //not sure if this is necessary
-    }
-    //put these here so Qt can call them directly.
-    void NudgeTrack(double dist);
-    void NudgeDistanceReset();
-    void SnapToPivot();
-    void NudgeRefTrack(double dist);
+    //we can't call these directly from QML because of thread context
+    //issues.  At least for now QML must call TracksInterface signals
+    //which we'll connect to these slots.
+    void select(int index);
+    void next();
+    void prev();
+
+    void start_new(int mode);
+    void mark_start(double easting, double northing, double heading);
+    void mark_end(int refSide, double easting,
+                           double northing);
+
+    void finish_new(QString name);
+
+    void cancel_new();
+    void pause(bool pause);
+    void add_point(double easting, double northing, double heading);
+
+    void delete_track(int index);
+    void changeName(int index, QString new_name);
+    void swapAB(int index);
+    void setVisible(int index, bool isVisible);
+    void copy(int index, QString new_name);
+
+    void ref_nudge(double dist_m);
+    void nudge_zero();
+    void nudge_center();
+    void nudge(double dist_m);
 
 private:
     // Used by QML model interface

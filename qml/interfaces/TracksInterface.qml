@@ -34,10 +34,13 @@ Item {
     signal add_point(double easting, double northing, double heading)
 
     signal select(int index)
+    signal next()
+    signal prev()
     signal swapAB(int index)
     signal changeName(int index, string new_name)
     signal delete_track(int index)
     signal setVisible(int index, bool isVisible)
+    signal copy(int index, string new_name)
 
     //signal updateModel()
 

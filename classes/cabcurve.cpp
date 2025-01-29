@@ -1417,61 +1417,29 @@ bool CABCurve::PointOnLine(Vec3 pt1, Vec3 pt2, Vec3 pt)
 
 }
 
-void CABCurve::AddFirstLastPoints(QVector<Vec3> &xList,
-                                  const CBoundary &bnd)
+void CABCurve::AddFirstLastPoints(QVector<Vec3> &xList)
 {
+    //No longer are we clipping to the boundary. I don't think it's necessary.
+
     int ptCnt = xList.count() - 1;
     Vec3 start(xList[0]);
 
-    if (bnd.bndList.count() > 0)
+    for (int i = 1; i < 300; i++)
     {
-        //end
-        while (glm::IsPointInPolygon(bnd.bndList[0].fenceLineEar, xList[xList.count() - 1]))
-        {
-            for (int i = 1; i < 10; i++)
-            {
-                Vec3 pt(xList[ptCnt]);
-                pt.easting += (sin(pt.heading) * i);
-                pt.northing += (cos(pt.heading) * i);
-                xList.append(pt);
-            }
-            ptCnt = xList.count() - 1;
-        }
-
-        //and the beginning
-        start = Vec3(xList[0]);
-
-        while (glm::IsPointInPolygon(bnd.bndList[0].fenceLineEar,xList[0]))
-        {
-            for (int i = 1; i < 10; i++)
-            {
-                Vec3 pt(start);
-                pt.easting -= (sin(pt.heading) * i);
-                pt.northing -= (cos(pt.heading) * i);
-                xList.insert(0, pt);
-            }
-            start = Vec3(xList[0]);
-        }
+        Vec3 pt(xList[ptCnt]);
+        pt.easting += (sin(pt.heading) * i);
+        pt.northing += (cos(pt.heading) * i);
+        xList.append(pt);
     }
-    else
+
+    //and the beginning
+    start = Vec3(xList[0]);
+
+    for (int i = 1; i < 300; i++)
     {
-        for (int i = 1; i < 300; i++)
-        {
-            Vec3 pt(xList[ptCnt]);
-            pt.easting += (sin(pt.heading) * i);
-            pt.northing += (cos(pt.heading) * i);
-            xList.append(pt);
-        }
-
-        //and the beginning
-        start = Vec3(xList[0]);
-
-        for (int i = 1; i < 300; i++)
-        {
-            Vec3 pt(start);
-            pt.easting -= (sin(pt.heading) * i);
-            pt.northing -= (cos(pt.heading) * i);
-            xList.insert(0, pt);
-        }
+        Vec3 pt(start);
+        pt.easting -= (sin(pt.heading) * i);
+        pt.northing -= (cos(pt.heading) * i);
+        xList.insert(0, pt);
     }
 }

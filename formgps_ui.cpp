@@ -166,23 +166,25 @@ void FormGPS::setupGui()
 
     connect(aog,SIGNAL(sectionButtonStateChanged()), &tool.sectionButtonState, SLOT(onStatesUpdated()));
 
-    connect(tracksInterface, SIGNAL(start_new(int)), this, SLOT(tracks_start_new(int)));
-    connect(tracksInterface, SIGNAL(mark_start(double,double,double)), this, SLOT(tracks_mark_start(double,double,double)));
-    connect(tracksInterface, SIGNAL(mark_end(int,double,double)), this, SLOT(tracks_mark_end(int,double,double)));
-    connect(tracksInterface, SIGNAL(finish_new(QString)), this, SLOT(tracks_finish_new(QString)));
-    connect(tracksInterface, SIGNAL(cancel_new()), this, SLOT(tracks_cancel_new()));
-    connect(tracksInterface, SIGNAL(pause_or_resume(bool)), this, SLOT(tracks_pause(bool)));
-    connect(tracksInterface, SIGNAL(add_point(double,double,double)), this, SLOT(tracks_add_point(double,double,double)));
-    connect(tracksInterface, SIGNAL(select(int)), this, SLOT(tracks_select(int)));
-    connect(tracksInterface, SIGNAL(swapAB(int)), this, SLOT(tracks_swapAB(int)));
-    connect(tracksInterface, SIGNAL(changeName(int,QString)), this, SLOT(tracks_changeName(int,QString)));
-    connect(tracksInterface, SIGNAL(copy(int,QString)), this, SLOT(tracks_copy(int,QString)));
-    connect(tracksInterface, SIGNAL(delete_track(int)), this, SLOT(tracks_delete(int)));
-    connect(tracksInterface, SIGNAL(setVisible(int,bool)), this, SLOT(tracks_setVisible(int,bool)));
-    connect(tracksInterface, SIGNAL(ref_nudge(double)), this, SLOT(tracks_ref_nudge(double)));
-    connect(tracksInterface, SIGNAL(nudge_zero()), this, SLOT(tracks_nudge_zero()));
-    connect(tracksInterface, SIGNAL(nudge_center()), this, SLOT(tracks_nudge_center()));
-    connect(tracksInterface, SIGNAL(nudge(double)), this, SLOT(tracks_nudge(double)));
+    connect(tracksInterface, SIGNAL(select(int)), &trk, SLOT(select(int)));
+    connect(tracksInterface, SIGNAL(next()), &trk, SLOT(next()));
+    connect(tracksInterface, SIGNAL(prev()), &trk, SLOT(prev()));
+    connect(tracksInterface, SIGNAL(start_new(int)), &trk, SLOT(start_new(int)));
+    connect(tracksInterface, SIGNAL(mark_start(double,double,double)), &trk, SLOT(mark_start(double,double,double)));
+    connect(tracksInterface, SIGNAL(mark_end(int,double,double)), &trk, SLOT(mark_end(int,double,double)));
+    connect(tracksInterface, SIGNAL(finish_new(QString)), &trk, SLOT(finish_new(QString)));
+    connect(tracksInterface, SIGNAL(cancel_new()), &trk, SLOT(cancel_new()));
+    connect(tracksInterface, SIGNAL(pause_or_resume(bool)), &trk, SLOT(pause(bool)));
+    connect(tracksInterface, SIGNAL(add_point(double,double,double)), &trk, SLOT(add_point(double,double,double)));
+    connect(tracksInterface, SIGNAL(swapAB(int)), &trk, SLOT(swapAB(int)));
+    connect(tracksInterface, SIGNAL(changeName(int,QString)), &trk, SLOT(changeName(int,QString)));
+    connect(tracksInterface, SIGNAL(copy(int,QString)), &trk, SLOT(copy(int,QString)));
+    connect(tracksInterface, SIGNAL(delete_track(int)), &trk, SLOT(delete_track(int)));
+    connect(tracksInterface, SIGNAL(setVisible(int,bool)), &trk, SLOT(setVisible(int,bool)));
+    connect(tracksInterface, SIGNAL(ref_nudge(double)), &trk, SLOT(ref_nudge(double)));
+    connect(tracksInterface, SIGNAL(nudge_zero()), &trk, SLOT(nudge_zero()));
+    connect(tracksInterface, SIGNAL(nudge_center()), &trk, SLOT(nudge_center()));
+    connect(tracksInterface, SIGNAL(nudge(double)), &trk, SLOT(nudge(double)));
 
     //on screen buttons
     connect(aog,SIGNAL(zoomIn()), this, SLOT(onBtnZoomIn_clicked()));

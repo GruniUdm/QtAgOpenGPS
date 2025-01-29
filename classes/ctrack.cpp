@@ -566,3 +566,358 @@ bool CTrack::getTrackVisible(int index)
 {
     return gArr[index].isVisible;
 }
+
+void CTrack::select(int index)
+{
+    //reset to generate new reference
+    curve.isCurveValid = false;
+    curve.lastHowManyPathsAway = 98888;
+    ABLine.isABValid = false;
+    curve.desList.clear();
+
+    emit saveTracks(); //Do we really need to do this here?
+
+    //We assume that QML will always pass us a valid index that is
+    //visible, or -1
+    setIdx(index);
+    emit resetCreatedYouTurn();
+    //yt.ResetCreatedYouTurn();
+}
+
+void CTrack::next()
+{
+    if (idx < 0) return;
+
+    int visible_count = 0;
+    for(CTrk &track : gArr) {
+        if (track.isVisible) visible_count++;
+    }
+
+    if (visible_count == 0) return; //no visible tracks to choose
+
+    idx = (idx + 1) % gArr.count();
+    while (!gArr[idx].isVisible)
+        idx = (idx + 1) % gArr.count();
+}
+
+void CTrack::prev()
+{
+    if (idx < 0) return;
+
+    int visible_count = 0;
+    for(CTrk &track : gArr) {
+        if (track.isVisible) visible_count++;
+    }
+
+    if (visible_count == 0) return; //no visible tracks to choose
+
+    idx = (idx - 1) % gArr.count();
+    while (!gArr[idx].isVisible)
+        idx = (idx - 1) % gArr.count();
+}
+
+void CTrack::start_new(int mode)
+{
+    newTrack = CTrk();
+    setNewMode((TrackMode)mode);
+    setNewName("");
+}
+
+void CTrack::mark_start(double easting, double northing, double heading)
+{
+    //mark "A" location for AB Line or AB curve, or center for waterPivot
+    switch(getNewMode()) {
+    case TrackMode::AB:
+        curve.desList.clear();
+        ABLine.isMakingABLine = true;
+        ABLine.desPtA.easting = easting;
+        ABLine.desPtA.northing = northing;
+
+        ABLine.desLineEndA.easting = ABLine.desPtA.easting - (sin(heading) * 1000);
+        ABLine.desLineEndA.northing = ABLine.desPtA.northing - (cos(heading) * 1000);
+
+        ABLine.desLineEndB.easting = ABLine.desPtA.easting + (sin(heading) * 1000);
+        ABLine.desLineEndB.northing = ABLine.desPtA.northing + (cos(heading) * 1000);
+
+        break;
+
+    case TrackMode::Curve:
+        curve.desList.clear();
+        curve.isMakingCurve = true;
+        break;
+
+    case TrackMode::waterPivot:
+        //record center
+        newTrack.ptA.easting = easting;
+        newTrack.ptA.northing = northing;
+        setNewName("Piv");
+
+    default:
+        return;
+    }
+}
+
+void CTrack::mark_end(int refSide, double easting, double northing)
+{
+    QLocale locale;
+
+    //mark "B" location for AB Line or AB curve, or NOP for waterPivot
+    int cnt;
+    double aveLineHeading = 0;
+    newRefSide = refSide;
+
+    switch(getNewMode()) {
+    case TrackMode::AB:
+        newTrack.ptB.easting = easting;
+        newTrack.ptB.northing = northing;
+
+        ABLine.desHeading = atan2(easting - ABLine.desPtA.easting,
+                                  northing - ABLine.desPtA.northing);
+        if (ABLine.desHeading < 0) ABLine.desHeading += glm::twoPI;
+
+        newTrack.heading = ABLine.desHeading;
+
+        setNewName("AB " + locale.toString(glm::toDegrees(ABLine.desHeading), 'g', 1) + QChar(0x00B0));
+
+        //after we're sure we want this, we'll shift it over
+        break;
+
+    case TrackMode::Curve:
+        newTrack.curvePts.clear();
+
+        cnt = curve.desList.count();
+        if (cnt > 3)
+        {
+            //make sure point distance isn't too big
+            curve.MakePointMinimumSpacing(curve.desList, 1.6);
+            curve.CalculateHeadings(curve.desList);
+
+            newTrack.ptA = Vec2(curve.desList[0].easting,
+                                     curve.desList[0].northing);
+            newTrack.ptB = Vec2(curve.desList[curve.desList.count() - 1].easting,
+                                     curve.desList[curve.desList.count() - 1].northing);
+
+            //calculate average heading of line
+            double x = 0, y = 0;
+            for (Vec3 &pt : curve.desList)
+            {
+                x += cos(pt.heading);
+                y += sin(pt.heading);
+            }
+            x /= curve.desList.count();
+            y /= curve.desList.count();
+            aveLineHeading = atan2(y, x);
+            if (aveLineHeading < 0) aveLineHeading += glm::twoPI;
+
+            newTrack.heading = aveLineHeading;
+
+            //build the tail extensions
+            curve.AddFirstLastPoints(curve.desList);
+            curve.SmoothABDesList(4);
+            curve.CalculateHeadings(curve.desList);
+
+            //write out the Curve Points
+            for (Vec3 &item : curve.desList)
+            {
+                newTrack.curvePts.append(item);
+            }
+
+            setNewName("Cu " + locale.toString(glm::toDegrees(aveLineHeading), 'g', 1) + QChar(0x00B0));
+
+            double dist;
+
+            if (newRefSide > 0)
+            {
+                dist = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) * 0.5 + (double)property_setVehicle_toolOffset;
+                NudgeRefCurve(newTrack, dist);
+            }
+            else if (newRefSide < 0)
+            {
+                dist = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) * -0.5 + (double)property_setVehicle_toolOffset;
+                NudgeRefCurve(newTrack, dist);
+            }
+            //else no nudge, center ref line
+
+       }
+        else
+        {
+            curve.isMakingCurve = false;
+            curve.desList.clear();
+        }
+        break;
+
+    case TrackMode::waterPivot:
+        //Do nothing here.  pivot point is already established.
+        break;
+
+    default:
+        return;
+    }
+
+}
+
+void CTrack::finish_new(QString name)
+{
+    double dist;
+    newTrack.name = name;
+
+    switch(getNewMode()) {
+    case TrackMode::AB:
+        if (!ABLine.isMakingABLine) return; //do not add line if it stopped
+
+        if (newRefSide > 0)
+        {
+            dist = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) * 0.5 + (double)property_setVehicle_toolOffset;
+            NudgeRefABLine(newTrack, dist);
+
+        }
+        else if (newRefSide < 0)
+        {
+            dist = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) * -0.5 + (double)property_setVehicle_toolOffset;
+            NudgeRefABLine(newTrack, dist);
+        }
+
+        ABLine.isMakingABLine = false;
+        break;
+
+    case TrackMode::Curve:
+        if (!curve.isMakingCurve) return; //do not add line if it failed.
+        curve.isMakingCurve = false;
+        break;
+
+    case TrackMode::waterPivot:
+        break;
+
+    default:
+        return;
+
+    }
+
+    gArr.append(newTrack);
+    setIdx(gArr.count() - 1);
+    reloadModel();
+
+}
+
+void CTrack::cancel_new()
+{
+    ABLine.isMakingABLine = false;
+    curve.isMakingCurve = false;
+    if(newTrack.mode == TrackMode::Curve) {
+        curve.desList.clear();
+    }
+    newTrack.mode = 0;
+
+    //don't need to do anything else
+}
+
+void CTrack::pause(bool pause)
+{
+    if (newTrack.mode == TrackMode::Curve) {
+        //turn off isMakingCurve when paused, or turn it on
+        //when unpausing
+        curve.isMakingCurve = !pause;
+    }
+}
+
+void CTrack::add_point(double easting, double northing, double heading)
+{
+    AddPathPoint(Vec3(easting, northing, heading));
+}
+
+void CTrack::ref_nudge(double dist_m)
+{
+    NudgeRefTrack(dist_m);
+}
+
+void CTrack::nudge_zero()
+{
+    NudgeDistanceReset();
+}
+
+void CTrack::nudge_center()
+{
+    SnapToPivot();
+}
+
+void CTrack::nudge(double dist_m)
+{
+    NudgeTrack(dist_m);
+}
+
+void CTrack::delete_track(int index)
+{
+    gArr.removeAt(index);
+}
+
+void CTrack::swapAB(int idx)
+{
+    if (idx >= 0 && idx < gArr.count()) {
+        if (gArr[idx].mode == TrackMode::AB)
+        {
+            Vec2 bob = gArr[idx].ptA;
+            gArr[idx].ptA = gArr[idx].ptB;
+            gArr[idx].ptB = bob;
+
+            gArr[idx].heading += M_PI;
+            if (gArr[idx].heading < 0) gArr[idx].heading += glm::twoPI;
+            if (gArr[idx].heading > glm::twoPI) gArr[idx].heading -= glm::twoPI;
+        }
+        else
+        {
+            int cnt = gArr[idx].curvePts.count();
+            if (cnt > 0)
+            {
+                QVector<Vec3> arr;
+                arr.reserve(gArr[idx].curvePts.count());
+                std::reverse_copy(gArr[idx].curvePts.begin(),
+                                  gArr[idx].curvePts.end(), std::back_inserter(arr));
+
+                gArr[idx].curvePts.clear();
+
+                gArr[idx].heading += M_PI;
+                if (gArr[idx].heading < 0) gArr[idx].heading += glm::twoPI;
+                if (gArr[idx].heading > glm::twoPI) gArr[idx].heading -= glm::twoPI;
+
+                for (int i = 1; i < cnt; i++)
+                {
+                    Vec3 pt3 = arr[i];
+                    pt3.heading += M_PI;
+                    if (pt3.heading > glm::twoPI) pt3.heading -= glm::twoPI;
+                    if (pt3.heading < 0) pt3.heading += glm::twoPI;
+                    gArr[idx].curvePts.append(pt3);
+                }
+
+                Vec2 temp = gArr[idx].ptA;
+
+                gArr[idx].ptA =gArr[idx].ptB;
+                gArr[idx].ptB = temp;
+            }
+        }
+    }
+    reloadModel();
+}
+
+void CTrack::changeName(int index, QString new_name)
+{
+    if (index >=0 && index < gArr.count() ) {
+        gArr[index].name = new_name;
+    }
+    reloadModel();
+}
+
+void CTrack::setVisible(int index, bool isVisible)
+{
+    gArr[index].isVisible = isVisible;
+    reloadModel();
+}
+
+void CTrack::copy(int index, QString new_name)
+{
+    CTrk new_track = CTrk(gArr[index]);
+    new_track.name = new_name;
+
+    gArr.append(new_track);
+    reloadModel();
+}
+

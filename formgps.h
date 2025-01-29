@@ -483,7 +483,7 @@ public:
 
     void FileSaveHeadLines();
     void FileLoadHeadLines();
-    void FileSaveTracks();
+    //moved up to a SLOT: void FileSaveTracks();
     void FileLoadTracks();
     void FileSaveCurveLines();
     void FileLoadCurveLines();
@@ -653,7 +653,8 @@ public slots:
 
     void TimedMessageBox(int timeout, QString s1, QString s2);
 
-    //Tracks GUI
+    //Tracks GUI callbacks are now in CTrack
+    /*
 
     void tracks_start_new(int mode);
 
@@ -681,7 +682,7 @@ public slots:
     void tracks_nudge_zero();
     void tracks_nudge_center();
     void tracks_nudge(double dist_m);
-
+    */
 
 
     /*
@@ -838,6 +839,7 @@ public slots:
      * misc
      */
     void FileSaveEverythingBeforeClosingField();
+    void FileSaveTracks();
 
     /* formgps_classcallbacks.cpp */
     void onStopAutoSteer(); //cancel autosteer and ensure button state

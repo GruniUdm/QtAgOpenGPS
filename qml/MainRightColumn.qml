@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import AOG
 import "components" as Comp
 
 ColumnLayout {
@@ -72,12 +73,7 @@ ColumnLayout {
 
         onClicked: {
             if (trk.idx > -1) {
-                var a = trk.idx
-                a += 1
-                if (a >= trk.rowCount())
-                    a = 0
-
-                tracksInterface.select(a)
+                TracksInterface.next()
             }
         }
     }
@@ -90,12 +86,7 @@ ColumnLayout {
 
         onClicked: {
             if (trk.idx > -1) {
-                var a = trk.idx
-                a -= 1
-                if (a < 0)
-                    a = trk.rowCount() - 1
-
-                tracksInterface.select(a)
+                TracksInterface.prev()
             }
         }
 

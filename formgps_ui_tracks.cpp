@@ -6,7 +6,7 @@
 #include "qmlutil.h"
 #include "aogproperty.h"
 
-
+#if 0
 void FormGPS::tracks_select(int index)
 {
     //reset to generate new reference
@@ -326,6 +326,7 @@ void FormGPS::tracks_copy(int index, QString new_name)
     trk.reloadModel();
 }
 
+#endif
     /*
 void FormGPS::update_current_ABline_from_qml()
 {
