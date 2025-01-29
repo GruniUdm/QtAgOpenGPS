@@ -80,7 +80,10 @@ Rectangle{
             editable: true
             enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockRow1
-            onValueModified: settings.setSeed_blockRow1 = value, mandatory.visible = true
+            onValueModified: {
+                settings.setSeed_blockRow1 = value
+                mandatory.visible = true
+            }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Rows on module 1: ")
@@ -95,7 +98,10 @@ Rectangle{
             editable: true
             enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockRow2
-            onValueModified: settings.setSeed_blockRow2 = value, mandatory.visible = true
+            onValueModified: {
+                settings.setSeed_blockRow2 = value
+                mandatory.visible = true
+            }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Rows on module 2: ")
@@ -110,7 +116,10 @@ Rectangle{
             editable: true
             enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockRow3
-            onValueModified: settings.setSeed_blockRow3 = value, mandatory.visible = true
+            onValueModified: {
+                settings.setSeed_blockRow3 = value
+                mandatory.visible = true
+            }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Rows on module 3: ")
@@ -125,7 +134,10 @@ Rectangle{
             editable: true
             enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockRow4
-            onValueModified: settings.setSeed_blockRow4 = value, mandatory.visible = true
+            onValueModified:{
+                settings.setSeed_blockRow4 = value
+                mandatory.visible = true
+            }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Rows on module 4: ")
@@ -141,7 +153,10 @@ Rectangle{
             editable: true
             enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockCountMin
-            onValueModified: settings.setSeed_blockCountMin = value, mandatory.visible = true
+            onValueModified: {
+                settings.setSeed_blockCountMin = value
+                mandatory.visible = true
+            }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Grain countMin: ")
@@ -156,7 +171,10 @@ Rectangle{
             editable: true
             enabled: cboxIsBlockageOn.checked
             boundValue: settings.setSeed_blockCountMax
-            onValueModified: settings.setSeed_blockCountMax = value, mandatory.visible = true
+            onValueModified:{
+                settings.setSeed_blockCountMax = value
+                mandatory.visible = true
+            }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Grain countMax: ")
@@ -201,7 +219,10 @@ Rectangle{
         anchors.leftMargin: 20 * theme.scaleHeight
         enabled: cboxIsBlockageOn.checked
         icon.source: prefix + "/images/UpArrow64.png"
-        onClicked: load_settings(), mandatory.visible = true
+        onClicked: {
+            load_settings()
+            mandatory.visible = true
+        }
     }
     IconButtonColor{
         id: cboxIsBlockageOn
