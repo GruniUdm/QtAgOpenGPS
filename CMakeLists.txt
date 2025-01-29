@@ -212,6 +212,10 @@ qt_add_executable(QtAgOpenGPS
     android/res/xml/qtprovider_paths.xml
 )
 
+set(qml_interfaces_singletons
+    qml/interfaces/TracksInterface.qml
+)
+
 #Add the QML module
 qt_add_qml_module(QtAgOpenGPS
     URI AOG
