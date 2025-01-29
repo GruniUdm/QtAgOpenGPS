@@ -159,12 +159,18 @@ Rectangle{
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
-                text: qsTr("Grain countMin: ")
+                text: qsTr("Minimum ")
                 font.bold: true
                 anchors.top: parent.bottom
             }
+            Label{
+                anchors.left: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: utils.per_unit()
+            }
         }
         SpinBoxCustomized{
+            Layout.alignment: Qt.AlignRight
             id: graincountMax
             from: 0
             to:10000
@@ -177,9 +183,14 @@ Rectangle{
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
-                text: qsTr("Grain countMax: ")
+                text: qsTr("Maximum ")
                 font.bold: true
                 anchors.top: parent.bottom
+            }
+            Label{
+                anchors.left: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: utils.per_unit()
             }
         }
 
