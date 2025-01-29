@@ -336,20 +336,20 @@ MoveablePopup {
                     spacing: 10 * theme.scaleWidth
 
                     Text {
-                        //text: qsTr("Set: " + aog.steerAngleSetRounded)
-                        text: qsTr("Set: " + aog.steerAngleSet)
+                        text: qsTr("Set: " + aog.steerAngleSetRounded)
+                        //text: qsTr("Set: " + aog.steerAngleSet)
                         Layout.alignment: Qt.AlignCenter
                     }
                     Text {
-                        text: qsTr("Act: " + Math.round(aog.steerAngleActual, 1))
+                        text: qsTr("Act: " + aog.steerAngleActualRounded)
                         Layout.alignment: Qt.AlignCenter
                     }
                     Text {
-                        property double err: Math.round(aog.steerAngleActual, 1) - aog.steerAngleSet
+                        property double err: aog.steerAngleActualRounded - aog.steerAngleSetRounded
                         id: errorlbl
                         Layout.alignment: Qt.AlignCenter
                         onErrChanged: err > 0 ? errorlbl.color = "red" : errorlbl.color = "darkgreen"
-                        text: qsTr("Err: " + err)
+                        text: qsTr("Err: " + Math.round(err*100)/100)
                     }
                     IconButtonTransparent{
                         //show angle info window
@@ -455,12 +455,14 @@ MoveablePopup {
             Text{
                 anchors.top: btnStartSA.top
                 anchors.left: btnStartSA.right
+                anchors.leftMargin: 5 * theme.scaleWidth
                 text: qsTr("Steer Angle: "+ aog.lblCalcSteerAngleInner)
                 Layout.alignment: Qt.AlignCenter
             }
             Text{
                 anchors.bottom: btnStartSA.bottom
                 anchors.left: btnStartSA.right
+                anchors.leftMargin: 5 * theme.scaleWidth
                 text: qsTr("Diameter: " + aog.lblDiameter)
                 Layout.alignment: Qt.AlignCenter
             }
