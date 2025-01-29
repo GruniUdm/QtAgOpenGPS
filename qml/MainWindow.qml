@@ -28,6 +28,8 @@ Window {
     id: mainWindow
     objectName: "mainWindow"
 
+    property string prefix: "../.."
+
     height: theme.defaultHeight
     width: theme.defaultWidth
 
