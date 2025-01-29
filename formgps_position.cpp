@@ -1335,6 +1335,7 @@ void FormGPS::TheRest()
 void FormGPS::CalculatePositionHeading()
 {
     // #region pivot hitch trail
+    //Probably move this into CVehicle
 
     //translate from pivot position to steer axle and pivot axle position
     //translate world to the pivot axle
@@ -1348,10 +1349,12 @@ void FormGPS::CalculatePositionHeading()
 
     //guidance look ahead distance based on time or tool width at least
 
-    double guidanceLookDist = (max(tool.width * 0.5, vehicle.avgSpeed * 0.277777 * guidanceLookAheadTime));
-    guidanceLookPos.easting = vehicle.pivotAxlePos.easting + (sin(vehicle.fixHeading) * guidanceLookDist);
-    guidanceLookPos.northing = vehicle.pivotAxlePos.northing + (cos(vehicle.fixHeading) * guidanceLookDist);
-
+    if (!trk.ABLine.isLateralTriggered && !trk.curve.isLateralTriggered)
+    {
+        double guidanceLookDist = (max(tool.width * 0.5, vehicle.avgSpeed * 0.277777 * guidanceLookAheadTime));
+        vehicle.guidanceLookPos.easting = vehicle.pivotAxlePos.easting + (sin(vehicle.fixHeading) * guidanceLookDist);
+        vehicle.guidanceLookPos.northing = vehicle.pivotAxlePos.northing + (cos(vehicle.fixHeading) * guidanceLookDist);
+    }
 
     //determine where the rigid vehicle hitch ends
     vehicle.hitchPos.easting = pn.fix.easting + (sin(vehicle.fixHeading) * (tool.hitchLength - vehicle.antennaPivot));
