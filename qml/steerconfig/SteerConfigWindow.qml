@@ -57,7 +57,7 @@ MoveablePopup {
                     colorChecked: "lightgray"
                     icon.source: prefix + "/images/Steer/ST_SteerTab.png"
                     implicitHeight: 50 * theme.scaleHeight
-                    implicitWidth: parent.width /4 - 5 * theme.scaleWidth
+                    implicitWidth: parent.width /3 - 5 * theme.scaleWidth
                 }
 				IconButtonColor{
 					id: gainBtn
@@ -65,7 +65,7 @@ MoveablePopup {
                     colorChecked: "lightgray"
                     icon.source: prefix + "/images/Steer/ST_GainTab.png"
                     implicitHeight: 50 * theme.scaleHeight
-                    implicitWidth: parent.width /4 - 5 * theme.scaleWidth
+                    implicitWidth: parent.width /3 - 5 * theme.scaleWidth
                 }
 				IconButtonColor{
 					id: stanleyBtn
@@ -73,7 +73,8 @@ MoveablePopup {
                     colorChecked: "lightgray"
                     icon.source: prefix + "/images/Steer/ST_StanleyTab.png"
                     implicitHeight: 50 * theme.scaleHeight
-                    implicitWidth: parent.width /4 - 5 * theme.scaleWidth
+                    implicitWidth: parent.width /3 - 5 * theme.scaleWidth
+                    visible: !settings.setMenu_isPureOn
                 }
 				IconButtonColor{
 					id: ppBtn
@@ -81,7 +82,8 @@ MoveablePopup {
                     colorChecked: "lightgray"
                     icon.source: prefix + "/images/Steer/Sf_PPTab.png"
                     implicitHeight: 50 * theme.scaleHeight
-                    implicitWidth: parent.width /4 - 5 * theme.scaleWidth
+                    implicitWidth: parent.width /3 - 5 * theme.scaleWidth
+                    visible: settings.setMenu_isPureOn
                 }
             }
 
