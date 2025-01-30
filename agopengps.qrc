@@ -676,5 +676,9 @@
         <file>qml/wizards/ChartSteer.qml</file>
         <file>qml/wizards/Camera.qml</file>
         <file>qml/wizards/PlayerMenuBar.qml</file>
+        <file>qml/MachineData.qml</file>
+        <file>images/spray2.png</file>
+        <file>images/RateDown.png</file>
+        <file>images/RateUp.png</file>
     </qresource>
 </RCC>

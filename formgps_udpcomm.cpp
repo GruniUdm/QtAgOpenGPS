@@ -276,10 +276,18 @@ void FormGPS::ReceiveFromAgIO()
 
             break;
 
+        case 0xED:
+            //machineData
+            if (datagram_data.length() != 14)
+                break;
+
+            mc.actualRate = (qint16)((uint8_t(data[6]) << 8) + uint8_t(data[5]));
+            break;
+
         case 0xf4://blockage
             //
             if (datagram_data.length() != 10)
-                break;
+            break;
 
             int i = data[6];
             //mc.blockageseccount[data[5]*16+i] = data[7];
@@ -290,7 +298,6 @@ void FormGPS::ReceiveFromAgIO()
             doBlockageMonitoring();
             //qDebug() << mc.blockageseccount1[1];
             break;
-
         }
     }
     //qDebug() << pn->rawBuffer ;"Connected to blockage"

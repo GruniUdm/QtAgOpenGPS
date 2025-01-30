@@ -90,6 +90,7 @@ import "components" as Comp
                     gpsData.visible = !gpsData.visible
                     fieldData.visible = false
                     blockageData.visible = false
+                    machineData.visible = false
                 }
                 Connections{
                     target: aog
@@ -113,6 +114,22 @@ import "components" as Comp
                     blockageData.visible = !blockageData.visible
                     gpsData.visible = false
                     fieldData.visible = false
+                    machineData.visible = false
+                }
+            }
+
+            Comp.IconButton {
+                id: btnMachineInfo
+                icon.source: prefix + "/images/spray2.png"
+                Layout.alignment: Qt.AlignCenter
+                implicitWidth: theme.buttonSize
+                height:parent.height
+                visible: (settings.setArdMac_isHydEnabled) ? true : false
+                onClicked: {
+                    machineData.visible = !machineData.visible
+                    gpsData.visible = false
+                    fieldData.visible = false
+                    blockageData.visible = false
                 }
             }
 

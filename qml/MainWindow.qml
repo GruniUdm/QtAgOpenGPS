@@ -528,11 +528,17 @@ Window {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: false
             }
-            BlockageData{ //window that displays GPS data
+            BlockageData{ //window that displays Blockage data
                 id: blockageData
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 visible: (aog.blockageConnected & settings.setSeed_blockageIsOn) ? true : false
+            }
+            MachineData{ //window that displays Machine data
+                id: machineData
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                visible: (settings.setArdMac_isHydEnabled) ? true : false
             }
 
             SimController{

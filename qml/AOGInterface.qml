@@ -154,7 +154,7 @@ Item {
     property int blockage_max_i: 0
     property int blockage_blocked: 0;
     property double imuCorrected:0
-
+    property double	actualRate: 0
 
 
     onSteerAngleActualChanged: steerAngleActualRounded = Number(Math.round(steerAngleActual)).toLocaleString(Qt.locale(), 'f', 1)
