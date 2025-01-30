@@ -406,6 +406,8 @@ Window{
                     height: 50 * theme.scaleWidth
                     visible: cboxPressureSensor.checked || cboxCurrentSensor.checked
                     value: aog.sensorData
+                    from: 0
+                    to: 255
                     Text {
                         //id: lblPercentFS
                         anchors.verticalCenter: parent.verticalCenter
