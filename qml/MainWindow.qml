@@ -506,12 +506,14 @@ Window {
                 anchors.top: tracknum.bottom
                 anchors.margins: 30
                 anchors.left: parent.horizontalCenter
+                visible: settings.setFeature_isTramOn
             }
             TramIndicators{
                 id: tramRight
                 anchors.top: tracknum.bottom
                 anchors.margins: 30
                 anchors.right: parent.horizontalCenter
+                visible: settings.setFeature_isTramOn
             }
 
             //Components- this is where the windows that get displayed over the
