@@ -8,13 +8,13 @@ import "components" as Comp
 
 Rectangle{
     id: gpsData
-    width: 200
-    height: childrenRect.height + 30
+    width: 200* theme.scaleWidth
+    height: childrenRect.height + 30 * theme.scaleHeight
     color: "#4d4d4d"
     Column{
         id: column
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.margins: 15
+        anchors.margins: 15 * theme.scaleHeight
         Comp.TextLine{ color: "white"; text: qsTr("Lat ", "abbreviation for latitude")+(Number(aog.latitude).toLocaleString(Qt.locale(), 'f', 9))}
         Comp.TextLine{ color: "white"; text: qsTr("Lon ", "abbreviation for longitude")+(Number(aog.longitude).toLocaleString(Qt.locale(), 'f', 9))}
         Comp.TextLine{ color: "white"; text: qsTr("N ", "abbreviation for northing") + (Number(aog.northing).toLocaleString(Qt.locale(), 'f', 3))}
