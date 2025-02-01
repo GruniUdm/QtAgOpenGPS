@@ -302,3 +302,4 @@ AOGProperty property_setSeed_blockRow4("seed/blockRow4",0);
 AOGProperty property_setSeed_numRows("seed/numRows",32);
 AOGProperty property_setSeed_blockageIsOn("seed/blockageIsOn",false);
 AOGProperty property_setVehicle_vehicleName("vehicle/vehicleName",QString("Default Vehicle"));
+AOGProperty property_setCam_CamLink("cam/camLink",QString("rtsp://192.168.0.138:1945"));

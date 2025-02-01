@@ -72,6 +72,7 @@ RowLayout{
         Layout.alignment: Qt.AlignCenter
         implicitWidth: theme.buttonSize
         implicitHeight: theme.buttonSize
+        visible: settings.setFeature_isTramOn
     }
     Comp.MainWindowBtns {
         property bool isOn: false
