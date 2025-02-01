@@ -161,14 +161,31 @@ void FormGPS::oglMain_Paint()
         //will not update, which isn't what we want either.  Some kind of timeout?
      return;
 
-    //if (newframe)
-    //    qDebug() << "start of new frame render at " << swFrame.elapsed();
+    if(newframe && (bool)isJobStarted) {
+        //save some OpenGL things
+        GLint fbo_id;
+        QSurface *origsurface = glContext->surface();
+        gl->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo_id);
+
+        oglBack_Paint();
+        //if we just had a new position and updated the back buffer then
+        //proecss the section lookaheads:
+        QTimer::singleShot(0,this, &FormGPS::processSectionLookahead);
+
+        oglZoom_Paint();
+        QTimer::singleShot(0,this, &FormGPS::processOverlapCount);
+
+        glContext->doneCurrent();
+        glContext->makeCurrent(origsurface);
+        gl->glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+    }
 
     int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
     int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
     double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
     double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
-    //gl->glViewport(0,0,width,height);
+    //restore the viewport after oglBack and oglPaint are done with it.
+    gl->glViewport(0,0,width,height);
     //qDebug() << width << height;
 
     /*
@@ -383,7 +400,7 @@ void FormGPS::oglMain_Paint()
             else// draw the current and reference AB Lines or CurveAB Ref and line
             {
                 //when switching lines, draw the ghost
-                trk.DrawTrack(gl, projection*modelview, isFontOn, yt, camera, gyd);
+                trk.DrawTrack(gl, projection*modelview, isFontOn, worldGrid.isRateMap, yt, camera, gyd);
             }
 
             //if (recPath.isRecordOn)
@@ -502,8 +519,6 @@ void FormGPS::oglMain_Paint()
             //qWarning() << "rendered but skipping section lookahead processing.";
             return;
         }
-        oglBack_Paint();
-        oglZoom_Paint();
         gl->glFlush();
 
     }
@@ -549,14 +564,6 @@ void FormGPS::oglMain_Paint()
         //GUI widgets have to be updated elsewhere
     }
     lock.unlock();
-    if(newframe && (bool)isJobStarted) {
-        //if we just had a new position and updated the back buffer then
-        //proecss the section lookaheads:
-        QTimer::singleShot(0,this, &FormGPS::processSectionLookahead);
-        QTimer::singleShot(0,this, &FormGPS::processOverlapCount);
-        //qDebug() << "GL thread is different: " << !(QThread::currentThread() == QCoreApplication::instance()->thread());
-        //qDebug() << "end of new frame render at " << swFrame.elapsed();
-    }
     newframe = false;
 }
 
@@ -640,17 +647,13 @@ void FormGPS::oglBack_Paint()
         //I think context has to be active to delete it...
         backFBO = new QOpenGLFramebufferObject(QSize(500,300),format);
     }
-    QSurface *origSurface = glContext->surface();
 
-    glContext->makeCurrent(&backSurface);
     backFBO->bind();
     glContext->functions()->glViewport(0,0,500,300);
     QOpenGLFunctions *gl = glContext->functions();
 
     //int width = glContext->surface()->size().width();
     //int height = glContext->surface()->size().height();
-
-    gl->glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
     //  Load the identity.
     projection.setToIdentity();
@@ -840,8 +843,6 @@ void FormGPS::oglBack_Paint()
 
     //restore QML's context
     backFBO->bindDefault();
-    glContext->doneCurrent();
-    glContext->makeCurrent(origSurface);
     //resetOpenGLState();
 }
 
@@ -875,9 +876,7 @@ void FormGPS::oglZoom_Paint()
         //I think context has to be active to delete it...
         zoomFBO = new QOpenGLFramebufferObject(QSize(400,400),format);
     }
-    QSurface *origSurface = glContext->surface();
 
-    glContext->makeCurrent(&zoomSurface);
     zoomFBO->bind();
     glContext->functions()->glViewport(0,0,400,400);
     QOpenGLFunctions *gl = glContext->functions();
@@ -885,7 +884,6 @@ void FormGPS::oglZoom_Paint()
     //int width = glContext->surface()->size().width();
     //int height = glContext->surface()->size().height();
 
-    gl->glPixelStorei(GL_PACK_ALIGNMENT, 1);
     gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     gl->glCullFace(GL_BACK);
     gl->glClearColor(0, 0, 0, 1.0f);
@@ -962,8 +960,6 @@ void FormGPS::oglZoom_Paint()
 
     //restore QML's context
     zoomFBO->bindDefault();
-    glContext->doneCurrent();
-    glContext->makeCurrent(origSurface);
 }
 
 void FormGPS::MakeFlagMark(QOpenGLFunctions *gl)

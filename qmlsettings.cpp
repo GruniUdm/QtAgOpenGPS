@@ -36,8 +36,8 @@ void QMLSettings::loadSettings() {
 
         //fix QVariant type
         if (settings_type_map[settings_key] != "leavealone") {
-            auto t = QMetaType::type(settings_type_map[settings_key].toUtf8());
-            if (settings_value.userType() != t && !settings_value.convert(t) && !settings_value.isNull()) {
+            auto t = QMetaType::fromName(settings_type_map[settings_key].toUtf8()).id() ;
+            if (settings_value.userType() != t && !settings_value.convert(QMetaType(t)) && !settings_value.isNull()) {
                 qWarning() << "Could not set the type of qml setting " << key;
             }
         } else {
@@ -71,8 +71,8 @@ void QMLSettings::updateSetting(const QString &settings_key) {
 
     //fix QVariant to have the right type
     if (settings_type_map[settings_key] != "leavealone") {
-        auto t = QMetaType::type(settings_type_map[settings_key].toUtf8());
-        if (settings_value.userType() != t && !settings_value.convert(t) && !settings_value.isNull()) {
+        auto t = QMetaType::fromName(settings_type_map[settings_key].toUtf8()).id() ;
+        if (settings_value.userType() != t && !settings_value.convert(QMetaType(t)) && !settings_value.isNull()) {
             qWarning() << "Could not set the type of setting " << settings_key;
         }
     } else {

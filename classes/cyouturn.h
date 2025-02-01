@@ -268,9 +268,10 @@ public:
     void Set_Alternate_skips();
 
     //something went seriously wrong so reset everything
-    void ResetYouTurn();
+    //moved to slots area
+    //void ResetYouTurn();
 
-    void ResetCreatedYouTurn();
+    //void ResetCreatedYouTurn();
 
     void FailCreate();
 
@@ -299,6 +300,11 @@ signals:
     //void guidanceLineDistanceOff(int);
     //void guidanceLineSteerAngle(int);
     //void setLookaheadGoal(double);
+public slots:
+    void ResetYouTurn();
+
+    void ResetCreatedYouTurn();
+
 };
 
 #endif // YOUTURN_H

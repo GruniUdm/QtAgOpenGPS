@@ -128,7 +128,7 @@ public:
     void SaveSmoothList(CTrk &track);
     void MoveABCurve(double dist);
     bool PointOnLine(Vec3 pt1, Vec3 pt2, Vec3 pt);
-    void AddFirstLastPoints(QVector<Vec3> &xList, const CBoundary &bnd);
+    void AddFirstLastPoints(QVector<Vec3> &xList);
 
     CABCurve &operator=(CABCurve &src)
     {

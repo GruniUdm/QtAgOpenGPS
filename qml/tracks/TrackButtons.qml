@@ -29,6 +29,7 @@ Comp.TimedRectangle {
             implicitWidth: marker.width
             implicitHeight: marker.width
             Layout.alignment: Qt.AlignCenter
+            onClicked: TracksInterface.nudge_center()
         }
         Comp.IconButtonTransparent{
             icon.source: prefix + "/images/SwitchOff.png"

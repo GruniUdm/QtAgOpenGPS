@@ -22,6 +22,7 @@ To do
  * Show AB and AC on main screen, implement timer like in AOG
  * Add NTRIP to bluetooth
  * Serial. Add NTRIP to bluetooth
+ * Implement new AOG 6.6 light bar in QML.
 
 Done
  * ~~Set the categories to consistent in the ini file.~~

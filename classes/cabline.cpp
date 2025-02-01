@@ -9,6 +9,7 @@
 #include "cahrs.h"
 #include "cguidance.h"
 #include "ctrack.h"
+#include "cworldgrid.h"
 #include "aogproperty.h"
 #include <QOpenGLFunctions>
 #include <QColor>
@@ -20,7 +21,8 @@
 
 CABLine::CABLine(QObject *parent) : QObject(parent)
 {
-    abLength = property_setAB_lineLength;
+    //abLength = property_setAB_lineLength; ?
+    abLength = 2000;
 }
 
 void CABLine::BuildCurrentABLineList(Vec3 pivot,
@@ -68,6 +70,8 @@ void CABLine::BuildCurrentABLineList(Vec3 pivot,
                            (refNudgePtB.easting * refNudgePtA.northing) -
                            (refNudgePtB.northing * refNudgePtA.easting)) /
                           sqrt((dy * dy) + (dx * dx));
+
+    distanceFromRefLine -= (0.5 * widthMinusOverlap);
 
     isLateralTriggered = false;
 
@@ -334,6 +338,7 @@ void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 
 void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                           bool isFontOn,
+                          bool isRateMapOn,
                           const CTrk &track,
                           CYouTurn &yt,
                           const CCamera &camera,
@@ -372,41 +377,48 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
         drawText3D(camera,gl,mvp, track.ptB.easting, track.ptB.northing, "&B", 1.0, true, color);
     }
 
-    /*
-    if (!mf.worldGrid.isRateMap)
+    //Draw reference AB line
+    color.setRgbF(0.930f, 0.2f, 0.2f);
+    gldraw.clear();
+    gldraw.append(QVector3D(track.endPtA.easting, track.endPtA.northing, 0));
+    gldraw.append(QVector3D(track.endPtB.easting, track.endPtB.northing, 0));
+
+    //TODO: figure out a way to make the line dashed
+    gldraw.draw(gl, mvp, color, GL_LINES, 4.0f);
+
+    if (!isRateMapOn)
     {
-        double sinHR = Math.Sin(abHeading + glm.PIBy2) * (widthMinusOverlap * 0.5 + shadowOffset);
-        double cosHR = Math.Cos(abHeading + glm.PIBy2) * (widthMinusOverlap * 0.5 + shadowOffset);
-        double sinHL = Math.Sin(abHeading + glm.PIBy2) * (widthMinusOverlap * 0.5 - shadowOffset);
-        double cosHL = Math.Cos(abHeading + glm.PIBy2) * (widthMinusOverlap * 0.5 - shadowOffset);
+        double sinHR = sin(abHeading + glm::PIBy2) * (widthMinusOverlap * 0.5 + shadowOffset);
+        double cosHR = cos(abHeading + glm::PIBy2) * (widthMinusOverlap * 0.5 + shadowOffset);
+        double sinHL = sin(abHeading + glm::PIBy2) * (widthMinusOverlap * 0.5 - shadowOffset);
+        double cosHL = cos(abHeading + glm::PIBy2) * (widthMinusOverlap * 0.5 - shadowOffset);
 
         //shadow
-        GL.Color4(0.5, 0.5, 0.5, 0.3);
-        GL.Begin(PrimitiveType.TriangleFan);
-        {
-            GL.Vertex3(currentLinePtA.easting - sinHL, currentLinePtA.northing - cosHL, 0);
-            GL.Vertex3(currentLinePtA.easting + sinHR, currentLinePtA.northing + cosHR, 0);
-            GL.Vertex3(currentLinePtB.easting + sinHR, currentLinePtB.northing + cosHR, 0);
-            GL.Vertex3(currentLinePtB.easting - sinHL, currentLinePtB.northing - cosHR, 0);
-        }
-        GL.End();
+        color.setRgbF(0.5, 0.5, 0.5, 0.3);
+
+        gldraw.clear();
+        gldraw.append(QVector3D(currentLinePtA.easting - sinHL, currentLinePtA.northing - cosHL, 0));
+        gldraw.append(QVector3D(currentLinePtA.easting + sinHR, currentLinePtA.northing + cosHR, 0));
+        gldraw.append(QVector3D(currentLinePtB.easting + sinHR, currentLinePtB.northing + cosHR, 0));
+        gldraw.append(QVector3D(currentLinePtB.easting - sinHL, currentLinePtB.northing - cosHR, 0));
+
+        gldraw.draw(gl,mvp,color,GL_TRIANGLE_FAN,lineWidth);
 
         //shadow lines
-        GL.Color4(0.55, 0.55, 0.55, 0.3);
-        GL.LineWidth(1);
-        GL.Begin(PrimitiveType.LineLoop);
-        {
-            GL.Vertex3(currentLinePtA.easting - sinHL, currentLinePtA.northing - cosHL, 0);
-            GL.Vertex3(currentLinePtA.easting + sinHR, currentLinePtA.northing + cosHR, 0);
-            GL.Vertex3(currentLinePtB.easting + sinHR, currentLinePtB.northing + cosHR, 0);
-            GL.Vertex3(currentLinePtB.easting - sinHL, currentLinePtB.northing - cosHR, 0);
-        }
-        GL.End();
+        color.setRgbF(0.55, 0.55, 0.55, 0.3);
+        gldraw.clear();
+        gldraw.append(QVector3D(currentLinePtA.easting - sinHL, currentLinePtA.northing - cosHL, 0));
+        gldraw.append(QVector3D(currentLinePtA.easting + sinHR, currentLinePtA.northing + cosHR, 0));
+        gldraw.append(QVector3D(currentLinePtB.easting + sinHR, currentLinePtB.northing + cosHR, 0));
+        gldraw.append(QVector3D(currentLinePtB.easting - sinHL, currentLinePtB.northing - cosHR, 0));
+
+        gldraw.draw(gl,mvp,color,GL_LINE_LOOP,1.0f);
+
     }
-    */
 
     //draw current AB line
     color.setRgbF(0.95, 0.2f, 0.950f);
+    gldraw.clear();
     gldraw.append(QVector3D(currentLinePtA.easting, currentLinePtA.northing, 0));
     gldraw.append(QVector3D(currentLinePtB.easting, currentLinePtB.northing, 0));
     gldraw.draw(gl,mvp,color,GL_LINES,lineWidth);
