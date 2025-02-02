@@ -866,8 +866,8 @@ void FormGPS::onDeleteAppliedArea_clicked()
                */
 
                 //clear out the contour Lists
-                //ct.StopContourLine();
-                //ct.ResetContour();
+                ct.StopContourLine(contourSaveList);
+                ct.ResetContour();
                 fd.workedAreaTotal = 0;
 
                 //clear the section lists
@@ -877,7 +877,9 @@ void FormGPS::onDeleteAppliedArea_clicked()
                     triStrip[j].patchList.clear();
                     triStrip[j].triangleList.clear();
                 }
-                //patchSaveList.clear();
+                //shouldn't we clean out triStrip too?
+
+                tool.patchSaveList.clear();
 
                 FileCreateContour();
                 FileCreateSections();
