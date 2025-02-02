@@ -115,14 +115,14 @@ MoveablePopup {
                 name: lineName1
                 axisX: axisX
                 axisY: axisY
-                //useOpenGL: chartView.openGL
+                useOpenGL: chartView.openGL
             }
             LineSeries {
                 id: lineSeries2
                 name: lineName2
                 axisX: axisX
                 axisYRight: axisY
-                //useOpenGL: chartView.openGL
+                useOpenGL: chartView.openGL
             }
 
             ValueAxis {

@@ -17,6 +17,7 @@ AOGSettings *settings;
 #ifndef TESTING
 int main(int argc, char *argv[])
 {
+    qputenv("QSG_RENDER_LOOP","threaded");
     QApplication a(argc, argv);
 
     QFont f = a.font();

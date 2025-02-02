@@ -143,8 +143,8 @@ MoveablePopup {
                         width: 200 * theme.scaleWidth
                         from: -4000
                         leftText: utils.decimalRound(value / cpDegSlider.value, 2)
-                        onValueChanged: settings.setAS_wasOffset = value * cpDegSlider.value, sendUdptimer.running = true
-                        //onValueChanged: settings.setAS_wasOffset = value, sendUdptimer.running = true
+                        //onValueChanged: settings.setAS_wasOffset = value * cpDegSlider.value, sendUdptimer.running = true
+                        onValueChanged: settings.setAS_wasOffset = value, sendUdptimer.running = true
                         to: 4000
                         value: settings.setAS_wasOffset / cpDegSlider.value
                         visible: steerBtn.checked
