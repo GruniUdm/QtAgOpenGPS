@@ -27,7 +27,6 @@
 
 #include <assert.h>
 
-
 QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
 {
     /* returns easting and northing relative to the tractor's hitch position,
@@ -166,6 +165,8 @@ void FormGPS::oglMain_Paint()
         GLint fbo_id;
         QSurface *origsurface = glContext->surface();
         gl->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo_id);
+        GLint viewport[4];
+        gl->glGetIntegerv(GL_VIEWPORT, viewport);
 
         oglBack_Paint();
         //if we just had a new position and updated the back buffer then
@@ -178,6 +179,7 @@ void FormGPS::oglMain_Paint()
         glContext->doneCurrent();
         glContext->makeCurrent(origsurface);
         gl->glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+        gl->glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
     }
 
     int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
@@ -185,7 +187,7 @@ void FormGPS::oglMain_Paint()
     double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
     double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
     //restore the viewport after oglBack and oglPaint are done with it.
-    gl->glViewport(0,0,width,height);
+    //gl->glViewport(0,0,width,height);
     //qDebug() << width << height;
 
     /*
