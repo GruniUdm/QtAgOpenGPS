@@ -148,9 +148,9 @@ void FormGPS::oglMain_Paint()
     GLHelperColors gldrawcolors;
     GLHelperOneColor gldraw1;
 
-    //synchronize with the position code in the main thread
     //if (newframe)
     //    qDebug() << "start of new frame, waiting for lock at " << swFrame.elapsed();
+    //synchronize with the position code in the main thread
     if (!lock.tryLockForRead())
         //if there's no new position to draw, just return so we don't
         //waste time redrawing.  Frame rate is at most gpsHz.  And if we
@@ -160,39 +160,10 @@ void FormGPS::oglMain_Paint()
         //will not update, which isn't what we want either.  Some kind of timeout?
      return;
 
-    /*
-    if(newframe &&(bool)isJobStarted) {
-        //save some OpenGL things
-        GLint fbo_id;
-        QSurface *origsurface = glContext->surface();
-        gl->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo_id);
-        GLint viewport[4];
-        gl->glGetIntegerv(GL_VIEWPORT, viewport);
-
-        oglBack_Paint();
-        //if we just had a new position and updated the back buffer then
-        //proecss the section lookaheads:
-        emit do_processSectionLookahead();
-        //QTimer::singleShot(0,this, &FormGPS::processSectionLookahead);
-
-        oglZoom_Paint();
-        emit do_processOverlapCount();
-        //QTimer::singleShot(0,this, &FormGPS::processOverlapCount);
-
-        glContext->doneCurrent();
-        glContext->makeCurrent(origsurface);
-        gl->glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
-        gl->glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-    }
-    */
-
     int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
     int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
     double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
     double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
-    //restore the viewport after oglBack and oglPaint are done with it.
-    //gl->glViewport(0,0,width,height);
-    //qDebug() << width << height;
 
     /*
 #ifdef GL_POINT_SPRITE

@@ -43,7 +43,6 @@ void initializeBackShader() {
     if (!backShader) {
         backShader = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
         auto result = backShader->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/color_vshader.vsh");
-        qDebug() << "shader compiler said " << backShader->log();
         assert(result);
 
         assert(backShader->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/color_fshader.fsh"));
