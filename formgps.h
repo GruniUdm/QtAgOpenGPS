@@ -732,6 +732,8 @@ public slots:
     void modules_send_252();
 
     void doBlockageMonitoring();
+    void rate_bump(bool up);
+    void rate_auto();
 
     //boundary UI for recording new boundary
     void boundary_calculate_area();

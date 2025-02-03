@@ -236,6 +236,8 @@ Item {
     signal modules_send_252()
 
     signal doBlockageMonitoring()
+    signal rate_bump_pwm(bool up)
+    signal rate_pwm_auto()
 
     signal sim_bump_speed(bool up)
     signal sim_zero_speed()

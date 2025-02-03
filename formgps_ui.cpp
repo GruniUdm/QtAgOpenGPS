@@ -252,6 +252,8 @@ void FormGPS::setupGui()
     connect(aog, SIGNAL(modules_send_252()), this, SLOT(modules_send_252()));
 
     connect(aog, SIGNAL(doBlockageMonitoring()), this, SLOT(doBlockageMonitoring()));
+    connect(aog, SIGNAL(rate_bump_pwm(bool)), this, SLOT(rate_bump(bool)));
+    connect(aog, SIGNAL(rate_pwm_auto()), this, SLOT(rate_auto()));
 
     connect(aog, SIGNAL(sim_bump_speed(bool)), &sim, SLOT(speed_bump(bool)));
     connect(aog, SIGNAL(sim_zero_speed()), &sim, SLOT(speed_zero()));
@@ -1018,5 +1020,13 @@ void FormGPS::Timer1_Tick()
             //lblPercentFS.Text = mc.sensorData.ToString();
     }
     */
+}
+void FormGPS::rate_bump(bool up)
+{
+
+}
+void FormGPS::rate_auto()
+{
+
 }
 

@@ -43,7 +43,39 @@ Rectangle{
                 anchors.top: column.bottom
                 onClicked: settings.setArdMac_user4<10?settings.setArdMac_user4=0:settings.setArdMac_user4-=10
         }
+
+            Row{
+                height: 50 * theme.scaleHeight
+                width: parent.width
+                anchors.top: rateDown.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+
+            Comp.IconButtonTransparent{
+                //height: parent.height
+                implicitHeight: 50 * theme.scaleHeight
+                implicitWidth: 50 * theme.scaleWidth
+                //anchors.top: rateDown.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                icon.source: prefix + "/images/AutoStop.png"
+                onClicked: aog.rate_pwm_auto()
         }
-
-
-
+            Comp.IconButtonTransparent{
+                //height: parent.height
+                implicitHeight: 50 * theme.scaleHeight
+                implicitWidth: 50 * theme.scaleWidth
+                anchors.right: parent.right
+                //anchors.rightMargin: 25 * theme.scaleHeight
+                //anchors.top: rateDown.bottom
+                icon.source: prefix + "/images/UpArrow64.png"
+                onClicked: aog.rate_bump_pwm(true)
+        }
+            Comp.IconButtonTransparent{
+                //height: parent.height
+                implicitHeight: 50 * theme.scaleHeight
+                implicitWidth: 50 * theme.scaleWidth
+                anchors.left: parent.left
+                icon.source: prefix + "/images/DnArrow64.png"
+                onClicked: aog.rate_bump_pwm(false)
+        }
+}
+}
