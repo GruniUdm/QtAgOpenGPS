@@ -161,7 +161,8 @@ void FormGPS::oglMain_Paint()
         //will not update, which isn't what we want either.  Some kind of timeout?
      return;
 
-    if(newframe && (bool)isJobStarted) {
+    /*
+    if(newframe &&(bool)isJobStarted) {
         //save some OpenGL things
         GLint fbo_id;
         QSurface *origsurface = glContext->surface();
@@ -179,6 +180,7 @@ void FormGPS::oglMain_Paint()
         glContext->makeCurrent(origsurface);
         gl->glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
     }
+    */
 
     int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
     int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();

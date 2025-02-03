@@ -172,7 +172,7 @@ FormGPS::~FormGPS()
 //by the rendering routine.
 void FormGPS::processSectionLookahead() {
     //qDebug() << "frame time before doing section lookahead " << swFrame.elapsed();
-    lock.lockForWrite();
+    //lock.lockForWrite();
     //qDebug() << "frame time after getting lock  " << swFrame.elapsed();
 
     if (property_displayShowBack)
@@ -735,7 +735,7 @@ void FormGPS::processSectionLookahead() {
     }
 
 
-    lock.unlock();
+    //lock.unlock();
 
     //this is the end of the "frame". Now we wait for next NMEA sentence with a valid fix.
 }

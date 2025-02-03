@@ -18,6 +18,7 @@
 #include "aogrenderer.h"
 #include "cpgn.h"
 #include "qmlutil.h"
+#include "glutils.h"
 
 //called for every new GPS or simulator position
 void FormGPS::UpdateFixPosition()
@@ -1261,6 +1262,42 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("steerSwitchHigh", mc.steerSwitchHigh);
 
     newframe = true;
+
+    if (isJobStarted) {
+        QOpenGLContext *glContext = QOpenGLContext::currentContext();
+        //if there's no context we need to create one because
+        //the qml renderer is in a different thread.
+        if (!glContext) {
+            glContext = new QOpenGLContext;
+            glContext->create();
+        }
+
+        if (!backSurface.isValid()) {
+            backSurface.create();
+            auto r = backSurface.isValid();
+            qDebug() << "back surface creation: " << r;
+        }
+
+        auto result = glContext->makeCurrent(&backSurface);
+
+        initializeBackShader();
+
+        //save some OpenGL things
+        GLint fbo_id;
+        QSurface *origsurface = glContext->surface();
+        glContext->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo_id);
+
+        oglBack_Paint();
+        processSectionLookahead();
+
+        oglZoom_Paint();
+        processOverlapCount();
+
+        glContext->doneCurrent();
+        glContext->makeCurrent(origsurface);
+        glContext->functions()->glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+    }
+
     lock.unlock();
     //qDebug() << "frame time after processing a new position part 2 " << swFrame.elapsed();
 
