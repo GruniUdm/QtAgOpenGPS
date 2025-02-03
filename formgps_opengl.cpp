@@ -171,10 +171,12 @@ void FormGPS::oglMain_Paint()
         oglBack_Paint();
         //if we just had a new position and updated the back buffer then
         //proecss the section lookaheads:
-        QTimer::singleShot(0,this, &FormGPS::processSectionLookahead);
+        emit do_processSectionLookahead();
+        //QTimer::singleShot(0,this, &FormGPS::processSectionLookahead);
 
         oglZoom_Paint();
-        QTimer::singleShot(0,this, &FormGPS::processOverlapCount);
+        emit do_processOverlapCount();
+        //QTimer::singleShot(0,this, &FormGPS::processOverlapCount);
 
         glContext->doneCurrent();
         glContext->makeCurrent(origsurface);

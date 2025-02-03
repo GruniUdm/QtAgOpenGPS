@@ -20,6 +20,8 @@ extern QMLSettings qml_settings;
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
 
+    connect(this,SIGNAL(do_processSectionLookahead()), this, SLOT(processSectionLookahead()));
+    connect(this,SIGNAL(do_processOverlapCount()), this, SLOT(processOverlapCount()));
     connect_classes(); //make all the inter-class connections
     qml_settings.setupKeys();
     qml_settings.loadSettings();  //fetch everything from QSettings for QML to use
