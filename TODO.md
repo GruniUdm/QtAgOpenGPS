@@ -23,6 +23,7 @@ To do
  * Add NTRIP to bluetooth
  * Serial. Add NTRIP to bluetooth
  * Implement new AOG 6.6 light bar in QML.
+ * Convert OpenGL calls and shaders to QRhi for portability and speed, using DirectD3D and Vulkan where it can.
 
 Done
  * ~~Set the categories to consistent in the ini file.~~
