@@ -633,6 +633,10 @@ void FormGPS::oglBack_Paint()
     //After this, this widget will emit a finished signal, where the main
     //thread can then run the second part of this function, which I've
     //split out into its own function.
+
+    //don't draw if it's not a new frame. Save a lot of time.
+    if (!newframe) return;  //this will make resizes funny until the next frame comes in
+
     QOpenGLContext *glContext = QOpenGLContext::currentContext();
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
