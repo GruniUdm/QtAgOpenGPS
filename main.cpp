@@ -17,6 +17,9 @@ AOGSettings *settings;
 #ifndef TESTING
 int main(int argc, char *argv[])
 {
+    qputenv("QSG_RENDER_LOOP", "threaded");
+    QLoggingCategory::setFilterRules(QStringLiteral("qt.scenegraph.general=true"));
+
     QApplication a(argc, argv);
 
     QFont f = a.font();

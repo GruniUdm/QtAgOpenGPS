@@ -663,49 +663,6 @@ public slots:
 
     void TimedMessageBox(int timeout, QString s1, QString s2);
 
-    //Tracks GUI callbacks are now in CTrack
-    /*
-
-    void tracks_start_new(int mode);
-
-    void tracks_mark_start(double easting,
-                          double northing,
-                          double heading);
-
-    void tracks_mark_end(int refSide, double easting,
-                           double northing);
-
-    void tracks_finish_new(QString name);
-
-    void tracks_cancel_new();
-    void tracks_pause(bool pause);
-    void tracks_add_point(double easting, double northing, double heading);
-
-    void tracks_select(int index);
-    void tracks_delete(int index);
-    void tracks_changeName(int index, QString new_name);
-    void tracks_swapAB(int index);
-    void tracks_setVisible(int index, bool isVisible);
-    void tracks_copy(int index, QString new_name);
-
-    void tracks_ref_nudge(double dist_m);
-    void tracks_nudge_zero();
-    void tracks_nudge_center();
-    void tracks_nudge(double dist_m);
-    */
-
-
-    /*
-    //AB Lines in GUI. TODO: rename these, make them consistent
-    void update_ABlines_in_qml();
-    void update_current_ABline_from_qml();
-    void add_new_ABline(QString name, double easting, double northing,double heading);
-    void start_newABLine(bool start_or_cancel, double easting, double northing, double heading);
-    void delete_ABLine(int which_line);
-    void swap_heading_ABLine(int which_line);
-    void change_name_ABLine(int which_line, QString name);
-    */
-
     //settings dialog callbacks
     void on_settings_reload();
     void on_settings_save();
@@ -857,6 +814,9 @@ public slots:
     void onSectionMasterManualOff();
     void onStoppedDriving();
 
+signals:
+    void do_processSectionLookahead();
+    void do_processOverlapCount();
 };
 
 #endif // FORMGPS_H

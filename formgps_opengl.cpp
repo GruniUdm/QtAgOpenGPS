@@ -27,7 +27,6 @@
 
 #include <assert.h>
 
-
 QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
 {
     /* returns easting and northing relative to the tractor's hitch position,
@@ -149,9 +148,9 @@ void FormGPS::oglMain_Paint()
     GLHelperColors gldrawcolors;
     GLHelperOneColor gldraw1;
 
-    //synchronize with the position code in the main thread
     //if (newframe)
     //    qDebug() << "start of new frame, waiting for lock at " << swFrame.elapsed();
+    //synchronize with the position code in the main thread
     if (!lock.tryLockForRead())
         //if there's no new position to draw, just return so we don't
         //waste time redrawing.  Frame rate is at most gpsHz.  And if we
@@ -161,32 +160,10 @@ void FormGPS::oglMain_Paint()
         //will not update, which isn't what we want either.  Some kind of timeout?
      return;
 
-    if(newframe && (bool)isJobStarted) {
-        //save some OpenGL things
-        GLint fbo_id;
-        QSurface *origsurface = glContext->surface();
-        gl->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo_id);
-
-        oglBack_Paint();
-        //if we just had a new position and updated the back buffer then
-        //proecss the section lookaheads:
-        QTimer::singleShot(0,this, &FormGPS::processSectionLookahead);
-
-        oglZoom_Paint();
-        QTimer::singleShot(0,this, &FormGPS::processOverlapCount);
-
-        glContext->doneCurrent();
-        glContext->makeCurrent(origsurface);
-        gl->glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
-    }
-
     int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
     int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
     double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
     double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
-    //restore the viewport after oglBack and oglPaint are done with it.
-    gl->glViewport(0,0,width,height);
-    //qDebug() << width << height;
 
     /*
 #ifdef GL_POINT_SPRITE
@@ -631,6 +608,10 @@ void FormGPS::oglBack_Paint()
     //After this, this widget will emit a finished signal, where the main
     //thread can then run the second part of this function, which I've
     //split out into its own function.
+
+    //don't draw if it's not a new frame. Save a lot of time.
+    if (!newframe) return;  //this will make resizes funny until the next frame comes in
+
     QOpenGLContext *glContext = QOpenGLContext::currentContext();
     QMatrix4x4 projection;
     QMatrix4x4 modelview;

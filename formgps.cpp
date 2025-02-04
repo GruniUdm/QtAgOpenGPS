@@ -20,6 +20,8 @@ extern QMLSettings qml_settings;
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
 
+    connect(this,SIGNAL(do_processSectionLookahead()), this, SLOT(processSectionLookahead()));
+    connect(this,SIGNAL(do_processOverlapCount()), this, SLOT(processOverlapCount()));
     connect_classes(); //make all the inter-class connections
     qml_settings.setupKeys();
     qml_settings.loadSettings();  //fetch everything from QSettings for QML to use
@@ -172,7 +174,7 @@ FormGPS::~FormGPS()
 //by the rendering routine.
 void FormGPS::processSectionLookahead() {
     //qDebug() << "frame time before doing section lookahead " << swFrame.elapsed();
-    lock.lockForWrite();
+    //lock.lockForWrite();
     //qDebug() << "frame time after getting lock  " << swFrame.elapsed();
 
     if (property_displayShowBack)
@@ -735,7 +737,7 @@ void FormGPS::processSectionLookahead() {
     }
 
 
-    lock.unlock();
+    //lock.unlock();
 
     //this is the end of the "frame". Now we wait for next NMEA sentence with a valid fix.
 }
