@@ -27,10 +27,20 @@ Rectangle{
                 implicitHeight: 50 * theme.scaleHeight
                 implicitWidth: 50 * theme.scaleWidth
                 anchors.right: parent.right
-                anchors.rightMargin: 25 * theme.scaleHeight
+                anchors.rightMargin: 15 * theme.scaleHeight
                 anchors.top: column.bottom
                 onClicked: settings.setArdMac_user4>250?settings.setArdMac_user4=255:settings.setArdMac_user4+=10
             }
+            Comp.IconButtonTransparent{
+                id: rateSettings
+                checkable: true
+                implicitHeight: 50 * theme.scaleHeight
+                implicitWidth: 50 * theme.scaleWidth
+                anchors.top: column.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                icon.source: prefix + "/images/Settings48.png"
+
+        }
             Comp.IconButtonColor{
                 id: rateDown
                 checkable: true
@@ -39,7 +49,7 @@ Rectangle{
                 implicitHeight: 50 * theme.scaleHeight
                 implicitWidth: 50 * theme.scaleWidth
                 anchors.left: parent.left
-                anchors.leftMargin: 25 * theme.scaleHeight
+                anchors.leftMargin: 15 * theme.scaleHeight
                 anchors.top: column.bottom
                 onClicked: settings.setArdMac_user4<10?settings.setArdMac_user4=0:settings.setArdMac_user4-=10
         }
@@ -51,29 +61,28 @@ Rectangle{
                 anchors.horizontalCenter: parent.horizontalCenter
 
             Comp.IconButtonTransparent{
-                //height: parent.height
+                visible: rateSettings.checked
                 implicitHeight: 50 * theme.scaleHeight
                 implicitWidth: 50 * theme.scaleWidth
-                //anchors.top: rateDown.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
                 icon.source: prefix + "/images/AutoStop.png"
                 onClicked: aog.rate_pwm_auto()
         }
             Comp.IconButtonTransparent{
-                //height: parent.height
+                visible: rateSettings.checked
                 implicitHeight: 50 * theme.scaleHeight
                 implicitWidth: 50 * theme.scaleWidth
                 anchors.right: parent.right
-                //anchors.rightMargin: 25 * theme.scaleHeight
-                //anchors.top: rateDown.bottom
+                anchors.rightMargin: 15 * theme.scaleHeight
                 icon.source: prefix + "/images/UpArrow64.png"
                 onClicked: aog.rate_bump_pwm(true)
         }
             Comp.IconButtonTransparent{
-                //height: parent.height
+                visible: rateSettings.checked
                 implicitHeight: 50 * theme.scaleHeight
                 implicitWidth: 50 * theme.scaleWidth
                 anchors.left: parent.left
+                anchors.leftMargin: 15 * theme.scaleHeight
                 icon.source: prefix + "/images/DnArrow64.png"
                 onClicked: aog.rate_bump_pwm(false)
         }

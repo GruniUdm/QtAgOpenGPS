@@ -1024,9 +1024,28 @@ void FormGPS::Timer1_Tick()
 void FormGPS::rate_bump(bool up)
 {
 
+    if (up) {
+
+        if (rate_pwm_man < 110 ) rate_pwm_man += 10;
+        else rate_pwm_man = 127;
+
+    } else {
+        if (rate_pwm_man > -110) rate_pwm_man -=10;
+        else rate_pwm_man = -127;
+    }
+    qDebug() << "rate_bump";
+    qDebug() << rate_pwm_man;
+    p_239.pgn[p_239.rate_pwm] = rate_pwm_man;
+    SendPgnToLoop(p_239.pgn);
+
 }
 void FormGPS::rate_auto()
 {
+    rate_pwm_man = 0;
+    qDebug() << "Rate auto";
+    qDebug() << rate_pwm_man;
+    p_239.pgn[p_239.rate_pwm] = rate_pwm_man;
+    SendPgnToLoop(p_239.pgn);
 
 }
 

@@ -231,6 +231,7 @@ public:
     bool isKeyboardOn = true, isAutoStartAgIO = true, isSvennArrowOn = true;
     bool isConnectedBlockage = false; //Dim
     bool isUTurnOn = true, isLateralOn = true;
+    int8_t rate_pwm_man = 0;
 
     //sunrise, sunset
 

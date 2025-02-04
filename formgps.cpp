@@ -729,6 +729,7 @@ void FormGPS::processSectionLookahead() {
     {
         p_239.pgn[p_239.geoStop] = mc.isOutOfBounds ? 1 : 0;
 
+
         SendPgnToLoop(p_239.pgn);
 
         SendPgnToLoop(p_229.pgn);

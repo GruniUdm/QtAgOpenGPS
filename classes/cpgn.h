@@ -94,6 +94,7 @@ public:
     int hydLift = 7;
     int tram = 8;
     int geoStop = 9; //out of bounds etc
+    int rate_pwm = 10;
     int sc1to8 = 11;
     int sc9to16 = 12;
 
