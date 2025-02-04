@@ -431,7 +431,7 @@ void FormHeadland::update_headland() {
     int height = qmlItem(headland_designer_instance, "headlandRenderer")->property("height").toReal();
 
      //draw headland line if exists
-    if (bnd->bndList[0].hdLine.count()) {
+    if (bnd->bndList.count() > 0 && bnd->bndList[0].hdLine.count()) {
         //color is set in QML
 
         for (int i = 0; i < bnd->bndList[0].hdLine.count(); i++)
