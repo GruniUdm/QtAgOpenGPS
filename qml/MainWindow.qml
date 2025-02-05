@@ -37,6 +37,15 @@ Window {
 
     signal save_everything()
 
+    function get_settings() {
+        return settings
+    }
+
+    function getTracksInterface() {
+        return TracksInterface
+
+    }
+
     function close() {
         if (areWindowsOpen()) {
             timedMessage.addMessage(2000,qsTr("Some windows are open. Close them first."))
@@ -103,10 +112,11 @@ Window {
             console.log("setSimCoords visible")
             return true
         }
+        /* Must implement the new track dialog
         else if (trackNew.visible === true) {
             console.log("trackNew visible")
             return true
-        }
+        }*/
         else if (fieldNew.visible === true) {
             console.log("FieldNew visible")
             return true
@@ -127,8 +137,6 @@ Window {
         id: aog
         objectName: "aog"
     }
-
-    property QtObject tracksInterface: TracksInterface
 
     Interfaces.FieldInterface {
         id: fieldInterface
