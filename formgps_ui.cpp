@@ -30,6 +30,9 @@ void FormGPS::setupGui()
     /* Load the QML UI and display it in the main area of the GUI */
     setProperty("title","QtAgOpenGPS");
 
+    connect(this, SIGNAL(objectCreated(QObject*,QUrl)),
+            this, SLOT(on_qml_created(QObject*,QUrl)), Qt::QueuedConnection);
+
 //tell the QML what OS we are using
 #ifdef __ANDROID__
     rootContext()->setContextProperty("OS", "ANDROID");
@@ -91,7 +94,11 @@ void FormGPS::setupGui()
     rootContext()->setContextProperty("prefix","");
     load(QUrl("qrc:/qml/MainWindow.qml"));
 #endif
+}
 
+void FormGPS::on_qml_created(QObject *object, const QUrl &url)
+{
+    qDebug() << "object is now created. " << url.toString();
     //get pointer to root QML object, which is the OpenGLControl,
     //store in a member variable for future use.
     QList<QObject*> root_context = rootObjects();
@@ -254,7 +261,7 @@ void FormGPS::setupGui()
 
     //React to UI setting hyd life settings
     connect(aog, SIGNAL(modules_send_238()), this, SLOT(modules_send_238()));
-	connect(aog, SIGNAL(modules_send_251()), this, SLOT(modules_send_251()));
+    connect(aog, SIGNAL(modules_send_251()), this, SLOT(modules_send_251()));
     connect(aog, SIGNAL(modules_send_252()), this, SLOT(modules_send_252()));
 
     connect(aog, SIGNAL(doBlockageMonitoring()), this, SLOT(doBlockageMonitoring()));
@@ -339,10 +346,17 @@ void FormGPS::setupGui()
     connect (tmrWatchdog, SIGNAL(timeout()),this,SLOT(tmrWatchdog_timeout()));
     tmrWatchdog->start(250); //fire every 50ms.
 
-    //SIM
-    connect_classes();
+    loadSettings(); //load settings and properties
 
+    isJobStarted = false;
 
+    StartLoopbackServer();
+    if ((bool)property_setMenu_isSimulatorOn == false) {
+        qDebug() << "Stopping simulator because it's off in settings.";
+        timerSim.stop();
+    }
+
+    //star Sim
     swFrame.start();
 
     stopwatch.start();
