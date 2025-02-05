@@ -46,6 +46,12 @@ Window {
 
     }
 
+    property var tracksInterface: TracksInterface
+
+    Component.onCompleted: {
+        console.debug("tracks interface object is ", TracksInterface)
+    }
+
     function close() {
         if (areWindowsOpen()) {
             timedMessage.addMessage(2000,qsTr("Some windows are open. Close them first."))
