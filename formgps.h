@@ -663,6 +663,8 @@ public slots:
 
     void TimedMessageBox(int timeout, QString s1, QString s2);
 
+    void on_qml_created(QObject *object, const QUrl &url);
+
     //settings dialog callbacks
     void on_settings_reload();
     void on_settings_save();
