@@ -35,7 +35,7 @@ qt_add_executable(QtAgOpenGPS
     $<$<NOT:$<BOOL:${LOCAL_QML}>>:agopengps.qrc>
     aogproperties.cpp
     aogproperty.h aogproperty.cpp
-    aogrenderer.h aogrenderer.cpp
+ #   aogrenderer.h aogrenderer.cpp
     aogsettings.h aogsettings.cpp
     btnenum.h
     common.h
@@ -116,23 +116,118 @@ qt_add_executable(QtAgOpenGPS
     android/res/xml/qtprovider_paths.xml
 )
 
-set(qml_interfaces_singletons
-    qml/interfaces/TracksInterface.qml
-)
+###### Handling Local QML Handling QML in module in LOCAL_QML OFF######
 
-set_source_files_properties(${qml_interfaces_singletons}
-    PROPERTIES QT_QML_SINGLETON_TYPE TRUE
-)
+if(NOT LOCAL_QML)
+    # Function to process image files in a given directory (non-recursive)
+    function(process_files DIR OUT_VAR)
+        file(GLOB_RECURSE IMAGE_FILES "${DIR}/*.*")
+        set(REL_PATHS)
+        foreach(IMAGE_FILE ${IMAGE_FILES})
+            file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${IMAGE_FILE}")
+            set_source_files_properties(${IMAGE_FILE} PROPERTIES
+                QT_RESOURCE_ALIAS "${REL_PATH}")
+            # message(WARNING "file: ${REL_PATH}")
+            list(APPEND REL_PATHS "${REL_PATH}")
+        endforeach()
+        set(${OUT_VAR} ${REL_PATHS} PARENT_SCOPE)
+    endfunction()
 
-qt_add_qml_module(QtAgOpenGPS
-    URI AOG
-    VERSION 1.0
-    QML_FILES ${qml_interfaces_singletons}
-    SOURCES
+    # Process image files for each directory
+    process_files("${CMAKE_CURRENT_SOURCE_DIR}/images" IMAGE_REL_PATHS)
+
+    # Process shader files for each directory
+    process_files("${CMAKE_CURRENT_SOURCE_DIR}/shaders" SHADER_REL_PATHS)
+
+
+    # message(WARNING "All image relative paths: ${IMAGE_REL_PATHS}")
+    # message(WARNING "All shader relative paths: ${SHADER_REL_PATHS}")
+
+
+    # Function to process QML files in a given directory
+    function(process_qml_files DIR)
+        file(GLOB QML_FILES "${DIR}/*.qml" "${DIR}/*.js")
+        set(REL_PATHS)
+        foreach(QML_FILE ${QML_FILES})
+            if(NOT QML_FILE MATCHES "Test.*\\.qml$")  #Remove Test*.qml files from the list
+                file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/qml" "${QML_FILE}")
+                set_source_files_properties(${QML_FILE} PROPERTIES
+                    QT_RESOURCE_ALIAS "${REL_PATH}")
+                # message(WARNING "file: ${REL_PATH}")
+                list(APPEND REL_PATHS "qml/${REL_PATH}")
+            endif()
+        endforeach()
+        set(${ARGV1} ${REL_PATHS} PARENT_SCOPE)
+    endfunction()
+
+    # Process QML files for each directory
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml" QML_REL_PATHS)
+    #process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/AOG" AOG_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/boundary" BOUNDARY_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/components" COMPONENTS_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/config" CONFIG_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/config/steercomponents" STEERCOMPONENTS_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/field" FIELD_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/interfaces" INTERFACES_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/steerconfig" STEERCONFIG_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/tracks" TRACKS_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/wizards" WIZARDS_REL_PATHS)
+
+    # Combine all relative paths
+    set(ALL_REL_PATHS
+        ${QML_REL_PATHS}
+        ${AOG_REL_PATHS}
+        ${BOUNDARY_REL_PATHS}
+        ${COMPONENTS_REL_PATHS}
+        ${CONFIG_REL_PATHS}
+        ${STEERCOMPONENTS_REL_PATHS}
+        ${FIELD_REL_PATHS}
+        ${INTERFACES_REL_PATHS}
+        ${STEERCONFIG_REL_PATHS}
+        ${TRACKS_REL_PATHS}
+        ${WIZARDS_REL_PATHS}
+    )
+
+    # message(WARNING "All relative paths: ${ALL_REL_PATHS}")
+
+    # Configure QML module with relative paths
+    qt_add_qml_module(QtAgOpenGPS
+        URI AOG
+        VERSION 1.0
+        RESOURCE_PREFIX "/"
+        QML_FILES
+        ${ALL_REL_PATHS} #all qml files
+        SOURCES
         aogrenderer.cpp
         aogrenderer.h
-    DEPENDENCIES Qt6::QtQuick
-)
+
+        RESOURCES
+        ${IMAGE_REL_PATHS}
+        ${SHADER_REL_PATHS}
+    )
+else()
+
+    set(qml_interfaces_singletons
+        qml/interfaces/TracksInterface.qml
+    )
+
+    set_source_files_properties(${qml_interfaces_singletons}
+        PROPERTIES QT_QML_SINGLETON_TYPE TRUE
+    )
+
+    qt_add_qml_module(QtAgOpenGPS
+        URI AOG
+        VERSION 1.0
+        QML_FILES ${qml_interfaces_singletons}
+        SOURCES
+        aogrenderer.cpp
+        aogrenderer.h
+        DEPENDENCIES Qt6::QtQuick
+    )
+
+endif()
+
+###### End Script of Handling QML in module ######
 
 # show some of our mockup files in the project tree without compiling it
 set(qml_mockup_files
