@@ -17,17 +17,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
 # Find required libraries
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
-find_package(Qt6 REQUIRED COMPONENTS Gui)
-find_package(Qt6 REQUIRED COMPONENTS OpenGL)
+# find_package(Qt6 REQUIRED COMPONENTS Core)
+ find_package(Qt6 REQUIRED COMPONENTS Widgets) #used only for opengl ?
+# find_package(Qt6 REQUIRED COMPONENTS Gui)
+# find_package(Qt6 REQUIRED COMPONENTS OpenGL)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
-find_package(Qt6 REQUIRED COMPONENTS QuickWidgets)
+ find_package(Qt6 REQUIRED COMPONENTS QuickWidgets) #used only for opengl
 find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 
+# Add Qt policies
+qt_policy(SET QTP0001 NEW)
+qt_policy(SET QTP0004 NEW)
+
 # Qt magic
-qt_standard_project_setup()
+qt_standard_project_setup(REQUIRES 6.5)
 
 # Create the executable
 qt_add_executable(QtAgOpenGPS
@@ -265,10 +269,10 @@ target_include_directories(QtAgOpenGPS PRIVATE
 
 # Libraries to link
 target_link_libraries(QtAgOpenGPS PRIVATE
-    Qt6::Core
+#   Qt6::Core
     Qt6::Widgets
-    Qt6::Gui
-    Qt6::OpenGL
+#   Qt6::Gui
+#   Qt6::OpenGL
     Qt6::Quick
     Qt6::QuickWidgets
     Qt6::Network
