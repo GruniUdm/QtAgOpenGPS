@@ -8,13 +8,13 @@ import "components" as Comp
 
 Rectangle{
     id: blockageData
-    width: 200
-    height: childrenRect.height + 30
+    width: 200* theme.scaleWidth
+    height: childrenRect.height + 30 * theme.scaleHeight
     color: "#4d4d4d"
     Column{
         id: column
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.margins: 15
+        anchors.margins: 15 * theme.scaleHeight
         Comp.TextLine{ color: "white"; font.pixelSize: 30; text: qsTr("Max: ")+ utils.area_to_unit_string(aog.blockage_max*10000, 0)}
 
         Comp.TextLine{ color: "white"; font.pixelSize: 30; text: qsTr("Row N max  ")+aog.blockage_max_i}

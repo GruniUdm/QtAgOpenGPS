@@ -108,7 +108,7 @@ import "components" as Comp
                 Layout.alignment: Qt.AlignCenter
                 implicitWidth: theme.buttonSize
                 height:parent.height
-                visible: aog.blockageConnected
+                visible: (aog.blockageConnected & settings.setSeed_blockageIsOn) ? true : false
                 onClicked: {
                     blockageData.visible = !blockageData.visible
                     gpsData.visible = false
