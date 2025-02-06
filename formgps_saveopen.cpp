@@ -8,6 +8,7 @@
 //#include "cmodulecomm.h"
 #include "cboundarylist.h"
 #include "aogproperty.h"
+#include "qmlutil.h"
 #include <QString>
 
 enum OPEN_FLAGS {
@@ -1410,6 +1411,9 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         //Refresh GL view
 
     }
+
+    //update boundary list count in qml
+    qmlItem(mainWindow,"boundaryInterface")->setProperty("count", bnd.bndList.count());
 
     return true;
 }
