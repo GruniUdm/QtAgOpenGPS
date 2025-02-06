@@ -240,7 +240,7 @@ void FormHeadache::update_headland() {
     int height = qmlItem(headache_designer_instance, "headacheRenderer")->property("height").toReal();
 
      //draw headland line if exists
-    if (bnd->bndList[0].hdLine.count()) {
+    if (bnd->bndList.count() > 0 && bnd->bndList[0].hdLine.count()) {
         //color is set in QML
 
         for (int i = 0; i < bnd->bndList[0].hdLine.count(); i++)
@@ -849,7 +849,7 @@ void FormHeadache::btnBndLoop_Click() {
 
     QVector<Vec3> hdArr;
 
-    if (bnd->bndList[0].hdLine.count() > 0)
+    if (bnd->bndList.count() > 0 && bnd->bndList[0].hdLine.count() > 0)
     {
         hdArr = bnd->bndList[0].hdLine;
     }
