@@ -12,31 +12,18 @@ void FormGPS::field_update_list() {
                             + "/" + QCoreApplication::applicationName() + "/Fields";
 
     QObject *fieldInterface = qmlItem(mainWindow, "fieldInterface");
-
-    QDir fieldsDirectory(directoryName);
-    fieldsDirectory.setFilter(QDir::Dirs);
-
     QList<QVariant> fieldList;
     QMap<QString, QVariant> field;
-
-    QFileInfoList fieldsDirList = fieldsDirectory.entryInfoList();
-
     int index = 0;
 
-    for (QFileInfo &fieldDir : fieldsDirList) {
-
-        if(fieldDir.fileName() == "." ||
-            fieldDir.fileName() == "..")
-            continue;
-        field = FileFieldInfo(fieldDir.fileName());
-
+    QDirIterator it(directoryName, QStringList() << "Field.txt", QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()){
+        field = FileFieldInfo(it.next());
         if(field.contains("latitude")) {
             field["index"] = index;
             fieldList.append(field);
             index++;
         }
-
-        field["name"] = fieldDir.fileName(); // in case Field.txt doesn't agree with dir name
     }
 
     fieldInterface->setProperty("field_list", fieldList);
@@ -64,7 +51,7 @@ void FormGPS::field_new(QString field_name) {
     //assume the GUI will vet the name a little bit
     lock.lockForWrite();
     FileSaveEverythingBeforeClosingField();
-    currentFieldDirectory = field_name;
+    currentFieldDirectory = field_name.trimmed();
     property_setF_CurrentDir = currentFieldDirectory;
     JobNew();
 

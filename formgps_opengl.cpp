@@ -160,6 +160,30 @@ void FormGPS::oglMain_Paint()
         //will not update, which isn't what we want either.  Some kind of timeout?
      return;
 
+<<<<<<< HEAD
+=======
+    if(newframe && (bool)isJobStarted) {
+        //save some OpenGL things
+        GLint fbo_id;
+        QSurface *origsurface = glContext->surface();
+        gl->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo_id);
+        GLint viewport[4];
+        gl->glGetIntegerv(GL_VIEWPORT, viewport);
+
+        oglBack_Paint();
+        //if we just had a new position and updated the back buffer then
+        //proecss the section lookaheads:
+        QTimer::singleShot(0,this, &FormGPS::processSectionLookahead);
+
+        oglZoom_Paint();
+        QTimer::singleShot(0,this, &FormGPS::processOverlapCount);
+
+        glContext->doneCurrent();
+        glContext->makeCurrent(origsurface);
+        gl->glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+        gl->glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+    }
+
     int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
     int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
     double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();

@@ -8,6 +8,7 @@
 //#include "cmodulecomm.h"
 #include "cboundarylist.h"
 #include "aogproperty.h"
+#include <QString>
 
 enum OPEN_FLAGS {
     LOAD_MAPPING = 1,
@@ -677,14 +678,12 @@ void FormGPS::FileLoadABLines()
     linesFile.close();
 }
 
-QMap<QString,QVariant> FormGPS::FileFieldInfo(QString fieldDir)
+QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
 {
     QMap<QString,QVariant> field_info;
 
-    QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + fieldDir;
-
-    QString filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Field.txt");
+    QString directoryName =  filename.left(filename.indexOf("/Field.txt"));
+    QString fieldDir = directoryName.mid(filename.lastIndexOf("Fields/") + 7);
 
     QFile fieldFile(filename);
     if (!fieldFile.open(QIODevice::ReadOnly))
@@ -709,7 +708,7 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString fieldDir)
     line = reader.readLine();
 
     field_info["name"] = line.trimmed();
-    if (field_info["name"] != fieldDir) {
+    if (field_info["name"] != fieldDir.trimmed()) {
         field_info["name"] = fieldDir;
     }
 
