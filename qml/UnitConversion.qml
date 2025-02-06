@@ -177,6 +177,12 @@ Item {
         else
             return qsTr("ft", "imperial feet abbreviation")
     }
+    function per_unit() {
+        if(isMetric())
+            return qsTr("per hectare")
+        else
+            return qsTr("per acre")
+    }
 
     function m_unit() {
         if (isMetric())

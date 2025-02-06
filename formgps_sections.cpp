@@ -330,6 +330,7 @@ void FormGPS::doBlockageMonitoring()
     int k6 = (int)property_setSeed_blockCountMin;
     double k7 = property_setVehicle_toolWidth;
     double rowwidth = k7/k5;
+    if (pn.vtgSpeed != 0) {
     for(int i=0;i<k1;i++)
         mc.blockageseccount[k++]=mc.blockageseccount1[i]*7.2/rowwidth/pn.vtgSpeed;
     for(int i=0;i<k2;i++)
@@ -340,6 +341,7 @@ void FormGPS::doBlockageMonitoring()
         mc.blockageseccount[k++]=mc.blockageseccount4[i]*7.2/rowwidth/pn.vtgSpeed;
     for(int s=0; s< k5; s++) {
         tool.blockageRowState.set(s, mc.blockageseccount[s]);
+    }
     }
     int i;
     double avg=0;
