@@ -293,4 +293,5 @@ props = {'setwin': 'display/camPitch',
  'setBnd_isDrawPivot': 'bnd/isDrawPivot',
  'setDisplay_isSectionLinesOn': 'display/isSectionLinesOn',
  'setDisplay_isLineSmooth': 'display/isLineSmooth',
- 'setWindow_tramLineSize': 'window/tramLineSize'}
+ 'setWindow_tramLineSize': 'window/tramLineSize',
+ 'setCam_CamLink': 'cam/camLink'}

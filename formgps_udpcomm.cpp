@@ -276,7 +276,7 @@ void FormGPS::ReceiveFromAgIO()
 
             break;
 
-        case 0xf4://blockage
+        case 0xf4://blockage 244
             //
             if (datagram_data.length() != 10)
                 break;
