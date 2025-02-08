@@ -15,6 +15,7 @@
 #include "qmlsettings.h"
 
 extern QLabel *grnPixelsWindow;
+extern QLabel *overlapPixelsWindow;
 extern QMLSettings qml_settings;
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
@@ -47,9 +48,10 @@ void FormGPS::processSectionLookahead() {
     //lock.lockForWrite();
     //qDebug() << "frame time after getting lock  " << swFrame.elapsed();
 
-    if (property_displayShowBack)
+    if (property_displayShowBack) {
         grnPixelsWindow->setPixmap(QPixmap::fromImage(grnPix.mirrored()));
-        //grnPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
+        overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
+    }
 
     //determine where the tool is wrt to headland
     if (bnd.isHeadlandOn) bnd.WhereAreToolCorners(tool);
@@ -823,6 +825,7 @@ void FormGPS::SwapDirection() {
 
 void FormGPS::JobClose()
 {
+    lock.lockForWrite();
     recPath.resumeState = 0;
     recPath.currentPositonIndex = 0;
 
@@ -981,12 +984,11 @@ void FormGPS::JobClose()
     worldGrid.isRateMap = false;
 
     //release Bing texture
-
+    lock.unlock();
 }
 
 void FormGPS::JobNew()
 {
-    isJobStarted = true;
     startCounter = 0;
 
     //btnSectionMasterManual.Enabled = true;
@@ -1002,6 +1004,7 @@ void FormGPS::JobNew()
     SetZoom();
     fileSaveCounter = 25;
     trk.isAutoTrack = false;
+    isJobStarted = true;
 }
 
 void FormGPS::FileSaveEverythingBeforeClosingField()
@@ -1015,6 +1018,7 @@ void FormGPS::FileSaveEverythingBeforeClosingField()
 
     if (! isJobStarted) return;
 
+    lock.lockForWrite();
     //turn off contour line if on
     if (ct.isContourOn) ct.StopContourLine(contourSaveList);
 
@@ -1030,6 +1034,7 @@ void FormGPS::FileSaveEverythingBeforeClosingField()
     {
         if (triStrip[j].isDrawing) triStrip[j].TurnMappingOff(tool, fd);
     }
+    lock.unlock();
 
     //FileSaveHeadland();
     FileSaveBoundary();
