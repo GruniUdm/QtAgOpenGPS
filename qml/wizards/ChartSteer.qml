@@ -28,7 +28,7 @@ MoveablePopup {
 
     Timer {
         id:txt
-        interval:50; running: true; repeat: true
+        interval:50; running: chartSteer.visible; repeat: true
         onTriggered: {
                 yval++;
             chart.series(0).append(yval, xval1);
