@@ -309,5 +309,6 @@ Item {
     property bool setRate_RateControlOn: false
     property double setRate_rateSensorCount: 600
     property double setRate_rateSET: 100
+    property double setRateContType: 5
     property string setCam_CamLink: "rtsp://192.168.0.138:1945"
 }

@@ -313,5 +313,5 @@ extern AOGProperty property_setRate_RateControlOn;
 extern AOGProperty property_setRate_rateSensorCount;
 extern AOGProperty property_setRate_rateSET;
 extern AOGProperty property_setCam_CamLink;
-
+extern AOGProperty property_setRateContType;
 #endif // PROPERTIES_H

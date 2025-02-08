@@ -32,7 +32,7 @@ Rectangle{
         cboxIsRateControlOn.checked = settings.setRate_RateControlOn
         rateSensor.value = settings.setRate_rateSensorCount
         setRate.value = settings.setRate_rateSET
-
+        cboxRateControlType.currentIndex = Number(settings.setRateContType)-1
         mandatory.visible = false
 
     }
@@ -50,10 +50,10 @@ Rectangle{
         settings.setRate_RateControlOn = cboxIsRateControlOn.checked
         settings.setRate_rateSensorCount = rateSensor.value
         settings.setRate_rateSET = setRate.value
+        settings.setRateContType = Number(cboxRateControlType.model[cboxRateControlType.currentIndex].value)
 
         mandatory.visible = false
 
-        //aog.doBlockageMonitoring()
     }
     Label{
         id: top
@@ -250,6 +250,27 @@ Rectangle{
 
         }
 
+        ComboBox {
+            id: cboxRateControlType
+            enabled: cboxIsRateControlOn.checked
+            textRole: "name"
+            valueRole: "value"
+            implicitHeight: 40 * theme.scaleHeight
+            implicitWidth: 150 * theme.scaleWidth
+            model: [{ value: 1, name: qsTr("Standard")},
+                { value: 2, name: qsTr("Combo Close")},
+                { value: 3, name: qsTr("Motor")},
+                { value: 4, name: qsTr("Combo Timed")}]
+
+            Text{
+                anchors.top: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Control Type")
+                font.pixelSize: 15
+                font.bold: true
+            }
+        }
+
 
     }
 
@@ -346,6 +367,7 @@ Rectangle{
         icon.source: prefix + "/images/DnArrow64.png"
         onClicked: aog.rate_bump_pwm(false)
 }
+
     IconButtonTransparent{
         id: btnPinsSave
         anchors.right: mandatory.left

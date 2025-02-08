@@ -306,5 +306,6 @@ void QMLSettings::setupKeys() {
     addKey(QString("setRate_RateControlOn"),QString("rate/RateControlOn"),"bool");
     addKey(QString("setRate_rateSensorCount"),QString("rate/rateSensorCount"),"double");
     addKey(QString("setRate_rateSET"),QString("rate/rateSET"),"double");
-    addKey(QString("setCam_CamLink"),QString("cam/camLink"),"QString");
+    addKey(QString("setRateContType"),QString("rate/ContType"),"double");
+    addKey(QString("setCam_CamLink"),QString("cam/CamLink"),"QString");
 }

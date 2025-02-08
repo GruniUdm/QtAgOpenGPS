@@ -303,6 +303,8 @@ props = {'setwin': 'display/camPitch',
  'setRate_ratePIDscale': 'rate/ratePIDscale',
  'setRate_RateControlOn': 'rate/RateControlOn',
  'setRate_rateSensorCount': 'rate/rateSensorCount',
- 'setRate_rateSET': 'rate/rateSET'}
- 'setCam_CamLink': 'cam/camLink'}
+ 'setRate_rateSET': 'rate/rateSET'
+ 'setRateContType': 'rate/ContType'
+ 'setCam_CamLink': 'cam/camLink'
+ }
 
