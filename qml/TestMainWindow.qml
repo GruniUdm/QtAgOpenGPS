@@ -5,11 +5,9 @@
 //Loaded by formgps_ui.cpp.
 import QtQuick
 import QtQuick.Window
-import QtQuick.Controls.Fusion
-import QtQuick.Layouts
 import QtQuick.Effects
 import QtQuick.Dialogs
-import QtMultimedia
+import AOG
 
 import "interfaces" as Interfaces
 import "boundary" as Boundary
@@ -20,7 +18,7 @@ import "tracks" as Tracks
 import "components" as Comp
 
 Window {
-    property string prefix: "/home/torriem/projects/QtAgOpenGPS"
+
 
     AOGTheme{
         id: theme
@@ -28,10 +26,10 @@ Window {
     }
     //We draw native opengl to this root object
     id: mainWindow
+    objectName: "mainWindow"
+
     height: theme.defaultHeight
     width: theme.defaultWidth
-
-    visible: true
 
     onVisibleChanged: if(settings.setDisplay_isStartFullScreen){
                           mainWindow.showMaximized()
@@ -121,18 +119,16 @@ Window {
 
     //there's a global "settings" property now.  In qmlscene we'll have to fake it somehow.
 
-    MockSettings {
-        id: settings
-    }
+    //MockSettings {
+    //    id: settings
+    //}
 
     AOGInterface {
         id: aog
         objectName: "aog"
     }
-    Interfaces.TracksInterface {
-        objectName: "tracksInterface"
-        id: tracksInterface
-    }
+
+    property QtObject tracksInterface: TracksInterface
 
     Interfaces.FieldInterface {
         id: fieldInterface
@@ -140,7 +136,7 @@ Window {
     }
 
     /* only use in a mock setting.  Normally C++ will provide
-       this as a CVehicle instance.*/
+       this as a CVehicle instance.
     MockVehicle {
         id: vehicleInterface
         objectName: "vehicleInterface"
@@ -149,7 +145,7 @@ Window {
     MockTracks {
         id: trk
         }
-
+    */
 
     Interfaces.BoundaryInterface {
         id: boundaryInterface
@@ -213,7 +209,7 @@ Window {
             property Matrix4x4 panModelView
             property Matrix4x4 panProjection
 
-            onClicked: {
+            onClicked: function(mouse) {
                 parent.clicked(mouse)
             }
 
@@ -532,6 +528,12 @@ Window {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: false
             }
+            BlockageData{ //window that displays GPS data
+                id: blockageData
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                visible: false
+            }
 
             SimController{
                 id: simBarRect
@@ -571,6 +573,16 @@ Window {
                 height: 40 * theme.scaleHeight
                 width: 660  * theme.scaleWidth
                 //onHeightChanged: anchors.bottomMargin = (bottomButtons.height + simBarRect.height + (24 * theme.scaleHeight))
+            }
+            Comp.BlockageRows {
+                id: blockageRows
+                visible: aog.blockageConnected ? true : false  // need connect with c++ Dim
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 8
+                height: 100 * theme.scaleHeight
+                //width: 800  * theme.scaleWidth
+
             }
             DisplayButtons{ // window that shows the buttons to change display. Rotate up/down, day/night, zoom in/out etc. See DisplayButtons.qml
                 id: displayButtons

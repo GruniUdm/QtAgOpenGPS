@@ -14,6 +14,7 @@
 QOpenGLShaderProgram *simpleColorShader = 0;
 QOpenGLShaderProgram *texShader = 0;
 QOpenGLShaderProgram *interpColorShader = 0;
+QOpenGLShaderProgram *backShader = 0;
 
 QVector<QOpenGLTexture *> texture;
 
@@ -36,6 +37,18 @@ int textureHeight;
 bool isFontOn = true;
 
 bool texturesLoaded = false;
+
+void initializeBackShader() {
+    //needs a valid GL context bound before calling.
+    if (!backShader) {
+        backShader = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
+        auto result = backShader->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/color_vshader.vsh");
+        assert(result);
+
+        assert(backShader->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/color_fshader.fsh"));
+        assert(backShader->link());
+    }
+}
 
 void initializeShaders() {
     //GL context must be bound by caller, and this must be called from
@@ -140,6 +153,47 @@ void destroyTextures() {
         delete t;
     }
     texture.clear();
+}
+
+void glDrawArraysColorBack(QOpenGLFunctions *gl,
+                       QMatrix4x4 mvp,
+                       GLenum operation,
+                       QColor color,
+                       QOpenGLBuffer &vertexBuffer,
+                       GLenum GL_type,
+                       int count,
+                       float pointSize)
+{
+    //bind shader
+    assert(backShader->bind());
+    //set color
+    backShader->setUniformValue("color", color);
+    //set mvp matrix
+    backShader->setUniformValue("mvpMatrix", mvp);
+
+    backShader->setUniformValue("pointSize", pointSize);
+
+
+    vertexBuffer.bind();
+
+    //TODO: these require a VBA to be bound; we need to create them I suppose.
+    //enable the vertex attribute array in shader
+    backShader->enableAttributeArray("vertex");
+    //use attribute array from buffer, using non-normalized vertices
+    gl->glVertexAttribPointer(backShader->attributeLocation("vertex"),
+                              3, //3D vertices
+                              GL_type, //type of data GL_FLAOT or GL_DOUBLE
+                              GL_FALSE, //not normalized vertices!
+                              0, //no spaceing between vertices in data
+                              0 //start at offset 0 in buffer
+                             );
+
+    //draw primitive
+    gl->glDrawArrays(operation,0,count);
+    //release buffer
+    vertexBuffer.release();
+    //release shader
+    backShader->release();
 }
 
 void glDrawArraysColor(QOpenGLFunctions *gl,

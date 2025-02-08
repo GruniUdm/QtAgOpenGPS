@@ -48,11 +48,21 @@ extern QVector<QOpenGLTexture *> texture;
 //thinking about putting GL buffer drawing routines here
 //like Draw box, etc. Do I put the shaders as module globals here?
 
+void initializeBackShader();
+
 void initializeShaders();
 void initializeTextures();
 
 void destroyShaders();
 void destroyTextures();
+
+//Simple wrapper to draw primitives using lists of Vec3 or QVector3Ds
+//with a single color to the back frame buffer.
+void glDrawArraysColorBack(QOpenGLFunctions *gl, QMatrix4x4 mvp,
+                       GLenum operation, QColor color,
+                       QOpenGLBuffer &vertexBuffer, GLenum glType,
+                       int count,
+                       float pointSize=1.0f);
 
 //Simple wrapper to draw primitives using lists of Vec3 or QVector3Ds
 //with a single color.

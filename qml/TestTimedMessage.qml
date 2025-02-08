@@ -1,15 +1,13 @@
-import QtQuick 2.15
-import QtQuick.Controls.Fusion
-import QtQuick.Layouts 1.15
-import QtQuick.Controls.Styles 1.4
-import QtQuick.Window 2.15
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Window
 
 
 Window {
     width: 800
     height: 600
 
-    TimedMessage {
+    components.TimedMessage {
         id: timedMessageBox
     }
 

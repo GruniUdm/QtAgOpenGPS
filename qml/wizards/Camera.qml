@@ -23,6 +23,8 @@ MoveablePopup {
     visible: false
     modal: false
     x: 400 * theme.scaleWidth
+    onOpened: menuBar.autoload = true
+
 /*
     TopLine{
         id: cameraTopLine
@@ -34,12 +36,6 @@ MoveablePopup {
     MediaPlayer {
            id: mediaPlayer
            videoOutput: videoOutput
-           audioOutput: AudioOutput {
-               id: audio
-               muted: playbackControl.muted
-               volume: playbackControl.volume
-           }
-
            onErrorOccurred: { mediaErrorText.text = mediaPlayer.errorString; mediaError.open() }
        }
 

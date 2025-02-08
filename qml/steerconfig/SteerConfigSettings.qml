@@ -406,6 +406,8 @@ Window{
                     height: 50 * theme.scaleWidth
                     visible: cboxPressureSensor.checked || cboxCurrentSensor.checked
                     value: aog.sensorData
+                    from: 0
+                    to: 255
                     Text {
                         //id: lblPercentFS
                         anchors.verticalCenter: parent.verticalCenter
@@ -428,7 +430,7 @@ Window{
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: parent.right
                         anchors.leftMargin: 5
-                        text: (hsbarSensor.value * 0.3921568627)  + " %"
+                        text: Math.round((hsbarSensor.value * 0.3921568627) * 100) / 100  + " %"
                         font.bold: true
                     }
                 }

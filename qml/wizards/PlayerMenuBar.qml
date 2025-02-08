@@ -12,15 +12,22 @@ Item {
 
     required property MediaPlayer mediaPlayer
     required property VideoOutput videoOutput
-
-
+    property string cam1:"rtsp://192.168.0.138:1945/"
+    property bool autoload: false
     height: menuBar.height
 
     signal closePlayer
-
+    onAutoloadChanged: autoload===true?loadCam1():0
     function loadUrl(url) {
         mediaPlayer.stop()
         mediaPlayer.source = url
+        mediaPlayer.play()
+    }
+
+    function loadCam1() {
+        cam1 = settings.setCam_CamLink
+        mediaPlayer.stop()
+        mediaPlayer.source = cam1
         mediaPlayer.play()
     }
 
@@ -50,7 +57,7 @@ Item {
 
             Button {
                 text: "Load"
-                onClicked: { loadUrl(urlText.text); urlText.text = ""; urlPopup.close() }
+                onClicked: { settings.setCam_CamLink = urlText.text; loadUrl(urlText.text); urlText.text = ""; urlPopup.close() }
             }
         }
         onOpened: { urlPopup.forceActiveFocus() }
@@ -80,6 +87,11 @@ Item {
             Action {
                 text: qsTr("&URL");
                 onTriggered: urlPopup.open()
+            }
+
+            Action {
+                text: qsTr("&cam1");
+                onTriggered: loadCam1()
             }
 
             Action {

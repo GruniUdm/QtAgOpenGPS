@@ -30,6 +30,9 @@ void FormGPS::setupGui()
     /* Load the QML UI and display it in the main area of the GUI */
     setProperty("title","QtAgOpenGPS");
 
+    connect(this, SIGNAL(objectCreated(QObject*,QUrl)),
+            this, SLOT(on_qml_created(QObject*,QUrl)), Qt::QueuedConnection);
+
 //tell the QML what OS we are using
 #ifdef __ANDROID__
     rootContext()->setContextProperty("OS", "ANDROID");
@@ -91,7 +94,11 @@ void FormGPS::setupGui()
     rootContext()->setContextProperty("prefix","");
     load(QUrl("qrc:/qml/MainWindow.qml"));
 #endif
+}
 
+void FormGPS::on_qml_created(QObject *object, const QUrl &url)
+{
+    qDebug() << "object is now created. " << url.toString();
     //get pointer to root QML object, which is the OpenGLControl,
     //store in a member variable for future use.
     QList<QObject*> root_context = rootObjects();
@@ -143,7 +150,11 @@ void FormGPS::setupGui()
 
     //hook up our AOGInterface properties
     QObject *aog = qmlItem(mainWindow, "aog");
-    QObject *tracksInterface = mainWindow->property("tracksInterface").value<QObject *>();
+    QObject *tracksInterface; // = mainWindow->property("tracksInterface").value<QObject *>();
+    QVariant tracksInterfaceVariant;
+    QMetaObject::invokeMethod(mainWindow, "getTracksInterface", qReturnArg(tracksInterfaceVariant));
+    tracksInterface = tracksInterfaceVariant.value<QObject *>();
+
     //QObject *vehicleInterface = qmlItem(mainWindow, "vehicleInterface");
     QObject *fieldInterface = qmlItem(mainWindow, "fieldInterface");
     QObject *boundaryInterface = qmlItem(mainWindow, "boundaryInterface");
@@ -166,23 +177,25 @@ void FormGPS::setupGui()
 
     connect(aog,SIGNAL(sectionButtonStateChanged()), &tool.sectionButtonState, SLOT(onStatesUpdated()));
 
-    connect(tracksInterface, SIGNAL(start_new(int)), this, SLOT(tracks_start_new(int)));
-    connect(tracksInterface, SIGNAL(mark_start(double,double,double)), this, SLOT(tracks_mark_start(double,double,double)));
-    connect(tracksInterface, SIGNAL(mark_end(int,double,double)), this, SLOT(tracks_mark_end(int,double,double)));
-    connect(tracksInterface, SIGNAL(finish_new(QString)), this, SLOT(tracks_finish_new(QString)));
-    connect(tracksInterface, SIGNAL(cancel_new()), this, SLOT(tracks_cancel_new()));
-    connect(tracksInterface, SIGNAL(pause_or_resume(bool)), this, SLOT(tracks_pause(bool)));
-    connect(tracksInterface, SIGNAL(add_point(double,double,double)), this, SLOT(tracks_add_point(double,double,double)));
-    connect(tracksInterface, SIGNAL(select(int)), this, SLOT(tracks_select(int)));
-    connect(tracksInterface, SIGNAL(swapAB(int)), this, SLOT(tracks_swapAB(int)));
-    connect(tracksInterface, SIGNAL(changeName(int,QString)), this, SLOT(tracks_changeName(int,QString)));
-    connect(tracksInterface, SIGNAL(copy(int,QString)), this, SLOT(tracks_copy(int,QString)));
-    connect(tracksInterface, SIGNAL(delete_track(int)), this, SLOT(tracks_delete(int)));
-    connect(tracksInterface, SIGNAL(setVisible(int,bool)), this, SLOT(tracks_setVisible(int,bool)));
-    connect(tracksInterface, SIGNAL(ref_nudge(double)), this, SLOT(tracks_ref_nudge(double)));
-    connect(tracksInterface, SIGNAL(nudge_zero()), this, SLOT(tracks_nudge_zero()));
-    connect(tracksInterface, SIGNAL(nudge_center()), this, SLOT(tracks_nudge_center()));
-    connect(tracksInterface, SIGNAL(nudge(double)), this, SLOT(tracks_nudge(double)));
+    connect(tracksInterface, SIGNAL(select(int)), &trk, SLOT(select(int)));
+    connect(tracksInterface, SIGNAL(next()), &trk, SLOT(next()));
+    connect(tracksInterface, SIGNAL(prev()), &trk, SLOT(prev()));
+    connect(tracksInterface, SIGNAL(start_new(int)), &trk, SLOT(start_new(int)));
+    connect(tracksInterface, SIGNAL(mark_start(double,double,double)), &trk, SLOT(mark_start(double,double,double)));
+    connect(tracksInterface, SIGNAL(mark_end(int,double,double)), &trk, SLOT(mark_end(int,double,double)));
+    connect(tracksInterface, SIGNAL(finish_new(QString)), &trk, SLOT(finish_new(QString)));
+    connect(tracksInterface, SIGNAL(cancel_new()), &trk, SLOT(cancel_new()));
+    connect(tracksInterface, SIGNAL(pause_or_resume(bool)), &trk, SLOT(pause(bool)));
+    connect(tracksInterface, SIGNAL(add_point(double,double,double)), &trk, SLOT(add_point(double,double,double)));
+    connect(tracksInterface, SIGNAL(swapAB(int)), &trk, SLOT(swapAB(int)));
+    connect(tracksInterface, SIGNAL(changeName(int,QString)), &trk, SLOT(changeName(int,QString)));
+    connect(tracksInterface, SIGNAL(copy(int,QString)), &trk, SLOT(copy(int,QString)));
+    connect(tracksInterface, SIGNAL(delete_track(int)), &trk, SLOT(delete_track(int)));
+    connect(tracksInterface, SIGNAL(setVisible(int,bool)), &trk, SLOT(setVisible(int,bool)));
+    connect(tracksInterface, SIGNAL(ref_nudge(double)), &trk, SLOT(ref_nudge(double)));
+    connect(tracksInterface, SIGNAL(nudge_zero()), &trk, SLOT(nudge_zero()));
+    connect(tracksInterface, SIGNAL(nudge_center()), &trk, SLOT(nudge_center()));
+    connect(tracksInterface, SIGNAL(nudge(double)), &trk, SLOT(nudge(double)));
 
     //on screen buttons
     connect(aog,SIGNAL(zoomIn()), this, SLOT(onBtnZoomIn_clicked()));
@@ -248,7 +261,7 @@ void FormGPS::setupGui()
 
     //React to UI setting hyd life settings
     connect(aog, SIGNAL(modules_send_238()), this, SLOT(modules_send_238()));
-	connect(aog, SIGNAL(modules_send_251()), this, SLOT(modules_send_251()));
+    connect(aog, SIGNAL(modules_send_251()), this, SLOT(modules_send_251()));
     connect(aog, SIGNAL(modules_send_252()), this, SLOT(modules_send_252()));
 
     connect(aog, SIGNAL(doBlockageMonitoring()), this, SLOT(doBlockageMonitoring()));
@@ -344,7 +357,17 @@ void FormGPS::setupGui()
     //SIM
     connect_classes();
 
+    loadSettings(); //load settings and properties
 
+    isJobStarted = false;
+
+    StartLoopbackServer();
+    if ((bool)property_setMenu_isSimulatorOn == false) {
+        qDebug() << "Stopping simulator because it's off in settings.";
+        timerSim.stop();
+    }
+
+    //star Sim
     swFrame.start();
 
     stopwatch.start();
@@ -893,8 +916,8 @@ void FormGPS::onDeleteAppliedArea_clicked()
                */
 
                 //clear out the contour Lists
-                //ct.StopContourLine();
-                //ct.ResetContour();
+                ct.StopContourLine(contourSaveList);
+                ct.ResetContour();
                 fd.workedAreaTotal = 0;
 
                 //clear the section lists
@@ -904,7 +927,9 @@ void FormGPS::onDeleteAppliedArea_clicked()
                     triStrip[j].patchList.clear();
                     triStrip[j].triangleList.clear();
                 }
-                //patchSaveList.clear();
+                //shouldn't we clean out triStrip too?
+
+                tool.patchSaveList.clear();
 
                 FileCreateContour();
                 FileCreateSections();

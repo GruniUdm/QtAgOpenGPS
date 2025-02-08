@@ -23,12 +23,6 @@ MoveablePopup {
 
     modal: true
 
-    //signal updateTracks()
-    //signal deleteLine(int lineno)
-    //signal changeName(int lineno)
-    //signal addLine(string name, double easting, double northing, double heading)
-    //signal setA(bool start_cancel); //true to mark an A point, false to cancel new point
-
 	function show() {
 		trackPickerDialog.visible = true
 	}
@@ -46,6 +40,11 @@ MoveablePopup {
                 trackView.currentIndex = 0
     }
 
+    TrackNewButtons {
+        id: trackNewButtons
+        visible: false
+    }
+
     Rectangle{
         anchors.fill: parent
         border.width: 1
@@ -54,6 +53,10 @@ MoveablePopup {
         TopLine{
             id: topLine
             titleText: "Tracks"
+
+            onBtnCloseClicked: {
+                trackPickerDialog.close()
+            }
         }
         ColumnLayout{
             id: leftColumn
@@ -67,10 +70,7 @@ MoveablePopup {
 				icon.source: prefix + "/images/Trash.png"
 				onClicked: {
                     if (trackView.currentIndex > -1) {
-                        if (aog.currentTrack === trackView.currentIndex)
-						aog.currentTrack = -1
-                        linesInterface.abLine_deleteLine(trackView.currentIndex)
-                        trackView.currentIndex = -1
+                        TracksInterface.delete_track(trackView.currentIndex)
 					}
 				}
             }
@@ -88,8 +88,12 @@ MoveablePopup {
                 icon.source: prefix + "/images/FileCopy.png"
                 onClicked: {
                     if(trackView.currentIndex > -1) {
-                        copyLineName.set_name("Copy of " + linesInterface.abLinesList[trackView.currentIndex].name)
-                        copyLineName.visible = true
+                        var name = trk.getTrackName(trackView.currentIndex)
+                        if (name) {
+                            name = "Copy of " + name
+
+                            TracksInterface.copy(trackView.currentIndex, name)
+                        }
                     }
                 }
             }
@@ -124,12 +128,16 @@ MoveablePopup {
             }
             IconButtonTransparent{
                 icon.source: prefix + "/images/ABLinesHideShow.png"
+
+                onClicked: {
+                    TracksInterface.setVisible(trackView.currentIndex, !trk.getTrackVisible(trackView.currentIndex))
+                }
             }
 			IconButtonTransparent{
 				icon.source: prefix + "/images/AddNew.png"
 				onClicked: {
                     trackNewButtons.show()
-					trackListDialog.visible = false
+                    trackPickerDialog.visible = false
 				}
 			}
             IconButtonTransparent{
@@ -137,9 +145,13 @@ MoveablePopup {
                 icon.source: prefix + "/images/OK64.png"
                 onClicked: {
                     trackPickerDialog.visible = false
-                    if (trackView.currentIndex > -1 && trackView.trackVisible) {
-                        console.debug("Activating track ", trackView.currentIndex)
-                        TracksInterface.select(trackView.currentIndex)
+                    if (trackView.currentIndex > -1) {
+                        if (trk.getTrackVisible(trackView.currentIndex)) {
+                            console.debug("Activating track ", trackView.currentIndex)
+                            TracksInterface.select(trackView.currentIndex)
+                        } else {
+                            timedMessage.addMessage(2000, qsTr("Track not visible!"), qsTr("Cannot Desired because it is not marked as visible."))
+                        }
                     }
                     trackPickerDialog.visible = false
                 }

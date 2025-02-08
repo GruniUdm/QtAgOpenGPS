@@ -353,6 +353,7 @@ void FormGPS::FileLoadTracks()
         trk.gArr[trk.idx].ptA = Vec2(words[0].toDouble(),words[1].toDouble());
 
         line = reader.readLine();
+        words = line.split(",");
         if (words.count() < 2) {
             TimedMessageBox(1000,tr("Corrupt File!"), tr("Corrupt TracksList.txt. Not all tracks were loaded."));
             trk.gArr.pop_back();

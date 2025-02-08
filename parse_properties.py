@@ -146,6 +146,13 @@ add_props = [
       'qml_name' : 'setVehicle_vehicleName',
       'qml_default' : "Default Vehicle"
     },
+
+    { 'ini_path': 'cam/camLink',
+      'cpp_name': 'property_setCam_CamLink',
+      'cpp_default' : 'QString("rtsp://192.168.0.138:1945")',
+      'qml_name' : 'setCam_CamLink',
+      'qml_default' : "rtsp://192.168.0.138:1945"
+    },
 ]
 
 def parse_settings(file):

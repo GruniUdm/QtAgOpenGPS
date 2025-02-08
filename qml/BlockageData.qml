@@ -8,8 +8,9 @@ import "components" as Comp
 
 Rectangle{
     id: blockageData
-    width: 200 * theme.scaleWidth
-    height: childrenRect.height + 30 * theme.scaleWidth
+    width: 200* theme.scaleWidth
+    height: childrenRect.height + 30 * theme.scaleHeight
+
     color: "#4d4d4d"
     Column{
         id: column

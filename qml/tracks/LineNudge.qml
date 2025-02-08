@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import AOG
 
 import ".."
 import "../components" as Comp
@@ -58,10 +59,12 @@ Comp.MoveablePopup{
                     implicitWidth: parent.width
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapLeftHalf.png"
+                        onClicked: TracksInterface.nudge((settings.setVehicle_toolWidth - settings.setVehicle_toolOverlap)/-2)
                         Layout.alignment: Qt.AlignLeft
                     }
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapRightHalf.png"
+                        onClicked: TracksInterface.nudge((settings.setVehicle_toolWidth - settings.setVehicle_toolOverlap)/2)
                         Layout.alignment: Qt.AlignRight
                     }
                 }
@@ -71,15 +74,22 @@ Comp.MoveablePopup{
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapLeft.png"
                         Layout.alignment: Qt.AlignLeft
+                        onClicked: TracksInterface.nudge(settings.setAS_snapDistance/-100) //spinbox returns cm, convert to metres
                     }
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapRight.png"
                         Layout.alignment: Qt.AlignRight
+                        onClicked: TracksInterface.nudge(settings.setAS_snapDistance/100) //spinbox returns cm, convert to metres
                     }
                 }
-                TextField{
+                Comp.SpinBoxCM{
+                    id: offset
                     Layout.alignment: Qt.AlignCenter
-                    implicitWidth: 75
+
+                    from: 1
+                    to: 1000
+                    boundValue: settings.properties_setAS_snapDistance
+                    onValueModified: settings.propeties.setAS_snapDistance = value
                 }
 
                 RowLayout{
@@ -88,10 +98,12 @@ Comp.MoveablePopup{
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapToPivot.png"
                         Layout.alignment: Qt.AlignLeft
+                        onClicked: TracksInterface.nudge_center()
                     }
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SteerZero.png"
                         Layout.alignment: Qt.AlignRight
+                        onClicked: TracksInterface.nudge_zero()
                     }
                 }
             }

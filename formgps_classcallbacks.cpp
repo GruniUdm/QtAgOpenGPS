@@ -40,6 +40,9 @@ void FormGPS::connect_classes()
     //TODO: connect(&yt,SIGNAL(turnOffBoundAlarm()),&sounds,SLOT(onTurnOffBoundAlarm()));
 
     //connect(settings, &AOGSettings::updateFromSettings, this, &FormGPS::loadSettings);
+
+    connect(&trk, SIGNAL(resetCreatedYouTurn()),&yt,SLOT(ResetCreatedYouTurn()));
+    connect(&trk, SIGNAL(saveTracks()),this,SLOT(FileSaveTracks()));
 }
 
 void FormGPS::onStopAutoSteer()
