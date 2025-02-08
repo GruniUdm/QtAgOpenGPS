@@ -602,21 +602,14 @@ void FormGPS::openGLControl_Shutdown()
 //back buffer openGL draw function
 void FormGPS::oglBack_Paint()
 {
-    //Because this is potentially running in another thread, we cannot
-    //safely make any GUI calls to set buttons, etc.  So instead, we
-    //do the GL drawing here and get the lookahead pixmap from GL here.
-    //After this, this widget will emit a finished signal, where the main
-    //thread can then run the second part of this function, which I've
-    //split out into its own function.
-
-    //don't draw if it's not a new frame. Save a lot of time.
-    if (!newframe) return;  //this will make resizes funny until the next frame comes in
 
     QOpenGLContext *glContext = QOpenGLContext::currentContext();
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
 
-    GLHelperOneColor gldraw;
+    GLHelperOneColorBack gldraw;
+
+    initializeBackShader(); //compiler the shader we need if necessary
 
     /* use the QML context with an offscreen surface to draw
      * the lookahead triangles
@@ -715,7 +708,7 @@ void FormGPS::oglBack_Paint()
                     triBuffer.release();
 
                     //draw the triangles in each triangle strip
-                    glDrawArraysColor(gl,projection*modelview,
+                    glDrawArraysColorBack(gl,projection*modelview,
                                       GL_TRIANGLE_STRIP, patchColor,
                                       triBuffer,GL_FLOAT,count2-1);
 
@@ -763,14 +756,14 @@ void FormGPS::oglBack_Paint()
         ////draw the bnd line
         if (bnd.bndList[0].fenceLine.count() > 3)
         {
-            DrawPolygon(gl,projection*modelview,bnd.bndList[0].fenceLine,3,QColor::fromRgb(0,240,0));
+            DrawPolygonBack(gl,projection*modelview,bnd.bndList[0].fenceLine,3,QColor::fromRgb(0,240,0));
         }
 
 
         //draw 250 green for the headland
         if (bnd.isHeadlandOn && bnd.isSectionControlledByHeadland)
         {
-            DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
+            DrawPolygonBack(gl,projection*modelview,bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
         }
     }
 
@@ -845,7 +838,9 @@ void FormGPS::oglZoom_Paint()
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
 
-    GLHelperOneColor gldraw;
+    GLHelperOneColorBack gldraw;
+
+    initializeBackShader(); //make sure shader is loaded
 
     /* use the QML context with an offscreen surface to draw
      * the lookahead triangles

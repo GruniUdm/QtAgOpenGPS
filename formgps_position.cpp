@@ -1294,11 +1294,16 @@ void FormGPS::UpdateFixPosition()
 
         initializeBackShader();
 
+        GLint origview[4];
+        glGetIntegerv(GL_VIEWPORT, origview);
+
         oglBack_Paint();
         processSectionLookahead();
 
         oglZoom_Paint();
         processOverlapCount();
+
+        glViewport(origview[0], origview[1], origview[2], origview[3]);
     }
 
     lock.unlock();

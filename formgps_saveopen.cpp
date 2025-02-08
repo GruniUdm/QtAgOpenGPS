@@ -147,6 +147,7 @@ void FormGPS::FileLoadHeadLines()
     QTextStream reader(&headfile);
     reader.setLocale(QLocale::C);
 
+    lock.lockForWrite();
     hdl.tracksArr.clear();
     hdl.idx = -1;
 
@@ -207,6 +208,7 @@ void FormGPS::FileLoadHeadLines()
     }
 
     hdl.idx = -1;
+    lock.unlock();
 }
 
 void FormGPS::FileSaveTracks()
@@ -329,6 +331,8 @@ void FormGPS::FileLoadTracks()
     //read header $CurveLine
     line = reader.readLine();
 
+    lock.lockForWrite();
+
     while (!reader.atEnd())
     {
         line = reader.readLine();
@@ -401,7 +405,10 @@ void FormGPS::FileLoadTracks()
         }
     }
     trk.idx = -1;
+    lock.unlock();
+
     trk.reloadModel();
+
 }
 
 void FormGPS::FileSaveCurveLines()
@@ -496,6 +503,7 @@ void FormGPS::FileLoadCurveLines()
     //read header $CurveLine
     line = reader.readLine();
 
+    lock.lockForWrite();
     while (!reader.atEnd())
     {
         line = reader.readLine();
@@ -562,7 +570,7 @@ void FormGPS::FileLoadCurveLines()
             }
         }
     }
-
+    lock.unlock();
     curveFile.close();
 }
 
@@ -646,6 +654,7 @@ void FormGPS::FileLoadABLines()
 
     QString line;
 
+    lock.lockForWrite();
     //read all the lines
     for (int i = 0; !reader.atEnd(); i++)
     {
@@ -675,6 +684,7 @@ void FormGPS::FileLoadABLines()
         trk.gArr[i].isVisible = true;
     }
 
+    lock.unlock();
     linesFile.close();
 }
 
@@ -917,7 +927,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             TimedMessageBox(1500, tr("Field Error"), (tr("Couldn't open sections ") + filename + tr(" for reading!")));
         } else
         {
-
+            lock.lockForWrite();
             reader.setDevice(&sectionsFile);
             bool isv3 = false;
             fd.distanceUser = 0;
@@ -970,6 +980,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                         //Append the current list to the field file
                 }
             }
+            lock.unlock();
             sectionsFile.close();
         }
     }
@@ -990,6 +1001,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         //read header
         line = reader.readLine();
 
+        lock.lockForWrite();
         while (!reader.atEnd())
         {
             //read how many vertices in the following patch
@@ -1011,6 +1023,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                 ct.ptList->append(vecFix);
             }
         }
+        lock.unlock();
 
         contourFile.close();
     }
@@ -1049,6 +1062,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                 int color, ID;
                 QString notes;
 
+                lock.lockForWrite();
+
                 for (int v = 0; v < points; v++)
                 {
                     line = reader.readLine();
@@ -1080,6 +1095,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                     CFlag flagPt(lat, longi, east, nort, head, color, ID, notes);
                     flagPts.append(flagPt);
                 }
+                lock.unlock();
             }
             flagsFile.close();
 
@@ -1101,6 +1117,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         //read header
         line = reader.readLine();//Boundary
 
+        lock.lockForWrite();
         for (int k = 0; true; k++)
         {
             if (reader.atEnd()) break;
@@ -1168,6 +1185,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                 bnd.bndList.append(New);
             }
         }
+
         calculateMinMax();
         bnd.BuildTurnLines(fd);
 
@@ -1175,6 +1193,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         {
             //TODO: inform GUI btnABDraw can be seen
         }
+        lock.unlock();
         boundariesFile.close();
     }
     // Headland  -------------------------------------------------------------------------------------------------
@@ -1190,6 +1209,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
             //read header
             line = reader.readLine();
+
+            lock.lockForWrite();
 
             for (int k = 0; true; k++)
             {
@@ -1221,6 +1242,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                     break;
                 }
             }
+
+            lock.unlock();
         }
 
         if (bnd.bndList.count() > 0 && bnd.bndList[0].hdLine.count() > 0)
@@ -1246,6 +1269,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
     //trams ---------------------------------------------------------------------------------
     filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Tram.txt");
 
+    lock.lockForWrite();
     tram.tramBndOuterArr.clear();
     tram.tramBndInnerArr.clear();
     tram.tramList.clear();
@@ -1333,6 +1357,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
     }
 
     SetZoom();
+    lock.unlock();
 
     //Recorded Path
     filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "RecPath.txt");
@@ -1350,6 +1375,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         line = reader.readLine();
         int numPoints = line.toInt();
         recPath.recList.clear();
+
+        lock.lockForWrite();
 
         while (!reader.atEnd())
         {
@@ -1375,6 +1402,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         } else {
             //TODO: panelDrag.Visible = false;
         }
+        lock.unlock();
     }
 
     worldGrid.isGeoMap = false;
@@ -1384,6 +1412,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
     QFile backPic(filename);
     if (backPic.open(QIODevice::ReadOnly))
     {
+        lock.lockForWrite();
+
         reader.setDevice(&backPic);
 
         //read header
@@ -1407,8 +1437,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             //TODO: load map texture
             worldGrid.isGeoMap = false;
         }
-        //Refresh GL view
-
+        lock.unlock();
     }
 
     return true;
