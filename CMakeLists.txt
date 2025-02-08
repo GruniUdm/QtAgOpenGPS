@@ -63,8 +63,6 @@ qt_add_executable(QtAgOpenGPS
     qmlsettings_addkeys.cpp
     qmlutil.h
     setter.h
-    testlists.cpp
-    testnmea.cpp
     classes/cabcurve.h classes/cabcurve.cpp
     classes/cabline.h classes/cabline.cpp
     classes/cahrs.h classes/cahrs.cpp
