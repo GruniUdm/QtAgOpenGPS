@@ -680,5 +680,7 @@
         <file>images/spray2.png</file>
         <file>images/RateDown.png</file>
         <file>images/RateUp.png</file>
+        <file>qml/config/ConfigRateControl.qml</file>
+        <file>images/Config/Con_spray2.png</file>
     </qresource>
 </RCC>

@@ -299,4 +299,14 @@ Item {
     property double setSeed_blockRow4: 0
     property double setSeed_numRows: 32
     property bool setSeed_blockageIsOn: false
+    property double setRate_valveMinPWM: 100
+    property double setRate_valveMaxPWM: 255
+    property double setRate_moduleID: 0
+    property double setRate_pidKP: 10
+    property double setRate_pidKD: 0
+    property double setRate_pidKI: 0
+    property double setRate_ratePIDscale: 0
+    property bool setRate_RateControlOn: false
+    property double setRate_rateSensorCount: 600
+    property double setRate_rateSET: 100
 }

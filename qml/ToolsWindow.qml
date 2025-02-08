@@ -165,6 +165,13 @@ import "wizards" as Wiz
                 text: qsTr("Roll Chart")
                 icon.source: prefix + "/images/Config/ConDa_InvertRoll.png"
             }
+            Comp.IconButtonTextBeside{
+                id: rateChart
+                text: qsTr("Rate Chart")
+                onClicked: chartsMenu.visible = !chartsMenu.visible, toolsMenu.visible = false, rateCharta.visible = true
+                icon.source: prefix + "/images/spray2.png"
+
+            }
         }
     }
     Wiz.ChartSteer{
@@ -207,7 +214,18 @@ import "wizards" as Wiz
     }
     //xval1 = (glm.toDegrees(mf.gpsHeading)).ToString("N1", CultureInfo.InvariantCulture);
     //xval2 = (glm.toDegrees(mf.imuCorrected)).ToString("N1", CultureInfo.InvariantCulture);
-
+    Wiz.ChartSteer{
+    id: rateCharta
+    height: 300  * theme.scaleHeight
+    width: 400  * theme.scaleWidth
+    xval1: settings.setRate_rateSET
+    xval2: Number(aog.actualRate)
+    axismin: 0
+    axismax: 1000
+    lineName1:"RateSet"
+    lineName2:"Rate"
+    chartName: qsTr("Rate Chart")
+    }
     Wiz.Camera{
     id: cam1
     height: 300  * theme.scaleHeight

@@ -124,7 +124,7 @@ import "components" as Comp
                 Layout.alignment: Qt.AlignCenter
                 implicitWidth: theme.buttonSize
                 height:parent.height
-                visible: (settings.setArdMac_isHydEnabled) ? true : false
+                visible: (settings.setRate_RateControlOn) ? true : false
                 onClicked: {
                     machineData.visible = !machineData.visible
                     gpsData.visible = false

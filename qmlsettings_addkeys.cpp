@@ -296,4 +296,14 @@ void QMLSettings::setupKeys() {
     addKey(QString("setSeed_blockRow4"),QString("seed/blockRow4"),"double");
     addKey(QString("setSeed_numRows"),QString("seed/numRows"),"double");
     addKey(QString("setSeed_blockageIsOn"),QString("seed/blockageIsOn"),"bool");
+    addKey(QString("setRate_valveMinPWM"),QString("rate/valveMinPWM"),"double");
+    addKey(QString("setRate_valveMaxPWM"),QString("rate/valveMaxPWM"),"double");
+    addKey(QString("setRate_moduleID"),QString("rate/moduleID"),"double");
+    addKey(QString("setRate_pidKP"),QString("rate/pidKP"),"double");
+    addKey(QString("setRate_pidKD"),QString("rate/pidKD"),"double");
+    addKey(QString("setRate_pidKI"),QString("rate/pidKI"),"double");
+    addKey(QString("setRate_ratePIDscale"),QString("rate/ratePIDscale"),"double");
+    addKey(QString("setRate_RateControlOn"),QString("rate/RateControlOn"),"bool");
+    addKey(QString("setRate_rateSensorCount"),QString("rate/rateSensorCount"),"double");
+    addKey(QString("setRate_rateSET"),QString("rate/rateSET"),"double");
 }

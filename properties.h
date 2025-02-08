@@ -1,6 +1,7 @@
 #ifndef PROPERTIES_H
 #define PROPERTIES_H
 
+#include "aogproperty.h"
 #include "aogsettings.h"
 
 extern AOGProperty property_setWindow_Location;
@@ -301,5 +302,14 @@ extern AOGProperty property_setSeed_blockRow4;
 extern AOGProperty property_setSeed_numRows;
 extern AOGProperty property_setSeed_blockageIsOn;
 extern AOGProperty property_setVehicle_vehicleName;
-
+extern AOGProperty property_setRate_valveMinPWM;
+extern AOGProperty property_setRate_valveMaxPWM;
+extern AOGProperty property_setRate_moduleID;
+extern AOGProperty property_setRate_pidKP;
+extern AOGProperty property_setRate_pidKD;
+extern AOGProperty property_setRate_pidKI;
+extern AOGProperty property_setRate_ratePIDscale;
+extern AOGProperty property_setRate_RateControlOn;
+extern AOGProperty property_setRate_rateSensorCount;
+extern AOGProperty property_setRate_rateSET;
 #endif // PROPERTIES_H
