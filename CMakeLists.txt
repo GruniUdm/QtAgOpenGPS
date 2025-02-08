@@ -22,7 +22,7 @@ set(CMAKE_AUTORCC ON)
 # find_package(Qt6 REQUIRED COMPONENTS Gui)
 # find_package(Qt6 REQUIRED COMPONENTS OpenGL)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
- find_package(Qt6 REQUIRED COMPONENTS QuickWidgets) #used only for opengl
+ find_package(Qt6 REQUIRED COMPONENTS QuickWidgets) #used only for opengl ?
 find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 
