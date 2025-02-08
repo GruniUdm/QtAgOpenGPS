@@ -155,6 +155,7 @@ Item {
     property int blockage_blocked: 0;
     property double imuCorrected:0
     property double	actualRate: 0
+    property double	actualRatePWM: 0
 
 
     onSteerAngleActualChanged: steerAngleActualRounded = Math.round(steerAngleActual*100)/100

@@ -305,6 +305,7 @@ extern AOGProperty property_setVehicle_vehicleName;
 extern AOGProperty property_setRate_valveMinPWM;
 extern AOGProperty property_setRate_valveMaxPWM;
 extern AOGProperty property_setRate_moduleID;
+extern AOGProperty property_setRate_sensorID;
 extern AOGProperty property_setRate_pidKP;
 extern AOGProperty property_setRate_pidKD;
 extern AOGProperty property_setRate_pidKI;
@@ -314,4 +315,5 @@ extern AOGProperty property_setRate_rateSensorCount;
 extern AOGProperty property_setRate_rateSET;
 extern AOGProperty property_setCam_CamLink;
 extern AOGProperty property_setRateContType;
+extern AOGProperty property_setRateMode;
 #endif // PROPERTIES_H

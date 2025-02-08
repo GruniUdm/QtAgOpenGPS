@@ -1254,6 +1254,7 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("lblDiameter", lblDiameter);
     aog->setProperty("startSA", isSA);
     aog->setProperty("actualRate", mc.actualRate);
+    aog->setProperty("actualRatePWM", rate_pwm_man);
     aog->setProperty("lblmodeActualXTE", vehicle.modeActualXTE);
     aog->setProperty("lblmodeActualHeadingError", vehicle.modeActualHeadingError);
 

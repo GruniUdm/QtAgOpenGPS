@@ -302,6 +302,7 @@ Item {
     property double setRate_valveMinPWM: 100
     property double setRate_valveMaxPWM: 255
     property double setRate_moduleID: 0
+    property double setRate_sensorID: 0
     property double setRate_pidKP: 10
     property double setRate_pidKD: 0
     property double setRate_pidKI: 0
@@ -310,5 +311,6 @@ Item {
     property double setRate_rateSensorCount: 600
     property double setRate_rateSET: 100
     property double setRateContType: 5
+    property double setRateMode: 1
     property string setCam_CamLink: "rtsp://192.168.0.138:1945"
 }

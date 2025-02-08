@@ -25,6 +25,7 @@ Rectangle{
         rateMinPWM.value = settings.setRate_valveMinPWM
         rateMaxPWM.value = settings.setRate_valveMaxPWM
         moduleID.value = settings.setRate_moduleID
+        sensorID.value = settings.setRate_sensorID
         rateKP.value = settings.setRate_pidKP
         rateKI.value = settings.setRate_pidKI
         rateKD.value = settings.setRate_pidKD
@@ -33,6 +34,7 @@ Rectangle{
         rateSensor.value = settings.setRate_rateSensorCount
         setRate.value = settings.setRate_rateSET
         cboxRateControlType.currentIndex = Number(settings.setRateContType)-1
+        cboxRateMode.currentIndex = Number(settings.setRateMode)-1
         mandatory.visible = false
 
     }
@@ -43,6 +45,7 @@ Rectangle{
         settings.setRate_valveMinPWM = rateMinPWM.value
         settings.setRate_valveMaxPWM = rateMaxPWM.value
         settings.setRate_moduleID = moduleID.value
+        settings.setRate_sensorID = sensorID.value
         settings.setRate_pidKP = rateKP.value
         settings.setRate_pidKI = rateKI.value
         settings.setRate_pidKD = rateKD.value
@@ -51,6 +54,7 @@ Rectangle{
         settings.setRate_rateSensorCount = rateSensor.value
         settings.setRate_rateSET = setRate.value
         settings.setRateContType = Number(cboxRateControlType.model[cboxRateControlType.currentIndex].value)
+        settings.setRateMode = Number(cboxRateMode.model[cboxRateMode.currentIndex].value)
 
         mandatory.visible = false
 
@@ -91,6 +95,24 @@ Rectangle{
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
                 text: qsTr("Module ID: ")
+                font.bold: true
+                anchors.top: parent.bottom
+            }
+        }
+        SpinBoxCustomized{
+            id: sensorID
+            from: 0
+            to:255
+            editable: true
+            enabled: cboxIsRateControlOn.checked
+            boundValue: settings.setRate_sensorID
+            onValueModified: {
+                settings.setRate_sensorID = value
+                mandatory.visible = true
+            }
+            anchors.bottomMargin: 10 * theme.scaleHeight
+            TextLine{
+                text: qsTr("Sensor ID: ")
                 font.bold: true
                 anchors.top: parent.bottom
             }
@@ -270,6 +292,24 @@ Rectangle{
                 font.bold: true
             }
         }
+        ComboBox {
+            id: cboxRateMode
+            enabled: cboxIsRateControlOn.checked
+            textRole: "name"
+            valueRole: "value"
+            implicitHeight: 40 * theme.scaleHeight
+            implicitWidth: 150 * theme.scaleWidth
+            model: [{ value: 1, name: qsTr("Section UPM")},
+                { value: 2, name: qsTr("Constant UPM")}]
+
+            Text{
+                anchors.top: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Mode")
+                font.pixelSize: 15
+                font.bold: true
+            }
+        }
 
 
     }
@@ -352,7 +392,7 @@ Rectangle{
             anchors.bottom: parent.top
             anchors.bottomMargin: 20 * theme.scaleHeight
             anchors.horizontalCenter: parent.horizontalCenter
-            text: qsTr("Manual PWM")
+            text: qsTr("Manual PWM ") + aog.actualRatePWM
         }
 }
     IconButtonTransparent{

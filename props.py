@@ -297,6 +297,7 @@ props = {'setwin': 'display/camPitch',
  'setRate_valveMinPWM': 'rate/valveMinPWM',
  'setRate_valveMaxPWM': 'rate/valveMaxPWM',
  'setRate_moduleID': 'rate/moduleID',
+ 'setRate_sensorID': 'rate/sensorID',
  'setRate_pidKP': 'rate/pidKP',
  'setRate_pidKD': 'rate/pidKD',
  'setRate_pidKI': 'rate/pidKI',
@@ -305,6 +306,7 @@ props = {'setwin': 'display/camPitch',
  'setRate_rateSensorCount': 'rate/rateSensorCount',
  'setRate_rateSET': 'rate/rateSET'
  'setRateContType': 'rate/ContType'
+ 'setRateMode': 'rate/ContMode'
  'setCam_CamLink': 'cam/camLink'
  }
 

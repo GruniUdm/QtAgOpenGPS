@@ -305,6 +305,7 @@ AOGProperty property_setVehicle_vehicleName("vehicle/vehicleName",QString("Defau
 AOGProperty property_setRate_valveMinPWM("rate/valveMinPWM",100);
 AOGProperty property_setRate_valveMaxPWM("rate/valveMaxPWM",255);
 AOGProperty property_setRate_moduleID("rate/moduleID",0);
+AOGProperty property_setRate_sensorID("rate/sensorID",0);
 AOGProperty property_setRate_pidKP("rate/pidKP",10);
 AOGProperty property_setRate_pidKD("rate/pidKD",0);
 AOGProperty property_setRate_pidKI("rate/pidKI",0);
@@ -312,6 +313,7 @@ AOGProperty property_setRate_ratePIDscale("rate/ratePIDscale",0);
 AOGProperty property_setRate_RateControlOn("rate/RateControlOn",false);
 AOGProperty property_setRate_rateSensorCount("rate/rateSensorCount",600);
 AOGProperty property_setRate_rateSET("rate/rateSET",100);
-AOGProperty property_setRateContType("rate/ContType",5);
+AOGProperty property_setRateContType("rate/ContType",2);
+AOGProperty property_setRateMode("rate/ContMode",2);
 AOGProperty property_setCam_CamLink("cam/camLink",QString("rtsp://192.168.0.138:1945"));
 

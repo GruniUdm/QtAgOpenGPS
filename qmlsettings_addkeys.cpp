@@ -299,6 +299,7 @@ void QMLSettings::setupKeys() {
     addKey(QString("setRate_valveMinPWM"),QString("rate/valveMinPWM"),"double");
     addKey(QString("setRate_valveMaxPWM"),QString("rate/valveMaxPWM"),"double");
     addKey(QString("setRate_moduleID"),QString("rate/moduleID"),"double");
+    addKey(QString("setRate_sensorID"),QString("rate/sensorID"),"double");
     addKey(QString("setRate_pidKP"),QString("rate/pidKP"),"double");
     addKey(QString("setRate_pidKD"),QString("rate/pidKD"),"double");
     addKey(QString("setRate_pidKI"),QString("rate/pidKI"),"double");
@@ -307,5 +308,6 @@ void QMLSettings::setupKeys() {
     addKey(QString("setRate_rateSensorCount"),QString("rate/rateSensorCount"),"double");
     addKey(QString("setRate_rateSET"),QString("rate/rateSET"),"double");
     addKey(QString("setRateContType"),QString("rate/ContType"),"double");
+    addKey(QString("setRateMode"),QString("rate/ContMode"),"double");
     addKey(QString("setCam_CamLink"),QString("cam/CamLink"),"QString");
 }
