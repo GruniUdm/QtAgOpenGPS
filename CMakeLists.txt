@@ -132,6 +132,7 @@ qt_add_qml_module(QtAgOpenGPS
         aogrenderer.cpp
         aogrenderer.h
     DEPENDENCIES Qt6::QtQuick
+    SOURCES ratecontrol.h ratecontrol.cpp
 )
 
 # show some of our mockup files in the project tree without compiling it
