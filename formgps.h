@@ -70,6 +70,7 @@ public:
     QSignalMapper *sectionButtonsSignalMapper;
     QTimer *tmrWatchdog;
     QTimer timerSim;
+    QTimer *timer_tick;
 
     //other
     QObject *btnFlag;
@@ -612,6 +613,16 @@ public:
 
     void SetZoom();
     void loadGLTextures();
+    void Timer1_Tick();
+
+private:
+    bool toSend = false, isSA = false;
+    int counter = 0, secondCntr = 0, cntr;
+    Vec3 startFix;
+    double diameter, steerAngleRight, dist;
+    QString lblCalcSteerAngleInner, lblCalcSteerAngleOuter, lblDiameter;
+
+
 
 private:
     void setupGui();
@@ -651,6 +662,8 @@ public slots:
     void processOverlapCount(); //called to calculate overlap stats
 
     void TimedMessageBox(int timeout, QString s1, QString s2);
+
+    void on_qml_created(QObject *object, const QUrl &url);
 
     //settings dialog callbacks
     void on_settings_reload();

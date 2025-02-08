@@ -47,6 +47,12 @@ Window {
 
     }
 
+    property var tracksInterface: TracksInterface
+
+    Component.onCompleted: {
+        console.debug("tracks interface object is ", TracksInterface)
+    }
+
     function close() {
         if (areWindowsOpen()) {
             timedMessage.addMessage(2000,qsTr("Some windows are open. Close them first."))
@@ -515,12 +521,14 @@ Window {
                 anchors.top: tracknum.bottom
                 anchors.margins: 30
                 anchors.left: parent.horizontalCenter
+                visible: settings.setFeature_isTramOn
             }
             TramIndicators{
                 id: tramRight
                 anchors.top: tracknum.bottom
                 anchors.margins: 30
                 anchors.right: parent.horizontalCenter
+                visible: settings.setFeature_isTramOn
             }
 
             //Components- this is where the windows that get displayed over the
@@ -541,11 +549,12 @@ Window {
                 id: blockageData
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                visible: false
+                visible: (aog.blockageConnected & settings.setSeed_blockageIsOn) ? true : false
             }
 
             SimController{
                 id: simBarRect
+                //z: 2
                 anchors.bottom: timeText.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottomMargin: 8
@@ -585,7 +594,7 @@ Window {
             }
             Comp.BlockageRows {
                 id: blockageRows
-                visible: aog.blockageConnected ? true : false  // need connect with c++ Dim
+                visible: (aog.blockageConnected & settings.setSeed_blockageIsOn) ? true : false  // need connect with c++ Dim
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 8
@@ -774,10 +783,10 @@ Window {
 
         Tracks.LineDrawer {//window where lines are created off field boundary/edited
             id:lineDrawer
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom
-            height: 768
-            width:1024
+            //anchors.horizontalCenter: parent.horizontalCenter
+            //anchors.bottom: parent.bottom
+            //height: 768
+            //width:1024
             visible:false
         }
         Tracks.LineNudge{

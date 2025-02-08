@@ -10,8 +10,12 @@ import ".."
 import "../components" as Comp
 //import AgOpenGPS 1.0
 
-Item {
+Popup{
 	id: lineDrawer
+    width: parent.width
+    height: parent.height
+    //color: "ghostwhite"
+    closePolicy: Popup.NoAutoClose
 	function show(){
 		lineDrawer.visible = true
 	}
@@ -27,10 +31,10 @@ Item {
 		anchors.bottom:  parent.bottom
 		color: "black"
 
-		Rectangle { //temporary for qmlscene testing
-		//AOGRenderer{
-			id: lineDrawerField
-			objectName: "lineDrawerField"
+        Rectangle { //temporary for qmlscene testing
+        //AOGRenderer{
+            id: lineDrawerField
+            objectName: "lineDrawerField"
 			anchors.fill: parent
             Comp.TextLine{ text: "nothing to see here yet"}
 

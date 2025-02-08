@@ -301,5 +301,6 @@ extern AOGProperty property_setSeed_blockRow4;
 extern AOGProperty property_setSeed_numRows;
 extern AOGProperty property_setSeed_blockageIsOn;
 extern AOGProperty property_setVehicle_vehicleName;
+extern AOGProperty property_setCam_CamLink;
 
 #endif // PROPERTIES_H
