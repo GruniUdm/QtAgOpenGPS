@@ -90,7 +90,7 @@ import "components" as Comp
                     gpsData.visible = !gpsData.visible
                     fieldData.visible = false
                     blockageData.visible = false
-                    machineData.visible = false
+                    rateData.visible = false
                 }
                 Connections{
                     target: aog
@@ -114,7 +114,7 @@ import "components" as Comp
                     blockageData.visible = !blockageData.visible
                     gpsData.visible = false
                     fieldData.visible = false
-                    machineData.visible = false
+                    rateData.visible = false
                 }
             }
 
@@ -126,7 +126,7 @@ import "components" as Comp
                 height:parent.height
                 visible: (settings.setRate_RateControlOn) ? true : false
                 onClicked: {
-                    machineData.visible = !machineData.visible
+                    rateData.visible = !rateData.visible
                     gpsData.visible = false
                     fieldData.visible = false
                     blockageData.visible = false

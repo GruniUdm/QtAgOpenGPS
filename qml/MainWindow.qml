@@ -544,8 +544,8 @@ Window {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: (aog.blockageConnected & settings.setSeed_blockageIsOn) ? true : false
             }
-            MachineData{ //window that displays Machine data
-                id: machineData
+            RateData{ //window that displays Machine data
+                id: rateData
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 visible: (settings.setArdMac_isHydEnabled) ? true : false
