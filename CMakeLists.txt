@@ -25,13 +25,17 @@ find_package(Qt6 REQUIRED COMPONENTS Quick)
  find_package(Qt6 REQUIRED COMPONENTS QuickWidgets) #used only for opengl ?
 find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt6 REQUIRED COMPONENTS Multimedia)
+find_package(Qt6 REQUIRED COMPONENTS LinguistTools) #for i18n internationalization support
 
 # Add Qt policies
 qt_policy(SET QTP0001 NEW)
 qt_policy(SET QTP0004 NEW)
 
-# Qt magic
-qt_standard_project_setup(REQUIRES 6.5)
+# Qt standard project setup with internationalization support
+qt_standard_project_setup(REQUIRES 6.5
+    I18N_SOURCE_LANGUAGE en
+    I18N_TRANSLATED_LANGUAGES fr ru
+)
 
 # Create the executable
 qt_add_executable(QtAgOpenGPS
@@ -145,9 +149,7 @@ if(NOT LOCAL_QML)
 
 
     # message(WARNING "All image relative paths: ${IMAGE_REL_PATHS}")
-    # message(WARNING "All shader relative paths: ${SHADER_REL_PATHS}")
-
-
+    
     # Function to process QML files in a given directory
     function(process_qml_files DIR)
         file(GLOB QML_FILES "${DIR}/*.qml" "${DIR}/*.js")
@@ -209,6 +211,40 @@ if(NOT LOCAL_QML)
         ${IMAGE_REL_PATHS}
         ${SHADER_REL_PATHS}
     )
+
+# Add translations
+    qt_add_translations(QtAgOpenGPS
+    RESOURCE_PREFIX /qt/qml/AOG/i18n
+    TS_FILE_BASE qml
+    TS_FILE_DIR i18n
+)
+
+ # Function to process translated QM files in a given directory
+ function(process_qm_files DIR OUT_VAR)
+ file(GLOB QM_FILES "${DIR}/*.qm")
+ set(REL_PATHS)
+ foreach(QM_FILE ${QM_FILES})
+     file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${QM_FILE}")
+     set_source_files_properties(${QM_FILE} PROPERTIES
+         QT_RESOURCE_ALIAS "${REL_PATH}")
+     # message(WARNING "file: ${REL_PATH}")
+     list(APPEND REL_PATHS "${REL_PATH}")
+ endforeach()
+ set(${OUT_VAR} ${REL_PATHS} PARENT_SCOPE)
+endfunction()
+
+# Process QM files in the i18n directory
+process_qm_files("${CMAKE_CURRENT_SOURCE_DIR}/i18n" QM_REL_PATHS)
+
+# Add the translation file to the resources
+
+# Add the translation files to the resources
+qt_add_resources(QtAgOpenGPS "translations"
+PREFIX "/"
+FILES
+${QM_REL_PATHS}
+)
+
 else()
 
     set(qml_interfaces_singletons
@@ -230,6 +266,8 @@ else()
     )
 
 endif()
+
+
 
 ###### End Script of Handling QML in module ######
 
