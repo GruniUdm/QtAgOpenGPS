@@ -11,6 +11,7 @@ Item{
     property alias model: rootCombo.model
     property alias editable: rootCombo.editable
     property alias currentIndex: rootCombo.currentIndex
+    property alias currentText: rootCombo.currentText
 
 	signal activated()
     height: 75
@@ -22,8 +23,8 @@ Item{
     ComboBox{
         id: rootCombo
         editable: true
-        implicitWidth: 200
-        implicitHeight: 50
+        implicitHeight: 40 * theme.scaleHeight
+        implicitWidth: 150 * theme.scaleWidth
         anchors.bottom: parent.bottom
         model: ListModel{
             id: rootComboModel

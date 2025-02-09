@@ -33,14 +33,41 @@ Rectangle{
         cboxIsRateControlOn.checked = settings.setRate_RateControlOn
         rateSensor.value = settings.setRate_rateSensorCount
         setRate.value = settings.setRate_rateSET
-        cboxRateControlType.currentIndex = Number(settings.setRateContType)-1
-        cboxRateMode.currentIndex = Number(settings.setRateMode)-1
+        cboxRateMode.currentIndex = Number(settings.setRateMode)
+
+        var sett = settings.setRateContType;
+
+        if ((sett & 1) == 1) cboxRateControlType.currentIndex = 1;
+        else if ((sett & 2) == 2) cboxRateControlType.currentIndex = 2;
+        else if ((sett & 4) == 4) cboxRateControlType.currentIndex = 3;
+        else cboxRateControlType.currentIndex = 0;
+
+
         mandatory.visible = false
 
     }
 
     function save_settings() {
+        var set = 1;
+        var reset = 2046;
+        var sett = 0;
 
+
+        if (cboxRateControlType.currentText === "Combo Close") sett |= set;
+        else sett &= reset;
+
+        set <<= 1;
+        reset <<= 1;
+        reset += 1;
+        if (cboxRateControlType.currentText === "Motor") sett |= set;
+        else sett &= reset;
+
+        set <<= 1;
+        reset <<= 1;
+        reset += 1;
+        if (cboxRateControlType.currentText === "Combo Timed") sett |= set;
+        else sett &= reset;
+        settings.setRateContType = sett;
 
         settings.setRate_valveMinPWM = rateMinPWM.value
         settings.setRate_valveMaxPWM = rateMaxPWM.value
@@ -53,8 +80,7 @@ Rectangle{
         settings.setRate_RateControlOn = cboxIsRateControlOn.checked
         settings.setRate_rateSensorCount = rateSensor.value
         settings.setRate_rateSET = setRate.value
-        settings.setRateContType = Number(cboxRateControlType.model[cboxRateControlType.currentIndex].value)
-        settings.setRateMode = Number(cboxRateMode.model[cboxRateMode.currentIndex].value)
+        settings.setRateMode = Number(cboxRateMode.currentIndex)
 
         mandatory.visible = false
 
@@ -272,43 +298,30 @@ Rectangle{
 
         }
 
-        ComboBox {
+        ComboBoxCustomized {
             id: cboxRateControlType
             enabled: cboxIsRateControlOn.checked
-            textRole: "name"
-            valueRole: "value"
-            implicitHeight: 40 * theme.scaleHeight
-            implicitWidth: 150 * theme.scaleWidth
-            model: [{ value: 1, name: qsTr("Standard")},
-                { value: 2, name: qsTr("Combo Close")},
-                { value: 3, name: qsTr("Motor")},
-                { value: 4, name: qsTr("Combo Timed")}]
-
-            Text{
-                anchors.top: parent.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("Control Type")
-                font.pixelSize: 15
-                font.bold: true
+            editable: false
+            model: ListModel {
+                ListElement {text: qsTr("Standard")}
+                ListElement {text: qsTr("Combo Close")}
+                ListElement {text: qsTr("Motor")}
+                ListElement {text: qsTr("Combo Timed")}
             }
-        }
-        ComboBox {
-            id: cboxRateMode
-            enabled: cboxIsRateControlOn.checked
-            textRole: "name"
-            valueRole: "value"
-            implicitHeight: 40 * theme.scaleHeight
-            implicitWidth: 150 * theme.scaleWidth
-            model: [{ value: 1, name: qsTr("Section UPM")},
-                { value: 2, name: qsTr("Constant UPM")}]
+            text: qsTr("Control Type")
+            onActivated: mandatory.visible = true
+    }
 
-            Text{
-                anchors.top: parent.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
+            ComboBoxCustomized {
+                id: cboxRateMode
+                enabled: cboxIsRateControlOn.checked
+                editable: false
+                model: ListModel {
+                    ListElement {text: qsTr("Section UPM")}
+                    ListElement {text: qsTr("Constant UPM")}
+                }
                 text: qsTr("Mode")
-                font.pixelSize: 15
-                font.bold: true
-            }
+                onActivated: mandatory.visible = true
         }
 
 
@@ -376,6 +389,7 @@ Rectangle{
         anchors.leftMargin: 20 * theme.scaleHeight
         icon.source: prefix + "/images/AutoStop.png"
         onClicked: aog.rate_pwm_auto()
+        enabled: cboxIsRateControlOn.checked
 }
     IconButtonTransparent{
         id: ratePWMUP
@@ -388,6 +402,7 @@ Rectangle{
         anchors.leftMargin: 20 * theme.scaleHeight
         icon.source: prefix + "/images/UpArrow64.png"
         onClicked: aog.rate_bump_pwm(true)
+        enabled: cboxIsRateControlOn.checked
         Label{
             anchors.bottom: parent.top
             anchors.bottomMargin: 20 * theme.scaleHeight
@@ -406,6 +421,7 @@ Rectangle{
         anchors.leftMargin: 20 * theme.scaleHeight
         icon.source: prefix + "/images/DnArrow64.png"
         onClicked: aog.rate_bump_pwm(false)
+        enabled: cboxIsRateControlOn.checked
 }
 
     IconButtonTransparent{
