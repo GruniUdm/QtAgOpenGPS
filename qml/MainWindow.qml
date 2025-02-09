@@ -46,6 +46,12 @@ Window {
 
     }
 
+    property var tracksInterface: TracksInterface
+
+    Component.onCompleted: {
+        console.debug("tracks interface object is ", TracksInterface)
+    }
+
     function close() {
         if (areWindowsOpen()) {
             timedMessage.addMessage(2000,qsTr("Some windows are open. Close them first."))
@@ -776,10 +782,10 @@ Window {
 
         Tracks.LineDrawer {//window where lines are created off field boundary/edited
             id:lineDrawer
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom
-            height: 768
-            width:1024
+            //anchors.horizontalCenter: parent.horizontalCenter
+            //anchors.bottom: parent.bottom
+            //height: 768
+            //width:1024
             visible:false
         }
         Tracks.LineNudge{

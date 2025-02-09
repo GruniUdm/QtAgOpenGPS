@@ -14,7 +14,7 @@ void CPGN_FC::loadSettings()
     pgn[minPWM] = property_setAS_minSteerPWM;
     pgn[countsPerDegree] = property_setAS_countsPerDegree;
     pgn[wasOffsetHi] = (char)((int)property_setAS_wasOffset >> 8);;
-    pgn[wasOffsetLo] = (char)property_setAS_Kp;
+    pgn[wasOffsetLo] = (char)property_setAS_wasOffset;
     pgn[ackerman] = property_setAS_ackerman;
 }
 

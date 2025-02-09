@@ -130,8 +130,10 @@ MoveablePopup {
                         implicitHeight: parent.height /5 -20* theme.scaleHeight
                         //visible: false
                         visible: steerBtn.checked
-                        onClicked:  settings.setAS_wasOffset += cpDegSlider.value * -aog.steerAngleActual, aog.modules_send_252()
-
+                        onClicked:  {settings.setAS_wasOffset -= cpDegSlider.value *aog.steerAngleActual;
+                        if (Math.abs(settings.setAS_wasOffset)< 3900){ sendUdptimer.running = true}
+                        else {timedMessage.addMessage(2000, "Exceeded Range", "Excessive Steer Angle - Cannot Zero");}
+                                    }
                     }
 
                     SteerConfigSliderCustomized {
@@ -141,8 +143,8 @@ MoveablePopup {
                         width: 200 * theme.scaleWidth
                         from: -4000
                         leftText: utils.decimalRound(value / cpDegSlider.value, 2)
-                        //onValueChanged: settings.setAS_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
-                        onValueChanged: settings.setAS_wasOffset = value, aog.modules_send_252()
+                        //onValueChanged: settings.setAS_wasOffset = value * cpDegSlider.value, sendUdptimer.running = true
+                        onValueChanged: settings.setAS_wasOffset = value, sendUdptimer.running = true
                         to: 4000
                         value: settings.setAS_wasOffset / cpDegSlider.value
                         visible: steerBtn.checked
@@ -152,7 +154,7 @@ MoveablePopup {
                         centerTopText: "Counts per Degree"
                         from: 1
                         leftText: value
-                        onValueChanged: settings.setAS_countsPerDegree = value, aog.modules_send_252()
+                        onValueChanged: settings.setAS_countsPerDegree = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 255
                         value: Math.round(settings.setAS_countsPerDegree, 0)
@@ -164,7 +166,7 @@ MoveablePopup {
                         centerTopText: "AckerMann"
                         from: 1
                         leftText: value
-                        onValueChanged: settings.setAS_ackerman = value, aog.modules_send_252()
+                        onValueChanged: settings.setAS_ackerman = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 200
                         value: Math.round(settings.setAS_ackerman, 0)
@@ -190,7 +192,7 @@ MoveablePopup {
                         centerTopText: "Proportional Gain"
                         from: 0
                         leftText: value
-                        onValueChanged: settings.setAS_Kp = value, aog.modules_send_252()
+                        onValueChanged: settings.setAS_Kp = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 200
                         value: Math.round(settings.setAS_Kp, 0)
@@ -201,7 +203,7 @@ MoveablePopup {
                         centerTopText: "Maximum Limit"
                         from: 0
                         leftText: value
-                        onValueChanged: settings.setAS_highSteerPWM = value, aog.modules_send_252()
+                        onValueChanged: settings.setAS_highSteerPWM = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 254
                         value: Math.round(settings.setAS_highSteerPWM, 0)
@@ -212,7 +214,7 @@ MoveablePopup {
                         centerTopText: "Minimum to Move"
                         from: 0
                         leftText: value
-                        onValueChanged: settings.setAS_minSteerPWM = value, aog.modules_send_252()
+                        onValueChanged: settings.setAS_minSteerPWM = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 100
                         value: Math.round(settings.setAS_minSteerPWM, 0)
@@ -226,10 +228,10 @@ MoveablePopup {
                         id: stanleyAggressivenessSlider
                         centerTopText: "Agressiveness"
                         from: .1
-                        onValueChanged: settings.stanleyDistanceErrorGain = value, aog.modules_send_252()
+                        onValueChanged: settings.stanleyDistanceErrorGain = value
                         stepSize: .1
                         to: 4
-                        leftText: Math.round(value * 100)/100
+                        leftText: Math.round(value * 10)/10
                         value: settings.stanleyDistanceErrorGain
                         visible: stanleyBtn.checked
                     }
@@ -237,10 +239,10 @@ MoveablePopup {
                         id: overShootReductionSlider
                         centerTopText: "OverShoot Reduction"
                         from: .1
-                        onValueChanged: settings.stanleyHeadingErrorGain = value, aog.modules_send_252()
+                        onValueChanged: settings.stanleyHeadingErrorGain = value
                         stepSize: .1
                         to: 1.5
-                        leftText: Math.round(value * 100) / 100
+                        leftText: Math.round(value * 10) / 10
                         value: settings.stanleyHeadingErrorGain
                         visible: stanleyBtn.checked
                     }
@@ -249,7 +251,7 @@ MoveablePopup {
                         centerTopText: "Integral"
                         from: 0
                         leftText: value
-                        onValueChanged: settings.stanleyIntegralGainAB = value /100, aog.modules_send_252()
+                        onValueChanged: settings.stanleyIntegralGainAB = value /100
                         stepSize: 1
                         to: 100
                         value: Math.round(settings.stanleyIntegralGainAB * 100, 0)
@@ -263,9 +265,9 @@ MoveablePopup {
                         id: acqLookAheadSlider
                         centerTopText: "Acquire Look Ahead"
                         from: 1
-                        onValueChanged: settings.setVehicle_goalPointLookAhead = value, aog.modules_send_252()
+                        onValueChanged: settings.setVehicle_goalPointLookAhead = value
                         stepSize: .1
-                        leftText: Math.round(value * 100) / 100
+                        leftText: Math.round(value * 10) / 10
                         to: 7
                         value: settings.setVehicle_goalPointLookAhead
                         visible: ppBtn.checked
@@ -275,7 +277,7 @@ MoveablePopup {
                         centerTopText: "Hold Look Ahead"
                         from: 1
                         stepSize: .1
-                        leftText: Math.round(value * 100) / 100
+                        leftText: Math.round(value * 10) / 10
                         onValueChanged: settings.setVehicle_goalPointLookAheadHold = utils.decimalRound(value, 1)
                         to: 7
                         value: settings.setVehicle_goalPointLookAheadHold
@@ -285,10 +287,10 @@ MoveablePopup {
                         id: lookAheadSpeedGainSlider
                         centerTopText: "Look Ahead Speed Gain"
                         from: .5
-                        onValueChanged: settings.setVehicle_goalPointLookAheadMult = value, aog.modules_send_252()
+                        onValueChanged: settings.setVehicle_goalPointLookAheadMult = value
                         stepSize: .1
                         to: 3
-                        leftText: Math.round(value * 100) / 100
+                        leftText: Math.round(value * 10) / 10
                         value: settings.setVehicle_goalPointLookAheadMult
                         visible: ppBtn.checked
                     }
@@ -296,10 +298,10 @@ MoveablePopup {
                         id: ppIntegralSlider
                         centerTopText: "Integral"
                         from: 0
-                        onValueChanged: settings.purePursuitIntegralGainAB = value /100, aog.modules_send_252()
+                        onValueChanged: settings.purePursuitIntegralGainAB = value /100
                         stepSize: 1
                         to: 100
-                        leftText: Math.round(value *100) / 100
+                        leftText: Math.round(value *10) / 10
                         value: settings.purePursuitIntegralGainAB *100
                         visible: ppBtn.checked
                     }
@@ -351,7 +353,7 @@ MoveablePopup {
                         id: errorlbl
                         Layout.alignment: Qt.AlignCenter
                         onErrChanged: err > 0 ? errorlbl.color = "red" : errorlbl.color = "darkgreen"
-                        text: qsTr("Err: " + Math.round(err*100)/100)
+                        text: qsTr("Err: " + Math.round(err*10)/10)
                     }
                     IconButtonTransparent{
                         //show angle info window
@@ -469,5 +471,10 @@ MoveablePopup {
                 Layout.alignment: Qt.AlignCenter
             }
         }
+    }
+    Timer {
+        id: sendUdptimer
+        interval: 1000;
+        onTriggered:  aog.modules_send_252()
     }
 }
