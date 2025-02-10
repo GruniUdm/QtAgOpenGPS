@@ -7,6 +7,7 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Effects
 import QtQuick.Dialogs
+import Interfaces
 import AOG
 
 import "interfaces" as Interfaces
@@ -254,7 +255,7 @@ Window {
                 width: 70 * theme.scaleWidth
                 height: 70 * theme.scaleHeight
                 source: prefix + "/images/Images/z_ReverseArrow.png"
-                visible: vehicleInterface.isReverse || vehicleInterface.isChangingDirection
+                visible: VehicleInterface.isReverse || VehicleInterface.isChangingDirection
             }
             MouseArea{
                 //button that catches any clicks on the vehicle in the GL Display

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Interfaces
 import AOG
 import "components" as Comp
 
@@ -73,7 +74,7 @@ ColumnLayout {
 
         onClicked: {
             if (trk.idx > -1) {
-                TracksInterface.next()
+                trk.next()
             }
         }
     }
@@ -86,7 +87,7 @@ ColumnLayout {
 
         onClicked: {
             if (trk.idx > -1) {
-                TracksInterface.prev()
+                trk.prev()
             }
         }
 
