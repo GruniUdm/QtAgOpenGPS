@@ -10,6 +10,7 @@
 #include "aogproperty.h"
 #include <QProcess>
 #include <QSysInfo>
+#include <QTranslator> //for translations
 
 QLabel *grnPixelsWindow;
 AOGSettings *settings;

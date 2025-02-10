@@ -20,6 +20,7 @@
 #include "cboundarylist.h"
 #include <cmath>
 #include <cstring>
+#include <QTranslator>
 
 QString caseInsensitiveFilename(QString directory, QString filename);
 
@@ -53,6 +54,17 @@ void FormGPS::setupGui()
 
     rootContext()->setContextProperty("trk", &trk);
     rootContext()->setContextProperty("tram", &tram);
+
+    // translate the QML
+    QString language = "ru"; // Change this variable to "fr" or "en" as needed
+    QString translationPath = QString("qml_%1.qm").arg(language);
+    QTranslator translator;
+    if (translator.load(translationPath)) {
+        qDebug() << "Translation loaded from" << translationPath;
+        QCoreApplication::installTranslator(&translator);
+    } else {
+        qDebug() << "Translation not loaded";
+    }
 
 #ifdef LOCAL_QML
     // Look for QML files relative to our current directory

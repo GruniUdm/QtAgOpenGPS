@@ -212,12 +212,12 @@ if(NOT LOCAL_QML)
         ${SHADER_REL_PATHS}
     )
 
-# Add translations
-    qt_add_translations(QtAgOpenGPS
+    # Add translations
+   qt_add_translations(QtAgOpenGPS
     RESOURCE_PREFIX /qt/qml/AOG/i18n
-    TS_FILE_BASE qml
+    TS_FILE_BASE qml 
     TS_FILE_DIR i18n
-)
+    )
 
  # Function to process translated QM files in a given directory
  function(process_qm_files DIR OUT_VAR)

@@ -1581,24 +1581,39 @@ Radius</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../qml/MainWindow.qml" line="58"/>
+        <location filename="../qml/MainWindow.qml" line="59"/>
         <source>Some windows are open. Close them first.</source>
         <translation>Некоторые окна открыты. Сначала закройте их.</translation>
     </message>
     <message>
-        <location filename="../qml/MainWindow.qml" line="63"/>
+        <location filename="../qml/MainWindow.qml" line="64"/>
         <source>Section Control on. Shut off Section Control.</source>
         <translation>Управление секцией включено. Выключите управление секцией.</translation>
     </message>
     <message>
-        <location filename="../qml/MainWindow.qml" line="442"/>
+        <location filename="../qml/MainWindow.qml" line="443"/>
         <source>Simulator On</source>
         <translation>Симулятор включен</translation>
     </message>
     <message>
-        <location filename="../qml/MainWindow.qml" line="459"/>
+        <location filename="../qml/MainWindow.qml" line="460"/>
         <source>Age: </source>
         <translation>Возраст: </translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="973"/>
+        <source>English</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="978"/>
+        <source>Russian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindow.qml" line="983"/>
+        <source>French</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
