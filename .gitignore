@@ -1,8 +1,11 @@
+# Ignore user-specific files
 *.user
 *.user.*
 Wedel.txt
 *.swp
 *.autosave
+
+# Build-related files
 compile_commands.json
 .ccls-cache
 .qmake.stash
@@ -11,6 +14,23 @@ Makefile
 build*
 cmkbuild*
 branchnotes.txt
-__pycache__
 CMakeCache.txt
 *.patch
+cmake/
+
+# Python cache and patch files
+__pycache__
+
+# Specific Qt project files and backups
+*.qtds
+*.pro.user
+*.qmlproject.user
+*.cpp.*
+*.h.*
+*.qml.*
+.qmlls.ini
+.qtcreator/
+.qt/
+project.json.qtds
+*.txt.*
+*.qtds.*
