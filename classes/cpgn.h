@@ -248,6 +248,26 @@ public:
     void MakeCRC();
 };
 
+class PGN32500
+{
+public:
+    QByteArray pgn;
+    int ID = 2;
+    int RateSetLo = 3;
+    int RateSett = 4;
+    int RateSetHI = 5;
+    int MeterCalLO = 6;
+    int MeterCall = 7;
+    int MeterCalHI = 8;
+    int PIDScale = 9;
+    int ControlType = 10;
+    int ManualPWMLO = 11;
+    int ManualPWMHI = 12;
+
+    PGN32500();
+    void MakeCRC();
+};
+
 /*
 extern CPGN_FE p_254;
 extern CPGN_FC p_252;

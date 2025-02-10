@@ -333,6 +333,7 @@ public:
     CPGN_EB p_235;
     CPGN_E5 p_229;
     PGN32502 ModulePIDdata;
+    PGN32500 Prod;
 
     /* GUI synchronization lock */
     QReadWriteLock lock;

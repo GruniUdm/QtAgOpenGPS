@@ -119,3 +119,17 @@ void PGN32502::MakeCRC()
     }
     pgn[pgn.length() - 1] = crc;
 }
+
+PGN32500::PGN32500() : pgn(QByteArray( "\xF7\x7E\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 14))
+{
+}
+
+void PGN32500::MakeCRC()
+{
+    int crc = 0;
+    for (int i = 2; i < pgn.length() - 1; i++)
+    {
+        crc += pgn[i];
+    }
+    pgn[pgn.length() - 1] = crc;
+}
