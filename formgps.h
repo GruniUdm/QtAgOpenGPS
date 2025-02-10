@@ -47,6 +47,7 @@
 
 #include "formheadland.h"
 #include "formheadache.h"
+#include "ratecontrol.h"
 
 //forward declare classes referred to below, to break circular
 //references in the code
@@ -305,6 +306,7 @@ public:
 
     //module communication object
     CModuleComm mc;
+    ratecontrol rc;
 
     //boundary instance
     CBoundary bnd;
@@ -330,6 +332,7 @@ public:
     CPGN_EC p_236;
     CPGN_EB p_235;
     CPGN_E5 p_229;
+    PGN32502 ModulePIDdata;
 
     /* GUI synchronization lock */
     QReadWriteLock lock;

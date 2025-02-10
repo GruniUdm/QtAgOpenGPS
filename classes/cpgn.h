@@ -229,6 +229,25 @@ public:
     void Reset() {}
 };
 
+class PGN32502
+{
+public:
+    QByteArray pgn;
+    int ID = 2;
+    int KD = 3;
+    int KI = 4;
+    int KP = 5;
+    int MaxPWM = 6;
+    int MinPWM = 7;
+    int PIDScale = 8;
+    int MeterCal = 9;
+    int Command = 10;
+
+    PGN32502();
+    void loadSettings();
+    void MakeCRC();
+};
+
 /*
 extern CPGN_FE p_254;
 extern CPGN_FC p_252;

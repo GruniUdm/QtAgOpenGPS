@@ -93,3 +93,29 @@ void CPGN_EC::MakeCRC()
     pgn[pgn.length() - 1] = crc;
 }
 
+PGN32502::PGN32502() : pgn(QByteArray( "\xF6\x7E\x00\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 12))
+{
+    loadSettings();
+}
+
+void PGN32502::loadSettings()
+{   pgn[ID] = property_setRate_moduleID;
+    pgn[KD] = property_setRate_pidKI;
+    pgn[KI] = property_setRate_pidKD;
+    pgn[KP] = property_setRate_pidKP;
+    pgn[MaxPWM] = property_setRate_valveMaxPWM;
+    pgn[MinPWM] = property_setRate_valveMinPWM;
+    pgn[PIDScale] = property_setRate_ratePIDscale;
+    pgn[MeterCal] = property_setRate_rateSensorCount;
+    pgn[Command] = property_setRateContType;
+}
+
+void PGN32502::MakeCRC()
+{
+    int crc = 0;
+    for (int i = 2; i < pgn.length() - 1; i++)
+    {
+        crc += pgn[i];
+    }
+    pgn[pgn.length() - 1] = crc;
+}

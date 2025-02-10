@@ -277,13 +277,14 @@ void FormGPS::ReceiveFromAgIO()
             break;
 
 
-        case 0xED:
-            //machineData
-            if (datagram_data.length() != 14)
+        case 0x7E://Rate 126
+            //
+            if (datagram_data.length() != 15)
                 break;
-
-            mc.actualRate = (qint16)((uint8_t(data[6]) << 8) + uint8_t(data[5]));
-            break;
+            rc.cUPM = (data[7] << 16 | data[6] << 8 | data[5]) / 1000.0;
+            rc.cQuantity = (data[10] << 16 | data[9] << 8 | data[8]) / 10.0;
+            rc.cPWMsetting = (qint16)(data[12] << 8 | data[11]);  // need to cast to 16 bit integer to preserve the sign bit
+            rc.cSensorReceiving = ((data[13] & 0b00000001) == 0b00000001);
 
 
         case 0xf4://blockage 244
@@ -300,6 +301,7 @@ void FormGPS::ReceiveFromAgIO()
             doBlockageMonitoring();
             //qDebug() << mc.blockageseccount1[1];
             break;
+
         }
     }
     //qDebug() << pn->rawBuffer ;"Connected to blockage"
