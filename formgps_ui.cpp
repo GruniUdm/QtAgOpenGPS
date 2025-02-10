@@ -263,10 +263,11 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(aog, SIGNAL(modules_send_238()), this, SLOT(modules_send_238()));
     connect(aog, SIGNAL(modules_send_251()), this, SLOT(modules_send_251()));
     connect(aog, SIGNAL(modules_send_252()), this, SLOT(modules_send_252()));
+    connect(aog, SIGNAL(modules_send_PGN32502()), this, SLOT(modules_send_PGN32502()));
 
     connect(aog, SIGNAL(doBlockageMonitoring()), this, SLOT(doBlockageMonitoring()));
-    connect(aog, SIGNAL(rate_bump_pwm(bool)), this, SLOT(rate_bump(bool)));
-    connect(aog, SIGNAL(rate_pwm_auto()), this, SLOT(rate_auto()));
+    connect(aog, SIGNAL(rate_bump_pwm(bool)), &rc, SLOT(rate_bump(bool)));
+    connect(aog, SIGNAL(rate_pwm_auto()), &rc, SLOT(rate_auto()));
 
     connect(aog, SIGNAL(sim_bump_speed(bool)), &sim, SLOT(speed_bump(bool)));
     connect(aog, SIGNAL(sim_zero_speed()), &sim, SLOT(speed_zero()));
@@ -834,6 +835,35 @@ void FormGPS::modules_send_252() {
     qDebug() << p_252.pgn;
     SendPgnToLoop(p_252.pgn);
 }
+void FormGPS::modules_send_PGN32500() {
+    //qDebug() << "Sending 32500 message to AgIO";
+    ModuleRateSettings.pgn[ModuleRateSettings.ID] = property_setRate_moduleID;
+    ModuleRateSettings.pgn[ModuleRateSettings.RateSetLo] = (char)rc.RateSet;
+    ModuleRateSettings.pgn[ModuleRateSettings.RateSett] = (char)((int)rc.RateSet >> 8);
+    ModuleRateSettings.pgn[ModuleRateSettings.RateSetHI] = (char)((int)rc.RateSet >> 16);
+    ModuleRateSettings.pgn[ModuleRateSettings.MeterCalLO] = (char)rc.MeterCal;
+    ModuleRateSettings.pgn[ModuleRateSettings.MeterCall] = (char)((int)rc.MeterCal >> 8);
+    ModuleRateSettings.pgn[ModuleRateSettings.MeterCalHI] = (char)((int)rc.MeterCal >> 16);
+    ModuleRateSettings.pgn[ModuleRateSettings.ControlType] = rc.ControlType;
+    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMLO] = (char)rc.ManualPWM;
+    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMHI] = (char)(rc.ManualPWM >> 8);
+}
+void FormGPS::modules_send_PGN32502() {
+    //qDebug() << "Sending 32502 message to AgIO";
+    ModulePIDdata.pgn[ModulePIDdata.ID] = property_setRate_moduleID;
+    ModulePIDdata.pgn[ModulePIDdata.KD] = property_setRate_pidKI;
+    ModulePIDdata.pgn[ModulePIDdata.KI] = property_setRate_pidKD;
+    ModulePIDdata.pgn[ModulePIDdata.KP] = property_setRate_pidKP;
+    ModulePIDdata.pgn[ModulePIDdata.MaxPWM] = property_setRate_valveMaxPWM;
+    ModulePIDdata.pgn[ModulePIDdata.MinPWM] = property_setRate_valveMinPWM;
+    ModulePIDdata.pgn[ModulePIDdata.PIDScale] = property_setRate_ratePIDscale;
+    ModulePIDdata.pgn[ModulePIDdata.MeterCal] = property_setRate_rateSensorCount;
+    ModulePIDdata.pgn[ModulePIDdata.Command] = property_setRateContType;
+
+
+    qDebug() << ModulePIDdata.pgn;
+    SendPgnToLoop(ModulePIDdata.pgn);
+}
 
 void FormGPS::headland_save() {
     //TODO make FileHeadland() a slot so we don't have to have this
@@ -1046,31 +1076,5 @@ void FormGPS::Timer1_Tick()
     }
     */
 }
-void FormGPS::rate_bump(bool up)
-{
 
-    if (up) {
-
-        if (rate_pwm_man < 110 ) rate_pwm_man += 10;
-        else rate_pwm_man = 127;
-
-    } else {
-        if (rate_pwm_man > -110) rate_pwm_man -=10;
-        else rate_pwm_man = -127;
-    }
-    qDebug() << "rate_bump";
-    qDebug() << rate_pwm_man;
-    p_239.pgn[p_239.rate_pwm] = rate_pwm_man;
-    SendPgnToLoop(p_239.pgn);
-
-}
-void FormGPS::rate_auto()
-{
-    rate_pwm_man = 0;
-    qDebug() << "Rate auto";
-    qDebug() << rate_pwm_man;
-    p_239.pgn[p_239.rate_pwm] = rate_pwm_man;
-    SendPgnToLoop(p_239.pgn);
-
-}
 

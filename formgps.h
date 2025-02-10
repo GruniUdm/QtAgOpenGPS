@@ -232,7 +232,7 @@ public:
     bool isKeyboardOn = true, isAutoStartAgIO = true, isSvennArrowOn = true;
     bool isConnectedBlockage = false; //Dim
     bool isUTurnOn = true, isLateralOn = true;
-    int8_t rate_pwm_man = 0;
+
 
     //sunrise, sunset
 
@@ -333,7 +333,7 @@ public:
     CPGN_EB p_235;
     CPGN_E5 p_229;
     PGN32502 ModulePIDdata;
-    PGN32500 Prod;
+    PGN32500 ModuleRateSettings;
 
     /* GUI synchronization lock */
     QReadWriteLock lock;
@@ -694,10 +694,10 @@ public slots:
     void modules_send_238();
 	void modules_send_251();
     void modules_send_252();
+    void modules_send_PGN32502();
+    void modules_send_PGN32500();
 
     void doBlockageMonitoring();
-    void rate_bump(bool up);
-    void rate_auto();
 
     //boundary UI for recording new boundary
     void boundary_calculate_area();

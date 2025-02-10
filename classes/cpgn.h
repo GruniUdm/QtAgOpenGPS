@@ -259,10 +259,9 @@ public:
     int MeterCalLO = 6;
     int MeterCall = 7;
     int MeterCalHI = 8;
-    int PIDScale = 9;
-    int ControlType = 10;
-    int ManualPWMLO = 11;
-    int ManualPWMHI = 12;
+    int ControlType = 9;
+    int ManualPWMLO = 10;
+    int ManualPWMHI = 11;
 
     PGN32500();
     void MakeCRC();

@@ -10,9 +10,13 @@ public:
     double width;
     //PGN32400 RateSensor;
     //PGN32500 ModuleRateSettings;
+    int ManualPWM = 0;
+    int ControlType = 0;
     uint8_t CoverageUnits = 0;
     double cUPM;
     double cQuantity;
+    double MeterCal;
+    double RateSet;
     int cPWMsetting;
     int cSensorReceiving;
     explicit ratecontrol(QObject *parent = nullptr);
@@ -63,13 +67,12 @@ private:
     uint8_t cVRID = 0;
     double cVRmax;
     double cVRmin;
-    //DateTime LastHours1;
-    //DateTime LastHours2;
-    //DateTime LastUpdateTime;
-    //PGN32502 ModulePIDdata;
     bool PauseWork = false;
     double TankSize = 0;
 signals:
+public slots:
+    void rate_auto();
+    void rate_bump(bool up);
 };
 
 #endif // RATECONTROL_H
