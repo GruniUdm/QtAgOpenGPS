@@ -30,13 +30,10 @@ void FormGPS::field_update_list() {
 }
 
 void FormGPS::field_close() {
-    lock.lockForWrite();
     FileSaveEverythingBeforeClosingField();
-    lock.unlock();
 }
 
 void FormGPS::field_open(QString field_name) {
-    lock.lockForWrite();
     FileSaveEverythingBeforeClosingField();
     if (! FileOpenField(field_name)) {
         TimedMessageBox(8000, tr("Saved field does not exist."), QString(tr("Cannot find the requested saved field.")) + " " +
@@ -44,7 +41,6 @@ void FormGPS::field_open(QString field_name) {
 
         property_setF_CurrentDir = "Default";
     }
-    lock.unlock();
 }
 
 void FormGPS::field_new(QString field_name) {

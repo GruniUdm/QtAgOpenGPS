@@ -47,7 +47,11 @@ Drawer {
                 visible: settings.setFeature_isHeadlandOn
                 onClicked: {
                     fieldToolsMenu.visible = false
-                    headlandDesigner.show()
+                    if (boundaryInterface.count > 0) {
+                        headlandDesigner.show()
+                    }else{
+                        timedMessage.addMessage(2000, qsTr("No Boundaries"), qsTr("Create A Boundary First"))
+                    }
                 }
             }
             IconButtonTextBeside{

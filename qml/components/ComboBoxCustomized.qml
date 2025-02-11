@@ -11,6 +11,7 @@ Item{
     property alias model: rootCombo.model
     property alias editable: rootCombo.editable
     property alias currentIndex: rootCombo.currentIndex
+    property alias currentText: rootCombo.currentText
 
 	signal activated()
     height: 75
@@ -25,6 +26,7 @@ Item{
         implicitWidth: 200
         implicitHeight: 50
         anchors.bottom: parent.bottom
+
         model: ListModel{
             id: rootComboModel
         }

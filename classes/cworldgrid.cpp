@@ -261,5 +261,5 @@ void CWorldGrid::destroyGLBuffers() {
     fieldShader = 0;
 
     fieldBuffer.destroy();
-    gridBuffer.destroy();
+    //gridBuffer.destroy();
 }

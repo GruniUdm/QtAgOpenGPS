@@ -12,12 +12,14 @@
 #include <QSysInfo>
 
 QLabel *grnPixelsWindow;
+QLabel *overlapPixelsWindow;
 AOGSettings *settings;
 
 #ifndef TESTING
 int main(int argc, char *argv[])
 {
     qputenv("QSG_RENDER_LOOP", "threaded");
+
     QLoggingCategory::setFilterRules(QStringLiteral("qt.scenegraph.general=true"));
     QApplication a(argc, argv);
 
@@ -51,6 +53,10 @@ int main(int argc, char *argv[])
         grnPixelsWindow->setFixedWidth(500);
         grnPixelsWindow->setFixedHeight(500);
         grnPixelsWindow->show();
+        overlapPixelsWindow = new QLabel("overlap buffer");
+        overlapPixelsWindow->setFixedWidth(500);
+        overlapPixelsWindow->setFixedHeight(500);
+        overlapPixelsWindow->show();
     }
 
 //auto start AgIO
