@@ -8,6 +8,7 @@
 #include <QColor>
 #include <QPoint>
 #include <QSize>
+#include <QRect>
 
 extern QVector<int> default_relay_pinConfig;
 extern QVector<int> default_zones;

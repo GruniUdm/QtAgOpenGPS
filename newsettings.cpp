@@ -3,7 +3,6 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QFile>
-#include <QRect>
 
 QVector<int> default_relay_pinConfig = { 1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 QVector<int> default_zones = { 2,10,20,0,0,0,0,0,0 };
