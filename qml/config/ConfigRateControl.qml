@@ -83,6 +83,7 @@ Rectangle{
         settings.setRateMode = Number(cboxRateMode.currentIndex)
 
         mandatory.visible = false
+        aog.modules_send_PGN32500();
 
     }
     Label{
@@ -440,6 +441,7 @@ Rectangle{
             text: qsTr("Send + Save")
         }
         onClicked: save_settings()
+
 
     }
 

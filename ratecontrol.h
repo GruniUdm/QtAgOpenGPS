@@ -17,6 +17,7 @@ public:
     double cQuantity;
     double MeterCal;
     double RateSet;
+    double TargetRate();
     int cPWMsetting;
     int cSensorReceiving;
     explicit ratecontrol(QObject *parent = nullptr);

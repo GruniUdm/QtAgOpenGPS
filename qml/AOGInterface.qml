@@ -235,6 +235,8 @@ Item {
     signal modules_send_238()
 	signal modules_send_251()
     signal modules_send_252()
+    signal modules_send_PGN32500()
+
 
     signal doBlockageMonitoring()
     signal rate_bump_pwm(bool up)

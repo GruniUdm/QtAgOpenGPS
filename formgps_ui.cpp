@@ -263,11 +263,12 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(aog, SIGNAL(modules_send_238()), this, SLOT(modules_send_238()));
     connect(aog, SIGNAL(modules_send_251()), this, SLOT(modules_send_251()));
     connect(aog, SIGNAL(modules_send_252()), this, SLOT(modules_send_252()));
-    connect(aog, SIGNAL(modules_send_PGN32502()), this, SLOT(modules_send_PGN32502()));
-
-    connect(aog, SIGNAL(doBlockageMonitoring()), this, SLOT(doBlockageMonitoring()));
+    // RateControl settings
+    connect(aog, SIGNAL(modules_send_PGN32500()), this, SLOT(modules_send_PGN32500()));
     connect(aog, SIGNAL(rate_bump_pwm(bool)), &rc, SLOT(rate_bump(bool)));
     connect(aog, SIGNAL(rate_pwm_auto()), &rc, SLOT(rate_auto()));
+    // Blockage monitoring
+    connect(aog, SIGNAL(doBlockageMonitoring()), this, SLOT(doBlockageMonitoring()));
 
     connect(aog, SIGNAL(sim_bump_speed(bool)), &sim, SLOT(speed_bump(bool)));
     connect(aog, SIGNAL(sim_zero_speed()), &sim, SLOT(speed_zero()));
@@ -836,7 +837,7 @@ void FormGPS::modules_send_252() {
     SendPgnToLoop(p_252.pgn);
 }
 void FormGPS::modules_send_PGN32500() {
-    //qDebug() << "Sending 32500 message to AgIO";
+    qDebug() << "Sending 32500 message to AgIO";
     ModuleRateSettings.pgn[ModuleRateSettings.ID] = property_setRate_moduleID;
     ModuleRateSettings.pgn[ModuleRateSettings.RateSetLo] = (char)rc.RateSet;
     ModuleRateSettings.pgn[ModuleRateSettings.RateSett] = (char)((int)rc.RateSet >> 8);
@@ -847,9 +848,12 @@ void FormGPS::modules_send_PGN32500() {
     ModuleRateSettings.pgn[ModuleRateSettings.ControlType] = rc.ControlType;
     ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMLO] = (char)rc.ManualPWM;
     ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMHI] = (char)(rc.ManualPWM >> 8);
+
+    qDebug() << ModuleRateSettings.pgn;
+    SendPgnToLoop(ModuleRateSettings.pgn);
 }
 void FormGPS::modules_send_PGN32502() {
-    //qDebug() << "Sending 32502 message to AgIO";
+    qDebug() << "Sending 32502 message to AgIO";
     ModulePIDdata.pgn[ModulePIDdata.ID] = property_setRate_moduleID;
     ModulePIDdata.pgn[ModulePIDdata.KD] = property_setRate_pidKI;
     ModulePIDdata.pgn[ModulePIDdata.KI] = property_setRate_pidKD;
@@ -859,7 +863,6 @@ void FormGPS::modules_send_PGN32502() {
     ModulePIDdata.pgn[ModulePIDdata.PIDScale] = property_setRate_ratePIDscale;
     ModulePIDdata.pgn[ModulePIDdata.MeterCal] = property_setRate_rateSensorCount;
     ModulePIDdata.pgn[ModulePIDdata.Command] = property_setRateContType;
-
 
     qDebug() << ModulePIDdata.pgn;
     SendPgnToLoop(ModulePIDdata.pgn);
