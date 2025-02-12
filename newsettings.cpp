@@ -41,7 +41,10 @@ void NewSettings::addKey(const QString settings_key,
     }
 
     //set the possibly changed value in both settings and the hash map
-    setValue(settings_key, settings_value);
+    settings.setValue(settings_key, settings_value);
+    QString qml_key = settings_key.split('/').join('_');
+    insert(qml_key, settings_value);
+    settings.sync();
 }
 
 void NewSettings::onValueChanged(const QString &qml_key,
@@ -62,6 +65,10 @@ void NewSettings::onValueChanged(const QString &qml_key,
 
 QVariant NewSettings::value(const QString &key)
 {
+    if (key.contains('_')) {
+        qDebug() << key;
+    }
+
     QVariant notfound("NOTFOUND"); //sentinal
     QVariant value = settings.value(key,notfound);
 

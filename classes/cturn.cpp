@@ -1,6 +1,6 @@
 #include "cboundary.h"
 #include "glm.h"
-#include "aogproperty.h"
+#include "newsettings.h"
 #include "cabline.h"
 #include "cfielddata.h"
 
@@ -116,7 +116,7 @@ void CBoundary::BuildTurnLines(CFieldData &fd)
     Vec3 point;
 
     //determine how wide a headland space
-    double totalHeadWidth = property_set_youTurnDistanceFromBoundary;
+    double totalHeadWidth = settings->value("youturn/distanceFromBoundary").value<double>();
 
     //inside boundaries
     for (int j = 0; j < bndList.count(); j++)

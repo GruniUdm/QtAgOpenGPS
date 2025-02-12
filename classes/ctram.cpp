@@ -5,7 +5,7 @@
 #include "glutils.h"
 #include "cboundary.h"
 #include "ccamera.h"
-#include "aogproperty.h"
+#include "newsettings.h"
 #include "glm.h"
 
 //TODO: move all these to own file, centralize the names we're using
@@ -23,15 +23,15 @@ CTram::CTram(QObject *parent): QObject(parent)
 
 void CTram::loadSettings()
 {
-    tramWidth = property_setTram_tramWidth;
-    halfWheelTrack = (double)property_setVehicle_trackWidth * 0.5;
-    passes = property_setTram_passes;
+    tramWidth = settings->value("tram/width").value<double>();
+    halfWheelTrack = settings->value("vehicle/trackWidth").value<double>() * 0.5;
+    passes = settings->value("tram/passes").value<int>();
 }
 
 void CTram::IsTramOuterOrInner()
 {
-    isOuter = ((int)(tramWidth / (double)property_setVehicle_toolWidth + 0.5)) % 2 == 0;
-    if ((bool)property_setTool_isTramOuterInverted) isOuter = !isOuter;
+    isOuter = ((int)(tramWidth / settings->value("vehicle/toolWidth").value<double>() + 0.5)) % 2 == 0;
+    if ((bool)settings->value("tool/isTramOuterInverted").value<bool>()) isOuter = !isOuter;
 }
 
 void CTram::DrawTram(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, CCamera &camera)
@@ -93,8 +93,8 @@ void CTram::BuildTramBnd(const CBoundary &bnd)
 
 void CTram::CreateBndInnerTramTrack(const CBoundary &bnd)
 {
-    double tramWidth = property_setTram_tramWidth;
-    double halfWheelTrack = (double)property_setVehicle_trackWidth * 0.5;
+    double tramWidth = settings->value("tram/tramWidth").value<double>();
+    double halfWheelTrack = settings->value("vehicle/trackWidth").value<double>() * 0.5;
 
     int ptCount = bnd.bndList[0].fenceLine.count();
     tramBndInnerArr.clear();
@@ -143,8 +143,8 @@ void CTram::CreateBndInnerTramTrack(const CBoundary &bnd)
 
 void CTram::CreateBndOuterTramTrack(const CBoundary &bnd)
 {
-    double tramWidth = property_setTram_tramWidth;
-    double halfWheelTrack = (double)property_setVehicle_trackWidth * 0.5;
+    double tramWidth = settings->value("tram/tramWidth").value<double>();
+    double halfWheelTrack = settings->value("vehicle/trackWidth").value<double>() * 0.5;
 
     //count the points from the boundary
     int ptCount = bnd.bndList[0].fenceLine.count();

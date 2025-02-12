@@ -51,7 +51,7 @@ void FormGPS::setupGui()
     rootContext()->setContextProperty("tram", &tram);
     qmlRegisterSingletonInstance("Interfaces", 1, 0, "TracksInterface", &trk);
     qmlRegisterSingletonInstance("Interfaces", 1, 0, "VehicleInterface", &vehicle);
-    qmlRegisterSingletonInstance("AOG", 1, 0, "Settnigs", settings);
+    qmlRegisterSingletonInstance("Settings", 1, 0, "Settings", settings);
 
 #ifdef LOCAL_QML
     // Look for QML files relative to our current directory

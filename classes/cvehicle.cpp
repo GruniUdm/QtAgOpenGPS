@@ -3,7 +3,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QRgb>
-#include "aogproperty.h"
+#include "newsettings.h"
 #include "ccamera.h"
 #include "cboundary.h"
 #include "ctool.h"
@@ -47,50 +47,46 @@ QRect find_bounding_box(int viewport_height, QVector3D p1, QVector3D p2, QVector
 
 void CVehicle::loadSettings()
 {
-    isPivotBehindAntenna = property_setVehicle_isPivotBehindAntenna;
-    antennaHeight = property_setVehicle_antennaHeight;
-    antennaPivot = property_setVehicle_antennaPivot;
-    antennaOffset = property_setVehicle_antennaOffset;
+    vehicleType = settings->value("vehicle/vehicleType").value<int>();
 
-    wheelbase = property_setVehicle_wheelbase;
-    isSteerAxleAhead = property_setVehicle_isSteerAxleAhead;
+    isPivotBehindAntenna = settings->value("vehicle/isPivotBehindAntenna").value<bool>();
+    isSteerAxleAhead = settings->value("vehicle/isSteerAxleAhead").value<bool>();
 
-    slowSpeedCutoff = property_setVehicle_slowSpeedCutoff;
+    antennaHeight = settings->value("vehicle/antennaHeight").value<double>();
+    antennaPivot = settings->value("vehicle/antennaPivot").value<double>();
+    antennaOffset = settings->value("vehicle/antennaOffset").value<double>();
 
-    goalPointLookAhead = property_setVehicle_goalPointLookAhead;
-    goalPointLookAheadHold = property_setVehicle_goalPointLookAheadHold;
-    goalPointLookAheadMult = property_setVehicle_goalPointLookAheadMult;
+    trackWidth = settings->value("vehicle/trackWidth").value<double>();
+    wheelbase = settings->value("vehicle/wheelbase").value<double>();
 
-    stanleyDistanceErrorGain = property_stanleyDistanceErrorGain;
-    stanleyHeadingErrorGain = property_stanleyHeadingErrorGain;
+    maxAngularVelocity = settings->value("vehicle/maxAngularVelocity").value<double>();
+    maxSteerAngle = settings->value("vehicle/maxSteerAngle").value<double>();
+    slowSpeedCutoff = settings->value("vehicle/slowSpeedCutoff").value<double>();
+    panicStopSpeed = settings->value("vehicle/panicStopSpeed").value<double>();
 
-    maxAngularVelocity = property_setVehicle_maxAngularVelocity;
-    maxSteerAngle = property_setVehicle_maxSteerAngle;
+    hydLiftLookAheadTime = settings->value("vehicle/hydraulicLiftLookAhead").value<double>();
 
+    goalPointLookAhead = settings->value("vehicle/goalPointLookAhead").value<double>();
+    goalPointLookAheadHold = settings->value("vehicle/goalPointLookAheadHold").value<double>();
+    goalPointLookAheadMult = settings->value("vehicle/goalPointLookAheadMult").value<double>();
 
-    trackWidth = property_setVehicle_trackWidth;
-
-    stanleyIntegralGainAB = property_stanleyIntegralGainAB;
-    stanleyIntegralDistanceAwayTriggerAB = property_stanleyIntegralDistanceAwayTriggerAB;
-
-    purePursuitIntegralGain = property_purePursuitIntegralGainAB;
-    vehicleType = property_setVehicle_vehicleType;
-
-    hydLiftLookAheadTime = property_setVehicle_hydraulicLiftLookAhead;
-    panicStopSpeed = property_setVehicle_panicStopSpeed;
-
+    stanleyDistanceErrorGain = settings->value("vehicle/stanleyDistanceErrorGain").value<double>();
+    stanleyHeadingErrorGain = settings->value("vehicle/stanleyHeadingErrorGain").value<double>();
+    stanleyIntegralGainAB = settings->value("vehicle/stanleyIntegralGainAB").value<double>();
+    stanleyIntegralDistanceAwayTriggerAB = settings->value("vehicle/stanleyIntegralDistanceAwayTriggerAB").value<double>();
+    purePursuitIntegralGain = settings->value("vehicle/purePursuitIntegralGainAB").value<double>();
 
     //how far from line before it becomes Hold
-    modeXTE = property_setAS_ModeXTE;
+    modeXTE = settings->value("as/modeXTE").value<double>();
 
     //how long before hold is activated
-    modeTime = property_setAS_ModeTime;
+    modeTime = settings->value("as/modeTime").value<int>();
 
-    functionSpeedLimit = property_setAS_functionSpeedLimit;
-    maxSteerSpeed = property_setAS_maxSteerSpeed;
-    minSteerSpeed = property_setAS_minSteerSpeed;
+    functionSpeedLimit = settings->value("as/functionSpeedLimit").value<double>();
+    maxSteerSpeed = settings->value("as/maxSteerSpeed").value<double>();
+    minSteerSpeed = settings->value("as/minSteerSpeed").value<double>();
 
-    uturnCompensation = property_setAS_uTurnCompensation;
+    uturnCompensation = settings->value("as/uTurnCompensation").value<double>();
 }
 
 CVehicle::CVehicle(QObject *parent) : QObject(parent)
@@ -144,6 +140,10 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
                            CBoundary &bnd
                            )
 {
+    bool display_isVehicleImage = settings->value("display/isVehicleImage").value<bool>();
+    bool display_isSvennArrowOn = settings->value("display/isSvennArrowOn").value<bool>();
+    float display_lineWidth = settings->value("display/lineWidth").value<float>();
+
     //draw vehicle
     modelview.rotate(glm::toDegrees(-fixHeading), 0.0, 0.0, 1.0);
 
@@ -221,8 +221,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     }
 
     //3 vehicle types  tractor=0 harvestor=1 4wd=2
-    if (
-        property_setDisplay_isVehicleImage)
+    if (display_isVehicleImage)
     {
         s = QVector3D(0,0,0); //should be pivot axle
         p1 = s.project(modelview, projection, viewport);
@@ -510,7 +509,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
 
     //Svenn Arrow
 
-    if (property_setDisplay_isSvennArrowOn && camera.camSetDistance > -1000)
+    if (display_isSvennArrowOn && camera.camSetDistance > -1000)
     {
         //double offs = mf.curve.distanceFromCurrentLinePivot * 0.3;
         double svennDist = camera.camSetDistance * -0.07;
@@ -522,7 +521,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
         gldraw.append(QVector3D(0, wheelbase + svennWidth + 0.5 + svennDist, 0.0));
         gldraw.append(QVector3D(-svennWidth, wheelbase + svennDist, 0.0));
 
-        gldraw.draw(gl,mvp,color,GL_LINE_STRIP,property_setDisplay_lineWidth);
+        gldraw.draw(gl,mvp,color,GL_LINE_STRIP,display_lineWidth);
     }
 
     /*

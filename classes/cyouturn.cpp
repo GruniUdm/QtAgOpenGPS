@@ -2,7 +2,7 @@
 #include <math.h>
 #include <QFile>
 #include "cyouturn.h"
-#include "aogproperty.h"
+#include "newsettings.h"
 #include "cabline.h"
 #include "cvehicle.h"
 #include "cnmea.h"
@@ -22,19 +22,19 @@ CYouTurn::CYouTurn(QObject *parent) : QObject(parent)
 
 void CYouTurn::loadSettings()
 {
-    uturnDistanceFromBoundary = property_set_youTurnDistanceFromBoundary;
+    uturnDistanceFromBoundary = settings->value("youturn/distanceFromBoundary").value<double>();
 
     //how far before or after boundary line should turn happen
-    youTurnStartOffset = property_set_youTurnExtensionLength;
+    youTurnStartOffset = settings->value("youturn/extensionLength").value<double>();
 
-    rowSkipsWidth = property_set_youSkipWidth;
+    rowSkipsWidth = settings->value("youturn/skipWidth").value<int>();
     Set_Alternate_skips();
 
-    youTurnRadius = property_set_youTurnRadius;
+    youTurnRadius = settings->value("youturn/radius").value<double>();
 
-    uTurnStyle = property_set_uTurnStyle;
+    uTurnStyle = settings->value("youturn/style").value<int>();
 
-    uTurnSmoothing = property_setAS_uTurnSmoothing;
+    uTurnSmoothing = settings->value("as/uTurnSmoothing").value<int>();
 
 }
 
@@ -46,9 +46,9 @@ bool CYouTurn::BuildCurveDubinsYouTurn(bool isTurnLeft, Vec3 pivotPos,
                                        int secondsSinceStart
                                        )
 {
-    double tool_toolWidth = property_setVehicle_toolWidth;
-    double tool_toolOverlap = property_setVehicle_toolOverlap;
-    double tool_toolOffset = property_setVehicle_toolOffset;
+    double tool_toolWidth = settings->value("vehicle/toolWidth").value<double>();
+    double tool_toolOffset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_toolOverlap = settings->value("vehicle/toolOverlap").value<double>();
 
     //TODO: is calculated many taimes after the priveous turn is complete
     //grab the vehicle widths and offsets
@@ -84,9 +84,9 @@ bool CYouTurn::BuildABLineDubinsYouTurn(bool isTurnLeft,
                                         CTrack &trk,
                                         int secondsSinceStart)
 {
-    double tool_toolWidth = property_setVehicle_toolWidth;
-    double tool_toolOverlap = property_setVehicle_toolOverlap;
-    double tool_toolOffset = property_setVehicle_toolOffset;
+    double tool_toolWidth = settings->value("vehicle/toolWidth").value<double>();
+    double tool_toolOffset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_toolOverlap = settings->value("vehicle/toolOverlap").value<double>();
 
     if (!(bool)isBtnAutoSteerOn) trk.ABLine.isHeadingSameWay
             = M_PI - fabs(fabs(vehicle.fixHeading - trk.ABLine.abHeading) - M_PI) < glm::PIBy2;
@@ -126,9 +126,9 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
                                     int secondsSinceStart
                                     )
 {
-    double tool_toolWidth = property_setVehicle_toolWidth;
-    double tool_toolOverlap = property_setVehicle_toolOverlap;
-    double tool_toolOffset = property_setVehicle_toolOffset;
+    double tool_toolWidth = settings->value("vehicle/toolWidth").value<double>();
+    double tool_toolOffset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_toolOverlap = settings->value("vehicle/toolOverlap").value<double>();
 
     //keep from making turns constantly - wait 1.5 seconds
     if (makeUTurnCounter < 4)
@@ -359,9 +359,9 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
                                    int secondsSinceStart
                                    )
 {
-    double tool_toolWidth = property_setVehicle_toolWidth;
-    double tool_toolOverlap = property_setVehicle_toolOverlap;
-    double tool_toolOffset = property_setVehicle_toolOffset;
+    double tool_toolWidth = settings->value("vehicle/toolWidth").value<double>();
+    double tool_toolOffset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_toolOverlap = settings->value("vehicle/toolOverlap").value<double>();
 
     CABCurve nextCurve;
 
@@ -750,9 +750,9 @@ bool CYouTurn::CreateABOmegaTurn(bool isTurnLeft,
                                  const CBoundary &bnd,
                                  const CTrack &trk)
 {
-    double tool_toolWidth = property_setVehicle_toolWidth;
-    double tool_toolOverlap = property_setVehicle_toolOverlap;
-    double tool_toolOffset = property_setVehicle_toolOffset;
+    double tool_toolWidth = settings->value("vehicle/toolWidth").value<double>();
+    double tool_toolOffset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_toolOverlap = settings->value("vehicle/toolOverlap").value<double>();
 
     //keep from making turns constantly - wait 1.5 seconds
     if (makeUTurnCounter < 4)
@@ -876,9 +876,9 @@ bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
                                 CTrack &trk,
                                 int secondsSinceStart)
 {
-    double tool_width = property_setVehicle_toolWidth;
-    double tool_overlap = property_setVehicle_toolOverlap;
-    double tool_offset = property_setVehicle_toolOffset;
+    double tool_width = settings->value("vehicle/toolWidth").value<double>();
+    double tool_offset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_overlap = settings->value("vehicle/toolOverlap").value<double>();
 
     //keep from making turns constantly - wait 1.5 seconds
     if (makeUTurnCounter < 4)
@@ -1197,9 +1197,9 @@ bool CYouTurn::KStyleTurnCurve(bool isTurnLeft,
                                const CTrack &track,
                                const CBoundary &bnd)
 {
-    double tool_width = property_setVehicle_toolWidth;
-    double tool_overlap = property_setVehicle_toolOverlap;
-    double tool_offset = property_setVehicle_toolOffset;
+    double tool_width = settings->value("vehicle/toolWidth").value<double>();
+    double tool_offset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_overlap = settings->value("vehicle/toolOverlap").value<double>();
 
     //grab the vehicle widths and offsets
     double turnOffset = (tool_width - tool_overlap) * rowSkipsWidth + (isYouTurnRight ? -tool_offset * 2.0 : tool_offset * 2.0);
@@ -1416,9 +1416,9 @@ bool CYouTurn::KStyleTurnAB(bool isTurnLeft,
                             const CABLine &ABLine,
                             const CBoundary &bnd)
 {
-    double tool_width = property_setVehicle_toolWidth;
-    double tool_overlap = property_setVehicle_toolOverlap;
-    double tool_offset = property_setVehicle_toolOffset;
+    double tool_width = settings->value("vehicle/toolWidth").value<double>();
+    double tool_offset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_overlap = settings->value("vehicle/toolOverlap").value<double>();
 
     double pointSpacing = youTurnRadius * 0.1;
 
@@ -2576,8 +2576,9 @@ void CYouTurn::BuildManualYouLateral(bool isTurnRight,
                                      CTrack &trk
                                      )
 {
-    double tool_toolWidth = property_setVehicle_toolWidth;
-    double tool_toolOverlap = property_setVehicle_toolOverlap;
+    double tool_toolWidth = settings->value("vehicle/toolWidth").value<double>();
+    double tool_toolOffset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_toolOverlap = settings->value("vehicle/toolOverlap").value<double>();
 
     double head;
     //point on AB line closest to pivot axle point from ABLine PurePursuit
@@ -2631,10 +2632,10 @@ void CYouTurn::BuildManualYouTurn(bool isTurnRight,
                                   CVehicle &vehicle,
                                   CTrack &trk)
 {
-    double minTurningRadius = property_setVehicle_minTurningRadius;
-    double tool_toolWidth = property_setVehicle_toolWidth;
-    double tool_toolOverlap = property_setVehicle_toolOverlap;
-    double tool_toolOffset = property_setVehicle_toolOffset;
+    double minTurningRadius = settings->value("vehicle/minTurningRadius").value<double>();
+    double tool_toolWidth = settings->value("vehicle/toolWidth").value<double>();
+    double tool_toolOffset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_toolOverlap = settings->value("vehicle/toolOverlap").value<double>();
 
     isYouTurnTriggered = true;
 
@@ -2714,8 +2715,13 @@ void CYouTurn::BuildManualYouTurn(bool isTurnRight,
 bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
                                        CNMEA &pn)
 {
-    double maxSteerAngle = property_setVehicle_maxSteerAngle;
-    double wheelbase = property_setVehicle_wheelbase;
+    double maxSteerAngle = settings->value("vehicle/maxSteerAngle").value<double>();
+    double wheelbase = settings->value("vehicle/wheelbase").value<double>();
+    bool vehicle_isStanleyUsed = settings->value("vehicle/isStanleyUsed").value<bool>();
+
+    double vehicle_stanleyDistanceErrorGain = settings->value("vehicle/stanleyDistanceErrorGain").value<double>();
+    double vehicle_stanleyHeadingErrorGain = settings->value("vehicle/stanleyHeadingErrorGain").value<double>();
+
 
     //grab a copy from main - the steer position
     double minDistA = 1000000, minDistB = 1000000;
@@ -2723,7 +2729,7 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
 
     if (ptCount > 0)
     {
-        if (property_setVehicle_isStanleyUsed)
+        if (vehicle_isStanleyUsed)
         {
             pivot = vehicle.steerAxlePos;
 
@@ -2811,12 +2817,12 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
 
             if(vehicle.isReverse) abFixHeadingDelta *= -1;
             //normally set to 1, less then unity gives less heading error.
-            abFixHeadingDelta *= (double)(property_stanleyDistanceErrorGain);
+            abFixHeadingDelta *= vehicle_stanleyDistanceErrorGain;
             if (abFixHeadingDelta > 0.74) abFixHeadingDelta = 0.74;
             if (abFixHeadingDelta < -0.74) abFixHeadingDelta = -0.74;
 
             //the non linear distance error part of stanley
-            steerAngleYT = atan((distanceFromCurrentLine * (double)property_stanleyDistanceErrorGain) / ((pn.speed * 0.277777) + 1));
+            steerAngleYT = atan((distanceFromCurrentLine * vehicle_stanleyDistanceErrorGain) / ((pn.speed * 0.277777) + 1));
 
             //clamp it to max 42 degrees
             if (steerAngleYT > 0.74) steerAngleYT = 0.74;
@@ -2974,6 +2980,7 @@ void CYouTurn::DrawYouTurn(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
 {
     GLHelperOneColor gldraw;
     QColor color;
+    float display_lineWidth = settings->value("display/lineWidth").value<float>();
 
     int ptCount = ytList.size();
     if (ptCount < 3) return;
@@ -2991,5 +2998,5 @@ void CYouTurn::DrawYouTurn(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
     }
 
     gldraw.draw(gl, mvp, color,
-                GL_POINTS, property_setDisplay_lineWidth);
+                GL_POINTS, display_lineWidth);
 }

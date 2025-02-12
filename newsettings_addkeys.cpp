@@ -151,7 +151,7 @@ void NewSettings::setupKeys() {
     addKey("gps/forwardComp", 0.15);
     addKey("gps/headingFromWhichSource", "Fix");
     addKey("gps/isRTK", false);
-    addKey("gps/isRTK_KillAutoSteer", false);
+    addKey("gps/isRTKKillAutoSteer", false);
     addKey("gps/jumpFixAlarmDispance", 0);
     addKey("gps/minimumStepLimit", 0.05);
     addKey("gps/reverseComp", 0.3);
@@ -246,7 +246,7 @@ void NewSettings::setupKeys() {
     addKey("vehicle/hydraulicLiftLookAhead", 2);
     addKey("vehicle/isMachineControlToAutoSteer", false);
     addKey("vehicle/isPivotBehindAntenna", true);
-    addKey("vehicle/isStanlyUsed", false);
+    addKey("vehicle/isStanleyUsed", false);
     addKey("vehicle/isSteerAxleAhead", true);
     addKey("vehicle/lookAheadMinimum", 2);
     addKey("vehicle/maxAngularVelocity", 0.64);
@@ -263,7 +263,7 @@ void NewSettings::setupKeys() {
     addKey("vehicle/stanleyIntegralGainAB", 0);
     addKey("vehicle/tankTrailingHitchLength", -3);
     addKey("vehicle/toolLookAheadOff", 0.5);
-    addKey("vehicle/toollookAheadOn", 1);
+    addKey("vehicle/toolLookAheadOn", 1);
     addKey("vehicle/toolOffDelay", 0);
     addKey("vehicle/toolOffset", 0);
     addKey("vehicle/toolOverlap", 0);

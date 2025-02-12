@@ -1,7 +1,7 @@
 #include "ctool.h"
 #include "cvehicle.h"
 #include "glm.h"
-#include "aogproperty.h"
+#include "newsettings.h"
 #include "glutils.h"
 #include "ccamera.h"
 #include "ctram.h"
@@ -9,64 +9,64 @@
 void CTool::loadSettings()
 {
     //from settings grab the vehicle specifics
-    trailingToolToPivotLength = property_setTool_trailingToolToPivotLength;
+    trailingToolToPivotLength = settings->value("tool/trailingToolToPivotLength").value<double>();
 
-    width = property_setVehicle_toolWidth;
-    overlap = property_setVehicle_toolOverlap;
+    width = settings->value("vehicle/toolWidth").value<double>();
+    overlap = settings->value("vehicle/toolOverlap").value<double>();
 
-    offset = property_setVehicle_toolOffset;
+    offset = settings->value("vehicle/toolOffset").value<double>();
 
-    trailingHitchLength = property_setTool_toolTrailingHitchLength;
-    tankTrailingHitchLength = property_setVehicle_tankTrailingHitchLength;
-    hitchLength = property_setVehicle_hitchLength;
+    trailingHitchLength = settings->value("tool/toolTrailingHitchLength").value<double>();
+    tankTrailingHitchLength = settings->value("vehicle/tankTrailingHitchLength").value<double>();
+    hitchLength = settings->value("vehicle/hitchLength").value<double>();
 
-    isToolRearFixed = property_setTool_isToolRearFixed;
-    isToolTrailing = property_setTool_isToolTrailing;
-    isToolTBT = property_setTool_isToolTBT;
-    isToolFrontFixed = property_setTool_isToolFront;
+    isToolRearFixed = settings->value("tool/isToolRearFixed").value<bool>();
+    isToolTrailing = settings->value("tool/isToolTrailing").value<bool>();
+    isToolTBT = settings->value("tool/isTBT").value<bool>();
+    isToolFrontFixed = settings->value("tool/isToolFront").value<bool>();
 
-    lookAheadOnSetting = property_setVehicle_toolLookAheadOn;
-    lookAheadOffSetting = property_setVehicle_toolLookAheadOff;
-    turnOffDelay = property_setVehicle_toolOffDelay;
+    lookAheadOnSetting = settings->value("vehicle/toolLookAheadOn").value<double>();
+    lookAheadOffSetting = settings->value("vehicle/toolLookAheadOff").value<double>();
+    turnOffDelay = settings->value("vehicle/toolOffDelay").value<double>();
 
-    isSectionOffWhenOut = property_setTool_isSectionOffWhenOut;
+    isSectionOffWhenOut = settings->value("tool/isSectionOffWhenOut").value<bool>();
 
-    isSectionsNotZones = property_setTool_isSectionsNotZones;
+    isSectionsNotZones = settings->value("tool/isSectionsNotZones").value<bool>();
 
     if (isSectionsNotZones)
-        numOfSections = property_setVehicle_numSections;
+        numOfSections = settings->value("vehicle/numSections").value<int>();
     else
-        numOfSections = property_setTool_numSectionsMulti;
+        numOfSections = settings->value("tool/numSectionsMulti").value<int>();
 
-    minCoverage = property_setVehicle_minCoverage;
-    isMultiColoredSections = property_setColor_isMultiColorSections;
+    minCoverage = settings->value("vehicle/minCoverage").value<double>();
+    isMultiColoredSections = settings->value("color/isMultiColorSections").value<bool>();
 
-    secColors[0] = property_setColor_sec01;
-    secColors[1] = property_setColor_sec02;
-    secColors[2] = property_setColor_sec03;
-    secColors[3] = property_setColor_sec04;
-    secColors[4] = property_setColor_sec05;
-    secColors[5] = property_setColor_sec06;
-    secColors[6] = property_setColor_sec07;
-    secColors[7] = property_setColor_sec08;
-    secColors[8] = property_setColor_sec09;
-    secColors[9] = property_setColor_sec10;
-    secColors[10] = property_setColor_sec11;
-    secColors[11] = property_setColor_sec12;
-    secColors[12] = property_setColor_sec13;
-    secColors[13] = property_setColor_sec14;
-    secColors[14] = property_setColor_sec15;
-    secColors[15] = property_setColor_sec16;
+    secColors[0] = settings->value("color/sec01").value<QColor>();
+    secColors[1] = settings->value("color/sec02").value<QColor>();
+    secColors[2] = settings->value("color/sec03").value<QColor>();
+    secColors[3] = settings->value("color/sec04").value<QColor>();
+    secColors[4] = settings->value("color/sec05").value<QColor>();
+    secColors[5] = settings->value("color/sec06").value<QColor>();
+    secColors[6] = settings->value("color/sec07").value<QColor>();
+    secColors[7] = settings->value("color/sec08").value<QColor>();
+    secColors[8] = settings->value("color/sec09").value<QColor>();
+    secColors[9] = settings->value("color/sec10").value<QColor>();
+    secColors[10] = settings->value("color/sec11").value<QColor>();
+    secColors[11] = settings->value("color/sec12").value<QColor>();
+    secColors[12] = settings->value("color/sec13").value<QColor>();
+    secColors[13] = settings->value("color/sec14").value<QColor>();
+    secColors[14] = settings->value("color/sec15").value<QColor>();
+    secColors[15] = settings->value("color/sec16").value<QColor>();
 
     for (int c=0 ; c < 16; c++) {
         //check setColor[C] to make sure there's nothing over 254
     }
 
-    zoneRanges = property_setTool_zones;
+    zoneRanges = toVector<int>(settings->value("tool/zones"));
     zones = zoneRanges[0];
     //zoneRanges.removeAt(0); //remove first element since it was a count
 
-    isDisplayTramControl = property_setTool_isDisplayTramControl;
+    isDisplayTramControl = settings->value("tool/isDisplayTramControl").value<bool>();
 
 }
 
@@ -80,8 +80,8 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 pro
                      bool isJobStarted,
                      CVehicle &v, CCamera &camera, CTram &tram)
 {
-    double tram_halfWheelTrack = (double)property_setVehicle_trackWidth * 0.5;
-
+    double tram_halfWheelTrack = settings->value("vehicle/trackWidth").value<double>() * 0.5;
+    bool tool_isDisplayTramControl = settings->value("tool/isDisplayTramControl").value<bool>();
     //translate and rotate at pivot axle, caller's mvp will be changed
     //all subsequent draws will be based on this point
     modelview.translate(v.pivotAxlePos.easting, v.pivotAxlePos.northing, 0);
@@ -251,7 +251,7 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 pro
     float pointSize;
 
     //tram Dots
-    if (property_setTool_isDisplayTramControl && tram.displayMode != 0)
+    if ( tool_isDisplayTramControl && tram.displayMode != 0)
     {
         if (camera.camSetDistance > -300)
         {
@@ -298,7 +298,6 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 pro
     }
 }
 
-//function to calculate the width of each section and update
 void CTool::sectionCalcWidths()
 {
     if (isSectionsNotZones)
@@ -312,7 +311,7 @@ void CTool::sectionCalcWidths()
 
         //calculate tool width based on extreme right and left values
         double width = fabs(section[0].positionLeft) + fabs(section[numOfSections - 1].positionRight);
-        property_setVehicle_toolWidth = width; //save it in settings
+        settings->setValue("vehicle/toolWidth", width);
 
         //left and right tool position
         farLeftPosition = section[0].positionLeft;
@@ -328,8 +327,8 @@ void CTool::sectionCalcWidths()
 void CTool::sectionCalcMulti()
 {
     double leftside = width / -2.0;
-    double defaultSectionWidth = property_setTool_sectionWidthMulti;
-    double offset = property_setVehicle_toolOffset;
+    double defaultSectionWidth = settings->value("tool/sectionWidthMulti").value<double>();
+    double offset = settings->value("vehicle/toolOffset").value<double>();
     section[0].positionLeft = leftside+offset;
 
     for (int i = 0; i < numOfSections - 1; i++)
@@ -351,8 +350,7 @@ void CTool::sectionCalcMulti()
 
     //calculate tool width based on extreme right and left values
     width = (section[numOfSections - 1].positionRight) - (section[0].positionLeft);
-    property_setVehicle_toolWidth = width; //save it in settings
-
+    settings->setValue("vehicle/toolWidth", width);
 
     //left and right tool position
     farLeftPosition = section[0].positionLeft;
@@ -367,51 +365,70 @@ void CTool::sectionCalcMulti()
 
 void CTool::sectionSetPositions()
 {
-    section[0].positionLeft = (double)property_setSection_position1 + (double)property_setVehicle_toolOffset;
-    section[0].positionRight = (double)property_setSection_position2 + (double)property_setVehicle_toolOffset;
+    double vehicle_toolOffset = settings->value("vehicle/toolOffset").value<double>();
+    double section_position1 = settings->value("section/position1").value<double>();
+    double section_position2 = settings->value("section/position2").value<double>();
+    double section_position3 = settings->value("section/position3").value<double>();
+    double section_position4 = settings->value("section/position4").value<double>();
+    double section_position5 = settings->value("section/position5").value<double>();
+    double section_position6 = settings->value("section/position6").value<double>();
+    double section_position7 = settings->value("section/position7").value<double>();
+    double section_position8 = settings->value("section/position8").value<double>();
+    double section_position9 = settings->value("section/position9").value<double>();
+    double section_position10 = settings->value("section/position10").value<double>();
+    double section_position11 = settings->value("section/position11").value<double>();
+    double section_position12 = settings->value("section/position12").value<double>();
+    double section_position13 = settings->value("section/position13").value<double>();
+    double section_position14 = settings->value("section/position14").value<double>();
+    double section_position15 = settings->value("section/position15").value<double>();
+    double section_position16 = settings->value("section/position16").value<double>();
+    double section_position17 = settings->value("section/position17").value<double>();
 
-    section[1].positionLeft = (double)property_setSection_position2 + (double)property_setVehicle_toolOffset;
-    section[1].positionRight = (double)property_setSection_position3 + (double)property_setVehicle_toolOffset;
+    section[0].positionLeft = section_position1 + vehicle_toolOffset;
+    section[0].positionRight = section_position2 + vehicle_toolOffset;
 
-    section[2].positionLeft = (double)property_setSection_position3 + (double)property_setVehicle_toolOffset;
-    section[2].positionRight = (double)property_setSection_position4 + (double)property_setVehicle_toolOffset;
+    section[1].positionLeft = section_position2 + vehicle_toolOffset;
+    section[1].positionRight = section_position3 + vehicle_toolOffset;
 
-    section[3].positionLeft = (double)property_setSection_position4 + (double)property_setVehicle_toolOffset;
-    section[3].positionRight = (double)property_setSection_position5 + (double)property_setVehicle_toolOffset;
+    section[2].positionLeft = section_position3 + vehicle_toolOffset;
+    section[2].positionRight = section_position4 + vehicle_toolOffset;
 
-    section[4].positionLeft = (double)property_setSection_position5 + (double)property_setVehicle_toolOffset;
-    section[4].positionRight = (double)property_setSection_position6 + (double)property_setVehicle_toolOffset;
+    section[3].positionLeft = section_position4 + vehicle_toolOffset;
+    section[3].positionRight = section_position5 + vehicle_toolOffset;
 
-    section[5].positionLeft = (double)property_setSection_position6 + (double)property_setVehicle_toolOffset;
-    section[5].positionRight = (double)property_setSection_position7 + (double)property_setVehicle_toolOffset;
+    section[4].positionLeft = section_position5 + vehicle_toolOffset;
+    section[4].positionRight = section_position6 + vehicle_toolOffset;
 
-    section[6].positionLeft = (double)property_setSection_position7 + (double)property_setVehicle_toolOffset;
-    section[6].positionRight = (double)property_setSection_position8 + (double)property_setVehicle_toolOffset;
+    section[5].positionLeft = section_position6 + vehicle_toolOffset;
+    section[5].positionRight = section_position7 + vehicle_toolOffset;
 
-    section[7].positionLeft = (double)property_setSection_position8 + (double)property_setVehicle_toolOffset;
-    section[7].positionRight = (double)property_setSection_position9 + (double)property_setVehicle_toolOffset;
+    section[6].positionLeft = section_position7 + vehicle_toolOffset;
+    section[6].positionRight = section_position8 + vehicle_toolOffset;
 
-    section[8].positionLeft = (double)property_setSection_position9 + (double)property_setVehicle_toolOffset;
-    section[8].positionRight = (double)property_setSection_position10 + (double)property_setVehicle_toolOffset;
+    section[7].positionLeft = section_position8 + vehicle_toolOffset;
+    section[7].positionRight = section_position9 + vehicle_toolOffset;
 
-    section[9].positionLeft = (double)property_setSection_position10 + (double)property_setVehicle_toolOffset;
-    section[9].positionRight = (double)property_setSection_position11 + (double)property_setVehicle_toolOffset;
+    section[8].positionLeft = section_position9 + vehicle_toolOffset;
+    section[8].positionRight = section_position10 + vehicle_toolOffset;
 
-    section[10].positionLeft = (double)property_setSection_position11 + (double)property_setVehicle_toolOffset;
-    section[10].positionRight = (double)property_setSection_position12 + (double)property_setVehicle_toolOffset;
+    section[9].positionLeft = section_position10 + vehicle_toolOffset;
+    section[9].positionRight = section_position11 + vehicle_toolOffset;
 
-    section[11].positionLeft = (double)property_setSection_position12 + (double)property_setVehicle_toolOffset;
-    section[11].positionRight = (double)property_setSection_position13 + (double)property_setVehicle_toolOffset;
+    section[10].positionLeft = section_position11 + vehicle_toolOffset;
+    section[10].positionRight = section_position12 + vehicle_toolOffset;
 
-    section[12].positionLeft = (double)property_setSection_position13 + (double)property_setVehicle_toolOffset;
-    section[12].positionRight = (double)property_setSection_position14 + (double)property_setVehicle_toolOffset;
+    section[11].positionLeft = section_position12 + vehicle_toolOffset;
+    section[11].positionRight = section_position13 + vehicle_toolOffset;
 
-    section[13].positionLeft = (double)property_setSection_position14 + (double)property_setVehicle_toolOffset;
-    section[13].positionRight = (double)property_setSection_position15 + (double)property_setVehicle_toolOffset;
+    section[12].positionLeft = section_position13 + vehicle_toolOffset;
+    section[12].positionRight = section_position14 + vehicle_toolOffset;
 
-    section[14].positionLeft = (double)property_setSection_position15 + (double)property_setVehicle_toolOffset;
-    section[14].positionRight = (double)property_setSection_position16 + (double)property_setVehicle_toolOffset;
+    section[13].positionLeft = section_position14 + vehicle_toolOffset;
+    section[13].positionRight = section_position15 + vehicle_toolOffset;
 
-    section[15].positionLeft = (double)property_setSection_position16 + (double)property_setVehicle_toolOffset;
-    section[15].positionRight = (double)property_setSection_position17 + (double)property_setVehicle_toolOffset;
+    section[14].positionLeft = section_position15 + vehicle_toolOffset;
+    section[14].positionRight = section_position16 + vehicle_toolOffset;
+
+    section[15].positionLeft = section_position16 + vehicle_toolOffset;
+    section[15].positionRight = section_position17 + vehicle_toolOffset;
 }
