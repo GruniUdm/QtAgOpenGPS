@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import Settings
 import Interfaces
 //import QtQuick.Extras 1.4
 
@@ -38,14 +39,14 @@ Item {
             anchors.topMargin: 130 * theme.scaleHeight
             spacing: 15 * theme.scaleHeight
             TextLine{ text: qsTr("Units: ")+ (utils.isMetric() ? "Metric" : "Imperial")}
-            TextLine{ text: qsTr("Width: ")+ utils.m_to_ft_string(settings.setVehicle_toolWidth)}
-            TextLine{ text: qsTr("Sections: ")+ settings.setVehicle_numSections}
-            TextLine{ text: qsTr("Offset: ")+  utils.cm_to_unit_string(settings.setVehicle_toolOffset, 0)+ " "+ utils.cm_unit_abbrev()}
-            TextLine{ text: qsTr("Overlap: ")+  utils.cm_to_unit_string(settings.setVehicle_toolOverlap, 0)+ " "+ utils.cm_unit_abbrev()}
-            TextLine{ text: qsTr("LookAhead: ")+ settings.setVehicle_toolLookAheadOn}
+            TextLine{ text: qsTr("Width: ")+ utils.m_to_ft_string(Settings.vehicle_toolWidth)}
+            TextLine{ text: qsTr("Sections: ")+ Settings.vehicle_numSections}
+            TextLine{ text: qsTr("Offset: ")+  utils.cm_to_unit_string(Settings.vehicle_toolOffset, 0)+ " "+ utils.cm_unit_abbrev()}
+            TextLine{ text: qsTr("Overlap: ")+  utils.cm_to_unit_string(Settings.vehicle_toolOverlap, 0)+ " "+ utils.cm_unit_abbrev()}
+            TextLine{ text: qsTr("LookAhead: ")+ Settings.vehicle_toolLookAheadOn}
             TextLine{ text: qsTr("Nudge: ")+ utils.cm_to_unit_string(settings.setVehicle_setAS_snapDistance, 0)+ " "+ utils.cm_unit_abbrev()}
-            TextLine{ text: qsTr("Tram Width: ")+ utils.m_to_ft_string(settings.setTram_tramWidth )}
-            TextLine{ text: qsTr("Wheelbase: ")+ utils.cm_to_unit_string(settings.setVehicle_wheelbase, 0)+ " "+ utils.cm_unit_abbrev() }
+            TextLine{ text: qsTr("Tram Width: ")+ utils.m_to_ft_string(Settings.tram_width )}
+            TextLine{ text: qsTr("Wheelbase: ")+ utils.cm_to_unit_string(Settings.vehicle_wheelbase, 0)+ " "+ utils.cm_unit_abbrev() }
         }
         Rectangle{
             id: vehicleListRect
@@ -125,7 +126,7 @@ Item {
         }
         Label {
             id: currentVehicle
-            text: qsTr("Current vehicle is") + "<h2>" + settings.setVehicle_vehicleName + "</h2>"
+            text: qsTr("Current vehicle is") + "<h2>" + Settings.vehicle_vehicleName + "</h2>"
             anchors.top: configWhichVehicle.top
             anchors.horizontalCenter: entryBox.horizontalCenter
             anchors.margins: 15 * theme.scaleWidth
@@ -150,7 +151,7 @@ Item {
                         //console.debug("Going to save", saveAsVehicle.text)
                         VehicleInterface.vehicle_saveas(saveAsVehicle.text)
                         //just setting the name is probably enough to get it to save the vehicle
-                        settings.setVehicle_vehicleName = saveAsVehicle.text
+                        Settings.vehicle_vehicleName = saveAsVehicle.text
                         saveAsVehicle.text = ""
                         VehicleInterface.vehicle_update_list()
                     }
@@ -187,7 +188,7 @@ Item {
             onClicked: {
                 if (vehicleListView.selectedVehicle != "" ) {
                     VehicleInterface.vehicle_load(vehicleListView.selectedVehicle)
-                    settings.setVehicle_vehicleName = vehicleListView.selectedVehicle
+                    Settings.vehicle_vehicleName = vehicleListView.selectedVehicle
                 }
             }
 
@@ -202,8 +203,8 @@ Item {
             color3: "white"
             border: 2
             onClicked: {
-                //settings.setMenu_isMetric = !utils.isTrue(settings.setMenu_isMetric)
-                //console.debug("qml says settings ismetric is",settings.setMenu_isMetric)
+                //Settings.menu_isMetric = !utils.isTrue(Settings.menu_isMetric)
+                //console.debug("qml says settings ismetric is",Settings.menu_isMetric)
                 //VehicleInterface.vehicle_delete("testing123")
                 if (vehicleListView.selectedVehicle != "" ) {
                     VehicleInterface.vehicle_delete(vehicleListView.selectedVehicle)

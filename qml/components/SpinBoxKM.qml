@@ -1,5 +1,6 @@
 // Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
+import Settings
 import QtQuick
 
 //This is a spinbox for displaying dimensions that are either
@@ -33,8 +34,8 @@ Item {
     }
 
     Connections {
-        target: settings
-        function onSetMenu_isMetricChanged() {
+        target: Settings
+        function onMenu_isMetricChanged() {
             spinner.value = utils.km_to_mi(value)
         }
     }

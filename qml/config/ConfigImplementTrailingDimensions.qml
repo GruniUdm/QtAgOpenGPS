@@ -4,6 +4,7 @@
 // Set the dimensions for a drawn implement
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -32,8 +33,8 @@ Rectangle{
         anchors.rightMargin: 400 * theme.scaleWidth
         from: 10
         to:3000
-        boundValue: -settings.setTool_toolTrailingHitchLength
-        onValueModified: settings.setTool_toolTrailingHitchLength = -value
+        boundValue: -Settings.tool_toolTrailingHitchLength
+        onValueModified: Settings.tool_toolTrailingHitchLength = -value
         TextLine{
             text: qsTr("Units: ")+ utils.cm_unit_abbrev()
             font.bold: true

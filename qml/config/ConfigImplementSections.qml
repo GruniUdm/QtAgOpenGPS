@@ -5,6 +5,7 @@
 // we are using sections or zones.
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -27,10 +28,10 @@ Rectangle{
         spacing: 90 * theme.scaleWidth
         Button{
             function toggleZones(){
-                if( utils.isTrue(settings.setTool_isSectionsNotZones)){
-                    settings.setTool_isSectionsNotZones = false
+                if( utils.isTrue(Settings.tool_isSectionsNotZones)){
+                    Settings.tool_isSectionsNotZones = false
                 }else{
-                    settings.setTool_isSectionsNotZones = true
+                    Settings.tool_isSectionsNotZones = true
                 }
             }
             width: 180 * theme.scaleWidth
@@ -47,7 +48,7 @@ Rectangle{
                 Image{
                     id: image
 
-                    source: utils.isTrue(settings.setTool_isSectionsNotZones) ? prefix + "/images/Config/ConT_Asymmetric.png" : prefix + "/images/Config/ConT_Symmetric.png"
+                    source: utils.isTrue(Settings.tool_isSectionsNotZones) ? prefix + "/images/Config/ConT_Asymmetric.png" : prefix + "/images/Config/ConT_Symmetric.png"
                     anchors.fill: parent
                 }
             }
@@ -56,10 +57,10 @@ Rectangle{
             id: percentCoverage
             from: 0
             to: 100
-            boundValue: settings.setVehicle_minCoverage
+            boundValue: Settings.vehicle_minCoverage
             anchors.bottom: parent.bottom
             text: qsTr("% Coverage")
-            onValueModified: settings.setVehicle_minCoverage = value
+            onValueModified: Settings.vehicle_minCoverage = value
         }
         IconButton{
             icon.source: prefix + "/images/SectionOffBoundary.png"
@@ -73,8 +74,8 @@ Rectangle{
             colorChecked1: "green"
             colorChecked2: "green"
             colorChecked3: "green"
-            isChecked: settings.setTool_isSectionOffWhenOut
-            onCheckedChanged: settings.setTool_isSectionOffWhenOut = checked
+            isChecked: Settings.tool_isSectionOffWhenOut
+            onCheckedChanged: Settings.tool_isSectionOffWhenOut = checked
         }
         SpinBoxCustomized{
             //todo: this should be made english/metric
@@ -82,9 +83,9 @@ Rectangle{
             id: slowSpeedCutoff
             from: utils.speed_to_unit(0)
             to: utils.speed_to_unit(30)
-            boundValue: utils.speed_to_unit(settings.setVehicle_slowSpeedCutoff)
+            boundValue: utils.speed_to_unit(Settings.vehicle_slowSpeedCutoff)
             anchors.bottom: parent.bottom
-            onValueModified: settings.setVehicle_slowSpeedCutoff = utils.speed_from_unit(value)
+            onValueModified: Settings.vehicle_slowSpeedCutoff = utils.speed_from_unit(value)
             text: utils.speed_unit()
 
             Image{
@@ -104,7 +105,7 @@ Rectangle{
 		anchors.leftMargin: 7 * theme.scaleWidth
         anchors.bottom: bottomRow.top
         anchors.bottomMargin: 30 * theme.scaleHeight
-        visible: utils.isTrue(settings.setTool_isSectionsNotZones)
+        visible: utils.isTrue(Settings.tool_isSectionsNotZones)
     }
     ConfigImplementSectionsZones{
         id: configImplementSectionsZones
@@ -116,7 +117,7 @@ Rectangle{
 		anchors.leftMargin: 7 * theme.scaleWidth
         anchors.bottom: bottomRow.top
         anchors.bottomMargin: 30 * theme.scaleHeight
-        visible: !utils.isTrue(settings.setTool_isSectionsNotZones)
+        visible: !utils.isTrue(Settings.tool_isSectionsNotZones)
 
     }
 }

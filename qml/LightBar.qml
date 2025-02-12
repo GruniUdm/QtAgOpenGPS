@@ -4,6 +4,7 @@
 // Main screen lightbar
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 import 'components' as Comp
 
 Rectangle {
@@ -37,13 +38,13 @@ Rectangle {
 
         var limited_dotDistance = dotDistance
 
-        var limit = settings.setDisplay_lightbarCmPerPixel * 8
+        var limit = Settings.display_lightbarCmPerPixel * 8
         if (limited_dotDistance < -limit) limited_dotDistance = -limit
         if (limited_dotDistance > limit) limited_dotDistance = limit
 
         dots.clear()
 
-        numDots = -limited_dotDistance / settings.setDisplay_lightbarCmPerPixel
+        numDots = -limited_dotDistance / Settings.display_lightbarCmPerPixel
 
         for (i = -8 ; i < 0 ; i ++ ) {
             if (numDots < 0 && i >= numDots) {

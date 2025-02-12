@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import Settings
 
 import ".."
 import "../components"
@@ -22,13 +23,13 @@ Rectangle{
 
     function load_settings() {
 
-        graincountMin.boundValue = settings.setSeed_blockCountMin
-        graincountMax.boundValue = settings.setSeed_blockCountMax
-        modulerows1.boundValue = settings.setSeed_blockRow1
-        modulerows2.boundValue = settings.setSeed_blockRow2
-        modulerows3.boundValue = settings.setSeed_blockRow3
-        modulerows4.boundValue = settings.setSeed_blockRow4
-        cboxIsBlockageOn.checked = settings.setSeed_blockageIsOn
+        graincountMin.boundValue = Settings.seed_blockCountMin
+        graincountMax.boundValue = Settings.seed_blockCountMax
+        modulerows1.boundValue = Settings.seed_blockRow1
+        modulerows2.boundValue = Settings.seed_blockRow2
+        modulerows3.boundValue = Settings.seed_blockRow3
+        modulerows4.boundValue = Settings.seed_blockRow4
+        cboxIsBlockageOn.checked = Settings.seed_blockageIsOn
 
 
         mandatory.visible = false
@@ -38,14 +39,14 @@ Rectangle{
     function save_settings() {
 
 
-        settings.setSeed_blockCountMin = graincountMin.value
-        settings.setSeed_blockCountMax = graincountMax.value
-        settings.setSeed_blockRow1 = modulerows1.value
-        settings.setSeed_blockRow2 = modulerows2.value
-        settings.setSeed_blockRow3 = modulerows3.value
-        settings.setSeed_blockRow4 = modulerows4.value
-        settings.setSeed_blockageIsOn = cboxIsBlockageOn.checked
-        settings.setSeed_numRows = Number(settings.setSeed_blockRow1 + settings.setSeed_blockRow2 + settings.setSeed_blockRow3 + settings.setSeed_blockRow4)
+        Settings.seed_blockCountMin = graincountMin.value
+        Settings.seed_blockCountMax = graincountMax.value
+        Settings.seed_blockRow1 = modulerows1.value
+        Settings.seed_blockRow2 = modulerows2.value
+        Settings.seed_blockRow3 = modulerows3.value
+        Settings.seed_blockRow4 = modulerows4.value
+        Settings.seed_blockageIsOn = cboxIsBlockageOn.checked
+        Settings.seed_numRows = Number(Settings.seed_blockRow1 + Settings.seed_blockRow2 + Settings.seed_blockRow3 + Settings.seed_blockRow4)
         blockageRows.setSizes()
         mandatory.visible = false
 
@@ -79,9 +80,9 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: settings.setSeed_blockRow1
+            boundValue: Settings.seed_blockRow1
             onValueModified: {
-                settings.setSeed_blockRow1 = value
+                Settings.seed_blockRow1 = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -97,9 +98,9 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: settings.setSeed_blockRow2
+            boundValue: Settings.seed_blockRow2
             onValueModified: {
-                settings.setSeed_blockRow2 = value
+                Settings.seed_blockRow2 = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -115,9 +116,9 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: settings.setSeed_blockRow3
+            boundValue: Settings.seed_blockRow3
             onValueModified: {
-                settings.setSeed_blockRow3 = value
+                Settings.seed_blockRow3 = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -133,9 +134,9 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: settings.setSeed_blockRow4
+            boundValue: Settings.seed_blockRow4
             onValueModified:{
-                settings.setSeed_blockRow4 = value
+                Settings.seed_blockRow4 = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -152,9 +153,9 @@ Rectangle{
             to:10000
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: settings.setSeed_blockCountMin
+            boundValue: Settings.seed_blockCountMin
             onValueModified: {
-                settings.setSeed_blockCountMin = value
+                Settings.seed_blockCountMin = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -176,9 +177,9 @@ Rectangle{
             to:10000
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: settings.setSeed_blockCountMax
+            boundValue: Settings.seed_blockCountMax
             onValueModified:{
-                settings.setSeed_blockCountMax = value
+                Settings.seed_blockCountMax = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight

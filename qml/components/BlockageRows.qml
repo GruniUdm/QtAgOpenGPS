@@ -3,6 +3,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts 1.1
+import Settings
 //This is a the row of on-screen section-control buttonw
 
 Rectangle {
@@ -15,9 +16,9 @@ Rectangle {
     color: "transparent"
 
 
-    property int numRows:  Number(settings.setSeed_blockRow1 + settings.setSeed_blockRow2 + settings.setSeed_blockRow3 + settings.setSeed_blockRow4)
-    property int countMin: Number(settings.setSeed_blockCountMin)
-    property int countMax: Number(settings.setSeed_blockCountMax)
+    property int numRows:  Number(Settings.seed_blockRow1 + Settings.seed_blockRow2 + Settings.seed_blockRow3 + Settings.seed_blockRow4)
+    property int countMin: Number(Settings.seed_blockCountMin)
+    property int countMax: Number(Settings.seed_blockCountMax)
     property var rowCount: aog.rowCount
     property color offColor: "Crimson"
     property color offTextColor: "White"
@@ -30,7 +31,7 @@ Rectangle {
     //methods
     function setColors() {
         //same colors for sections and zones
-        if (settings.setDisplay_isDayMode) {
+        if (Settings.display_isDayMode) {
             blockageRows.offColor = "Red"
             blockageRows.offTextColor = "Black"
             blockageRows.onColor = "Yellow"
@@ -48,9 +49,9 @@ Rectangle {
     }
     function setSizes() {
         //same colors for sections and zones
-        numRows = Number(settings.setSeed_blockRow1 + settings.setSeed_blockRow2 + settings.setSeed_blockRow3 + settings.setSeed_blockRow4)
-        countMin =  Number(settings.setSeed_blockCountMin)
-        countMax =  Number(settings.setSeed_blockCountMax)
+        numRows = Number(Settings.seed_blockRow1 + Settings.seed_blockRow2 + Settings.seed_blockRow3 + Settings.seed_blockRow4)
+        countMin =  Number(Settings.seed_blockCountMin)
+        countMax =  Number(Settings.seed_blockCountMax)
         }
 
 
@@ -73,11 +74,11 @@ Rectangle {
     }
 
 Connections {
-    target: settings
-    function onSetDisplay_isDayModeChanged() {
+    target: Settings
+    function onDisplay_isDayModeChanged() {
         setColors()
     }
-    function onSetBlockrow1Changed() {
+    function onSeed_blockrow1Changed() {
         setSizes()
     }
 }

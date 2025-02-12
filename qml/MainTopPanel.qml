@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Settings
 import "components" as Comp
 
     Rectangle{
@@ -39,7 +40,7 @@ import "components" as Comp
         //            anchors.top: parent.top
         //            anchors.left: parent.left
         //            anchors.leftMargin: 120
-        //            text: qsTr("Field: "+ (aog.isJobStarted ? settings.setF_CurrentDir: "None"))
+        //            text: qsTr("Field: "+ (aog.isJobStarted ? Settings.f_currentDir: "None"))
         //            anchors.bottom: parent.verticalCenter
         //            font.bold: true
         //            font.pixelSize: 15
@@ -108,7 +109,7 @@ import "components" as Comp
                 Layout.alignment: Qt.AlignCenter
                 implicitWidth: theme.buttonSize
                 height:parent.height
-                visible: (aog.blockageConnected & settings.setSeed_blockageIsOn) ? true : false
+                visible: (aog.blockageConnected & Settings.seed_blockageIsOn) ? true : false
                 onClicked: {
                     blockageData.visible = !blockageData.visible
                     gpsData.visible = false
@@ -144,7 +145,7 @@ import "components" as Comp
                     if (mainWindow.visibility == Window.FullScreen){
                         mainWindow.showNormal()
                     }else{
-                        settings.setWindow_Size = ((mainWindow.width).toString() + ", "+  (mainWindow.height).toString())
+                        Settings.window_size = ((mainWindow.width).toString() + ", "+  (mainWindow.height).toString())
                         mainWindow.showFullScreen()
                     }
                 }
