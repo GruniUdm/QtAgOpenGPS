@@ -3,8 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include "glm.h"
-#include "aogproperty.h"
-
+#include "newsettings.h"
 
 CSim::CSim(QObject *parent) : QObject(parent)
 {
@@ -15,8 +14,8 @@ CSim::CSim(QObject *parent) : QObject(parent)
 
 void CSim::loadSettings()
 {
-    latitude = property_setGPS_SimLatitude;
-    longitude = property_setGPS_SimLongitude;
+    latitude = settings->value("gps/simLatitude").value<double>();
+    longitude = settings->value("gps/simLongitude").value<double>();
 }
 
 void CSim::DoSimTick(double _st)
@@ -175,6 +174,5 @@ void CSim::forward() {
 }
 
 void CSim::reset() {
-    latitude = property_setGPS_SimLatitude;
-    longitude = property_setGPS_SimLongitude;
+    loadSettings();
 }

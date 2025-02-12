@@ -5,7 +5,7 @@
 #include "formgps.h"
 #include "classes/csim.h"
 #include "qmlutil.h"
-#include "aogproperty.h"
+#include "newsettings.h"
 
 /* Callback for Simulator new position */
 void FormGPS::simConnectSlots()
@@ -16,7 +16,7 @@ void FormGPS::simConnectSlots()
             Qt::UniqueConnection);
     connect(&timerSim,SIGNAL(timeout()),this,SLOT(onSimTimerTimeout()),Qt::UniqueConnection);
 
-    if (property_setMenu_isSimulatorOn) {
+    if (settings->value("menu/isSimulatorOn").value<bool>()) {
         pn.latitude = sim.latitude;
         pn.longitude = sim.longitude;
         pn.headingTrue = 0;

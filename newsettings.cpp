@@ -10,6 +10,8 @@ QVector<int> default_zones = { 2,10,20,0,0,0,0,0,0 };
 NewSettings::NewSettings(QObject *parent)
     : QQmlPropertyMap{parent}
 {
+    setupKeys();
+
     connect (this, &QQmlPropertyMap::valueChanged,
             this, &NewSettings::onValueChanged);
 }
@@ -30,7 +32,7 @@ void NewSettings::addKey(const QString settings_key,
     //a couple of cases we need to correct them back to QVariantLists.
 
     //this one should be a qvariant list, but ini reads it in as a QStringList
-    if (special_case == VECTOR_OF_INTS && settings_value.typeName() == "QStringList" ) {
+    if (special_case == VECTOR_OF_INTS && QString(settings_value.typeName()) == "QStringList" ) {
         QVariantList l;
         for(QString &i: settings_value.toStringList()) {
             l.append(QVariant(i.toInt()));
@@ -60,6 +62,13 @@ void NewSettings::onValueChanged(const QString &qml_key,
 
 QVariant NewSettings::value(const QString &key)
 {
+    QVariant notfound("NOTFOUND"); //sentinal
+    QVariant value = settings.value(key,notfound);
+
+    if(value == notfound) {
+        qWarning() << "Settings key not found: " << key;
+        return QVariant();
+    }
     return settings.value(key);
 }
 
@@ -72,6 +81,16 @@ QVector<int> NewSettings::valueIntVec(const QString &key)
 
 void NewSettings::setValue(const QString &key, const QVariant &value)
 {
+    QVariant notfound("NOTFOUND"); //sentinal
+    QVariant existing_value = settings.value(key,notfound);
+
+    if (existing_value == notfound) {
+        qWarning() << "Tried to write to non-pre-existing key: " << key;
+        //will litter INI with "NOTFOUND" strings but should help us
+        //track down bad keys
+        return;
+    }
+
     settings.setValue(key, value);
 
     //in qml we use underscores instead of slashes.
@@ -199,4 +218,7 @@ bool NewSettings::saveJson(QString filename)
 
 }
 
+void NewSettings::sync() {
+    settings.sync();
+}
 

@@ -11,8 +11,7 @@
 #include <QMatrix4x4>
 #include <QOpenGLFunctions>
 #include "glutils.h"
-#include "aogproperty.h"
-#include "aogrenderer.h"
+#include "newsettings.h"
 
 //here for now.  Put in another module for use in other places.
 
@@ -756,7 +755,7 @@ void FormHeadland::btn_Exit_Click() {
 
 void FormHeadland::isSectionControlled(bool wellIsIt) {
     bnd->isSectionControlledByHeadland = wellIsIt;
-    property_setHeadland_isSectionControlled = wellIsIt;
+    settings->setValue("headland/isSectionControlled", wellIsIt);
 }
 
 void FormHeadland::btnBndLoop_Click() {

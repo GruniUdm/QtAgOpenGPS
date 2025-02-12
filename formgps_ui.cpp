@@ -8,13 +8,12 @@
 #include "cvehicle.h"
 #include "ccontour.h"
 #include "cabline.h"
-#include "aogproperty.h"
+#include "newsettings.h"
 #include <QGuiApplication>
 #include <QQmlEngine>
 #include <functional>
 #include <assert.h>
 #include "aogrenderer.h"
-#include "qmlsettings.h"
 #include "qmlsectionbuttons.h"
 #include "interfaceproperty.h"
 #include "cboundarylist.h"
@@ -22,8 +21,6 @@
 #include <cstring>
 
 QString caseInsensitiveFilename(QString directory, QString filename);
-
-extern QMLSettings qml_settings;
 
 void FormGPS::setupGui()
 {
@@ -45,7 +42,6 @@ void FormGPS::setupGui()
     //Load the QML into a view
     rootContext()->setContextProperty("screenPixelDensity",QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio());
     rootContext()->setContextProperty("mainForm", this);
-    rootContext()->setContextProperty("settings", &qml_settings);
 
     //populate vehicle_list property in vehicleInterface
     vehicle_update_list();
@@ -55,6 +51,7 @@ void FormGPS::setupGui()
     rootContext()->setContextProperty("tram", &tram);
     qmlRegisterSingletonInstance("Interfaces", 1, 0, "TracksInterface", &trk);
     qmlRegisterSingletonInstance("Interfaces", 1, 0, "VehicleInterface", &vehicle);
+    qmlRegisterSingletonInstance("AOG", 1, 0, "Settnigs", settings);
 
 #ifdef LOCAL_QML
     // Look for QML files relative to our current directory
@@ -167,7 +164,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     openGLControl->setProperty("initCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Initialized, this)));
     openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::oglMain_Paint,this)));
 
-    openGLControl->setProperty("samples",settings->value("display/antiAliasSamples", 0));
+    openGLControl->setProperty("samples",settings->value("display/antiAliasSamples").value<int>());
     openGLControl->setMirrorVertically(true);
     connect(openGLControl,SIGNAL(clicked(QVariant)),this,SLOT(onGLControl_clicked(QVariant)));
     connect(openGLControl,SIGNAL(dragged(int,int,int,int)),this,SLOT(onGLControl_dragged(int,int,int,int)));
@@ -337,7 +334,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     isJobStarted = false;
 
     StartLoopbackServer();
-    if ((bool)property_setMenu_isSimulatorOn == false) {
+    if (settings->value("menu/isSimulatorOn").value<bool>() == false) {
         qDebug() << "Stopping simulator because it's off in settings.";
         timerSim.stop();
     }
@@ -477,7 +474,7 @@ void FormGPS::onBtnContour_clicked(){
         //    ABLine.isABValid = false;
         //    curve.isCurveValid = false;
         //}
-        guidanceLookAheadTime = property_setAS_guidanceLookAheadTime;
+        guidanceLookAheadTime = settings->value("as/guidanceLookAheadTime").value<double>();
     }
 }
 
@@ -498,25 +495,27 @@ void FormGPS::onBtnTiltDown_clicked(){
     if (camera.camPitch < -76) camera.camPitch = -76;
 
     lastHeight = -1; //redraw the sky
-    property_setDisplay_camPitch = camera.camPitch;
+    settings->setValue("display/camPitch", camera.camPitch);
     openGLControl->update();
 }
 
 void FormGPS::onBtnTiltUp_clicked(){
-    double camPitch = property_setDisplay_camPitch;
+    double camPitch = settings->value("display/camPitch").value<double>();
 
     lastHeight = -1; //redraw the sky
     camera.camPitch -= ((camera.camPitch * 0.012) - 1);
     if (camera.camPitch > -58) camera.camPitch = 0;
 
-    property_setDisplay_camPitch = camera.camPitch;
+    settings->setValue("display/camPitch", camera.camPitch);
     openGLControl->update();
 }
+
 void FormGPS::onBtn2D_clicked(){
     camera.camFollowing = true;
     camera.camPitch = 0;
     navPanelCounter = 0;
 }
+
 void FormGPS::onBtn3D_clicked(){
     camera.camFollowing = true;
     camera.camPitch = -65;
@@ -767,26 +766,26 @@ void FormGPS::on_settings_save() {
 
 void FormGPS::modules_send_238() {
     qDebug() << "Sending 238 message to AgIO";
-    p_238.pgn[p_238.set0] = (int)property_setArdMac_setting0;
-    p_238.pgn[p_238.raiseTime] = (int)property_setArdMac_hydRaiseTime;
-    p_238.pgn[p_238.lowerTime] = (int)property_setArdMac_hydLowerTime;
+    p_238.pgn[p_238.set0] = settings->value("ardMac/setting0").value<int>();
+    p_238.pgn[p_238.raiseTime] = settings->value("ardMac/hydRaiseTime").value<int>();
+    p_238.pgn[p_238.lowerTime] = settings->value("ardMac/hydLowerTime").value<int>();
 
-    p_238.pgn[p_238.user1] = (int)property_setArdMac_user1;
-    p_238.pgn[p_238.user2] = (int)property_setArdMac_user2;
-    p_238.pgn[p_238.user3] = (int)property_setArdMac_user3;
-    p_238.pgn[p_238.user4] = (int)property_setArdMac_user4;
+    p_238.pgn[p_238.user1] = settings->value("ardMac/user1").value<int>();
+    p_238.pgn[p_238.user2] = settings->value("ardMac/user2").value<int>();
+    p_238.pgn[p_238.user3] = settings->value("ardMac/user3").value<int>();
+    p_238.pgn[p_238.user4] = settings->value("ardMac/user4").value<int>();
 
-    qDebug() << (int)property_setArdMac_user1;
+    qDebug() << settings->value("ardMac/user1").value<int>();
     SendPgnToLoop(p_238.pgn);
 }
 void FormGPS::modules_send_251() {
 	//qDebug() << "Sending 251 message to AgIO";
-	p_251.pgn[p_251.set0] = (int)property_setArdSteer_setting0;
-	p_251.pgn[p_251.set1] = (int)property_setArdSteer_setting1;
-	p_251.pgn[p_251.maxPulse] = (int)property_setArdSteer_maxPulseCounts;
+    p_251.pgn[p_251.set0] = settings->value("ardSteer/setting0").value<int>();
+    p_251.pgn[p_251.set1] = settings->value("ardSteer/setting1").value<int>();
+    p_251.pgn[p_251.maxPulse] = settings->value("ardSteer/maxPulseCounts").value<int>();
 	p_251.pgn[p_251.minSpeed] = 5; //0.5 kmh THIS IS CHANGED IN AOG FIXES
 
-	if ((int)property_setAS_isConstantContourOn)
+    if (settings->value("as/isConstantContourOn").value<bool>())
 		p_251.pgn[p_251.angVel] = 1;
 	else p_251.pgn[p_251.angVel] = 0;
 
@@ -796,14 +795,14 @@ void FormGPS::modules_send_251() {
 
 void FormGPS::modules_send_252() {
     //qDebug() << "Sending 252 message to AgIO";
-    p_252.pgn[p_252.gainProportional] = (int)property_setAS_Kp;
-    p_252.pgn[p_252.highPWM] = (int)property_setAS_highSteerPWM;
-    p_252.pgn[p_252.lowPWM] = (int)property_setAS_lowSteerPWM;
-    p_252.pgn[p_252.minPWM] = property_setAS_minSteerPWM;
-    p_252.pgn[p_252.countsPerDegree] = (int)property_setAS_countsPerDegree;
-    p_252.pgn[p_252.wasOffsetHi] = (char)((int)property_setAS_wasOffset >> 8);
-    p_252.pgn[p_252.wasOffsetLo] = (char)property_setAS_wasOffset;
-    p_252.pgn[p_252.ackerman] = (int)property_setAS_ackerman;
+    p_252.pgn[p_252.gainProportional] = settings->value("as/Kp").value<int>();
+    p_252.pgn[p_252.highPWM] = settings->value("as/highSteerPWM").value<int>();
+    p_252.pgn[p_252.lowPWM] = settings->value("as/lowSteerPWM").value<int>();
+    p_252.pgn[p_252.minPWM] = settings->value("as/minSteerPWM").value<int>();
+    p_252.pgn[p_252.countsPerDegree] = settings->value("as/countsPerDegree").value<int>();
+    p_252.pgn[p_252.wasOffsetHi] = (char)(settings->value("as/wasOffset").value<int>() >> 8);
+    p_252.pgn[p_252.wasOffsetLo] = (char)settings->value("as/wasOffset").value<int>();
+    p_252.pgn[p_252.ackerman] = settings->value("as/ackerman").value<int>();
 
 
     qDebug() << p_252.pgn;
@@ -826,8 +825,8 @@ void FormGPS::headlines_save() {
     FileSaveHeadLines();
 }
 void FormGPS::onBtnResetSim_clicked(){
-    sim.latitude = property_setGPS_SimLatitude;
-    sim.longitude = property_setGPS_SimLongitude;
+    sim.latitude = settings->value("gps/simLatitude").value<double>();
+    sim.longitude = settings->value("gps/simLongitude").value<double>();
 }
 
 void FormGPS::onBtnRotateSim_clicked(){

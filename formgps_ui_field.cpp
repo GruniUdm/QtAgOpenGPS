@@ -4,8 +4,7 @@
 // GUI to backend field interface
 #include "formgps.h"
 #include "qmlutil.h"
-#include "aogproperty.h"
-
+#include "newsettings.h"
 
 void FormGPS::field_update_list() {
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
@@ -39,7 +38,7 @@ void FormGPS::field_open(QString field_name) {
         TimedMessageBox(8000, tr("Saved field does not exist."), QString(tr("Cannot find the requested saved field.")) + " " +
                                                                 field_name);
 
-        property_setF_CurrentDir = "Default";
+        settings->setValue("f/currentDir", "Default");
     }
 }
 
@@ -48,7 +47,7 @@ void FormGPS::field_new(QString field_name) {
     lock.lockForWrite();
     FileSaveEverythingBeforeClosingField();
     currentFieldDirectory = field_name.trimmed();
-    property_setF_CurrentDir = currentFieldDirectory;
+    settings->setValue("f/currentDir", currentFieldDirectory);
     JobNew();
 
     pn.latStart = pn.latitude;
@@ -75,7 +74,7 @@ void FormGPS::field_new_from(QString existing, QString field_name, int flags) {
     }
     //change to new name
     currentFieldDirectory = field_name;
-    property_setF_CurrentDir = currentFieldDirectory;
+    settings->setValue("f/currentDir", currentFieldDirectory);
 
     FileCreateField();
     FileCreateSections();

@@ -13,6 +13,10 @@
 extern QVector<int> default_relay_pinConfig;
 extern QVector<int> default_zones;
 
+class NewSettings;
+
+extern NewSettings *settings;
+
 /* This class helps bridge between QSettings and QML/Javascript.
  * An instance of QSettings is kept inside this class and a
  * QSettings-like api is exported. This class is generally only
@@ -64,6 +68,8 @@ public:
     QJsonObject toJson();
     bool saveJson(QString filename);
     bool loadJson(QString filename);
+
+    void sync();
 
 public slots:
     void onValueChanged (const QString &qml_key, const QVariant &value);

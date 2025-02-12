@@ -22,7 +22,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
-#include "aogproperty.h"
+#include "newsettings.h"
 #include "cpgn.h"
 
 #include <assert.h>
@@ -160,6 +160,7 @@ void FormGPS::oglMain_Paint()
         //will not update, which isn't what we want either.  Some kind of timeout?
      return;
 
+    float lineWidth = settings->value("display/lineWidth").value<float>();
     int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
     int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
     double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
@@ -398,7 +399,7 @@ void FormGPS::oglMain_Paint()
 
                     for (int i = 0; i < bnd.bndList.count(); i++)
                     {
-                        DrawPolygon(gl,projection*modelview,bnd.bndList[i].turnLine,(float)property_setDisplay_lineWidth,color);
+                        DrawPolygon(gl,projection*modelview,bnd.bndList[i].turnLine,lineWidth,color);
                     }
                 }
 
@@ -406,7 +407,7 @@ void FormGPS::oglMain_Paint()
                 if (bnd.isHeadlandOn)
                 {
                     color.setRgbF(0.960f, 0.96232f, 0.30f);
-                    DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,(float)property_setDisplay_lineWidth,color);
+                    DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,lineWidth,color);
                 }
             }
 
@@ -419,7 +420,7 @@ void FormGPS::oglMain_Paint()
                 gldraw1.append(QVector3D(flagPts[flagNumberPicked-1].easting, flagPts[flagNumberPicked-1].northing, 0));
                 gldraw1.draw(gl, projection*modelview,
                              QColor::fromRgbF(0.930f, 0.72f, 0.32f),
-                             GL_LINES, property_setDisplay_lineWidth);
+                             GL_LINES, lineWidth);
             }
 
             //draw the vehicle/implement

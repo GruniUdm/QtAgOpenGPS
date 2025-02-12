@@ -17,8 +17,8 @@
 #include "cnmea.h"
 #include "cahrs.h"
 #include "cguidance.h"
-#include "aogproperty.h"
 #include "ctrack.h"
+#include "newsettings.h"
 
 CABCurve::CABCurve(QObject *parent) : QObject(parent)
 {
@@ -34,9 +34,9 @@ void CABCurve::BuildCurveCurrentList(Vec3 pivot,
 {
     double minDistA = 1000000, minDistB;
 
-    double tool_width = property_setVehicle_toolWidth;
-    double tool_overlap = property_setVehicle_toolOverlap;
-    double tool_offset = property_setVehicle_toolOffset;
+    double tool_width = settings->value("vehicle/toolWidth").value<double>();
+    double tool_overlap = settings->value("vehicle/toolOverlap").value<double>();
+    double tool_offset = settings->value("vehicle/toolOffset").value<double>();
 
     //move the ABLine over based on the overlap amount set in vehicle
     double widthMinusOverlap = tool_width - tool_overlap;
@@ -458,8 +458,8 @@ void CABCurve::BuildNewCurveAsync(double distAway,
 
     newCurList.clear();
 
-    double tool_width = property_setVehicle_toolWidth;
-    double tool_overlap = property_setVehicle_toolOverlap;
+    double tool_width = settings->value("vehicle/toolWidth").value<double>();
+    double tool_overlap = settings->value("vehicle/toolOverlap").value<double>();
     double step = (tool_width - tool_overlap) * 0.48;
     if (step > 4) step = 4;
     if (step < 1) step = 1;
@@ -653,9 +653,11 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                                    CGuidance &gyd,
                                    CNMEA &pn)
 {
-    double purePursuitGain = property_purePursuitIntegralGainAB;
-    double wheelBase = property_setVehicle_wheelbase;
-    double maxSteerAngle = property_setVehicle_maxSteerAngle;
+    double purePursuitGain = settings->value("vehicle/purePursuitIntegralGainAB").value<double>();
+    double wheelBase = settings->value("vehicle/wheelbase").value<double>();
+    double maxSteerAngle = settings->value("vehicle/maxSteerAngle").value<double>();
+    bool vehicle_isStanleyUsed = settings->value("vehicle/isStanleyUsed").value<bool>();
+    double as_sideHillCompensation = settings->value("as/sideHillCompensation").value<double>();
 
     if (track.curvePts.count() == 0 || track.curvePts.count() < 5)
     {
@@ -683,7 +685,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
             ppRadiusCu = yt.ppRadiusYT;
             vehicle.modeActualXTE = (distanceFromCurrentLinePivot);
         }
-        else if (property_setVehicle_isStanleyUsed)//Stanley
+        else if (vehicle_isStanleyUsed)//Stanley
         {
             gyd.StanleyGuidanceCurve(pivot, steer, curList, isBtnAutoSteerOn, vehicle, *this, ahrs);
         }
@@ -930,7 +932,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                                                         + ((goalPointCu.northing - pivot.northing) * sin(localHeading))) * wheelBase / goalPointDistanceSquared));
 
             if (ahrs.imuRoll != 88888)
-                steerAngleCu += ahrs.imuRoll * -(double)property_setAS_sideHillComp; /* gyd.sideHillCompFactor*/
+                steerAngleCu += ahrs.imuRoll * -as_sideHillCompensation; /* gyd.sideHillCompFactor*/
 
             if (steerAngleCu < -maxSteerAngle) steerAngleCu = -maxSteerAngle;
             if (steerAngleCu > maxSteerAngle) steerAngleCu = maxSteerAngle;
@@ -982,8 +984,8 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                          const CTrk &track,
                          CYouTurn &yt, const CCamera &camera)
 {
-    //double tool_toolWidth = property_setVehicle_toolWidth;
-    //double tool_toolOverlap = property_setVehicle_toolOverlap;
+    //double tool_toolWidth = settings->value("Vehicle_toolWidth;
+    //double tool_toolOverlap = settings->value("Vehicle_toolOverlap;
 
 
     GLHelperColors gldraw_colors;
@@ -991,7 +993,8 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     ColorVertex cv;
     QColor color;
 
-    double lineWidth = property_setDisplay_lineWidth;
+    double lineWidth = settings->value("display/lineWidth").value<double>();
+    bool vehicle_isStanleyUsed = settings->value("vehicle/isStanleyUsed").value<bool>();
 
     if (desList.count() > 0)
     {
@@ -1050,7 +1053,7 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                 else
                     gldraw.draw(gl,mvp,color,GL_LINE_LOOP,lineWidth);
 
-                if (!(bool)property_setVehicle_isStanleyUsed && camera.camSetDistance > -200)
+                if (!vehicle_isStanleyUsed && camera.camSetDistance > -200)
                 {
                     gldraw.clear();
                     //Draw lookahead Point
@@ -1082,7 +1085,7 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 
             gldraw.draw(gl, mvp, QColor::fromRgbF(0.95f, 0.2f, 0.95f),GL_LINE_STRIP, lineWidth);
 
-            if (!(bool)property_setVehicle_isStanleyUsed && camera.camSetDistance > -200)
+            if (!vehicle_isStanleyUsed && camera.camSetDistance > -200)
             {
                 //Draw lookahead Point
                 gldraw.clear();
@@ -1095,7 +1098,9 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 
 void CABCurve::BuildTram(CBoundary &bnd, CTram &tram, const CTrk &track)
 {
-    double halfWheelTrack = (double)property_setVehicle_trackWidth * 0.5;
+    double halfWheelTrack = settings->value("vehicle/trackWidth").value<double>() * 0.5;
+    double tram_width = settings->value("tram/width").value<double>();
+    int tram_passes = settings->value("tram/passes").value<int>();
 
     //if all or bnd only then make outer loop pass
     if (tram.generateMode != 1)
@@ -1127,13 +1132,13 @@ void CABCurve::BuildTram(CBoundary &bnd, CTram &tram, const CTrk &track)
     }
     double widd = 0;
 
-    for (int i = cntr; i <= (int)property_setTram_passes; i++)
+    for (int i = cntr; i <= tram_passes; i++)
     {
         tram.tramArr = QSharedPointer<QVector<Vec2>>(new QVector<Vec2>());
         tram.tramList.append(tram.tramArr);
 
-        widd = (double)property_setTram_tramWidth * 0.5 - halfWheelTrack;
-        widd += ((double)property_setTram_tramWidth * i);
+        widd = tram_width * 0.5 - halfWheelTrack;
+        widd += (tram_width * i);
 
         double distSqAway = widd * widd * 0.999999;
 
@@ -1175,13 +1180,13 @@ void CABCurve::BuildTram(CBoundary &bnd, CTram &tram, const CTrk &track)
         }
     }
 
-    for (int i = cntr; i <= (int)property_setTram_passes; i++)
+    for (int i = cntr; i <= tram_passes; i++)
     {
         tram.tramArr = QSharedPointer<QVector<Vec2>>(new QVector<Vec2>());
         tram.tramList.append(tram.tramArr);
 
-        widd = (double)property_setTram_tramWidth * 0.5 + halfWheelTrack;
-        widd += ((double)property_setTram_tramWidth * i);
+        widd = tram_width * 0.5 + halfWheelTrack;
+        widd += (tram_width * i);
 
         double distSqAway = widd * widd * 0.999999;
 

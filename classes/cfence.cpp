@@ -1,7 +1,7 @@
 #include "cboundary.h"
 #include "glm.h"
 #include "glutils.h"
-#include "aogproperty.h"
+#include "newsettings.h"
 #include "cvehicle.h"
 #include "cmodulecomm.h"
 
@@ -55,25 +55,26 @@ void CBoundary::DrawFenceLines(const CVehicle &v, const CModuleComm &mc,
                                  const QMatrix4x4 &mvp)
 {
     QColor color;
-    float line_width;
     Vec3 pivot = v.pivotAxlePos;
+    float line_width = settings->value("display/lineWidth").value<float>();
+    float line_width2;
 
     GLHelperOneColor gldraw;
 
     if (!mc.isOutOfBounds)
     {
         color.setRgbF(0.95f, 0.75f, 0.50f);
-        line_width = property_setDisplay_lineWidth;
+        line_width2 = line_width;
     }
     else
     {
-        line_width = (float) property_setDisplay_lineWidth * 3;
+        line_width2 = line_width * 3;
         color.setRgbF(0.95f, 0.25f, 0.25f);
     }
 
     for (int i = 0; i < bndList.count(); i++)
     {
-        DrawPolygon(gl,mvp,bndList[i].fenceLineEar,line_width,color);
+        DrawPolygon(gl,mvp,bndList[i].fenceLineEar,line_width2,color);
     }
 
 
@@ -101,7 +102,7 @@ void CBoundary::DrawFenceLines(const CVehicle &v, const CModuleComm &mc,
         cv.vertex = QVector3D(bndBeingMadePts[0].easting, bndBeingMadePts[0].northing, 0);
         gldraw1.append(cv);
 
-        gldraw1.draw(gl, mvp, GL_LINE_STRIP, property_setDisplay_lineWidth);
+        gldraw1.draw(gl, mvp, GL_LINE_STRIP, line_width);
 
         //line from last point to pivot marker
         gldraw.clear();
