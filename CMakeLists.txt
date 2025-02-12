@@ -33,10 +33,7 @@ qt_standard_project_setup()
 qt_add_executable(QtAgOpenGPS
     main.cpp
     $<$<NOT:$<BOOL:${LOCAL_QML}>>:agopengps.qrc>
-    aogproperties.cpp
-    aogproperty.h aogproperty.cpp
     aogrenderer.h aogrenderer.cpp
-    aogsettings.h aogsettings.cpp
     newsettings.h newsettings.cpp
     newsettings_addkeys.cpp
     btnenum.h
@@ -53,7 +50,6 @@ qt_add_executable(QtAgOpenGPS
     formgps_ui.cpp
     formgps_ui_boundary.cpp
     formgps_ui_field.cpp
-    formgps_ui_tracks.cpp
     formgps_ui_vehicle.cpp
     formheadache.h formheadache.cpp
     formheadland.h formheadland.cpp
@@ -61,8 +57,6 @@ qt_add_executable(QtAgOpenGPS
     interfaceproperty.h
     properties.h
     qmlsectionbuttons.h qmlsectionbuttons.cpp
-    qmlsettings.h qmlsettings.cpp
-    qmlsettings_addkeys.cpp
     qmlutil.h
     setter.h
     classes/cabcurve.h classes/cabcurve.cpp
