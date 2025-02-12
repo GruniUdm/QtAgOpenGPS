@@ -7,7 +7,7 @@ class ratecontrol : public QObject
 {
     Q_OBJECT
 public:
-    double width;
+    //double width;
     //PGN32400 RateSensor;
     //PGN32500 ModuleRateSettings;
     int ManualPWM = 0;
@@ -17,13 +17,15 @@ public:
     double cQuantity;
     double MeterCal;
     double RateSet;
-    double TargetRate();
+
     int cPWMsetting;
     int cSensorReceiving;
     explicit ratecontrol(QObject *parent = nullptr);
-    double TargetUPM();
-private:
+    inline void set (int ID, int rateset);
 
+private:
+    double TargetRate;
+    double TargetUPM();
     double AccumulatedLast = 0;
     double cAppMode = 0;
     bool cBumpButtons;
@@ -70,10 +72,13 @@ private:
     double cVRmin;
     bool PauseWork = false;
     double TankSize = 0;
+    double width;
+    double speed;
 signals:
 public slots:
     void rate_auto();
     void rate_bump(bool up);
+
 };
 
 #endif // RATECONTROL_H

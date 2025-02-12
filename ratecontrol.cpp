@@ -43,40 +43,40 @@ double ratecontrol::TargetUPM() // returns units per minute set rate
         {
             // Constant UPM
             // same upm no matter how many sections are on
-            double HPM = tool.width * speedData / 600.0;
-            Result = TargetRate() * HPM * 2.47;
+            double HPM = width * speed / 600.0;
+            Result = TargetRate * HPM * 2.47;
         }
         else
         {
             // section controlled UPM, Document applied or Document target
-            Result = TargetRate() * cHectaresPerMinute * 2.47;
+            Result = TargetRate * cHectaresPerMinute * 2.47;
         }
         break;
 
     case 1:
         // hectares
-        if (cAppMode == ApplicationMode.ConstantUPM)
+        if (cAppMode = property_setRateContType)
         {
             // Constant UPM
             // same upm no matter how many sections are on
-            double HPM = tool.width * speedData / 600.0;
-            Result = TargetRate() * HPM;
+            double HPM = width * speed / 600.0;
+            Result = TargetRate * HPM;
         }
         else
         {
             // section controlled UPM, Document applied or Document target
-            Result = TargetRate() * cHectaresPerMinute;
+            Result = TargetRate * cHectaresPerMinute;
         }
         break;
 
     case 2:
         // minutes
-        Result = TargetRate();
+        Result = TargetRate;
         break;
 
     default:
         // hours
-        Result = TargetRate() / 60;
+        Result = TargetRate / 60;
         break;
     }
 
@@ -85,9 +85,8 @@ double ratecontrol::TargetUPM() // returns units per minute set rate
 
     return Result;
 }
-double ratecontrol::TargetRate()
-{
-    double Result = 0;
 
-    return Result;
+void ratecontrol::set (int ID, int rateset){
+    cProductID = ID;
+    TargetRate = rateset;
 }
