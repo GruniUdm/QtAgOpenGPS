@@ -12,7 +12,7 @@ import QtQuick
  * qmlRegisterSingletonInstance("Interface", 1, 0, "TracksInterface", &trk);
  * to place the instance of CTracks (classes/ctracks.h) into
  * the qml namespace in place of this mock file.
- ******************************************************************************
+ ******************************************************************************/
 
 pragma Singleton
 
