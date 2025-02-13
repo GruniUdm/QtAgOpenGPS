@@ -36,7 +36,7 @@ qt_add_executable(QtAgOpenGPS
     aogrenderer.h aogrenderer.cpp
     newsettings.h newsettings.cpp
     newsettings_addkeys.cpp
-    aogsettings.h
+    settings_defines.h
     btnenum.h
     common.h
     formgps.h formgps.cpp

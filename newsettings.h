@@ -10,6 +10,8 @@
 #include <QSize>
 #include <QRect>
 
+#include "settings_defines.h"
+
 extern QVector<int> default_relay_pinConfig;
 extern QVector<int> default_zones;
 
