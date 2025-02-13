@@ -105,6 +105,11 @@ def generate_mockqml(reader):
 
     print ("}")
 
+def generate_sed(reader):
+    for row in reader:
+        print ('s|\\"%s/%s\\"|SETTINGS_%s_%s|g' % (row['section'], row['key'], row['section'], row['key']))
+
+
 if __name__ == "__main__":
     import argparse
 
@@ -113,6 +118,7 @@ if __name__ == "__main__":
     argparser.add_argument('-a', '--addkeys', action = 'store_true', help = 'Generate the newsettings_addkeys.cpp file')
     argparser.add_argument('-m', '--mockqml', action = 'store_true', help = 'Generate the mock Settings.qml file')
     argparser.add_argument('-c', '--header', action = 'store_true', help = 'Generate convenience macro header file')
+    argparser.add_argument('-s', '--sed', action = 'store_true', help = 'Generate a list of sed expressions to convert code from using strings to using macros from settings_defines.h for better compile-time error checking.')
     argparser.add_argument('csv_file', help = 'path to settings.csv file.')
 
     args = argparser.parse_args()
@@ -120,14 +126,20 @@ if __name__ == "__main__":
     with open(args.csv_file,'r') as csv_file:
         reader = csv.DictReader(csv_file, quotechar="'")
 
-        print ("// Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team")
-        print ("// SPDX-License-Identifier: GNU General Public License v3.0 or later")
-        print ("//")
-
-        if (args.addkeys):
-            generate_addkeys(reader)
-        elif (args.header):
-            generate_header(reader)
+        if (args.sed):
+            generate_sed(reader)
         else:
-            generate_mockqml(reader)
+            
+            print ("// Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team")
+            print ("// SPDX-License-Identifier: GNU General Public License v3.0 or later")
+            print ("//")
+
+            if (args.addkeys):
+                generate_addkeys(reader)
+            elif (args.header):
+                generate_header(reader)
+            elif (args.mockqml):
+                generate_mockqml(reader)
+            else:
+                print ("Unknown option.")
 
