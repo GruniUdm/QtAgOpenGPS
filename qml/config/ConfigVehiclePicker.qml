@@ -44,7 +44,7 @@ Item {
             TextLine{ text: qsTr("Offset: ")+  utils.cm_to_unit_string(Settings.vehicle_toolOffset, 0)+ " "+ utils.cm_unit_abbrev()}
             TextLine{ text: qsTr("Overlap: ")+  utils.cm_to_unit_string(Settings.vehicle_toolOverlap, 0)+ " "+ utils.cm_unit_abbrev()}
             TextLine{ text: qsTr("LookAhead: ")+ Settings.vehicle_toolLookAheadOn}
-            TextLine{ text: qsTr("Nudge: ")+ utils.cm_to_unit_string(settings.setVehicle_setAS_snapDistance, 0)+ " "+ utils.cm_unit_abbrev()}
+            TextLine{ text: qsTr("Nudge: ")+ utils.cm_to_unit_string(Settings.as_snapDistance, 0)+ " "+ utils.cm_unit_abbrev()}
             TextLine{ text: qsTr("Tram Width: ")+ utils.m_to_ft_string(Settings.tram_width )}
             TextLine{ text: qsTr("Wheelbase: ")+ utils.cm_to_unit_string(Settings.vehicle_wheelbase, 0)+ " "+ utils.cm_unit_abbrev() }
         }

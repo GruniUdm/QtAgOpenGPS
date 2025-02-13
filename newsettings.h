@@ -60,6 +60,7 @@ public:
 
     void addKey(const QString qsettings_key,
                 const QVariant &default_value,
+                const QMetaType type,
                 NewSettings::SpecialCase special_case = NORMAL);
 
     QVariant value(const QString &key);
@@ -72,6 +73,8 @@ public:
     bool loadJson(QString filename);
 
     void sync();
+protected:
+    QVariant updateValue(const QString &key, const QVariant &input);
 
 public slots:
     void onValueChanged (const QString &qml_key, const QVariant &value);

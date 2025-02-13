@@ -9,10 +9,15 @@ def generate_addkeys(reader):
 void NewSettings::setupKeys() {
 """)
     for row in reader:
+        if row['cpp_type'] == 'double': row['cpp_type'] = 'Double'
+        if row['cpp_type'] == 'int': row['cpp_type'] = 'Int'
+        if row['cpp_type'] == 'bool': row['cpp_type'] = 'Bool'
+        if not row['cpp_type']: row['cpp_type'] = 'Void'
+
         if row["special_case"]:
-            print('    addKey("%s/%s", %s, NewSettings::%s);' % (row['section'],row['key'], row['default'], row['special_case']))
+            print('    addKey("%s/%s", %s, QMetaType(QMetaType::%s), NewSettings::%s);' % (row['section'],row['key'], row['default'], row['cpp_type'], row['special_case']))
         else:
-            print('    addKey("%s/%s", %s);' % (row['section'],row['key'], row['default']))
+            print('    addKey("%s/%s", %s, QMetaType(QMetaType::%s));' % (row['section'],row['key'], row['default'], row['cpp_type']))
 
 
     print ("}")

@@ -18,6 +18,7 @@ NewSettings::NewSettings(QObject *parent)
 
 void NewSettings::addKey(const QString settings_key,
                          const QVariant &default_value,
+                         const QMetaType type,
                          NewSettings::SpecialCase special_case)
 {
     //put key into app-wide settings with its default value,
@@ -38,6 +39,14 @@ void NewSettings::addKey(const QString settings_key,
             l.append(QVariant(i.toInt()));
         }
         settings_value = l;
+    } else {
+        if (settings_value.metaType() != type) {
+            if (settings_value.canConvert(type)) {
+                settings_value.convert(type);
+            } else {
+                qWarning() << "Cannot convert " << settings_key << " from INI to type " << type.name();
+            }
+        }
     }
 
     //set the possibly changed value in both settings and the hash map
@@ -61,14 +70,12 @@ void NewSettings::onValueChanged(const QString &qml_key,
     } else {
         settings.setValue(settings_key, value);
     }
+
+    settings.sync();
 }
 
 QVariant NewSettings::value(const QString &key)
 {
-    if (key.contains('_')) {
-        qDebug() << key;
-    }
-
     QVariant notfound("NOTFOUND"); //sentinal
     QVariant value = settings.value(key,notfound);
 
@@ -103,6 +110,7 @@ void NewSettings::setValue(const QString &key, const QVariant &value)
     //in qml we use underscores instead of slashes.
     QString qml_key = key.split('/').join('_');
     insert(qml_key, value);
+    settings.sync();
 }
 
 void NewSettings::setValue(const QString &key, const QVector<int> &value_list)
@@ -229,3 +237,7 @@ void NewSettings::sync() {
     settings.sync();
 }
 
+QVariant NewSettings::updateValue(const QString &key, const QVariant &input)
+{
+    return QQmlPropertyMap::updateValue(key, input);
+}

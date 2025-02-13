@@ -225,7 +225,7 @@ property_setTool_toolTrailingHitchLength,tool,toolTrailingHitchLength,-2.5,doubl
 property_setTool_trailingToolToPivotLength,tool,trailingToolToPivotLength,0,double,,
 property_setTool_zones,tool,zones,toVariant(default_zones),,VECTOR_OF_INTS,
 property_setTram_alpha,tram,alpha,0.8,double,,
-property_setTram_BasedOn,tram,basedOn,0,,,Does not appear to be used
+property_setTram_BasedOn,tram,basedOn,0,int,,Does not appear to be used
 property_setTram_isTramOnBackBuffer,tram,isTramOnBackBuffer,true,bool,,
 property_setTram_offset,tram,offset,0,double,,
 property_setTram_passes,tram,passes,1,int,,
