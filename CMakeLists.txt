@@ -129,9 +129,9 @@ qt_add_qml_module(QtAgOpenGPS
 set(qml_mockup_files
     qml/AOG/qmldir
     qml/AOG/AOGRenderer.qml
-    qml/Interfaces/qmldir
-    qml/Interfaces/TracksInterface.qml
-    qml/Interfaces/MockVehicle.qml
+    qml/Interface/qmldir
+    qml/Interface/TracksInterface.qml
+    qml/Interface/MockVehicle.qml
     qml/Settings/qmldir
     qml/Settings/MockSettings.qml
 )

@@ -8,7 +8,7 @@ import QtQuick.Window
 import QtQuick.Effects
 import QtQuick.Dialogs
 import Settings
-import Interfaces
+import Interface
 import AOG
 
 import "interfaces" as Interfaces

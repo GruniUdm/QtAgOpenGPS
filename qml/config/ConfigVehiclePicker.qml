@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import Settings
-import Interfaces
+import Interface
 //import QtQuick.Extras 1.4
 
 import ".."

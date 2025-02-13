@@ -49,8 +49,8 @@ void FormGPS::setupGui()
 
     rootContext()->setContextProperty("trk", &trk);
     rootContext()->setContextProperty("tram", &tram);
-    qmlRegisterSingletonInstance("Interfaces", 1, 0, "TracksInterface", &trk);
-    qmlRegisterSingletonInstance("Interfaces", 1, 0, "VehicleInterface", &vehicle);
+    qmlRegisterSingletonInstance("Interface", 1, 0, "TracksInterface", &trk);
+    qmlRegisterSingletonInstance("Interface", 1, 0, "VehicleInterface", &vehicle);
     qmlRegisterSingletonInstance("Settings", 1, 0, "Settings", settings);
 
 #ifdef LOCAL_QML

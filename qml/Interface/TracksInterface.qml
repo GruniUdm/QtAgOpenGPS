@@ -9,7 +9,7 @@ import QtQuick
  * This mock file is used only when viewing qml files in 
  * the qml viewer, or when designing in QtDS. When compiled,
  * formgps_ui.cpp calls 
- * qmlRegisterSingletonInstance("Interfaces", 1, 0, "TracksInterface", &trk);
+ * qmlRegisterSingletonInstance("Interface", 1, 0, "TracksInterface", &trk);
  * to place the instance of CTracks (classes/ctracks.h) into
  * the qml namespace in place of this mock file.
  ******************************************************************************
