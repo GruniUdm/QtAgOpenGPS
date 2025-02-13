@@ -493,7 +493,7 @@ Window{
                 height: parent.height /2
                 ComboBoxCustomized {
                     id: cboxMotorDrive
-                    editable: true
+                    editable: false
                     // Component.onCompleted: currentIndex = ((settings.setArdSteer_setting0 & 16) == 0) ? 1 : 0
                     model: ListModel {
                         id: modelmotorDriver
@@ -505,7 +505,7 @@ Window{
                 }
                 ComboBoxCustomized {
                     id: cboxConv
-                    editable: true
+                    editable: false
                     // Component.onCompleted: currentIndex = ((settings.setArdSteer_setting0 & 8) == 0) ? 1 : 0
                     model: ListModel {
                         id: a2Dmodel
@@ -517,7 +517,7 @@ Window{
                 }
                 ComboBoxCustomized {
                     id: cboxXY
-                    editable: true
+                    editable: false
                     // Component.onCompleted: currentIndex = ((settings.setArdSteer_setting1 & 8) == 0) ? 0 : 1
                     model: ListModel {
                         id: imuAxismodel
@@ -530,6 +530,7 @@ Window{
 
                 ComboBoxCustomized {
                     id: cboxSteerEnable
+                    editable: false
                     /* Component.onCompleted: if((settings.setArdSteer_setting0 & 32) == 32)
                            currentIndex = 1
                            else if((settings.setArdSteer_setting0 & 64) == 64)
