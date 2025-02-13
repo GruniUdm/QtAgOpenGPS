@@ -483,6 +483,7 @@ void CTrack::setIdx(int new_idx)
         idx = new_idx;
         emit idxChanged();
         emit modeChanged();
+        emit currentNameChanged();
     }
 }
 
@@ -513,6 +514,15 @@ void CTrack::setNewName(QString new_name)
         curve.desName= new_name;
 
     emit newNameChanged();
+}
+
+QString CTrack::getCurrentName(void)
+{
+    if (idx > -1) {
+        return gArr[idx].name;
+    } else {
+        return "";
+    }
 }
 
 int CTrack::rowCount(const QModelIndex &parent) const
