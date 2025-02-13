@@ -19,7 +19,7 @@ Item {
 	property int ardMac_user2: 2
 	property int ardMac_user3: 3
 	property int ardMac_user4: 4
-	property int ardSteer_ardSteerMaxPulseCounts: 3
+	property int ardSteer_maxPulseCounts: 3
 	property double ardSteer_maxSpeed: 20
 	property double ardSteer_minSpeed: 0
 	property int ardSteer_setting0: 56
@@ -235,7 +235,7 @@ Item {
 	property double tool_trailingToolToPivotLength: 0
 	property var tool_zones: [ 2,10,20,0,0,0,0,0,0 ]
 	property double tram_alpha: 0.8
-	property  tram_basedOn: 0
+	property int tram_basedOn: 0
 	property bool tram_isTramOnBackBuffer: true
 	property double tram_offset: 0
 	property int tram_passes: 1

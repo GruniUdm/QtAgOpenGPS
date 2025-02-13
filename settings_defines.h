@@ -18,7 +18,7 @@
 #define SETTINGS_ardMac_user2 "ardMac/user2"
 #define SETTINGS_ardMac_user3 "ardMac/user3"
 #define SETTINGS_ardMac_user4 "ardMac/user4"
-#define SETTINGS_ardSteer_ardSteerMaxPulseCounts "ardSteer/ardSteerMaxPulseCounts"
+#define SETTINGS_ardSteer_maxPulseCounts "ardSteer/maxPulseCounts"
 #define SETTINGS_ardSteer_maxSpeed "ardSteer/maxSpeed"
 #define SETTINGS_ardSteer_minSpeed "ardSteer/minSpeed"
 #define SETTINGS_ardSteer_setting0 "ardSteer/setting0"

@@ -15,7 +15,7 @@ void NewSettings::setupKeys() {
     addKey("ardMac/user2", 2, QMetaType(QMetaType::Int));
     addKey("ardMac/user3", 3, QMetaType(QMetaType::Int));
     addKey("ardMac/user4", 4, QMetaType(QMetaType::Int));
-    addKey("ardSteer/ardSteerMaxPulseCounts", 3, QMetaType(QMetaType::Int));
+    addKey("ardSteer/maxPulseCounts", 3, QMetaType(QMetaType::Int));
     addKey("ardSteer/maxSpeed", 20, QMetaType(QMetaType::Double));
     addKey("ardSteer/minSpeed", 0, QMetaType(QMetaType::Double));
     addKey("ardSteer/setting0", 56, QMetaType(QMetaType::Int));

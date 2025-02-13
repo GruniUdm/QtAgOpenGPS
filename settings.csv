@@ -9,7 +9,7 @@ property_setArdMac_user1,ardMac,user1,1,int,,
 property_setArdMac_user2,ardMac,user2,2,int,,
 property_setArdMac_user3,ardMac,user3,3,int,,
 property_setArdMac_user4,ardMac,user4,4,int,,
-property_setArdSteer_maxPulseCounts,ardSteer,ardSteerMaxPulseCounts,3,int,,
+property_setArdSteer_maxPulseCounts,ardSteer,maxPulseCounts,3,int,,
 property_setArdSteer_maxSpeed,ardSteer,maxSpeed,20,double,,Does not appear to be used
 property_setArdSteer_minSpeed,ardSteer,minSpeed,0,double,,Does not appear to be used
 property_setArdSteer_setting0,ardSteer,setting0,56,int,,
