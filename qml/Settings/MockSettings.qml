@@ -5,6 +5,7 @@
 //This is a mock Settings singleton for use in qml viewer or QtDS
 //This mirrors the structure of the real Settings.Settings used
 //in the compiled binary.
+import QtQuick
 
 pragma singleton
 
