@@ -108,17 +108,17 @@ qt_add_executable(QtAgOpenGPS
     android/res/xml/qtprovider_paths.xml
 )
 
-set(qml_interfaces_singletons
-)
+#set(qml_interfaces_singletons
+#)
 
-set_source_files_properties(${qml_interfaces_singletons}
-    PROPERTIES QT_QML_SINGLETON_TYPE TRUE
-)
+#set_source_files_properties(${qml_interfaces_singletons}
+#    PROPERTIES QT_QML_SINGLETON_TYPE TRUE
+#)
 
 qt_add_qml_module(QtAgOpenGPS
     URI AOG
     VERSION 1.0
-    QML_FILES ${qml_interfaces_singletons}
+    #QML_FILES ${qml_interfaces_singletons}
     SOURCES
         aogrenderer.cpp
         aogrenderer.h
@@ -128,9 +128,12 @@ qt_add_qml_module(QtAgOpenGPS
 # show some of our mockup files in the project tree without compiling it
 set(qml_mockup_files
     qml/AOG/qmldir
-    qml/MockSettings.qml
-    qml/MockTracks.qml
-    qml/MockVehicle.qml
+    qml/AOG/AOGRenderer.qml
+    qml/Interfaces/qmldir
+    qml/Interfaces/TracksInterface.qml
+    qml/Interfaces/MockVehicle.qml
+    qml/Settings/qmldir
+    qml/Settings/MockSettings.qml
 )
 
 add_custom_target(MockQML SOURCES ${qml_mockup_files})

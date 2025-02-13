@@ -39,21 +39,6 @@ Window {
 
     signal save_everything()
 
-    function get_settings() {
-        return settings
-    }
-
-    function getTracksInterface() {
-        return TracksInterface
-
-    }
-
-    property var tracksInterface: TracksInterface
-
-    Component.onCompleted: {
-        console.debug("tracks interface object is ", TracksInterface)
-    }
-
     function close() {
         if (areWindowsOpen()) {
             timedMessage.addMessage(2000,qsTr("Some windows are open. Close them first."))
@@ -135,12 +120,6 @@ Window {
         else return false
     }
 
-    //there's a global "settings" property now.  In qmlscene we'll have to fake it somehow.
-
-    //MockSettings {
-    //    id: settings
-    //}
-
     AOGInterface {
         id: aog
         objectName: "aog"
@@ -150,18 +129,6 @@ Window {
         id: fieldInterface
         objectName: "fieldInterface"
     }
-
-    /* only use in a mock setting.  Normally C++ will provide
-       this as a CVehicle instance.
-    MockVehicle {
-        id: vehicleInterface
-        objectName: "vehicleInterface"
-    }
-
-    MockTracks {
-        id: trk
-        }
-    */
 
     Interfaces.BoundaryInterface {
         id: boundaryInterface
