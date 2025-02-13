@@ -14,8 +14,8 @@ CSim::CSim(QObject *parent) : QObject(parent)
 
 void CSim::loadSettings()
 {
-    latitude = settings->value("gps/simLatitude").value<double>();
-    longitude = settings->value("gps/simLongitude").value<double>();
+    latitude = settings->value(SETTINGS_gps_simLatitude).value<double>();
+    longitude = settings->value(SETTINGS_gps_simLongitude).value<double>();
 }
 
 void CSim::DoSimTick(double _st)

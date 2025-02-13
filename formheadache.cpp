@@ -748,7 +748,7 @@ void FormHeadache::btnExit_Click() {
 
 void FormHeadache::isSectionControlled(bool wellIsIt) {
     bnd->isSectionControlledByHeadland = wellIsIt;
-    settings->setValue("headland/isSectionControlled", wellIsIt);
+    settings->setValue(SETTINGS_headland_isSectionControlled, wellIsIt);
 }
 
 void FormHeadache::btnBndLoop_Click() {

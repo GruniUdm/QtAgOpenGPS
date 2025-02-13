@@ -160,7 +160,7 @@ void FormGPS::oglMain_Paint()
         //will not update, which isn't what we want either.  Some kind of timeout?
      return;
 
-    float lineWidth = settings->value("display/lineWidth").value<float>();
+    float lineWidth = settings->value(SETTINGS_display_lineWidth).value<float>();
     int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
     int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
     double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();

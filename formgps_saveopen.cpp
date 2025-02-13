@@ -862,7 +862,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
     line = reader.readLine();
 
     currentFieldDirectory = fieldDir;
-    settings->setValue("f/currentDir", currentFieldDirectory);
+    settings->setValue(SETTINGS_f_currentDir, currentFieldDirectory);
 
     //Offset header
     line = reader.readLine();
@@ -902,9 +902,9 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             pn.longitude = pn.lonStart;
 
             sim.latitude = pn.latStart;
-            settings->setValue("gps/simLatitude", pn.latStart);
+            settings->setValue(SETTINGS_gps_simLatitude, pn.latStart);
             sim.longitude = pn.lonStart;
-            settings->setValue("gps/simLongitude", pn.lonStart);
+            settings->setValue(SETTINGS_gps_simLongitude, pn.lonStart);
         }
         pn.SetLocalMetersPerDegree();
     }

@@ -9,64 +9,64 @@
 void CTool::loadSettings()
 {
     //from settings grab the vehicle specifics
-    trailingToolToPivotLength = settings->value("tool/trailingToolToPivotLength").value<double>();
+    trailingToolToPivotLength = settings->value(SETTINGS_tool_trailingToolToPivotLength).value<double>();
 
-    width = settings->value("vehicle/toolWidth").value<double>();
-    overlap = settings->value("vehicle/toolOverlap").value<double>();
+    width = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    overlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
 
-    offset = settings->value("vehicle/toolOffset").value<double>();
+    offset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
 
-    trailingHitchLength = settings->value("tool/toolTrailingHitchLength").value<double>();
-    tankTrailingHitchLength = settings->value("vehicle/tankTrailingHitchLength").value<double>();
-    hitchLength = settings->value("vehicle/hitchLength").value<double>();
+    trailingHitchLength = settings->value(SETTINGS_tool_toolTrailingHitchLength).value<double>();
+    tankTrailingHitchLength = settings->value(SETTINGS_vehicle_tankTrailingHitchLength).value<double>();
+    hitchLength = settings->value(SETTINGS_vehicle_hitchLength).value<double>();
 
-    isToolRearFixed = settings->value("tool/isToolRearFixed").value<bool>();
-    isToolTrailing = settings->value("tool/isToolTrailing").value<bool>();
-    isToolTBT = settings->value("tool/isTBT").value<bool>();
-    isToolFrontFixed = settings->value("tool/isToolFront").value<bool>();
+    isToolRearFixed = settings->value(SETTINGS_tool_isToolRearFixed).value<bool>();
+    isToolTrailing = settings->value(SETTINGS_tool_isToolTrailing).value<bool>();
+    isToolTBT = settings->value(SETTINGS_tool_isTBT).value<bool>();
+    isToolFrontFixed = settings->value(SETTINGS_tool_isToolFront).value<bool>();
 
-    lookAheadOnSetting = settings->value("vehicle/toolLookAheadOn").value<double>();
-    lookAheadOffSetting = settings->value("vehicle/toolLookAheadOff").value<double>();
-    turnOffDelay = settings->value("vehicle/toolOffDelay").value<double>();
+    lookAheadOnSetting = settings->value(SETTINGS_vehicle_toolLookAheadOn).value<double>();
+    lookAheadOffSetting = settings->value(SETTINGS_vehicle_toolLookAheadOff).value<double>();
+    turnOffDelay = settings->value(SETTINGS_vehicle_toolOffDelay).value<double>();
 
-    isSectionOffWhenOut = settings->value("tool/isSectionOffWhenOut").value<bool>();
+    isSectionOffWhenOut = settings->value(SETTINGS_tool_isSectionOffWhenOut).value<bool>();
 
-    isSectionsNotZones = settings->value("tool/isSectionsNotZones").value<bool>();
+    isSectionsNotZones = settings->value(SETTINGS_tool_isSectionsNotZones).value<bool>();
 
     if (isSectionsNotZones)
-        numOfSections = settings->value("vehicle/numSections").value<int>();
+        numOfSections = settings->value(SETTINGS_vehicle_numSections).value<int>();
     else
-        numOfSections = settings->value("tool/numSectionsMulti").value<int>();
+        numOfSections = settings->value(SETTINGS_tool_numSectionsMulti).value<int>();
 
-    minCoverage = settings->value("vehicle/minCoverage").value<double>();
-    isMultiColoredSections = settings->value("color/isMultiColorSections").value<bool>();
+    minCoverage = settings->value(SETTINGS_vehicle_minCoverage).value<double>();
+    isMultiColoredSections = settings->value(SETTINGS_color_isMultiColorSections).value<bool>();
 
-    secColors[0] = settings->value("color/sec01").value<QColor>();
-    secColors[1] = settings->value("color/sec02").value<QColor>();
-    secColors[2] = settings->value("color/sec03").value<QColor>();
-    secColors[3] = settings->value("color/sec04").value<QColor>();
-    secColors[4] = settings->value("color/sec05").value<QColor>();
-    secColors[5] = settings->value("color/sec06").value<QColor>();
-    secColors[6] = settings->value("color/sec07").value<QColor>();
-    secColors[7] = settings->value("color/sec08").value<QColor>();
-    secColors[8] = settings->value("color/sec09").value<QColor>();
-    secColors[9] = settings->value("color/sec10").value<QColor>();
-    secColors[10] = settings->value("color/sec11").value<QColor>();
-    secColors[11] = settings->value("color/sec12").value<QColor>();
-    secColors[12] = settings->value("color/sec13").value<QColor>();
-    secColors[13] = settings->value("color/sec14").value<QColor>();
-    secColors[14] = settings->value("color/sec15").value<QColor>();
-    secColors[15] = settings->value("color/sec16").value<QColor>();
+    secColors[0] = settings->value(SETTINGS_color_sec01).value<QColor>();
+    secColors[1] = settings->value(SETTINGS_color_sec02).value<QColor>();
+    secColors[2] = settings->value(SETTINGS_color_sec03).value<QColor>();
+    secColors[3] = settings->value(SETTINGS_color_sec04).value<QColor>();
+    secColors[4] = settings->value(SETTINGS_color_sec05).value<QColor>();
+    secColors[5] = settings->value(SETTINGS_color_sec06).value<QColor>();
+    secColors[6] = settings->value(SETTINGS_color_sec07).value<QColor>();
+    secColors[7] = settings->value(SETTINGS_color_sec08).value<QColor>();
+    secColors[8] = settings->value(SETTINGS_color_sec09).value<QColor>();
+    secColors[9] = settings->value(SETTINGS_color_sec10).value<QColor>();
+    secColors[10] = settings->value(SETTINGS_color_sec11).value<QColor>();
+    secColors[11] = settings->value(SETTINGS_color_sec12).value<QColor>();
+    secColors[12] = settings->value(SETTINGS_color_sec13).value<QColor>();
+    secColors[13] = settings->value(SETTINGS_color_sec14).value<QColor>();
+    secColors[14] = settings->value(SETTINGS_color_sec15).value<QColor>();
+    secColors[15] = settings->value(SETTINGS_color_sec16).value<QColor>();
 
     for (int c=0 ; c < 16; c++) {
         //check setColor[C] to make sure there's nothing over 254
     }
 
-    zoneRanges = toVector<int>(settings->value("tool/zones"));
+    zoneRanges = toVector<int>(settings->value(SETTINGS_tool_zones));
     zones = zoneRanges[0];
     //zoneRanges.removeAt(0); //remove first element since it was a count
 
-    isDisplayTramControl = settings->value("tool/isDisplayTramControl").value<bool>();
+    isDisplayTramControl = settings->value(SETTINGS_tool_isDisplayTramControl).value<bool>();
 
 }
 
@@ -80,8 +80,8 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 pro
                      bool isJobStarted,
                      CVehicle &v, CCamera &camera, CTram &tram)
 {
-    double tram_halfWheelTrack = settings->value("vehicle/trackWidth").value<double>() * 0.5;
-    bool tool_isDisplayTramControl = settings->value("tool/isDisplayTramControl").value<bool>();
+    double tram_halfWheelTrack = settings->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
+    bool tool_isDisplayTramControl = settings->value(SETTINGS_tool_isDisplayTramControl).value<bool>();
     //translate and rotate at pivot axle, caller's mvp will be changed
     //all subsequent draws will be based on this point
     modelview.translate(v.pivotAxlePos.easting, v.pivotAxlePos.northing, 0);
@@ -311,7 +311,7 @@ void CTool::sectionCalcWidths()
 
         //calculate tool width based on extreme right and left values
         double width = fabs(section[0].positionLeft) + fabs(section[numOfSections - 1].positionRight);
-        settings->setValue("vehicle/toolWidth", width);
+        settings->setValue(SETTINGS_vehicle_toolWidth, width);
 
         //left and right tool position
         farLeftPosition = section[0].positionLeft;
@@ -327,8 +327,8 @@ void CTool::sectionCalcWidths()
 void CTool::sectionCalcMulti()
 {
     double leftside = width / -2.0;
-    double defaultSectionWidth = settings->value("tool/sectionWidthMulti").value<double>();
-    double offset = settings->value("vehicle/toolOffset").value<double>();
+    double defaultSectionWidth = settings->value(SETTINGS_tool_sectionWidthMulti).value<double>();
+    double offset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
     section[0].positionLeft = leftside+offset;
 
     for (int i = 0; i < numOfSections - 1; i++)
@@ -350,7 +350,7 @@ void CTool::sectionCalcMulti()
 
     //calculate tool width based on extreme right and left values
     width = (section[numOfSections - 1].positionRight) - (section[0].positionLeft);
-    settings->setValue("vehicle/toolWidth", width);
+    settings->setValue(SETTINGS_vehicle_toolWidth, width);
 
     //left and right tool position
     farLeftPosition = section[0].positionLeft;
@@ -365,24 +365,24 @@ void CTool::sectionCalcMulti()
 
 void CTool::sectionSetPositions()
 {
-    double vehicle_toolOffset = settings->value("vehicle/toolOffset").value<double>();
-    double section_position1 = settings->value("section/position1").value<double>();
-    double section_position2 = settings->value("section/position2").value<double>();
-    double section_position3 = settings->value("section/position3").value<double>();
-    double section_position4 = settings->value("section/position4").value<double>();
-    double section_position5 = settings->value("section/position5").value<double>();
-    double section_position6 = settings->value("section/position6").value<double>();
-    double section_position7 = settings->value("section/position7").value<double>();
-    double section_position8 = settings->value("section/position8").value<double>();
-    double section_position9 = settings->value("section/position9").value<double>();
-    double section_position10 = settings->value("section/position10").value<double>();
-    double section_position11 = settings->value("section/position11").value<double>();
-    double section_position12 = settings->value("section/position12").value<double>();
-    double section_position13 = settings->value("section/position13").value<double>();
-    double section_position14 = settings->value("section/position14").value<double>();
-    double section_position15 = settings->value("section/position15").value<double>();
-    double section_position16 = settings->value("section/position16").value<double>();
-    double section_position17 = settings->value("section/position17").value<double>();
+    double vehicle_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double section_position1 = settings->value(SETTINGS_section_position1).value<double>();
+    double section_position2 = settings->value(SETTINGS_section_position2).value<double>();
+    double section_position3 = settings->value(SETTINGS_section_position3).value<double>();
+    double section_position4 = settings->value(SETTINGS_section_position4).value<double>();
+    double section_position5 = settings->value(SETTINGS_section_position5).value<double>();
+    double section_position6 = settings->value(SETTINGS_section_position6).value<double>();
+    double section_position7 = settings->value(SETTINGS_section_position7).value<double>();
+    double section_position8 = settings->value(SETTINGS_section_position8).value<double>();
+    double section_position9 = settings->value(SETTINGS_section_position9).value<double>();
+    double section_position10 = settings->value(SETTINGS_section_position10).value<double>();
+    double section_position11 = settings->value(SETTINGS_section_position11).value<double>();
+    double section_position12 = settings->value(SETTINGS_section_position12).value<double>();
+    double section_position13 = settings->value(SETTINGS_section_position13).value<double>();
+    double section_position14 = settings->value(SETTINGS_section_position14).value<double>();
+    double section_position15 = settings->value(SETTINGS_section_position15).value<double>();
+    double section_position16 = settings->value(SETTINGS_section_position16).value<double>();
+    double section_position17 = settings->value(SETTINGS_section_position17).value<double>();
 
     section[0].positionLeft = section_position1 + vehicle_toolOffset;
     section[0].positionRight = section_position2 + vehicle_toolOffset;

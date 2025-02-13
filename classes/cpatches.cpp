@@ -12,7 +12,7 @@ CPatches::CPatches() {
  */
 void CPatches::TurnMappingOn(CTool &tool, int j)
 {
-    QColor display_colorSectionsDay = settings->value("display/colorSectionsDay").value<QColor>();
+    QColor display_colorSectionsDay = settings->value(SETTINGS_display_colorSectionsDay).value<QColor>();
 
     QColor color_prop;
     numTriangles = 0;
@@ -84,7 +84,7 @@ void CPatches::AddMappingPoint(CTool &tool,
     QVector3D rightPoint(vrightPoint.easting,vrightPoint.northing,0);
     QVector3D color;
     QColor color_prop;
-    QColor display_colorSectionsDay = settings->value("display/colorSectionsDay").value<QColor>();
+    QColor display_colorSectionsDay = settings->value(SETTINGS_display_colorSectionsDay).value<QColor>();
 
 
     //add two triangles for next step.

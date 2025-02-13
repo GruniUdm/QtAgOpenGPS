@@ -31,9 +31,9 @@ void CABLine::BuildCurrentABLineList(Vec3 pivot,
                                      const CYouTurn &yt,
                                      const CVehicle &vehicle)
 {
-    double tool_width = settings->value("vehicle/toolWidth").value<double>();
-    double tool_overlap = settings->value("vehicle/toolOverlap").value<double>();
-    double tool_offset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_width = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double tool_overlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_offset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
 
     double dx, dy;
 
@@ -132,11 +132,11 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
                                )
 {
     double dx, dy;
-    double purePursuitIntegralGain = settings->value("vehicle/purePursuitIntegralGainAB").value<double>();
-    double wheelBase = settings->value("vehicle/wheelbase").value<double>();
-    double maxSteerAngle = settings->value("vehicle/maxSteerAngle").value<double>();
-    bool vehicle_isStanleyUsed = settings->value("vehicle/isStanleyUsed").value<bool>();
-    double as_sideHillCompensation = settings->value("as/sideHillCompensation").value<double>();
+    double purePursuitIntegralGain = settings->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
+    double wheelBase = settings->value(SETTINGS_vehicle_wheelbase).value<double>();
+    double maxSteerAngle = settings->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
+    bool vehicle_isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    double as_sideHillCompensation = settings->value(SETTINGS_as_sideHillCompensation).value<double>();
 
     //Check uturn first
     if (yt.isYouTurnTriggered && yt.DistanceFromYouTurnLine(vehicle,pn))//do the pure pursuit from youTurn
@@ -327,7 +327,7 @@ void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 {
     GLHelperOneColor gldraw;
     QColor color;
-    double lineWidth = settings->value("display/lineWidth").value<double>();
+    double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
 
     gldraw.append(QVector3D(desLineEndA.easting, desLineEndA.northing, 0.0));
     gldraw.append(QVector3D(desLineEndB.easting, desLineEndB.northing, 0.0));
@@ -346,12 +346,12 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                           const CCamera &camera,
                           const CGuidance &gyd)
 {
-    double tool_toolWidth = settings->value("vehicle/toolWidth").value<double>();
-    double tool_toolOverlap = settings->value("vehicle/toolOverlap").value<double>();
-    double tool_toolOffset = settings->value("vehicle/toolOffset").value<double>();
-    bool isStanleyUsed = settings->value("vehicle/isStanleyUsed").value<bool>();
-    bool isSideGuideLines = settings->value("menu/isSideGuideLines").value<bool>();
-    double lineWidth = settings->value("display/lineWidth").value<double>();
+    double tool_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double tool_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
+    bool isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    bool isSideGuideLines = settings->value(SETTINGS_menu_isSideGuideLines).value<bool>();
+    double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
     widthMinusOverlap = tool_toolWidth - tool_toolOverlap;
 
     GLHelperOneColor gldraw;
@@ -513,10 +513,10 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 
 void CABLine::BuildTram(const CTrk &track, CBoundary &bnd, CTram &tram)
 {
-    double tramWidth = settings->value("tram/width").value<double>();
-    double tool_halfWidth = (settings->value("vehicle/toolWidth").value<double>() - settings->value("vehicle/toolOverlap").value<double>()) / 2.0;
-    double halfWheelTrack = settings->value("vehicle/trackWidth").value<double>() * 0.5;
-    int tram_passes = settings->value("tram/passes").value<int>();
+    double tramWidth = settings->value(SETTINGS_tram_width).value<double>();
+    double tool_halfWidth = (settings->value(SETTINGS_vehicle_toolWidth).value<double>() - settings->value(SETTINGS_vehicle_toolOverlap).value<double>()) / 2.0;
+    double halfWheelTrack = settings->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
+    int tram_passes = settings->value(SETTINGS_tram_passes).value<int>();
 
     if (tram.generateMode != 1)
     {

@@ -27,9 +27,9 @@ void CContour::SetLockToLine()
 
 void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehicle, Vec3 pivot)
 {
-    double tool_toolWidth = settings->value("vehicle/toolWidth").value<double>();
-    double tool_toolOverlap = settings->value("vehicle/toolOverlap").value<double>();
-    double tool_toolOffset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double tool_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
     double tool_toolHalfWidth = (tool_toolWidth - tool_toolOverlap) / 2;
 
     if (ctList.count() == 0)
@@ -294,14 +294,14 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
                                        CNMEA &pn,
                                        Vec3 pivot, Vec3 steer)
 {
-    double wheelbase = settings->value("vehicle/wheelbase").value<double>();
-    double maxSteerAngle = settings->value("vehicle/maxSteerAngle").value<double>();
+    double wheelbase = settings->value(SETTINGS_vehicle_wheelbase).value<double>();
+    double maxSteerAngle = settings->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
     //double maxAngularVelocity = property_setVehicle_maxAngularVelocity;
-    double stanleyHeadingErrorGain = settings->value("vehicle/stanleyHeadingErrorGain").value<double>();
-    double stanleyDistanceErrorGain = settings->value("vehicle/stanleyDistanceErrorGain").value<double>();
-    double purePursuitIntegralGain = settings->value("vehicle/purePursuitIntegralGainAB").value<double>();
-    double as_sideHillCompensation = settings->value("as/sideHillCompensation").value<double>();
-    bool isStanleyUsed = settings->value("vehicle/isStanleyUsed").value<bool>();
+    double stanleyHeadingErrorGain = settings->value(SETTINGS_vehicle_stanleyHeadingErrorGain).value<double>();
+    double stanleyDistanceErrorGain = settings->value(SETTINGS_vehicle_stanleyDistanceErrorGain).value<double>();
+    double purePursuitIntegralGain = settings->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
+    double as_sideHillCompensation = settings->value(SETTINGS_as_sideHillCompensation).value<double>();
+    bool isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
 
     double minDistA = 1000000, minDistB = 1000000;
     int ptCount = ctList.count();
@@ -585,7 +585,7 @@ void CContour::StartContourLine() {
 
 //Add current position to stripList
 void CContour::AddPoint(Vec3 pivot) {
-    double tool_toolOffset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
 
     ptList->append(Vec3(pivot.easting + cos(pivot.heading) * tool_toolOffset,
                         pivot.northing - sin(pivot.heading) * tool_toolOffset,
@@ -617,8 +617,8 @@ void CContour::StopContourLine(QVector<QSharedPointer <QVector<Vec3>>> &contourS
 //build contours for boundaries
 void CContour::BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCounter)
 {
-    double tool_toolWidth = settings->value("vehicle/toolWidth").value<double>();
-    double tool_toolOverlap = settings->value("vehicle/toolOverlap").value<double>();
+    double tool_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double tool_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
 
     spacingInt *= 0.01;
     if (bnd.bndList.count() == 0)
@@ -669,9 +669,9 @@ void CContour::BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCo
 //draw the red follow me line
 void CContour::DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
 {
-    bool isStanleyUsed = settings->value("vehicle/isStanleyUsed").value<bool>();
-    double lineWidth = settings->value("display/lineWidth").value<double>();
-    bool isPureDisplayOn = settings->value("menu/isPureOn").value<bool>();
+    bool isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
+    bool isPureDisplayOn = settings->value(SETTINGS_menu_isPureOn).value<bool>();
 
     GLHelperOneColor gldraw;
     QColor color;

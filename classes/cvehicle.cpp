@@ -47,46 +47,46 @@ QRect find_bounding_box(int viewport_height, QVector3D p1, QVector3D p2, QVector
 
 void CVehicle::loadSettings()
 {
-    vehicleType = settings->value("vehicle/vehicleType").value<int>();
+    vehicleType = settings->value(SETTINGS_vehicle_vehicleType).value<int>();
 
-    isPivotBehindAntenna = settings->value("vehicle/isPivotBehindAntenna").value<bool>();
-    isSteerAxleAhead = settings->value("vehicle/isSteerAxleAhead").value<bool>();
+    isPivotBehindAntenna = settings->value(SETTINGS_vehicle_isPivotBehindAntenna).value<bool>();
+    isSteerAxleAhead = settings->value(SETTINGS_vehicle_isSteerAxleAhead).value<bool>();
 
-    antennaHeight = settings->value("vehicle/antennaHeight").value<double>();
-    antennaPivot = settings->value("vehicle/antennaPivot").value<double>();
-    antennaOffset = settings->value("vehicle/antennaOffset").value<double>();
+    antennaHeight = settings->value(SETTINGS_vehicle_antennaHeight).value<double>();
+    antennaPivot = settings->value(SETTINGS_vehicle_antennaPivot).value<double>();
+    antennaOffset = settings->value(SETTINGS_vehicle_antennaOffset).value<double>();
 
-    trackWidth = settings->value("vehicle/trackWidth").value<double>();
-    wheelbase = settings->value("vehicle/wheelbase").value<double>();
+    trackWidth = settings->value(SETTINGS_vehicle_trackWidth).value<double>();
+    wheelbase = settings->value(SETTINGS_vehicle_wheelbase).value<double>();
 
-    maxAngularVelocity = settings->value("vehicle/maxAngularVelocity").value<double>();
-    maxSteerAngle = settings->value("vehicle/maxSteerAngle").value<double>();
-    slowSpeedCutoff = settings->value("vehicle/slowSpeedCutoff").value<double>();
-    panicStopSpeed = settings->value("vehicle/panicStopSpeed").value<double>();
+    maxAngularVelocity = settings->value(SETTINGS_vehicle_maxAngularVelocity).value<double>();
+    maxSteerAngle = settings->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
+    slowSpeedCutoff = settings->value(SETTINGS_vehicle_slowSpeedCutoff).value<double>();
+    panicStopSpeed = settings->value(SETTINGS_vehicle_panicStopSpeed).value<double>();
 
-    hydLiftLookAheadTime = settings->value("vehicle/hydraulicLiftLookAhead").value<double>();
+    hydLiftLookAheadTime = settings->value(SETTINGS_vehicle_hydraulicLiftLookAhead).value<double>();
 
-    goalPointLookAhead = settings->value("vehicle/goalPointLookAhead").value<double>();
-    goalPointLookAheadHold = settings->value("vehicle/goalPointLookAheadHold").value<double>();
-    goalPointLookAheadMult = settings->value("vehicle/goalPointLookAheadMult").value<double>();
+    goalPointLookAhead = settings->value(SETTINGS_vehicle_goalPointLookAhead).value<double>();
+    goalPointLookAheadHold = settings->value(SETTINGS_vehicle_goalPointLookAheadHold).value<double>();
+    goalPointLookAheadMult = settings->value(SETTINGS_vehicle_goalPointLookAheadMult).value<double>();
 
-    stanleyDistanceErrorGain = settings->value("vehicle/stanleyDistanceErrorGain").value<double>();
-    stanleyHeadingErrorGain = settings->value("vehicle/stanleyHeadingErrorGain").value<double>();
-    stanleyIntegralGainAB = settings->value("vehicle/stanleyIntegralGainAB").value<double>();
-    stanleyIntegralDistanceAwayTriggerAB = settings->value("vehicle/stanleyIntegralDistanceAwayTriggerAB").value<double>();
-    purePursuitIntegralGain = settings->value("vehicle/purePursuitIntegralGainAB").value<double>();
+    stanleyDistanceErrorGain = settings->value(SETTINGS_vehicle_stanleyDistanceErrorGain).value<double>();
+    stanleyHeadingErrorGain = settings->value(SETTINGS_vehicle_stanleyHeadingErrorGain).value<double>();
+    stanleyIntegralGainAB = settings->value(SETTINGS_vehicle_stanleyIntegralGainAB).value<double>();
+    stanleyIntegralDistanceAwayTriggerAB = settings->value(SETTINGS_vehicle_stanleyIntegralDistanceAwayTriggerAB).value<double>();
+    purePursuitIntegralGain = settings->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
 
     //how far from line before it becomes Hold
-    modeXTE = settings->value("as/modeXTE").value<double>();
+    modeXTE = settings->value(SETTINGS_as_modeXTE).value<double>();
 
     //how long before hold is activated
-    modeTime = settings->value("as/modeTime").value<int>();
+    modeTime = settings->value(SETTINGS_as_modeTime).value<int>();
 
-    functionSpeedLimit = settings->value("as/functionSpeedLimit").value<double>();
-    maxSteerSpeed = settings->value("as/maxSteerSpeed").value<double>();
-    minSteerSpeed = settings->value("as/minSteerSpeed").value<double>();
+    functionSpeedLimit = settings->value(SETTINGS_as_functionSpeedLimit).value<double>();
+    maxSteerSpeed = settings->value(SETTINGS_as_maxSteerSpeed).value<double>();
+    minSteerSpeed = settings->value(SETTINGS_as_minSteerSpeed).value<double>();
 
-    uturnCompensation = settings->value("as/uTurnCompensation").value<double>();
+    uturnCompensation = settings->value(SETTINGS_as_uTurnCompensation).value<double>();
 }
 
 CVehicle::CVehicle(QObject *parent) : QObject(parent)
@@ -140,9 +140,9 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
                            CBoundary &bnd
                            )
 {
-    bool display_isVehicleImage = settings->value("display/isVehicleImage").value<bool>();
-    bool display_isSvennArrowOn = settings->value("display/isSvennArrowOn").value<bool>();
-    float display_lineWidth = settings->value("display/lineWidth").value<float>();
+    bool display_isVehicleImage = settings->value(SETTINGS_display_isVehicleImage).value<bool>();
+    bool display_isSvennArrowOn = settings->value(SETTINGS_display_isSvennArrowOn).value<bool>();
+    float display_lineWidth = settings->value(SETTINGS_display_lineWidth).value<float>();
 
     //draw vehicle
     modelview.rotate(glm::toDegrees(-fixHeading), 0.0, 0.0, 1.0);

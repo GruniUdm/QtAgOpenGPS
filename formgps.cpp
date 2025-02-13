@@ -44,7 +44,7 @@ void FormGPS::processSectionLookahead() {
     //lock.lockForWrite();
     //qDebug() << "frame time after getting lock  " << swFrame.elapsed();
 
-    if (settings->value("display/showBack").value<bool>()) {
+    if (settings->value(SETTINGS_display_showBack).value<bool>()) {
         grnPixelsWindow->setPixmap(QPixmap::fromImage(grnPix.mirrored()));
         overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
     }
@@ -660,10 +660,10 @@ void FormGPS::tmrWatchdog_timeout()
 {
     //TODO: replace all this with individual timers for cleaner
 
-    if (! settings->value("menu/isSimulatorOn").value<bool>() && timerSim.isActive()) {
+    if (! settings->value(SETTINGS_menu_isSimulatorOn).value<bool>() && timerSim.isActive()) {
         qDebug() << "Shutting down simulator.";
         timerSim.stop();
-    } else if ( settings->value("menu/isSimulatorOn").value<bool>() && ! timerSim.isActive() ) {
+    } else if ( settings->value(SETTINGS_menu_isSimulatorOn).value<bool>() && ! timerSim.isActive() ) {
         qDebug() << "Starting up simulator.";
         pn.latitude = sim.latitude;
         pn.longitude = sim.longitude;
@@ -1008,8 +1008,8 @@ void FormGPS::FileSaveEverythingBeforeClosingField()
     qDebug() << "shutting down, saving field items.";
 
     //update our settings to the vehicle as well
-    if(settings->value("vehicle/vehicleName").value<QString>() != "Default Vehicle") {
-        vehicle_saveas(settings->value("vehicle/vehicleName").value<QString>());
+    if(settings->value(SETTINGS_vehicle_vehicleName).value<QString>() != "Default Vehicle") {
+        vehicle_saveas(settings->value(SETTINGS_vehicle_vehicleName).value<QString>());
     }
 
     if (! isJobStarted) return;

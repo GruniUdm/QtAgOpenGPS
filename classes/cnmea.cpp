@@ -15,7 +15,7 @@ CNMEA::CNMEA(QObject *parent) : QObject(parent)
 
 void CNMEA::loadSettings(void)
 {
-    ageAlarm  = settings->value("gps/ageAlarm").value<int>();
+    ageAlarm  = settings->value(SETTINGS_gps_ageAlarm).value<int>();
 }
 
 //moved to CVehicle

@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     FormGPS w;
     //w.show();
 
-    if (settings->value("display/showBack").value<bool>()) {
+    if (settings->value(SETTINGS_display_showBack).value<bool>()) {
         grnPixelsWindow = new QLabel("Back Buffer");
         grnPixelsWindow->setFixedWidth(500);
         grnPixelsWindow->setFixedHeight(500);
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 //auto start AgIO
 #ifndef __ANDROID__
     QProcess process;
-    if(settings->value("feature/isAgIOOn").value<bool>()){
+    if(settings->value(SETTINGS_feature_isAgIOOn).value<bool>()){
         QObject::connect(&process, &QProcess::errorOccurred, [&](QProcess::ProcessError error) {
             if (error == QProcess::Crashed) {
                 qDebug() << "AgIO Crashed! Continuing QtAgOpenGPS like normal";

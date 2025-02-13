@@ -12,9 +12,9 @@ CCamera::CCamera()
 
 void CCamera::loadSettings()
 {
-    camPitch = settings->value("display/camPitch").value<double>();
-    zoomValue = settings->value("display/camZoom").value<double>();
-    camSmoothFactor = (settings->value("display/camSmooth").value<double>() * 0.004) + 0.2;
+    camPitch = settings->value(SETTINGS_display_camPitch).value<double>();
+    zoomValue = settings->value(SETTINGS_display_camZoom).value<double>();
+    camSmoothFactor = (settings->value(SETTINGS_display_camSmooth).value<double>() * 0.004) + 0.2;
 }
 
 void CCamera::SetWorldCam(QMatrix4x4 &modelview,

@@ -9,19 +9,19 @@ CAHRS::CAHRS(QObject *parent) : QObject(parent)
 
 void CAHRS::loadSettings()
 {
-    rollZero = settings->value("imu/rollZero").value<double>();
-    rollFilter = settings->value("imu/rollFilter").value<double>();
+    rollZero = settings->value(SETTINGS_imu_rollZero).value<double>();
+    rollFilter = settings->value(SETTINGS_imu_rollFilter).value<double>();
 
     //is the auto steer in auto turn on mode or not
-    isAutoSteerAuto = settings->value("as/isAutoSteerAutoOn").value<bool>();
-    isRollInvert = settings->value("imu/invertRoll").value<bool>();
-    isDualAsIMU = settings->value("imu/isDualAsIMU").value<bool>();
-    isReverseOn = settings->value("imu/isReverseOn").value<bool>();
+    isAutoSteerAuto = settings->value(SETTINGS_as_isAutoSteerAutoOn).value<bool>();
+    isRollInvert = settings->value(SETTINGS_imu_invertRoll).value<bool>();
+    isDualAsIMU = settings->value(SETTINGS_imu_isDualAsIMU).value<bool>();
+    isReverseOn = settings->value(SETTINGS_imu_isReverseOn).value<bool>();
 
     //the factor for fusion of GPS and IMU
-    forwardComp = settings->value("gps/forwardComp").value<double>();
-    reverseComp = settings->value("gps/reverseComp").value<double>();
-    fusionWeight = settings->value("imu/fusionWeight2").value<double>();
+    forwardComp = settings->value(SETTINGS_gps_forwardComp).value<double>();
+    reverseComp = settings->value(SETTINGS_gps_reverseComp).value<double>();
+    fusionWeight = settings->value(SETTINGS_imu_fusionWeight2).value<double>();
 
 }
 

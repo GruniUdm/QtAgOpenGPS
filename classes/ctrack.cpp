@@ -671,9 +671,9 @@ void CTrack::mark_start(double easting, double northing, double heading)
 void CTrack::mark_end(int refSide, double easting, double northing)
 {
     QLocale locale;
-    double vehicle_toolWidth = settings->value("vehicle/toolWidth").value<double>();
-    double vehicle_toolOffset = settings->value("vehicle/toolOffset").value<double>();
-    double vehicle_toolOverlap = settings->value("vehicle/toolOverlap").value<double>();
+    double vehicle_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double vehicle_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double vehicle_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
 
 
     //mark "B" location for AB Line or AB curve, or NOP for waterPivot
@@ -773,9 +773,9 @@ void CTrack::mark_end(int refSide, double easting, double northing)
 
 void CTrack::finish_new(QString name)
 {
-    double vehicle_toolWidth = settings->value("vehicle/toolWidth").value<double>();
-    double vehicle_toolOffset = settings->value("vehicle/toolOffset").value<double>();
-    double vehicle_toolOverlap = settings->value("vehicle/toolOverlap").value<double>();
+    double vehicle_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double vehicle_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double vehicle_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
 
     double dist;
     newTrack.name = name;

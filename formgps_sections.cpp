@@ -322,13 +322,13 @@ void FormGPS::doBlockageMonitoring()
     QObject *aog = qmlItem(mainWindow,"aog");
     aog->setProperty("blockageConnected", isConnectedBlockage);
     int k=0;
-    int k1 = settings->value("seed/blockRow1").value<int>();
-    int k2 = settings->value("seed/blockRow2").value<int>();
-    int k3 = settings->value("seed/blockRow3").value<int>();
-    int k4 = settings->value("seed/blockRow4").value<int>();
-    int k5 = settings->value("seed/numRows").value<int>();
-    int k6 = settings->value("seed/blockCountMin").value<int>();
-    double k7 = settings->value("vehicle/toolWidth").value<double>();
+    int k1 = settings->value(SETTINGS_seed_blockRow1).value<int>();
+    int k2 = settings->value(SETTINGS_seed_blockRow2).value<int>();
+    int k3 = settings->value(SETTINGS_seed_blockRow3).value<int>();
+    int k4 = settings->value(SETTINGS_seed_blockRow4).value<int>();
+    int k5 = settings->value(SETTINGS_seed_numRows).value<int>();
+    int k6 = settings->value(SETTINGS_seed_blockCountMin).value<int>();
+    double k7 = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
     double rowwidth = k7/k5;
     if (pn.vtgSpeed != 0) {
     for(int i=0;i<k1;i++)

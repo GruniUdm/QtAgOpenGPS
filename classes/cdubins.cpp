@@ -185,7 +185,7 @@ CDubins::CDubins()
 
 void CDubins::loadSettings()
 {
-    CDubinsTurningRadius = settings->value("vehicle/minTurningRadius").value<double>();
+    CDubinsTurningRadius = settings->value(SETTINGS_vehicle_minTurningRadius).value<double>();
 
 }
 

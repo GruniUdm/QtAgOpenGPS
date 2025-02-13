@@ -56,7 +56,7 @@ void CBoundary::DrawFenceLines(const CVehicle &v, const CModuleComm &mc,
 {
     QColor color;
     Vec3 pivot = v.pivotAxlePos;
-    float line_width = settings->value("display/lineWidth").value<float>();
+    float line_width = settings->value(SETTINGS_display_lineWidth).value<float>();
     float line_width2;
 
     GLHelperOneColor gldraw;

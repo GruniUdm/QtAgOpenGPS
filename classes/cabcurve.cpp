@@ -34,9 +34,9 @@ void CABCurve::BuildCurveCurrentList(Vec3 pivot,
 {
     double minDistA = 1000000, minDistB;
 
-    double tool_width = settings->value("vehicle/toolWidth").value<double>();
-    double tool_overlap = settings->value("vehicle/toolOverlap").value<double>();
-    double tool_offset = settings->value("vehicle/toolOffset").value<double>();
+    double tool_width = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double tool_overlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_offset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
 
     //move the ABLine over based on the overlap amount set in vehicle
     double widthMinusOverlap = tool_width - tool_overlap;
@@ -458,8 +458,8 @@ void CABCurve::BuildNewCurveAsync(double distAway,
 
     newCurList.clear();
 
-    double tool_width = settings->value("vehicle/toolWidth").value<double>();
-    double tool_overlap = settings->value("vehicle/toolOverlap").value<double>();
+    double tool_width = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double tool_overlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
     double step = (tool_width - tool_overlap) * 0.48;
     if (step > 4) step = 4;
     if (step < 1) step = 1;
@@ -653,11 +653,11 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                                    CGuidance &gyd,
                                    CNMEA &pn)
 {
-    double purePursuitGain = settings->value("vehicle/purePursuitIntegralGainAB").value<double>();
-    double wheelBase = settings->value("vehicle/wheelbase").value<double>();
-    double maxSteerAngle = settings->value("vehicle/maxSteerAngle").value<double>();
-    bool vehicle_isStanleyUsed = settings->value("vehicle/isStanleyUsed").value<bool>();
-    double as_sideHillCompensation = settings->value("as/sideHillCompensation").value<double>();
+    double purePursuitGain = settings->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
+    double wheelBase = settings->value(SETTINGS_vehicle_wheelbase).value<double>();
+    double maxSteerAngle = settings->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
+    bool vehicle_isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    double as_sideHillCompensation = settings->value(SETTINGS_as_sideHillCompensation).value<double>();
 
     if (track.curvePts.count() == 0 || track.curvePts.count() < 5)
     {
@@ -993,8 +993,8 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     ColorVertex cv;
     QColor color;
 
-    double lineWidth = settings->value("display/lineWidth").value<double>();
-    bool vehicle_isStanleyUsed = settings->value("vehicle/isStanleyUsed").value<bool>();
+    double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
+    bool vehicle_isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
 
     if (desList.count() > 0)
     {
@@ -1098,9 +1098,9 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 
 void CABCurve::BuildTram(CBoundary &bnd, CTram &tram, const CTrk &track)
 {
-    double halfWheelTrack = settings->value("vehicle/trackWidth").value<double>() * 0.5;
-    double tram_width = settings->value("tram/width").value<double>();
-    int tram_passes = settings->value("tram/passes").value<int>();
+    double halfWheelTrack = settings->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
+    double tram_width = settings->value(SETTINGS_tram_width).value<double>();
+    int tram_passes = settings->value(SETTINGS_tram_passes).value<int>();
 
     //if all or bnd only then make outer loop pass
     if (tram.generateMode != 1)

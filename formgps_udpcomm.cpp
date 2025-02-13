@@ -304,7 +304,7 @@ void FormGPS::DisableSim()
     isGPSPositionInitialized = false;
     isFirstHeadingSet = false;
     startCounter = 0;
-    settings->setValue("menu/isSimulatorOn", false);
+    settings->setValue(SETTINGS_menu_isSimulatorOn, false);
     return;
 }
 

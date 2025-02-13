@@ -14,11 +14,11 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
                                  const CAHRS &ahrs
                                  )
 {
-    double stanleyHeadingErrorGain = settings->value("vehicle/stanleyHeadingErrorGain").value<double>();
-    double stanleyDistanceErrorGain = settings->value("vehicle/stanleyDistanceErrorGain").value<double>();
-    double stanleyIntegralGainAB = settings->value("vehicle/stanleyIntegralGainAB").value<double>();
-    double sideHillCompFactor = settings->value("as/sideHillCompensation").value<double>();
-    double maxSteerAngle = settings->value("vehicle/maxSteerAngle").value<double>();
+    double stanleyHeadingErrorGain = settings->value(SETTINGS_vehicle_stanleyHeadingErrorGain).value<double>();
+    double stanleyDistanceErrorGain = settings->value(SETTINGS_vehicle_stanleyDistanceErrorGain).value<double>();
+    double stanleyIntegralGainAB = settings->value(SETTINGS_vehicle_stanleyIntegralGainAB).value<double>();
+    double sideHillCompFactor = settings->value(SETTINGS_as_sideHillCompensation).value<double>();
+    double maxSteerAngle = settings->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
 
     if (vehicle.isReverse) steerHeadingError *= -1;
     //Overshoot setting on Stanley tab

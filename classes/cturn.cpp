@@ -116,7 +116,7 @@ void CBoundary::BuildTurnLines(CFieldData &fd)
     Vec3 point;
 
     //determine how wide a headland space
-    double totalHeadWidth = settings->value("youturn/distanceFromBoundary").value<double>();
+    double totalHeadWidth = settings->value(SETTINGS_youturn_distanceFromBoundary).value<double>();
 
     //inside boundaries
     for (int j = 0; j < bndList.count(); j++)
