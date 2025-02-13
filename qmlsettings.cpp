@@ -48,7 +48,7 @@ void QMLSettings::loadSettings() {
                     l.append(QVariant(i.toInt()));
                 }
                 settings_value = l;
-            } else if (settings_key == "todo/relayPincofig" && QString(settings_value.typeName()) == "QStringList"){
+            } else if (settings_key == "relay/pinConfig" && QString(settings_value.typeName()) == "QStringList"){
                 QVariantList l;
                 for(QString &i: settings_value.toStringList()) {
                     l.append(QVariant(i.toInt()));
@@ -83,7 +83,7 @@ void QMLSettings::updateSetting(const QString &settings_key) {
                 l.append(QVariant(i.toInt()));
             }
             settings_value = l;
-        } else if (settings_key == "todo/relayPincofig" && QString(settings_value.typeName()) == "QStringList"){
+        } else if (settings_key == "relay/pinConfig" && QString(settings_value.typeName()) == "QStringList"){
             QVariantList l;
             for(QString i: settings_value.toStringList()) {
                 l.append(QVariant(i.toInt()));
@@ -102,12 +102,13 @@ void QMLSettings::onValueChanged(const QString &key, const QVariant &value) {
     //the QSettings store.  We use AOGSetting's setValue_noqml to
     //prevent AOGSetting from calling our updateSetting which would loop!
     QString settings_key = qml_to_settings_map[key];
+
     QString type_name = value.typeName();
     //qDebug() << "QML changed " << key << " to type " << type_name;
     if (type_name == "QJSValue") {
         //assume QList<int>
-        QVector<int> v = toVector<int>(value);
-        settings -> setValue_noqml(settings_key, toVariant(v));
+        QVector<int> v = _toVector<int>(value);
+        settings -> setValue_noqml(settings_key, _toVariant(v));
     } else {
         settings -> setValue_noqml(settings_key, value);
     }

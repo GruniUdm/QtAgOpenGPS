@@ -14,7 +14,7 @@ AOGProperty::AOGProperty(const QString key, const QVariant &defaultvalue): key(k
 
 AOGProperty::AOGProperty(const QString key, const QVector<int> &defaultvalue): key(key), default_list(defaultvalue)
 {
-    AOGProperty::add_default_map(key,toVariant(defaultvalue));
+    AOGProperty::add_default_map(key,_toVariant(defaultvalue));
 }
 
 void AOGProperty::add_default_map(const QString &key, const QVariant &default_value) {

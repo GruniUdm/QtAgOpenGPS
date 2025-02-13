@@ -53,6 +53,8 @@ void FormGPS::setupGui()
 
     rootContext()->setContextProperty("trk", &trk);
     rootContext()->setContextProperty("tram", &tram);
+    qmlRegisterSingletonInstance("Interfaces", 1, 0, "TracksInterface", &trk);
+    qmlRegisterSingletonInstance("Interfaces", 1, 0, "VehicleInterface", &vehicle);
 
 #ifdef LOCAL_QML
     // Look for QML files relative to our current directory
@@ -150,11 +152,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     //hook up our AOGInterface properties
     QObject *aog = qmlItem(mainWindow, "aog");
-    QObject *tracksInterface; // = mainWindow->property("tracksInterface").value<QObject *>();
-    QVariant tracksInterfaceVariant;
-    QMetaObject::invokeMethod(mainWindow, "getTracksInterface", qReturnArg(tracksInterfaceVariant));
-    tracksInterface = tracksInterfaceVariant.value<QObject *>();
-
     //QObject *vehicleInterface = qmlItem(mainWindow, "vehicleInterface");
     QObject *fieldInterface = qmlItem(mainWindow, "fieldInterface");
     QObject *boundaryInterface = qmlItem(mainWindow, "boundaryInterface");
@@ -176,26 +173,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(openGLControl,SIGNAL(dragged(int,int,int,int)),this,SLOT(onGLControl_dragged(int,int,int,int)));
 
     connect(aog,SIGNAL(sectionButtonStateChanged()), &tool.sectionButtonState, SLOT(onStatesUpdated()));
-
-    connect(tracksInterface, SIGNAL(select(int)), &trk, SLOT(select(int)));
-    connect(tracksInterface, SIGNAL(next()), &trk, SLOT(next()));
-    connect(tracksInterface, SIGNAL(prev()), &trk, SLOT(prev()));
-    connect(tracksInterface, SIGNAL(start_new(int)), &trk, SLOT(start_new(int)));
-    connect(tracksInterface, SIGNAL(mark_start(double,double,double)), &trk, SLOT(mark_start(double,double,double)));
-    connect(tracksInterface, SIGNAL(mark_end(int,double,double)), &trk, SLOT(mark_end(int,double,double)));
-    connect(tracksInterface, SIGNAL(finish_new(QString)), &trk, SLOT(finish_new(QString)));
-    connect(tracksInterface, SIGNAL(cancel_new()), &trk, SLOT(cancel_new()));
-    connect(tracksInterface, SIGNAL(pause_or_resume(bool)), &trk, SLOT(pause(bool)));
-    connect(tracksInterface, SIGNAL(add_point(double,double,double)), &trk, SLOT(add_point(double,double,double)));
-    connect(tracksInterface, SIGNAL(swapAB(int)), &trk, SLOT(swapAB(int)));
-    connect(tracksInterface, SIGNAL(changeName(int,QString)), &trk, SLOT(changeName(int,QString)));
-    connect(tracksInterface, SIGNAL(copy(int,QString)), &trk, SLOT(copy(int,QString)));
-    connect(tracksInterface, SIGNAL(delete_track(int)), &trk, SLOT(delete_track(int)));
-    connect(tracksInterface, SIGNAL(setVisible(int,bool)), &trk, SLOT(setVisible(int,bool)));
-    connect(tracksInterface, SIGNAL(ref_nudge(double)), &trk, SLOT(ref_nudge(double)));
-    connect(tracksInterface, SIGNAL(nudge_zero()), &trk, SLOT(nudge_zero()));
-    connect(tracksInterface, SIGNAL(nudge_center()), &trk, SLOT(nudge_center()));
-    connect(tracksInterface, SIGNAL(nudge(double)), &trk, SLOT(nudge(double)));
 
     //on screen buttons
     connect(aog,SIGNAL(zoomIn()), this, SLOT(onBtnZoomIn_clicked()));

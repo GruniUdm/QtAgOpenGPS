@@ -180,9 +180,8 @@ signals:
     void countChanged();
 
 public slots:
-    //we can't call these directly from QML because of thread context
-    //issues.  At least for now QML must call TracksInterface signals
-    //which we'll connect to these slots.
+    //slots are by definition invoke-able from QML directly.
+    //or they can be connected to qml-emitted signals
     void select(int index);
     void next();
     void prev();

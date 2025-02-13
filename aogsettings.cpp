@@ -38,16 +38,16 @@ QVector<int> AOGSettings::value(const QString &key, const QVector<int> &defaultv
     QVariant val;
     val = QSettings::value(key,unset);
     if (val == unset) {
-        QSettings::setValue(key,toVariant(defaultvalue));
+        QSettings::setValue(key,_toVariant(defaultvalue));
         return defaultvalue;
     }
 
-    return toVector<int>(val);
+    return _toVector<int>(val);
 }
 
 void AOGSettings::setValue(const QString &key, const QVector<int> &value_list)
 {
-    QSettings::setValue(key,toVariant(value_list));
+    QSettings::setValue(key,_toVariant(value_list));
     qml_settings.updateSetting(key);
     //emit updateFromSettings();
 }
