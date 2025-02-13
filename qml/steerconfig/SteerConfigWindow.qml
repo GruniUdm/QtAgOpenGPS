@@ -145,7 +145,7 @@ MoveablePopup {
                         from: -4000
                         leftText: utils.decimalRound(value / cpDegSlider.value, 2)
                         //onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
-                        onValueChanged: Settings.as_wasOffset = value, sendUdptimer.running = true
+                        onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, sendUdptimer.running = true
                         to: 4000
                         value: Settings.as_wasOffset / cpDegSlider.value
                         visible: steerBtn.checked
