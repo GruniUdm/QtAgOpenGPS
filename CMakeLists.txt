@@ -36,6 +36,7 @@ qt_add_executable(QtAgOpenGPS
     aogrenderer.h aogrenderer.cpp
     newsettings.h newsettings.cpp
     newsettings_addkeys.cpp
+    aogsettings.h
     btnenum.h
     common.h
     formgps.h formgps.cpp
@@ -55,7 +56,6 @@ qt_add_executable(QtAgOpenGPS
     formheadland.h formheadland.cpp
     glutils.h glutils.cpp
     interfaceproperty.h
-    properties.h
     qmlsectionbuttons.h qmlsectionbuttons.cpp
     qmlutil.h
     setter.h
@@ -95,9 +95,7 @@ qt_add_executable(QtAgOpenGPS
     classes/vecfix2fix.h
     classes/qmlblockage.h classes/qmlblockage.cpp
     LICENSE
-    props.py
     TODO.md
-    parse_properties.py
     README.md
     android/AndroidManifest.xml
     android/build.gradle
@@ -111,7 +109,6 @@ qt_add_executable(QtAgOpenGPS
 )
 
 set(qml_interfaces_singletons
-    qml/interfaces/TracksInterface.qml
 )
 
 set_source_files_properties(${qml_interfaces_singletons}
