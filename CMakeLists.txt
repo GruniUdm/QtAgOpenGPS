@@ -108,17 +108,18 @@ qt_add_executable(QtAgOpenGPS
     android/res/xml/qtprovider_paths.xml
 )
 
-#set(qml_interfaces_singletons
-#)
+set(aog_qml_singletons
+    qml/AOG/Utils.qml
+)
 
-#set_source_files_properties(${qml_interfaces_singletons}
-#    PROPERTIES QT_QML_SINGLETON_TYPE TRUE
-#)
+set_source_files_properties(${aog_qml_singletons}
+    PROPERTIES QT_QML_SINGLETON_TYPE TRUE
+)
 
 qt_add_qml_module(QtAgOpenGPS
     URI AOG
     VERSION 1.0
-    #QML_FILES ${qml_interfaces_singletons}
+    QML_FILES ${aog_qml_singletons}
     SOURCES
         aogrenderer.cpp
         aogrenderer.h

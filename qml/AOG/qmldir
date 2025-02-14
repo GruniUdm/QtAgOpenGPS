@@ -1,3 +1,4 @@
 module AOG
 AOGRenderer 1.0 AOGRenderer.qml
+singleton Utils 1.0 Utils.qml
 
