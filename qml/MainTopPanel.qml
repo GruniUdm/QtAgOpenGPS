@@ -45,14 +45,53 @@ import "components" as Comp
         //            font.pixelSize: 15
         //        }
         Text {
+            id: playText
             anchors.bottom: parent.bottom
             anchors.left: parent.left
-            anchors.leftMargin: 150
-            text: qsTr("ac")
+            anchors.leftMargin: 100
+            text: ""
             anchors.top: parent.verticalCenter
             font.bold: true
             font.pixelSize: 15
         }
+        Timer{
+            property int increment: -1
+            /* increment:
+              0: Time + Date
+              1: Lat + Lon
+              2: Vehicle
+              3: Field
+              4: App
+              Else: Line*/
+            running: true
+            interval: 2000
+            repeat: true
+            onTriggered: {
+                increment++
+                if(increment == 0){
+                    playText.text = Qt.formatDateTime(new Date(), "MM-dd-yyyy HH:mm:ss")
+                }else if(increment == 1){
+                    playText.text = "Lat: " + aog.latitude + " Lon: " + aog.longitude
+                }else if(increment == 2){
+                    playText.text =  utils.m_to_ft_string(settings.setVehicle_toolWidth) + " - " + settings.setVehicle_vehicleName
+                    if(!aog.isJobStarted) //reset
+                        increment = -1
+                }else if(increment == 3){
+                    playText.text = "Field: " + settings.setF_CurrentDir
+                }else if(increment == 4) {
+                    playText.text = "App: " + utils.area_to_unit_string(aog.workedAreaTotal, 2) + " Actual: " + utils.area_to_unit_string(aog.actualAreaCovered, 2) + " " +
+                            Number(aog.percentLeft).toLocaleString(Qt.locale(), 'f', 0)+"% " + aog.workRate
+                }
+                else {
+                        playText.text = "Track: " + tracksInterface.currentName
+                    increment = -1 //reset
+                }
+
+
+
+            }
+        }
+
         Text {
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
