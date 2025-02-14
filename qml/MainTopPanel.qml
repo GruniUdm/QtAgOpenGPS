@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Settings
+import Interface
 import "components" as Comp
 
     Rectangle{
@@ -84,17 +85,17 @@ import "components" as Comp
                 }else if(increment == 1){
                     playText.mainString = "Lat: " + aog.latitude + " Lon: " + aog.longitude
                 }else if(increment == 2){
-                    playText.mainString =  utils.m_to_ft_string(settings.setVehicle_toolWidth) + " - " + settings.setVehicle_vehicleName
+                    playText.mainString =  utils.m_to_ft_string(Settings.vehicle_toolWidth) + " - " + Settings.vehicle_vehicleName
                     if(!aog.isJobStarted) //reset
                         increment = -1
                 }else if(increment == 3){
-                    playText.mainString = "Field: " + settings.setF_CurrentDir
+                    playText.mainString = "Field: " + Settings.f_currentDir
                 }else if(increment == 4) {
                     playText.mainString = "App: " + utils.area_to_unit_string(aog.workedAreaTotal, 2) + " Actual: " + utils.area_to_unit_string(aog.actualAreaCovered, 2) + " " +
                             Number(aog.percentLeft).toLocaleString(Qt.locale(), 'f', 0)+"% " + aog.workRate
                 }
                 else {
-                        playText.mainString = "Track: " + tracksInterface.currentName
+                        playText.mainString = "Track: " + TracksInterface.currentName
                     increment = -1 //reset
                 }
 
