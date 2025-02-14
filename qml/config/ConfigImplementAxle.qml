@@ -4,6 +4,7 @@
 // Set where main axle is on implement
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -26,12 +27,12 @@ Rectangle{
         to: 2000
         anchors.verticalCenter: parent.verticalCenter
         anchors.horizontalCenter: parent.horizontalCenter
-        boundValue: Math.abs(settings.setTool_trailingToolToPivotLength)
+        boundValue: Math.abs(Settings.tool_trailingToolToPivotLength)
         onValueChanged: {
             if(backBtn.checked){
-                settings.setTool_trailingToolToPivotLength = -value
+                Settings.tool_trailingToolToPivotLength = -value
             } else {
-                settings.setTool_trailingToolToPivotLength = value
+                Settings.tool_trailingToolToPivotLength = value
             }
         }
     }
@@ -51,9 +52,9 @@ Rectangle{
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: 50 * theme.scaleWidth
         checkable: true
-        isChecked: (settings.setTool_trailingToolToPivotLength > 0)
+        isChecked: (Settings.tool_trailingToolToPivotLength > 0)
         icon.source: prefix + "/images/Config/ToolHitchPivotOffsetNeg.png"
-        onClicked: settings.setTool_trailingToolToPivotLength = Math.abs(settings.setTool_trailingToolToPivotLength)
+        onClicked: Settings.tool_trailingToolToPivotLength = Math.abs(Settings.tool_trailingToolToPivotLength)
     }
 
     IconButtonColor{
@@ -63,9 +64,9 @@ Rectangle{
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         anchors.rightMargin: 50 * theme.scaleWidth
-        isChecked: (settings.setTool_trailingToolToPivotLength <= 0)
+        isChecked: (Settings.tool_trailingToolToPivotLength <= 0)
         checkable: true
-        onClicked: settings.setTool_trailingToolToPivotLength = -Math.abs(settings.setTool_trailingToolToPivotLength)
+        onClicked: Settings.tool_trailingToolToPivotLength = -Math.abs(Settings.tool_trailingToolToPivotLength)
         icon.source: prefix + "/images/Config/ToolHitchPivotOffsetPos.png"
     }
 }

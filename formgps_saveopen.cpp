@@ -4,10 +4,8 @@
 // Main event loop save/load files from file manager to QtAOG
 #include "formgps.h"
 #include <QDir>
-//#include "aogsettings.h"
-//#include "cmodulecomm.h"
 #include "cboundarylist.h"
-#include "aogproperty.h"
+#include "newsettings.h"
 #include "qmlutil.h"
 #include <QString>
 
@@ -864,7 +862,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
     line = reader.readLine();
 
     currentFieldDirectory = fieldDir;
-    property_setF_CurrentDir = currentFieldDirectory;
+    settings->setValue(SETTINGS_f_currentDir, currentFieldDirectory);
 
     //Offset header
     line = reader.readLine();
@@ -903,8 +901,10 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             pn.latitude = pn.latStart;
             pn.longitude = pn.lonStart;
 
-            sim.latitude = property_setGPS_SimLatitude = pn.latStart;
-            sim.longitude = property_setGPS_SimLongitude = pn.lonStart;
+            sim.latitude = pn.latStart;
+            settings->setValue(SETTINGS_gps_simLatitude, pn.latStart);
+            sim.longitude = pn.lonStart;
+            settings->setValue(SETTINGS_gps_simLongitude, pn.lonStart);
         }
         pn.SetLocalMetersPerDegree();
     }

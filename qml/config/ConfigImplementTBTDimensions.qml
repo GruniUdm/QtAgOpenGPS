@@ -4,6 +4,7 @@
 // Window where we set dimensions for the TBT implement, or a drawn implement behind a drawn implement
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -31,8 +32,8 @@ Rectangle{
             anchors.rightMargin: 80 * theme.scaleWidth
             from: 10
             to:3000
-            boundValue: -settings.setTool_toolTrailingHitchLength
-            onValueModified: settings.setTool_toolTrailingHitchLength = -value
+            boundValue: -Settings.tool_toolTrailingHitchLength
+            onValueModified: Settings.tool_toolTrailingHitchLength = -value
         }
         SpinBoxCM{
             id: toolTBTHitchLength
@@ -41,8 +42,8 @@ Rectangle{
             anchors.rightMargin: 130 * theme.scaleWidth
             from: 10
             to:3000
-            boundValue: -settings.setVehicle_tankTrailingHitchLength
-            onValueModified: settings.setVehicle_tankTrailingHitchLength = -value
+            boundValue: -Settings.vehicle_tankTrailingHitchLength
+            onValueModified: Settings.vehicle_tankTrailingHitchLength = -value
         }
     }
     TextLine{

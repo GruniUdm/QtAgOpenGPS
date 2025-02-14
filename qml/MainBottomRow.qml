@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Settings
 import "components" as Comp
 
 RowLayout{
@@ -58,7 +59,7 @@ RowLayout{
         icon.source: prefix + "/images/ResetTool.png"
         buttonText: "Reset Tool"
         onClicked: aog.btnResetTool()
-        visible: settings.setTool_isToolTrailing === true //hide if front or rear 3 pt
+        visible: Settings.tool_isToolTrailing === true //hide if front or rear 3 pt
     }
     Comp.MainWindowBtns {
         id: btnSectionMapping
@@ -72,7 +73,7 @@ RowLayout{
         Layout.alignment: Qt.AlignCenter
         implicitWidth: theme.buttonSize
         implicitHeight: theme.buttonSize
-        visible: settings.setFeature_isTramOn
+        visible: Settings.feature_isTramOn
     }
     Comp.MainWindowBtns {
         property bool isOn: false
@@ -80,7 +81,7 @@ RowLayout{
         isChecked: isOn
         checkable: true
         disabled: btnHeadland.checked
-        visible: utils.isTrue(settings.setArdMac_isHydEnabled) && btnHeadland.visible
+        visible: utils.isTrue(Settings.ardMac_isHydEnabled) && btnHeadland.visible
         icon.source: prefix + "/images/HydraulicLiftOff.png"
         iconChecked: prefix + "/images/HydraulicLiftOn.png"
         buttonText: "HydLift"

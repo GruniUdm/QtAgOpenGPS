@@ -4,6 +4,7 @@
 // Dimensions for front 3pt mounted implement
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -32,8 +33,8 @@ Rectangle{
         anchors.rightMargin: parent.width * 0.45
         from: 10
         to:3000
-        boundValue: settings.setVehicle_hitchLength < 0 ? -settings.setVehicle_hitchLength : settings.setVehicle_hitchLength
-        onValueModified: settings.setVehicle_hitchLength = value
+        boundValue: Settings.vehicle_hitchLength < 0 ? -Settings.vehicle_hitchLength : Settings.vehicle_hitchLength
+        onValueModified: Settings.vehicle_hitchLength = value
         TextLine{
             text: qsTr("Units: ")+ utils.cm_unit_abbrev()
             font.bold: true

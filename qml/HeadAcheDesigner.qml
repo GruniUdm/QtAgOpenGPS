@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Shapes
+import Settings
 import "components" as Comp
 
 Popup{
@@ -368,7 +369,7 @@ Popup{
                 iconChecked: prefix + "/images/HeadlandSectionOn.png"
                 checkable: true
                 Layout.alignment: Qt.AlignCenter
-                isChecked: settings.setHeadland_isSectionControlled
+                isChecked: Settings.headland_isSectionControlled
                 onCheckedChanged: isSectionControlled(checked)
             }
             Comp.IconButtonTransparent{
@@ -417,7 +418,7 @@ Popup{
                 //objectName: "nudSetDistance"
                 from: 0
                 to: 2000
-                boundValue: numTracks.value * settings.setVehicle_toolWidth
+                boundValue: numTracks.value * Settings.vehicle_toolWidth
                 Layout.alignment: Qt.AlignCenter
                 Comp.TextLine{anchors.top: parent.bottom; text: "( "+ utils.m_unit_abbrev()+" )"}
 
@@ -429,7 +430,7 @@ Popup{
                 to: 10
                 value: 0
                 Layout.alignment: Qt.AlignCenter
-                Comp.TextLine{anchors.top: parent.bottom; text: qsTr("Tool: ")+ utils.m_to_ft_string(settings.setVehicle_toolWidth)}
+                Comp.TextLine{anchors.top: parent.bottom; text: qsTr("Tool: ")+ utils.m_to_ft_string(Settings.vehicle_toolWidth)}
             }
             Comp.IconButtonColor{
                 id: cboxIsZoom

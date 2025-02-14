@@ -10,8 +10,14 @@
 #include <QSize>
 #include <QRect>
 
+#include "settings_defines.h"
+
 extern QVector<int> default_relay_pinConfig;
 extern QVector<int> default_zones;
+
+class NewSettings;
+
+extern NewSettings *settings;
 
 /* This class helps bridge between QSettings and QML/Javascript.
  * An instance of QSettings is kept inside this class and a
@@ -54,6 +60,7 @@ public:
 
     void addKey(const QString qsettings_key,
                 const QVariant &default_value,
+                const QMetaType type,
                 NewSettings::SpecialCase special_case = NORMAL);
 
     QVariant value(const QString &key);
@@ -64,6 +71,10 @@ public:
     QJsonObject toJson();
     bool saveJson(QString filename);
     bool loadJson(QString filename);
+
+    void sync();
+protected:
+    QVariant updateValue(const QString &key, const QVariant &input);
 
 public slots:
     void onValueChanged (const QString &qml_key, const QVariant &value);

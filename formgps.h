@@ -158,9 +158,6 @@ public:
 
     double nudNumber = 0;
 
-    double m2InchOrCm, inchOrCm2m, m2FtOrM, ftOrMtoM, cm2CmOrIn, inOrCm2Cm;
-    QString unitsFtM, unitsInCm;
-
     //used by filePicker Form to return picked file and directory
     //QString filePickerFileAndDirectory;
 

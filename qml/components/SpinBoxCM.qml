@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 import QtQuick
+import Settings
 
 //This is a spinbox for displaying dimensions that are either
 //cm or inches
@@ -35,8 +36,8 @@ Item {
     }
 
     Connections {
-        target: settings
-        function onSetMenu_isMetricChanged() {
+        target: Settings
+        function onMenu_isMetricChanged() {
             spinner.value = utils.cm_to_unit(value)
         }
     }

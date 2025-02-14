@@ -3,6 +3,7 @@
 //
 //
 import QtQuick 2.0
+import Settings
 import "components" as Comp
 
 Comp.OutlineText {
@@ -16,7 +17,7 @@ Comp.OutlineText {
     function generate_text(track_no) {
         var track_num = track_no
 
-        if (utils.isTrue(settings.setDisplay_useTrackZero)) {
+        if (utils.isTrue(Settings.display_useTrackZero)) {
             if (track_num >  0)
                 track_num -=1
         }

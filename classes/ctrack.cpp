@@ -9,7 +9,7 @@
 #include "glm.h"
 #include "cabcurve.h"
 #include "cabline.h"
-#include "aogproperty.h"
+#include "newsettings.h"
 #include "cyouturn.h"
 #include "cboundary.h"
 #include "ctram.h"
@@ -681,6 +681,10 @@ void CTrack::mark_start(double easting, double northing, double heading)
 void CTrack::mark_end(int refSide, double easting, double northing)
 {
     QLocale locale;
+    double vehicle_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double vehicle_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double vehicle_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+
 
     //mark "B" location for AB Line or AB curve, or NOP for waterPivot
     int cnt;
@@ -749,12 +753,12 @@ void CTrack::mark_end(int refSide, double easting, double northing)
 
             if (newRefSide > 0)
             {
-                dist = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) * 0.5 + (double)property_setVehicle_toolOffset;
+                dist = (vehicle_toolWidth - vehicle_toolOverlap) * 0.5 + vehicle_toolOffset;
                 NudgeRefCurve(newTrack, dist);
             }
             else if (newRefSide < 0)
             {
-                dist = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) * -0.5 + (double)property_setVehicle_toolOffset;
+                dist = (vehicle_toolWidth - vehicle_toolOverlap) * -0.5 + vehicle_toolOffset;
                 NudgeRefCurve(newTrack, dist);
             }
             //else no nudge, center ref line
@@ -779,6 +783,10 @@ void CTrack::mark_end(int refSide, double easting, double northing)
 
 void CTrack::finish_new(QString name)
 {
+    double vehicle_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double vehicle_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double vehicle_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+
     double dist;
     newTrack.name = name;
 
@@ -788,13 +796,13 @@ void CTrack::finish_new(QString name)
 
         if (newRefSide > 0)
         {
-            dist = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) * 0.5 + (double)property_setVehicle_toolOffset;
+            dist = (vehicle_toolWidth - vehicle_toolOverlap) * 0.5 + vehicle_toolOffset;
             NudgeRefABLine(newTrack, dist);
 
         }
         else if (newRefSide < 0)
         {
-            dist = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) * -0.5 + (double)property_setVehicle_toolOffset;
+            dist = (vehicle_toolWidth - vehicle_toolOverlap) * -0.5 + vehicle_toolOffset;
             NudgeRefABLine(newTrack, dist);
         }
 

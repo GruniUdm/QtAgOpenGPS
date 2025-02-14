@@ -3,6 +3,7 @@
 //
 //
 import QtQuick 2.0
+import Settings
 
 //a collection of functions to do unit and coordinate conversions
 
@@ -104,7 +105,7 @@ Item {
     }
 
     function isMetric() {
-        return (settings.setMenu_isMetric === true || settings.setMenu_isMetric === "true")
+        return (Settings.menu_isMetric === true || Settings.menu_isMetric === "true")
     }
 
     function speed_unit() {
@@ -366,7 +367,7 @@ Item {
         if (aog.speedKph > 2)
         {
             var total_time = ((aog.areaBoundaryOuterLessInner - aog.workedAreaTotal) / 1000 /
-                              (settings.setVehicle_toolWidth * aog.speedKph * 0.1));
+                              (Settings.vehicle_toolWidth * aog.speedKph * 0.1));
             var hours = Math.floor(total_time);
             var minutes = (total_time - hours) * 60;
 
@@ -379,9 +380,9 @@ Item {
 
     function workRate() {
         if (isMetric())
-            aog.workRate = (Number(settings.setVehicle_toolWidth * aog.speedKph * 0.1).toLocaleString(Qt.locale(), 'f', 2)) + " ha/hr";
+            aog.workRate = (Number(Settings.vehicle_toolWidth * aog.speedKph * 0.1).toLocaleString(Qt.locale(), 'f', 2)) + " ha/hr";
         else
-            aog.workRate =  (Number(settings.setVehicle_toolWidth * aog.speedKph * 0.2471).toLocaleString(Qt.locale(), 'f', 2)) + " ac/hr";
+            aog.workRate =  (Number(Settings.vehicle_toolWidth * aog.speedKph * 0.2471).toLocaleString(Qt.locale(), 'f', 2)) + " ac/hr";
     }
     function percents (){
         aog.percentLeft = ((aog.areaBoundaryOuterLessInner - aog.workedAreaTotal) / aog.areaBoundaryOuterLessInner* 100)
