@@ -46,14 +46,63 @@ import "components" as Comp
         //            font.pixelSize: 15
         //        }
         Text {
+            id: playText
+            property string mainString: ""
             anchors.bottom: parent.bottom
             anchors.left: parent.left
-            anchors.leftMargin: 150
-            text: qsTr("ac")
+            anchors.leftMargin: 100
+            text: (playTimer.running ? "■ " : "▶ ") + mainString
             anchors.top: parent.verticalCenter
             font.bold: true
             font.pixelSize: 15
         }
+        MouseArea{
+            anchors.top:playText.top
+            anchors.left: playText.left
+            height: playText.height
+            width: height
+            onClicked: playTimer.running = !playTimer.running
+        }
+
+        Timer{
+            id: playTimer
+            property int increment: -1
+            /* increment:
+              0: Time + Date
+              1: Lat + Lon
+              2: Vehicle
+              3: Field
+              4: App
+              Else: Line*/
+            running: true
+            interval: 2000
+            repeat: true
+            onTriggered: {
+                increment++
+                if(increment == 0){
+                    playText.mainString = Qt.formatDateTime(new Date(), "MM-dd-yyyy HH:mm:ss")
+                }else if(increment == 1){
+                    playText.mainString = "Lat: " + aog.latitude + " Lon: " + aog.longitude
+                }else if(increment == 2){
+                    playText.mainString =  utils.m_to_ft_string(settings.setVehicle_toolWidth) + " - " + settings.setVehicle_vehicleName
+                    if(!aog.isJobStarted) //reset
+                        increment = -1
+                }else if(increment == 3){
+                    playText.mainString = "Field: " + settings.setF_CurrentDir
+                }else if(increment == 4) {
+                    playText.mainString = "App: " + utils.area_to_unit_string(aog.workedAreaTotal, 2) + " Actual: " + utils.area_to_unit_string(aog.actualAreaCovered, 2) + " " +
+                            Number(aog.percentLeft).toLocaleString(Qt.locale(), 'f', 0)+"% " + aog.workRate
+                }
+                else {
+                        playText.mainString = "Track: " + tracksInterface.currentName
+                    increment = -1 //reset
+                }
+
+
+
+            }
+        }
+
         Text {
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
