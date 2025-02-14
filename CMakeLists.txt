@@ -129,10 +129,10 @@ qt_add_qml_module(QtAgOpenGPS
 # show some of our mockup files in the project tree without compiling it
 set(qml_mockup_files
     qml/AOG/qmldir
-    qml/AOG/AOGRenderer.qml
+    qml/AOG/MockAOGRenderer.qml
     qml/Interface/qmldir
-    qml/Interface/TracksInterface.qml
-    qml/Interface/MockVehicle.qml
+    qml/Interface/MockTracksInterface.qml
+    qml/Interface/MockVehicleInterface.qml
     qml/Settings/qmldir
     qml/Settings/MockSettings.qml
 )
