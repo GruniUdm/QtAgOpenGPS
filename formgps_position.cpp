@@ -1783,7 +1783,7 @@ void FormGPS::InitializeFirstFewGPSPositions()
             //TODO determine if it is day from wall clock and date
             isDayTime = true;
 
-            SetZoom();
+            camera.SetZoom();
         }
         return;
     }

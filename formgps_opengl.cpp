@@ -187,7 +187,7 @@ void FormGPS::oglMain_Paint()
     //gl->glDisable(GL_CULL_FACE);
 
     //set the camera to right distance
-    SetZoom();
+    camera.SetZoom();
 
     //now move the "camera" to the calculated zoom settings
     //I had to move these functions here because if setZoom is called
@@ -1109,26 +1109,6 @@ void FormGPS::CalcFrustum(const QMatrix4x4 &mvp)
     //frustum[21] = clip[7] - clip[5];
     //frustum[22] = clip[11] - clip[9];
     //frustum[23] = clip[15] - clip[13];
-}
-
-//take the distance from object and convert to camera data
-//TODO, move Projection matrix stuff into here when OpenGL ES migration is complete
-void FormGPS::SetZoom()
-{
-    //match grid to cam distance and redo perspective
-    if (camera.camSetDistance <= -20000) gridZoom = 2000;
-    if (camera.camSetDistance >= -20000 && camera.camSetDistance < -10000) gridZoom =   2012;
-    if (camera.camSetDistance >= -10000 && camera.camSetDistance < -5000) gridZoom =    1006;
-    if (camera.camSetDistance >= -5000 && camera.camSetDistance < -2000) gridZoom =     503;
-    if (camera.camSetDistance >= -2000 && camera.camSetDistance < -1000) gridZoom =     201.2;
-    if (camera.camSetDistance >= -1000 && camera.camSetDistance < -500) gridZoom =      100.6;
-    if (camera.camSetDistance >= -500 && camera.camSetDistance < -250) gridZoom =       50.3;
-    if (camera.camSetDistance >= -250 && camera.camSetDistance < -150) gridZoom =       25.15;
-    if (camera.camSetDistance >= -150 && camera.camSetDistance < -50) gridZoom =         10.06;
-    if (camera.camSetDistance >= -50 && camera.camSetDistance < -1) gridZoom = 5.03;
-    //1.216 2.532
-
-
 }
 
 void FormGPS::loadGLTextures()

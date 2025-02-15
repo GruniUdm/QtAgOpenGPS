@@ -1357,7 +1357,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         FixTramModeButton();
     }
 
-    SetZoom();
+    camera.SetZoom();
     lock.unlock();
 
     //Recorded Path

@@ -249,12 +249,6 @@ public:
     //for animated submenu
     //bool isMenuHid = true;
 
-    //Zoom variables
-    double gridZoom;
-    double zoomValue = 10;
-    double triangleResolution = 1.0;
-    double previousZoom = 25;
-
     // Storage For Our Tractor, implement, background etc Textures
     //Texture particleTexture;
 
@@ -608,7 +602,6 @@ public:
     QVector3D mouseClickToField(int mouseX, int mouseY);
     QVector3D mouseClickToPan(int mouseX, int mouseY);
 
-    void SetZoom();
     void loadGLTextures();
     void Timer1_Tick();
 

@@ -975,7 +975,7 @@ void FormGPS::JobClose()
     recPath.shuttleDubinsList.clear();
 
     //FixPanelsAndMenus();
-    SetZoom();
+    camera.SetZoom();
     worldGrid.isGeoMap = false;
     worldGrid.isRateMap = false;
 
@@ -997,7 +997,7 @@ void FormGPS::JobNew()
 
     trk.ABLine.abHeading = 0.00;
 
-    SetZoom();
+    camera.SetZoom();
     fileSaveCounter = 25;
     trk.isAutoTrack = false;
     isJobStarted = true;

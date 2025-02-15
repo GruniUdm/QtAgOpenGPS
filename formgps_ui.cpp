@@ -540,7 +540,7 @@ void FormGPS::onBtnZoomIn_clicked(){
             camera.zoomValue = 3.0;
     }
     camera.camSetDistance = camera.zoomValue * camera.zoomValue * -1;
-    SetZoom();
+    camera.SetZoom();
     //TODO save zoom to properties
     openGLControl->update();
 }
@@ -550,7 +550,7 @@ void FormGPS::onBtnZoomOut_clicked(){
     else camera.zoomValue += camera.zoomValue * 0.05;
     if (camera.zoomValue > 220) camera.zoomValue = 220;
     camera.camSetDistance = camera.zoomValue * camera.zoomValue * -1;
-    SetZoom();
+    camera.SetZoom();
 
     //todo save to properties
     openGLControl->update();

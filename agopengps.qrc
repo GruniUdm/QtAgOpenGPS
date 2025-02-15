@@ -487,7 +487,6 @@
         <file>qml/Speedometer.qml</file>
         <file>qml/AOGInterface.qml</file>
         <file>images/SectionOnBoundary.png</file>
-        <file>qml/UnitConversion.qml</file>
         <file>qml/LightBar.qml</file>
         <file>qml/TrackNum.qml</file>
         <file>qml/DisplayButtons.qml</file>
