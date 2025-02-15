@@ -86,7 +86,4 @@ double ratecontrol::TargetUPM() // returns units per minute set rate
     return Result;
 }
 
-void ratecontrol::set (int ID, int rateset){
-    cProductID = ID;
-    TargetRate = rateset;
-}
+

@@ -21,7 +21,10 @@ public:
     int cPWMsetting;
     int cSensorReceiving;
     explicit ratecontrol(QObject *parent = nullptr);
-    inline void set (int ID, int rateset);
+    inline void set (int ID, int rateset){
+        cProductID = ID;
+        TargetRate = rateset;
+    }
 
 private:
     double TargetRate;
