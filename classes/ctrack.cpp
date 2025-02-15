@@ -632,9 +632,10 @@ void CTrack::prev()
 
     if (visible_count == 0) return; //no visible tracks to choose
 
-    idx = (idx - 1) % gArr.count();
-    while (!gArr[idx].isVisible)
-        idx = (idx - 1) % gArr.count();
+    if (--idx < 0) idx = gArr.count() - 1;
+    while (!gArr[idx].isVisible) {
+        if (--idx < 0) idx = gArr.count() - 1;
+    }
 }
 
 void CTrack::start_new(int mode)
