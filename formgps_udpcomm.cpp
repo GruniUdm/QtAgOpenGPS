@@ -285,7 +285,8 @@ void FormGPS::ReceiveFromAgIO()
             rc.cQuantity = (data[10] << 16 | data[9] << 8 | data[8]) / 10.0;
             rc.cPWMsetting = (qint16)(data[12] << 8 | data[11]);  // need to cast to 16 bit integer to preserve the sign bit
             rc.cSensorReceiving = ((data[13] & 0b00000001) == 0b00000001);
-            rc.set(0, rc.cUPM);
+
+            doRateControl();
 
         case 0xf4://blockage 244
             //

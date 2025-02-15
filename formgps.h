@@ -698,6 +698,7 @@ public slots:
     void modules_send_PGN32500();
 
     void doBlockageMonitoring();
+    void doRateControl();
 
     //boundary UI for recording new boundary
     void boundary_calculate_area();

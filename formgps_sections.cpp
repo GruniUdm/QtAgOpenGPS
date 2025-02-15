@@ -386,6 +386,9 @@ void FormGPS::doBlockageMonitoring()
     tool.blockage_blocked = count;
 }
 
-
-
+void FormGPS::doRateControl()
+{
+     rc.set(0, rc.cUPM);
+    SendPgnToLoop(ModulePIDdata.pgn);
+}
 
