@@ -7,6 +7,8 @@ import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -650,7 +652,7 @@ Window{
                                 boundValue: Settings.display_lightbarCmPerPixel
                                 onValueModified: Settings.display_lightbarCmPerPixel = value
                                 editable: true
-                                text: utils.cm_unit() + " " + qsTr("per pixel","As in units per pixel")
+                                text: Utils.cm_unit() + " " + qsTr("per pixel","As in units per pixel")
                             }
                         }
                     }
@@ -754,7 +756,7 @@ Window{
                         boundValue: Settings.as_snapDistance
                         onValueModified: Settings.as_snapDistance = value
                         editable: true
-                        text: utils.cm_unit()
+                        text: Utils.cm_unit()
                     }
                 }
             }
@@ -829,7 +831,7 @@ Window{
                     onValueModified: Settings.as_functionSpeedLimit = value
                     Layout.alignment: Qt.AlignCenter
                 }
-                Text{ text: qsTr(utils.speed_unit()); Layout.alignment: Qt.AlignCenter}
+                Text{ text: qsTr(Utils.speed_unit()); Layout.alignment: Qt.AlignCenter}
                 Text{ text: qsTr("Min AutoSteer Speed"); Layout.alignment: Qt.AlignCenter}
                 Image{
                     id: minAutoSteerImage
@@ -847,7 +849,7 @@ Window{
                     onValueModified: Settings.as_minSteerSpeed = value
                     Layout.alignment: Qt.AlignCenter
                 }
-                Text{ text: qsTr(utils.speed_unit()); Layout.alignment: Qt.AlignCenter}
+                Text{ text: qsTr(Utils.speed_unit()); Layout.alignment: Qt.AlignCenter}
                 Text{ text: qsTr("Max AutoSteer Speed"); Layout.alignment: Qt.AlignCenter}
                 Image{
                     id: maxAutoSteerImage
@@ -865,7 +867,7 @@ Window{
                     onValueModified: Settings.as_maxSteerSpeed = value
                     Layout.alignment: Qt.AlignCenter
                 }
-                Text{ text: qsTr(utils.speed_unit()); Layout.alignment: Qt.AlignCenter}
+                Text{ text: qsTr(Utils.speed_unit()); Layout.alignment: Qt.AlignCenter}
                 Text{ text: qsTr("Max Turn Rate"); Layout.alignment: Qt.AlignCenter}
                 Image{
                     source: prefix + "/images/Config/ConV_MaxAngVel.png"
@@ -882,8 +884,8 @@ Window{
                     from: 5
                     to: 100
                     editable: true
-                    value: utils.radians_to_deg(Settings.vehicle_maxAngularVelocity) // should be in radians!
-                    onValueChanged: Settings.vehicle_maxAngularVelocity = utils.deg_to_radians(value)
+                    value: Utils.radians_to_deg(Settings.vehicle_maxAngularVelocity) // should be in radians!
+                    onValueChanged: Settings.vehicle_maxAngularVelocity = Utils.deg_to_radians(value)
                 }
                 Text{ text: qsTr("Degrees/sec"); Layout.alignment: Qt.AlignCenter}
             }

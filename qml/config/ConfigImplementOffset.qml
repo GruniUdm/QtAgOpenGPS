@@ -9,6 +9,8 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import Qt.labs.folderlistmodel
 import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -56,7 +58,7 @@ Rectangle{
             TextLine{
                 anchors.horizontalCenter: undefined;
                 anchors.verticalCenter: parent.verticalCenter
-                text: utils.cm_unit_abbrev()
+                text: Utils.cm_unit_abbrev()
             }
         }
         Item{
@@ -139,7 +141,7 @@ Rectangle{
             TextLine{
                 anchors.horizontalCenter: undefined;
                 anchors.verticalCenter: parent.verticalCenter
-                text: utils.cm_unit_abbrev()
+                text: Utils.cm_unit_abbrev()
             }
 
         }
@@ -183,7 +185,7 @@ Rectangle{
             TextLine{
                 anchors.horizontalCenter: undefined;
                 anchors.verticalCenter: parent.verticalCenter
-                text: utils.cm_unit_abbrev()
+                text: Utils.cm_unit_abbrev()
             }
         }
     }

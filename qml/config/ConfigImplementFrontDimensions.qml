@@ -5,6 +5,8 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -36,7 +38,7 @@ Rectangle{
         boundValue: Settings.vehicle_hitchLength < 0 ? -Settings.vehicle_hitchLength : Settings.vehicle_hitchLength
         onValueModified: Settings.vehicle_hitchLength = value
         TextLine{
-            text: qsTr("Units: ")+ utils.cm_unit_abbrev()
+            text: qsTr("Units: ")+ Utils.cm_unit_abbrev()
             font.bold: true
             anchors.top: parent.bottom
         }

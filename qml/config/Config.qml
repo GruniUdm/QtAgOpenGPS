@@ -9,6 +9,8 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import Settings
 import Qt.labs.folderlistmodel
+import AOG
+
 
 import ".."
 import "../components"
@@ -238,14 +240,14 @@ Dialog {
             z: 3
             TextLine{
                 id: vehicle
-                text: utils.cm_unit()
+                text: Utils.cm_unit()
                 anchors.verticalCenter: parent.verticalCenter
                 color: "green"
                 font.pixelSize: parent.height/2
             }
             TextLine {
                 id: sections
-                text: utils.m_to_ft_string(Settings.vehicle_toolWidth)
+                text: Utils.m_to_ft_string(Settings.vehicle_toolWidth)
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: saveAndClose.left
                 anchors.rightMargin: 80
@@ -265,8 +267,8 @@ Dialog {
 
                     //TODO, have to do this if rejected() also.
 
-                    if ((utils.isTrue(Settings.tool_isToolFront) && Number(Settings.vehicle_hitchLength < 0)) ||
-                            (!utils.isTrue(Settings.tool_isToolFront) && Number(Settings.vehicle_hitchLength) > 0)) {
+                    if ((Utils.isTrue(Settings.tool_isToolFront) && Number(Settings.vehicle_hitchLength < 0)) ||
+                            (!Utils.isTrue(Settings.tool_isToolFront) && Number(Settings.vehicle_hitchLength) > 0)) {
                         //if front-mounted tool, make sure the hitchLength is positive and if rear-mounted, make sure
                         //hitchLength is negative
                         Settings.vehicle_hitchLength = -Number(Settings.vehicle_hitchLength)

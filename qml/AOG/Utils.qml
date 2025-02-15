@@ -378,4 +378,13 @@ Item {
             return inputString
         }
     }
+
+    function workRateString(speed) {
+        if (isMetric())
+            return Number(Settings.vehicle_toolWidth * speed * 0.1).toLocaleString(Qt.locale(), 'f', 2) + " ha/hr"; //TODO: translate
+        else
+            return Number(Settings.vehicle_toolWidth * speed * 0.2471).toLocaleString(Qt.locale(), 'f', 2) + " ac/hr";
+    }
+
+
 }

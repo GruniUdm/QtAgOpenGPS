@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 import Settings
 import QtQuick
+import AOG
 
 //This is a spinbox for displaying dimensions that are either
 //cm or inches
@@ -26,7 +27,7 @@ Item {
 
     //set the spinner value without triggering valueChanged
     function setValue(value) {
-        spinner.setValue(utils.km_to_mi(value))
+        spinner.setValue(Utils.km_to_mi(value))
     }
 
     onBoundValueChanged: {
@@ -36,22 +37,22 @@ Item {
     Connections {
         target: Settings
         function onMenu_isMetricChanged() {
-            spinner.value = utils.km_to_mi(value)
+            spinner.value = Utils.km_to_mi(value)
         }
     }
 
     SpinBoxCustomized {
         id: spinner
-        from: utils.km_to_mi(spinBoxCM.from)
-        to: utils.km_to_mi(spinBoxCM.to)
+        from: Utils.km_to_mi(spinBoxCM.from)
+        to: Utils.km_to_mi(spinBoxCM.to)
         editable: spinBoxCM.editable
         text: spinBoxCM.text
-        value: utils.km_to_mi(spinBoxCM.value) // should be in metres!
+        value: Utils.km_to_mi(spinBoxCM.value) // should be in metres!
         stepSize: spinBoxCM.stepSize
         anchors.fill: parent
 
         onValueModified: {
-            spinBoxCM.value = utils.mi_to_km(value)
+            spinBoxCM.value = Utils.mi_to_km(value)
             spinBoxCM.valueModified()
         }
     }

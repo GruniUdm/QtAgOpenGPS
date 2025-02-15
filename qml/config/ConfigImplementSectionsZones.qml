@@ -6,6 +6,8 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -353,10 +355,10 @@ Item {
             Layout.fillWidth: true
             spacing: 8 * theme.scaleHeight
             Text {
-                text: utils.cm_to_unit_string(Number(Settings.tool_numSectionsMulti) * Number(Settings.tool_sectionWidthMulti),0)
+                text: Utils.cm_to_unit_string(Number(Settings.tool_numSectionsMulti) * Number(Settings.tool_sectionWidthMulti),0)
             }
             Text {
-                text: utils.cm_unit()
+                text: Utils.cm_unit()
                 color: "green"
             }
         }

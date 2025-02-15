@@ -5,6 +5,8 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -47,7 +49,7 @@ Rectangle{
         }
     }
     TextLine{
-        text: qsTr("Units: ")+ utils.cm_unit_abbrev()
+        text: qsTr("Units: ")+ Utils.cm_unit_abbrev()
         font.bold: true
         anchors.top: image1.bottom
         anchors.topMargin: toolTrailingHitchLength.height + (15 * theme.scaleHeight)

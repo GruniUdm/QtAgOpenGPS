@@ -5,6 +5,7 @@ import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Shapes
 import Settings
+import AOG
 import "components" as Comp
 
 Popup{
@@ -420,7 +421,7 @@ Popup{
                 to: 2000
                 boundValue: numTracks.value * Settings.vehicle_toolWidth
                 Layout.alignment: Qt.AlignCenter
-                Comp.TextLine{anchors.top: parent.bottom; text: "( "+ utils.m_unit_abbrev()+" )"}
+                Comp.TextLine{anchors.top: parent.bottom; text: "( "+ Utils.m_unit_abbrev()+" )"}
 
                 onValueChanged: lineDistance = value
             }
@@ -430,7 +431,7 @@ Popup{
                 to: 10
                 value: 0
                 Layout.alignment: Qt.AlignCenter
-                Comp.TextLine{anchors.top: parent.bottom; text: qsTr("Tool: ")+ utils.m_to_ft_string(Settings.vehicle_toolWidth)}
+                Comp.TextLine{anchors.top: parent.bottom; text: qsTr("Tool: ")+ Utils.m_to_ft_string(Settings.vehicle_toolWidth)}
             }
             Comp.IconButtonColor{
                 id: cboxIsZoom

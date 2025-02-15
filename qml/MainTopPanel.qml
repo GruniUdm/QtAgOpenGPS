@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Settings
+import AOG
 import Interface
 import "components" as Comp
 
@@ -83,19 +84,35 @@ import "components" as Comp
                 if(increment == 0){
                     playText.mainString = Qt.formatDateTime(new Date(), "MM-dd-yyyy HH:mm:ss")
                 }else if(increment == 1){
-                    playText.mainString = "Lat: " + aog.latitude + " Lon: " + aog.longitude
+                    playText.mainString = qsTr("Lat: %1 Lon: %2")
+                            .arg(Qt.locale().toString(aog.latitude,'f',7))
+                            .arg(Qt.locale().toString(aog.longitude,'f',7))
                 }else if(increment == 2){
-                    playText.mainString =  utils.m_to_ft_string(Settings.vehicle_toolWidth) + " - " + Settings.vehicle_vehicleName
+                    playText.mainString = Utils.m_to_ft_string(Settings.vehicle_toolWidth) + " - " + Settings.vehicle_vehicleName
                     if(!aog.isJobStarted) //reset
                         increment = -1
                 }else if(increment == 3){
-                    playText.mainString = "Field: " + Settings.f_currentDir
+                    playText.mainString = qsTr("Field: %1").arg(Settings.f_currentDir)
                 }else if(increment == 4) {
-                    playText.mainString = "App: " + utils.area_to_unit_string(aog.workedAreaTotal, 2) + " Actual: " + utils.area_to_unit_string(aog.actualAreaCovered, 2) + " " +
-                            Number(aog.percentLeft).toLocaleString(Qt.locale(), 'f', 0)+"% " + aog.workRate
+                    var percentLeft = ""
+                    if (aog.areaBoundaryOuterLessInner > 0) {
+                        percentLeft = qsTr("%1%").arg(Qt.locale().toString((aog.areaBoundaryOuterLessInner - aog.workedAreaTotal) / aog.areaBoundaryOuterLessInner * 100, 'f', 0))
+                    } else {
+                        percentLeft = "--"
+                    }
+                    playText.mainString = qsTr("App: %1 Actual: %2 %3 %4")
+                            .arg(Utils.area_to_unit_string(aog.workedAreaTotal, 2))
+                            .arg(Utils.area_to_unit_string(aog.actualAreaCovered, 2))
+                            .arg(percentLeft)
+                            .arg(Utils.workRateString(aog.speedKph))
                 }
                 else {
-                        playText.mainString = "Track: " + TracksInterface.currentName
+                    if (TracksInterface.idx > -1) {
+                        playText.mainString = qsTr("Track: %1").arg(TracksInterface.currentName)
+                    } else {
+                        playText.mainString = qsTr("Track: none active")
+                    }
+
                     increment = -1 //reset
                 }
 
@@ -173,7 +190,7 @@ import "components" as Comp
                 anchors.verticalCenter: parent.verticalCenter
                 width: 75 * theme.scaleWidth
                 height:parent.height
-                text: utils.speed_to_unit_string(aog.speedKph, 1)
+                text: Utils.speed_to_unit_string(aog.speedKph, 1)
                 font.bold: true
                 font.pixelSize: 35
                 horizontalAlignment: Text.AlignHCenter

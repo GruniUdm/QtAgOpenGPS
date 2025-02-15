@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import Settings
+import AOG
 
 import ".."
 import "../components"
@@ -38,7 +39,7 @@ Rectangle{
     }
     TextLine{
         anchors.bottom: forwardBackSpin.top
-        text: utils.cm_unit_abbrev()
+        text: Utils.cm_unit_abbrev()
     }
         ButtonGroup {
             buttons: [ forwardBtn, backBtn ]

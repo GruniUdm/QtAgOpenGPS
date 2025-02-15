@@ -5,6 +5,8 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -27,7 +29,7 @@ Item{
     property int totalWidth: 0
 
     function loadModelFromSettings() {
-        if(!utils.isTrue(Settings.tool_isSectionsNotZones))
+        if(!Utils.isTrue(Settings.tool_isSectionsNotZones))
             return
 
         section_model.clear()
@@ -378,10 +380,10 @@ Item{
         Column{
             spacing: 8
             Text {
-                text: utils.cm_to_unit_string(totalWidth,0)
+                text: Utils.cm_to_unit_string(totalWidth,0)
             }
             Text {
-                text: utils.cm_unit()
+                text: Utils.cm_unit()
                 color: "green"
             }
         }

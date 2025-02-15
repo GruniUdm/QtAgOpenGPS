@@ -6,6 +6,8 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -167,7 +169,7 @@ Rectangle{
             Label{
                 anchors.left: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                text: utils.per_unit()
+                text: Utils.per_unit()
             }
         }
         SpinBoxCustomized{
@@ -191,7 +193,7 @@ Rectangle{
             Label{
                 anchors.left: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                text: utils.per_unit()
+                text: Utils.per_unit()
             }
         }
 

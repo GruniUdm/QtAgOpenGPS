@@ -6,6 +6,8 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -143,7 +145,7 @@ MoveablePopup {
                         centerTopText: "WAS Zero"
                         width: 200 * theme.scaleWidth
                         from: -4000
-                        leftText: utils.decimalRound(value / cpDegSlider.value, 2)
+                        leftText: Utils.decimalRound(value / cpDegSlider.value, 2)
                         //onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
                         onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, sendUdptimer.running = true
                         to: 4000
@@ -279,7 +281,7 @@ MoveablePopup {
                         from: 1
                         stepSize: .1
                         leftText: Math.round(value * 10) / 10
-                        onValueChanged: Settings.vehicle_goalPointLookAheadHold = utils.decimalRound(value, 1)
+                        onValueChanged: Settings.vehicle_goalPointLookAheadHold = Utils.decimalRound(value, 1)
                         to: 7
                         value: Settings.vehicle_goalPointLookAheadHold
                         visible: ppBtn.checked

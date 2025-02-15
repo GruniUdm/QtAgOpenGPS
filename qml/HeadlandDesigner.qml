@@ -5,6 +5,7 @@ import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Shapes
 import Settings
+import AOG
 import "components" as Comp
 
 Popup{
@@ -387,7 +388,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             Comp.TextLine {
                 anchors.top: parent.bottom;
-                text: "( "+ utils.m_unit_abbrev()+" )"
+                text: "( "+ Utils.m_unit_abbrev()+" )"
             }
             onValueChanged: {
                 lineDistance = value
@@ -401,7 +402,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             Comp.TextLine {
                 anchors.top: parent.bottom;
-                text: qsTr("Tool: ")+ utils.m_to_ft_string(Settings.vehicle_toolWidth)
+                text: qsTr("Tool: ")+ Utils.m_to_ft_string(Settings.vehicle_toolWidth)
             }
         }
         Comp.IconButtonColor{

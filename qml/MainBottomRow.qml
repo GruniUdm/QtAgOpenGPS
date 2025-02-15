@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Settings
+import AOG
 import "components" as Comp
 
 RowLayout{
@@ -81,7 +82,7 @@ RowLayout{
         isChecked: isOn
         checkable: true
         disabled: btnHeadland.checked
-        visible: utils.isTrue(Settings.ardMac_isHydEnabled) && btnHeadland.visible
+        visible: Utils.isTrue(Settings.ardMac_isHydEnabled) && btnHeadland.visible
         icon.source: prefix + "/images/HydraulicLiftOff.png"
         iconChecked: prefix + "/images/HydraulicLiftOn.png"
         buttonText: "HydLift"

@@ -1,4 +1,5 @@
 import QtQuick
+import AOG
 import Settings
 import "components" as Comp
 
@@ -20,7 +21,7 @@ Grid{
                 aog.uturn(false)
             } else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
-                                        utils.speed_to_unit_string(Settings.as_functionSpeedLimit,1) + " " + utils.speed_unit())
+                                        Utils.speed_to_unit_string(Settings.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
         }
 
     }
@@ -35,7 +36,7 @@ Grid{
                 aog.uturn(true)
             else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
-                                        utils.speed_to_unit_string(Settings.as_functionSpeedLimit,1) + " " + utils.speed_unit())
+                                        Utils.speed_to_unit_string(Settings.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
         }
     }
     Comp.IconButtonTransparent{
@@ -48,7 +49,7 @@ Grid{
                 aog.lateral(false)
             else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
-                                        aog.speed_to_unit_string(Settings.as_functionSpeedLimit,1) + " " + aog.speed_unit())
+                                        Utils.speed_to_unit_string(Settings.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
         }
     }
     Comp.IconButtonTransparent{
@@ -61,7 +62,7 @@ Grid{
                 aog.lateral(true)
             else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
-                                        aog.speed_to_unit_string(Settings.as_functionSpeedLimit,1) + " " + aog.speed_unit())
+                                        Utils.speed_to_unit_string(Settings.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
         }
     }
 }

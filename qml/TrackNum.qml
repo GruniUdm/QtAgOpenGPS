@@ -3,6 +3,7 @@
 //
 //
 import QtQuick 2.0
+import AOG
 import Settings
 import "components" as Comp
 
@@ -17,7 +18,7 @@ Comp.OutlineText {
     function generate_text(track_no) {
         var track_num = track_no
 
-        if (utils.isTrue(Settings.display_useTrackZero)) {
+        if (Utils.isTrue(Settings.display_useTrackZero)) {
             if (track_num >  0)
                 track_num -=1
         }
@@ -27,7 +28,7 @@ Comp.OutlineText {
 
         var dir = ""
         if (useDirNames === true) {
-            dir = utils.findTrackDirection(trackHeading, track_num)
+            dir = Utils.findTrackDirection(trackHeading, track_num)
         } else {
             if (track_num > 0)
                 dir = qsTr("R", "Abbreviation for right-hand direction.")

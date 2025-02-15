@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import Settings
+import AOG
 import 'components' as Comp
 
 Rectangle {
@@ -81,7 +82,7 @@ Rectangle {
 
         //dotDistance is in cm.  convert to meters, then
         //convert to local units, print
-        text: utils.cm_to_unit_string(Math.abs(dotDistance / 100), 0)
+        text: Utils.cm_to_unit_string(Math.abs(dotDistance / 100), 0)
 
         color: (aog.avgPivDistance > 20) ?
                    colorFar :

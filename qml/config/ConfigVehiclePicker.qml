@@ -8,6 +8,8 @@ import QtQuick.Layouts
 import Settings
 import Interface
 //import QtQuick.Extras 1.4
+import AOG
+
 
 import ".."
 import "../components"
@@ -38,15 +40,15 @@ Item {
             anchors.margins: 10 * theme.scaleWidth
             anchors.topMargin: 130 * theme.scaleHeight
             spacing: 15 * theme.scaleHeight
-            TextLine{ text: qsTr("Units: ")+ (utils.isMetric() ? "Metric" : "Imperial")}
-            TextLine{ text: qsTr("Width: ")+ utils.m_to_ft_string(Settings.vehicle_toolWidth)}
+            TextLine{ text: qsTr("Units: ")+ (Utils.isMetric() ? "Metric" : "Imperial")}
+            TextLine{ text: qsTr("Width: ")+ Utils.m_to_ft_string(Settings.vehicle_toolWidth)}
             TextLine{ text: qsTr("Sections: ")+ Settings.vehicle_numSections}
-            TextLine{ text: qsTr("Offset: ")+  utils.cm_to_unit_string(Settings.vehicle_toolOffset, 0)+ " "+ utils.cm_unit_abbrev()}
-            TextLine{ text: qsTr("Overlap: ")+  utils.cm_to_unit_string(Settings.vehicle_toolOverlap, 0)+ " "+ utils.cm_unit_abbrev()}
+            TextLine{ text: qsTr("Offset: ")+  Utils.cm_to_unit_string(Settings.vehicle_toolOffset, 0)+ " "+ Utils.cm_unit_abbrev()}
+            TextLine{ text: qsTr("Overlap: ")+  Utils.cm_to_unit_string(Settings.vehicle_toolOverlap, 0)+ " "+ Utils.cm_unit_abbrev()}
             TextLine{ text: qsTr("LookAhead: ")+ Settings.vehicle_toolLookAheadOn}
-            TextLine{ text: qsTr("Nudge: ")+ utils.cm_to_unit_string(Settings.as_snapDistance, 0)+ " "+ utils.cm_unit_abbrev()}
-            TextLine{ text: qsTr("Tram Width: ")+ utils.m_to_ft_string(Settings.tram_width )}
-            TextLine{ text: qsTr("Wheelbase: ")+ utils.cm_to_unit_string(Settings.vehicle_wheelbase, 0)+ " "+ utils.cm_unit_abbrev() }
+            TextLine{ text: qsTr("Nudge: ")+ Utils.cm_to_unit_string(Settings.as_snapDistance, 0)+ " "+ Utils.cm_unit_abbrev()}
+            TextLine{ text: qsTr("Tram Width: ")+ Utils.m_to_ft_string(Settings.tram_width )}
+            TextLine{ text: qsTr("Wheelbase: ")+ Utils.cm_to_unit_string(Settings.vehicle_wheelbase, 0)+ " "+ Utils.cm_unit_abbrev() }
         }
         Rectangle{
             id: vehicleListRect
@@ -203,7 +205,7 @@ Item {
             color3: "white"
             border: 2
             onClicked: {
-                //Settings.menu_isMetric = !utils.isTrue(Settings.menu_isMetric)
+                //Settings.menu_isMetric = !Utils.isTrue(Settings.menu_isMetric)
                 //console.debug("qml says settings ismetric is",Settings.menu_isMetric)
                 //VehicleInterface.vehicle_delete("testing123")
                 if (vehicleListView.selectedVehicle != "" ) {

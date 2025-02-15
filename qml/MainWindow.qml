@@ -140,10 +140,6 @@ Window {
         objectName: "recordedPathInterface"
     }
 
-    UnitConversion {
-        id: utils
-    }
-
     Comp.TimedMessage {
         //This is a popup message that dismisses itself after a timeout
         id: timedMessage
@@ -298,7 +294,7 @@ Window {
             anchors.margins: 10
             visible: Settings.menu_isSpeedoOn
 
-            speed: utils.speed_to_unit(aog.speedKph)
+            speed: Utils.speed_to_unit(aog.speedKph)
         }
 
         SteerCircle { //the IMU indicator on the bottom right -- Called the "SteerCircle" in AOG
@@ -478,7 +474,7 @@ Window {
                                   aog.currentABLine_heading :
                                   0
 
-                visible: (utils.isTrue(Settings.display_topTrackNum) &&
+                visible: (Utils.isTrue(Settings.display_topTrackNum) &&
                           ((aog.currentABLine > -1) ||
                            (aog.currentABCurve > -1)))
                 //TODO add contour
@@ -526,7 +522,7 @@ Window {
                 anchors.bottom: timeText.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottomMargin: 8
-                visible: utils.isTrue(Settings.menu_isSimulatorOn)
+                visible: Utils.isTrue(Settings.menu_isSimulatorOn)
                 height: 60 * theme.scaleHeight
                 onHeightChanged: anchors.bottomMargin = (8 * theme.scaleHeight)
             }
@@ -609,7 +605,7 @@ Window {
                 id: compass
                 anchors.top: parent.top
                 anchors.right: zoomBtns.left
-                heading: -utils.radians_to_deg(aog.heading)
+                heading: -Utils.radians_to_deg(aog.heading)
             }
             Column{
                 id: zoomBtns

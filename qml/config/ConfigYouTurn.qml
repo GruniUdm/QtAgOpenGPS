@@ -6,6 +6,8 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -84,21 +86,21 @@ Item {
                 editable: true
             }
             Text{
-                text: utils.m_unit()
+                text: Utils.m_unit()
                 font.bold: true
             }
             Text{
-                text: utils.m_unit()
+                text: Utils.m_unit()
                 font.bold: true
             }
             Text{
-                text: utils.m_unit() + " \n" + qsTr("Set Extension
+                text: Utils.m_unit() + " \n" + qsTr("Set Extension
 Length to 2 or
 3x Radius")
                 font.bold: true
             }
             Text{
-                text: utils.m_unit() + " \n" + qsTr("Set Smoothing
+                text: Utils.m_unit() + " \n" + qsTr("Set Smoothing
  to 3 or 4x
 Radius")
                 font.bold: true

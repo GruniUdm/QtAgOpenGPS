@@ -6,6 +6,8 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -28,7 +30,7 @@ Rectangle{
         spacing: 90 * theme.scaleWidth
         Button{
             function toggleZones(){
-                if( utils.isTrue(Settings.tool_isSectionsNotZones)){
+                if( Utils.isTrue(Settings.tool_isSectionsNotZones)){
                     Settings.tool_isSectionsNotZones = false
                 }else{
                     Settings.tool_isSectionsNotZones = true
@@ -48,7 +50,7 @@ Rectangle{
                 Image{
                     id: image
 
-                    source: utils.isTrue(Settings.tool_isSectionsNotZones) ? prefix + "/images/Config/ConT_Asymmetric.png" : prefix + "/images/Config/ConT_Symmetric.png"
+                    source: Utils.isTrue(Settings.tool_isSectionsNotZones) ? prefix + "/images/Config/ConT_Asymmetric.png" : prefix + "/images/Config/ConT_Symmetric.png"
                     anchors.fill: parent
                 }
             }
@@ -81,12 +83,12 @@ Rectangle{
             //todo: this should be made english/metric
             decimals: 1
             id: slowSpeedCutoff
-            from: utils.speed_to_unit(0)
-            to: utils.speed_to_unit(30)
-            boundValue: utils.speed_to_unit(Settings.vehicle_slowSpeedCutoff)
+            from: Utils.speed_to_unit(0)
+            to: Utils.speed_to_unit(30)
+            boundValue: Utils.speed_to_unit(Settings.vehicle_slowSpeedCutoff)
             anchors.bottom: parent.bottom
-            onValueModified: Settings.vehicle_slowSpeedCutoff = utils.speed_from_unit(value)
-            text: utils.speed_unit()
+            onValueModified: Settings.vehicle_slowSpeedCutoff = Utils.speed_from_unit(value)
+            text: Utils.speed_unit()
 
             Image{
                 anchors.bottom: parent.top
@@ -105,7 +107,7 @@ Rectangle{
 		anchors.leftMargin: 7 * theme.scaleWidth
         anchors.bottom: bottomRow.top
         anchors.bottomMargin: 30 * theme.scaleHeight
-        visible: utils.isTrue(Settings.tool_isSectionsNotZones)
+        visible: Utils.isTrue(Settings.tool_isSectionsNotZones)
     }
     ConfigImplementSectionsZones{
         id: configImplementSectionsZones
@@ -117,7 +119,7 @@ Rectangle{
 		anchors.leftMargin: 7 * theme.scaleWidth
         anchors.bottom: bottomRow.top
         anchors.bottomMargin: 30 * theme.scaleHeight
-        visible: !utils.isTrue(Settings.tool_isSectionsNotZones)
+        visible: !Utils.isTrue(Settings.tool_isSectionsNotZones)
 
     }
 }
