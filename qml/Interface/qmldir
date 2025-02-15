@@ -1,4 +1,4 @@
 module AOG
-singleton TracksInterface 1.0 TracksInterface.qml
-singleton VehicleInterface 1.0 MockVehicle.qml
+singleton TracksInterface 1.0 MockTracksInterface.qml
+singleton VehicleInterface 1.0 MockVehicleInterface.qml
 
