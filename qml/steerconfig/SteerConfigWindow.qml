@@ -139,7 +139,7 @@ MoveablePopup {
                     SteerConfigSliderCustomized {
                         property int wasOffset: settings.setAS_wasOffset
                         id: wasZeroSlider
-                        centerTopText: "WAS Zero"
+                        centerTopText: qsTr("WAS Zero")
                         width: 200 * theme.scaleWidth
                         from: -4000
                         leftText: utils.decimalRound(value / cpDegSlider.value, 2)
@@ -151,7 +151,7 @@ MoveablePopup {
                     }
                     SteerConfigSliderCustomized {
                         id: cpDegSlider
-                        centerTopText: "Counts per Degree"
+                        centerTopText: qsTr("Counts per Degree")
                         from: 1
                         leftText: value
                         onValueChanged: settings.setAS_countsPerDegree = value, sendUdptimer.running = true
@@ -163,7 +163,7 @@ MoveablePopup {
                     }
                     SteerConfigSliderCustomized {
                         id: ackermannSlider
-                        centerTopText: "AckerMann"
+                        centerTopText: qsTr("AckerMann")
                         from: 1
                         leftText: value
                         onValueChanged: settings.setAS_ackerman = value, sendUdptimer.running = true
@@ -174,7 +174,7 @@ MoveablePopup {
                     }
                     SteerConfigSliderCustomized {
                         id: maxSteerSlider
-                        centerTopText:"Max Steer Angle"
+                        centerTopText:qsTr("Max Steer Angle")
                         from: 10
                         leftText: value
                         onValueChanged: settings.setVehicle_maxSteerAngle= value
@@ -189,7 +189,7 @@ MoveablePopup {
                     //region PWMtab
                     SteerConfigSliderCustomized {
                         id: propGainlider
-                        centerTopText: "Proportional Gain"
+                        centerTopText: qsTr("Proportional Gain")
                         from: 0
                         leftText: value
                         onValueChanged: settings.setAS_Kp = value, sendUdptimer.running = true
@@ -200,7 +200,7 @@ MoveablePopup {
                     }
                     SteerConfigSliderCustomized {
                         id: maxLimitSlider
-                        centerTopText: "Maximum Limit"
+                        centerTopText: qsTr("Maximum Limit")
                         from: 0
                         leftText: value
                         onValueChanged: settings.setAS_highSteerPWM = value, sendUdptimer.running = true
@@ -211,7 +211,7 @@ MoveablePopup {
                     }
                     SteerConfigSliderCustomized {
                         id: min2moveSlider
-                        centerTopText: "Minimum to Move"
+                        centerTopText: qsTr("Minimum to Move")
                         from: 0
                         leftText: value
                         onValueChanged: settings.setAS_minSteerPWM = value, sendUdptimer.running = true
@@ -226,7 +226,7 @@ MoveablePopup {
                     //region StanleyTab
                     SteerConfigSliderCustomized {
                         id: stanleyAggressivenessSlider
-                        centerTopText: "Agressiveness"
+                        centerTopText: qsTr("Agressiveness")
                         from: .1
                         onValueChanged: settings.stanleyDistanceErrorGain = value
                         stepSize: .1
@@ -237,7 +237,7 @@ MoveablePopup {
                     }
                     SteerConfigSliderCustomized {
                         id: overShootReductionSlider
-                        centerTopText: "OverShoot Reduction"
+                        centerTopText: qsTr("OverShoot Reduction")
                         from: .1
                         onValueChanged: settings.stanleyHeadingErrorGain = value
                         stepSize: .1
@@ -248,7 +248,7 @@ MoveablePopup {
                     }
                     SteerConfigSliderCustomized {
                         id: integralStanleySlider
-                        centerTopText: "Integral"
+                        centerTopText: qsTr("Integral")
                         from: 0
                         leftText: value
                         onValueChanged: settings.stanleyIntegralGainAB = value /100
@@ -263,7 +263,7 @@ MoveablePopup {
                     //region PurePursuitTab
                     SteerConfigSliderCustomized {
                         id: acqLookAheadSlider
-                        centerTopText: "Acquire Look Ahead"
+                        centerTopText: qsTr("Acquire Look Ahead")
                         from: 1
                         onValueChanged: settings.setVehicle_goalPointLookAhead = value
                         stepSize: .1
@@ -274,7 +274,7 @@ MoveablePopup {
                     }
                     SteerConfigSliderCustomized {
                         id: holdLookAheadSlider
-                        centerTopText: "Hold Look Ahead"
+                        centerTopText: qsTr("Hold Look Ahead")
                         from: 1
                         stepSize: .1
                         leftText: Math.round(value * 10) / 10
@@ -285,7 +285,7 @@ MoveablePopup {
                     }
                     SteerConfigSliderCustomized {
                         id: lookAheadSpeedGainSlider
-                        centerTopText: "Look Ahead Speed Gain"
+                        centerTopText: qsTr("Look Ahead Speed Gain")
                         from: .5
                         onValueChanged: settings.setVehicle_goalPointLookAheadMult = value
                         stepSize: .1
@@ -296,7 +296,7 @@ MoveablePopup {
                     }
                     SteerConfigSliderCustomized {
                         id: ppIntegralSlider
-                        centerTopText: "Integral"
+                        centerTopText: qsTr("Integral")
                         from: 0
                         onValueChanged: settings.purePursuitIntegralGainAB = value /100
                         stepSize: 1

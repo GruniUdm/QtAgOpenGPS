@@ -43,24 +43,24 @@ Window{
         anchors.topMargin: 20 * theme.scaleHeight
         SteerConfigTopButtons{
 			id: sensorsBtn
-            buttonText: "Sensors"
+            buttonText: qsTr("Sensors")
             icon.source: prefix + "/images/Config/ConD_Speedometer.png"
             implicitWidth: parent.width /4 -4
             checked: true //because one has to be to start things off
         }
         SteerConfigTopButtons{
 			id: configBtn
-			buttonText: "Config"
+            buttonText: qsTr("Config")
             icon.source: prefix + "/images/Config/ConS_Pins.png"
         }
         SteerConfigTopButtons{
 			id: settingsBtn
-			buttonText: "Settings"
+            buttonText: qsTr("Settings")
             icon.source: prefix + "/images/Config/ConS_ImplementConfig.png"
         }
         SteerConfigTopButtons{
 			id: steerSettingsBtn
-			buttonText: "Steer Settings"
+            buttonText: qsTr("Steer Settings")
             icon.source: prefix + "/images/Config/ConS_ImplementConfig.png"
         }
 	}
@@ -346,7 +346,7 @@ Window{
                     id: cboxEncoder
                     icon.source: prefix + "/images/Config/ConSt_TurnSensor.png"
                     checkable: true
-                    buttonText: "Count Sensor"
+                    buttonText: qsTr("Count Sensor")
                     Layout.alignment: Qt.AlignCenter
                     onClicked: unsaved.visible = true
                     onCheckedChanged: nudMaxCounts.visible = checked
@@ -355,7 +355,7 @@ Window{
                     id: cboxPressureSensor
                     icon.source: prefix + "/images/Config/ConSt_TurnSensorPressure.png"
                     checkable: true
-                    buttonText: "Pressure Turn Sensor"
+                    buttonText: qsTr("Pressure Turn Sensor")
                     Layout.alignment: Qt.AlignCenter
                     onClicked: unsaved.visible = true
                 }
@@ -363,7 +363,7 @@ Window{
                     id: cboxCurrentSensor
                     icon.source: prefix + "/images/Config/ConSt_TurnSensorCurrent.png"
                     checkable: true
-                    buttonText: "Current Turn Sensor"
+                    buttonText: qsTr("Current Turn Sensor")
                     Layout.alignment: Qt.AlignCenter
                     onClicked: unsaved.visible = true
                 }
@@ -452,7 +452,7 @@ Window{
                     id: cboxDanfoss
                     icon.source: prefix + "/images/Config/ConST_Danfoss.png"
                     checkable: true
-                    buttonText: "Danfoss"
+                    buttonText: qsTr("Danfoss")
                     Layout.alignment: Qt.AlignCenter
                     onClicked: unsaved.visible = true
                 }
@@ -468,7 +468,7 @@ Window{
                     id: chkInvertSteer
                     icon.source: prefix + "/images/Config/ConSt_InvertDirection.png"
                     checkable: true
-                    buttonText: "Invert Motor Dir"
+                    buttonText: qsTr("Invert Motor Dir")
                     Layout.alignment: Qt.AlignCenter
                     onClicked: unsaved.visible = true
                 }
@@ -476,7 +476,7 @@ Window{
                     id: chkSteerInvertRelays
                     icon.source: prefix + "/images/Config/ConSt_InvertRelay.png"
                     checkable: true
-                    buttonText: "Invert Relays"
+                    buttonText: qsTr("Invert Relays")
                     Layout.alignment: Qt.AlignCenter
                     onClicked: unsaved.visible = true
                 }
@@ -509,8 +509,8 @@ Window{
                     // Component.onCompleted: currentIndex = ((settings.setArdSteer_setting0 & 8) == 0) ? 1 : 0
                     model: ListModel {
                         id: a2Dmodel
-                        ListElement {text: "Single"}
-                        ListElement {text: "Differential"}
+                        ListElement {text: qsTr("Single")}
+                        ListElement {text: qsTr("Differential")}
                     }
                     text: qsTr("A2D Converter")
                     onActivated: unsaved.visible = true
@@ -539,9 +539,9 @@ Window{
                            currentIndex = 0*/
                     model: ListModel {
                         //   id: steerEnablemodel
-                        ListElement {text: "None"}
-                        ListElement {text: "Switch"}
-                        ListElement {text: "Button"}
+                        ListElement {text: qsTr("None")}
+                        ListElement {text: qsTr("Switch")}
+                        ListElement {text: qsTr("Button")}
                     }
                     text: qsTr("Steer Enable")
                     onActivated: unsaved.visible = true

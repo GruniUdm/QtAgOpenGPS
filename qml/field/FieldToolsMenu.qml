@@ -31,7 +31,7 @@ Drawer {
             height: fieldToolsMenuRect.height
             spacing: 0
             IconButtonTextBeside{
-                text: "Boundary"
+                text: qsTr("Boundary")
                 icon.source: prefix + "/images/MakeBoundary.png"
                 //width: 300
                 visible: settings.setFeature_isBoundaryOn
@@ -41,7 +41,7 @@ Drawer {
                 }
             }
             IconButtonTextBeside{
-                text: "Headland"
+                text: qsTr("Headland")
                 icon.source: prefix + "/images/HeadlandMenu.png"
                 //width: 300
                 visible: settings.setFeature_isHeadlandOn
@@ -55,7 +55,7 @@ Drawer {
                 }
             }
             IconButtonTextBeside{
-                text: "Headland (Build)"
+                text: qsTr("Headland (Build)")
                 icon.source: prefix + "/images/Headache.png"
                 visible: settings.setFeature_isHeadlandOn
                 //width: 300
@@ -65,14 +65,14 @@ Drawer {
                 }
             }
             IconButtonTextBeside{
-                text: "Tram Lines"
+                text: qsTr("Tram Lines")
                 icon.source: prefix + "/images/TramLines.png"
                 //width: 300
                 visible: settings.setFeature_isTramOn
                 onClicked: tramLinesEditor.visible = true
             }
             IconButtonTextBeside{
-                text: "Recorded Path"
+                text: qsTr("Recorded Path")
                 icon.source: prefix + "/images/RecPath.png"
                 //width: 300
                 visible: settings.setFeature_isHeadlandOn

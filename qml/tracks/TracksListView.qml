@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import Interfaces
 
-pragma ComponentBehavior: Bound
+//pragma ComponentBehavior: Bound
 
 ListView {
     id: tracksView

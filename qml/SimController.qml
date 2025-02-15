@@ -31,7 +31,7 @@ Rectangle{
         anchors.centerIn: parent
         Button{
 			id: resetButton
-            text: "Reset"
+            text: qsTr("Reset")
             font.pixelSize: 15
             height: parent.height
             width: 65 * theme.scaleWidth

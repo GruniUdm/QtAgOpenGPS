@@ -51,12 +51,12 @@ RowLayout{
         checkable: true
         icon.source: prefix + "/images/YouSkipOff.png"
         iconChecked: prefix + "/images/YouSkipOn.png"
-        buttonText: "YouSkips"
+        buttonText: qsTr("YouSkips")
     }
     Comp.MainWindowBtns { //reset trailing tool to straight back
         id: btnResetTool
         icon.source: prefix + "/images/ResetTool.png"
-        buttonText: "Reset Tool"
+        buttonText: qsTr("Reset Tool")
         onClicked: aog.btnResetTool()
         visible: settings.setTool_isToolTrailing === true //hide if front or rear 3 pt
     }
@@ -68,7 +68,7 @@ RowLayout{
     Comp.MainWindowBtns {
         id: btnTramLines
         icon.source: prefix + "/images/TramLines.png"
-        buttonText: "Tram Lines"
+        buttonText: qsTr("Tram Lines")
         Layout.alignment: Qt.AlignCenter
         implicitWidth: theme.buttonSize
         implicitHeight: theme.buttonSize
@@ -83,7 +83,7 @@ RowLayout{
         visible: utils.isTrue(settings.setArdMac_isHydEnabled) && btnHeadland.visible
         icon.source: prefix + "/images/HydraulicLiftOff.png"
         iconChecked: prefix + "/images/HydraulicLiftOn.png"
-        buttonText: "HydLift"
+        buttonText: qsTr("HydLift")
         onClicked: {
             isOn = !isOn
             aog.isHydLiftOn(isOn)
@@ -95,7 +95,7 @@ RowLayout{
         checkable: true
         icon.source: prefix + "/images/HeadlandOff.png"
         iconChecked: prefix + "/images/HeadlandOn.png"
-        buttonText: "Headland"
+        buttonText: qsTr("Headland")
         onClicked: aog.btnHeadland()
     }
     Comp.MainWindowBtns {
@@ -110,14 +110,14 @@ RowLayout{
                 contextFlag.visible = true;
             }
         }
-        buttonText: "Flag"
+        buttonText: qsTr("Flag")
     }
 
     Comp.MainWindowBtns {
         id: btnTrack
         icon.source: prefix + "/images/TrackOff.png"
         iconChecked: prefix + "/images/TrackOn.png"
-        buttonText: "Track"
+        buttonText: qsTr("Track")
         onClicked: trackButtons.visible = !trackButtons.visible
     }
 
