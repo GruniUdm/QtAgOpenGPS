@@ -247,7 +247,7 @@ void FormGPS::oglMain_Paint()
 
             ////if grid is on draw it
             if (isGridOn)
-                worldGrid.DrawWorldGrid(gl,projection, modelview, gridZoom, QColor::fromRgbF(0,0,0));
+                worldGrid.DrawWorldGrid(gl, modelview, projection, camera.gridZoom, QColor::fromRgbF(0,0,0,1));
 
             //OpenGL ES does not support wireframe in this way. If we want wireframe,
             //we'll have to do it with LINES
