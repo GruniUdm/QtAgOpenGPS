@@ -4,7 +4,7 @@
 // Loaded by FieldOpen.qml. Contains the list of fields
 import QtQuick
 
-//pragma ComponentBehavior: Bound
+pragma ComponentBehavior: Bound
 
 ListView {
     id: tableView

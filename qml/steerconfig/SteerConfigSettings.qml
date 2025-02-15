@@ -935,6 +935,13 @@ Window{
             implicitWidth: 130
             onClicked: { settingsArea.save_settings() ; unsaved.visible = false }
         }
+        IconButtonTransparent{
+            icon.source: prefix + "/images/SwitchOff.png"
+            Layout.alignment: Qt.AlignCenter
+            onClicked: {
+                steerConfig.visible = false
+            }
+        }
     }
     Image {
         id: unsaved
