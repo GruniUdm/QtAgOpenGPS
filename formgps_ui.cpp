@@ -814,7 +814,7 @@ void FormGPS::modules_send_251() {
 	p_251.pgn[p_251.minSpeed] = 5; //0.5 kmh THIS IS CHANGED IN AOG FIXES
 
 	if ((int)property_setAS_isConstantContourOn)
-		p_251.pgn[p_251.angVel] = 1;
+         p_251.pgn[p_251.angVel] = 1;
 	else p_251.pgn[p_251.angVel] = 0;
 
 	qDebug() << p_251.pgn;

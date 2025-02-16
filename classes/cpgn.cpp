@@ -124,6 +124,10 @@ PGN32500::PGN32500() : pgn(QByteArray( "\xF7\x7E\x00\x00\x00\x00\x00\x00\x00\x00
 {
 }
 
+PGN32400::PGN32400() : pgn(QByteArray( "\xF7\x7E\x7E\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 16))
+{
+}
+
 void PGN32500::MakeCRC()
 {
     int crc = 0;

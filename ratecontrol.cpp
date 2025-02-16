@@ -86,4 +86,18 @@ double ratecontrol::TargetUPM() // returns units per minute set rate
     return Result;
 }
 
+void ratecontrol::set (int ID, QByteArray pgn_data)
+{
+    cProductID = ID;
+    //TargetRate = rateset;
+    TargetRate =  (pgn_data[8] << 16 | pgn_data[7] << 8 | pgn_data[6]) / 1000.0;
+    cQuantity = (pgn_data[11] << 16 | pgn_data[10] << 8 | pgn_data[9]) / 1000.0;
+    cPWMsetting = (qint16)(pgn_data[13] << 8 | pgn_data[12]);  // need to cast to 16 bit integer to preserve the sign bit
+    cSensorReceiving = ((pgn_data[14] & 0b00000001) == 0b00000001);
+
+    qDebug() << "Rate ";
+    qDebug() << TargetRate;
+}
+
+
 

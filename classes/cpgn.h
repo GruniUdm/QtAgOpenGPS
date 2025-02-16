@@ -266,6 +266,22 @@ public:
     PGN32500();
     void MakeCRC();
 };
+class PGN32400
+{
+public:
+    QByteArray pgn;
+    int ID = 5;
+    int RateAppliedLO = 6;
+    int RateAppliedMD = 7;
+    int RateAppliedHI = 8;
+    int AccQtyLO = 9;
+    int AccQtyMD = 10;
+    int AccQtyHI = 11;
+    int PWMLO = 12;
+    int PWMHI = 13;
+    int SensorStat = 14;
+    PGN32400();
+};
 
 /*
 extern CPGN_FE p_254;

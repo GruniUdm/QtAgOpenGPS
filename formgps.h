@@ -334,6 +334,7 @@ public:
     CPGN_E5 p_229;
     PGN32502 ModulePIDdata;
     PGN32500 ModuleRateSettings;
+    PGN32400 RateSensor;
 
     /* GUI synchronization lock */
     QReadWriteLock lock;

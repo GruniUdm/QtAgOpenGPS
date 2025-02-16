@@ -388,7 +388,7 @@ void FormGPS::doBlockageMonitoring()
 
 void FormGPS::doRateControl()
 {
-     rc.set(0, rc.cUPM);
     SendPgnToLoop(ModulePIDdata.pgn);
+    rc.set(0,RateSensor.pgn);
+    qDebug() << "doRateControl";
 }
-

@@ -279,13 +279,19 @@ void FormGPS::ReceiveFromAgIO()
 
         case 0x7E://Rate 126
             //
-            if (datagram_data.length() != 15)
+            if (datagram_data.length() != 16)
                 break;
-            rc.cUPM = (data[7] << 16 | data[6] << 8 | data[5]) / 1000.0;
-            rc.cQuantity = (data[10] << 16 | data[9] << 8 | data[8]) / 10.0;
-            rc.cPWMsetting = (qint16)(data[12] << 8 | data[11]);  // need to cast to 16 bit integer to preserve the sign bit
-            rc.cSensorReceiving = ((data[13] & 0b00000001) == 0b00000001);
-
+            RateSensor.pgn[RateSensor.ID] = data[5];
+            RateSensor.pgn[RateSensor.RateAppliedLO] = data[6];
+            RateSensor.pgn[RateSensor.RateAppliedMD] = data[7];
+            RateSensor.pgn[RateSensor.RateAppliedHI] = data[8];
+            RateSensor.pgn[RateSensor.AccQtyLO] = data[9];
+            RateSensor.pgn[RateSensor.AccQtyMD] = data[10];
+            RateSensor.pgn[RateSensor.AccQtyHI] = data[11];
+            RateSensor.pgn[RateSensor.PWMLO] = data[12];
+            RateSensor.pgn[RateSensor.PWMHI] = data[13];
+            RateSensor.pgn[RateSensor.SensorStat] = data[14];
+            qDebug() << "doRateControl";
             doRateControl();
 
         case 0xf4://blockage 244

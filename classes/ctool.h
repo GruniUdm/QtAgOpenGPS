@@ -8,6 +8,7 @@
 #include <QColor>
 #include "qmlsectionbuttons.h"
 #include "qmlblockage.h"
+#include  "ratecontrol.h"
 
 class QOpenGLFunctions;
 class QMatrix4x4;

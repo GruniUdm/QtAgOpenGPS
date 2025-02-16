@@ -17,14 +17,10 @@ public:
     double cQuantity;
     double MeterCal;
     double RateSet;
-
+    void set(int ID, QByteArray pgn_data);
     int cPWMsetting;
     int cSensorReceiving;
     explicit ratecontrol(QObject *parent = nullptr);
-    inline void set (int ID, int rateset){
-        cProductID = ID;
-        TargetRate = rateset;
-    }
 
 private:
     double TargetRate;
