@@ -83,7 +83,7 @@ Rectangle{
         settings.setRateMode = Number(cboxRateMode.currentIndex)
 
         mandatory.visible = false
-        aog.modules_send_PGN32500();
+        aog.modules_send_PGN32502();
 
     }
     Label{

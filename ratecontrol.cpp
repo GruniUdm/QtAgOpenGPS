@@ -2,6 +2,7 @@
 #include "aogproperty.h"
 #include "ctool.h"
 #include "formgps.h"
+#include "cpgn.h"
 
 ratecontrol::ratecontrol(QObject *parent)
     : QObject{parent}
@@ -22,8 +23,6 @@ void ratecontrol::rate_bump(bool up)
     }
     qDebug() << "rate_bump";
     qDebug() << ManualPWM;
-
-
 }
 void ratecontrol::rate_auto()
 {

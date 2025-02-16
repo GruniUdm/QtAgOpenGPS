@@ -387,8 +387,9 @@ void FormGPS::doBlockageMonitoring()
 }
 
 void FormGPS::doRateControl()
-{
-    SendPgnToLoop(ModulePIDdata.pgn);
+{   ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMLO] = (char)((int)rc.ManualPWM >> 8);
+    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMHI] = (char)rc.ManualPWM;
+    SendPgnToLoop(ModuleRateSettings.pgn);
     rc.set(0,RateSensor.pgn);
     qDebug() << "doRateControl";
 }

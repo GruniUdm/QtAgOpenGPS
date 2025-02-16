@@ -13,7 +13,7 @@ void CPGN_FC::loadSettings()
     pgn[lowPWM] = property_setAS_lowSteerPWM;
     pgn[minPWM] = property_setAS_minSteerPWM;
     pgn[countsPerDegree] = property_setAS_countsPerDegree;
-    pgn[wasOffsetHi] = (char)((int)property_setAS_wasOffset >> 8);;
+    pgn[wasOffsetHi] = (char)((int)property_setAS_wasOffset >> 8);
     pgn[wasOffsetLo] = (char)property_setAS_wasOffset;
     pgn[ackerman] = property_setAS_ackerman;
 }
@@ -120,7 +120,7 @@ void PGN32502::MakeCRC()
     pgn[pgn.length() - 1] = crc;
 }
 
-PGN32500::PGN32500() : pgn(QByteArray( "\xF7\x7E\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 14))
+PGN32500::PGN32500() : pgn(QByteArray( "\xF7\xF4\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 14))
 {
 }
 
