@@ -384,7 +384,10 @@ Item {
             aog.workRate =  (Number(settings.setVehicle_toolWidth * aog.speedKph * 0.2471).toLocaleString(Qt.locale(), 'f', 2)) + " ac/hr";
     }
     function percents (){
-        aog.percentLeft = ((aog.areaBoundaryOuterLessInner - aog.workedAreaTotal) / aog.areaBoundaryOuterLessInner* 100)
+        if (aog.areaBoundaryOuterLessInner > 0)
+            aog.percentLeft = ((aog.areaBoundaryOuterLessInner - aog.workedAreaTotal) / aog.areaBoundaryOuterLessInner* 100)
+        else
+            aog.percentLeft=0
     }
     function string_before_comma(inputString){
         var commaIndex = inputString.indexOf(",");

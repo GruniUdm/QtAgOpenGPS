@@ -13,6 +13,8 @@ Item {
     property bool isOutOfBounds: false //must be updated from mc.isOutOfBounds
     property bool isHeadlandOn: false
 
+    property int count: 0  //updated from formgps_ui_boundary, formgps_saveopen
+
     property double area: 0
     property int pts: 0
 

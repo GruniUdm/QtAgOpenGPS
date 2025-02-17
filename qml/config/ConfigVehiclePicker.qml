@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import Interfaces
 //import QtQuick.Extras 1.4
 
 import ".."
@@ -20,7 +21,7 @@ Item {
     onVisibleChanged: {
         if(visible)
             //ask backend to refresh our list of vehicles
-            vehicleInterface.vehicle_update_list()
+            VehicleInterface.vehicle_update_list()
     }
 
     Rectangle{
@@ -59,15 +60,15 @@ Item {
 
             function refresh_model() {
                 vehicleList.clear()
-                for (var i=0; i < vehicleInterface.vehicle_list.length ; i++) {
-                    //console.debug(vehicleInterface.vehicle_list[i])
-                    vehicleList.append( { index: vehicleInterface.vehicle_list[i].index,
-                                           name: vehicleInterface.vehicle_list[i].name })
+                for (var i=0; i < VehicleInterface.vehicle_list.length ; i++) {
+                    //console.debug(VehicleInterface.vehicle_list[i])
+                    vehicleList.append( { index: VehicleInterface.vehicle_list[i].index,
+                                           name: VehicleInterface.vehicle_list[i].name })
                 }
             }
 
             Connections {
-                target: vehicleInterface
+                target: VehicleInterface
                 function onVehicle_listChanged() {
                     vehicleListRect.refresh_model()
                 }
@@ -147,11 +148,11 @@ Item {
                 onClicked: {
                     if (saveAsVehicle.text !== "") {
                         //console.debug("Going to save", saveAsVehicle.text)
-                        vehicleInterface.vehicle_saveas(saveAsVehicle.text)
+                        VehicleInterface.vehicle_saveas(saveAsVehicle.text)
                         //just setting the name is probably enough to get it to save the vehicle
                         settings.setVehicle_vehicleName = saveAsVehicle.text
                         saveAsVehicle.text = ""
-                        vehicleInterface.vehicle_update_list()
+                        VehicleInterface.vehicle_update_list()
                     }
                 }
             }
@@ -185,7 +186,7 @@ Item {
             border: 2
             onClicked: {
                 if (vehicleListView.selectedVehicle != "" ) {
-                    vehicleInterface.vehicle_load(vehicleListView.selectedVehicle)
+                    VehicleInterface.vehicle_load(vehicleListView.selectedVehicle)
                     settings.setVehicle_vehicleName = vehicleListView.selectedVehicle
                 }
             }
@@ -203,10 +204,10 @@ Item {
             onClicked: {
                 //settings.setMenu_isMetric = !utils.isTrue(settings.setMenu_isMetric)
                 //console.debug("qml says settings ismetric is",settings.setMenu_isMetric)
-                //vehicleInterface.vehicle_delete("testing123")
+                //VehicleInterface.vehicle_delete("testing123")
                 if (vehicleListView.selectedVehicle != "" ) {
-                    vehicleInterface.vehicle_delete(vehicleListView.selectedVehicle)
-                    vehicleInterface.vehicle_update_list()
+                    VehicleInterface.vehicle_delete(vehicleListView.selectedVehicle)
+                    VehicleInterface.vehicle_update_list()
                 }
             }
         }

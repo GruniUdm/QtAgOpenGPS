@@ -7,6 +7,7 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Effects
 import QtQuick.Dialogs
+import Interfaces
 import AOG
 
 import "interfaces" as Interfaces
@@ -44,6 +45,12 @@ Window {
     function getTracksInterface() {
         return TracksInterface
 
+    }
+
+    property var tracksInterface: TracksInterface
+
+    Component.onCompleted: {
+        console.debug("tracks interface object is ", TracksInterface)
     }
 
     function close() {
@@ -248,7 +255,7 @@ Window {
                 width: 70 * theme.scaleWidth
                 height: 70 * theme.scaleHeight
                 source: prefix + "/images/Images/z_ReverseArrow.png"
-                visible: vehicleInterface.isReverse || vehicleInterface.isChangingDirection
+                visible: VehicleInterface.isReverse || VehicleInterface.isChangingDirection
             }
             MouseArea{
                 //button that catches any clicks on the vehicle in the GL Display
@@ -442,7 +449,7 @@ Window {
                 anchors.top: simulatorOnText.bottom
                 anchors.topMargin: 30
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Lost RTK"
+                text: qsTr("Lost RTK")
                 font.pixelSize: 65
                 color: "#cc5200"
                 onAgeChanged: {
@@ -782,10 +789,10 @@ Window {
 
         Tracks.LineDrawer {//window where lines are created off field boundary/edited
             id:lineDrawer
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom
-            height: 768
-            width:1024
+            //anchors.horizontalCenter: parent.horizontalCenter
+            //anchors.bottom: parent.bottom
+            //height: 768
+            //width:1024
             visible:false
         }
         Tracks.LineNudge{

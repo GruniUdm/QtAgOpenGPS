@@ -35,10 +35,7 @@ enum Textures {
     TRACTOR_4WD_REAR,
     HARVESTER,
     TOOLWHEELS,
-    TIRE,
-    TRAMDOT,
-    YOUTURNU,
-    YOUTURNH
+    TIRE
 };
 
 extern bool isFontOn;
@@ -94,6 +91,16 @@ void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp
 
 void DrawPolygon(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec2> &polygon, float size, QColor color);
 void DrawPolygon(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec3> &polygon, float size, QColor color);
+
+void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec2> &polygon, float size, QColor color);
+void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec3> &polygon, float size, QColor color);
+
+class GLHelperOneColorBack: public QVector<QVector3D>
+{
+public:
+    GLHelperOneColorBack();
+    void draw(QOpenGLFunctions *gl, QMatrix4x4 mvp, QColor color, GLenum operation, float point_size);
+};
 
 class GLHelperOneColor: public QVector<QVector3D>
 {

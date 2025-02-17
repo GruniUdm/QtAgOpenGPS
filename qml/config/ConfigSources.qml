@@ -48,7 +48,7 @@ Rectangle{
                 id: dualBtn
                 width:150 * theme.scaleWidth
                 height:100 * theme.scaleHeight
-                text: "Dual"
+                text: qsTr("Dual")
                 checkable: true
                 icon.source: prefix + "/images/Config/Con_SourcesGPSDual.png"
 
@@ -77,7 +77,7 @@ Rectangle{
                 id: fixBtn
                 width:150 * theme.scaleWidth
                 height:100 * theme.scaleHeight
-                text: "Fix"
+                text: qsTr("Fix")
                 checkable: true
                 icon.source: prefix + "/images/Config/Con_SourcesGPSSingle.png"
 
@@ -238,12 +238,12 @@ Rectangle{
             SliderCustomized{
                 leftText: 100 - value
                 rightText: value
-                leftTopText: "IMU <"
+                leftTopText: qsTr("IMU <")
                 colorLeftTopText: "green"
                 anchors.centerIn: parent
-                rightTopText: "> GPS"
+                rightTopText: qsTr("> GPS")
                 colorRightTopText: "red"
-                centerTopText: "Fusion"
+                centerTopText: qsTr("Fusion")
                 from: 20
                 to: 40
 

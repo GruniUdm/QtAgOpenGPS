@@ -62,7 +62,7 @@ Dialog {
         color: aog.backgroundColor
         TopLine{
             id: topLine
-            titleText: "AB Line"
+            titleText: qsTr("AB Line")
         }
         ColumnLayout{
             id: rightColumn

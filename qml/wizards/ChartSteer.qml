@@ -28,7 +28,9 @@ MoveablePopup {
 
     Timer {
         id:txt
-        interval:50; running: chartSteer.visible?true:false; repeat: true
+
+        interval:50; running: chartSteer.visible; repeat: true
+
         onTriggered: {
                 yval++;
             chart.series(0).append(yval, xval1);
@@ -115,14 +117,14 @@ MoveablePopup {
                 name: lineName1
                 axisX: axisX
                 axisY: axisY
-                //useOpenGL: chartView.openGL
+                useOpenGL: chartView.openGL
             }
             LineSeries {
                 id: lineSeries2
                 name: lineName2
                 axisX: axisX
                 axisYRight: axisY
-                //useOpenGL: chartView.openGL
+                useOpenGL: chartView.openGL
             }
 
             ValueAxis {

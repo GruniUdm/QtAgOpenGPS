@@ -88,8 +88,8 @@ Comp.MoveablePopup{
 
                     from: 1
                     to: 1000
-                    boundValue: settings.properties_setAS_snapDistance
-                    onValueModified: settings.propeties.setAS_snapDistance = value
+                    boundValue: settings.setAS_snapDistance
+                    onValueModified: settings.setAS_snapDistance = value
                 }
 
                 RowLayout{

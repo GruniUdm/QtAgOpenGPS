@@ -44,7 +44,7 @@ MoveablePopup {
             anchors.top: recordBoundaryWindow.top
             anchors.margins: 5
             objectName: "boundaryRecordOffset"
-            text: "Centimeter"
+            text: qsTr("Centimeter")
             from: 0
             to: 1968
             boundValue: boundaryInterface.createBndOffset

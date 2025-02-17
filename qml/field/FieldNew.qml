@@ -53,7 +53,7 @@ Dialog {
             anchors.right: parent.right
             anchors.top: newFieldLabel.bottom
             selectByMouse: true
-            placeholderText: "New Field Name"
+            placeholderText: qsTr("New Field Name")
             onTextChanged: {
                 for (var i=0; i < fieldInterface.field_list.length ; i++) {
                     if (text === fieldInterface.field_list[i].name) {
@@ -88,8 +88,11 @@ Dialog {
                 text: "+"
             }
             onClicked: {
-                var time = new Date().toLocaleDateString(Qt.locale(), Locale.ShortFormat)
-                newField.text += " " + time
+                var date = new Date();
+                var year = date.getFullYear();
+                var month = String(date.getMonth() + 1).padStart(2, '0');
+                var day = String(date.getDate()).padStart(2, '0');
+                newField.text += " " + `${year}-${month}-${day}`
             }
 
         }
@@ -102,8 +105,10 @@ Dialog {
                 text: "+"
             }
             onClicked: {
-                var time = new Date().toLocaleTimeString(Qt.locale())
-                newField.text += " " + time
+                var date = new Date();
+                var hours = String(date.getHours()).padStart(2, '0');
+                var minutes = String(date.getMinutes()).padStart(2, '0');
+                newField.text += " " + `${hours}-${minutes}`
             }
         }
     }
@@ -130,7 +135,7 @@ Dialog {
 
             onClicked: {
                 fieldNew.visible = false
-                fieldInterface.field_new(newField.text)
+                fieldInterface.field_new(newField.text.trim())
             }
         }
     }

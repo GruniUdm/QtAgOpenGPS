@@ -73,6 +73,7 @@ void FormGPS::boundary_stop() {
     bnd.isBndBeingMade = false;
     bnd.bndBeingMadePts.clear();
     boundary_update_list();
+    qmlItem(mainWindow,"boundaryInterface")->setProperty("count", bnd.bndList.count());
 }
 
 void FormGPS::boundary_add_point() {
@@ -107,6 +108,7 @@ void FormGPS::boundary_delete(int which_boundary) {
         return; //must remove other boundaries first.
 
     bnd.bndList.remove(which_boundary);
+    qmlItem(mainWindow,"boundaryInterface")->setProperty("count", bnd.bndList.count());
     boundary_update_list();
 }
 
@@ -119,6 +121,6 @@ void FormGPS::boundary_delete_all() {
     bnd.bndList.clear();
     FileSaveBoundary();
     bnd.BuildTurnLines(fd);
-
+    qmlItem(mainWindow,"boundaryInterface")->setProperty("count", bnd.bndList.count());
     boundary_update_list();
 }

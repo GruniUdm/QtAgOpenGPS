@@ -41,7 +41,7 @@ signals:
     void updateFromSettings();
 };
 
-template <class T> static QVariant toVariant(const QVector<T> &list)
+template <class T> static QVariant _toVariant(const QVector<T> &list)
 {
     QVariantList variantList;
     variantList.reserve(list.size());
@@ -52,7 +52,7 @@ template <class T> static QVariant toVariant(const QVector<T> &list)
     return variantList;
 }
 
-template <class T> static QVector<T> toVector(const QVariant &qv)
+template <class T> static QVector<T> _toVector(const QVariant &qv)
 {
     QVector <T> dataList;
     foreach(QVariant v, qv.value<QVariantList>()) {

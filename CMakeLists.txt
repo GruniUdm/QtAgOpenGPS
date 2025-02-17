@@ -37,6 +37,8 @@ qt_add_executable(QtAgOpenGPS
     aogproperty.h aogproperty.cpp
     aogrenderer.h aogrenderer.cpp
     aogsettings.h aogsettings.cpp
+    newsettings.h newsettings.cpp
+    newsettings_addkeys.cpp
     btnenum.h
     common.h
     formgps.h formgps.cpp
@@ -63,8 +65,6 @@ qt_add_executable(QtAgOpenGPS
     qmlsettings_addkeys.cpp
     qmlutil.h
     setter.h
-    testlists.cpp
-    testnmea.cpp
     classes/cabcurve.h classes/cabcurve.cpp
     classes/cabline.h classes/cabline.cpp
     classes/cahrs.h classes/cahrs.cpp

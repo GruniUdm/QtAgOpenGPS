@@ -26,6 +26,7 @@ Item{
         implicitHeight: 40 * theme.scaleHeight
         implicitWidth: 150 * theme.scaleWidth
         anchors.bottom: parent.bottom
+
         model: ListModel{
             id: rootComboModel
         }
