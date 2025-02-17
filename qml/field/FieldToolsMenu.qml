@@ -61,7 +61,11 @@ Drawer {
                 //width: 300
                 onClicked: {
                     fieldToolsMenu.visible = false
-                    headacheDesigner.show()
+                    if (boundaryInterface.count > 0) {
+                        headacheDesigner.show()
+                    }else{
+                        timedMessage.addMessage(2000, qsTr("No Boundaries"), qsTr("Create A Boundary First"))
+                    }
                 }
             }
             IconButtonTextBeside{

@@ -25,7 +25,6 @@ void FormGPS::field_update_list() {
             index++;
         }
     }
-
     fieldInterface->setProperty("field_list", fieldList);
 }
 
@@ -111,7 +110,8 @@ void FormGPS::field_delete(QString field_name) {
         TimedMessageBox(8000,tr("Cannot find saved field"),QString(tr("Cannot find saved field to delete.")) + " " + field_name);
         return;
     }
-
-    QFile::moveToTrash(directoryName);
+    if(!QFile::moveToTrash(directoryName)){
+        fieldDir.removeRecursively();
+    }
     field_update_list();
 }

@@ -52,8 +52,9 @@ Dialog {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: newFieldLabel.bottom
+            height: 49
             selectByMouse: true
-            placeholderText: "New Field Name"
+            placeholderText: focus || text ? "" : "New Field Name"
             onTextChanged: {
                 for (var i=0; i < fieldInterface.field_list.length ; i++) {
                     if (text === fieldInterface.field_list[i].name) {
@@ -83,6 +84,7 @@ Dialog {
             id: marker
             icon.source: prefix + "/images/JobNameCalendar.png"
             Text{
+                rightPadding: 10
                 anchors.right: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: "+"
@@ -100,6 +102,7 @@ Dialog {
             objectName: "btnAddTime"
             icon.source: prefix + "/images/JobNameTime.png"
             Text{
+                rightPadding: 10
                 anchors.right: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: "+"
