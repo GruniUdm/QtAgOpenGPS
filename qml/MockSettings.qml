@@ -312,5 +312,6 @@ Item {
     property double setRate_rateSET: 100
     property double setRateContType: 5
     property double setRateMode: 1
+    property double setRateCoverageUnits: 2
     property string setCam_CamLink: "rtsp://192.168.0.138:1945"
 }

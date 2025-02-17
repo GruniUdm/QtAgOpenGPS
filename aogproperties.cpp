@@ -315,5 +315,6 @@ AOGProperty property_setRate_rateSensorCount("rate/rateSensorCount",600);
 AOGProperty property_setRate_rateSET("rate/rateSET",100);
 AOGProperty property_setRateContType("rate/ContType",2);
 AOGProperty property_setRateMode("rate/ContMode",2);
+AOGProperty property_setRateCoverageUnits("rate/CovUnit",2);
 AOGProperty property_setCam_CamLink("cam/camLink",QString("rtsp://192.168.0.138:1945"));
 

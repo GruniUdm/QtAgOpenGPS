@@ -1,8 +1,5 @@
 #include "ratecontrol.h"
 #include "aogproperty.h"
-#include "ctool.h"
-#include "formgps.h"
-#include "cpgn.h"
 
 ratecontrol::ratecontrol(QObject *parent)
     : QObject{parent}

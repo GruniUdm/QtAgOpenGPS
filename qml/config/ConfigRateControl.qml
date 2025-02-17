@@ -42,6 +42,13 @@ Rectangle{
         else if ((sett & 4) == 4) cboxRateControlType.currentIndex = 3;
         else cboxRateControlType.currentIndex = 0;
 
+        var sett = settings.setRateCoverageUnits;
+
+        if ((sett & 1) == 1) cboxRateCoverageUnits.currentIndex = 1;
+        else if ((sett & 2) == 2) cboxRateCoverageUnits.currentIndex = 2;
+        else if ((sett & 4) == 4) cboxRateCoverageUnits.currentIndex = 3;
+        else cboxRateCoverageUnits.currentIndex = 0;
+
 
         mandatory.visible = false
 
@@ -68,6 +75,28 @@ Rectangle{
         if (cboxRateControlType.currentText === "Combo Timed") sett |= set;
         else sett &= reset;
         settings.setRateContType = sett;
+
+
+        set = 1;
+        reset = 2046;
+        sett = 0;
+
+
+        if (cboxRateCoverageUnits.currentText === "Hectare") sett |= set;
+        else sett &= reset;
+
+        set <<= 1;
+        reset <<= 1;
+        reset += 1;
+        if (cboxRateCoverageUnits.currentText === "Minutes") sett |= set;
+        else sett &= reset;
+
+        set <<= 1;
+        reset <<= 1;
+        reset += 1;
+        if (cboxRateCoverageUnits.currentText === "Hours") sett |= set;
+        else sett &= reset;
+        settings.setRateCoverageUnits= sett;
 
         settings.setRate_valveMinPWM = rateMinPWM.value
         settings.setRate_valveMaxPWM = rateMaxPWM.value
@@ -322,6 +351,19 @@ Rectangle{
                     ListElement {text: qsTr("Constant UPM")}
                 }
                 text: qsTr("Mode")
+                onActivated: mandatory.visible = true
+        }
+            ComboBoxCustomized {
+                id: cboxRateCoverageUnits
+                enabled: cboxIsRateControlOn.checked
+                editable: false
+                model: ListModel {
+                    ListElement {text: qsTr("Acres")}
+                    ListElement {text: qsTr("Hectare")}
+                    ListElement {text: qsTr("Minutes")}
+                    ListElement {text: qsTr("Hours")}
+                }
+                text: qsTr("Coverage Units")
                 onActivated: mandatory.visible = true
         }
 

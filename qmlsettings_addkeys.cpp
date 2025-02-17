@@ -309,5 +309,6 @@ void QMLSettings::setupKeys() {
     addKey(QString("setRate_rateSET"),QString("rate/rateSET"),"double");
     addKey(QString("setRateContType"),QString("rate/ContType"),"double");
     addKey(QString("setRateMode"),QString("rate/ContMode"),"double");
+    addKey(QString("setRateCoverageUnits"),QString("rate/CovUnit"),"double");
     addKey(QString("setCam_CamLink"),QString("cam/CamLink"),"QString");
 }
