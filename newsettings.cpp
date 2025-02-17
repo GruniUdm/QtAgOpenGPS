@@ -4,9 +4,6 @@
 #include <QJsonDocument>
 #include <QFile>
 
-QVector<int> default_relay_pinConfig = { 1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
-QVector<int> default_zones = { 2,10,20,0,0,0,0,0,0 };
-
 NewSettings::NewSettings(QObject *parent)
     : QQmlPropertyMap{parent}
 {
@@ -39,6 +36,18 @@ void NewSettings::addKey(const QString settings_key,
             l.append(QVariant(i.toInt()));
         }
         settings_value = l;
+    } else if(special_case == VECTOR_OF_DOUBLES && QString(settings_value.typeName()) == "QStringList" ) {
+        QVariantList l;
+        for(QString &i: settings_value.toStringList()) {
+            l.append(QVariant(i.toDouble()));
+        }
+        settings_value = l;
+    } else if(special_case == VECTOR_OF_STRINGS && QString(settings_value.typeName()) == "QStringList" ) {
+        QVariantList l;
+        for(QString &i: settings_value.toStringList()) {
+            l.append(QVariant(i));
+        }
+        settings_value = l;
     } else {
         if (settings_value.metaType() != type) {
             if (settings_value.canConvert(type)) {
@@ -66,6 +75,12 @@ void NewSettings::onValueChanged(const QString &qml_key,
 
     if (type_name == "QJSValue" && special_case == VECTOR_OF_INTS) {
         QVector<int> v = toVector<int>(value);
+        settings.setValue(settings_key, toVariant(v));
+    } else if (type_name == "QJSValue" && special_case == VECTOR_OF_DOUBLES) {
+        QVector<double> v = toVector<double>(value);
+        settings.setValue(settings_key, toVariant(v));
+    } else if (type_name == "QJSValue" && special_case == VECTOR_OF_STRINGS) {
+        QVector<QString> v = toVector<QString>(value);
         settings.setValue(settings_key, toVariant(v));
     } else {
         settings.setValue(settings_key, value);

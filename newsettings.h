@@ -12,9 +12,6 @@
 
 #include "settings_defines.h"
 
-extern QVector<int> default_relay_pinConfig;
-extern QVector<int> default_zones;
-
 class NewSettings;
 
 extern NewSettings *settings;
@@ -43,6 +40,8 @@ class NewSettings : public QQmlPropertyMap
     enum SpecialCase {
         NORMAL = 0,
         VECTOR_OF_INTS = 1,
+        VECTOR_OF_DOUBLES = 2,
+        VECTOR_OF_STRINGS = 3
     };
 
 
