@@ -184,7 +184,7 @@ void NewSettings::setupKeys() {
     addKey("menu/isSimulatorOn", true, QMetaType(QMetaType::Bool));
     addKey("menu/isSkyOn", true, QMetaType(QMetaType::Bool));
     addKey("menu/isSpeedoOn", false, QMetaType(QMetaType::Bool));
-    addKey("relay/pinConfig", toVariant(QVector<int>{ 1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }), QMetaType(QMetaType::Void), NewSettings::VECTOR_OF_INTS);
+    addKey("relay/pinConfig", toVariant(QVector<int>{ 1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }), QMetaType(METATYPE_QVECTOR_INT));
     addKey("section/isFast", false, QMetaType(QMetaType::Bool));
     addKey("section/position1", -2, QMetaType(QMetaType::Double));
     addKey("section/position10", 0, QMetaType(QMetaType::Double));
@@ -229,7 +229,7 @@ void NewSettings::setupKeys() {
     addKey("tool/sectionWidthMulti", 0.5, QMetaType(QMetaType::Double));
     addKey("tool/toolTrailingHitchLength", -2.5, QMetaType(QMetaType::Double));
     addKey("tool/trailingToolToPivotLength", 0, QMetaType(QMetaType::Double));
-    addKey("tool/zones", toVariant(QVector<int>{ 2,10,20,0,0,0,0,0,0 }), QMetaType(QMetaType::Void), NewSettings::VECTOR_OF_INTS);
+    addKey("tool/zones", toVariant(QVector<int>{ 2,10,20,0,0,0,0,0,0 }), QMetaType(METATYPE_QVECTOR_INT));
     addKey("tram/alpha", 0.8, QMetaType(QMetaType::Double));
     addKey("tram/basedOn", 0, QMetaType(QMetaType::Int));
     addKey("tram/isTramOnBackBuffer", true, QMetaType(QMetaType::Bool));
@@ -303,5 +303,8 @@ void NewSettings::setupKeys() {
     addKey("youturn/style", 0, QMetaType(QMetaType::Double));
     addKey("youturn/toolWidths", 2, QMetaType(QMetaType::Double));
     addKey("youturn/youMoveDistance", 0.25, QMetaType(QMetaType::Double));
+    addKey("test/testStrings", toVariant(QVector<QString>{"one", "two", "trheep{", "four}" }), QMetaType(METATYPE_QVECTOR_STRING));
+    addKey("test/testDoubles", toVariant(QVector<double>{1.2, 1.3, 1.4}), QMetaType(METATYPE_QVECTOR_DOUBLE));
+    addKey("test/testColorRgbF", QColor::fromRgbF(1.0,0.5,0.5,0.2), QMetaType(QMetaType::QColor));
 }
 

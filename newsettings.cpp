@@ -4,6 +4,11 @@
 #include <QJsonDocument>
 #include <QFile>
 
+//Q_DECLARE_METATYPE(QVector<int>)
+const int METATYPE_QVECTOR_INT = qRegisterMetaType<QVector<int>>("QVector<int>");
+const int METATYPE_QVECTOR_DOUBLE = qRegisterMetaType<QVector<double>>("QVector<double>");
+const int METATYPE_QVECTOR_STRING = qRegisterMetaType<QVector<QString>>("QVector<QString>");
+
 NewSettings::NewSettings(QObject *parent)
     : QQmlPropertyMap{parent}
 {
@@ -15,34 +20,33 @@ NewSettings::NewSettings(QObject *parent)
 
 void NewSettings::addKey(const QString settings_key,
                          const QVariant &default_value,
-                         const QMetaType type,
-                         NewSettings::SpecialCase special_case)
+                         const QMetaType type)
 {
     //put key into app-wide settings with its default value,
     //if it's not there already.  If it's already in QSettings, let's
     //make sure it's the correct type
     QVariant settings_value = settings.value(settings_key, default_value);
 
-    special_case_map.insert(settings_key, special_case);
+    settings_type_map.insert(settings_key, type);
 
     //INI files are typeless, so when settings are read in when QSettings
     //settings is constructed, some of the types end up being wrong.  In
     //a couple of cases we need to correct them back to QVariantLists.
 
     //this one should be a qvariant list, but ini reads it in as a QStringList
-    if (special_case == VECTOR_OF_INTS && QString(settings_value.typeName()) == "QStringList" ) {
+    if (type.id() == METATYPE_QVECTOR_INT && QString(settings_value.typeName()) == "QStringList" ) {
         QVariantList l;
         for(QString &i: settings_value.toStringList()) {
             l.append(QVariant(i.toInt()));
         }
         settings_value = l;
-    } else if(special_case == VECTOR_OF_DOUBLES && QString(settings_value.typeName()) == "QStringList" ) {
+    } else if(type.id() == METATYPE_QVECTOR_DOUBLE && QString(settings_value.typeName()) == "QStringList" ) {
         QVariantList l;
         for(QString &i: settings_value.toStringList()) {
             l.append(QVariant(i.toDouble()));
         }
         settings_value = l;
-    } else if(special_case == VECTOR_OF_STRINGS && QString(settings_value.typeName()) == "QStringList" ) {
+    } else if(type.id() == METATYPE_QVECTOR_STRING && QString(settings_value.typeName()) == "QStringList" ) {
         QVariantList l;
         for(QString &i: settings_value.toStringList()) {
             l.append(QVariant(i));
@@ -69,17 +73,17 @@ void NewSettings::onValueChanged(const QString &qml_key,
                                  const QVariant &value)
 {
     QString settings_key = qml_key.split('_').join('/');
-    int special_case = special_case_map[settings_key];
+    QMetaType settings_type = settings_type_map[settings_key];
 
     QString type_name = value.typeName();
 
-    if (type_name == "QJSValue" && special_case == VECTOR_OF_INTS) {
+    if (type_name == "QJSValue" && settings_type.id() == METATYPE_QVECTOR_INT) {
         QVector<int> v = toVector<int>(value);
         settings.setValue(settings_key, toVariant(v));
-    } else if (type_name == "QJSValue" && special_case == VECTOR_OF_DOUBLES) {
+    } else if (type_name == "QJSValue" && settings_type.id() == METATYPE_QVECTOR_DOUBLE) {
         QVector<double> v = toVector<double>(value);
         settings.setValue(settings_key, toVariant(v));
-    } else if (type_name == "QJSValue" && special_case == VECTOR_OF_STRINGS) {
+    } else if (type_name == "QJSValue" && settings_type.id() == METATYPE_QVECTOR_STRING) {
         QVector<QString> v = toVector<QString>(value);
         settings.setValue(settings_key, toVariant(v));
     } else {

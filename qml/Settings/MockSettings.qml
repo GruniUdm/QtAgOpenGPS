@@ -5,7 +5,6 @@
 //This is a mock Settings singleton for use in qml viewer or QtDS
 //This mirrors the structure of the real Settings.Settings used
 //in the compiled binary.
-import QtQuick
 
 pragma singleton
 
@@ -189,7 +188,7 @@ Item {
 	property bool menu_isSimulatorOn: true
 	property bool menu_isSkyOn: true
 	property bool menu_isSpeedoOn: false
-	property var relay_pinConfig: [ 1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
+	property var relay_pinConfig: [  1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  ]
 	property bool section_isFast: false
 	property double section_position1: -2
 	property double section_position10: 0
@@ -234,7 +233,7 @@ Item {
 	property double tool_sectionWidthMulti: 0.5
 	property double tool_toolTrailingHitchLength: -2.5
 	property double tool_trailingToolToPivotLength: 0
-	property var tool_zones: [ 2,10,20,0,0,0,0,0,0 ]
+	property var tool_zones: [  2,10,20,0,0,0,0,0,0  ]
 	property double tram_alpha: 0.8
 	property int tram_basedOn: 0
 	property bool tram_isTramOnBackBuffer: true
@@ -308,4 +307,7 @@ Item {
 	property double youturn_style: 0
 	property double youturn_toolWidths: 2
 	property double youturn_youMoveDistance: 0.25
+	property var test_testStrings: [ "one", "two", "trheep", "four}"  ]
+	property var test_testDoubles: [ 1.2, 1.3, 1.4 ]
+	property color test_testColorRgbF: "#ff7f7f33"
 }

@@ -14,6 +14,10 @@
 
 class NewSettings;
 
+extern const int METATYPE_QVECTOR_INT;
+extern const int METATYPE_QVECTOR_DOUBLE;
+extern const int METATYPE_QVECTOR_STRING;
+
 extern NewSettings *settings;
 
 /* This class helps bridge between QSettings and QML/Javascript.
@@ -37,18 +41,9 @@ class NewSettings : public QQmlPropertyMap
 {
     Q_OBJECT
 
-    enum SpecialCase {
-        NORMAL = 0,
-        VECTOR_OF_INTS = 1,
-        VECTOR_OF_DOUBLES = 2,
-        VECTOR_OF_STRINGS = 3
-    };
-
-
 private:
     QSettings settings;
-    QMap<QString, QMetaType::Type> settings_type_map;
-    QMap<QString, SpecialCase> special_case_map;
+    QMap<QString, QMetaType> settings_type_map;
 
 public:
     explicit NewSettings(QObject *parent = nullptr);
@@ -59,8 +54,7 @@ public:
 
     void addKey(const QString qsettings_key,
                 const QVariant &default_value,
-                const QMetaType type,
-                NewSettings::SpecialCase special_case = NORMAL);
+                const QMetaType type);
 
     QVariant value(const QString &key);
     QVector<int> valueIntVec(const QString &key);
