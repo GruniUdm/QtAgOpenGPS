@@ -15,7 +15,7 @@ Rectangle {
     border.color: aog.blackDayWhiteNight
     Comp.TopLine{
         id: topLine
-        titleText: "Edit AB"
+        titleText: qsTr("Edit AB")
     }
     Row{
         anchors.top: topLine. bottom
@@ -74,7 +74,7 @@ Rectangle {
             color1: "transparent"
             color2: "transparent"
             color3: "transparent"
-            text: "Cancel"
+            text: qsTr("Cancel")
             width: 75
             height: 75
         }
@@ -83,7 +83,7 @@ Rectangle {
             color1: "transparent"
             color2: "transparent"
             color3: "transparent"
-            text: "For Now"
+            text: qsTr("For Now")
             width: 75
             height: 75
             onClicked: lineEditor.visible = false
@@ -93,7 +93,7 @@ Rectangle {
             color1: "transparent"
             color2: "transparent"
             color3: "transparent"
-            text: "Save"
+            text: qsTr("Save")
             width: 75
             height: 75
             onClicked: lineEditor.visible = false

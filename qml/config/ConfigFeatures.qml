@@ -34,25 +34,25 @@ Item {
                 DisplayAndFeaturesBtns{
                     id: tramAll
                     icon.source: prefix + "/images/TramAll.png"
-                    text: "Tram Lines"
+                    text: qsTr("Tram Lines")
                     isChecked: Settings.feature_isTramOn
                     onCheckedChanged: Settings.feature_isTramOn = checked
                 }
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/HeadlandOn.png"
-                    text: "Headland"
+                    text: qsTr("Headland")
                     isChecked: Settings.feature_isHeadlandOn
                     onCheckedChanged: Settings.feature_isHeadlandOn = checked
                 }
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/BoundaryOuter.png"
-                    text: "Boundary"
+                    text: qsTr("Boundary")
                     isChecked: Settings.feature_isBoundaryOn
                     onCheckedChanged: Settings.feature_isBoundaryOn = checked
                 }
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/RecPath.png"
-                    text: "Rec Path"
+                    text: qsTr("Rec Path")
                     isChecked: Settings.feature_isRecPathOn
                     onCheckedChanged: Settings.feature_isRecPathOn = checked
                 }
@@ -68,7 +68,7 @@ Item {
             anchors.rightMargin: 30 * theme.scaleWidth
             anchors.leftMargin: 30 * theme.scaleWidth
             anchors.bottomMargin: 30 * theme.scaleHeight
-            title: "Tools Menu"
+            title: qsTr("Tools Menu")
             font.bold: true
             ColumnLayout{
                 id: toolsMenuColumn
@@ -76,19 +76,19 @@ Item {
                 height: parent.height
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/ABSmooth.png"
-                    text: "AB Smooth"
+                    text: qsTr("AB Smooth")
                     isChecked: Settings.feature_isABSmoothOn
                     onCheckedChanged: Settings.feature_isABSmoothOn = checked
                 }
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/HideContour.png"
-                    text: "Hide Contour"
+                    text: qsTr("Hide Contour")
                     isChecked: Settings.feature_isHideContourOn
                     onCheckedChanged: Settings.feature_isHideContourOn = checked
                 }
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/Webcam.png"
-                    text: "WebCam"
+                    text: qsTr("WebCam")
                     isChecked: Settings.feature_isWebCamOn
                     onCheckedChanged: Settings.feature_isWebCamOn = checked
                 }
@@ -160,7 +160,7 @@ Item {
             anchors.topMargin: 100 * theme.scaleHeight
             anchors.rightMargin: 30 * theme.scaleWidth
             anchors.leftMargin: 30 * theme.scaleWidth
-            title: "Sound"
+            title: qsTr("Sound")
             ColumnLayout{
                 width: children.width
                 height: parent.height
