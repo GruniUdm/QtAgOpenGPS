@@ -14,8 +14,8 @@ void NewSettings::setupKeys() {
         if row['cpp_type'] == 'bool': row['cpp_type'] = 'Bool'
         if not row['cpp_type']: row['cpp_type'] = 'Void'
 
-        if row["special_case"]:
-            print('    addKey("%s/%s", %s, QMetaType(QMetaType::%s), NewSettings::%s);' % (row['section'],row['key'], row['default'], row['cpp_type'], row['special_case']))
+        if row["cpp_type"][:8] == 'METATYPE':
+            print('    addKey("%s/%s", toVariant(%s), QMetaType(%s));' % (row['section'],row['key'], row['default'], row['cpp_type']))
         else:
             print('    addKey("%s/%s", %s, QMetaType(QMetaType::%s));' % (row['section'],row['key'], row['default'], row['cpp_type']))
 
@@ -56,12 +56,15 @@ def generate_mockqml(reader):
     print ("Item {")
 
     for row in reader:
-        if row['special_case'] == 'VECTOR_OF_INTS':
+        if row['cpp_type'][:8] == 'METATYPE':
             qml_type = 'var'
-            if row['key'] == 'pinConfig':
-                row['default'] = '[ 1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]'
-            else:
-                row['default'] = '[ 2,10,20,0,0,0,0,0,0 ]'
+
+            # instead of a greedy regex, we use a hack slicing job
+            # to make sure that if any of the values have { or } in
+            # them, we keep them.  Only looking for the first { and the
+            # last } to slice.
+            default = ''.join(row['default'].split('{')[1:]).split('}')
+            row['default'] = '[ ' + '}'.join(default[:-1]) + ' ]'
         else:
             qml_type = row['cpp_type']
             if qml_type == 'QString': 
@@ -82,6 +85,12 @@ def generate_mockqml(reader):
                     row['default'] = 'Qt.s' +  row['default'][2:]
             elif qml_type == 'QColor':
                 qml_type = 'color'
+                if row['default'][:17].lower() == 'qcolor::fromrgbf(':
+                    color = row['default'][17:-1]
+                    if ',' in color:
+                        color = [float(c.strip()) * 255 for c in color.split(',')]
+                        color = color_to_hex(color)
+                    row['default'] = color
                 if row['default'][:16].lower() == 'qcolor::fromrgb(':
                     color = row['default'][16:-1]
                     if ',' in color:
@@ -94,11 +103,6 @@ def generate_mockqml(reader):
                         color = [int(c.strip()) for c in color.split(',')]
                         color = color_to_hex(color)
                     row['default'] = color
-                    
-                    
-
-
-
 
         print("	property %s %s_%s: %s" % (qml_type, row['section'], row['key'], row['default']))
 
