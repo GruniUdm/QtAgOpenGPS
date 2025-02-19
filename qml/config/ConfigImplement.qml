@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Fusion
+import Settings
 //import QtQuick.Controls.Styles 1.4
 
 import ".."
@@ -39,12 +40,12 @@ Rectangle{
 			id: i3pt
             icon.source: prefix + "/images/ToolChkRear.png"
             checkable: true
-            isChecked: settings.setTool_isToolRearFixed
+            isChecked: Settings.tool_isToolRearFixed
             onClicked: {
-                settings.setTool_isToolRearFixed = true
-                settings.setTool_isToolFront = false
-                settings.setTool_isToolTrailing = false
-                settings.setTool_isToolTBT = false
+                Settings.tool_isToolRearFixed = true
+                Settings.tool_isToolFront = false
+                Settings.tool_isToolTrailing = false
+                Settings.tool_isTBT = false
             }
 		}
 
@@ -54,12 +55,12 @@ Rectangle{
 			id: i3ptfront
             icon.source: prefix + "/images/ToolChkFront.png"
             checkable: true
-            isChecked: settings.setTool_isToolFront
+            isChecked: Settings.tool_isToolFront
             onClicked: {
-                settings.setTool_isToolRearFixed = false
-                settings.setTool_isToolFront = true
-                settings.setTool_isToolTrailing = false
-                settings.setTool_isToolTBT = false
+                Settings.tool_isToolRearFixed = false
+                Settings.tool_isToolFront = true
+                Settings.tool_isToolTrailing = false
+                Settings.tool_isTBT = false
             }
         }
 
@@ -69,12 +70,12 @@ Rectangle{
 			id: itrailed
             icon.source: prefix + "/images/ToolChkTrailing.png"
             checkable: true
-            isChecked: settings.setTool_isToolTrailing && ! settings.setTool_isToolTBT
+            isChecked: Settings.tool_isToolTrailing && ! Settings.tool_isTBT
             onClicked: {
-                settings.setTool_isToolRearFixed = false
-                settings.setTool_isToolFront = false
-                settings.setTool_isToolTrailing = true
-                settings.setTool_isToolTBT = false
+                Settings.tool_isToolRearFixed = false
+                Settings.tool_isToolFront = false
+                Settings.tool_isToolTrailing = true
+                Settings.tool_isTBT = false
             }
         }
 		IconButtonColor{
@@ -83,12 +84,12 @@ Rectangle{
 			id: iTBT
             icon.source: prefix + "/images/ToolChkTBT.png"
             checkable: true
-            isChecked: settings.setTool_isToolTBT
+            isChecked: Settings.tool_isTBT
             onClicked: {
-                settings.setTool_isToolRearFixed = false
-                settings.setTool_isToolFront = false
-                settings.setTool_isToolTrailing = true
-                settings.setTool_isToolTBT = true
+                Settings.tool_isToolRearFixed = false
+                Settings.tool_isToolFront = false
+                Settings.tool_isToolTrailing = true
+                Settings.tool_isTBT = true
             }
         }
 	}

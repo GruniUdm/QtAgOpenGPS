@@ -7,7 +7,6 @@
 #include <QThread>
 #include <assert.h>
 #include "ccamera.h"
-#include "aogproperty.h"
 #include "glutils.h"
 #include "glm.h"
 

@@ -24,7 +24,7 @@ To do
  * Serial. Add NTRIP to bluetooth
  * Implement new AOG 6.6 light bar in QML.
  * Convert OpenGL calls and shaders to QRhi for portability and speed, using DirectD3D and Vulkan where it can.
-
+ * Make sure that if QML changes a setting, any classes that cache settings like CAHRS need to reload them.  Maybe use a signal and callback.
 Done
  * ~~Set the categories to consistent in the ini file.~~
  * ~~Add "Auto reconnect" to UDP code in QtAgIO.~~

@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import Settings
 
 import ".."
 import "../components"
@@ -22,37 +23,37 @@ Rectangle{
 
     function load_settings() {
 
-        if (settings.setRelay_pinConfig.length < 24) {
-            for( var i=settings.setRelay_pinConfig.length ; i < 24 ; i ++) {
+        if (Settings.relay_pinConfig.length < 24) {
+            for( var i=Settings.relay_pinConfig.length ; i < 24 ; i ++) {
                 console.debug("adding to setRelay_pinConfig.")
-                settings.setRelay_pinConfig[i] = 0
+                Settings.relay_pinConfig[i] = 0
             }
         }
 
-        pin1.currentIndex = settings.setRelay_pinConfig[0]
-        pin2.currentIndex = settings.setRelay_pinConfig[1]
-        pin3.currentIndex = settings.setRelay_pinConfig[2]
-        pin4.currentIndex = settings.setRelay_pinConfig[3]
-        pin5.currentIndex = settings.setRelay_pinConfig[4]
-        pin6.currentIndex = settings.setRelay_pinConfig[5]
-        pin7.currentIndex = settings.setRelay_pinConfig[6]
-        pin8.currentIndex = settings.setRelay_pinConfig[7]
-        pin9.currentIndex = settings.setRelay_pinConfig[8]
-        pin10.currentIndex = settings.setRelay_pinConfig[9]
-        pin11.currentIndex = settings.setRelay_pinConfig[10]
-        pin12.currentIndex = settings.setRelay_pinConfig[11]
-        pin13.currentIndex = settings.setRelay_pinConfig[12]
-        pin14.currentIndex = settings.setRelay_pinConfig[13]
-        pin15.currentIndex = settings.setRelay_pinConfig[14]
-        pin16.currentIndex = settings.setRelay_pinConfig[15]
-        pin17.currentIndex = settings.setRelay_pinConfig[16]
-        pin18.currentIndex = settings.setRelay_pinConfig[17]
-        pin19.currentIndex = settings.setRelay_pinConfig[18]
-        pin20.currentIndex = settings.setRelay_pinConfig[19]
-        pin21.currentIndex = settings.setRelay_pinConfig[20]
-        pin22.currentIndex = settings.setRelay_pinConfig[21]
-        pin23.currentIndex = settings.setRelay_pinConfig[22]
-        pin24.currentIndex = settings.setRelay_pinConfig[23]
+        pin1.currentIndex = Settings.relay_pinConfig[0]
+        pin2.currentIndex = Settings.relay_pinConfig[1]
+        pin3.currentIndex = Settings.relay_pinConfig[2]
+        pin4.currentIndex = Settings.relay_pinConfig[3]
+        pin5.currentIndex = Settings.relay_pinConfig[4]
+        pin6.currentIndex = Settings.relay_pinConfig[5]
+        pin7.currentIndex = Settings.relay_pinConfig[6]
+        pin8.currentIndex = Settings.relay_pinConfig[7]
+        pin9.currentIndex = Settings.relay_pinConfig[8]
+        pin10.currentIndex = Settings.relay_pinConfig[9]
+        pin11.currentIndex = Settings.relay_pinConfig[10]
+        pin12.currentIndex = Settings.relay_pinConfig[11]
+        pin13.currentIndex = Settings.relay_pinConfig[12]
+        pin14.currentIndex = Settings.relay_pinConfig[13]
+        pin15.currentIndex = Settings.relay_pinConfig[14]
+        pin16.currentIndex = Settings.relay_pinConfig[15]
+        pin17.currentIndex = Settings.relay_pinConfig[16]
+        pin18.currentIndex = Settings.relay_pinConfig[17]
+        pin19.currentIndex = Settings.relay_pinConfig[18]
+        pin20.currentIndex = Settings.relay_pinConfig[19]
+        pin21.currentIndex = Settings.relay_pinConfig[20]
+        pin22.currentIndex = Settings.relay_pinConfig[21]
+        pin23.currentIndex = Settings.relay_pinConfig[22]
+        pin24.currentIndex = Settings.relay_pinConfig[23]
 
         mandatory.visible = false
 
@@ -60,30 +61,30 @@ Rectangle{
 
     function save_settings() {
 
-        settings.setRelay_pinConfig[0] = pin1.currentIndex
-        settings.setRelay_pinConfig[1] = pin2.currentIndex
-        settings.setRelay_pinConfig[2] = pin3.currentIndex
-        settings.setRelay_pinConfig[3] = pin4.currentIndex
-        settings.setRelay_pinConfig[4] = pin5.currentIndex
-        settings.setRelay_pinConfig[5] = pin6.currentIndex
-        settings.setRelay_pinConfig[6] = pin7.currentIndex
-        settings.setRelay_pinConfig[7] = pin8.currentIndex
-        settings.setRelay_pinConfig[8] = pin9.currentIndex
-        settings.setRelay_pinConfig[9] = pin10.currentIndex
-        settings.setRelay_pinConfig[10] = pin11.currentIndex
-        settings.setRelay_pinConfig[11] = pin12.currentIndex
-        settings.setRelay_pinConfig[12] = pin13.currentIndex
-        settings.setRelay_pinConfig[13] = pin14.currentIndex
-        settings.setRelay_pinConfig[14] = pin15.currentIndex
-        settings.setRelay_pinConfig[15] = pin16.currentIndex
-        settings.setRelay_pinConfig[16] = pin17.currentIndex
-        settings.setRelay_pinConfig[17] = pin18.currentIndex
-        settings.setRelay_pinConfig[18] = pin19.currentIndex
-        settings.setRelay_pinConfig[19] = pin20.currentIndex
-        settings.setRelay_pinConfig[20] = pin21.currentIndex
-        settings.setRelay_pinConfig[21] = pin22.currentIndex
-        settings.setRelay_pinConfig[22] = pin23.currentIndex
-        settings.setRelay_pinConfig[23] = pin24.currentIndex
+        Settings.relay_pinConfig[0] = pin1.currentIndex
+        Settings.relay_pinConfig[1] = pin2.currentIndex
+        Settings.relay_pinConfig[2] = pin3.currentIndex
+        Settings.relay_pinConfig[3] = pin4.currentIndex
+        Settings.relay_pinConfig[4] = pin5.currentIndex
+        Settings.relay_pinConfig[5] = pin6.currentIndex
+        Settings.relay_pinConfig[6] = pin7.currentIndex
+        Settings.relay_pinConfig[7] = pin8.currentIndex
+        Settings.relay_pinConfig[8] = pin9.currentIndex
+        Settings.relay_pinConfig[9] = pin10.currentIndex
+        Settings.relay_pinConfig[10] = pin11.currentIndex
+        Settings.relay_pinConfig[11] = pin12.currentIndex
+        Settings.relay_pinConfig[12] = pin13.currentIndex
+        Settings.relay_pinConfig[13] = pin14.currentIndex
+        Settings.relay_pinConfig[14] = pin15.currentIndex
+        Settings.relay_pinConfig[15] = pin16.currentIndex
+        Settings.relay_pinConfig[16] = pin17.currentIndex
+        Settings.relay_pinConfig[17] = pin18.currentIndex
+        Settings.relay_pinConfig[18] = pin19.currentIndex
+        Settings.relay_pinConfig[19] = pin20.currentIndex
+        Settings.relay_pinConfig[20] = pin21.currentIndex
+        Settings.relay_pinConfig[21] = pin22.currentIndex
+        Settings.relay_pinConfig[22] = pin23.currentIndex
+        Settings.relay_pinConfig[23] = pin24.currentIndex
 
         mandatory.visible = false
     }

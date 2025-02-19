@@ -4,6 +4,7 @@
 // GPS heading source (dual/single)
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -52,14 +53,14 @@ Rectangle{
                 checkable: true
                 icon.source: prefix + "/images/Config/Con_SourcesGPSDual.png"
 
-                property string headingSource: settings.setGPS_headingFromWhichSource
+                property string headingSource: Settings.gps_headingFromWhichSource
 
-                checked: (settings.setGPS_headingFromWhichSource === "Dual" ? true: false)
+                checked: (Settings.gps_headingFromWhichSource === "Dual" ? true: false)
 
                 onCheckedChanged: {
 					if (checked){
-						settings.setGPS_headingFromWhichSource = "Dual"
-						if(settings.setVehicle_antennaOffset < 0)
+						Settings.gps_headingFromWhichSource = "Dual"
+						if(Settings.vehicle_antennaOffset < 0)
 						    timedMessage.addMessage(7000, qsTr("Antenna Offset error!"), qsTr('You have antenna offset set to "left". Dual requires it set to "right". Change it or you will have offset errors')) 
 					}
 				}
@@ -81,13 +82,13 @@ Rectangle{
                 checkable: true
                 icon.source: prefix + "/images/Config/Con_SourcesGPSSingle.png"
 
-                property string headingSource: settings.setGPS_headingFromWhichSource
+                property string headingSource: Settings.gps_headingFromWhichSource
 
-                checked: (settings.setGPS_headingFromWhichSource === "Fix" ? true : false)
+                checked: (Settings.gps_headingFromWhichSource === "Fix" ? true : false)
 
                 onCheckedChanged: {
                     if(checked)
-                        settings.setGPS_headingFromWhichSource = "Fix"
+                        Settings.gps_headingFromWhichSource = "Fix"
                 }
 
                 onHeadingSourceChanged: {
@@ -131,8 +132,8 @@ Rectangle{
                 height:100 * theme.scaleHeight
                 id: alarm
                 icon.source: prefix + "/images/Config/Con_SourcesRTKAlarm.png"
-                isChecked: settings.setGPS_isRTK
-                onClicked: settings.setGPS_isRTK = true
+                isChecked: Settings.gps_isRTK
+                onClicked: Settings.gps_isRTK = true
             }
             Rectangle {
                 height: 100 * theme.scaleHeight
@@ -149,8 +150,8 @@ Rectangle{
                 checkable: true
                 id: killAutoSteer
                 icon.source: prefix + "/images/AutoSteerOff.png"
-                isChecked: settings.setGPS_isRTK_KillAutoSteer
-                onClicked: settings.setGPS_isRTK_KillAutoSteer = true
+                isChecked: Settings.gps_isRTKKillAutoSteer
+                onClicked: Settings.gps_isRTKKillAutoSteer = true
             }
         }
     }
@@ -197,14 +198,14 @@ Rectangle{
 
                 onCheckedChanged: {
                     if(checked){
-                        settings.setGPS_minimumStepLimit = 0.1
-                        settings.setF_minHeadingStepDistance = 1
+                        Settings.gps_minimumStepLimit = 0.1
+                        Settings.f_minHeadingStepDistance = 1
                     }else{
-                        settings.setGPS_minimumStepLimit = 0.05
-                        settings.setF_minHeadingStepDistance = 0.5
+                        Settings.gps_minimumStepLimit = 0.05
+                        Settings.f_minHeadingStepDistance = 0.5
                     }
                 }
-                text: settings.setGPS_minimumStepLimit * 100 + " " + qsTr("cm", "centimeter abbreviation")
+                text: Settings.gps_minimumStepLimit * 100 + " " + qsTr("cm", "centimeter abbreviation")
             }
         }
         Row {
@@ -223,7 +224,7 @@ Rectangle{
                 id: headingDistanceText
                 width: minGPSStepBtn.width
                 color: fixBtn.checked ? aog.blackDayWhiteNight : "grey"
-                text: settings.setF_minHeadingStepDistance * 100 + " " + qsTr("cm", "centimeter abbreviation")
+                text: Settings.f_minHeadingStepDistance * 100 + " " + qsTr("cm", "centimeter abbreviation")
             }
         }
 
@@ -247,15 +248,15 @@ Rectangle{
                 from: 20
                 to: 40
 
-                property int fusionWeight: settings.setIMU_fusionWeight2
+                property int fusionWeight: Settings.imu_fusionWeight2
 
                 onFusionWeightChanged: {
                     value = fusionWeight * 100
                 }
 
-                value: settings.setIMU_fusionWeight2 * 100
+                value: Settings.imu_fusionWeight2 * 100
                 onValueChanged: {
-                    settings.setIMU_fusionWeight2 = value / 100
+                    Settings.imu_fusionWeight2 = value / 100
                 }
                 stepSize: 1
             }
@@ -277,8 +278,8 @@ Rectangle{
             anchors.horizontalCenter: parent.horizontalCenter
             color: aog.backgroundColor
             colorChecked: "green"
-            isChecked: settings.setIMU_isReverseOn
-            onClicked: settings.setIMU_isReverseOn = checked
+            isChecked: Settings.imu_isReverseOn
+            onClicked: Settings.imu_isReverseOn = checked
             width: 250*theme.scaleWidth
         }
     }
@@ -317,8 +318,8 @@ Rectangle{
             anchors.leftMargin: 10 * theme.scaleWidth
             decimals: 1
             from: -100
-            boundValue: settings.setGPS_dualHeadingOffset
-            onValueChanged: settings.setGPS_dualHeadingOffset = value
+            boundValue: Settings.gps_dualHeadingOffset
+            onValueChanged: Settings.gps_dualHeadingOffset = value
             to: 100
             editable: true
             text: qsTr("Heading Offset (Degrees)")
@@ -333,8 +334,8 @@ Rectangle{
             checkable: true
             color: aog.backgroundColor
             colorChecked: "green"
-            isChecked: settings.setIMU_isDualAsIMU
-            onClicked: settings.setIMU_isDualAsIMU = checked
+            isChecked: Settings.imu_isDualAsIMU
+            onClicked: Settings.imu_isDualAsIMU = checked
             width: 250*theme.scaleWidth
         }
     }

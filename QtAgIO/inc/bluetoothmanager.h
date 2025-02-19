@@ -15,7 +15,6 @@ private:
 
 public:
     explicit BluetoothManager(FormLoop* loop, QObject* parent = nullptr);    ~BluetoothManager();
-    void startBluetoothDiscovery();
 public slots:
     void userConnectBluetooth(const QString &device);
     void userRemoveDevice(const QString &device);
@@ -47,5 +46,7 @@ private slots:
     void onSocketErrorOccurred(QBluetoothSocket::SocketError error);
     void readData();
     void bluetooth_console_debug(bool doWeDebug);
+public slots:
+    void startBluetoothDiscovery();
 };
 #endif  //BLUETOOTHMANAGER_H

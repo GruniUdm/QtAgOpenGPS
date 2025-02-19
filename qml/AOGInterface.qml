@@ -34,9 +34,9 @@ Item {
     property color whiteDayBlackNight: aogTheme.whiteDayBlackNight
     /*
     Connections {
-        target: settings
-        function onSetMenu_isMetricChanged() {
-            console.debug("isMetric is now",settings.setMenu_isMetric)
+        target: Settings
+        function onMenu_isMetricChanged() {
+            console.debug("isMetric is now",Settings.menu_isMetric)
         }
     }
     */

@@ -4,6 +4,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtQml.Models
+import AOG
+
 import "../components"
 import ".."
 /*This is where the track is actually created*/
@@ -67,7 +69,7 @@ Item{
 				icon.source: prefix + "/images/LetterABlue.png"
 				onClicked: {
 					aPlusHeading.enabled = true
-					aPlusHeading.text = (Number(utils.radians_to_deg(aog.heading)).toLocaleString(Qt.locale(), 'f', 4))
+                    aPlusHeading.text = (Number(Utils.radians_to_deg(aog.heading)).toLocaleString(Qt.locale(), 'f', 4))
 					btnAPlusOk.enabled = true
 				}
 			}

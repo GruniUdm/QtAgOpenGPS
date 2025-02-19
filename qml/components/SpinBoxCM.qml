@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 import QtQuick
+import Settings
+import AOG
 
 //This is a spinbox for displaying dimensions that are either
 //cm or inches
@@ -26,18 +28,18 @@ Item {
 
     //set the spinner value without triggering valueChanged
     function setValue(value) {
-        spinner.setValue(utils.cm_to_unit(value))
+        spinner.setValue(Utils.cm_to_unit(value))
     }
 
     onBoundValueChanged: {
         value = boundValue
-        spinner.value = utils.cm_to_unit(spinBoxCM.value)
+        spinner.value = Utils.cm_to_unit(spinBoxCM.value)
     }
 
     Connections {
-        target: settings
-        function onSetMenu_isMetricChanged() {
-            spinner.value = utils.cm_to_unit(value)
+        target: Settings
+        function onMenu_isMetricChanged() {
+            spinner.value = Utils.cm_to_unit(value)
         }
     }
 
@@ -45,16 +47,16 @@ Item {
         id: spinner
 		height: 30 * theme.scaleHeight
 		width: 150 * theme.scaleWidth
-        from: utils.cm_to_unit(spinBoxCM.from / 100.0)
-        to: utils.cm_to_unit(spinBoxCM.to / 100.0)
+        from: Utils.cm_to_unit(spinBoxCM.from / 100.0)
+        to: Utils.cm_to_unit(spinBoxCM.to / 100.0)
         editable: spinBoxCM.editable
         text: spinBoxCM.text
-        value: utils.cm_to_unit(spinBoxCM.value) // should be in metres!
+        value: Utils.cm_to_unit(spinBoxCM.value) // should be in metres!
         stepSize: spinBoxCM.stepSize
         anchors.fill: parent
 
         onValueModified: {
-            spinBoxCM.value = utils.cm_from_unit(value)
+            spinBoxCM.value = Utils.cm_from_unit(value)
             spinBoxCM.valueModified()
         }
     }

@@ -10,8 +10,15 @@
 #include <QSize>
 #include <QRect>
 
-extern QVector<int> default_relay_pinConfig;
-extern QVector<int> default_zones;
+#include "settings_defines.h"
+
+class NewSettings;
+
+extern const int METATYPE_QVECTOR_INT;
+extern const int METATYPE_QVECTOR_DOUBLE;
+extern const int METATYPE_QVECTOR_STRING;
+
+extern NewSettings *settings;
 
 /* This class helps bridge between QSettings and QML/Javascript.
  * An instance of QSettings is kept inside this class and a
@@ -34,16 +41,9 @@ class NewSettings : public QQmlPropertyMap
 {
     Q_OBJECT
 
-    enum SpecialCase {
-        NORMAL = 0,
-        VECTOR_OF_INTS = 1,
-    };
-
-
 private:
     QSettings settings;
-    QMap<QString, QMetaType::Type> settings_type_map;
-    QMap<QString, SpecialCase> special_case_map;
+    QMap<QString, QMetaType> settings_type_map;
 
 public:
     explicit NewSettings(QObject *parent = nullptr);
@@ -54,7 +54,7 @@ public:
 
     void addKey(const QString qsettings_key,
                 const QVariant &default_value,
-                NewSettings::SpecialCase special_case = NORMAL);
+                const QMetaType type);
 
     QVariant value(const QString &key);
     QVector<int> valueIntVec(const QString &key);
@@ -64,6 +64,10 @@ public:
     QJsonObject toJson();
     bool saveJson(QString filename);
     bool loadJson(QString filename);
+
+    void sync();
+protected:
+    QVariant updateValue(const QString &key, const QVariant &input);
 
 public slots:
     void onValueChanged (const QString &qml_key, const QVariant &value);

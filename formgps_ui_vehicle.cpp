@@ -4,12 +4,9 @@
 // GUI to backend vehicle interface
 #include "formgps.h"
 #include "qmlutil.h"
-#include "aogproperty.h"
-#include "qmlsettings.h"
+#include "newsettings.h"
 
 QString caseInsensitiveFilename(QString directory, QString filename);
-
-extern QMLSettings qml_settings;
 
 void FormGPS::vehicle_saveas(QString vehicle_name) {
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
@@ -52,18 +49,6 @@ void FormGPS::vehicle_load(QString vehicle_name) {
 }
 
 void FormGPS::vehicle_delete(QString vehicle_name) {
-    /*
-    if ((bool)property_setMenu_isMetric) {
-        settings->setValue("display/isMetric", "false");
-        qml_settings.insert("testing123","false");
-    } else {
-        settings->setValue("display/isMetric", "true");
-        qml_settings.insert("testing123","true");
-    }
-
-    return;
-    */
-
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
                             + "/" + QCoreApplication::applicationName() + "/Vehicles";
 

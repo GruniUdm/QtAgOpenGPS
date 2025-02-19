@@ -33,6 +33,7 @@ public:
     void loadSettings();
 
     void SetWorldCam(QMatrix4x4 &modelview, double _fixPosX, double _fixPosY, double _fixHeading);
+    void SetZoom();
 
 };
 

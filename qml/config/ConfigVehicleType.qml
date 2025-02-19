@@ -4,6 +4,7 @@
 // Tractor/4wd/Harvester
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -36,8 +37,8 @@ Rectangle{
             height:100 * theme.scaleHeight
             checkable: true
             icon.source: prefix + "/images/vehiclePageHarvester.png"
-            isChecked: settings.setVehicle_vehicleType === 1
-            onClicked: settings.setVehicle_vehicleType = 1
+            isChecked: Settings.vehicle_vehicleType === 1
+            onClicked: Settings.vehicle_vehicleType = 1
         }
         IconButtonColor{
             width:150 * theme.scaleWidth
@@ -45,8 +46,8 @@ Rectangle{
             id: tractor
             icon.source: prefix + "/images/vehiclePageTractor.png"
             checkable: true
-            isChecked: settings.setVehicle_vehicleType === 0
-            onClicked: settings.setVehicle_vehicleType = 0
+            isChecked: Settings.vehicle_vehicleType === 0
+            onClicked: Settings.vehicle_vehicleType = 0
         }
         IconButtonColor{
             width:150 * theme.scaleWidth
@@ -54,8 +55,8 @@ Rectangle{
             id: tr4wd
             icon.source: prefix + "/images/vehiclePage4WD.png"
             checkable: true
-            isChecked: settings.setVehicle_vehicleType === 2
-            onClicked: settings.setVehicle_vehicleType = 2
+            isChecked: Settings.vehicle_vehicleType === 2
+            onClicked: Settings.vehicle_vehicleType = 2
         }
     }
 	IconButtonColor{//triangle, no vehicle image
@@ -66,10 +67,10 @@ Rectangle{
 		height:100 * theme.scaleHeight
 		icon.source: prefix + "/images/Config/Brand/TriangleVehicle.png"
 		checkable: true
-		isChecked: !settings.setDisplay_isVehicleImage
+		isChecked: !Settings.display_isVehicleImage
 		onCheckedChanged: {
-			settings.setDisplay_isVehicleImage = !checked
-			console.log(settings.setDisplay_isVehicleImage)
+			Settings.display_isVehicleImage = !checked
+			console.log(Settings.display_isVehicleImage)
 		}
 	}
 }

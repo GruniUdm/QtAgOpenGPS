@@ -1,5 +1,4 @@
 #include "cfielddata.h"
-#include "aogproperty.h"
 #include "cvehicle.h"
 
 CFieldData::CFieldData() {}

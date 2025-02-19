@@ -3,7 +3,6 @@
 #include "cvehicle.h"
 #include "cdubins.h"
 #include "cyouturn.h"
-#include "aogproperty.h"
 #include "btnenum.h"
 #include "glm.h"
 

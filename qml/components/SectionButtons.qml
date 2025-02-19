@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 //This is a the row of on-screen section-control buttonw
 
@@ -23,7 +24,7 @@ Rectangle {
     color: "transparent"
 
     property bool triState: true
-    property int numSections: (settings.setTool_isSectionsNotZones ? settings.setVehicle_numSections : settings.setTool_zones[0])
+    property int numSections: (Settings.tool_isSectionsNotZones ? Settings.vehicle_numSections : Settings.tool_zones[0])
     property var buttonState: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
     property color offColor: "Crimson"
     property color offTextColor: "White"
@@ -37,7 +38,7 @@ Rectangle {
     //methods
     function setColors() {
         //same colors for sections and zones
-        if (settings.setDisplay_isDayMode) {
+        if (Settings.display_isDayMode) {
             sectionButtons.offColor = "Red"
             sectionButtons.offTextColor = "Black"
 
@@ -65,7 +66,7 @@ Rectangle {
         var j
 
 
-        if (settings.setTool_isSectionsNotZones) {
+        if (Settings.tool_isSectionsNotZones) {
             //1:1 correlation between buttons and sections
             temp1[sectionNo] = new_state //this is the tie-in back to the C++ land
             temp2[sectionNo] = new_state //this is the onscreen button
@@ -78,10 +79,10 @@ Rectangle {
 
             //get the left-most section in the zone
             if (sectionNo===0) zone_left = 0
-            else zone_left = settings.setTool_zones[sectionNo]
+            else zone_left = Settings.tool_zones[sectionNo]
 
             //get the right-most section in the zone
-            zone_right = settings.setTool_zones[sectionNo+1]
+            zone_right = Settings.tool_zones[sectionNo+1]
 
             //set all sections between left and right
             for (j = zone_left ; j < zone_right ; j++) {
@@ -98,7 +99,7 @@ Rectangle {
         var temp2 = sectionButtons.buttonState
         var i,j
 
-        if (settings.setTool_isSectionsNotZones) {
+        if (Settings.tool_isSectionsNotZones) {
             //1:1 correlation between buttons and sections
             for (i=0; i < 65 ; i++) {
                 if (i < numSections)
@@ -119,10 +120,10 @@ Rectangle {
 
                 //get the left-most section in the zone
                 if (i===0) zone_left = 0
-                else zone_left = settings.setTool_zones[i]
+                else zone_left = Settings.tool_zones[i]
 
                 //get the right-most section in the zone
-                zone_right = settings.setTool_zones[i+1]
+                zone_right = Settings.tool_zones[i+1]
 
                 //set all sections between left and right
                 for (j = zone_left ; j < zone_right ; j++) {
@@ -151,8 +152,8 @@ Rectangle {
     }
 
     Connections {
-        target: settings
-        function onSetDisplay_isDayModeChanged() {
+        target: Settings
+        function onDisplay_isDayModeChanged() {
             setColors()
         }
     }

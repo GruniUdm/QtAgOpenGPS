@@ -3,10 +3,6 @@
 //
 //
 #include "formgps.h"
-#include "aogsettings.h"
-
-
-extern AOGSettings *settings;
 
 /***************************************
  * callbacks for classes to connect to *

@@ -1,5 +1,5 @@
 #include "cboundary.h"
-#include "aogproperty.h"
+#include "newsettings.h"
 
 CBoundary::CBoundary(QObject *parent) : QObject(parent)
 {
@@ -7,5 +7,5 @@ CBoundary::CBoundary(QObject *parent) : QObject(parent)
 }
 
 void CBoundary::loadSettings() {
-    isSectionControlledByHeadland = property_setHeadland_isSectionControlled;
+    isSectionControlledByHeadland = settings->value(SETTINGS_headland_isSectionControlled).value<bool>();
 }

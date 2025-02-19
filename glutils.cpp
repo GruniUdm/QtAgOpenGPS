@@ -8,7 +8,7 @@
 #include "ccamera.h"
 #include <assert.h>
 #include <math.h>
-#include "aogproperty.h"
+#include "newsettings.h"
 
 //module-level symbols
 QOpenGLShaderProgram *simpleColorShader = 0;
@@ -460,7 +460,7 @@ void drawText3D(const CCamera &camera, QOpenGLFunctions *gl,
 
     mvp.translate(x1, y1, 0);
 
-    if ((double)property_setDisplay_camPitch < -45)
+    if (settings->value(SETTINGS_display_camPitch).value<double>() < -45)
     {
         mvp.rotate(90, 1, 0, 0);
         if (camera.camFollowing) mvp.rotate(-camera.camHeading, 0, 1, 0);
@@ -535,7 +535,7 @@ void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp
     size = pow(size, 0.8)/800;
 
     //2d
-    if ((double)property_setDisplay_camPitch > -58)
+    if (settings->value(SETTINGS_display_camPitch).value<double>() < -58)
     {
         if (!camera.camFollowing)
         {
@@ -560,7 +560,7 @@ void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp
         }
         else
         {
-            mvp.rotate(-(double)property_setDisplay_camPitch, 1, 0, 0);
+            mvp.rotate(- settings->value(SETTINGS_display_camPitch).value<double>(), 1, 0, 0);
             y *= 0.3;
         }
     }

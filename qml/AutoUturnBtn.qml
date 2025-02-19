@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Controls
+import AOG
 
 
 Item{
@@ -38,7 +39,7 @@ Item{
             color: colorAutoUTurn.colorizationColor
             anchors.horizontalCenter: parent.horizontalCenter
             text: if(aog.distancePivotToTurnLine > 0)
-                      utils.m_to_unit_string(aog.distancePivotToTurnLine, 0) + " "+utils.m_unit_abbrev()
+                      Utils.m_to_unit_string(aog.distancePivotToTurnLine, 0) + " "+Utils.m_unit_abbrev()
                   else
                       "--"
         }

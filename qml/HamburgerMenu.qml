@@ -4,6 +4,7 @@
 // Top left button menu
 import QtQuick 2.0
 import QtQuick.Controls.Fusion
+import Settings
 
 import "components" as Comp
 
@@ -52,7 +53,7 @@ Drawer{
             }
             Comp.IconButtonTextBeside{
                 text: qsTr("Simulator On")
-                property bool isChecked: settings.setMenu_isSimulatorOn
+                property bool isChecked: Settings.menu_isSimulatorOn
                 onIsCheckedChanged: {
                     checked = isChecked
                 }
@@ -60,7 +61,7 @@ Drawer{
                 checkable: true
                 checked: isChecked
                 onCheckedChanged: {
-                    settings.setMenu_isSimulatorOn = checked
+                    Settings.menu_isSimulatorOn = checked
                 }
             }
             Comp.IconButtonTextBeside{

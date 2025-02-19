@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import Settings
 
 import ".."
 import "../components"
@@ -48,8 +49,8 @@ Rectangle{
 			IconButtonTextBeside{
 				icon.source: prefix + "/images/HydraulicLiftOff.png"
                 checkable: true
-                isChecked: settings.setF_isRemoteWorkSystemOn
-                onCheckedChanged: settings.setF_isRemoteWorkSystemOn = checked
+                isChecked: Settings.f_isRemoteWorkSystemOn
+                onCheckedChanged: Settings.f_isRemoteWorkSystemOn = checked
 				text: qsTr("Work Switch")
 			}
 
@@ -61,9 +62,9 @@ Rectangle{
                 id: workSwitchMan
 				icon.source: prefix + "/images/ManualOff.png"
                 checkable: true
-                enabled: settings.setF_isRemoteWorkSystemOn
-                isChecked: settings.setF_isWorkSwitchManualSections
-                onCheckedChanged: settings.setF_isWorkSwitchManualSections = checked
+                enabled: Settings.f_isRemoteWorkSystemOn
+                isChecked: Settings.f_isWorkSwitchManualSections
+                onCheckedChanged: Settings.f_isWorkSwitchManualSections = checked
 				text: qsTr("Manual Sections")
 			}
 
@@ -71,9 +72,9 @@ Rectangle{
                 id: workSwitchAuto
 				icon.source: prefix + "/images/SectionMasterOff.png"
                 checkable: true
-                enabled: settings.setF_isRemoteWorkSystemOn
-                isChecked: !settings.setF_isWorkSwitchManualSections
-                onCheckedChanged: settings.setF_isWorkSwitchManualSections = !checked
+                enabled: Settings.f_isRemoteWorkSystemOn
+                isChecked: !Settings.f_isWorkSwitchManualSections
+                onCheckedChanged: Settings.f_isWorkSwitchManualSections = !checked
 				text: qsTr("Auto Sections")
 			}
 
@@ -88,8 +89,8 @@ Rectangle{
 				colorChecked2: "green"
 				colorChecked3: "green"
                 checkable: true
-                isChecked: settings.setF_isWorkSwitchActiveLow
-                onCheckedChanged: settings.setF_isWorkSwitchActiveLow = checked
+                isChecked: Settings.f_isWorkSwitchActiveLow
+                onCheckedChanged: Settings.f_isWorkSwitchActiveLow = checked
 			}
 		}
 	}
@@ -122,8 +123,8 @@ Rectangle{
 			anchors.rightMargin: 7 * theme.scaleWidth
 			anchors.leftMargin: 7 * theme.scaleWidth
 			IconButtonTextBeside{
-                isChecked: settings.setF_isSteerWorkSwitchEnabled
-                onCheckedChanged: settings.setF_isSteerWorkSwitchEnabled = checked
+                isChecked: Settings.f_isSteerWorkSwitchEnabled
+                onCheckedChanged: Settings.f_isSteerWorkSwitchEnabled = checked
                 checkable: true
 				text: qsTr("Steer Switch")
 				icon.source: prefix + "/images/AutoSteerOff.png"
@@ -135,18 +136,18 @@ Rectangle{
 
             IconButtonTextBeside{
                 id: steerSwitchMan
-                isChecked: settings.setF_isSteerWorkSwitchManualSections
-                onCheckedChanged: settings.setF_isSteerWorkSwitchManualSections = checked
-                enabled: settings.setF_isSteerWorkSwitchEnabled
+                isChecked: Settings.f_isSteerWorkSwitchManualSections
+                onCheckedChanged: Settings.f_isSteerWorkSwitchManualSections = checked
+                enabled: Settings.f_isSteerWorkSwitchEnabled
                 checkable: true
 				text: qsTr("Manual Sections")
 				icon.source: prefix + "/images/ManualOff.png"
 			}
 			IconButtonTextBeside{
                 id: steerSwitchAuto
-                isChecked: !settings.setF_isSteerWorkSwitchManualSections
-                onCheckedChanged: settings.setF_isSteerWorkSwitchManualSections = !checked
-                enabled: settings.setF_isSteerWorkSwitchEnabled
+                isChecked: !Settings.f_isSteerWorkSwitchManualSections
+                onCheckedChanged: Settings.f_isSteerWorkSwitchManualSections = !checked
+                enabled: Settings.f_isSteerWorkSwitchEnabled
                 text: qsTr("Auto Sections")
 				icon.source: prefix + "/images/SectionMasterOff.png"
 			}

@@ -5,6 +5,8 @@
 import QtQuick 2.15
 
 //this is a stand-in for the renderer when using qmlscene
+//In the real binary, the AOGRenderer object is placed in 
+//the AOG module by add_qt_qml_module() cmake macro.
 
 Rectangle {
 

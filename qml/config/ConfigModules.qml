@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -25,7 +26,7 @@ Rectangle{
     function load_settings()
     {
         if (visible) {
-            var sett = settings.setArdMac_setting0
+            var sett = Settings.ardMac_setting0
 
             if ((sett & 1) === 0 ) cboxMachInvertRelays.checked = false
             else cboxMachInvertRelays.checked = true
@@ -33,13 +34,13 @@ Rectangle{
             if ((sett & 2) === 0 ) cboxIsHydOn.checked = false
             else cboxIsHydOn.checked = true
 
-            nudRaiseTime.value = settings.setArdMac_hydRaiseTime
-            nudLowerTime.value = settings.setArdMac_hydLowerTime
+            nudRaiseTime.value = Settings.ardMac_hydRaiseTime
+            nudLowerTime.value = Settings.ardMac_hydLowerTime
 
-            nudUser1.value = settings.setArdMac_user1
-            nudUser2.value = settings.setArdMac_user2
-            nudUser3.value = settings.setArdMac_user3
-            nudUser4.value = settings.setArdMac_user4
+            nudUser1.value = Settings.ardMac_user1
+            nudUser2.value = Settings.ardMac_user2
+            nudUser3.value = Settings.ardMac_user3
+            nudUser4.value = Settings.ardMac_user4
 
             unsaved.visible = false
         }
@@ -60,17 +61,17 @@ Rectangle{
         if(cboxIsHydOn.checked) sett |= set
         else sett &= reset
 
-        settings.setArdMac_setting0 = sett
-        settings.setArdMac_hydRaiseTime = nudRaiseTime.value
-        settings.setArdMac_hydLowerTime = nudLowerTime.value
+        Settings.ardMac_setting0 = sett
+        Settings.ardMac_hydRaiseTime = nudRaiseTime.value
+        Settings.ardMac_hydLowerTime = nudLowerTime.value
 
-        settings.setArdMac_user1 = nudUser1.value
-        settings.setArdMac_user2 = nudUser2.value
-        settings.setArdMac_user3 = nudUser3.value
-        settings.setArdMac_user4 = nudUser4.value
+        Settings.ardMac_user1 = nudUser1.value
+        Settings.ardMac_user2 = nudUser2.value
+        Settings.ardMac_user3 = nudUser3.value
+        Settings.ardMac_user4 = nudUser4.value
 
-        settings.setVehicle_hydraulicLiftLookAhead = nudHydLiftLookAhead.value
-        settings.setArdMac_isHydEnabled = cboxIsHydOn.checked
+        Settings.vehicle_hydraulicLiftLookAhead = nudHydLiftLookAhead.value
+        Settings.ardMac_isHydEnabled = cboxIsHydOn.checked
 
         //set pgns
         //signal handler will do the folling:
@@ -136,8 +137,8 @@ Rectangle{
             SpinBoxCustomized{
                 id: nudRaiseTime
                 from:1
-                //boundValue: settings.setArdMac_hydRaiseTime
-                //onValueChanged: settings.setArdMac_hydRaiseTime = value
+                //boundValue: Settings.ardMac_hydRaiseTime
+                //onValueChanged: Settings.ardMac_hydRaiseTime = value
                 to: 255
                 editable: true
                 enabled: cboxIsHydOn.checked
@@ -153,8 +154,8 @@ Rectangle{
             SpinBoxCustomized{
                 id: nudHydLiftLookAhead
                 from:1
-                //boundValue: settings.setVehicle_hydraulicLiftLookAhead
-                //onValueChanged: settings.setVehicle_hydraulicLiftLookAhead = value
+                //boundValue: Settings.vehicle_hydraulicLiftLookAhead
+                //onValueChanged: Settings.vehicle_hydraulicLiftLookAhead = value
                 to: 20
                 editable: true
                 enabled: cboxIsHydOn.checked
@@ -165,8 +166,8 @@ Rectangle{
             SpinBoxCustomized{
                 id: nudLowerTime
                 from:1
-                //boundValue: settings.setArdMac_hydLowerTime
-                //onValueChanged: settings.setArdMac_hydLowerTime = value
+                //boundValue: Settings.ardMac_hydLowerTime
+                //onValueChanged: Settings.ardMac_hydLowerTime = value
                 to: 255
                 editable: true
                 enabled: cboxIsHydOn.checked
@@ -214,8 +215,8 @@ Rectangle{
             SpinBoxCustomized{
                 id: nudUser1
                 from: 0
-                //boundValue: settings.setArdMac_user1
-                //onValueChanged: settings.setArdMac_user1 = value
+                //boundValue: Settings.ardMac_user1
+                //onValueChanged: Settings.ardMac_user1 = value
                 to: 255
                 editable: true
                 text: qsTr("User 1")
@@ -224,8 +225,8 @@ Rectangle{
             SpinBoxCustomized{
                 id: nudUser2
                 from: 0
-                //boundValue: settings.setArdMac_user2
-                //onValueChanged: settings.setArdMac_user2 = value
+                //boundValue: Settings.ardMac_user2
+                //onValueChanged: Settings.ardMac_user2 = value
                 to: 255
                 editable: true
                 text: qsTr("User 2")
@@ -234,8 +235,8 @@ Rectangle{
             SpinBoxCustomized{
                 id: nudUser3
                 from: 0
-                //boundValue: settings.setArdMac_user3
-                //onValueChanged: settings.setArdMac_user3 = value
+                //boundValue: Settings.ardMac_user3
+                //onValueChanged: Settings.ardMac_user3 = value
                 to: 255
                 editable: true
                 text: qsTr("User 3")
@@ -244,8 +245,8 @@ Rectangle{
             SpinBoxCustomized{
                 id: nudUser4
                 from: 0
-                //boundValue: settings.setArdMac_user4
-                //onValueChanged: settings.setArdMac_user4 = value
+                //boundValue: Settings.ardMac_user4
+                //onValueChanged: Settings.ardMac_user4 = value
                 to: 255
                 editable: true
                 text: qsTr("User 4")

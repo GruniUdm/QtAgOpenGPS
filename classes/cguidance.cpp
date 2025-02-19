@@ -5,7 +5,7 @@
 #include "cabline.h"
 #include "cabcurve.h"
 #include "glm.h"
-#include "aogproperty.h"
+#include "newsettings.h"
 
 CGuidance::CGuidance() {}
 
@@ -14,11 +14,11 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
                                  const CAHRS &ahrs
                                  )
 {
-    double stanleyHeadingErrorGain = property_stanleyHeadingErrorGain;
-    double stanleyDistanceErrorGain = property_stanleyDistanceErrorGain;
-    double stanleyIntegralGainAB = property_stanleyIntegralGainAB;
-    double sideHillCompFactor = property_setAS_sideHillComp;
-    double maxSteerAngle = property_setVehicle_maxSteerAngle;
+    double stanleyHeadingErrorGain = settings->value(SETTINGS_vehicle_stanleyHeadingErrorGain).value<double>();
+    double stanleyDistanceErrorGain = settings->value(SETTINGS_vehicle_stanleyDistanceErrorGain).value<double>();
+    double stanleyIntegralGainAB = settings->value(SETTINGS_vehicle_stanleyIntegralGainAB).value<double>();
+    double sideHillCompFactor = settings->value(SETTINGS_as_sideHillCompensation).value<double>();
+    double maxSteerAngle = settings->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
 
     if (vehicle.isReverse) steerHeadingError *= -1;
     //Overshoot setting on Stanley tab
@@ -104,14 +104,6 @@ void CGuidance::StanleyGuidanceABLine(Vec3 curPtA, Vec3 curPtB,
                                       const CAHRS &ahrs,
                                       CYouTurn &yt)
 {
-    /*
-    double stanleyHeadingErrorGain = property_stanleyHeadingErrorGain;
-    double stanleyDistanceErrorGain = property_stanleyDistanceErrorGain;
-    double stanleyIntegralGainAB = property_stanleyIntegralGainAB;
-    double sideHillCompFactor = property_setAS_sideHillComp;
-    double maxSteerAngle = property_setVehicle_maxSteerAngle;
-    */
-
     //get the pivot distance from currently active AB segment   ///////////  Pivot  ////////////
     double dx = curPtB.easting - curPtA.easting;
     double dy = curPtB.northing - curPtA.northing;
@@ -201,14 +193,8 @@ void CGuidance::StanleyGuidanceCurve(Vec3 pivot, Vec3 steer,
                                      CVehicle &vehicle,
                                      CABCurve &curve,
                                      const CAHRS &ahrs)
-{            //calculate required steer angle
-    /*
-    double stanleyHeadingErrorGain = property_stanleyHeadingErrorGain;
-    double standleyDistanceErrorGain = property_stanleyDistanceErrorGain;
-    double stanleyIntegralGainAB = property_stanleyIntegralGainAB;
-    double sideHillCompFactor = property_setAS_sideHillComp;
-    double maxSteerAngle = property_setVehicle_maxSteerAngle;
-    */
+{
+    //calculate required steer angle
 
     //find the closest point roughly
     int cc = 0, dd;

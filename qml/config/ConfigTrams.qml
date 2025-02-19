@@ -4,6 +4,7 @@
 //
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -39,15 +40,15 @@ Item {
             editable: true
             text: qsTr("Tram Width")
             from: 1
-            value: settings.setTram_tramWidth
+            value: Settings.tram_width
             Connections {
-                target: settings
-                function onSetTram_tramWidthChanged(){
-                    tramWidth.value = settings.setTram_tramWidth
+                target: Settings
+                function onTram_widthChanged(){
+                    tramWidth.value = Settings.tram_width
                 }
             }
             to: 5000
-            onValueChanged: settings.setTram_tramWidth = value
+            onValueChanged: Settings.tram_width = value
         }
         IconButtonColor{
             anchors.horizontalCenter: parent.horizontalCenter

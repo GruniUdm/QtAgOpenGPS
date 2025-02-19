@@ -10,11 +10,11 @@
 #include "cguidance.h"
 #include "ctrack.h"
 #include "cworldgrid.h"
-#include "aogproperty.h"
 #include <QOpenGLFunctions>
 #include <QColor>
 #include "glutils.h"
 #include "cnmea.h"
+#include "newsettings.h"
 
 //??? why does CABLine refer to mf.ABLine? Isn't there only one instance and
 //thus was can just use "this."  If this is wrong, we'll remove this and fix it.
@@ -31,9 +31,9 @@ void CABLine::BuildCurrentABLineList(Vec3 pivot,
                                      const CYouTurn &yt,
                                      const CVehicle &vehicle)
 {
-    double tool_width = property_setVehicle_toolWidth;
-    double tool_overlap = property_setVehicle_toolOverlap;
-    double tool_offset = property_setVehicle_toolOffset;
+    double tool_width = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double tool_overlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_offset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
 
     double dx, dy;
 
@@ -73,7 +73,7 @@ void CABLine::BuildCurrentABLineList(Vec3 pivot,
 
     distanceFromRefLine -= (0.5 * widthMinusOverlap);
 
-    isLateralTriggered = false;
+    //isLateralTriggered = false;
 
     isHeadingSameWay = M_PI - fabs(fabs(pivot.heading - abHeading) - M_PI) < glm::PIBy2;
 
@@ -132,9 +132,11 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
                                )
 {
     double dx, dy;
-    double purePursuitIntegralGain = property_purePursuitIntegralGainAB;
-    double wheelBase = property_setVehicle_wheelbase;
-    double maxSteerAngle = property_setVehicle_maxSteerAngle;
+    double purePursuitIntegralGain = settings->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
+    double wheelBase = settings->value(SETTINGS_vehicle_wheelbase).value<double>();
+    double maxSteerAngle = settings->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
+    bool vehicle_isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    double as_sideHillCompensation = settings->value(SETTINGS_as_sideHillCompensation).value<double>();
 
     //Check uturn first
     if (yt.isYouTurnTriggered && yt.DistanceFromYouTurnLine(vehicle,pn))//do the pure pursuit from youTurn
@@ -153,7 +155,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
     }
 
     //Stanley
-    else if (property_setVehicle_isStanleyUsed)
+    else if (vehicle_isStanleyUsed)
         gyd.StanleyGuidanceABLine(currentLinePtA, currentLinePtB, pivot, steer, isBtnAutoSteerOn, vehicle,*this, ahrs,yt);
 
     //Pure Pursuit
@@ -264,7 +266,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
                                                / goalPointDistanceDSquared));
 
         if (ahrs.imuRoll != 88888)
-            steerAngleAB += ahrs.imuRoll * -(double)property_setAS_sideHillComp; /*mf.gyd.sideHillCompFactor;*/
+            steerAngleAB += ahrs.imuRoll * -as_sideHillCompensation; /*mf.gyd.sideHillCompFactor;*/
 
         //steerAngleAB *= 1.4;
 
@@ -325,7 +327,7 @@ void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 {
     GLHelperOneColor gldraw;
     QColor color;
-    double lineWidth = property_setDisplay_lineWidth;
+    double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
 
     gldraw.append(QVector3D(desLineEndA.easting, desLineEndA.northing, 0.0));
     gldraw.append(QVector3D(desLineEndB.easting, desLineEndB.northing, 0.0));
@@ -344,19 +346,18 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                           const CCamera &camera,
                           const CGuidance &gyd)
 {
-    double tool_toolWidth = property_setVehicle_toolWidth;
-    double tool_toolOverlap = property_setVehicle_toolOverlap;
-    double tool_toolOffset = property_setVehicle_toolOffset;
-    bool isStanleyUsed = property_setVehicle_isStanleyUsed;
-    bool isSideGuideLines = property_setMenu_isSideGuideLines;
+    double tool_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double tool_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
+    bool isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    bool isSideGuideLines = settings->value(SETTINGS_menu_isSideGuideLines).value<bool>();
+    double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
     widthMinusOverlap = tool_toolWidth - tool_toolOverlap;
 
     GLHelperOneColor gldraw;
     GLHelperColors gldraw1;
     ColorVertex cv;
     QColor color;
-
-    double lineWidth = property_setDisplay_lineWidth;
 
     //Draw AB Points
     cv.color = QVector4D(0.95f, 0.0f, 0.0f, 1.0);
@@ -512,9 +513,10 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 
 void CABLine::BuildTram(const CTrk &track, CBoundary &bnd, CTram &tram)
 {
-    double tramWidth = property_setTram_tramWidth;
-    double tool_halfWidth = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) / 2.0;
-    double halfWheelTrack = (double)property_setVehicle_trackWidth * 0.5;
+    double tramWidth = settings->value(SETTINGS_tram_width).value<double>();
+    double tool_halfWidth = (settings->value(SETTINGS_vehicle_toolWidth).value<double>() - settings->value(SETTINGS_vehicle_toolOverlap).value<double>()) / 2.0;
+    double halfWheelTrack = settings->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
+    int tram_passes = settings->value(SETTINGS_tram_passes).value<int>();
 
     if (tram.generateMode != 1)
     {
@@ -570,7 +572,7 @@ void CABLine::BuildTram(const CTrk &track, CBoundary &bnd, CTram &tram)
 
     double widd = 0;
 
-    for (int i = cntr; i < (int)property_setTram_passes; i++)
+    for (int i = cntr; i < tram_passes; i++)
     {
         tram.tramArr = QSharedPointer<QVector<Vec2>>(new QVector<Vec2>());
         tram.tramList.append(tram.tramArr);
@@ -590,7 +592,7 @@ void CABLine::BuildTram(const CTrk &track, CBoundary &bnd, CTram &tram)
         }
     }
 
-    for (int i = cntr; i < (int)property_setTram_passes; i++)
+    for (int i = cntr; i < tram_passes; i++)
     {
         tram.tramArr = QSharedPointer<QVector<Vec2>>(new QVector<Vec2>());
         tram.tramList.append(tram.tramArr);
@@ -613,7 +615,7 @@ void CABLine::BuildTram(const CTrk &track, CBoundary &bnd, CTram &tram)
     tramRef.clear();
     //outside tram
 
-    if (bnd.bndList.count() == 0 || (int)property_setTram_passes != 0)
+    if (bnd.bndList.count() == 0 || tram_passes != 0)
     {
         //return;
     }

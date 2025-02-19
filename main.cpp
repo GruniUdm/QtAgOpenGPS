@@ -6,14 +6,14 @@
 #include <QApplication>
 #include <QCoreApplication>
 #include <QLabel>
+#include "newsettings.h"
 #include "aogrenderer.h"
-#include "aogproperty.h"
 #include <QProcess>
 #include <QSysInfo>
 
 QLabel *grnPixelsWindow;
 QLabel *overlapPixelsWindow;
-AOGSettings *settings;
+NewSettings *settings;
 
 #ifndef TESTING
 int main(int argc, char *argv[])
@@ -42,13 +42,13 @@ int main(int argc, char *argv[])
     qRegisterMetaTypeStreamOperators<QVector<int> >("QVector<int>");
 #endif
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
-    settings = new AOGSettings();
-    AOGProperty::init_defaults();
+    settings = new NewSettings();
+    //AOGProperty::init_defaults();
     settings->sync();
     FormGPS w;
     //w.show();
 
-    if (property_displayShowBack) {
+    if (settings->value(SETTINGS_display_showBack).value<bool>()) {
         grnPixelsWindow = new QLabel("Back Buffer");
         grnPixelsWindow->setFixedWidth(500);
         grnPixelsWindow->setFixedHeight(500);
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 //auto start AgIO
 #ifndef __ANDROID__
     QProcess process;
-    if(property_setFeature_isAgIOOn){
+    if(settings->value(SETTINGS_feature_isAgIOOn).value<bool>()){
         QObject::connect(&process, &QProcess::errorOccurred, [&](QProcess::ProcessError error) {
             if (error == QProcess::Crashed) {
                 qDebug() << "AgIO Crashed! Continuing QtAgOpenGPS like normal";

@@ -4,6 +4,7 @@
 // Menu displayed when the "Field Tools" button is clicked
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -34,7 +35,7 @@ Drawer {
                 text: qsTr("Boundary")
                 icon.source: prefix + "/images/MakeBoundary.png"
                 //width: 300
-                visible: settings.setFeature_isBoundaryOn
+                visible: Settings.feature_isBoundaryOn
                 onClicked: {
                     fieldToolsMenu.visible = false
                     boundaryMenu.show()
@@ -44,7 +45,7 @@ Drawer {
                 text: qsTr("Headland")
                 icon.source: prefix + "/images/HeadlandMenu.png"
                 //width: 300
-                visible: settings.setFeature_isHeadlandOn
+                visible: Settings.feature_isHeadlandOn
                 onClicked: {
                     fieldToolsMenu.visible = false
                     if (boundaryInterface.count > 0) {
@@ -57,7 +58,7 @@ Drawer {
             IconButtonTextBeside{
                 text: qsTr("Headland (Build)")
                 icon.source: prefix + "/images/Headache.png"
-                visible: settings.setFeature_isHeadlandOn
+                visible: Settings.feature_isHeadlandOn
                 //width: 300
                 onClicked: {
                     fieldToolsMenu.visible = false
@@ -68,14 +69,14 @@ Drawer {
                 text: qsTr("Tram Lines")
                 icon.source: prefix + "/images/TramLines.png"
                 //width: 300
-                visible: settings.setFeature_isTramOn
+                visible: Settings.feature_isTramOn
                 onClicked: tramLinesEditor.visible = true
             }
             IconButtonTextBeside{
                 text: qsTr("Recorded Path")
                 icon.source: prefix + "/images/RecPath.png"
                 //width: 300
-                visible: settings.setFeature_isHeadlandOn
+                visible: Settings.feature_isHeadlandOn
                 onClicked:{
                     fieldToolsMenu.visible = false
                     recPath.show()

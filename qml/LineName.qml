@@ -4,6 +4,7 @@
 // Set line name
 import QtQuick 2.0
 import QtQuick.Controls.Fusion
+import AOG
 import "components" as Comp
 
 Rectangle{
@@ -20,7 +21,7 @@ Rectangle{
     function generate_ab_name(heading_degrees) {
         var name
 
-        name = qsTr("AB ") + (heading_degrees).toLocaleString(Qt.locale(), 'f', 1) + "\u00B0 " + utils.findDirection(heading_degrees)
+        name = qsTr("AB ") + (heading_degrees).toLocaleString(Qt.locale(), 'f', 1) + "\u00B0 " + Utils.findDirection(heading_degrees)
 
         textInputBox.text = name
     }

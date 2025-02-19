@@ -119,6 +119,7 @@ engine.rootContext()->setContextProperty("bluetoothDeviceList", btDevicesList);
     connect(agio, SIGNAL(bt_kill()), bluetoothManager, SLOT(kill()));
     connect(agio, SIGNAL(bt_remove_device(QString)), bluetoothManager, SLOT(userRemoveDevice(QString)));
     connect(agio, SIGNAL(bluetoothDebug(bool)), bluetoothManager, SLOT(bluetooth_console_debug(bool)));
+    connect(agio, SIGNAL(startBluetoothDiscovery()), bluetoothManager, SLOT(startBluetoothDiscovery()));
 
 
 }
