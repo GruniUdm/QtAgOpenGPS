@@ -311,6 +311,8 @@ Item {
     property double setRate_rateSensorCount: 600
     property double setRate_rateSET: 100
     property double setRateContType: 5
+    property double setRateProductNames: 1
+    property string setRateProductName: "Name"
     property double setRateMode: 1
     property double setRateCoverageUnits: 2
     property string setCam_CamLink: "rtsp://192.168.0.138:1945"

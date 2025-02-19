@@ -42,13 +42,21 @@ Rectangle{
         else if ((sett & 4) == 4) cboxRateControlType.currentIndex = 3;
         else cboxRateControlType.currentIndex = 0;
 
-        var sett = settings.setRateCoverageUnits;
+        sett = settings.setRateCoverageUnits;
 
         if ((sett & 1) == 1) cboxRateCoverageUnits.currentIndex = 1;
         else if ((sett & 2) == 2) cboxRateCoverageUnits.currentIndex = 2;
         else if ((sett & 4) == 4) cboxRateCoverageUnits.currentIndex = 3;
         else cboxRateCoverageUnits.currentIndex = 0;
 
+        sett = settings.setRateProductNames;
+
+        if ((sett & 1) == 1) cboxRateProductNames.currentIndex = 1;
+        else if ((sett & 2) == 2) cboxRateProductNames.currentIndex = 2;
+        else if ((sett & 4) == 4) cboxRateProductNames.currentIndex = 3;
+        else cboxRateProductNames.currentIndex = 0;
+
+        cboxRateProductNames.currentText = settings.setRateProductName;
 
         mandatory.visible = false
 
@@ -82,21 +90,24 @@ Rectangle{
         sett = 0;
 
 
-        if (cboxRateCoverageUnits.currentText === "Hectare") sett |= set;
+        if (cboxRateProductNames.currentIndex === 1) sett |= set;
         else sett &= reset;
 
         set <<= 1;
         reset <<= 1;
         reset += 1;
-        if (cboxRateCoverageUnits.currentText === "Minutes") sett |= set;
+        if (cboxRateProductNames.currentIndex === 2) sett |= set;
         else sett &= reset;
 
         set <<= 1;
         reset <<= 1;
         reset += 1;
-        if (cboxRateCoverageUnits.currentText === "Hours") sett |= set;
+        if (cboxRateProductNames.currentIndex === 3) sett |= set;
         else sett &= reset;
-        settings.setRateCoverageUnits= sett;
+        settings.setRateProductNames= sett;
+        settings.setRateProductName = cboxRateProductNames.currentText
+
+
 
         settings.setRate_valveMinPWM = rateMinPWM.value
         settings.setRate_valveMaxPWM = rateMaxPWM.value
@@ -364,6 +375,19 @@ Rectangle{
                     ListElement {text: qsTr("Hours")}
                 }
                 text: qsTr("Coverage Units")
+                onActivated: mandatory.visible = true
+        }
+            ComboBoxCustomized {
+                id: cboxRateProductNames
+                enabled: cboxIsRateControlOn.checked
+                editable: true
+                model: ListModel {
+                    ListElement {text: qsTr("Acres")}
+                    ListElement {text: qsTr("Hectare")}
+                    ListElement {text: qsTr("Minutes")}
+                    ListElement {text: qsTr("Hours")}
+                }
+                text: qsTr("Product names")
                 onActivated: mandatory.visible = true
         }
 
