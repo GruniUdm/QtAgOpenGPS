@@ -5,6 +5,15 @@
 // Should be renamed to TracksInterface maybe?
 import QtQuick
 
+/******************************************************************************
+ * This mock file is used only when viewing qml files in 
+ * the qml viewer, or when designing in QtDS. When compiled,
+ * formgps_ui.cpp calls 
+ * qmlRegisterSingletonInstance("Interface", 1, 0, "TracksInterface", &trk);
+ * to place the instance of CTracks (classes/ctracks.h) into
+ * the qml namespace in place of this mock file.
+ ******************************************************************************/
+
 pragma Singleton
 
 Item {

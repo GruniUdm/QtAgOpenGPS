@@ -3,74 +3,22 @@
 //
 // This loads the setting (or some of them) into variables, that we can access later
 #include "formgps.h"
-#include "aogproperty.h"
+#include "newsettings.h"
 
 void FormGPS::loadSettings()
 {
-    isMetric = property_setMenu_isMetric;
+    isMetric = settings->value(SETTINGS_menu_isMetric).value<bool>();
 
-    //These properties will be accessed directly by QML
-    //tramLinesMenuField.Visible = setFeatures.isTramOn;
-    //headlandToolStripMenuItem.Visible = property_setFeature_isHeadlandOn;
+    isUTurnOn = settings->value(SETTINGS_feature_isUTurnOn).value<bool>();
+    isLateralOn = settings->value(SETTINGS_feature_isLateralOn).value<bool>();
 
-    //boundariesToolStripMenuItem.Visible = property_setFeature_isBoundaryOn;
-    //recordedPathStripMenu.Visible = property_setFeature_isRecPathOn;
-    //SmoothABtoolStripMenu.Visible = property_setFeature_isABSmoothOn;
-    //deleteContourPathsToolStripMenuItem.Visible = property_setFeature_isHideContourOn;
-    //webcamToolStrip.Visible = property_setFeature_isWebCamOn;
-    //offsetFixToolStrip.Visible = property_setFeature_isOffsetFixOn;
-    //btnContour.Visible = property_setFeature_isContourOn;
-    //btnAutoYouTurn.Visible = property_setFeature_isYouTurnOn;
-    //btnStartAgIO.Visible = property_setFeature_isAgIOOn;
+    pn.headingTrueDualOffset = settings->value(SETTINGS_gps_dualHeadingOffset).value<double>();
 
-    //btnAutoSteer.Visible = property_setFeature_isAutoSteerOn;
-    //btnCycleLines.Visible = property_setFeature_isCycleLinesOn;
-    //btnCycleLinesBk.Visible = property_setFeature_isCycleLinesOn;
-    //btnSectionMasterManual.Visible = property_setFeature_isManualSectionOn;
-    //btnSectionMasterAuto.Visible = property_setFeature_isAutoSectionOn;
-    //btnABLine.Visible = property_setFeature_isABLineOn;
-    //btnCurve.Visible = property_setFeature_isCurveOn;
-    //btnStanleyPure.Visible = property_setFeature_isSteerModeOn;
-
-    isUTurnOn = property_setFeature_isUTurnOn;
-    isLateralOn = property_setFeature_isLateralOn;
-
-    if (isMetric)
-    {
-        inchOrCm2m = 0.01;
-        m2InchOrCm = 100.0;
-
-        m2FtOrM = 1.0;
-        ftOrMtoM = 1.0;
-
-        inOrCm2Cm = 1.0;
-        cm2CmOrIn = 1.0;
-
-        unitsFtM = " m";
-        unitsInCm = " cm";
-    }
-    else
-    {
-        inchOrCm2m = glm::in2m;
-        m2InchOrCm = glm::m2in;
-
-        m2FtOrM = glm::m2ft;
-        ftOrMtoM = glm::ft2m;
-
-        inOrCm2Cm = 2.54;
-        cm2CmOrIn = 0.394;
-
-        unitsInCm = " in";
-        unitsFtM = " ft";
-    }
-
-    pn.headingTrueDualOffset = property_setGPS_dualHeadingOffset;
-
-    frameDayColor = property_setDisplay_colorDayFrame;
-    frameNightColor = property_setDisplay_colorNightFrame;
-    sectionColorDay = property_setDisplay_colorSectionsDay;
-    fieldColorDay = property_setDisplay_colorFieldDay;
-    fieldColorNight = property_setDisplay_colorFieldNight;
+    frameDayColor = settings->value(SETTINGS_display_colorDayFrame).value<QColor>();
+    frameNightColor = settings->value(SETTINGS_display_colorNightFrame).value<QColor>();
+    sectionColorDay = settings->value(SETTINGS_display_colorSectionsDay).value<QColor>();
+    fieldColorDay = settings->value(SETTINGS_display_colorFieldDay).value<QColor>();
+    fieldColorNight = settings->value(SETTINGS_display_colorFieldNight).value<QColor>();
 
     //check color for 255, reset it to properties
     //Properties.Settings.Default.setDisplay_colorDayFrame = frameDayColor;
@@ -79,62 +27,62 @@ void FormGPS::loadSettings()
     //Properties.Settings.Default.setDisplay_colorFieldDay = fieldColorDay;
     //Properties.Settings.Default.setDisplay_colorFieldNight = fieldColorNight;
 
-    isSkyOn = property_setMenu_isSkyOn;
-    isTextureOn = property_setDisplay_isTextureOn;
+    isSkyOn = settings->value(SETTINGS_menu_isSkyOn).value<bool>();
+    isTextureOn = settings->value(SETTINGS_display_isTextureOn).value<bool>();
 
-    isGridOn = property_setMenu_isGridOn;
-    isBrightnessOn = property_setDisplay_isBrightnessOn;
+    isGridOn = settings->value(SETTINGS_menu_isGridOn).value<bool>();
+    isBrightnessOn = settings->value(SETTINGS_display_isBrightnessOn).value<bool>();
 
-    isCompassOn = property_setMenu_isCompassOn;
-    isSpeedoOn = property_setMenu_isSpeedoOn;
-    isSideGuideLines = property_setMenu_isSideGuideLines;
-    isSvennArrowOn = property_setDisplay_isSvennArrowOn;
+    isCompassOn = settings->value(SETTINGS_menu_isCompassOn).value<bool>();
+    isSpeedoOn = settings->value(SETTINGS_menu_isSpeedoOn).value<bool>();
+    isSideGuideLines = settings->value(SETTINGS_menu_isSideGuideLines).value<bool>();
+    isSvennArrowOn = settings->value(SETTINGS_display_isSvennArrowOn).value<bool>();
 
-    lightbarCmPerPixel = property_setDisplay_lightbarCmPerPixel;
+    lightbarCmPerPixel = settings->value(SETTINGS_display_lightbarCmPerPixel).value<int>();
 
-    //isLogNMEA = property_setMenu_isLogNMEA;
-    isPureDisplayOn = property_setMenu_isPureOn;
+    //isLogNMEA = settings->value("menu/isLogNMEA;
+    isPureDisplayOn = settings->value(SETTINGS_menu_isPureOn).value<bool>();
 
-    isAutoStartAgIO = property_setDisplay_isAutoStartAgIO;
+    isAutoStartAgIO = settings->value(SETTINGS_display_isAutoStartAgIO).value<bool>();
 
-    vehicleOpacity = ((double)(property_setDisplay_vehicleOpacity) * 0.01);
-    vehicleOpacityByte = (char)(255 * ((double)(property_setDisplay_vehicleOpacity) * 0.01));
-    isVehicleImage = property_setDisplay_isVehicleImage;
+    vehicleOpacity = settings->value(SETTINGS_display_vehicleOpacity).value<double>() * 0.01;
+    vehicleOpacityByte = (char)(255 * (settings->value(SETTINGS_display_vehicleOpacity).value<double>() * 0.01));
+    isVehicleImage = settings->value(SETTINGS_display_isVehicleImage).value<bool>();
 
     //TODO: custom colors for display
 
     //TODO: check for 255
-    textColorDay = property_setDisplay_colorTextDay;
-    textColorNight = property_setDisplay_colorTextNight;
+    textColorDay = settings->value(SETTINGS_display_colorTextDay).value<QColor>();
+    textColorNight = settings->value(SETTINGS_display_colorTextNight).value<QColor>();
 
-    vehicleColor = property_setDisplay_colorVehicle;
+    vehicleColor = settings->value(SETTINGS_display_colorVehicle).value<QColor>();
 
-    isLightbarOn = property_setMenu_isLightbarOn;
+    isLightbarOn = settings->value(SETTINGS_menu_isLightBarOn).value<bool>();
 
 
     //hotkeys = Properties.Settings.Default.setKey_hotkeys.ToCharArray();
-    udpWatchLimit = property_setGPS_udpWatchMsec;
+    udpWatchLimit = settings->value(SETTINGS_gps_udpWatchMSec).value<int>();
     //check for 255
     //TODO
     //string[] words = Properties.Settings.Default.setDisplay_customColors.Split(',');
 
-    isRTK = property_setGPS_isRTK;
-    isRTK_KillAutosteer = property_setGPS_isRTK_KillAutoSteer;
+    isRTK = settings->value(SETTINGS_gps_isRTK).value<bool>();
+    isRTK_KillAutosteer = settings->value(SETTINGS_gps_isRTKKillAutoSteer).value<bool>();
 
-    pn.ageAlarm = property_setGPS_ageAlarm;
+    pn.ageAlarm = settings->value(SETTINGS_gps_ageAlarm).value<int>();
 
-    isConstantContourOn = property_setAS_isConstantContourOn;
-    isSteerInReverse = property_setAS_isSteerInReverse;
+    isConstantContourOn = settings->value(SETTINGS_as_isConstantContourOn).value<bool>();
+    isSteerInReverse = settings->value(SETTINGS_as_isSteerInReverse).value<bool>();
 
-    guidanceLookAheadTime = property_setAS_guidanceLookAheadTime;
+    guidanceLookAheadTime = settings->value(SETTINGS_as_guidanceLookAheadTime).value<double>();
 
     //gyd pulls directly from settings
     //gyd.sideHillCompFactor = property_setAS_sideHillComp;
 
     fd.UpdateFieldBoundaryGUIAreas(bnd.bndList);
 
-    isStanleyUsed = property_setVehicle_isStanleyUsed;
-    isDay = property_setDisplay_isDayMode;
+    isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    isDay = settings->value(SETTINGS_display_isDayMode).value<bool>();
 
     tool.loadSettings();
     if (tool.isSectionsNotZones){
@@ -145,8 +93,7 @@ void FormGPS::loadSettings()
     }
 
     //disable youturn buttons
-    headingFromSource = (QString)property_setGPS_headingFromWhichSource;
-
+    headingFromSource = settings->value(SETTINGS_gps_headingFromWhichSource).value<QString>();
 
     //load various saved settings or properties into the support classes
     ahrs.loadSettings();

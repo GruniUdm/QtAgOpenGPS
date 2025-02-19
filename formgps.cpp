@@ -3,7 +3,6 @@
 //
 // Main class where everything is initialized
 #include "formgps.h"
-#include "aogproperty.h"
 #include <QColor>
 #include <QRgb>
 #include "qmlutil.h"
@@ -12,11 +11,10 @@
 #include <QLocale>
 #include <QLabel>
 #include <QQuickWindow>
-#include "qmlsettings.h"
+#include "newsettings.h"
 
 extern QLabel *grnPixelsWindow;
 extern QLabel *overlapPixelsWindow;
-extern QMLSettings qml_settings;
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
@@ -24,8 +22,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     connect(this,SIGNAL(do_processSectionLookahead()), this, SLOT(processSectionLookahead()));
     connect(this,SIGNAL(do_processOverlapCount()), this, SLOT(processOverlapCount()));
     connect_classes(); //make all the inter-class connections
-    qml_settings.setupKeys();
-    qml_settings.loadSettings();  //fetch everything from QSettings for QML to use
 
     setupGui();
     //loadSettings();
@@ -48,7 +44,7 @@ void FormGPS::processSectionLookahead() {
     //lock.lockForWrite();
     //qDebug() << "frame time after getting lock  " << swFrame.elapsed();
 
-    if (property_displayShowBack) {
+    if (settings->value(SETTINGS_display_showBack).value<bool>()) {
         grnPixelsWindow->setPixmap(QPixmap::fromImage(grnPix.mirrored()));
         overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
     }
@@ -664,10 +660,10 @@ void FormGPS::tmrWatchdog_timeout()
 {
     //TODO: replace all this with individual timers for cleaner
 
-    if (! (bool)property_setMenu_isSimulatorOn && timerSim.isActive()) {
+    if (! settings->value(SETTINGS_menu_isSimulatorOn).value<bool>() && timerSim.isActive()) {
         qDebug() << "Shutting down simulator.";
         timerSim.stop();
-    } else if ( (bool)property_setMenu_isSimulatorOn && ! timerSim.isActive() ) {
+    } else if ( settings->value(SETTINGS_menu_isSimulatorOn).value<bool>() && ! timerSim.isActive() ) {
         qDebug() << "Starting up simulator.";
         pn.latitude = sim.latitude;
         pn.longitude = sim.longitude;
@@ -979,7 +975,7 @@ void FormGPS::JobClose()
     recPath.shuttleDubinsList.clear();
 
     //FixPanelsAndMenus();
-    SetZoom();
+    camera.SetZoom();
     worldGrid.isGeoMap = false;
     worldGrid.isRateMap = false;
 
@@ -1001,7 +997,7 @@ void FormGPS::JobNew()
 
     trk.ABLine.abHeading = 0.00;
 
-    SetZoom();
+    camera.SetZoom();
     fileSaveCounter = 25;
     trk.isAutoTrack = false;
     isJobStarted = true;
@@ -1012,8 +1008,8 @@ void FormGPS::FileSaveEverythingBeforeClosingField()
     qDebug() << "shutting down, saving field items.";
 
     //update our settings to the vehicle as well
-    if((QString)property_setVehicle_vehicleName != "Default Vehicle") {
-        vehicle_saveas(property_setVehicle_vehicleName);
+    if(settings->value(SETTINGS_vehicle_vehicleName).value<QString>() != "Default Vehicle") {
+        vehicle_saveas(settings->value(SETTINGS_vehicle_vehicleName).value<QString>());
     }
 
     if (! isJobStarted) return;

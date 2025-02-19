@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Controls.Material
+import Settings
 
 import ".."
 import "../components"
@@ -141,7 +142,7 @@ Dialog {
                     text: "+"
                 }
                 onClicked: {
-                    newField.text += " " + settings.setVehicle_vehicleName
+                    newField.text += " " + Settings.vehicle_vehicleName
                 }
             }
             IconButtonTransparent{

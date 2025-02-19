@@ -4,6 +4,7 @@
 // Vehicle dimensions
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -19,9 +20,9 @@ Rectangle{
     visible: false
     Image {
         id: dimImage
-        source: Number(settings.setVehicle_vehicleType) === 0 ? prefix + "/images/RadiusWheelBase.png":
-                Number(settings.setVehicle_vehicleType) === 1 ? prefix + "/images/RadiusWheelBaseHarvester.png" :
-                Number(settings.setVehicle_vehicleType) === 2 ? prefix + "/images/RadiusWheelBase4WD.png":
+        source: Number(Settings.vehicle_vehicleType) === 0 ? prefix + "/images/RadiusWheelBase.png":
+                Number(Settings.vehicle_vehicleType) === 1 ? prefix + "/images/RadiusWheelBaseHarvester.png" :
+                Number(Settings.vehicle_vehicleType) === 2 ? prefix + "/images/RadiusWheelBase4WD.png":
                 prefix + "/images/Config/ConSt_Mandatory.png"
         anchors.fill: parent
         anchors.margins: 15
@@ -34,8 +35,8 @@ Rectangle{
         anchors.bottomMargin: dimImage.height *.15
         from: 20
         to: 787
-        boundValue: settings.setVehicle_wheelbase
-        onValueModified: settings.setVehicle_wheelbase = value
+        boundValue: Settings.vehicle_wheelbase
+        onValueModified: Settings.vehicle_wheelbase = value
         text: qsTr("Wheelbase")
     }
     SpinBoxCM{
@@ -45,8 +46,8 @@ Rectangle{
         anchors.right: dimImage.right
         from: 50
         to: 9999
-        boundValue: settings.setVehicle_trackWidth
-        onValueModified: settings.setVehicle_trackWidth = value
+        boundValue: Settings.vehicle_trackWidth
+        onValueModified: Settings.vehicle_trackWidth = value
         text: qsTr("Track")
     }
     SpinBoxCM{
@@ -56,8 +57,8 @@ Rectangle{
         anchors.right: dimImage.right
         from: 50
         to: 9999
-        boundValue: settings.setVehicle_minTurningRadius
-        onValueModified: settings.setVehicle_minTurningRadius = value
+        boundValue: Settings.vehicle_minTurningRadius
+        onValueModified: Settings.vehicle_minTurningRadius = value
         text: qsTr("Turn Radius")
     }
     SpinBoxCM{
@@ -66,8 +67,8 @@ Rectangle{
         anchors.left: dimImage.left
         from: 10
         to:3000
-        boundValue: settings.setVehicle_hitchLength < 0 ? -settings.setVehicle_hitchLength : settings.setVehicle_hitchLength
-        onValueModified: settings.setVehicle_hitchLength = -value
-        visible: settings.setTool_isToolTrailing
+        boundValue: Settings.vehicle_hitchLength < 0 ? -Settings.vehicle_hitchLength : Settings.vehicle_hitchLength
+        onValueModified: Settings.vehicle_hitchLength = -value
+        visible: Settings.tool_isToolTrailing
     }
 }

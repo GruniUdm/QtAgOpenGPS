@@ -4,6 +4,7 @@
 // The panel with display controls (+, -, 2d/3d etc.
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 import "components" as Comp
 
 Comp.TimedRectangle{
@@ -71,8 +72,8 @@ Comp.TimedRectangle{
             icon.source: prefix + "/images/WindowNightMode.png"
             iconChecked: prefix + "/images/WindowDayMode.png"
             checkable: true
-            isChecked: settings.setDisplay_isDayMode
-            onCheckedChanged: settings.setDisplay_isDayMode = checked
+            isChecked: Settings.display_isDayMode
+            onCheckedChanged: Settings.display_isDayMode = checked
             onClicked: displayButtons.resetTimer()
         }
         Comp.IconButtonTransparent {

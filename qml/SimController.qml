@@ -4,6 +4,7 @@
 // Sim controller panel on main screen
 import QtQuick 2.0
 import QtQuick.Controls.Fusion
+import Settings
 import "components" as Comp
 
 Rectangle{
@@ -18,9 +19,9 @@ Rectangle{
 		}
 	}
     Connections{
-        target: settings
-        function onSetMenu_isSimulatorOnChanged(){
-            simBarRect.visible = settings.setMenu_isSimulatorOn
+        target: Settings
+        function onMenu_isSimulatorOnChanged(){
+            simBarRect.visible = Settings.menu_isSimulatorOn
         }
     }
 

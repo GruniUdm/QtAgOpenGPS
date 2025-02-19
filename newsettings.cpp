@@ -4,62 +4,104 @@
 #include <QJsonDocument>
 #include <QFile>
 
-QVector<int> default_relay_pinConfig = { 1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
-QVector<int> default_zones = { 2,10,20,0,0,0,0,0,0 };
+//Q_DECLARE_METATYPE(QVector<int>)
+const int METATYPE_QVECTOR_INT = qRegisterMetaType<QVector<int>>("QVector<int>");
+const int METATYPE_QVECTOR_DOUBLE = qRegisterMetaType<QVector<double>>("QVector<double>");
+const int METATYPE_QVECTOR_STRING = qRegisterMetaType<QVector<QString>>("QVector<QString>");
 
 NewSettings::NewSettings(QObject *parent)
     : QQmlPropertyMap{parent}
 {
+    setupKeys();
+
     connect (this, &QQmlPropertyMap::valueChanged,
             this, &NewSettings::onValueChanged);
 }
 
 void NewSettings::addKey(const QString settings_key,
                          const QVariant &default_value,
-                         NewSettings::SpecialCase special_case)
+                         const QMetaType type)
 {
     //put key into app-wide settings with its default value,
     //if it's not there already.  If it's already in QSettings, let's
     //make sure it's the correct type
     QVariant settings_value = settings.value(settings_key, default_value);
 
-    special_case_map.insert(settings_key, special_case);
+    settings_type_map.insert(settings_key, type);
 
     //INI files are typeless, so when settings are read in when QSettings
     //settings is constructed, some of the types end up being wrong.  In
     //a couple of cases we need to correct them back to QVariantLists.
 
     //this one should be a qvariant list, but ini reads it in as a QStringList
-    if (special_case == VECTOR_OF_INTS && settings_value.typeName() == "QStringList" ) {
+    if (type.id() == METATYPE_QVECTOR_INT && QString(settings_value.typeName()) == "QStringList" ) {
         QVariantList l;
         for(QString &i: settings_value.toStringList()) {
             l.append(QVariant(i.toInt()));
         }
         settings_value = l;
+    } else if(type.id() == METATYPE_QVECTOR_DOUBLE && QString(settings_value.typeName()) == "QStringList" ) {
+        QVariantList l;
+        for(QString &i: settings_value.toStringList()) {
+            l.append(QVariant(i.toDouble()));
+        }
+        settings_value = l;
+    } else if(type.id() == METATYPE_QVECTOR_STRING && QString(settings_value.typeName()) == "QStringList" ) {
+        QVariantList l;
+        for(QString &i: settings_value.toStringList()) {
+            l.append(QVariant(i));
+        }
+        settings_value = l;
+    } else {
+        if (settings_value.metaType() != type) {
+            if (settings_value.canConvert(type)) {
+                settings_value.convert(type);
+            } else {
+                qWarning() << "Cannot convert " << settings_key << " from INI to type " << type.name();
+            }
+        }
     }
 
     //set the possibly changed value in both settings and the hash map
-    setValue(settings_key, settings_value);
+    settings.setValue(settings_key, settings_value);
+    QString qml_key = settings_key.split('/').join('_');
+    insert(qml_key, settings_value);
+    settings.sync();
 }
 
 void NewSettings::onValueChanged(const QString &qml_key,
                                  const QVariant &value)
 {
     QString settings_key = qml_key.split('_').join('/');
-    int special_case = special_case_map[settings_key];
+    QMetaType settings_type = settings_type_map[settings_key];
 
     QString type_name = value.typeName();
 
-    if (type_name == "QJSValue" && special_case == VECTOR_OF_INTS) {
+    if (type_name == "QJSValue" && settings_type.id() == METATYPE_QVECTOR_INT) {
         QVector<int> v = toVector<int>(value);
+        settings.setValue(settings_key, toVariant(v));
+    } else if (type_name == "QJSValue" && settings_type.id() == METATYPE_QVECTOR_DOUBLE) {
+        QVector<double> v = toVector<double>(value);
+        settings.setValue(settings_key, toVariant(v));
+    } else if (type_name == "QJSValue" && settings_type.id() == METATYPE_QVECTOR_STRING) {
+        QVector<QString> v = toVector<QString>(value);
         settings.setValue(settings_key, toVariant(v));
     } else {
         settings.setValue(settings_key, value);
     }
+
+    settings.sync();
 }
 
 QVariant NewSettings::value(const QString &key)
 {
+    QVariant notfound("NOTFOUND"); //sentinal
+    QVariant value = settings.value(key,notfound);
+
+    if(value == notfound) {
+        qWarning() << "Settings key not found: " << key;
+        return QVariant();
+    }
     return settings.value(key);
 }
 
@@ -72,11 +114,22 @@ QVector<int> NewSettings::valueIntVec(const QString &key)
 
 void NewSettings::setValue(const QString &key, const QVariant &value)
 {
+    QVariant notfound("NOTFOUND"); //sentinal
+    QVariant existing_value = settings.value(key,notfound);
+
+    if (existing_value == notfound) {
+        qWarning() << "Tried to write to non-pre-existing key: " << key;
+        //will litter INI with "NOTFOUND" strings but should help us
+        //track down bad keys
+        return;
+    }
+
     settings.setValue(key, value);
 
     //in qml we use underscores instead of slashes.
     QString qml_key = key.split('/').join('_');
     insert(qml_key, value);
+    settings.sync();
 }
 
 void NewSettings::setValue(const QString &key, const QVector<int> &value_list)
@@ -199,4 +252,11 @@ bool NewSettings::saveJson(QString filename)
 
 }
 
+void NewSettings::sync() {
+    settings.sync();
+}
 
+QVariant NewSettings::updateValue(const QString &key, const QVariant &input)
+{
+    return QQmlPropertyMap::updateValue(key, input);
+}

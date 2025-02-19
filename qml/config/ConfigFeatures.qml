@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import Settings
 
 import ".."
 import "../components"
@@ -34,26 +35,25 @@ Item {
                     id: tramAll
                     icon.source: prefix + "/images/TramAll.png"
                     text: qsTr("Tram Lines")
-                    isChecked: settings.setFeature_isTramOn
-                    onCheckedChanged: settings.setFeature_isTramOn = checked
+                    isChecked: Settings.feature_isTramOn
+                    onCheckedChanged: Settings.feature_isTramOn = checked
                 }
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/HeadlandOn.png"
                     text: qsTr("Headland")
-                    isChecked: settings.setFeature_isHeadlandOn
-                    onCheckedChanged: settings.setFeature_isHeadlandOn = checked
+                    isChecked: Settings.feature_isHeadlandOn
+                    onCheckedChanged: Settings.feature_isHeadlandOn = checked
                 }
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/BoundaryOuter.png"
                     text: qsTr("Boundary")
-                    isChecked: settings.setFeature_isBoundaryOn
-                    onCheckedChanged: settings.setFeature_isBoundaryOn = checked
-                }
+                    isChecked: Settings.feature_isBoundaryOn
+                    onCheckedChanged: Settings.feature_isBoundaryOn = checked
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/RecPath.png"
                     text: qsTr("Rec Path")
-                    isChecked: settings.setFeature_isRecPathOn
-                    onCheckedChanged: settings.setFeature_isRecPathOn = checked
+                    isChecked: Settings.feature_isRecPathOn
+                    onCheckedChanged: Settings.feature_isRecPathOn = checked
                 }
             }
         }
@@ -76,26 +76,26 @@ Item {
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/ABSmooth.png"
                     text: qsTr("AB Smooth")
-                    isChecked: settings.setFeature_isABSmoothOn
-                    onCheckedChanged: settings.setFeature_isABSmoothOn = checked
+                    isChecked: Settings.feature_isABSmoothOn
+                    onCheckedChanged: Settings.feature_isABSmoothOn = checked
                 }
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/HideContour.png"
                     text: qsTr("Hide Contour")
-                    isChecked: settings.setFeature_isHideContourOn
-                    onCheckedChanged: settings.setFeature_isHideContourOn = checked
+                    isChecked: Settings.feature_isHideContourOn
+                    onCheckedChanged: Settings.feature_isHideContourOn = checked
                 }
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/Webcam.png"
                     text: qsTr("WebCam")
-                    isChecked: settings.setFeature_isWebCamOn
-                    onCheckedChanged: settings.setFeature_isWebCamOn = checked
+                    isChecked: Settings.feature_isWebCamOn
+                    onCheckedChanged: Settings.feature_isWebCamOn = checked
                 }
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/YouTurnReverse.png"
                     text: qsTr("Offset Fix")
-                    isChecked: settings.setFeature_isOffsetFixOn
-                    onCheckedChanged: settings.setFeature_isOffsetFixOn = checked
+                    isChecked: Settings.feature_isOffsetFixOn
+                    onCheckedChanged: Settings.feature_isOffsetFixOn = checked
                 }
             }
         }
@@ -123,15 +123,15 @@ Item {
                     id: uturn
                     icon.source: prefix + "/images/Images/z_TurnManual.png"
                     text: qsTr("U-Turn")
-                    isChecked: settings.setFeature_isYouTurnOn
-                    onCheckedChanged: settings.setFeature_isYouTurnOn = checked
+                    isChecked: Settings.feature_isYouTurnOn
+                    onCheckedChanged: Settings.feature_isYouTurnOn = checked
                 }
                 DisplayAndFeaturesBtns{
                     id: lateral
                     icon.source: prefix + "/images/Images/z_LateralManual.png"
                     text: qsTr("Lateral")
-                    isChecked: settings.setFeature_isLateralOn
-                    onCheckedChanged: settings.setFeature_isLateralOn = checked
+                    isChecked: Settings.feature_isLateralOn
+                    onCheckedChanged: Settings.feature_isLateralOn = checked
                 }
             }
         }
@@ -144,8 +144,8 @@ Item {
             DisplayAndFeaturesBtns{
                 text: qsTr("Auto Start AgIO")
                 icon.source: prefix	+ "/images/AgIO.png"
-                isChecked: settings.setFeature_isAgIOOn
-                onCheckedChanged: settings.setFeature_isAgIOOn = checked
+                isChecked: Settings.feature_isAgIOOn
+                onCheckedChanged: Settings.feature_isAgIOOn = checked
             }
         }
 
@@ -168,23 +168,23 @@ Item {
                     id: autoSteerSound
                     text: qsTr("Auto Steer")
                     icon.source: prefix + "/images/Config/ConF_SteerSound.png"
-                    isChecked: settings.setSound_isAutoSteerOn
-                    onCheckedChanged: settings.setSound_isAutoSteerOn = checked
+                    isChecked: Settings.sound_autoSteerSound
+                    onCheckedChanged: Settings.sound_autoSteerSound = checked
                 }
                 DisplayAndFeaturesBtns{
                     id: youTurnSound
                     text: qsTr("You Turn")
                     icon.source: prefix + "/images/Config/ConF_SteerSound.png"
-                    isChecked: settings.setSound_isUturnOn
-                    onCheckedChanged: settings.setSound_isUturnOn = checked
+                    isChecked: Settings.sound_isUturnOn
+                    onCheckedChanged: Settings.sound_isUturnOn = checked
                 }
 
                 DisplayAndFeaturesBtns{
                     id: hydLiftSound
                     text: qsTr("Hyd Lift")
                     icon.source: prefix + "/images/Config/ConF_SteerSound.png"
-                    isChecked: settings.setSound_isHydLiftOn
-                    onCheckedChanged: settings.setSound_isHydLiftOn = checked
+                    isChecked: Settings.sound_isHydLiftOn
+                    onCheckedChanged: Settings.sound_isHydLiftOn = checked
                 }
                 /*DisplayAndFeaturesBtns{
                 id: boundaryApproachSound
@@ -193,7 +193,7 @@ Item {
                 text: qsTr("Boundary Approach")
                 icon.source: prefix + "/images/Config/ConF_SteerSound.png"
                 isChecked: .setSound_isAutoSteerOn
-                onCheckedChanged: settings.setSound_isAutoSteerOn = checked
+                onCheckedChanged: Settings.sound_autoSteerSound = checked
             }*/
             }
         }
