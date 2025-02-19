@@ -49,6 +49,7 @@ Item {
                     text: qsTr("Boundary")
                     isChecked: Settings.feature_isBoundaryOn
                     onCheckedChanged: Settings.feature_isBoundaryOn = checked
+                }
                 DisplayAndFeaturesBtns{
                     icon.source: prefix + "/images/RecPath.png"
                     text: qsTr("Rec Path")
