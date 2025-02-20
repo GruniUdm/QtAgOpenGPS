@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Controls.Material
+import Settings
 
 import ".."
 import "../components"
@@ -141,7 +142,7 @@ Dialog {
                     text: "+"
                 }
                 onClicked: {
-                    newField.text += " " + settings.setVehicle_vehicleName
+                    newField.text += " " + Settings.vehicle_vehicleName
                 }
             }
             IconButtonTransparent{
@@ -153,8 +154,11 @@ Dialog {
                     text: "+"
                 }
                 onClicked: {
-                    var time = new Date().toLocaleDateString(Qt.locale(), Locale.ShortFormat)
-                    newField.text += " " + time
+                    var date = new Date();
+                    var year = date.getFullYear();
+                    var month = String(date.getMonth() + 1).padStart(2, '0');
+                    var day = String(date.getDate()).padStart(2, '0');
+                    newField.text += " " + `${year}-${month}-${day}`
                 }
             }
             IconButtonTransparent{
@@ -166,8 +170,10 @@ Dialog {
                     text: "+"
                 }
                 onClicked: {
-                    var time = new Date().toLocaleTimeString(Qt.locale())
-                    newField.text += " " + time
+                    var date = new Date();
+                    var hours = String(date.getHours()).padStart(2, '0');
+                    var minutes = String(date.getMinutes()).padStart(2, '0');
+                    newField.text += " " + `${hours}-${minutes}`
                 }
             }
             IconButtonColor{
@@ -244,7 +250,7 @@ Dialog {
                             flag |= fieldInterface.loadMapping
 
                         fieldFromExisting.visible = false
-                        fieldInterface.field_new_from(fieldView.currentFieldName, newField.text, flag)
+                        fieldInterface.field_new_from(fieldView.currentFieldName, newField.text.trim(), flag)
                         newField.text = ""
                         existingField.text = ""
                         fieldView.clear_selection()

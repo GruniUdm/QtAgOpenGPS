@@ -8,6 +8,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtQml.Models
+import Interface
 import AOG
 import "../components"
 import ".."
@@ -32,11 +33,11 @@ MoveablePopup {
         //program to update our lines list in the
         //AOGInterface object
         //linesInterface.abLine_updateLines()
-        trackView.currentIndex = trk.idx
+        trackView.currentIndex = TracksInterface.idx
         //preselect first AB line if none was in use before
         //to make it faster for user
         if (trackView.currentIndex < 0)
-            if (trk.model.count > 0)
+            if (TracksInterface.model.count > 0)
                 trackView.currentIndex = 0
     }
 
@@ -88,7 +89,7 @@ MoveablePopup {
                 icon.source: prefix + "/images/FileCopy.png"
                 onClicked: {
                     if(trackView.currentIndex > -1) {
-                        var name = trk.getTrackName(trackView.currentIndex)
+                        var name = TracksInterface.getTrackName(trackView.currentIndex)
                         if (name) {
                             name = "Copy of " + name
 
@@ -130,7 +131,7 @@ MoveablePopup {
                 icon.source: prefix + "/images/ABLinesHideShow.png"
 
                 onClicked: {
-                    TracksInterface.setVisible(trackView.currentIndex, !trk.getTrackVisible(trackView.currentIndex))
+                    TracksInterface.setVisible(trackView.currentIndex, !TracksInterface.getTrackVisible(trackView.currentIndex))
                 }
             }
 			IconButtonTransparent{
@@ -146,7 +147,7 @@ MoveablePopup {
                 onClicked: {
                     trackPickerDialog.visible = false
                     if (trackView.currentIndex > -1) {
-                        if (trk.getTrackVisible(trackView.currentIndex)) {
+                        if (TracksInterface.getTrackVisible(trackView.currentIndex)) {
                             console.debug("Activating track ", trackView.currentIndex)
                             TracksInterface.select(trackView.currentIndex)
                         } else {
@@ -176,7 +177,7 @@ MoveablePopup {
             TracksListView {
                 id: trackView
                 anchors.fill: parent
-                model: trk.model
+                model: TracksInterface.model
                 //property int currentIndex: -1
 
                 clip: true

@@ -4,6 +4,7 @@
 // Where we set the timing for section on/off
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -67,8 +68,8 @@ Rectangle{
         anchors.top: onPic.bottom
         anchors.topMargin: 10
         from: 0.2
-        value: settings.setVehicle_toolLookAheadOn
-        onValueChanged: settings.setVehicle_toolLookAheadOn = value
+        value: Settings.vehicle_toolLookAheadOn
+        onValueChanged: Settings.vehicle_toolLookAheadOn = value
         to: 22
         text: qsTr("On (secs)")
     }
@@ -78,8 +79,8 @@ Rectangle{
         anchors.top: offPic.bottom
         anchors.topMargin: 10
         from: 0
-        value:settings.setVehicle_toolLookAheadOff
-        onValueChanged: settings.setVehicle_toolLookAheadOff = value
+        value:Settings.vehicle_toolLookAheadOff
+        onValueChanged: Settings.vehicle_toolLookAheadOff = value
         to: 20
         editable: true
         text: qsTr("Off (secs)")
@@ -90,8 +91,8 @@ Rectangle{
         anchors.top: offDelayPic.bottom
         anchors.topMargin: 10
         from: 0
-        value: settings.setVehicle_toolOffDelay
-        onValueChanged: settings.setVehicle_toolOffDelay = value
+        value: Settings.vehicle_toolOffDelay
+        onValueChanged: Settings.vehicle_toolOffDelay = value
         to: 10
         editable: true
         text: qsTr("Delay (secs)")

@@ -8,13 +8,13 @@
 #include "ccamera.h"
 #include <assert.h>
 #include <math.h>
-#include "aogproperty.h"
+#include "newsettings.h"
 
 //module-level symbols
 QOpenGLShaderProgram *simpleColorShader = 0;
 QOpenGLShaderProgram *texShader = 0;
 QOpenGLShaderProgram *interpColorShader = 0;
-QOpenGLShaderProgram *backShader = 0;
+QOpenGLShaderProgram *simpleColorShaderBack = 0;
 
 QVector<QOpenGLTexture *> texture;
 
@@ -40,17 +40,22 @@ bool texturesLoaded = false;
 
 void initializeBackShader() {
     //needs a valid GL context bound before calling.
-    if (!backShader) {
-        backShader = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
-        auto result = backShader->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/color_vshader.vsh");
+    if (!simpleColorShaderBack) {
+        simpleColorShaderBack = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
+        auto result = simpleColorShaderBack->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/color_vshader.vsh");
         assert(result);
 
-        assert(backShader->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/color_fshader.fsh"));
-        assert(backShader->link());
+        assert(simpleColorShaderBack->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/color_fshader.fsh"));
+        assert(simpleColorShaderBack->link());
     }
 }
 
 void initializeShaders() {
+    QOpenGLContext *glContext = QOpenGLContext::currentContext();
+    qDebug() << glContext->isValid();
+
+    glContext->functions()->initializeOpenGLFunctions();
+
     //GL context must be bound by caller, and this must be called from
     //a QThread context
 
@@ -59,18 +64,23 @@ void initializeShaders() {
         simpleColorShader = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
         assert(simpleColorShader->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/color_vshader.vsh"));
         assert(simpleColorShader->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/color_fshader.fsh"));
+        simpleColorShader->bindAttributeLocation("vertex",0);
         assert(simpleColorShader->link());
     }
     if (!texShader) {
         texShader = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
         assert(texShader->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/colortex_vshader.vsh"));
         assert(texShader->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/colortex_fshader.fsh"));
+        texShader->bindAttributeLocation("vertex", 0);
+        texShader->bindAttributeLocation("texcoord_src", 1);
         assert(texShader->link());
     }
     if (!interpColorShader) {
         interpColorShader = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
         assert(interpColorShader->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/colors_vshader.vsh"));
         assert(interpColorShader->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/colors_fshader.fsh"));
+        interpColorShader->bindAttributeLocation("vertex", 0);
+        interpColorShader->bindAttributeLocation("color", 1);
         assert(interpColorShader->link());
     }
 }
@@ -116,15 +126,6 @@ void initializeTextures() {
     t = new QOpenGLTexture(QImage(PREFIX "/images/textures/z_Tire.png"));
     texture.append(t); //TIRE
 
-    t = new QOpenGLTexture(QImage(PREFIX "/images/textures/z_TramOnOff.png"));
-    texture.append(t); //TRAMDOT
-
-    t = new QOpenGLTexture(QImage(PREFIX "/images/textures/YouTurnU.png"));
-    texture.append(t); //YOUTURNU
-
-    t = new QOpenGLTexture(QImage(PREFIX "/images/textures/YouTurnH.png"));
-    texture.append(t); //YOUTURNH
-
 }
 
 void destroyShaders() {
@@ -156,31 +157,31 @@ void destroyTextures() {
 }
 
 void glDrawArraysColorBack(QOpenGLFunctions *gl,
-                       QMatrix4x4 mvp,
-                       GLenum operation,
-                       QColor color,
-                       QOpenGLBuffer &vertexBuffer,
-                       GLenum GL_type,
-                       int count,
-                       float pointSize)
+                           QMatrix4x4 mvp,
+                           GLenum operation,
+                           QColor color,
+                           QOpenGLBuffer &vertexBuffer,
+                           GLenum GL_type,
+                           int count,
+                           float pointSize)
 {
     //bind shader
-    assert(backShader->bind());
+    assert(simpleColorShaderBack->bind());
     //set color
-    backShader->setUniformValue("color", color);
+    simpleColorShaderBack->setUniformValue("color", color);
     //set mvp matrix
-    backShader->setUniformValue("mvpMatrix", mvp);
+    simpleColorShaderBack->setUniformValue("mvpMatrix", mvp);
 
-    backShader->setUniformValue("pointSize", pointSize);
+    simpleColorShaderBack->setUniformValue("pointSize", pointSize);
 
 
     vertexBuffer.bind();
 
     //TODO: these require a VBA to be bound; we need to create them I suppose.
     //enable the vertex attribute array in shader
-    backShader->enableAttributeArray("vertex");
+    simpleColorShaderBack->enableAttributeArray("vertex");
     //use attribute array from buffer, using non-normalized vertices
-    gl->glVertexAttribPointer(backShader->attributeLocation("vertex"),
+    gl->glVertexAttribPointer(simpleColorShaderBack->attributeLocation("vertex"),
                               3, //3D vertices
                               GL_type, //type of data GL_FLAOT or GL_DOUBLE
                               GL_FALSE, //not normalized vertices!
@@ -193,7 +194,7 @@ void glDrawArraysColorBack(QOpenGLFunctions *gl,
     //release buffer
     vertexBuffer.release();
     //release shader
-    backShader->release();
+    simpleColorShaderBack->release();
 }
 
 void glDrawArraysColor(QOpenGLFunctions *gl,
@@ -364,6 +365,31 @@ void DrawPolygon(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec3> &polygon, f
     }
 }
 
+void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec2> &polygon, float size, QColor color)
+{
+    GLHelperOneColorBack gldraw;
+    if (polygon.count() > 2)
+    {
+        for (int i = 0; i < polygon.count() ; i++)
+        {
+            gldraw.append(QVector3D(polygon[i].easting, polygon[i].northing, 0));
+        }
+        gldraw.draw(gl, mvp, color, GL_LINE_LOOP, size);
+    }
+}
+
+void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec3> &polygon, float size, QColor color)
+{
+    GLHelperOneColorBack gldraw;
+    if (polygon.count() > 2)
+    {
+        for (int i = 0; i < polygon.count() ; i++)
+        {
+            gldraw.append(QVector3D(polygon[i].easting, polygon[i].northing, 0));
+        }
+        gldraw.draw(gl, mvp, color, GL_LINE_LOOP, size);
+    }
+}
 
 void drawText(QOpenGLFunctions *gl, QMatrix4x4 mvp, double x, double y, QString text, double size, bool colorize, QColor color)
 {
@@ -434,7 +460,7 @@ void drawText3D(const CCamera &camera, QOpenGLFunctions *gl,
 
     mvp.translate(x1, y1, 0);
 
-    if ((double)property_setDisplay_camPitch < -45)
+    if (settings->value(SETTINGS_display_camPitch).value<double>() < -45)
     {
         mvp.rotate(90, 1, 0, 0);
         if (camera.camFollowing) mvp.rotate(-camera.camHeading, 0, 1, 0);
@@ -509,7 +535,7 @@ void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp
     size = pow(size, 0.8)/800;
 
     //2d
-    if ((double)property_setDisplay_camPitch > -58)
+    if (settings->value(SETTINGS_display_camPitch).value<double>() < -58)
     {
         if (!camera.camFollowing)
         {
@@ -534,7 +560,7 @@ void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp
         }
         else
         {
-            mvp.rotate(-(double)property_setDisplay_camPitch, 1, 0, 0);
+            mvp.rotate(- settings->value(SETTINGS_display_camPitch).value<double>(), 1, 0, 0);
             y *= 0.3;
         }
     }
@@ -583,6 +609,24 @@ void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp
         x += CharXSpacing * size;
     }
     gldraw.draw(gl, mvp, Textures::FONT, GL_TRIANGLES, colorize, color);
+}
+
+GLHelperOneColorBack::GLHelperOneColorBack() {
+}
+
+void GLHelperOneColorBack::draw(QOpenGLFunctions *gl, QMatrix4x4 mvp, QColor color, GLenum operation, float point_size) {
+    QOpenGLBuffer vertexBuffer;
+
+    vertexBuffer.create();
+    vertexBuffer.bind();
+    vertexBuffer.allocate(data(), size()*sizeof(QVector3D));
+    vertexBuffer.release();
+
+
+    glDrawArraysColorBack(gl, mvp,operation,
+                      color, vertexBuffer, GL_FLOAT,
+                      size(),point_size);
+
 }
 
 GLHelperOneColor::GLHelperOneColor() {

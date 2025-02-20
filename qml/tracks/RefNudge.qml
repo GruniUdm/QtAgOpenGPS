@@ -5,6 +5,8 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import AOG
+
 
 import ".."
 import "../components" as Comp
@@ -65,7 +67,7 @@ Comp.MoveablePopup {
         Comp.TextLine{
             id: nudgeText
             font.pixelSize: 25
-            text: qsTr("0 ")+ utils.cm_unit_abbrev()
+            text: qsTr("0 ")+ Utils.cm_unit_abbrev()
             anchors.bottom: bottomButtons.top
             anchors.bottomMargin: 15
         }

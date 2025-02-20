@@ -1,5 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
+import Settings
+import Interface
 import AOG
 import "components" as Comp
 
@@ -73,7 +75,7 @@ ColumnLayout {
 
         onClicked: {
             if (trk.idx > -1) {
-                TracksInterface.next()
+                trk.next()
             }
         }
     }
@@ -86,7 +88,7 @@ ColumnLayout {
 
         onClicked: {
             if (trk.idx > -1) {
-                TracksInterface.prev()
+                trk.prev()
             }
         }
 
@@ -160,7 +162,7 @@ ColumnLayout {
         checked: aog.isBtnAutoSteerOn
         //enabled: aog.isTrackOn || aog.isContourBtnOn
         //Is remote activation of autosteer enabled? //todo. Eliminated in 6.3.3
-        buttonText: (settings.setAS_isAutoSteerAutoOn === true ? "R" : "M")
+        buttonText: (Settings.as_isAutoSteerAutoOn === true ? "R" : "M")
         onClicked: {
             if (checked && ((trk.idx > -1) || btnContour.isChecked)) {
                 console.debug("okay to turn on autosteer button.")
@@ -185,9 +187,9 @@ ColumnLayout {
             }
             function onSpeedKphChanged() {
                 if (btnAutoSteer.checked) {
-                    if (aog.speedKph < settings.setAS_minSteerSpeed) {
+                    if (aog.speedKph < Settings.as_minSteerSpeed) {
                         aog.isBtnAutoSteerOn = false
-                    } else if (aog.speedKph > settings.setAS_maxSteerSpeed) {
+                    } else if (aog.speedKph > Settings.as_maxSteerSpeed) {
                         //timedMessage
                         aog.isBtnAutoSteerOn = false
                     }

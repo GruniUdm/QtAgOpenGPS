@@ -3,10 +3,11 @@
 //
 // An attemt to make shortcut keys easier. Not used right now
 import QtQuick
+import Settings
 
 Shortcut{
 	id: shortcut
 	property int hotkeys: 0
-	property var hotkeysVar: settings.setKey_hotkeys
+	property var hotkeysVar: Settings.key_hotKeys
 	sequences: [hotkeysVar[hotkeys], ("Shift+"+ hotkeysVar[hotkeys])]
 }

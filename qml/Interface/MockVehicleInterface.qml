@@ -9,6 +9,8 @@ import QtQuick
 //places the CVehicle object in the root of the QML namespace where
 //these items are provided by the CVehicle instance in FormGPS.
 
+pragma singleton
+
 Item {
     id: vehicleInterface
 
