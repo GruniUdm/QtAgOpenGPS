@@ -117,7 +117,6 @@ qt_add_executable(QtAgOpenGPS
 )
 
 ###### Handling Local QML Handling QML in module in LOCAL_QML OFF######
-
 if(NOT LOCAL_QML)
     # Function to process image files in a given directory (non-recursive)
     function(process_files DIR OUT_VAR)
@@ -204,31 +203,54 @@ if(NOT LOCAL_QML)
         ${SHADER_REL_PATHS}
     )
 
-    # Add translations
-   qt_add_translations(QtAgOpenGPS
-    RESOURCE_PREFIX /qt/qml/AOG/i18n
-    TS_FILE_BASE qml 
-    TS_FILE_DIR i18n
+else()
+
+    set(aog_qml_singletons
+        qml/AOG/Utils.qml
     )
 
- # Function to process translated QM files in a given directory
- function(process_qm_files DIR OUT_VAR)
- file(GLOB QM_FILES "${DIR}/*.qm")
- set(REL_PATHS)
- foreach(QM_FILE ${QM_FILES})
-     file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${QM_FILE}")
-     set_source_files_properties(${QM_FILE} PROPERTIES
-         QT_RESOURCE_ALIAS "${REL_PATH}")
-     # message(WARNING "file: ${REL_PATH}")
-     list(APPEND REL_PATHS "${REL_PATH}")
- endforeach()
- set(${OUT_VAR} ${REL_PATHS} PARENT_SCOPE)
+    set_source_files_properties(${aog_qml_singletons}
+        PROPERTIES QT_QML_SINGLETON_TYPE TRUE
+    )
+
+    qt_add_qml_module(QtAgOpenGPS
+        URI AOG
+        VERSION 1.0
+        QML_FILES ${aog_qml_singletons}
+        SOURCES
+            aogrenderer.cpp
+            aogrenderer.h
+            DEPENDENCIES Qt6::QtQuick
+        )
+
+endif()
+###### End Script of Handling QML in module ######
+
+###### Script for Translation ######
+
+  # Add translations
+  qt_add_translations(QtAgOpenGPS
+  RESOURCE_PREFIX /qt/qml/AOG/i18n
+  TS_FILE_BASE qml 
+  TS_FILE_DIR i18n
+  )
+
+# Function to process translated QM files in a given directory
+function(process_qm_files DIR OUT_VAR)
+file(GLOB QM_FILES "${DIR}/*.qm")
+set(REL_PATHS)
+foreach(QM_FILE ${QM_FILES})
+   file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${QM_FILE}")
+   set_source_files_properties(${QM_FILE} PROPERTIES
+       QT_RESOURCE_ALIAS "${REL_PATH}")
+   # message(WARNING "file: ${REL_PATH}")
+   list(APPEND REL_PATHS "${REL_PATH}")
+endforeach()
+set(${OUT_VAR} ${REL_PATHS} PARENT_SCOPE)
 endfunction()
 
 # Process QM files in the i18n directory
 process_qm_files("${CMAKE_CURRENT_SOURCE_DIR}/i18n" QM_REL_PATHS)
-
-# Add the translation file to the resources
 
 # Add the translation files to the resources
 qt_add_resources(QtAgOpenGPS "translations"
@@ -237,31 +259,7 @@ FILES
 ${QM_REL_PATHS}
 )
 
-else()
-
-set(aog_qml_singletons
-    qml/AOG/Utils.qml
-)
-
-set_source_files_properties(${aog_qml_singletons}
-    PROPERTIES QT_QML_SINGLETON_TYPE TRUE
-)
-
-qt_add_qml_module(QtAgOpenGPS
-    URI AOG
-    VERSION 1.0
-    QML_FILES ${aog_qml_singletons}
-    SOURCES
-        aogrenderer.cpp
-        aogrenderer.h
-        DEPENDENCIES Qt6::QtQuick
-    )
-
-endif()
-
-
-
-###### End Script of Handling QML in module ######
+###### End script for Translation ######
 
 # show some of our mockup files in the project tree without compiling it
 set(qml_mockup_files
