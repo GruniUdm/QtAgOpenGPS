@@ -99,15 +99,17 @@ PGN32502::PGN32502() : pgn(QByteArray( "\xF6\x7E\x00\x00\x00\x00\x00\x00\x00\x00
 }
 
 void PGN32502::loadSettings()
-{   pgn[ID] = property_setRate_moduleID;
-    pgn[KD] = property_setRate_pidKI;
-    pgn[KI] = property_setRate_pidKD;
-    pgn[KP] = property_setRate_pidKP;
-    pgn[MaxPWM] = property_setRate_valveMaxPWM;
-    pgn[MinPWM] = property_setRate_valveMinPWM;
-    pgn[PIDScale] = property_setRate_ratePIDscale;
-    pgn[MeterCal] = property_setRate_rateSensorCount;
-    pgn[Command] = property_setRateContType;
+
+{   QVector<int> rate_settings = toVector<int>(settings->value(SETTINGS_rate_Product0));
+    pgn[ID] = rate_settings[0];
+    pgn[KP] = rate_settings[3];
+    pgn[KI] = rate_settings[4];
+    pgn[KD] = rate_settings[5];
+    pgn[MinPWM] = rate_settings[6];
+    pgn[MaxPWM] = rate_settings[7];
+    pgn[PIDScale] = rate_settings[8];
+    pgn[MeterCal] = rate_settings[9];
+    pgn[Command] = rate_settings[10];
 }
 
 void PGN32502::MakeCRC()

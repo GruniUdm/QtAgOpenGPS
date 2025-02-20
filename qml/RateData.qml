@@ -5,7 +5,8 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import "components" as Comp
-
+import Settings
+import AOG
 Rectangle{
     id: c
     width: 200 * theme.scaleWidth
@@ -15,7 +16,7 @@ Rectangle{
         id: column
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.margins: 15 * theme.scaleWidth
-        Comp.TextLine{ color: "red"; font.pixelSize: 30; text: qsTr("RateSet ")+settings.setRate_rateSET}
+        Comp.TextLine{ color: "red"; font.pixelSize: 30; text: qsTr("RateSet ")+Settings.rate_Product0[10]}
         Comp.TextLine{ color: "red"; font.pixelSize: 30; text: qsTr("Rate ")+aog.actualRate}
     }
 
@@ -29,7 +30,7 @@ Rectangle{
                 anchors.right: parent.right
                 anchors.rightMargin: 15 * theme.scaleHeight
                 anchors.top: column.bottom
-                onClicked: settings.setRate_rateSET>250?settings.setRate_rateSET=255:settings.setRate_rateSET+=10
+                onClicked: Settings.rate_Product0[10]>500?Settings.rate_Product0[10]=500:Settings.rate_Product0[10]+=10
             }
 
             Comp.IconButtonColor{
@@ -42,7 +43,7 @@ Rectangle{
                 anchors.left: parent.left
                 anchors.leftMargin: 15 * theme.scaleHeight
                 anchors.top: column.bottom
-                onClicked: settings.setRate_rateSET<10?settings.setRate_rateSET=0:settings.setRate_rateSET-=10
+                onClicked: Settings.rate_Product0[10]<10?Settings.rate_Product0[10]=0:Settings.rate_Product0[10]-=10
         }
 
 }

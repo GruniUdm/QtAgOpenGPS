@@ -5,7 +5,8 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-
+import Settings
+import AOG
 import ".."
 import "../components"
 
@@ -22,106 +23,43 @@ Rectangle{
 
     function load_settings() {
 
-        rateMinPWM.value = settings.setRate_valveMinPWM
-        rateMaxPWM.value = settings.setRate_valveMaxPWM
-        moduleID.value = settings.setRate_moduleID
-        sensorID.value = settings.setRate_sensorID
-        rateKP.value = settings.setRate_pidKP
-        rateKI.value = settings.setRate_pidKI
-        rateKD.value = settings.setRate_pidKD
-        ratePIDscale.value = settings.setRate_ratePIDscale
-        cboxIsRateControlOn.checked = settings.setRate_RateControlOn
-        rateSensor.value = settings.setRate_rateSensorCount
-        setRate.value = settings.setRate_rateSET
-        cboxRateMode.currentIndex = Number(settings.setRateMode)
-
-        var sett = settings.setRateContType;
-
-        if ((sett & 1) == 1) cboxRateControlType.currentIndex = 1;
-        else if ((sett & 2) == 2) cboxRateControlType.currentIndex = 2;
-        else if ((sett & 4) == 4) cboxRateControlType.currentIndex = 3;
-        else cboxRateControlType.currentIndex = 0;
-
-        sett = settings.setRateCoverageUnits;
-
-        if ((sett & 1) == 1) cboxRateCoverageUnits.currentIndex = 1;
-        else if ((sett & 2) == 2) cboxRateCoverageUnits.currentIndex = 2;
-        else if ((sett & 4) == 4) cboxRateCoverageUnits.currentIndex = 3;
-        else cboxRateCoverageUnits.currentIndex = 0;
-
-        sett = settings.setRateProductNames;
-
-        if ((sett & 1) == 1) cboxRateProductNames.currentIndex = 1;
-        else if ((sett & 2) == 2) cboxRateProductNames.currentIndex = 2;
-        else if ((sett & 4) == 4) cboxRateProductNames.currentIndex = 3;
-        else cboxRateProductNames.currentIndex = 0;
-
-        cboxRateProductNames.currentText = settings.setRateProductName;
+        moduleID.value = Settings.rate_Product0[0]
+        //sensorID.value = Settings.rate_Product0[0]
+        //cboxRateProductNames = Settings.rate_Product0[1];
+        cboxIsRateControlOn.checked = (Settings.rate_Product0[2]>0)?true:false
+        rateKP.value = Settings.rate_Product0[3]
+        rateKI.value = Settings.rate_Product0[4]
+        rateKD.value = Settings.rate_Product0[5]
+        rateMinPWM.value = Settings.rate_Product0[6]
+        rateMaxPWM.value = Settings.rate_Product0[7]
+        ratePIDscale.value = Settings.rate_Product0[8]
+        rateSensor.value = Settings.rate_Product0[9]
+        setRate.value = Settings.rate_Product0[10]
+        cboxRateMode.currentIndex = Settings.rate_Product0[11]
+        cboxRateControlType.currentIndex = Settings.rate_Product0[12];
+        cboxRateCoverageUnits.currentIndex = Settings.rate_Product0[13];
 
         mandatory.visible = false
 
     }
 
     function save_settings() {
-        var set = 1;
-        var reset = 2046;
-        var sett = 0;
 
-
-        if (cboxRateControlType.currentText === "Combo Close") sett |= set;
-        else sett &= reset;
-
-        set <<= 1;
-        reset <<= 1;
-        reset += 1;
-        if (cboxRateControlType.currentText === "Motor") sett |= set;
-        else sett &= reset;
-
-        set <<= 1;
-        reset <<= 1;
-        reset += 1;
-        if (cboxRateControlType.currentText === "Combo Timed") sett |= set;
-        else sett &= reset;
-        settings.setRateContType = sett;
-
-
-        set = 1;
-        reset = 2046;
-        sett = 0;
-
-
-        if (cboxRateProductNames.currentIndex === 1) sett |= set;
-        else sett &= reset;
-
-        set <<= 1;
-        reset <<= 1;
-        reset += 1;
-        if (cboxRateProductNames.currentIndex === 2) sett |= set;
-        else sett &= reset;
-
-        set <<= 1;
-        reset <<= 1;
-        reset += 1;
-        if (cboxRateProductNames.currentIndex === 3) sett |= set;
-        else sett &= reset;
-        settings.setRateProductNames= sett;
-        settings.setRateProductName = cboxRateProductNames.currentText
-
-
-
-        settings.setRate_valveMinPWM = rateMinPWM.value
-        settings.setRate_valveMaxPWM = rateMaxPWM.value
-        settings.setRate_moduleID = moduleID.value
-        settings.setRate_sensorID = sensorID.value
-        settings.setRate_pidKP = rateKP.value
-        settings.setRate_pidKI = rateKI.value
-        settings.setRate_pidKD = rateKD.value
-        settings.setRate_ratePIDscale = ratePIDscale.value
-        settings.setRate_RateControlOn = cboxIsRateControlOn.checked
-        settings.setRate_rateSensorCount = rateSensor.value
-        settings.setRate_rateSET = setRate.value
-        settings.setRateMode = Number(cboxRateMode.currentIndex)
-
+        Settings.rate_Product0[0] = moduleID.value;
+        //Settings.rate_Product0[1] = cboxRateProductNames
+        Settings.rate_Product0[2] = cboxIsRateControlOn.checked?1:0
+        Settings.rate_Product0[3] = rateKP.value
+        Settings.rate_Product0[4] = rateKI.value
+        Settings.rate_Product0[5] = rateKD.value
+        Settings.rate_Product0[6] = rateMinPWM.value
+        Settings.rate_Product0[7] = rateMaxPWM.value
+        Settings.rate_Product0[8] = ratePIDscale.value
+        Settings.rate_Product0[9] = rateSensor.value
+        Settings.rate_Product0[10] = setRate.value
+        Settings.rate_Product0[11] = Number(cboxRateMode.currentIndex)
+        Settings.rate_Product0[12] = Number(cboxRateControlType.currentIndex)
+        Settings.rate_Product0[13] = Number(cboxRateCoverageUnits.currentIndex)
+        console.debug(Settings.rate_Product0[13])
         mandatory.visible = false
         aog.modules_send_PGN32502();
 
@@ -154,9 +92,9 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: settings.setRate_moduleID
+            boundValue: Settings.rate_Product0[0]
             onValueModified: {
-                settings.setRate_moduleID = value
+                Settings.rate_Product0[0] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -172,9 +110,9 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: settings.setRate_sensorID
+            boundValue: Settings.rate_Product0[1]
             onValueModified: {
-                settings.setRate_sensorID = value
+                Settings.rate_Product0[1] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -190,9 +128,9 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: settings.setRate_pidKP
+            boundValue: Settings.rate_Product0[3]
             onValueModified: {
-                settings.setRate_pidKP = value
+                Settings.rate_Product0[3] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -208,9 +146,9 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: settings.setRate_pidKI
+            boundValue: Settings.rate_Product0[4]
             onValueModified: {
-                settings.setRate_pidKI = value
+                Settings.rate_Product0[4] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -226,9 +164,9 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: settings.setRate_pidKD
+            boundValue: Settings.rate_Product0[5]
             onValueModified:{
-                settings.setRate_pidKD = value
+                Settings.rate_Product0[5] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -245,9 +183,9 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: settings.setRate_valveMinPWM
+            boundValue: Settings.rate_Product0[6]
             onValueModified: {
-                settings.setRate_valveMinPWM = value
+                Settings.rate_Product0[6] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -265,9 +203,9 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: settings.setRate_valveMaxPWM
+            boundValue: Settings.rate_Product0[7]
             onValueModified:{
-                settings.setRate_valveMaxPWM = value
+                Settings.rate_Product0[7] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -285,9 +223,9 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: settings.setRate_ratePIDscale
+            boundValue: Settings.rate_Product0[8]
             onValueModified:{
-                settings.setRate_ratePIDscale = value
+                Settings.rate_Product0[8] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -305,9 +243,9 @@ Rectangle{
             to:1000
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: settings.setRate_rateSET
+            boundValue: Settings.rate_Product0[10]
             onValueModified:{
-                settings.setRate_rateSET = value
+                Settings.rate_Product0[10] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -325,9 +263,9 @@ Rectangle{
             to:1000
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: settings.setRate_rateSensorCount
+            boundValue: Settings.rate_Product0[9]
             onValueModified:{
-                settings.setRate_rateSensorCount = value
+                Settings.rate_Product0[9] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -360,6 +298,8 @@ Rectangle{
                 model: ListModel {
                     ListElement {text: qsTr("Section UPM")}
                     ListElement {text: qsTr("Constant UPM")}
+                    ListElement {text: qsTr("Applied rate")}
+                    ListElement {text: qsTr("Target rate")}
                 }
                 text: qsTr("Mode")
                 onActivated: mandatory.visible = true
@@ -377,19 +317,7 @@ Rectangle{
                 text: qsTr("Coverage Units")
                 onActivated: mandatory.visible = true
         }
-            ComboBoxCustomized {
-                id: cboxRateProductNames
-                enabled: cboxIsRateControlOn.checked
-                editable: true
-                model: ListModel {
-                    ListElement {text: qsTr("Acres")}
-                    ListElement {text: qsTr("Hectare")}
-                    ListElement {text: qsTr("Minutes")}
-                    ListElement {text: qsTr("Hours")}
-                }
-                text: qsTr("Product names")
-                onActivated: mandatory.visible = true
-        }
+
 
 
     }

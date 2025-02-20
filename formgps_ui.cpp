@@ -815,31 +815,22 @@ void FormGPS::modules_send_252() {
 }
 void FormGPS::modules_send_PGN32500() {
     qDebug() << "Sending 32500 message to AgIO";
-    ModuleRateSettings.pgn[ModuleRateSettings.ID] = property_setRate_moduleID;
-    ModuleRateSettings.pgn[ModuleRateSettings.RateSetLo] = (char)rc.RateSet;
-    ModuleRateSettings.pgn[ModuleRateSettings.RateSett] = (char)((int)rc.RateSet >> 8);
-    ModuleRateSettings.pgn[ModuleRateSettings.RateSetHI] = (char)((int)rc.RateSet >> 16);
-    ModuleRateSettings.pgn[ModuleRateSettings.MeterCalLO] = (char)rc.MeterCal;
-    ModuleRateSettings.pgn[ModuleRateSettings.MeterCall] = (char)((int)rc.MeterCal >> 8);
-    ModuleRateSettings.pgn[ModuleRateSettings.MeterCalHI] = (char)((int)rc.MeterCal >> 16);
-    ModuleRateSettings.pgn[ModuleRateSettings.ControlType] = rc.ControlType;
-    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMLO] = (char)rc.ManualPWM;
-    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMHI] = (char)(rc.ManualPWM >> 8);
 
     qDebug() << ModuleRateSettings.pgn;
     SendPgnToLoop(ModuleRateSettings.pgn);
 }
 void FormGPS::modules_send_PGN32502() {
     qDebug() << "Sending 32502 message to AgIO";
-    ModulePIDdata.pgn[ModulePIDdata.ID] = property_setRate_moduleID;
-    ModulePIDdata.pgn[ModulePIDdata.KD] = property_setRate_pidKI;
-    ModulePIDdata.pgn[ModulePIDdata.KI] = property_setRate_pidKD;
-    ModulePIDdata.pgn[ModulePIDdata.KP] = property_setRate_pidKP;
-    ModulePIDdata.pgn[ModulePIDdata.MaxPWM] = property_setRate_valveMaxPWM;
-    ModulePIDdata.pgn[ModulePIDdata.MinPWM] = property_setRate_valveMinPWM;
-    ModulePIDdata.pgn[ModulePIDdata.PIDScale] = property_setRate_ratePIDscale;
-    ModulePIDdata.pgn[ModulePIDdata.MeterCal] = property_setRate_rateSensorCount;
-    ModulePIDdata.pgn[ModulePIDdata.Command] = property_setRateContType;
+    QVector<int> rateconfig0 = toVector<int>(settings->value(SETTINGS_rate_Product0));
+    ModulePIDdata.pgn[ModulePIDdata.ID] = rateconfig0[0];
+    ModulePIDdata.pgn[ModulePIDdata.KP] = rateconfig0[3];
+    ModulePIDdata.pgn[ModulePIDdata.KI] = rateconfig0[4];
+    ModulePIDdata.pgn[ModulePIDdata.KD] = rateconfig0[5];
+    ModulePIDdata.pgn[ModulePIDdata.MinPWM] = rateconfig0[6];
+    ModulePIDdata.pgn[ModulePIDdata.MaxPWM] = rateconfig0[7];
+    ModulePIDdata.pgn[ModulePIDdata.PIDScale] = rateconfig0[8];
+    ModulePIDdata.pgn[ModulePIDdata.MeterCal] = rateconfig0[9];
+    ModulePIDdata.pgn[ModulePIDdata.Command] = rateconfig0[12];
 
     qDebug() << ModulePIDdata.pgn;
     SendPgnToLoop(ModulePIDdata.pgn);

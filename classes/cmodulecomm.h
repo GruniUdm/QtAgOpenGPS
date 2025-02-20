@@ -42,7 +42,7 @@ public:
     int pwmDisplay = 0;
     double actualSteerAngleDegrees = 0;
     int actualSteerAngleChart = 0;
-    double actualRate = 0;
+
 
     InterfaceProperty<AOGInterface, int> sensorData = InterfaceProperty<AOGInterface, int>("sensorData");
 

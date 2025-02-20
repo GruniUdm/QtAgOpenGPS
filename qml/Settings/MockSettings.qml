@@ -308,6 +308,6 @@ Item {
 	property double youturn_toolWidths: 2
 	property double youturn_youMoveDistance: 0.25
 	property var test_testStrings: [ "one", "two", "trheep", "four}"  ]
-	property var test_testDoubles: [ 1.2, 1.3, 1.4 ]
+    property var rate_Product0: [ 1,1,1,0,1,0,0,100,10,0,0,100,0,0,1,0,0,1,0 ]
 	property color test_testColorRgbF: "#ff7f7f33"
 }

@@ -519,7 +519,7 @@ Window {
                 id: rateData
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                visible: (settings.setArdMac_isHydEnabled) ? true : false
+                visible: (Settings.rate_Product0[2]>0) ? true : false
             }
 
             SimController{

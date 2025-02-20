@@ -234,11 +234,11 @@ class PGN32502
 public:
     QByteArray pgn;
     int ID = 2;
-    int KD = 3;
+    int KP = 3;
     int KI = 4;
-    int KP = 5;
-    int MaxPWM = 6;
-    int MinPWM = 7;
+    int KD = 5;
+    int MinPWM = 6;
+    int MaxPWM = 7;
     int PIDScale = 8;
     int MeterCal = 9;
     int Command = 10;
@@ -254,11 +254,11 @@ public:
     QByteArray pgn;
     int ID = 2;
     int RateSetLo = 3;
-    int RateSett = 4;
+    int RateSetMd = 4;
     int RateSetHI = 5;
-    int MeterCalLO = 6;
-    int MeterCall = 7;
-    int MeterCalHI = 8;
+    int FlowCalLO = 6;
+    int FlowCalMd = 7;
+    int FlowCalHI = 8;
     int ControlType = 9;
     int ManualPWMLO = 10;
     int ManualPWMHI = 11;
