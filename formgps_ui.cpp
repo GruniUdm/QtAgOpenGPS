@@ -829,7 +829,6 @@ void FormGPS::modules_send_PGN32502() {
     ModulePIDdata.pgn[ModulePIDdata.MinPWM] = rateconfig0[6];
     ModulePIDdata.pgn[ModulePIDdata.MaxPWM] = rateconfig0[7];
     ModulePIDdata.pgn[ModulePIDdata.PIDScale] = rateconfig0[8];
-    ModulePIDdata.pgn[ModulePIDdata.MeterCal] = rateconfig0[9];
     ModulePIDdata.pgn[ModulePIDdata.Command] = rateconfig0[12];
 
     qDebug() << ModulePIDdata.pgn;

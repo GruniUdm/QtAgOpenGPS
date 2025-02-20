@@ -233,15 +233,14 @@ class PGN32502
 {
 public:
     QByteArray pgn;
-    int ID = 2;
-    int KP = 3;
-    int KI = 4;
-    int KD = 5;
-    int MinPWM = 6;
-    int MaxPWM = 7;
-    int PIDScale = 8;
-    int MeterCal = 9;
-    int Command = 10;
+    int ID = 5;
+    int KP = 6;
+    int KI = 7;
+    int KD = 8;
+    int MinPWM = 9;
+    int MaxPWM = 10;
+    int PIDScale = 11;
+    int Command = 12;
 
     PGN32502();
     void loadSettings();
@@ -252,16 +251,15 @@ class PGN32500
 {
 public:
     QByteArray pgn;
-    int ID = 2;
-    int RateSetLo = 3;
-    int RateSetMd = 4;
-    int RateSetHI = 5;
-    int FlowCalLO = 6;
-    int FlowCalMd = 7;
-    int FlowCalHI = 8;
-    int ControlType = 9;
-    int ManualPWMLO = 10;
-    int ManualPWMHI = 11;
+    int ID = 5;
+    int RateSetLo = 6;
+    int RateSetMd = 7;
+    int RateSetHI = 8;
+    int FlowCalLO = 9;
+    int FlowCalMd = 10;
+    int FlowCalHI = 11;
+    int ManualPWMLO = 12;
+    int ManualPWMHI = 13;
 
     PGN32500();
     void MakeCRC();

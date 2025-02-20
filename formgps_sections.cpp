@@ -402,7 +402,7 @@ void FormGPS::doRateControl()
     ModuleRateSettings.pgn[ModuleRateSettings.FlowCalLO] = (char)((int)rc.MeterCal >> 8);
     ModuleRateSettings.pgn[ModuleRateSettings.FlowCalMd] = (char)((int)rc.MeterCal >> 8);
     ModuleRateSettings.pgn[ModuleRateSettings.FlowCalHI] = (char)rc.MeterCal;
-    ModuleRateSettings.pgn[ModuleRateSettings.ControlType] = rc.ControlType;
+
     SendPgnToLoop(ModuleRateSettings.pgn);
     qDebug() << "doRateControl";
 }

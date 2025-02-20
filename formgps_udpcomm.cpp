@@ -277,7 +277,7 @@ void FormGPS::ReceiveFromAgIO()
             break;
 
 
-        case 0x7E://Rate 126
+        case 0x90://Rate
             //
             if (datagram_data.length() != 16)
                 break;
