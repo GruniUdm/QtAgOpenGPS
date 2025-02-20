@@ -17,7 +17,10 @@ Rectangle{
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.margins: 15 * theme.scaleWidth
         Comp.TextLine{ color: "red"; font.pixelSize: 30; text: qsTr("RateSet ")+Settings.rate_Product0[10]}
-        Comp.TextLine{ color: "red"; font.pixelSize: 30; text: qsTr("Rate ")+aog.actualRate}
+        Comp.TextLine{ color:(aog.product0stat)?"green":"red"; font.pixelSize: 30; text: qsTr("Rate ")+aog.actualRate}
+        Component.onCompleted: if (aog.product0stat & aog.actualRate < Settings.rate_Product0[10]*0.9 || aog.actualRate > Settings.rate_Product0[10] * 1.1){
+            timedMessage.addMessage(2000, qsTr("Rate not good"));
+        }
     }
 
             Comp.IconButtonColor{

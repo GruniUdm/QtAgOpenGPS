@@ -20,8 +20,8 @@ public:
     void getfrommodule(int ID, QByteArray pgn_data);
     void aogset(int toolwidth, double aogspeed);
     void getsettings(int ID, QVector<int> set_data);
-    int cPWMsetting;
-    int cSensorReceiving;
+    int PWMsetting;
+    int SensorReceiving;
     explicit ratecontrol(QObject *parent = nullptr);
 
 private:

@@ -156,6 +156,7 @@ Item {
     property double imuCorrected:0
     property double	actualRate: 0
     property double	actualRatePWM: 0
+    property bool product0stat: false
 
 
     onSteerAngleActualChanged: steerAngleActualRounded = Math.round(steerAngleActual*100)/100

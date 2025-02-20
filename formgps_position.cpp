@@ -1255,6 +1255,7 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("startSA", isSA);
     aog->setProperty("actualRate", rc.RateApplied());
     aog->setProperty("actualRatePWM", rc.ManualPWM);
+    aog->setProperty("product0stat", rc.SensorReceiving);
     aog->setProperty("lblmodeActualXTE", vehicle.modeActualXTE);
     aog->setProperty("lblmodeActualHeadingError", vehicle.modeActualHeadingError);
 
