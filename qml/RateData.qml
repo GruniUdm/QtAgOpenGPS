@@ -16,10 +16,13 @@ Rectangle{
         id: column
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.margins: 15 * theme.scaleWidth
-        Comp.TextLine{ color: "red"; font.pixelSize: 30; text: qsTr("RateSet ")+Settings.rate_Product0[10]}
-        Comp.TextLine{ color:(aog.product0stat)?"green":"red"; font.pixelSize: 30; text: qsTr("Rate ")+aog.actualRate}
-        Component.onCompleted: if (aog.product0stat & aog.actualRate < Settings.rate_Product0[10]*0.9 || aog.actualRate > Settings.rate_Product0[10] * 1.1){
-            timedMessage.addMessage(2000, qsTr("Rate not good"));
+        Comp.TextLine{ color: "red"; font.pixelSize: 30; text: qsTr("Target Rate ")+Settings.rate_Product0[10]}
+        Comp.TextLine{ color:(aog.product0stat)?"green":"red"; font.pixelSize: 30; text: qsTr("Instant Rate ")+aog.actualRate}
+        Comp.TextLine{ color:(aog.product0stat)?"green":"red"; font.pixelSize: 30; text: qsTr("Current ate ")+aog.smoothRate}
+        Component.onCompleted:{ if (aog.product0stat & aog.actualRate < Settings.rate_Product0[10]*0.9){
+            timedMessage.addMessage(2000, qsTr("Low rate. Increase speed!"))}
+            else if (aog.product0stat & aog.actualRate > Settings.rate_Product0[10] * 1.1){
+            timedMessage.addMessage(2000, qsTr("High rate. Reduce speed!"));}
         }
     }
 

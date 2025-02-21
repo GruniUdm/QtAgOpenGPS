@@ -155,6 +155,7 @@ Item {
     property int blockage_blocked: 0;
     property double imuCorrected:0
     property double	actualRate: 0
+    property double	smoothRate: 0
     property double	actualRatePWM: 0
     property bool product0stat: false
 

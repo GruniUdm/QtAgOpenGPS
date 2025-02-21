@@ -34,7 +34,61 @@ void ratecontrol::aogset(int toolwidth, double aogspeed)
     width = toolwidth;
     speed = aogspeed;
 }
+bool ratecontrol::ProductOn()
+{
+    bool Result = false;
+    if (ControlType == 4)
+    {
+        Result = SensorReceiving;
+    }
+    else
+    {
+        Result = (SensorReceiving && HectaresPerMinute > 0);
+    }
+    return Result;
+}
 
+double ratecontrol::SmoothRate()
+{
+    double Result = 0;
+    if (ProductOn())
+    {
+        double Ra = RateApplied();
+        if (ProdDensity > 0) Ra *= ProdDensity;
+
+        if (TargetRate > 0)
+        {
+            double Rt = Ra / TargetRate;
+
+            if (Rt >= .9 && Rt <= 1.1)// && autoBtnState)
+            {
+                Result = TargetRate;
+            }
+            else
+            {
+                Result = Ra;
+            }
+        }
+        else
+        {
+            Result = Ra;
+        }
+    }
+    return Result;
+}
+double ratecontrol::CurrentRate()
+{
+    if (ProductOn())
+    {
+        double V = RateApplied();
+        if (ProdDensity > 0) V *= ProdDensity;
+        return V;
+    }
+    else
+    {
+        return 0;
+    }
+}
 double ratecontrol::TargetUPM() // returns units per minute set rate
 {
     double Result = 0;
@@ -42,7 +96,7 @@ double ratecontrol::TargetUPM() // returns units per minute set rate
     {
     case 0:
         // acres
-        if (AppMode = 1)
+        if (AppMode == 1)
         {
             // Constant UPM
             // same upm no matter how many sections are on
@@ -58,7 +112,7 @@ double ratecontrol::TargetUPM() // returns units per minute set rate
 
     case 1:
         // hectares
-        if (AppMode = 2)
+        if (AppMode == 2)
         {
             // Constant UPM
             // same upm no matter how many sections are on
@@ -84,13 +138,13 @@ double ratecontrol::TargetUPM() // returns units per minute set rate
     }
 
     // added this back in to change from lb/min to ft^3/min, Moved from PGN32614.
-    //if (cEnableProdDensity && cProdDensity > 0) { Result /= cProdDensity; }
+    if (ProdDensity > 0) { Result /= ProdDensity; }
 
     return Result;
 }
 
 double ratecontrol::RateApplied()
-{
+{   HectaresPerMinute = width * speed / 600.0;
     double Result = 0;
     switch (CoverageUnits)
     {
@@ -181,6 +235,7 @@ void ratecontrol::getfrommodule (int ID, QByteArray pgn_data)
 void ratecontrol::getsettings (int ID, QVector<int> set_data)
 {
     ModID = set_data[0];
+    ProdDensity = set_data[1];
     OnScreen = set_data[2];
     pidscale = set_data[8];
     MeterCal = set_data[9];

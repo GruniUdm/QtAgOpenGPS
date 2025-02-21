@@ -17,6 +17,8 @@ public:
     int ControlType;
     double TargetUPM();
     double RateApplied();
+    double SmoothRate();
+    double CurrentRate();
     void getfrommodule(int ID, QByteArray pgn_data);
     void aogset(int toolwidth, double aogspeed);
     void getsettings(int ID, QVector<int> set_data);
@@ -25,7 +27,7 @@ public:
     explicit ratecontrol(QObject *parent = nullptr);
 
 private:
-
+    bool ProductOn();
     int OnScreen;
     int kp;
     int ki;
@@ -42,7 +44,7 @@ private:
     double width;
     double speed;
 
-    double cProdDensity = 0;
+    double ProdDensity = 0;
     bool cEnableProdDensity = false;
     double cMinUPM;
     double cMinUPMbySpeed;

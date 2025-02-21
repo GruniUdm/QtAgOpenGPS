@@ -24,7 +24,7 @@ Rectangle{
     function load_settings() {
 
         moduleID.value = Settings.rate_Product0[0]
-        //sensorID.value = Settings.rate_Product0[0]
+        prodDensityBox.value = Settings.rate_Product0[1]
         //cboxRateProductNames = Settings.rate_Product0[1];
         cboxIsRateControlOn.checked = (Settings.rate_Product0[2]>0)?true:false
         rateKP.value = Settings.rate_Product0[3]
@@ -46,7 +46,7 @@ Rectangle{
     function save_settings() {
 
         Settings.rate_Product0[0] = moduleID.value;
-        //Settings.rate_Product0[1] = cboxRateProductNames
+        Settings.rate_Product0[1] = prodDensityBox.value
         Settings.rate_Product0[2] = cboxIsRateControlOn.checked?1:0
         Settings.rate_Product0[3] = rateKP.value
         Settings.rate_Product0[4] = rateKI.value
@@ -105,7 +105,7 @@ Rectangle{
             }
         }
         SpinBoxCustomized{
-            id: sensorID
+            id: prodDensityBox
             from: 0
             to:255
             editable: true
@@ -117,7 +117,7 @@ Rectangle{
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
             TextLine{
-                text: qsTr("Sensor ID: ")
+                text: qsTr("ProdDensity: ")
                 font.bold: true
                 anchors.top: parent.bottom
             }
@@ -286,6 +286,7 @@ Rectangle{
                 ListElement {text: qsTr("Combo Close")}
                 ListElement {text: qsTr("Motor")}
                 ListElement {text: qsTr("Combo Timed")}
+                ListElement {text: qsTr("Fan")}
             }
             text: qsTr("Control Type")
             onActivated: mandatory.visible = true
