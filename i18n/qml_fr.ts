@@ -56,32 +56,32 @@
 <context>
     <name>BlockageData</name>
     <message>
-        <location filename="../qml/BlockageData.qml" line="18"/>
+        <location filename="../qml/BlockageData.qml" line="19"/>
         <source>Max: </source>
         <translation>Max : </translation>
     </message>
     <message>
-        <location filename="../qml/BlockageData.qml" line="20"/>
+        <location filename="../qml/BlockageData.qml" line="21"/>
         <source>Row N max  </source>
         <translation>Rangée N max  </translation>
     </message>
     <message>
-        <location filename="../qml/BlockageData.qml" line="21"/>
+        <location filename="../qml/BlockageData.qml" line="22"/>
         <source>Avg </source>
         <translation>Moy </translation>
     </message>
     <message>
-        <location filename="../qml/BlockageData.qml" line="22"/>
+        <location filename="../qml/BlockageData.qml" line="23"/>
         <source>Min </source>
         <translation>Min </translation>
     </message>
     <message>
-        <location filename="../qml/BlockageData.qml" line="23"/>
+        <location filename="../qml/BlockageData.qml" line="24"/>
         <source>Rows </source>
         <translation>Rangées </translation>
     </message>
     <message>
-        <location filename="../qml/BlockageData.qml" line="24"/>
+        <location filename="../qml/BlockageData.qml" line="25"/>
         <source>Blocked </source>
         <translation>Bloqué </translation>
     </message>
@@ -102,17 +102,17 @@
 <context>
     <name>BoundaryRecord</name>
     <message>
-        <location filename="../qml/boundary/BoundaryRecord.qml" line="28"/>
+        <location filename="../qml/boundary/BoundaryRecord.qml" line="29"/>
         <source>Record Boundary</source>
         <translation>Enregistrer la limite</translation>
     </message>
     <message>
-        <location filename="../qml/boundary/BoundaryRecord.qml" line="95"/>
+        <location filename="../qml/boundary/BoundaryRecord.qml" line="96"/>
         <source>Area:</source>
         <translation>Surface :</translation>
     </message>
     <message>
-        <location filename="../qml/boundary/BoundaryRecord.qml" line="98"/>
+        <location filename="../qml/boundary/BoundaryRecord.qml" line="99"/>
         <source>Points:</source>
         <translation>Points :</translation>
     </message>
@@ -120,39 +120,39 @@
 <context>
     <name>BoundaryTable</name>
     <message>
-        <location filename="../qml/boundary/BoundaryTable.qml" line="126"/>
+        <location filename="../qml/boundary/BoundaryTable.qml" line="127"/>
         <source>Boundary</source>
         <translation>Limite</translation>
     </message>
     <message>
-        <location filename="../qml/boundary/BoundaryTable.qml" line="163"/>
+        <location filename="../qml/boundary/BoundaryTable.qml" line="164"/>
         <source>Area</source>
         <translation>Surface</translation>
     </message>
     <message>
-        <location filename="../qml/boundary/BoundaryTable.qml" line="199"/>
+        <location filename="../qml/boundary/BoundaryTable.qml" line="200"/>
         <source>Drive Through</source>
         <translation>Traverser</translation>
     </message>
     <message>
-        <location filename="../qml/boundary/BoundaryTable.qml" line="236"/>
+        <location filename="../qml/boundary/BoundaryTable.qml" line="237"/>
         <source>Outer</source>
         <comment>outer boundary</comment>
         <translation>Extérieure</translation>
     </message>
     <message>
-        <location filename="../qml/boundary/BoundaryTable.qml" line="237"/>
+        <location filename="../qml/boundary/BoundaryTable.qml" line="238"/>
         <source>Inner</source>
         <comment>inner boundary</comment>
         <translation>Intérieure</translation>
     </message>
     <message>
-        <location filename="../qml/boundary/BoundaryTable.qml" line="258"/>
+        <location filename="../qml/boundary/BoundaryTable.qml" line="259"/>
         <source>Yes</source>
         <translation>Oui</translation>
     </message>
     <message>
-        <location filename="../qml/boundary/BoundaryTable.qml" line="258"/>
+        <location filename="../qml/boundary/BoundaryTable.qml" line="259"/>
         <source>No</source>
         <translation>Non</translation>
     </message>
@@ -169,14 +169,14 @@
 <context>
     <name>CABCurve</name>
     <message>
-        <location filename="../classes/cabcurve.cpp" line="902"/>
-        <location filename="../classes/cabcurve.cpp" line="910"/>
+        <location filename="../classes/cabcurve.cpp" line="904"/>
+        <location filename="../classes/cabcurve.cpp" line="912"/>
         <source>Guidance Stopped</source>
         <translation>Guidage arrêté</translation>
     </message>
     <message>
-        <location filename="../classes/cabcurve.cpp" line="902"/>
-        <location filename="../classes/cabcurve.cpp" line="910"/>
+        <location filename="../classes/cabcurve.cpp" line="904"/>
+        <location filename="../classes/cabcurve.cpp" line="912"/>
         <source>Past end of curve</source>
         <translation>Fin de courbe dépassée</translation>
     </message>
@@ -225,7 +225,7 @@
 <context>
     <name>Config</name>
     <message>
-        <location filename="../qml/config/Config.qml" line="23"/>
+        <location filename="../qml/config/Config.qml" line="26"/>
         <source>General Settings</source>
         <translation>Paramètres généraux</translation>
     </message>
@@ -233,62 +233,62 @@
 <context>
     <name>ConfigDisplay</name>
     <message>
-        <location filename="../qml/config/ConfigDisplay.qml" line="31"/>
+        <location filename="../qml/config/ConfigDisplay.qml" line="32"/>
         <source>Field Texture</source>
         <translation>Texture du champ</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigDisplay.qml" line="40"/>
+        <location filename="../qml/config/ConfigDisplay.qml" line="41"/>
         <source>Auto Day Night</source>
         <translation>Jour Nuit Auto</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigDisplay.qml" line="45"/>
+        <location filename="../qml/config/ConfigDisplay.qml" line="46"/>
         <source>Start FullScreen</source>
         <translation>Démarrer en plein écran</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigDisplay.qml" line="52"/>
+        <location filename="../qml/config/ConfigDisplay.qml" line="53"/>
         <source>Grid</source>
         <translation>Grille</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigDisplay.qml" line="59"/>
+        <location filename="../qml/config/ConfigDisplay.qml" line="60"/>
         <source>Sky</source>
         <translation>Ciel</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigDisplay.qml" line="66"/>
+        <location filename="../qml/config/ConfigDisplay.qml" line="67"/>
         <source>Brightness</source>
         <translation>Luminosité</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigDisplay.qml" line="73"/>
+        <location filename="../qml/config/ConfigDisplay.qml" line="74"/>
         <source>Lightbar</source>
         <translation>Barre lumineuse</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigDisplay.qml" line="80"/>
+        <location filename="../qml/config/ConfigDisplay.qml" line="81"/>
         <source>Log NMEA</source>
         <translation>Journal NMEA</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigDisplay.qml" line="85"/>
+        <location filename="../qml/config/ConfigDisplay.qml" line="86"/>
         <source>GuideLines</source>
         <translation>Lignes de guidage</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigDisplay.qml" line="92"/>
+        <location filename="../qml/config/ConfigDisplay.qml" line="93"/>
         <source>Svenn Arrow</source>
         <translation>Flèche Svenn</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigDisplay.qml" line="99"/>
+        <location filename="../qml/config/ConfigDisplay.qml" line="100"/>
         <source>Compass</source>
         <translation>Boussole</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigDisplay.qml" line="114"/>
+        <location filename="../qml/config/ConfigDisplay.qml" line="115"/>
         <source>Units</source>
         <translation>Unités</translation>
     </message>
@@ -296,37 +296,37 @@
 <context>
     <name>ConfigFeatures</name>
     <message>
-        <location filename="../qml/config/ConfigFeatures.qml" line="96"/>
+        <location filename="../qml/config/ConfigFeatures.qml" line="97"/>
         <source>Offset Fix</source>
         <translation>Correction de décalage</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigFeatures.qml" line="125"/>
+        <location filename="../qml/config/ConfigFeatures.qml" line="126"/>
         <source>U-Turn</source>
         <translation>Demi-tour</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigFeatures.qml" line="132"/>
+        <location filename="../qml/config/ConfigFeatures.qml" line="133"/>
         <source>Lateral</source>
         <translation>Latéral</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigFeatures.qml" line="145"/>
+        <location filename="../qml/config/ConfigFeatures.qml" line="146"/>
         <source>Auto Start AgIO</source>
         <translation>Démarrage auto AgIO</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigFeatures.qml" line="169"/>
+        <location filename="../qml/config/ConfigFeatures.qml" line="170"/>
         <source>Auto Steer</source>
         <translation>Direction auto</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigFeatures.qml" line="176"/>
+        <location filename="../qml/config/ConfigFeatures.qml" line="177"/>
         <source>You Turn</source>
         <translation>Vous tournez</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigFeatures.qml" line="184"/>
+        <location filename="../qml/config/ConfigFeatures.qml" line="185"/>
         <source>Hyd Lift</source>
         <translation>Levage hyd</translation>
     </message>
@@ -334,7 +334,7 @@
 <context>
     <name>ConfigImplement</name>
     <message>
-        <location filename="../qml/config/ConfigImplement.qml" line="21"/>
+        <location filename="../qml/config/ConfigImplement.qml" line="22"/>
         <source>&lt;h1&gt;Attachment Style&lt;/h1&gt;</source>
         <translation>&lt;h1&gt;Style de fixation&lt;/h1&gt;</translation>
     </message>
@@ -342,7 +342,7 @@
 <context>
     <name>ConfigImplementFrontDimensions</name>
     <message>
-        <location filename="../qml/config/ConfigImplementFrontDimensions.qml" line="38"/>
+        <location filename="../qml/config/ConfigImplementFrontDimensions.qml" line="41"/>
         <source>Units: </source>
         <translation>Unités : </translation>
     </message>
@@ -350,22 +350,22 @@
 <context>
     <name>ConfigImplementOffset</name>
     <message>
-        <location filename="../qml/config/ConfigImplementOffset.qml" line="21"/>
+        <location filename="../qml/config/ConfigImplementOffset.qml" line="24"/>
         <source>Tool Offset Direction</source>
         <translation>Direction de décalage de l&apos;outil</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementOffset.qml" line="99"/>
+        <location filename="../qml/config/ConfigImplementOffset.qml" line="102"/>
         <source>Tool Right</source>
         <translation>Outil à droite</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementOffset.qml" line="104"/>
+        <location filename="../qml/config/ConfigImplementOffset.qml" line="107"/>
         <source>Overlap / Gap</source>
         <translation>Chevauchement / Écart</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementOffset.qml" line="164"/>
+        <location filename="../qml/config/ConfigImplementOffset.qml" line="167"/>
         <source>Overlap</source>
         <translation>Chevauchement</translation>
     </message>
@@ -373,7 +373,7 @@
 <context>
     <name>ConfigImplementRearDimensions</name>
     <message>
-        <location filename="../qml/config/ConfigImplementRearDimensions.qml" line="39"/>
+        <location filename="../qml/config/ConfigImplementRearDimensions.qml" line="42"/>
         <source>Units: </source>
         <translation>Unités : </translation>
     </message>
@@ -381,7 +381,7 @@
 <context>
     <name>ConfigImplementSections</name>
     <message>
-        <location filename="../qml/config/ConfigImplementSections.qml" line="61"/>
+        <location filename="../qml/config/ConfigImplementSections.qml" line="64"/>
         <source>% Coverage</source>
         <translation>% Couverture</translation>
     </message>
@@ -389,98 +389,98 @@
 <context>
     <name>ConfigImplementSectionsSection</name>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="275"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="278"/>
         <source>Section</source>
         <comment>Refers to an implement section</comment>
         <translation>Section</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="310"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="313"/>
         <source>Default Section Width</source>
         <translation>Largeur de section par défaut</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="353"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="356"/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="354"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="357"/>
         <source>2</source>
         <translation>2</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="355"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="358"/>
         <source>3</source>
         <translation>3</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="356"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="359"/>
         <source>4</source>
         <translation>4</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="357"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="360"/>
         <source>5</source>
         <translation>5</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="358"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="361"/>
         <source>6</source>
         <translation>6</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="359"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="362"/>
         <source>7</source>
         <translation>7</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="360"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="363"/>
         <source>8</source>
         <translation>8</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="361"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="364"/>
         <source>9</source>
         <translation>9</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="362"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="365"/>
         <source>10</source>
         <translation>10</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="363"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="366"/>
         <source>11</source>
         <translation>11</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="364"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="367"/>
         <source>12</source>
         <translation>12</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="365"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="368"/>
         <source>13</source>
         <translation>13</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="366"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="369"/>
         <source>14</source>
         <translation>14</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="367"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="370"/>
         <source>15</source>
         <translation>15</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="368"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="371"/>
         <source>16</source>
         <translation>16</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="374"/>
+        <location filename="../qml/config/ConfigImplementSectionsSection.qml" line="377"/>
         <source>Sections</source>
         <translation>Sections</translation>
     </message>
@@ -488,30 +488,30 @@
 <context>
     <name>ConfigImplementSectionsZones</name>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsZones.qml" line="262"/>
+        <location filename="../qml/config/ConfigImplementSectionsZones.qml" line="265"/>
         <source>Zone</source>
         <comment>Zone as in zone of sections</comment>
         <translation>Zone</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsZones.qml" line="272"/>
+        <location filename="../qml/config/ConfigImplementSectionsZones.qml" line="275"/>
         <source>↦</source>
         <comment>In LTR languages, right arrow</comment>
         <translation>↦</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsZones.qml" line="299"/>
+        <location filename="../qml/config/ConfigImplementSectionsZones.qml" line="302"/>
         <source>Zones</source>
         <comment>Zones as in zones of sections</comment>
         <translation>Zones</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsZones.qml" line="330"/>
+        <location filename="../qml/config/ConfigImplementSectionsZones.qml" line="333"/>
         <source>Uniform Section Width</source>
         <translation>Largeur de section uniforme</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSectionsZones.qml" line="342"/>
+        <location filename="../qml/config/ConfigImplementSectionsZones.qml" line="345"/>
         <source>Sections</source>
         <translation>Sections</translation>
     </message>
@@ -519,26 +519,26 @@
 <context>
     <name>ConfigImplementSwitches</name>
     <message>
-        <location filename="../qml/config/ConfigImplementSwitches.qml" line="36"/>
-        <location filename="../qml/config/ConfigImplementSwitches.qml" line="53"/>
+        <location filename="../qml/config/ConfigImplementSwitches.qml" line="37"/>
+        <location filename="../qml/config/ConfigImplementSwitches.qml" line="54"/>
         <source>Work Switch</source>
         <translation>Interrupteur de travail</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSwitches.qml" line="67"/>
-        <location filename="../qml/config/ConfigImplementSwitches.qml" line="142"/>
+        <location filename="../qml/config/ConfigImplementSwitches.qml" line="68"/>
+        <location filename="../qml/config/ConfigImplementSwitches.qml" line="143"/>
         <source>Manual Sections</source>
         <translation>Sections manuelles</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSwitches.qml" line="77"/>
-        <location filename="../qml/config/ConfigImplementSwitches.qml" line="150"/>
+        <location filename="../qml/config/ConfigImplementSwitches.qml" line="78"/>
+        <location filename="../qml/config/ConfigImplementSwitches.qml" line="151"/>
         <source>Auto Sections</source>
         <translation>Sections automatiques</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementSwitches.qml" line="112"/>
-        <location filename="../qml/config/ConfigImplementSwitches.qml" line="128"/>
+        <location filename="../qml/config/ConfigImplementSwitches.qml" line="113"/>
+        <location filename="../qml/config/ConfigImplementSwitches.qml" line="129"/>
         <source>Steer Switch</source>
         <translation>Interrupteur de direction</translation>
     </message>
@@ -546,7 +546,7 @@
 <context>
     <name>ConfigImplementTBTDimensions</name>
     <message>
-        <location filename="../qml/config/ConfigImplementTBTDimensions.qml" line="49"/>
+        <location filename="../qml/config/ConfigImplementTBTDimensions.qml" line="52"/>
         <source>Units: </source>
         <translation>Unités : </translation>
     </message>
@@ -554,22 +554,22 @@
 <context>
     <name>ConfigImplementTiming</name>
     <message>
-        <location filename="../qml/config/ConfigImplementTiming.qml" line="19"/>
+        <location filename="../qml/config/ConfigImplementTiming.qml" line="20"/>
         <source>Look Ahead Time Settings</source>
         <translation>Paramètres de temps de prévision</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementTiming.qml" line="73"/>
+        <location filename="../qml/config/ConfigImplementTiming.qml" line="74"/>
         <source>On (secs)</source>
         <translation>Activé (secs)</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementTiming.qml" line="85"/>
+        <location filename="../qml/config/ConfigImplementTiming.qml" line="86"/>
         <source>Off (secs)</source>
         <translation>Désactivé (secs)</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigImplementTiming.qml" line="97"/>
+        <location filename="../qml/config/ConfigImplementTiming.qml" line="98"/>
         <source>Delay (secs)</source>
         <translation>Délai (secs)</translation>
     </message>
@@ -577,7 +577,7 @@
 <context>
     <name>ConfigImplementTrailingDimensions</name>
     <message>
-        <location filename="../qml/config/ConfigImplementTrailingDimensions.qml" line="38"/>
+        <location filename="../qml/config/ConfigImplementTrailingDimensions.qml" line="41"/>
         <source>Units: </source>
         <translation>Unités : </translation>
     </message>
@@ -585,57 +585,57 @@
 <context>
     <name>ConfigModules</name>
     <message>
-        <location filename="../qml/config/ConfigModules.qml" line="94"/>
+        <location filename="../qml/config/ConfigModules.qml" line="95"/>
         <source>Machine Module</source>
         <translation>Module de machine</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModules.qml" line="118"/>
+        <location filename="../qml/config/ConfigModules.qml" line="119"/>
         <source>Hydraulic Lift Config</source>
         <translation>Configuration du levage hydraulique</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModules.qml" line="144"/>
+        <location filename="../qml/config/ConfigModules.qml" line="145"/>
         <source>Raise Time(secs)</source>
         <translation>Temps de levage (secs)</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModules.qml" line="161"/>
+        <location filename="../qml/config/ConfigModules.qml" line="162"/>
         <source>Hyd Lift Look Ahead (secs)</source>
         <translation>Prévision de levage hyd (secs)</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModules.qml" line="173"/>
+        <location filename="../qml/config/ConfigModules.qml" line="174"/>
         <source>Lower Time(secs)</source>
         <translation>Temps de descente (secs)</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModules.qml" line="188"/>
+        <location filename="../qml/config/ConfigModules.qml" line="189"/>
         <source>Invert Relays</source>
         <translation>Inverser les relais</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModules.qml" line="221"/>
+        <location filename="../qml/config/ConfigModules.qml" line="222"/>
         <source>User 1</source>
         <translation>Utilisateur 1</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModules.qml" line="231"/>
+        <location filename="../qml/config/ConfigModules.qml" line="232"/>
         <source>User 2</source>
         <translation>Utilisateur 2</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModules.qml" line="241"/>
+        <location filename="../qml/config/ConfigModules.qml" line="242"/>
         <source>User 3</source>
         <translation>Utilisateur 3</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModules.qml" line="251"/>
+        <location filename="../qml/config/ConfigModules.qml" line="252"/>
         <source>User 4</source>
         <translation>Utilisateur 4</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModules.qml" line="272"/>
+        <location filename="../qml/config/ConfigModules.qml" line="273"/>
         <source>Send + Save</source>
         <translation>Envoyer + Enregistrer</translation>
     </message>
@@ -643,42 +643,42 @@
 <context>
     <name>ConfigModulesBlockage</name>
     <message>
-        <location filename="../qml/config/ConfigModulesBlockage.qml" line="59"/>
+        <location filename="../qml/config/ConfigModulesBlockage.qml" line="62"/>
         <source>Planter Monitor</source>
         <translation>Moniteur de planteur</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModulesBlockage.qml" line="89"/>
+        <location filename="../qml/config/ConfigModulesBlockage.qml" line="92"/>
         <source>Rows on module 1: </source>
         <translation>Rangées sur le module 1 : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModulesBlockage.qml" line="107"/>
+        <location filename="../qml/config/ConfigModulesBlockage.qml" line="110"/>
         <source>Rows on module 2: </source>
         <translation>Rangées sur le module 2 : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModulesBlockage.qml" line="125"/>
+        <location filename="../qml/config/ConfigModulesBlockage.qml" line="128"/>
         <source>Rows on module 3: </source>
         <translation>Rangées sur le module 3 : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModulesBlockage.qml" line="143"/>
+        <location filename="../qml/config/ConfigModulesBlockage.qml" line="146"/>
         <source>Rows on module 4: </source>
         <translation>Rangées sur le module 4 : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModulesBlockage.qml" line="162"/>
+        <location filename="../qml/config/ConfigModulesBlockage.qml" line="165"/>
         <source>Minimum </source>
         <translation>Minimum </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModulesBlockage.qml" line="186"/>
+        <location filename="../qml/config/ConfigModulesBlockage.qml" line="189"/>
         <source>Maximum </source>
         <translation>Maximum </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigModulesBlockage.qml" line="265"/>
+        <location filename="../qml/config/ConfigModulesBlockage.qml" line="268"/>
         <source>Send + Save</source>
         <translation>Envoyer + Enregistrer</translation>
     </message>
@@ -686,7 +686,7 @@
 <context>
     <name>ConfigModulesPins</name>
     <message>
-        <location filename="../qml/config/ConfigModulesPins.qml" line="280"/>
+        <location filename="../qml/config/ConfigModulesPins.qml" line="281"/>
         <source>Send + Save</source>
         <translation>Envoyer + Enregistrer</translation>
     </message>
@@ -694,70 +694,70 @@
 <context>
     <name>ConfigSources</name>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="29"/>
+        <location filename="../qml/config/ConfigSources.qml" line="30"/>
         <source>Antenna Type</source>
         <comment>GPS Antenna type, fixed or dual</comment>
         <translation>Type d&apos;antenne</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="63"/>
+        <location filename="../qml/config/ConfigSources.qml" line="64"/>
         <source>Antenna Offset error!</source>
         <translation>Erreur de décalage d&apos;antenne !</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="63"/>
+        <location filename="../qml/config/ConfigSources.qml" line="64"/>
         <source>You have antenna offset set to &quot;left&quot;. Dual requires it set to &quot;right&quot;. Change it or you will have offset errors</source>
         <translation>Vous avez réglé le décalage de l&apos;antenne sur &quot;gauche&quot;. Le double nécessite qu&apos;il soit réglé sur &quot;droite&quot;. Changez-le ou vous aurez des erreurs de décalage</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="116"/>
+        <location filename="../qml/config/ConfigSources.qml" line="117"/>
         <source>RTK Alarm</source>
         <translation>Alarme RTK</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="175"/>
+        <location filename="../qml/config/ConfigSources.qml" line="176"/>
         <source>Single Antenna Settings</source>
         <translation>Paramètres d&apos;antenne unique</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="187"/>
+        <location filename="../qml/config/ConfigSources.qml" line="188"/>
         <source>Minimum GPS Step</source>
         <translation>Pas minimum du GPS</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="207"/>
-        <location filename="../qml/config/ConfigSources.qml" line="226"/>
+        <location filename="../qml/config/ConfigSources.qml" line="208"/>
+        <location filename="../qml/config/ConfigSources.qml" line="227"/>
         <source>cm</source>
         <comment>centimeter abbreviation</comment>
         <translation>cm</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="219"/>
+        <location filename="../qml/config/ConfigSources.qml" line="220"/>
         <source>Heading Distance</source>
         <translation>Distance de cap</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="269"/>
+        <location filename="../qml/config/ConfigSources.qml" line="270"/>
         <source>Default: 70%</source>
         <translation>Par défaut : 70%</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="274"/>
+        <location filename="../qml/config/ConfigSources.qml" line="275"/>
         <source>Reverse Detection</source>
         <translation>Détection de marche arrière</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="299"/>
+        <location filename="../qml/config/ConfigSources.qml" line="300"/>
         <source>Dual Antenna Settings</source>
         <translation>Paramètres d&apos;antenne double</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="324"/>
+        <location filename="../qml/config/ConfigSources.qml" line="325"/>
         <source>Heading Offset (Degrees)</source>
         <translation>Décalage de cap (degrés)</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSources.qml" line="329"/>
+        <location filename="../qml/config/ConfigSources.qml" line="330"/>
         <source>Dual As IMU</source>
         <translation>Double en tant qu&apos;IMU</translation>
     </message>
@@ -765,17 +765,17 @@
 <context>
     <name>ConfigSourcesRoll</name>
     <message>
-        <location filename="../qml/config/ConfigSourcesRoll.qml" line="25"/>
+        <location filename="../qml/config/ConfigSourcesRoll.qml" line="26"/>
         <source>Remove Offset</source>
         <translation>Supprimer le décalage</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSourcesRoll.qml" line="33"/>
+        <location filename="../qml/config/ConfigSourcesRoll.qml" line="34"/>
         <source>Zero Roll</source>
         <translation>Annuler le roulis</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigSourcesRoll.qml" line="94"/>
+        <location filename="../qml/config/ConfigSourcesRoll.qml" line="95"/>
         <source>Invert Roll</source>
         <translation>Inverser le roulis</translation>
     </message>
@@ -783,7 +783,7 @@
 <context>
     <name>ConfigTrams</name>
     <message>
-        <location filename="../qml/config/ConfigTrams.qml" line="40"/>
+        <location filename="../qml/config/ConfigTrams.qml" line="41"/>
         <source>Tram Width</source>
         <translation>Largeur du tram</translation>
     </message>
@@ -791,17 +791,17 @@
 <context>
     <name>ConfigVehicleAntenna</name>
     <message>
-        <location filename="../qml/config/ConfigVehicleAntenna.qml" line="55"/>
+        <location filename="../qml/config/ConfigVehicleAntenna.qml" line="56"/>
         <source>Antenna Offset</source>
         <translation>Décalage de l&apos;antenne</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehicleAntenna.qml" line="83"/>
+        <location filename="../qml/config/ConfigVehicleAntenna.qml" line="84"/>
         <source>Not Allowed</source>
         <translation>Non autorisé</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehicleAntenna.qml" line="83"/>
+        <location filename="../qml/config/ConfigVehicleAntenna.qml" line="84"/>
         <source>Dual heading MUST be right only</source>
         <translation>Le double cap DOIT être uniquement à droite</translation>
     </message>
@@ -809,17 +809,17 @@
 <context>
     <name>ConfigVehicleDimensions</name>
     <message>
-        <location filename="../qml/config/ConfigVehicleDimensions.qml" line="39"/>
+        <location filename="../qml/config/ConfigVehicleDimensions.qml" line="40"/>
         <source>Wheelbase</source>
         <translation>Empattement</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehicleDimensions.qml" line="50"/>
+        <location filename="../qml/config/ConfigVehicleDimensions.qml" line="51"/>
         <source>Track</source>
         <translation>Voie</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehicleDimensions.qml" line="61"/>
+        <location filename="../qml/config/ConfigVehicleDimensions.qml" line="62"/>
         <source>Turn Radius</source>
         <translation>Rayon de braquage</translation>
     </message>
@@ -827,67 +827,67 @@
 <context>
     <name>ConfigVehiclePicker</name>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="39"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="43"/>
         <source>Units: </source>
         <translation>Unités : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="40"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="44"/>
         <source>Width: </source>
         <translation>Largeur : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="41"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="45"/>
         <source>Sections: </source>
         <translation>Sections : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="42"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="46"/>
         <source>Offset: </source>
         <translation>Décalage : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="43"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="47"/>
         <source>Overlap: </source>
         <translation>Chevauchement : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="44"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="48"/>
         <source>LookAhead: </source>
         <translation>Prévision : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="45"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="49"/>
         <source>Nudge: </source>
         <translation>Correction : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="46"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="50"/>
         <source>Tram Width: </source>
         <translation>Largeur du tram : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="47"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="51"/>
         <source>Wheelbase: </source>
         <translation>Empattement : </translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="127"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="131"/>
         <source>Current vehicle is</source>
         <translation>Le véhicule actuel est</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="163"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="167"/>
         <source>Save As</source>
         <translation>Enregistrer sous</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="183"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="187"/>
         <source>Load</source>
         <translation>Charger</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigVehiclePicker.qml" line="200"/>
+        <location filename="../qml/config/ConfigVehiclePicker.qml" line="204"/>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
@@ -895,7 +895,7 @@
 <context>
     <name>ConfigVehicleType</name>
     <message>
-        <location filename="../qml/config/ConfigVehicleType.qml" line="18"/>
+        <location filename="../qml/config/ConfigVehicleType.qml" line="19"/>
         <source>&lt;h1&gt;Choose Vehicle Type&lt;/h1&gt;</source>
         <translation>&lt;h1&gt;Choisissez le type de véhicule&lt;/h1&gt;</translation>
     </message>
@@ -903,7 +903,7 @@
 <context>
     <name>ConfigYouTurn</name>
     <message>
-        <location filename="../qml/config/ConfigYouTurn.qml" line="94"/>
+        <location filename="../qml/config/ConfigYouTurn.qml" line="97"/>
         <source>Set Extension
 Length to 2 or
 3x Radius</source>
@@ -911,7 +911,7 @@ Length to 2 or
 à 2 ou 3x le rayon</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigYouTurn.qml" line="100"/>
+        <location filename="../qml/config/ConfigYouTurn.qml" line="103"/>
         <source>Set Smoothing
  to 3 or 4x
 Radius</source>
@@ -919,7 +919,7 @@ Radius</source>
 à 3 ou 4x le rayon</translation>
     </message>
     <message>
-        <location filename="../qml/config/ConfigYouTurn.qml" line="116"/>
+        <location filename="../qml/config/ConfigYouTurn.qml" line="119"/>
         <source>UTurn Style</source>
         <translation>Style de demi-tour</translation>
     </message>
@@ -927,34 +927,54 @@ Radius</source>
 <context>
     <name>FieldData</name>
     <message>
-        <location filename="../qml/field/FieldData.qml" line="24"/>
+        <location filename="../qml/field/FieldData.qml" line="37"/>
+        <source>%1:%2 hours</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldData.qml" line="40"/>
+        <source>∞ hours</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldData.qml" line="43"/>
+        <source>%1%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldData.qml" line="45"/>
+        <source>--</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldData.qml" line="52"/>
         <source>Total: </source>
         <translation>Total : </translation>
     </message>
     <message>
-        <location filename="../qml/field/FieldData.qml" line="27"/>
+        <location filename="../qml/field/FieldData.qml" line="55"/>
         <source>Worked</source>
         <translation>Travaillé</translation>
     </message>
     <message>
-        <location filename="../qml/field/FieldData.qml" line="28"/>
-        <location filename="../qml/field/FieldData.qml" line="35"/>
+        <location filename="../qml/field/FieldData.qml" line="56"/>
+        <location filename="../qml/field/FieldData.qml" line="63"/>
         <source>Applied: </source>
         <translation>Appliqué : </translation>
     </message>
     <message>
-        <location filename="../qml/field/FieldData.qml" line="29"/>
-        <location filename="../qml/field/FieldData.qml" line="36"/>
+        <location filename="../qml/field/FieldData.qml" line="57"/>
+        <location filename="../qml/field/FieldData.qml" line="64"/>
         <source>Remain: </source>
         <translation>Restant : </translation>
     </message>
     <message>
-        <location filename="../qml/field/FieldData.qml" line="34"/>
+        <location filename="../qml/field/FieldData.qml" line="62"/>
         <source>Actual</source>
         <translation>Réel</translation>
     </message>
     <message>
-        <location filename="../qml/field/FieldData.qml" line="37"/>
+        <location filename="../qml/field/FieldData.qml" line="65"/>
         <source>Overlap: </source>
         <translation>Chevauchement : </translation>
     </message>
@@ -962,27 +982,27 @@ Radius</source>
 <context>
     <name>FieldFromExisting</name>
     <message>
-        <location filename="../qml/field/FieldFromExisting.qml" line="24"/>
+        <location filename="../qml/field/FieldFromExisting.qml" line="25"/>
         <source>Create New Field from Existing Field</source>
         <translation>Créer un nouveau champ à partir d&apos;un champ existant</translation>
     </message>
     <message>
-        <location filename="../qml/field/FieldFromExisting.qml" line="76"/>
+        <location filename="../qml/field/FieldFromExisting.qml" line="77"/>
         <source>---</source>
         <translation>---</translation>
     </message>
     <message>
-        <location filename="../qml/field/FieldFromExisting.qml" line="81"/>
+        <location filename="../qml/field/FieldFromExisting.qml" line="82"/>
         <source>New field name</source>
         <translation>Nouveau nom de champ</translation>
     </message>
     <message>
-        <location filename="../qml/field/FieldFromExisting.qml" line="101"/>
+        <location filename="../qml/field/FieldFromExisting.qml" line="102"/>
         <source>Edit Field Name</source>
         <translation>Modifier le nom du champ</translation>
     </message>
     <message>
-        <location filename="../qml/field/FieldFromExisting.qml" line="109"/>
+        <location filename="../qml/field/FieldFromExisting.qml" line="110"/>
         <source>This field exists already; please change the new name.</source>
         <translation>Ce champ existe déjà ; veuillez changer le nouveau nom.</translation>
     </message>
@@ -1029,31 +1049,44 @@ Radius</source>
 <context>
     <name>FieldTable</name>
     <message>
-        <location filename="../qml/field/FieldTable.qml" line="134"/>
+        <location filename="../qml/field/FieldTable.qml" line="136"/>
         <source>Field name</source>
         <translation>Nom du champ</translation>
     </message>
     <message>
-        <location filename="../qml/field/FieldTable.qml" line="169"/>
+        <location filename="../qml/field/FieldTable.qml" line="171"/>
         <source>Distance</source>
         <translation>Distance</translation>
     </message>
     <message>
-        <location filename="../qml/field/FieldTable.qml" line="204"/>
+        <location filename="../qml/field/FieldTable.qml" line="206"/>
         <source>Area</source>
         <translation>Surface</translation>
     </message>
     <message>
-        <location filename="../qml/field/FieldTable.qml" line="265"/>
+        <location filename="../qml/field/FieldTable.qml" line="267"/>
         <source>No boundary</source>
         <translation>Pas de limite</translation>
     </message>
 </context>
 <context>
+    <name>FieldToolsMenu</name>
+    <message>
+        <location filename="../qml/field/FieldToolsMenu.qml" line="54"/>
+        <source>No Boundaries</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldToolsMenu.qml" line="54"/>
+        <source>Create A Boundary First</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>FormGPS</name>
     <message>
-        <location filename="../formgps.cpp" line="972"/>
-        <location filename="../formgps.cpp" line="1046"/>
+        <location filename="../formgps.cpp" line="971"/>
+        <location filename="../formgps.cpp" line="1047"/>
         <source>None</source>
         <translation>Aucun</translation>
     </message>
@@ -1090,192 +1123,192 @@ Radius</source>
         <translation>En dessous de la vitesse de direction minimale sécurisée : </translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="133"/>
+        <location filename="../formgps_saveopen.cpp" line="131"/>
         <location filename="../formgps_saveopen.cpp" line="307"/>
         <source>Cannot create field directory!</source>
         <translation>Impossible de créer le répertoire du champ !</translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="133"/>
+        <location filename="../formgps_saveopen.cpp" line="131"/>
         <location filename="../formgps_saveopen.cpp" line="307"/>
         <source>Cannot create field directory at </source>
         <translation>Impossible de créer le répertoire du champ à </translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="144"/>
+        <location filename="../formgps_saveopen.cpp" line="142"/>
         <source>Cannot read headlines.</source>
         <translation>Impossible de lire les titres.</translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="144"/>
+        <location filename="../formgps_saveopen.cpp" line="142"/>
         <source> Error was </source>
         <translation> L&apos;erreur était </translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="192"/>
-        <location filename="../formgps_saveopen.cpp" line="349"/>
-        <location filename="../formgps_saveopen.cpp" line="360"/>
-        <location filename="../formgps_saveopen.cpp" line="392"/>
+        <location filename="../formgps_saveopen.cpp" line="191"/>
+        <location filename="../formgps_saveopen.cpp" line="351"/>
+        <location filename="../formgps_saveopen.cpp" line="362"/>
+        <location filename="../formgps_saveopen.cpp" line="394"/>
         <source>Corrupt File!</source>
         <translation>Fichier corrompu !</translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="192"/>
+        <location filename="../formgps_saveopen.cpp" line="191"/>
         <source>Corrupt headline for this field. Deleting lines.</source>
         <translation>Titre corrompu pour ce champ. Suppression des lignes.</translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="349"/>
-        <location filename="../formgps_saveopen.cpp" line="360"/>
-        <location filename="../formgps_saveopen.cpp" line="392"/>
+        <location filename="../formgps_saveopen.cpp" line="351"/>
+        <location filename="../formgps_saveopen.cpp" line="362"/>
+        <location filename="../formgps_saveopen.cpp" line="394"/>
         <source>Corrupt TracksList.txt. Not all tracks were loaded.</source>
         <translation>TracksList.txt corrompu. Tous les pistes n&apos;ont pas été chargées.</translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="488"/>
-        <location filename="../formgps_saveopen.cpp" line="641"/>
-        <location filename="../formgps_saveopen.cpp" line="692"/>
-        <location filename="../formgps_saveopen.cpp" line="825"/>
-        <location filename="../formgps_saveopen.cpp" line="918"/>
-        <location filename="../formgps_saveopen.cpp" line="985"/>
-        <location filename="../formgps_saveopen.cpp" line="1029"/>
-        <location filename="../formgps_saveopen.cpp" line="1097"/>
-        <location filename="../formgps_saveopen.cpp" line="1188"/>
-        <location filename="../formgps_saveopen.cpp" line="1259"/>
-        <location filename="../formgps_saveopen.cpp" line="1344"/>
-        <location filename="../formgps_saveopen.cpp" line="2048"/>
+        <location filename="../formgps_saveopen.cpp" line="493"/>
+        <location filename="../formgps_saveopen.cpp" line="647"/>
+        <location filename="../formgps_saveopen.cpp" line="700"/>
+        <location filename="../formgps_saveopen.cpp" line="833"/>
+        <location filename="../formgps_saveopen.cpp" line="928"/>
+        <location filename="../formgps_saveopen.cpp" line="996"/>
+        <location filename="../formgps_saveopen.cpp" line="1042"/>
+        <location filename="../formgps_saveopen.cpp" line="1113"/>
+        <location filename="../formgps_saveopen.cpp" line="1207"/>
+        <location filename="../formgps_saveopen.cpp" line="1283"/>
+        <location filename="../formgps_saveopen.cpp" line="1369"/>
+        <location filename="../formgps_saveopen.cpp" line="2077"/>
         <source>Field Error</source>
         <translation>Erreur de champ</translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="488"/>
-        <location filename="../formgps_saveopen.cpp" line="641"/>
-        <location filename="../formgps_saveopen.cpp" line="2048"/>
+        <location filename="../formgps_saveopen.cpp" line="493"/>
+        <location filename="../formgps_saveopen.cpp" line="647"/>
+        <location filename="../formgps_saveopen.cpp" line="2077"/>
         <source>Couldn&apos;t open </source>
         <translation>Impossible d&apos;ouvrir </translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="488"/>
+        <location filename="../formgps_saveopen.cpp" line="493"/>
         <source>for reading!</source>
         <translation>pour la lecture !</translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="641"/>
-        <location filename="../formgps_saveopen.cpp" line="825"/>
-        <location filename="../formgps_saveopen.cpp" line="918"/>
-        <location filename="../formgps_saveopen.cpp" line="985"/>
-        <location filename="../formgps_saveopen.cpp" line="1029"/>
-        <location filename="../formgps_saveopen.cpp" line="1097"/>
-        <location filename="../formgps_saveopen.cpp" line="1188"/>
-        <location filename="../formgps_saveopen.cpp" line="1259"/>
-        <location filename="../formgps_saveopen.cpp" line="1344"/>
-        <location filename="../formgps_saveopen.cpp" line="2048"/>
+        <location filename="../formgps_saveopen.cpp" line="647"/>
+        <location filename="../formgps_saveopen.cpp" line="833"/>
+        <location filename="../formgps_saveopen.cpp" line="928"/>
+        <location filename="../formgps_saveopen.cpp" line="996"/>
+        <location filename="../formgps_saveopen.cpp" line="1042"/>
+        <location filename="../formgps_saveopen.cpp" line="1113"/>
+        <location filename="../formgps_saveopen.cpp" line="1207"/>
+        <location filename="../formgps_saveopen.cpp" line="1283"/>
+        <location filename="../formgps_saveopen.cpp" line="1369"/>
+        <location filename="../formgps_saveopen.cpp" line="2077"/>
         <source> for reading!</source>
         <translation> pour la lecture !</translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="692"/>
+        <location filename="../formgps_saveopen.cpp" line="700"/>
         <source> is missing Field.txt! It will be ignored and should probably be deleted.</source>
         <translation> manque Field.txt ! Il sera ignoré et devrait probablement être supprimé.</translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="825"/>
+        <location filename="../formgps_saveopen.cpp" line="833"/>
         <source>Couldn&apos;t open field </source>
         <translation>Impossible d&apos;ouvrir le champ </translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="918"/>
+        <location filename="../formgps_saveopen.cpp" line="928"/>
         <source>Couldn&apos;t open sections </source>
         <translation>Impossible d&apos;ouvrir les sections </translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="985"/>
+        <location filename="../formgps_saveopen.cpp" line="996"/>
         <source>Couldn&apos;t open contour </source>
         <translation>Impossible d&apos;ouvrir le contour </translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="1029"/>
+        <location filename="../formgps_saveopen.cpp" line="1042"/>
         <source>Couldn&apos;t open flags </source>
         <translation>Impossible d&apos;ouvrir les drapeaux </translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="1097"/>
+        <location filename="../formgps_saveopen.cpp" line="1113"/>
         <source>Couldn&apos;t open boundaries </source>
         <translation>Impossible d&apos;ouvrir les limites </translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="1188"/>
+        <location filename="../formgps_saveopen.cpp" line="1207"/>
         <source>Couldn&apos;t open headland </source>
         <translation>Impossible d&apos;ouvrir la bordure </translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="1221"/>
+        <location filename="../formgps_saveopen.cpp" line="1242"/>
         <source>Corrupt Headland File</source>
         <translation>Fichier de bordure corrompu</translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="1221"/>
+        <location filename="../formgps_saveopen.cpp" line="1242"/>
         <source>Headland file is corrupt. Field still loaded.</source>
         <translation>Le fichier de bordure est corrompu. Le champ est toujours chargé.</translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="1259"/>
+        <location filename="../formgps_saveopen.cpp" line="1283"/>
         <source>Couldn&apos;t open tram file </source>
         <translation>Impossible d&apos;ouvrir le fichier de tram </translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="1344"/>
+        <location filename="../formgps_saveopen.cpp" line="1369"/>
         <source>Couldn&apos;t open Recorded Path </source>
         <translation>Impossible d&apos;ouvrir le chemin enregistré </translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="1432"/>
+        <location filename="../formgps_saveopen.cpp" line="1461"/>
         <source>Field Not Open</source>
         <translation>Champ non ouvert</translation>
     </message>
     <message>
-        <location filename="../formgps_saveopen.cpp" line="1432"/>
+        <location filename="../formgps_saveopen.cpp" line="1461"/>
         <source>Create a new field.</source>
         <translation>Créer un nouveau champ.</translation>
     </message>
     <message>
-        <location filename="../formgps_ui.cpp" line="960"/>
-        <location filename="../formgps_ui.cpp" line="971"/>
+        <location filename="../formgps_ui.cpp" line="948"/>
+        <location filename="../formgps_ui.cpp" line="959"/>
         <source> m</source>
         <translation> m</translation>
     </message>
     <message>
-        <location filename="../formgps_ui.cpp" line="969"/>
+        <location filename="../formgps_ui.cpp" line="957"/>
         <source>°</source>
         <translation>°</translation>
     </message>
     <message>
-        <location filename="../formgps_ui_field.cpp" line="42"/>
+        <location filename="../formgps_ui_field.cpp" line="38"/>
         <source>Saved field does not exist.</source>
         <translation>Le champ enregistré n&apos;existe pas.</translation>
     </message>
     <message>
-        <location filename="../formgps_ui_field.cpp" line="42"/>
+        <location filename="../formgps_ui_field.cpp" line="38"/>
         <source>Cannot find the requested saved field.</source>
         <translation>Impossible de trouver le champ enregistré demandé.</translation>
     </message>
     <message>
-        <location filename="../formgps_ui_field.cpp" line="77"/>
+        <location filename="../formgps_ui_field.cpp" line="72"/>
         <source>Existing field cannot be found</source>
         <translation>Le champ existant ne peut pas être trouvé</translation>
     </message>
     <message>
-        <location filename="../formgps_ui_field.cpp" line="77"/>
+        <location filename="../formgps_ui_field.cpp" line="72"/>
         <source>Cannot find the existing saved field.</source>
         <translation>Impossible de trouver le champ enregistré existant.</translation>
     </message>
     <message>
-        <location filename="../formgps_ui_field.cpp" line="115"/>
+        <location filename="../formgps_ui_field.cpp" line="110"/>
         <source>Cannot find saved field</source>
         <translation>Impossible de trouver le champ enregistré</translation>
     </message>
     <message>
-        <location filename="../formgps_ui_field.cpp" line="115"/>
+        <location filename="../formgps_ui_field.cpp" line="110"/>
         <source>Cannot find saved field to delete.</source>
         <translation>Impossible de trouver le champ enregistré à supprimer.</translation>
     </message>
@@ -1283,42 +1316,42 @@ Radius</source>
 <context>
     <name>FormHeadache</name>
     <message>
-        <location filename="../formheadache.cpp" line="459"/>
+        <location filename="../formheadache.cpp" line="458"/>
         <source>Line Error</source>
         <translation>Erreur de ligne</translation>
     </message>
     <message>
-        <location filename="../formheadache.cpp" line="459"/>
+        <location filename="../formheadache.cpp" line="458"/>
         <source>Start Point = End Point</source>
         <translation>Point de départ = Point de fin</translation>
     </message>
     <message>
-        <location filename="../formheadache.cpp" line="778"/>
+        <location filename="../formheadache.cpp" line="777"/>
         <source>Create Error</source>
         <translation>Erreur de création</translation>
     </message>
     <message>
-        <location filename="../formheadache.cpp" line="778"/>
+        <location filename="../formheadache.cpp" line="777"/>
         <source>Is there maybe only one line?</source>
         <translation>Y a-t-il peut-être une seule ligne ?</translation>
     </message>
     <message>
-        <location filename="../formheadache.cpp" line="816"/>
+        <location filename="../formheadache.cpp" line="815"/>
         <source>Crosings Error</source>
         <translation>Erreur de croisements</translation>
     </message>
     <message>
-        <location filename="../formheadache.cpp" line="816"/>
+        <location filename="../formheadache.cpp" line="815"/>
         <source>Make sure all ends cross only once</source>
         <translation>Assurez-vous que toutes les extrémités se croisent une seule fois</translation>
     </message>
     <message>
-        <location filename="../formheadache.cpp" line="938"/>
+        <location filename="../formheadache.cpp" line="937"/>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>
     <message>
-        <location filename="../formheadache.cpp" line="938"/>
+        <location filename="../formheadache.cpp" line="937"/>
         <source>Crossings not Found</source>
         <translation>Traversées non trouvées</translation>
     </message>
@@ -1326,22 +1359,22 @@ Radius</source>
 <context>
     <name>FormHeadland</name>
     <message>
-        <location filename="../formheadland.cpp" line="469"/>
+        <location filename="../formheadland.cpp" line="468"/>
         <source>Distance Error</source>
         <translation>Erreur de distance</translation>
     </message>
     <message>
-        <location filename="../formheadland.cpp" line="469"/>
+        <location filename="../formheadland.cpp" line="468"/>
         <source>Distance Set to 0, Nothing to Move</source>
         <translation>Distance réglée à 0, rien à déplacer</translation>
     </message>
     <message>
-        <location filename="../formheadland.cpp" line="904"/>
+        <location filename="../formheadland.cpp" line="903"/>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>
     <message>
-        <location filename="../formheadland.cpp" line="904"/>
+        <location filename="../formheadland.cpp" line="903"/>
         <source>Crossings not Found</source>
         <translation>Traversées non trouvées</translation>
     </message>
@@ -1496,7 +1529,7 @@ Radius</source>
 <context>
     <name>HeadAcheDesigner</name>
     <message>
-        <location filename="../qml/HeadAcheDesigner.qml" line="432"/>
+        <location filename="../qml/HeadAcheDesigner.qml" line="434"/>
         <source>Tool: </source>
         <translation>Outil : </translation>
     </message>
@@ -1504,7 +1537,7 @@ Radius</source>
 <context>
     <name>HeadlandDesigner</name>
     <message>
-        <location filename="../qml/HeadlandDesigner.qml" line="403"/>
+        <location filename="../qml/HeadlandDesigner.qml" line="405"/>
         <source>Tool: </source>
         <translation>Outil : </translation>
     </message>
@@ -1520,7 +1553,7 @@ Radius</source>
 <context>
     <name>LineName</name>
     <message>
-        <location filename="../qml/LineName.qml" line="23"/>
+        <location filename="../qml/LineName.qml" line="24"/>
         <source>AB </source>
         <translation>AB </translation>
     </message>
@@ -1528,37 +1561,37 @@ Radius</source>
 <context>
     <name>MainLeftColumn</name>
     <message>
-        <location filename="../qml/MainLeftColumn.qml" line="58"/>
+        <location filename="../qml/MainLeftColumn.qml" line="60"/>
         <source>Display</source>
         <translation>Affichage</translation>
     </message>
     <message>
-        <location filename="../qml/MainLeftColumn.qml" line="64"/>
+        <location filename="../qml/MainLeftColumn.qml" line="66"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
     </message>
     <message>
-        <location filename="../qml/MainLeftColumn.qml" line="70"/>
+        <location filename="../qml/MainLeftColumn.qml" line="72"/>
         <source>Tools</source>
         <translation>Outils</translation>
     </message>
     <message>
-        <location filename="../qml/MainLeftColumn.qml" line="76"/>
+        <location filename="../qml/MainLeftColumn.qml" line="78"/>
         <source>Field</source>
         <translation>Champ</translation>
     </message>
     <message>
-        <location filename="../qml/MainLeftColumn.qml" line="82"/>
+        <location filename="../qml/MainLeftColumn.qml" line="84"/>
         <source>Field Tools</source>
         <translation>Outils de champ</translation>
     </message>
     <message>
-        <location filename="../qml/MainLeftColumn.qml" line="90"/>
+        <location filename="../qml/MainLeftColumn.qml" line="92"/>
         <source>AgIO</source>
         <translation>AgIO</translation>
     </message>
     <message>
-        <location filename="../qml/MainLeftColumn.qml" line="95"/>
+        <location filename="../qml/MainLeftColumn.qml" line="97"/>
         <source>Steer config</source>
         <translation>Configuration de direction</translation>
     </message>
@@ -1566,12 +1599,41 @@ Radius</source>
 <context>
     <name>MainTopPanel</name>
     <message>
-        <location filename="../qml/MainTopPanel.qml" line="51"/>
         <source>ac</source>
-        <translation>ac</translation>
+        <translation type="vanished">ac</translation>
     </message>
     <message>
-        <location filename="../qml/MainTopPanel.qml" line="59"/>
+        <location filename="../qml/MainTopPanel.qml" line="87"/>
+        <source>Lat: %1 Lon: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainTopPanel.qml" line="95"/>
+        <source>Field: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainTopPanel.qml" line="99"/>
+        <source>%1%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainTopPanel.qml" line="103"/>
+        <source>App: %1 Actual: %2 %3 %4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainTopPanel.qml" line="111"/>
+        <source>Track: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainTopPanel.qml" line="113"/>
+        <source>Track: none active</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainTopPanel.qml" line="127"/>
         <source>ab</source>
         <translation>ab</translation>
     </message>
@@ -1579,56 +1641,41 @@ Radius</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../qml/MainWindow.qml" line="59"/>
+        <location filename="../qml/MainWindow.qml" line="45"/>
         <source>Some windows are open. Close them first.</source>
         <translation>Certaines fenêtres sont ouvertes. Fermez-les d&apos;abord.</translation>
     </message>
     <message>
-        <location filename="../qml/MainWindow.qml" line="64"/>
+        <location filename="../qml/MainWindow.qml" line="50"/>
         <source>Section Control on. Shut off Section Control.</source>
         <translation>Contrôle de section activé. Désactivez le contrôle de section.</translation>
     </message>
     <message>
-        <location filename="../qml/MainWindow.qml" line="443"/>
+        <location filename="../qml/MainWindow.qml" line="407"/>
         <source>Simulator On</source>
         <translation>Simulateur activé</translation>
     </message>
     <message>
-        <location filename="../qml/MainWindow.qml" line="460"/>
+        <location filename="../qml/MainWindow.qml" line="424"/>
         <source>Age: </source>
         <translation>Âge : </translation>
-    </message>
-    <message>
-        <location filename="../qml/MainWindow.qml" line="973"/>
-        <source>English</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/MainWindow.qml" line="978"/>
-        <source>Russian</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/MainWindow.qml" line="983"/>
-        <source>French</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>ManualTurnBtns</name>
     <message>
-        <location filename="../qml/ManualTurnBtns.qml" line="21"/>
-        <location filename="../qml/ManualTurnBtns.qml" line="36"/>
-        <location filename="../qml/ManualTurnBtns.qml" line="49"/>
-        <location filename="../qml/ManualTurnBtns.qml" line="62"/>
+        <location filename="../qml/ManualTurnBtns.qml" line="23"/>
+        <location filename="../qml/ManualTurnBtns.qml" line="38"/>
+        <location filename="../qml/ManualTurnBtns.qml" line="51"/>
+        <location filename="../qml/ManualTurnBtns.qml" line="64"/>
         <source>Too Fast</source>
         <translation>Trop rapide</translation>
     </message>
     <message>
-        <location filename="../qml/ManualTurnBtns.qml" line="21"/>
-        <location filename="../qml/ManualTurnBtns.qml" line="36"/>
-        <location filename="../qml/ManualTurnBtns.qml" line="49"/>
-        <location filename="../qml/ManualTurnBtns.qml" line="62"/>
+        <location filename="../qml/ManualTurnBtns.qml" line="23"/>
+        <location filename="../qml/ManualTurnBtns.qml" line="38"/>
+        <location filename="../qml/ManualTurnBtns.qml" line="51"/>
+        <location filename="../qml/ManualTurnBtns.qml" line="64"/>
         <source>Slow down below</source>
         <translation>Ralentissez en dessous de</translation>
     </message>
@@ -1636,32 +1683,32 @@ Radius</source>
 <context>
     <name>PlayerMenuBar</name>
     <message>
-        <location filename="../qml/wizards/PlayerMenuBar.qml" line="47"/>
+        <location filename="../qml/wizards/PlayerMenuBar.qml" line="48"/>
         <source>URL:</source>
         <translation>URL :</translation>
     </message>
     <message>
-        <location filename="../qml/wizards/PlayerMenuBar.qml" line="82"/>
+        <location filename="../qml/wizards/PlayerMenuBar.qml" line="83"/>
         <source>&amp;File</source>
         <translation>&amp;Fichier</translation>
     </message>
     <message>
-        <location filename="../qml/wizards/PlayerMenuBar.qml" line="84"/>
+        <location filename="../qml/wizards/PlayerMenuBar.qml" line="85"/>
         <source>&amp;Open</source>
         <translation>&amp;Ouvrir</translation>
     </message>
     <message>
-        <location filename="../qml/wizards/PlayerMenuBar.qml" line="88"/>
+        <location filename="../qml/wizards/PlayerMenuBar.qml" line="89"/>
         <source>&amp;URL</source>
         <translation>&amp;URL</translation>
     </message>
     <message>
-        <location filename="../qml/wizards/PlayerMenuBar.qml" line="93"/>
+        <location filename="../qml/wizards/PlayerMenuBar.qml" line="94"/>
         <source>&amp;cam1</source>
         <translation>&amp;cam1</translation>
     </message>
     <message>
-        <location filename="../qml/wizards/PlayerMenuBar.qml" line="98"/>
+        <location filename="../qml/wizards/PlayerMenuBar.qml" line="99"/>
         <source>&amp;Exit</source>
         <translation>&amp;Quitter</translation>
     </message>
@@ -1669,12 +1716,12 @@ Radius</source>
 <context>
     <name>RefNudge</name>
     <message>
-        <location filename="../qml/tracks/RefNudge.qml" line="26"/>
+        <location filename="../qml/tracks/RefNudge.qml" line="28"/>
         <source>Ref Adjust</source>
         <translation>Ajustement de référence</translation>
     </message>
     <message>
-        <location filename="../qml/tracks/RefNudge.qml" line="68"/>
+        <location filename="../qml/tracks/RefNudge.qml" line="70"/>
         <source>0 </source>
         <translation>0 </translation>
     </message>
@@ -1775,129 +1822,129 @@ Radius</source>
 <context>
     <name>SteerConfigSettings</name>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="17"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="20"/>
         <source>Auto Steer Config</source>
         <translation>Configuration de direction automatique</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="376"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="379"/>
         <source>Off at %</source>
         <translation>Éteint à %</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="391"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="394"/>
         <source>Counts</source>
         <translation>Comptes</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="515"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="518"/>
         <source>A2D Converter</source>
         <translation>Convertisseur A2D</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="527"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="530"/>
         <source>IMU X or Y Axis</source>
         <translation>IMU Axe X ou Y</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="545"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="549"/>
         <source>Steer Enable</source>
         <translation>Activer la direction</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="550"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="554"/>
         <source>Button- Push On, Push Off
 Switch- Pushed On, Release Off</source>
         <translation>Bouton - Appuyer pour activer, Appuyer pour désactiver
 Interrupteur - Appuyer pour activer, Relâcher pour désactiver</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="573"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="577"/>
         <source>UTurn Compensation</source>
         <translation>Compensation de demi-tour</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="583"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="587"/>
         <source>Sidehill Deg Turn per Deg of Roll</source>
         <translation>Degré de virage par degré de roulis</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="593"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="597"/>
         <source>Stanley/Pure</source>
         <translation>Stanley/Pur</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="602"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="606"/>
         <source>Steer In Reverse?</source>
         <translation>Diriger en marche arrière ?</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="669"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="673"/>
         <source>Steer Switch Control</source>
         <translation>Contrôle de l&apos;interrupteur de direction</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="690"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="694"/>
         <source>Line Width</source>
         <translation>Largeur de ligne</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="713"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="717"/>
         <source>pixels</source>
         <translation>pixels</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="731"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="735"/>
         <source>Nudge Distance</source>
         <translation>Distance de correction</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="772"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="776"/>
         <source>Line Acquire Look Ahead</source>
         <translation>Prévision d&apos;acquisition de ligne</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="796"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="800"/>
         <source>Seconds</source>
         <translation>Secondes</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="814"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="818"/>
         <source>Manual Turns Limit</source>
         <translation>Limite de virages manuels</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="831"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="835"/>
         <source>Min AutoSteer Speed</source>
         <translation>Vitesse minimale de direction automatique</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="849"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="853"/>
         <source>Max AutoSteer Speed</source>
         <translation>Vitesse maximale de direction automatique</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="867"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="871"/>
         <source>Max Turn Rate</source>
         <translation>Taux de virage maximal</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="886"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="890"/>
         <source>Degrees/sec</source>
         <translation>Degrés/sec</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="901"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="905"/>
         <source>Wizard</source>
         <translation>Assistant</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="908"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="912"/>
         <source>Reset All To Defaults</source>
         <translation>Réinitialiser tout par défaut</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="927"/>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="931"/>
         <source>Send + Save</source>
         <translation>Envoyer + Enregistrer</translation>
     </message>
@@ -1905,12 +1952,12 @@ Interrupteur - Appuyer pour activer, Relâcher pour désactiver</translation>
 <context>
     <name>SteerConfigWindow</name>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="35"/>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="38"/>
         <source>Auto Steer Config</source>
         <translation>Configuration de direction automatique</translation>
     </message>
     <message>
-        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="443"/>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="446"/>
         <source>0r +5</source>
         <translation>0r +5</translation>
     </message>
@@ -1918,65 +1965,65 @@ Interrupteur - Appuyer pour activer, Relâcher pour désactiver</translation>
 <context>
     <name>ToolsWindow</name>
     <message>
-        <location filename="../qml/ToolsWindow.qml" line="39"/>
+        <location filename="../qml/ToolsWindow.qml" line="40"/>
         <source>Wizards</source>
         <translation>Assistants</translation>
     </message>
     <message>
-        <location filename="../qml/ToolsWindow.qml" line="47"/>
+        <location filename="../qml/ToolsWindow.qml" line="48"/>
         <source>Charts</source>
         <translation>Graphiques</translation>
     </message>
     <message>
-        <location filename="../qml/ToolsWindow.qml" line="55"/>
+        <location filename="../qml/ToolsWindow.qml" line="56"/>
         <source>Smooth AB Curve</source>
         <translation>Lisser la courbe AB</translation>
     </message>
     <message>
-        <location filename="../qml/ToolsWindow.qml" line="62"/>
+        <location filename="../qml/ToolsWindow.qml" line="63"/>
         <source>Delete Contour Paths</source>
         <translation>Supprimer les chemins de contour</translation>
     </message>
     <message>
-        <location filename="../qml/ToolsWindow.qml" line="69"/>
+        <location filename="../qml/ToolsWindow.qml" line="70"/>
         <source>Delete Applied Area</source>
         <translation>Supprimer la zone appliquée</translation>
     </message>
     <message>
-        <location filename="../qml/ToolsWindow.qml" line="76"/>
+        <location filename="../qml/ToolsWindow.qml" line="77"/>
         <source>WebCam</source>
         <translation>WebCam</translation>
     </message>
     <message>
-        <location filename="../qml/ToolsWindow.qml" line="84"/>
+        <location filename="../qml/ToolsWindow.qml" line="85"/>
         <source>Offset Fix</source>
         <translation>Correction de décalage</translation>
     </message>
     <message>
-        <location filename="../qml/ToolsWindow.qml" line="118"/>
+        <location filename="../qml/ToolsWindow.qml" line="119"/>
         <source>Steer Wizard</source>
         <translation>Assistant de direction</translation>
     </message>
     <message>
-        <location filename="../qml/ToolsWindow.qml" line="144"/>
-        <location filename="../qml/ToolsWindow.qml" line="180"/>
+        <location filename="../qml/ToolsWindow.qml" line="145"/>
+        <location filename="../qml/ToolsWindow.qml" line="181"/>
         <source>Steer Chart</source>
         <translation>Graphique de direction</translation>
     </message>
     <message>
-        <location filename="../qml/ToolsWindow.qml" line="151"/>
-        <location filename="../qml/ToolsWindow.qml" line="206"/>
+        <location filename="../qml/ToolsWindow.qml" line="152"/>
+        <location filename="../qml/ToolsWindow.qml" line="207"/>
         <source>Heading Chart</source>
         <translation>Graphique de cap</translation>
     </message>
     <message>
-        <location filename="../qml/ToolsWindow.qml" line="158"/>
-        <location filename="../qml/ToolsWindow.qml" line="193"/>
+        <location filename="../qml/ToolsWindow.qml" line="159"/>
+        <location filename="../qml/ToolsWindow.qml" line="194"/>
         <source>XTE Chart</source>
         <translation>Graphique XTE</translation>
     </message>
     <message>
-        <location filename="../qml/ToolsWindow.qml" line="165"/>
+        <location filename="../qml/ToolsWindow.qml" line="166"/>
         <source>Roll Chart</source>
         <translation>Graphique de roulis</translation>
     </message>
@@ -1984,12 +2031,12 @@ Interrupteur - Appuyer pour activer, Relâcher pour désactiver</translation>
 <context>
     <name>TrackList</name>
     <message>
-        <location filename="../qml/tracks/TrackList.qml" line="153"/>
+        <location filename="../qml/tracks/TrackList.qml" line="154"/>
         <source>Track not visible!</source>
         <translation>Piste non visible !</translation>
     </message>
     <message>
-        <location filename="../qml/tracks/TrackList.qml" line="153"/>
+        <location filename="../qml/tracks/TrackList.qml" line="154"/>
         <source>Cannot Desired because it is not marked as visible.</source>
         <translation>Impossible de désirer car il n&apos;est pas marqué comme visible.</translation>
     </message>
@@ -2035,38 +2082,38 @@ Interrupteur - Appuyer pour activer, Relâcher pour désactiver</translation>
 <context>
     <name>TrackNewSet</name>
     <message>
-        <location filename="../qml/tracks/TrackNewSet.qml" line="215"/>
+        <location filename="../qml/tracks/TrackNewSet.qml" line="217"/>
         <source>Status: Driving</source>
         <translation>Statut : Conduite</translation>
     </message>
     <message>
-        <location filename="../qml/tracks/TrackNewSet.qml" line="305"/>
-        <location filename="../qml/tracks/TrackNewSet.qml" line="343"/>
-        <location filename="../qml/tracks/TrackNewSet.qml" line="436"/>
-        <location filename="../qml/tracks/TrackNewSet.qml" line="539"/>
+        <location filename="../qml/tracks/TrackNewSet.qml" line="307"/>
+        <location filename="../qml/tracks/TrackNewSet.qml" line="345"/>
+        <location filename="../qml/tracks/TrackNewSet.qml" line="438"/>
+        <location filename="../qml/tracks/TrackNewSet.qml" line="541"/>
         <source>Latitude (+- 90)</source>
         <translation>Latitude (+- 90)</translation>
     </message>
     <message>
-        <location filename="../qml/tracks/TrackNewSet.qml" line="314"/>
+        <location filename="../qml/tracks/TrackNewSet.qml" line="316"/>
         <source>A</source>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../qml/tracks/TrackNewSet.qml" line="327"/>
-        <location filename="../qml/tracks/TrackNewSet.qml" line="365"/>
-        <location filename="../qml/tracks/TrackNewSet.qml" line="452"/>
-        <location filename="../qml/tracks/TrackNewSet.qml" line="555"/>
+        <location filename="../qml/tracks/TrackNewSet.qml" line="329"/>
+        <location filename="../qml/tracks/TrackNewSet.qml" line="367"/>
+        <location filename="../qml/tracks/TrackNewSet.qml" line="454"/>
+        <location filename="../qml/tracks/TrackNewSet.qml" line="557"/>
         <source>Longitude (+- 180)</source>
         <translation>Longitude (+- 180)</translation>
     </message>
     <message>
-        <location filename="../qml/tracks/TrackNewSet.qml" line="352"/>
+        <location filename="../qml/tracks/TrackNewSet.qml" line="354"/>
         <source>B</source>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../qml/tracks/TrackNewSet.qml" line="469"/>
+        <location filename="../qml/tracks/TrackNewSet.qml" line="471"/>
         <source>Heading</source>
         <translation>Cap</translation>
     </message>
@@ -2074,20 +2121,20 @@ Interrupteur - Appuyer pour activer, Relâcher pour désactiver</translation>
 <context>
     <name>TrackNum</name>
     <message>
-        <location filename="../qml/TrackNum.qml" line="25"/>
-        <location filename="../qml/TrackNum.qml" line="37"/>
+        <location filename="../qml/TrackNum.qml" line="27"/>
+        <location filename="../qml/TrackNum.qml" line="39"/>
         <source>Track</source>
         <comment>Track as in &quot;track number.&quot;</comment>
         <translation>Piste</translation>
     </message>
     <message>
-        <location filename="../qml/TrackNum.qml" line="32"/>
+        <location filename="../qml/TrackNum.qml" line="34"/>
         <source>R</source>
         <comment>Abbreviation for right-hand direction.</comment>
         <translation>R</translation>
     </message>
     <message>
-        <location filename="../qml/TrackNum.qml" line="34"/>
+        <location filename="../qml/TrackNum.qml" line="36"/>
         <source>L</source>
         <comment>Abbreviation for left-hand direction.</comment>
         <translation>L</translation>
@@ -2117,172 +2164,307 @@ Interrupteur - Appuyer pour activer, Relâcher pour désactiver</translation>
 <context>
     <name>UnitConversion</name>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="20"/>
-        <location filename="../qml/UnitConversion.qml" line="73"/>
         <source>N</source>
         <comment>compass bearing</comment>
-        <translation>N</translation>
+        <translation type="vanished">N</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="24"/>
-        <location filename="../qml/UnitConversion.qml" line="77"/>
         <source>NE</source>
         <comment>compass bearing</comment>
-        <translation>NE</translation>
+        <translation type="vanished">NE</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="28"/>
-        <location filename="../qml/UnitConversion.qml" line="81"/>
         <source>E</source>
         <comment>compass bearing</comment>
-        <translation>E</translation>
+        <translation type="vanished">E</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="32"/>
-        <location filename="../qml/UnitConversion.qml" line="85"/>
         <source>SE</source>
         <comment>compass bearing</comment>
-        <translation>SE</translation>
+        <translation type="vanished">SE</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="36"/>
-        <location filename="../qml/UnitConversion.qml" line="89"/>
         <source>S</source>
         <comment>compass bearing</comment>
-        <translation>S</translation>
+        <translation type="vanished">S</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="40"/>
-        <location filename="../qml/UnitConversion.qml" line="93"/>
         <source>SW</source>
         <comment>compass bearing</comment>
-        <translation>SO</translation>
+        <translation type="vanished">SO</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="44"/>
-        <location filename="../qml/UnitConversion.qml" line="97"/>
         <source>W</source>
         <comment>compass bearing</comment>
-        <translation>O</translation>
+        <translation type="vanished">O</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="48"/>
-        <location filename="../qml/UnitConversion.qml" line="101"/>
         <source>NW</source>
         <comment>compass bearing</comment>
-        <translation>NO</translation>
+        <translation type="vanished">NO</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="50"/>
-        <location filename="../qml/UnitConversion.qml" line="103"/>
         <source>??</source>
         <comment>unknown compass bearing</comment>
-        <translation>??</translation>
+        <translation type="vanished">??</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="112"/>
         <source>km/h</source>
         <comment>abbreviation for kilometers per hour</comment>
-        <translation>km/h</translation>
+        <translation type="vanished">km/h</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="114"/>
         <source>MPH</source>
         <comment>abbreviation for miles per hour</comment>
-        <translation>MPH</translation>
+        <translation type="vanished">MPH</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="140"/>
         <source>cm</source>
         <comment>centimeter abbreviation</comment>
-        <translation>cm</translation>
+        <translation type="vanished">cm</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="142"/>
         <source>in</source>
         <comment>inches abbreviation</comment>
-        <translation>in</translation>
+        <translation type="vanished">in</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="147"/>
         <source>Centimeter</source>
         <comment>centimeter unit</comment>
-        <translation>Centimètre</translation>
+        <translation type="vanished">Centimètre</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="149"/>
         <source>Inches</source>
         <comment>inches unit</comment>
-        <translation>Inches</translation>
+        <translation type="vanished">Inches</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="176"/>
         <source>m</source>
         <comment>metre abbreviation</comment>
-        <translation>m</translation>
+        <translation type="vanished">m</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="178"/>
         <source>ft</source>
         <comment>imperial feet abbreviation</comment>
-        <translation>ft</translation>
+        <translation type="vanished">ft</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="182"/>
         <source>per hectare</source>
-        <translation>par hectare</translation>
+        <translation type="vanished">par hectare</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="184"/>
         <source>per acre</source>
-        <translation>par acre</translation>
+        <translation type="vanished">par acre</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="189"/>
         <source>metres</source>
-        <translation>mètres</translation>
+        <translation type="vanished">mètres</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="191"/>
         <source>feet</source>
         <comment>imperial feet</comment>
-        <translation>pieds</translation>
+        <translation type="vanished">pieds</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="229"/>
         <source>km</source>
         <comment>kilometre abbreviation</comment>
-        <translation>km</translation>
+        <translation type="vanished">km</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="231"/>
         <source>mi</source>
         <comment>imperial miles abbreviation</comment>
-        <translation>mi</translation>
+        <translation type="vanished">mi</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="271"/>
         <source>ha</source>
         <comment>hectares abbreviation</comment>
-        <translation>ha</translation>
+        <translation type="vanished">ha</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="273"/>
         <source>ac</source>
         <comment>acres abbreviation</comment>
-        <translation>ac</translation>
+        <translation type="vanished">ac</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="301"/>
         <source>ha/hr</source>
         <comment>Abbreviation for hectares per hour</comment>
-        <translation>ha/hr</translation>
+        <translation type="vanished">ha/hr</translation>
     </message>
     <message>
-        <location filename="../qml/UnitConversion.qml" line="303"/>
         <source>ac/hr</source>
         <comment>Abbreviation for acres per hour</comment>
-        <translation>ac/hr</translation>
+        <translation type="vanished">ac/hr</translation>
+    </message>
+</context>
+<context>
+    <name>Utils</name>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="23"/>
+        <location filename="../qml/AOG/Utils.qml" line="76"/>
+        <source>N</source>
+        <comment>compass bearing</comment>
+        <translation type="unfinished">N</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="27"/>
+        <location filename="../qml/AOG/Utils.qml" line="80"/>
+        <source>NE</source>
+        <comment>compass bearing</comment>
+        <translation type="unfinished">NE</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="31"/>
+        <location filename="../qml/AOG/Utils.qml" line="84"/>
+        <source>E</source>
+        <comment>compass bearing</comment>
+        <translation type="unfinished">E</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="35"/>
+        <location filename="../qml/AOG/Utils.qml" line="88"/>
+        <source>SE</source>
+        <comment>compass bearing</comment>
+        <translation type="unfinished">SE</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="39"/>
+        <location filename="../qml/AOG/Utils.qml" line="92"/>
+        <source>S</source>
+        <comment>compass bearing</comment>
+        <translation type="unfinished">S</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="43"/>
+        <location filename="../qml/AOG/Utils.qml" line="96"/>
+        <source>SW</source>
+        <comment>compass bearing</comment>
+        <translation type="unfinished">SO</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="47"/>
+        <location filename="../qml/AOG/Utils.qml" line="100"/>
+        <source>W</source>
+        <comment>compass bearing</comment>
+        <translation type="unfinished">O</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="51"/>
+        <location filename="../qml/AOG/Utils.qml" line="104"/>
+        <source>NW</source>
+        <comment>compass bearing</comment>
+        <translation type="unfinished">NO</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="53"/>
+        <location filename="../qml/AOG/Utils.qml" line="106"/>
+        <source>??</source>
+        <comment>unknown compass bearing</comment>
+        <translation type="unfinished">??</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="115"/>
+        <source>km/h</source>
+        <comment>abbreviation for kilometers per hour</comment>
+        <translation type="unfinished">km/h</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="117"/>
+        <source>MPH</source>
+        <comment>abbreviation for miles per hour</comment>
+        <translation type="unfinished">MPH</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="143"/>
+        <source>cm</source>
+        <comment>centimeter abbreviation</comment>
+        <translation type="unfinished">cm</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="145"/>
+        <source>in</source>
+        <comment>inches abbreviation</comment>
+        <translation type="unfinished">in</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="150"/>
+        <source>Centimeter</source>
+        <comment>centimeter unit</comment>
+        <translation type="unfinished">Centimètre</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="152"/>
+        <source>Inches</source>
+        <comment>inches unit</comment>
+        <translation type="unfinished">Inches</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="179"/>
+        <source>m</source>
+        <comment>metre abbreviation</comment>
+        <translation type="unfinished">m</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="181"/>
+        <source>ft</source>
+        <comment>imperial feet abbreviation</comment>
+        <translation type="unfinished">ft</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="185"/>
+        <source>per hectare</source>
+        <translation type="unfinished">par hectare</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="187"/>
+        <source>per acre</source>
+        <translation type="unfinished">par acre</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="192"/>
+        <source>metres</source>
+        <translation type="unfinished">mètres</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="194"/>
+        <source>feet</source>
+        <comment>imperial feet</comment>
+        <translation type="unfinished">pieds</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="232"/>
+        <source>km</source>
+        <comment>kilometre abbreviation</comment>
+        <translation type="unfinished">km</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="234"/>
+        <source>mi</source>
+        <comment>imperial miles abbreviation</comment>
+        <translation type="unfinished">mi</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="274"/>
+        <source>ha</source>
+        <comment>hectares abbreviation</comment>
+        <translation type="unfinished">ha</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="276"/>
+        <source>ac</source>
+        <comment>acres abbreviation</comment>
+        <translation type="unfinished">ac</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="304"/>
+        <source>ha/hr</source>
+        <comment>Abbreviation for hectares per hour</comment>
+        <translation type="unfinished">ha/hr</translation>
+    </message>
+    <message>
+        <location filename="../qml/AOG/Utils.qml" line="306"/>
+        <source>ac/hr</source>
+        <comment>Abbreviation for acres per hour</comment>
+        <translation type="unfinished">ac/hr</translation>
     </message>
 </context>
 </TS>
