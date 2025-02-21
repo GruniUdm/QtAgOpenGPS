@@ -93,7 +93,7 @@ void CPGN_EC::MakeCRC()
     pgn[pgn.length() - 1] = crc;
 }
 
-PGN32502::PGN32502() : pgn(QByteArray( "\x80\x81\x7E\xF6\x08\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 14))
+PGN32502::PGN32502() : pgn(QByteArray( "\x80\x81\x7E\xF6\x08\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 13))
 {
     loadSettings();
 }
@@ -108,7 +108,6 @@ void PGN32502::loadSettings()
     pgn[MinPWM] = rate_settings[6];
     pgn[MaxPWM] = rate_settings[7];
     pgn[PIDScale] = rate_settings[8];
-    pgn[Command] = rate_settings[12];
 }
 
 void PGN32502::MakeCRC()
@@ -121,7 +120,7 @@ void PGN32502::MakeCRC()
     pgn[pgn.length() - 1] = crc;
 }
 
-PGN32500::PGN32500() : pgn(QByteArray( "\x80\x81\x7E\xF4\x09\x00\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 15))
+PGN32500::PGN32500() : pgn(QByteArray( "\x80\x81\x7E\xF4\x09\x00\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 16))
 {
 }
 

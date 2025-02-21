@@ -19,11 +19,13 @@ public:
     double RateApplied();
     double SmoothRate();
     double CurrentRate();
+    int Command();
     void getfrommodule(int ID, QByteArray pgn_data);
     void aogset(int toolwidth, double aogspeed);
     void getsettings(int ID, QVector<int> set_data);
     int PWMsetting;
     int SensorReceiving;
+    int BtnState;
     explicit ratecontrol(QObject *parent = nullptr);
 
 private:

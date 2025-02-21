@@ -240,7 +240,6 @@ public:
     int MinPWM = 9;
     int MaxPWM = 10;
     int PIDScale = 11;
-    int Command = 12;
 
     PGN32502();
     void loadSettings();
@@ -258,8 +257,9 @@ public:
     int FlowCalLO = 9;
     int FlowCalMd = 10;
     int FlowCalHI = 11;
-    int ManualPWMLO = 12;
-    int ManualPWMHI = 13;
+    int Command = 12;
+    int ManualPWMLO = 13;
+    int ManualPWMHI = 14;
 
     PGN32500();
     void MakeCRC();

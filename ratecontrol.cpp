@@ -34,6 +34,16 @@ void ratecontrol::aogset(int toolwidth, double aogspeed)
     width = toolwidth;
     speed = aogspeed;
 }
+
+int ratecontrol::Command()
+{
+    int Result = 0;
+    Result |= (1<<(ControlType+1));
+    if (BtnState > 0) Result |= (1<<6);
+    if (ManualPWM == 0) Result |= (1<<6);
+    return Result;
+}
+
 bool ratecontrol::ProductOn()
 {
     bool Result = false;
@@ -60,7 +70,7 @@ double ratecontrol::SmoothRate()
         {
             double Rt = Ra / TargetRate;
 
-            if (Rt >= .9 && Rt <= 1.1)// && autoBtnState)
+            if (Rt >= .9 && Rt <= 1.1 && BtnState>0)
             {
                 Result = TargetRate;
             }
@@ -221,7 +231,7 @@ double ratecontrol::RateApplied()
 }
 
 void ratecontrol::getfrommodule (int ID, QByteArray pgn_data)
-{
+{   BtnState = ID;
     ModID = pgn_data[5];
     appRate =  (pgn_data[8] << 16 | pgn_data[7] << 8 | pgn_data[6]) / 1000.0;
     cQuantity = (pgn_data[11] << 16 | pgn_data[10] << 8 | pgn_data[9]) / 1000.0;
