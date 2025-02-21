@@ -55,7 +55,7 @@ void FormGPS::setupGui()
     qmlRegisterSingletonInstance("Settings", 1, 0, "Settings", settings);
 
     // translate the QML
-    QString language = "ru"; // Change this variable to "fr" or "en" as needed
+    QString language = "ru"; // Change this variable to "en", "fr" or "ru" as needed
     QString translationPath = QString("qml_%1.qm").arg(language);
     QTranslator translator;
     if (translator.load(translationPath)) {

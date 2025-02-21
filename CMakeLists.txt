@@ -173,7 +173,7 @@ if(NOT LOCAL_QML)
     # Combine all relative paths
     set(ALL_REL_PATHS
         ${QML_REL_PATHS}
-        ${AOG_REL_PATHS}
+    #   ${AOG_REL_PATHS}
         ${BOUNDARY_REL_PATHS}
         ${COMPONENTS_REL_PATHS}
         ${CONFIG_REL_PATHS}
@@ -187,6 +187,15 @@ if(NOT LOCAL_QML)
 
     # message(WARNING "All relative paths: ${ALL_REL_PATHS}")
 
+    #add singletons (AOG/ path)
+    set(aog_qml_singletons
+        qml/AOG/Utils.qml
+    )
+
+    set_source_files_properties(${aog_qml_singletons}
+        PROPERTIES QT_QML_SINGLETON_TYPE TRUE
+    )
+
     # Configure QML module with relative paths
     qt_add_qml_module(QtAgOpenGPS
         URI AOG
@@ -194,6 +203,7 @@ if(NOT LOCAL_QML)
         RESOURCE_PREFIX "/"
         QML_FILES
         ${ALL_REL_PATHS} #all qml files
+        ${aog_qml_singletons} #singletons
         SOURCES
         aogrenderer.cpp
         aogrenderer.h
@@ -201,7 +211,7 @@ if(NOT LOCAL_QML)
         RESOURCES
         ${IMAGE_REL_PATHS}
         ${SHADER_REL_PATHS}
-    )
+    )  
 
 else()
 
