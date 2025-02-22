@@ -53,7 +53,7 @@ MoveablePopup {
         color: aog.backgroundColor
         TopLine{
             id: topLine
-            titleText: "Tracks"
+            titleText: qsTr("Tracks")
 
             onBtnCloseClicked: {
                 trackPickerDialog.close()

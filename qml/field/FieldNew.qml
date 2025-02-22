@@ -53,7 +53,7 @@ Dialog {
             anchors.right: parent.right
             anchors.top: newFieldLabel.bottom
             selectByMouse: true
-            placeholderText: "New Field Name"
+            placeholderText: qsTr("New Field Name")
             onTextChanged: {
                 for (var i=0; i < fieldInterface.field_list.length ; i++) {
                     if (text === fieldInterface.field_list[i].name) {

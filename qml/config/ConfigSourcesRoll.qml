@@ -115,9 +115,9 @@ Rectangle{
             property double boundValue: Settings.imu_rollFilter
             value: Settings.imu_rollFilter * 100
             onValueChanged: Settings.imu_rollFilter = value / 100.0
-            leftTopText: "Less"
-            centerTopText: "Roll Filter"
-            rightTopText: "More"
+            leftTopText: qsTr("Less")
+            centerTopText: qsTr("Roll Filter")
+            rightTopText: qsTr("More")
         }
     }
     Image {

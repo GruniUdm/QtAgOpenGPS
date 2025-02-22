@@ -22,7 +22,7 @@ Popup{
 
     Comp.TopLine{
 		id: topLine
-		titleText: "Click 2 points on the Boundary to Begin"
+        titleText: qsTr("Click 2 points on the Boundary to Begin")
 	}
 	Rectangle{
 		anchors.top: topLine.bottom
@@ -36,7 +36,7 @@ Popup{
             id: lineDrawerField
             objectName: "lineDrawerField"
 			anchors.fill: parent
-            Comp.TextLine{ text: "nothing to see here yet"}
+            Comp.TextLine{ text: qsTr("nothing to see here yet")}
 
 			signal clicked(var mouse)
 
@@ -93,7 +93,7 @@ Popup{
 				id: boundaryCurve
 				icon.source: prefix + "/images/BoundaryCurveLine.png"
 				Layout.alignment: Qt.AlignCenter
-				text: "Boundary Curve"
+                text: qsTr("Boundary Curve")
 			}
             Comp.IconButtonTransparent{
 				icon.source: prefix + "/images/ZoomOGL.png"
