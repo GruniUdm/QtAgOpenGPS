@@ -33,10 +33,10 @@ qt_standard_project_setup()
 qt_add_executable(QtAgOpenGPS
     main.cpp
     $<$<NOT:$<BOOL:${LOCAL_QML}>>:agopengps.qrc>
-    aogproperties.cpp
-    aogproperty.h aogproperty.cpp
     aogrenderer.h aogrenderer.cpp
-    aogsettings.h aogsettings.cpp
+    newsettings.h newsettings.cpp
+    newsettings_addkeys.cpp
+    settings_defines.h
     btnenum.h
     common.h
     formgps.h formgps.cpp
@@ -51,20 +51,14 @@ qt_add_executable(QtAgOpenGPS
     formgps_ui.cpp
     formgps_ui_boundary.cpp
     formgps_ui_field.cpp
-    formgps_ui_tracks.cpp
     formgps_ui_vehicle.cpp
     formheadache.h formheadache.cpp
     formheadland.h formheadland.cpp
     glutils.h glutils.cpp
     interfaceproperty.h
-    properties.h
     qmlsectionbuttons.h qmlsectionbuttons.cpp
-    qmlsettings.h qmlsettings.cpp
-    qmlsettings_addkeys.cpp
     qmlutil.h
     setter.h
-    testlists.cpp
-    testnmea.cpp
     classes/cabcurve.h classes/cabcurve.cpp
     classes/cabline.h classes/cabline.cpp
     classes/cahrs.h classes/cahrs.cpp
@@ -101,9 +95,7 @@ qt_add_executable(QtAgOpenGPS
     classes/vecfix2fix.h
     classes/qmlblockage.h classes/qmlblockage.cpp
     LICENSE
-    props.py
     TODO.md
-    parse_properties.py
     README.md
     android/AndroidManifest.xml
     android/build.gradle
@@ -116,18 +108,18 @@ qt_add_executable(QtAgOpenGPS
     android/res/xml/qtprovider_paths.xml
 )
 
-set(qml_interfaces_singletons
-    qml/interfaces/TracksInterface.qml
+set(aog_qml_singletons
+    qml/AOG/Utils.qml
 )
 
-set_source_files_properties(${qml_interfaces_singletons}
+set_source_files_properties(${aog_qml_singletons}
     PROPERTIES QT_QML_SINGLETON_TYPE TRUE
 )
 
 qt_add_qml_module(QtAgOpenGPS
     URI AOG
     VERSION 1.0
-    QML_FILES ${qml_interfaces_singletons}
+    QML_FILES ${aog_qml_singletons}
     SOURCES
         aogrenderer.cpp
         aogrenderer.h
@@ -137,9 +129,12 @@ qt_add_qml_module(QtAgOpenGPS
 # show some of our mockup files in the project tree without compiling it
 set(qml_mockup_files
     qml/AOG/qmldir
-    qml/MockSettings.qml
-    qml/MockTracks.qml
-    qml/MockVehicle.qml
+    qml/AOG/MockAOGRenderer.qml
+    qml/Interface/qmldir
+    qml/Interface/MockTracksInterface.qml
+    qml/Interface/MockVehicleInterface.qml
+    qml/Settings/qmldir
+    qml/Settings/MockSettings.qml
 )
 
 add_custom_target(MockQML SOURCES ${qml_mockup_files})

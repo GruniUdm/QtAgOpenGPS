@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Fusion
 import QtQuick.Controls.Material
+import AOG
 
 ListView {
     id: tableView
@@ -247,7 +248,7 @@ ListView {
             width: parent.width * 0.33
 
             id: bndArea
-            text: utils.area_to_unit_string(model.area,1)+ " " + utils.area_unit()
+            text: Utils.area_to_unit_string(model.area,1)+ " " + Utils.area_unit()
             font.pointSize: 16
         }
         Button {

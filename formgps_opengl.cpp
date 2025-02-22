@@ -22,7 +22,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
-#include "aogproperty.h"
+#include "newsettings.h"
 #include "cpgn.h"
 
 #include <assert.h>
@@ -160,6 +160,7 @@ void FormGPS::oglMain_Paint()
         //will not update, which isn't what we want either.  Some kind of timeout?
      return;
 
+    float lineWidth = settings->value(SETTINGS_display_lineWidth).value<float>();
     int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
     int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
     double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
@@ -186,7 +187,7 @@ void FormGPS::oglMain_Paint()
     //gl->glDisable(GL_CULL_FACE);
 
     //set the camera to right distance
-    SetZoom();
+    camera.SetZoom();
 
     //now move the "camera" to the calculated zoom settings
     //I had to move these functions here because if setZoom is called
@@ -246,7 +247,7 @@ void FormGPS::oglMain_Paint()
 
             ////if grid is on draw it
             if (isGridOn)
-                worldGrid.DrawWorldGrid(gl,projection, modelview, gridZoom, QColor::fromRgbF(0,0,0));
+                worldGrid.DrawWorldGrid(gl, modelview, projection, camera.gridZoom, QColor::fromRgbF(0,0,0,1));
 
             //OpenGL ES does not support wireframe in this way. If we want wireframe,
             //we'll have to do it with LINES
@@ -398,7 +399,7 @@ void FormGPS::oglMain_Paint()
 
                     for (int i = 0; i < bnd.bndList.count(); i++)
                     {
-                        DrawPolygon(gl,projection*modelview,bnd.bndList[i].turnLine,(float)property_setDisplay_lineWidth,color);
+                        DrawPolygon(gl,projection*modelview,bnd.bndList[i].turnLine,lineWidth,color);
                     }
                 }
 
@@ -406,7 +407,7 @@ void FormGPS::oglMain_Paint()
                 if (bnd.isHeadlandOn)
                 {
                     color.setRgbF(0.960f, 0.96232f, 0.30f);
-                    DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,(float)property_setDisplay_lineWidth,color);
+                    DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,lineWidth,color);
                 }
             }
 
@@ -419,7 +420,7 @@ void FormGPS::oglMain_Paint()
                 gldraw1.append(QVector3D(flagPts[flagNumberPicked-1].easting, flagPts[flagNumberPicked-1].northing, 0));
                 gldraw1.draw(gl, projection*modelview,
                              QColor::fromRgbF(0.930f, 0.72f, 0.32f),
-                             GL_LINES, property_setDisplay_lineWidth);
+                             GL_LINES, lineWidth);
             }
 
             //draw the vehicle/implement
@@ -602,21 +603,14 @@ void FormGPS::openGLControl_Shutdown()
 //back buffer openGL draw function
 void FormGPS::oglBack_Paint()
 {
-    //Because this is potentially running in another thread, we cannot
-    //safely make any GUI calls to set buttons, etc.  So instead, we
-    //do the GL drawing here and get the lookahead pixmap from GL here.
-    //After this, this widget will emit a finished signal, where the main
-    //thread can then run the second part of this function, which I've
-    //split out into its own function.
-
-    //don't draw if it's not a new frame. Save a lot of time.
-    if (!newframe) return;  //this will make resizes funny until the next frame comes in
 
     QOpenGLContext *glContext = QOpenGLContext::currentContext();
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
 
-    GLHelperOneColor gldraw;
+    GLHelperOneColorBack gldraw;
+
+    initializeBackShader(); //compiler the shader we need if necessary
 
     /* use the QML context with an offscreen surface to draw
      * the lookahead triangles
@@ -715,7 +709,7 @@ void FormGPS::oglBack_Paint()
                     triBuffer.release();
 
                     //draw the triangles in each triangle strip
-                    glDrawArraysColor(gl,projection*modelview,
+                    glDrawArraysColorBack(gl,projection*modelview,
                                       GL_TRIANGLE_STRIP, patchColor,
                                       triBuffer,GL_FLOAT,count2-1);
 
@@ -763,14 +757,14 @@ void FormGPS::oglBack_Paint()
         ////draw the bnd line
         if (bnd.bndList[0].fenceLine.count() > 3)
         {
-            DrawPolygon(gl,projection*modelview,bnd.bndList[0].fenceLine,3,QColor::fromRgb(0,240,0));
+            DrawPolygonBack(gl,projection*modelview,bnd.bndList[0].fenceLine,3,QColor::fromRgb(0,240,0));
         }
 
 
         //draw 250 green for the headland
         if (bnd.isHeadlandOn && bnd.isSectionControlledByHeadland)
         {
-            DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
+            DrawPolygonBack(gl,projection*modelview,bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
         }
     }
 
@@ -845,7 +839,9 @@ void FormGPS::oglZoom_Paint()
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
 
-    GLHelperOneColor gldraw;
+    GLHelperOneColorBack gldraw;
+
+    initializeBackShader(); //make sure shader is loaded
 
     /* use the QML context with an offscreen surface to draw
      * the lookahead triangles
@@ -1113,26 +1109,6 @@ void FormGPS::CalcFrustum(const QMatrix4x4 &mvp)
     //frustum[21] = clip[7] - clip[5];
     //frustum[22] = clip[11] - clip[9];
     //frustum[23] = clip[15] - clip[13];
-}
-
-//take the distance from object and convert to camera data
-//TODO, move Projection matrix stuff into here when OpenGL ES migration is complete
-void FormGPS::SetZoom()
-{
-    //match grid to cam distance and redo perspective
-    if (camera.camSetDistance <= -20000) gridZoom = 2000;
-    if (camera.camSetDistance >= -20000 && camera.camSetDistance < -10000) gridZoom =   2012;
-    if (camera.camSetDistance >= -10000 && camera.camSetDistance < -5000) gridZoom =    1006;
-    if (camera.camSetDistance >= -5000 && camera.camSetDistance < -2000) gridZoom =     503;
-    if (camera.camSetDistance >= -2000 && camera.camSetDistance < -1000) gridZoom =     201.2;
-    if (camera.camSetDistance >= -1000 && camera.camSetDistance < -500) gridZoom =      100.6;
-    if (camera.camSetDistance >= -500 && camera.camSetDistance < -250) gridZoom =       50.3;
-    if (camera.camSetDistance >= -250 && camera.camSetDistance < -150) gridZoom =       25.15;
-    if (camera.camSetDistance >= -150 && camera.camSetDistance < -50) gridZoom =         10.06;
-    if (camera.camSetDistance >= -50 && camera.camSetDistance < -1) gridZoom = 5.03;
-    //1.216 2.532
-
-
 }
 
 void FormGPS::loadGLTextures()

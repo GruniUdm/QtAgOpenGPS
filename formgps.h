@@ -158,9 +158,6 @@ public:
 
     double nudNumber = 0;
 
-    double m2InchOrCm, inchOrCm2m, m2FtOrM, ftOrMtoM, cm2CmOrIn, inOrCm2Cm;
-    QString unitsFtM, unitsInCm;
-
     //used by filePicker Form to return picked file and directory
     //QString filePickerFileAndDirectory;
 
@@ -251,12 +248,6 @@ private:
 public:
     //for animated submenu
     //bool isMenuHid = true;
-
-    //Zoom variables
-    double gridZoom;
-    double zoomValue = 10;
-    double triangleResolution = 1.0;
-    double previousZoom = 25;
 
     // Storage For Our Tractor, implement, background etc Textures
     //Texture particleTexture;
@@ -611,7 +602,6 @@ public:
     QVector3D mouseClickToField(int mouseX, int mouseY);
     QVector3D mouseClickToPan(int mouseX, int mouseY);
 
-    void SetZoom();
     void loadGLTextures();
     void Timer1_Tick();
 

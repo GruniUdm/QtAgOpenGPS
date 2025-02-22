@@ -93,6 +93,7 @@ public:
     Q_PROPERTY (QString newName READ getNewName WRITE setNewName NOTIFY newNameChanged)
 
     Q_PROPERTY (int count READ rowCount NOTIFY countChanged())
+    Q_PROPERTY (QString currentName READ getCurrentName NOTIFY currentNameChanged)
 
     explicit CTrack(QObject* parent = nullptr);
     ~CTrack();
@@ -144,6 +145,8 @@ public:
     int getNewMode(void);
     void setNewMode(TrackMode);
 
+    QString getCurrentName(void);
+
     int getHowManyPathsAway();
     int getMode() { if (idx >=0) return gArr[idx].mode; else return 0; }
     void setIdx(int new_idx);
@@ -178,11 +181,11 @@ signals:
     void newNameChanged();
     void newRefSideChanged();
     void countChanged();
+    void currentNameChanged();
 
 public slots:
-    //we can't call these directly from QML because of thread context
-    //issues.  At least for now QML must call TracksInterface signals
-    //which we'll connect to these slots.
+    //slots are by definition invoke-able from QML directly.
+    //or they can be connected to qml-emitted signals
     void select(int index);
     void next();
     void prev();

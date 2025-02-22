@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import AOG
+import Settings
 import "components" as Comp
 
 ColumnLayout {
@@ -33,7 +35,7 @@ ColumnLayout {
                 anchors.margins: 5
                 width: parent.width
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: utils.m_to_unit_string(aog.distanceUser, 2)
+                text: Utils.m_to_unit_string(aog.distanceUser, 2)
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -45,7 +47,7 @@ ColumnLayout {
                 anchors.margins: 5
                 width: parent.width
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: utils.area_to_unit_string(aog.workedAreaTotalUser, 2)
+                text: Utils.area_to_unit_string(aog.workedAreaTotalUser, 2)
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter

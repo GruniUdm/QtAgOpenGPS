@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import Interface
 
 pragma ComponentBehavior: Bound
 
@@ -9,10 +10,10 @@ ListView {
     property bool trackVisible: false
 
     onVisibleChanged: {
-        if (visible && trk.idx > -1) {
-            console.debug("turning on track ",trk.idx)
-            //tracksView.selected = trk.idx
-            tracksView.currentIndex = trk.idx
+        if (visible && TracksInterface.idx > -1) {
+            console.debug("turning on track ",TracksInterface.idx)
+            //tracksView.selected = TracksInterface.idx
+            tracksView.currentIndex = TracksInterface.idx
         }
     }
 

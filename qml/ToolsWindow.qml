@@ -4,6 +4,7 @@
 // The "Tools" button on main screen
 import QtQuick 2.0
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "components" as Comp
@@ -53,14 +54,14 @@ import "wizards" as Wiz
                 id: smABCurve
                 icon.source: prefix + "/images/ABSmooth.png"
                 text: qsTr("Smooth AB Curve")
-                visible: settings.setFeature_isABSmoothOn
+                visible: Settings.feature_isABSmoothOn
             }
 
             Comp.IconButtonTextBeside {
                 id: delContourPaths
                 icon.source: prefix + "/images/TrashContourRef.png"
                 text: qsTr("Delete Contour Paths")
-                visible:settings.setFeature_isHideContourOn
+                visible:Settings.feature_isHideContourOn
             }
 
             Comp.IconButtonTextBeside {
@@ -74,7 +75,7 @@ import "wizards" as Wiz
                 id: webcam
                 icon.source: prefix + "/images/Webcam.png"
                 text: qsTr("WebCam")
-                visible:settings.setFeature_isWebCamOn
+                visible:Settings.feature_isWebCamOn
                 onClicked: cam1.visible = !cam1.visible, toolsMenu.visible = false
             }
 
@@ -82,7 +83,7 @@ import "wizards" as Wiz
                 id: offsetFix
                 icon.source: prefix + "/images/YouTurnReverse.png" // this is horrible. This has nothing to do with YouTurnReverse.
                 text: qsTr("Offset Fix")
-                visible: settings.setFeature_isOffsetFixOn
+                visible: Settings.feature_isOffsetFixOn
             }
         }
 

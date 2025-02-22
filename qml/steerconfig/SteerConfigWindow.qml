@@ -5,6 +5,9 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -16,8 +19,8 @@ MoveablePopup {
     modal: false
     visible: false
     width:350 * theme.scaleWidth
-    x: settings.setWindow_steerSettingsLocation.x
-    y: settings.setWindow_steerSettingsLocation.y
+    x: Settings.window_steerSettingsLocation.x
+    y: Settings.window_steerSettingsLocation.y
     function show (){
         steerConfigWindow.visible = true
 	}
@@ -74,7 +77,7 @@ MoveablePopup {
                     icon.source: prefix + "/images/Steer/ST_StanleyTab.png"
                     implicitHeight: 50 * theme.scaleHeight
                     implicitWidth: parent.width /3 - 5 * theme.scaleWidth
-                    visible: !settings.setMenu_isPureOn
+                    visible: !Settings.menu_isPureOn
                 }
 				IconButtonColor{
 					id: ppBtn
@@ -83,7 +86,7 @@ MoveablePopup {
                     icon.source: prefix + "/images/Steer/Sf_PPTab.png"
                     implicitHeight: 50 * theme.scaleHeight
                     implicitWidth: parent.width /3 - 5 * theme.scaleWidth
-                    visible: settings.setMenu_isPureOn
+                    visible: Settings.menu_isPureOn
                 }
             }
 
@@ -130,23 +133,23 @@ MoveablePopup {
                         implicitHeight: parent.height /5 -20* theme.scaleHeight
                         //visible: false
                         visible: steerBtn.checked
-                        onClicked:  {settings.setAS_wasOffset -= cpDegSlider.value *aog.steerAngleActual;
-                        if (Math.abs(settings.setAS_wasOffset)< 3900){ sendUdptimer.running = true}
+                        onClicked:  {Settings.as_wasOffset -= cpDegSlider.value *aog.steerAngleActual;
+                        if (Math.abs(Settings.as_wasOffset)< 3900){ sendUdptimer.running = true}
                         else {timedMessage.addMessage(2000, "Exceeded Range", "Excessive Steer Angle - Cannot Zero");}
                                     }
                     }
 
                     SteerConfigSliderCustomized {
-                        property int wasOffset: settings.setAS_wasOffset
+                        property int wasOffset: Settings.as_wasOffset
                         id: wasZeroSlider
                         centerTopText: "WAS Zero"
                         width: 200 * theme.scaleWidth
                         from: -4000
-                        leftText: utils.decimalRound(value / cpDegSlider.value, 2)
-                        //onValueChanged: settings.setAS_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
-                        onValueChanged: settings.setAS_wasOffset = value, sendUdptimer.running = true
+                        leftText: Utils.decimalRound(value / cpDegSlider.value, 2)
+                        //onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
+                        onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, sendUdptimer.running = true
                         to: 4000
-                        value: settings.setAS_wasOffset / cpDegSlider.value
+                        value: Settings.as_wasOffset / cpDegSlider.value
                         visible: steerBtn.checked
                     }
                     SteerConfigSliderCustomized {
@@ -154,10 +157,10 @@ MoveablePopup {
                         centerTopText: "Counts per Degree"
                         from: 1
                         leftText: value
-                        onValueChanged: settings.setAS_countsPerDegree = value, sendUdptimer.running = true
+                        onValueChanged: Settings.as_countsPerDegree = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 255
-                        value: Math.round(settings.setAS_countsPerDegree, 0)
+                        value: Math.round(Settings.as_countsPerDegree, 0)
                         width: 200 * theme.scaleWidth
                         visible: steerBtn.checked
                     }
@@ -166,10 +169,10 @@ MoveablePopup {
                         centerTopText: "AckerMann"
                         from: 1
                         leftText: value
-                        onValueChanged: settings.setAS_ackerman = value, sendUdptimer.running = true
+                        onValueChanged: Settings.as_ackerman = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 200
-                        value: Math.round(settings.setAS_ackerman, 0)
+                        value: Math.round(Settings.as_ackerman, 0)
                         visible: steerBtn.checked
                     }
                     SteerConfigSliderCustomized {
@@ -177,10 +180,10 @@ MoveablePopup {
                         centerTopText:"Max Steer Angle"
                         from: 10
                         leftText: value
-                        onValueChanged: settings.setVehicle_maxSteerAngle= value
+                        onValueChanged: Settings.vehicle_maxSteerAngle= value
                         stepSize: 1
                         to: 80
-                        value: Math.round(settings.setVehicle_maxSteerAngle)
+                        value: Math.round(Settings.vehicle_maxSteerAngle)
                         visible: steerBtn.checked
                     }
 
@@ -192,10 +195,10 @@ MoveablePopup {
                         centerTopText: "Proportional Gain"
                         from: 0
                         leftText: value
-                        onValueChanged: settings.setAS_Kp = value, sendUdptimer.running = true
+                        onValueChanged: Settings.as_Kp = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 200
-                        value: Math.round(settings.setAS_Kp, 0)
+                        value: Math.round(Settings.as_Kp, 0)
                         visible: gainBtn.checked
                     }
                     SteerConfigSliderCustomized {
@@ -203,10 +206,10 @@ MoveablePopup {
                         centerTopText: "Maximum Limit"
                         from: 0
                         leftText: value
-                        onValueChanged: settings.setAS_highSteerPWM = value, sendUdptimer.running = true
+                        onValueChanged: Settings.as_highSteerPWM = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 254
-                        value: Math.round(settings.setAS_highSteerPWM, 0)
+                        value: Math.round(Settings.as_highSteerPWM, 0)
                         visible: gainBtn.checked
                     }
                     SteerConfigSliderCustomized {
@@ -214,10 +217,10 @@ MoveablePopup {
                         centerTopText: "Minimum to Move"
                         from: 0
                         leftText: value
-                        onValueChanged: settings.setAS_minSteerPWM = value, sendUdptimer.running = true
+                        onValueChanged: Settings.as_minSteerPWM = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 100
-                        value: Math.round(settings.setAS_minSteerPWM, 0)
+                        value: Math.round(Settings.as_minSteerPWM, 0)
                         visible: gainBtn.checked
                     }
 
@@ -228,22 +231,22 @@ MoveablePopup {
                         id: stanleyAggressivenessSlider
                         centerTopText: "Agressiveness"
                         from: .1
-                        onValueChanged: settings.stanleyDistanceErrorGain = value
+                        onValueChanged: Settings.vehicle_stanleyDistanceErrorGain = value
                         stepSize: .1
                         to: 4
                         leftText: Math.round(value * 10)/10
-                        value: settings.stanleyDistanceErrorGain
+                        value: Settings.vehicle_stanleyDistanceErrorGain
                         visible: stanleyBtn.checked
                     }
                     SteerConfigSliderCustomized {
                         id: overShootReductionSlider
                         centerTopText: "OverShoot Reduction"
                         from: .1
-                        onValueChanged: settings.stanleyHeadingErrorGain = value
+                        onValueChanged: Settings.vehicle_stanleyHeadingErrorGain = value
                         stepSize: .1
                         to: 1.5
                         leftText: Math.round(value * 10) / 10
-                        value: settings.stanleyHeadingErrorGain
+                        value: Settings.vehicle_stanleyHeadingErrorGain
                         visible: stanleyBtn.checked
                     }
                     SteerConfigSliderCustomized {
@@ -251,10 +254,10 @@ MoveablePopup {
                         centerTopText: "Integral"
                         from: 0
                         leftText: value
-                        onValueChanged: settings.stanleyIntegralGainAB = value /100
+                        onValueChanged: Settings.vehicle_stanleyIntegralGainAB = value /100
                         stepSize: 1
                         to: 100
-                        value: Math.round(settings.stanleyIntegralGainAB * 100, 0)
+                        value: Math.round(Settings.vehicle_stanleyIntegralGainAB * 100, 0)
                         visible: stanleyBtn.checked
                     }
 
@@ -265,11 +268,11 @@ MoveablePopup {
                         id: acqLookAheadSlider
                         centerTopText: "Acquire Look Ahead"
                         from: 1
-                        onValueChanged: settings.setVehicle_goalPointLookAhead = value
+                        onValueChanged: Settings.vehicle_goalPointLookAhead = value
                         stepSize: .1
                         leftText: Math.round(value * 10) / 10
                         to: 7
-                        value: settings.setVehicle_goalPointLookAhead
+                        value: Settings.vehicle_goalPointLookAhead
                         visible: ppBtn.checked
                     }
                     SteerConfigSliderCustomized {
@@ -278,31 +281,31 @@ MoveablePopup {
                         from: 1
                         stepSize: .1
                         leftText: Math.round(value * 10) / 10
-                        onValueChanged: settings.setVehicle_goalPointLookAheadHold = utils.decimalRound(value, 1)
+                        onValueChanged: Settings.vehicle_goalPointLookAheadHold = Utils.decimalRound(value, 1)
                         to: 7
-                        value: settings.setVehicle_goalPointLookAheadHold
+                        value: Settings.vehicle_goalPointLookAheadHold
                         visible: ppBtn.checked
                     }
                     SteerConfigSliderCustomized {
                         id: lookAheadSpeedGainSlider
                         centerTopText: "Look Ahead Speed Gain"
                         from: .5
-                        onValueChanged: settings.setVehicle_goalPointLookAheadMult = value
+                        onValueChanged: Settings.vehicle_goalPointLookAheadMult = value
                         stepSize: .1
                         to: 3
                         leftText: Math.round(value * 10) / 10
-                        value: settings.setVehicle_goalPointLookAheadMult
+                        value: Settings.vehicle_goalPointLookAheadMult
                         visible: ppBtn.checked
                     }
                     SteerConfigSliderCustomized {
                         id: ppIntegralSlider
                         centerTopText: "Integral"
                         from: 0
-                        onValueChanged: settings.purePursuitIntegralGainAB = value /100
+                        onValueChanged: Settings.vehicle_purePursuitIntegralGainAB = value /100
                         stepSize: 1
                         to: 100
                         leftText: Math.round(value *10) / 10
-                        value: settings.purePursuitIntegralGainAB *100
+                        value: Settings.vehicle_purePursuitIntegralGainAB *100
                         visible: ppBtn.checked
                     }
                     //endregion PurePursuitTab

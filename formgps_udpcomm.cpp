@@ -4,10 +4,10 @@
 // This is in charge of all UDP comm.
 #include <QNetworkDatagram>
 #include "formgps.h"
-#include "aogproperty.h"
 #include "cnmea.h"
 #include <QHostAddress>
 #include "qmlutil.h"
+#include "newsettings.h"
 
 #define BitConverter_ToDouble(data,position) (*(reinterpret_cast<double *>(&(data[position]))))
 #define BitConverter_ToSingle(data,position) (*(reinterpret_cast<float *>(&(data[position]))))
@@ -304,15 +304,12 @@ void FormGPS::DisableSim()
     isGPSPositionInitialized = false;
     isFirstHeadingSet = false;
     startCounter = 0;
-    property_setMenu_isSimulatorOn = false;
-    //TODO, do we need to save explicitly?
-    //Properties.Settings.Default.Save();
+    settings->setValue(SETTINGS_menu_isSimulatorOn, false);
     return;
 }
 
 void FormGPS::StartLoopbackServer()
 {
-    AOGSettings s;
     int port = 15550; //property?
 	qDebug() << "StartLoopbackServer" << port;
 

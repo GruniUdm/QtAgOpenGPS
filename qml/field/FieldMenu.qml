@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import Settings
 
 import ".."
 import "../components"
@@ -82,12 +83,12 @@ Drawer {
                 isChecked: false
                 text: "Resume"
                 icon.source: prefix + "/images/FilePrevious.png"
-                enabled: settings.setF_CurrentDir !== "Default" && !aog.isJobStarted
+                enabled: Settings.f_currentDir !== "Default" && !aog.isJobStarted
                 onEnabledChanged: fieldToResumeText.visible = enabled
 
                 onClicked: {
                     fieldMenu.visible = false
-                    fieldInterface.field_open(settings.setF_CurrentDir)
+                    fieldInterface.field_open(Settings.f_currentDir)
                 }
                 Text{ //show which field will be enabled
                     id: fieldToResumeText
@@ -97,7 +98,7 @@ Drawer {
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 5
                     font.pixelSize: 20
-                    text: settings.setF_CurrentDir
+                    text: Settings.f_currentDir
                 }
             }
             IconButtonTextBeside{
