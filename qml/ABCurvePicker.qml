@@ -57,7 +57,7 @@ Dialog {
         color: aog.borderColor
         TopLine{
             id: topLine
-            titleText: "AB Curve"
+            titleText: qsTr("AB Curve")
         }
 
         ColumnLayout{

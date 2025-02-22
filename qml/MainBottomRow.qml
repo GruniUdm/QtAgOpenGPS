@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Settings
+import AOG
 import "components" as Comp
 
 RowLayout{
@@ -51,14 +53,14 @@ RowLayout{
         checkable: true
         icon.source: prefix + "/images/YouSkipOff.png"
         iconChecked: prefix + "/images/YouSkipOn.png"
-        buttonText: "YouSkips"
+        buttonText: qsTr("YouSkips")
     }
     Comp.MainWindowBtns { //reset trailing tool to straight back
         id: btnResetTool
         icon.source: prefix + "/images/ResetTool.png"
-        buttonText: "Reset Tool"
+        buttonText: qsTr("Reset Tool")
         onClicked: aog.btnResetTool()
-        visible: settings.setTool_isToolTrailing === true //hide if front or rear 3 pt
+        visible: Settings.tool_isToolTrailing === true //hide if front or rear 3 pt
     }
     Comp.MainWindowBtns {
         id: btnSectionMapping
@@ -68,11 +70,11 @@ RowLayout{
     Comp.MainWindowBtns {
         id: btnTramLines
         icon.source: prefix + "/images/TramLines.png"
-        buttonText: "Tram Lines"
+        buttonText: qsTr("Tram Lines")
         Layout.alignment: Qt.AlignCenter
         implicitWidth: theme.buttonSize
         implicitHeight: theme.buttonSize
-        visible: settings.setFeature_isTramOn
+        visible: Settings.feature_isTramOn
     }
     Comp.MainWindowBtns {
         property bool isOn: false
@@ -80,10 +82,10 @@ RowLayout{
         isChecked: isOn
         checkable: true
         disabled: btnHeadland.checked
-        visible: utils.isTrue(settings.setArdMac_isHydEnabled) && btnHeadland.visible
+        visible: Utils.isTrue(Settings.ardMac_isHydEnabled) && btnHeadland.visible
         icon.source: prefix + "/images/HydraulicLiftOff.png"
         iconChecked: prefix + "/images/HydraulicLiftOn.png"
-        buttonText: "HydLift"
+        buttonText: qsTr("HydLift")
         onClicked: {
             isOn = !isOn
             aog.isHydLiftOn(isOn)
@@ -95,7 +97,7 @@ RowLayout{
         checkable: true
         icon.source: prefix + "/images/HeadlandOff.png"
         iconChecked: prefix + "/images/HeadlandOn.png"
-        buttonText: "Headland"
+        buttonText: qsTr("Headland")
         onClicked: aog.btnHeadland()
     }
     Comp.MainWindowBtns {
@@ -110,14 +112,14 @@ RowLayout{
                 contextFlag.visible = true;
             }
         }
-        buttonText: "Flag"
+        buttonText: qsTr("Flag")
     }
 
     Comp.MainWindowBtns {
         id: btnTrack
         icon.source: prefix + "/images/TrackOff.png"
         iconChecked: prefix + "/images/TrackOn.png"
-        buttonText: "Track"
+        buttonText: qsTr("Track")
         onClicked: trackButtons.visible = !trackButtons.visible
     }
 

@@ -1,5 +1,5 @@
 import QtQuick 2.15
-import QtQuick.Controls.Fusion
+import QtQuick.Controls 2.15
 
 Rectangle {
     width: 800
@@ -13,14 +13,14 @@ Rectangle {
         id: utils
     }
 
-    SpinBoxCM {
+    SpinBoxOneDecimal {
         id: test
         
-        from: 4 //centimetres
-        to: 240 //centimetres
-        text: "section width"
+        from: 0 
+        to: 24 
+        text: "test it"
 
-        value: 2.3 * 1
+        value: 2.3
 
         onValueModified: {
             console.debug("value in metres is " + test.value + " which is local units " + utils.cm_to_unit(test.value))

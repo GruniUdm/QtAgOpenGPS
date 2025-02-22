@@ -4,6 +4,7 @@
 // Antenna dimensions
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -16,9 +17,9 @@ Rectangle{
     Image {
         id: antImage
         //3 vehicle types  tractor=0 harvestor=1 4wd=2
-        source: settings.setVehicle_vehicleType === 0 ? prefix + "/images/qtSpecific/AntennaTractor.png" :
-                settings.setVehicle_vehicleType === 1 ? prefix + "/images/qtSpecific/AntennaHarvester.png" :
-                settings.setVehicle_vehicleType === 2 ? prefix + "/images/qtSpecific/Antenna4WD.png" :
+        source: Settings.vehicle_vehicleType === 0 ? prefix + "/images/qtSpecific/AntennaTractor.png" :
+                Settings.vehicle_vehicleType === 1 ? prefix + "/images/qtSpecific/AntennaHarvester.png" :
+                Settings.vehicle_vehicleType === 2 ? prefix + "/images/qtSpecific/Antenna4WD.png" :
                 prefix + "/images/Config/ConSt_Mandatory.png"
         width: 350 * theme.scaleWidth
         height: 175 * theme.scaleHeight
@@ -34,8 +35,8 @@ Rectangle{
         from: -999
         to: 999
         editable: true
-        boundValue: settings.setVehicle_antennaPivot
-        onValueModified: settings.setVehicle_antennaPivot = value
+        boundValue: Settings.vehicle_antennaPivot
+        onValueModified: Settings.vehicle_antennaPivot = value
     }
     SpinBoxCM{
         id: antennaHeight
@@ -46,8 +47,8 @@ Rectangle{
         from: 0
         to: 1000
         editable: true
-        boundValue: settings.setVehicle_antennaHeight
-        onValueModified: settings.setVehicle_antennaHeight = value
+        boundValue: Settings.vehicle_antennaHeight
+        onValueModified: Settings.vehicle_antennaHeight = value
     }
 	TitleFrame{
 		anchors.top: antImage.bottom
@@ -72,17 +73,17 @@ Rectangle{
             anchors.verticalCenter: parent.verticalCenter
 			anchors.leftMargin: 7 * theme.scaleWidth
 			iconHeightScaleText: 1
-            checkable: settings.setGPS_headingFromWhichSource === "Single"
-            isChecked: (settings.setVehicle_antennaOffset < 0)
-			icon.source: settings.setVehicle_vehicleType === 0 ? prefix + "/images/qtSpecific/LeftAntenna.png"
-			: settings.setVehicle_vehicleType === 1 ? prefix + "/images/qtSpecific/LeftAntennaHarvester.png"
-			: settings.setVehicle_vehicleType === 2 ? prefix + "/images/qtSpecific/LeftAntenna4WD.png"
+            checkable: Settings.gps_headingFromWhichSource === "Single"
+            isChecked: (Settings.vehicle_antennaOffset < 0)
+			icon.source: Settings.vehicle_vehicleType === 0 ? prefix + "/images/qtSpecific/LeftAntenna.png"
+			: Settings.vehicle_vehicleType === 1 ? prefix + "/images/qtSpecific/LeftAntennaHarvester.png"
+			: Settings.vehicle_vehicleType === 2 ? prefix + "/images/qtSpecific/LeftAntenna4WD.png"
 			: prefix + "/images/Config/ConSt_Mandatory.png"
 			onClicked: {
-				if (settings.setGPS_headingFromWhichSource === "Dual") 
+				if (Settings.gps_headingFromWhichSource === "Dual") 
 				    timedMessage.addMessage(5000, qsTr("Not Allowed"), qsTr("Dual heading MUST be right only"))
 				else
-					settings.setVehicle_antennaOffset = -Math.abs(settings.setVehicle_antennaOffset)
+					Settings.vehicle_antennaOffset = -Math.abs(Settings.vehicle_antennaOffset)
 			}
 
         }
@@ -94,12 +95,12 @@ Rectangle{
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
 			anchors.rightMargin: 7 * theme.scaleWidth
-            isChecked: (settings.setVehicle_antennaOffset >= 0)
+            isChecked: (Settings.vehicle_antennaOffset >= 0)
             checkable: true
-            onClicked: settings.setVehicle_antennaOffset = Math.abs(settings.setVehicle_antennaOffset)
-            icon.source: settings.setVehicle_vehicleType === 0 ? prefix + "/images/qtSpecific/RightAntenna.png"
-					: settings.setVehicle_vehicleType === 1 ? prefix + "/images/qtSpecific/RightAntennaHarvester.png"
-					: settings.setVehicle_vehicleType === 2 ? prefix + "/images/qtSpecific/RightAntenna4WD.png"
+            onClicked: Settings.vehicle_antennaOffset = Math.abs(Settings.vehicle_antennaOffset)
+            icon.source: Settings.vehicle_vehicleType === 0 ? prefix + "/images/qtSpecific/RightAntenna.png"
+					: Settings.vehicle_vehicleType === 1 ? prefix + "/images/qtSpecific/RightAntennaHarvester.png"
+					: Settings.vehicle_vehicleType === 2 ? prefix + "/images/qtSpecific/RightAntenna4WD.png"
 					: prefix + "/images/Config/ConSt_Mandatory.png"
         }
 		SpinBoxCM{
@@ -110,14 +111,14 @@ Rectangle{
 			from: 0
 			to: 500
 			editable: true
-			boundValue: Math.abs(settings.setVehicle_antennaOffset)
+			boundValue: Math.abs(Settings.vehicle_antennaOffset)
 			onValueChanged:{
 				if (offsetLeft.checked){
-					settings.setVehicle_antennaOffset = -value
+					Settings.vehicle_antennaOffset = -value
 				} else {
-				settings.setVehicle_antennaOffset = value
+				Settings.vehicle_antennaOffset = value
 				}
-				console.log(settings.setVehicle_antennaOffset)
+				console.log(Settings.vehicle_antennaOffset)
 			}
 		}
 	}

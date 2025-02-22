@@ -8,6 +8,9 @@ import QtQuick.Layouts
 //import QtQuick.Extras 1.4
 import QtQuick.Dialogs
 import Qt.labs.folderlistmodel
+import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -43,19 +46,19 @@ Rectangle{
                 from: 0
                 to: 2500
                 anchors.verticalCenter: parent.verticalCenter
-                boundValue: Math.abs(settings.setVehicle_toolOffset)
+                boundValue: Math.abs(Settings.vehicle_toolOffset)
                 onValueChanged: {
                     if(leftBtn.checked){
-                        settings.setVehicle_toolOffset = -value
+                        Settings.vehicle_toolOffset = -value
                     } else {
-                        settings.setVehicle_toolOffset = value
+                        Settings.vehicle_toolOffset = value
                     }
                 }
             }
             TextLine{
                 anchors.horizontalCenter: undefined;
                 anchors.verticalCenter: parent.verticalCenter
-                text: utils.cm_unit_abbrev()
+                text: Utils.cm_unit_abbrev()
             }
         }
         Item{
@@ -75,10 +78,10 @@ Rectangle{
 			anchors.rightMargin: 7 * theme.scaleWidth
 			anchors.bottomMargin: 7 * theme.scaleHeight
             checkable: true
-            isChecked: (settings.setVehicle_toolOffset < 0)
-            property string offsetNum: settings.setVehicle_toolOffset
+            isChecked: (Settings.vehicle_toolOffset < 0)
+            property string offsetNum: Settings.vehicle_toolOffset
             icon.source: prefix + "/images/Config/ToolOffsetNegativeLeft.png"
-            onClicked: settings.setVehicle_toolOffset = -Math.abs(settings.setVehicle_toolOffset)
+            onClicked: Settings.vehicle_toolOffset = -Math.abs(Settings.vehicle_toolOffset)
         }
 
         IconButtonColor{
@@ -92,9 +95,9 @@ Rectangle{
 			anchors.leftMargin: 7 * theme.scaleWidth
 			anchors.rightMargin: 7 * theme.scaleWidth
 			anchors.bottomMargin: 7 * theme.scaleHeight
-            isChecked: (settings.setVehicle_toolOffset >= 0)
+            isChecked: (Settings.vehicle_toolOffset >= 0)
             checkable: true
-            onClicked: settings.setVehicle_toolOffset = Math.abs(settings.setVehicle_toolOffset)
+            onClicked: Settings.vehicle_toolOffset = Math.abs(Settings.vehicle_toolOffset)
             icon.source: prefix + "/images/Config/ToolOffsetPositiveRight.png"
             TextLine{ text: qsTr("Tool Right"); anchors.top: right.bottom}
         }
@@ -126,19 +129,19 @@ Rectangle{
                 id: overlapGapSpin
                 from: 0
                 to: 2500
-                boundValue: Math.abs(settings.setVehicle_toolOverlap)
+                boundValue: Math.abs(Settings.vehicle_toolOverlap)
                 onValueChanged: {
                     if(overlap.checked){
-                        settings.setVehicle_toolOverlap = -value
+                        Settings.vehicle_toolOverlap = -value
                     } else {
-                        settings.setVehicle_toolOverlap = value
+                        Settings.vehicle_toolOverlap = value
                     }
                 }
             }
             TextLine{
                 anchors.horizontalCenter: undefined;
                 anchors.verticalCenter: parent.verticalCenter
-                text: utils.cm_unit_abbrev()
+                text: Utils.cm_unit_abbrev()
             }
 
         }
@@ -158,8 +161,8 @@ Rectangle{
 			anchors.rightMargin: 7 * theme.scaleWidth
 			anchors.bottomMargin: 7 * theme.scaleHeight
             checkable: true
-            isChecked: (settings.setVehicle_toolOverlap >= 0)
-            onClicked: settings.setVehicle_toolOverlap = Math.abs(settings.setVehicle_toolOverlap)
+            isChecked: (Settings.vehicle_toolOverlap >= 0)
+            onClicked: Settings.vehicle_toolOverlap = Math.abs(Settings.vehicle_toolOverlap)
             icon.source: prefix + "/images/Config/ToolOverlap.png"
             TextLine{ text: qsTr("Overlap"); anchors.top: left.bottom}
         }
@@ -175,14 +178,14 @@ Rectangle{
 			anchors.leftMargin: 7 * theme.scaleWidth
 			anchors.rightMargin: 7 * theme.scaleWidth
 			anchors.bottomMargin: 7 * theme.scaleHeight
-            isChecked: (settings.setVehicle_toolOverlap < 0)
-            onClicked: settings.setVehicle_toolOverlap = -Math.abs(settings.setVehicle_toolOverlap)
+            isChecked: (Settings.vehicle_toolOverlap < 0)
+            onClicked: Settings.vehicle_toolOverlap = -Math.abs(Settings.vehicle_toolOverlap)
             checkable: true
             icon.source: prefix + "/images/Config/ToolGap.png"
             TextLine{
                 anchors.horizontalCenter: undefined;
                 anchors.verticalCenter: parent.verticalCenter
-                text: utils.cm_unit_abbrev()
+                text: Utils.cm_unit_abbrev()
             }
         }
     }

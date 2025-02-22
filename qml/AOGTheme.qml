@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtMultimedia
+import Settings
 
 /* This type contains the sounds, colors, and perhaps screen sizes,
   *Sounds will track AOGInterface.qml, and react when needed as set
@@ -47,9 +48,9 @@ Item {
         }
     }
     Connections{
-        target: settings
-        function onSetDisplay_isDayModeChanged(){
-            if (settings.setDisplay_isDayMode){
+        target: Settings
+        function onDisplay_isDayModeChanged(){
+            if (Settings.display_isDayMode){
                 backgroundColor = "ghostWhite"
                 textColor = "black"
                 borderColor = "lightBlue"
@@ -88,7 +89,7 @@ Item {
     Connections{//sounds functions go here.
         target: aog
         function onIsBtnAutoSteerOnChanged() {//will need another function for every sound option
-            if(settings.setSound_isAutoSteerOn){//does the user want the sound on?
+            if(Settings.sound_isAutoSteerOn){//does the user want the sound on?
                 if(aog.isBtnAutoSteerOn)
                     engage.play()
                 else
@@ -96,7 +97,7 @@ Item {
             }
         }
         function onHydLiftDownChanged(){
-            if(settings.setSound_isHydLiftOn){
+            if(Settings.sound_isHydLiftOn){
                 if(aog.HydLiftDown)
                     hydDown.play()
                 else
@@ -104,21 +105,21 @@ Item {
             }
         }
         function onAutoBtnStateChanged(){
-            if(settings.setSound_isSectionsOn)
+            if(Settings.sound_isSectionsOn)
                 sectionOn.play()
         }
         function onManualBtnStateChanged(){
-            if(settings.setSound_isSectionsOn)
+            if(Settings.sound_isSectionsOn)
                 sectionOff.play()
         }
         function onAgeChanged(){
-            if(aog.age > settings.setGPS_ageAlarm)
-                if(settings.setGPS_isRTK)
+            if(aog.age > Settings.gps_ageAlarm)
+                if(Settings.gps_isRTK)
                     rtkLost.play()
         }
         function onDistancePivotToTurnLineChanged(){
             if(aog.distancePivotToTurnLine == 20)
-                if(settings.setSound_isUturnOn)
+                if(Settings.sound_isUturnOn)
                     approachingYouTurn.play()
         }
     }

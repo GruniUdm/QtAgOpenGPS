@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Controls.Material
+import Settings
 
 import ".."
 import "../components"
@@ -141,7 +142,7 @@ Dialog {
                     text: "+"
                 }
                 onClicked: {
-                    newField.text += " " + settings.setVehicle_vehicleName
+                    newField.text += " " + Settings.vehicle_vehicleName
                 }
             }
             IconButtonTransparent{
@@ -184,7 +185,7 @@ Dialog {
                 width: marker.width
                 height: marker.height
                 icon.source: prefix + "/images/FlagRed.png"
-                text: "Flags"
+                text: qsTr("Flags")
             }
             IconButtonColor{
                 id: btnKeepMapping
@@ -193,7 +194,7 @@ Dialog {
                 width: marker.width
                 height: marker.height
                 icon.source: prefix + "/images/ManualOff.png"
-                text: "Mapping"
+                text: qsTr("Mapping")
             }
             IconButtonColor{
                 id: btnKeepHeadland
@@ -202,7 +203,7 @@ Dialog {
                 width: marker.width
                 height: marker.height
                 icon.source: prefix + "/images/HeadlandMenu.png"
-                text: "Headland"
+                text: qsTr("Headland")
             }
             IconButtonColor{
                 id: btnKeepLines
@@ -211,7 +212,7 @@ Dialog {
                 width: marker.width
                 height: marker.height
                 icon.source: prefix + "/images/ABLineEdit.png"
-                text: "Lines"
+                text: qsTr("Lines")
             }
         }
         Row{

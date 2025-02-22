@@ -54,7 +54,7 @@ Dialog {
             anchors.top: newFieldLabel.bottom
             height: 49
             selectByMouse: true
-            placeholderText: focus || text ? "" : "New Field Name"
+            placeholderText: focus || text ? "" : qsTr("New Field Name")
             onTextChanged: {
                 for (var i=0; i < fieldInterface.field_list.length ; i++) {
                     if (text === fieldInterface.field_list[i].name) {

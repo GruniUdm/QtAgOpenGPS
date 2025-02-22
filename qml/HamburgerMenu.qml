@@ -4,6 +4,7 @@
 // Top left button menu
 import QtQuick 2.0
 import QtQuick.Controls.Fusion
+import Settings
 
 import "components" as Comp
 
@@ -25,25 +26,25 @@ Drawer{
             anchors.fill: parent
 
             Comp.IconButtonTextBeside{
-                text: "Languages"
+                text: qsTr("Languages")
                 onClicked: console.log("")
                 visible: false//todo
             }
             Comp.IconButtonTextBeside{
-                text: "Directories"
+                text: qsTr("Directories")
                 onClicked: console.log("")
                 visible: false//todo
             }
             Comp.IconButtonTextBeside{
-                text: "Colors"
+                text: qsTr("Colors")
                 onClicked: console.log("")
             }
             Comp.IconButtonTextBeside{
-                text: "Section Colors"
+                text: qsTr("Section Colors")
                 onClicked: console.log("")
             }
             Comp.IconButtonTextBeside{
-                text: "Enter Sim Coords"
+                text: qsTr("Enter Sim Coords")
                 onClicked: {
                     console.log("showing")
                     hamburgerMenuRoot.visible = false
@@ -51,8 +52,8 @@ Drawer{
                 }
             }
             Comp.IconButtonTextBeside{
-                text: "Simulator On"
-                property bool isChecked: settings.setMenu_isSimulatorOn
+                text: qsTr("Simulator On")
+                property bool isChecked: Settings.menu_isSimulatorOn
                 onIsCheckedChanged: {
                     checked = isChecked
                 }
@@ -60,26 +61,26 @@ Drawer{
                 checkable: true
                 checked: isChecked
                 onCheckedChanged: {
-                    settings.setMenu_isSimulatorOn = checked
+                    Settings.menu_isSimulatorOn = checked
                 }
             }
             Comp.IconButtonTextBeside{
-                text: "Reset All"
+                text: qsTr("Reset All")
                 onClicked: console.log("")
                 visible: false//todo
             }
             Comp.IconButtonTextBeside{
-                text: "HotKeys"
+                text: qsTr("HotKeys")
                 onClicked: console.log("")
                 visible: false//todo
             }
             Comp.IconButtonTextBeside{
-                text: "About..."
+                text: qsTr("About...")
                 onClicked: console.log("")
                 visible: false//todo
             }
             Comp.IconButtonTextBeside{
-                text: "Help"
+                text: qsTr("Help")
                 onClicked: console.log("")
                 visible: false//todo
             }

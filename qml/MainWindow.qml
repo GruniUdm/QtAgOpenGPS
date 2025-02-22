@@ -7,7 +7,8 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Effects
 import QtQuick.Dialogs
-import Interfaces
+import Settings
+import Interface
 import AOG
 
 import "interfaces" as Interfaces
@@ -32,26 +33,11 @@ Window {
     height: theme.defaultHeight
     width: theme.defaultWidth
 
-    onVisibleChanged: if(settings.setDisplay_isStartFullScreen){
+    onVisibleChanged: if(Settings.display_isStartFullscreen){
                           mainWindow.showMaximized()
                       }
 
     signal save_everything()
-
-    function get_settings() {
-        return settings
-    }
-
-    function getTracksInterface() {
-        return TracksInterface
-
-    }
-
-    property var tracksInterface: TracksInterface
-
-    Component.onCompleted: {
-        console.debug("tracks interface object is ", TracksInterface)
-    }
 
     function close() {
         if (areWindowsOpen()) {
@@ -66,7 +52,7 @@ Window {
             return
         }
         if (mainWindow.visibility !== (Window.FullScreen) && mainWindow.visibility !== (Window.Maximized)){
-            settings.setWindow_Size = ((mainWindow.width).toString() + ", "+  (mainWindow.height).toString())
+            Settings.window_size = ((mainWindow.width).toString() + ", "+  (mainWindow.height).toString())
         }
 
         if (aog.isJobStarted) {
@@ -134,12 +120,6 @@ Window {
         else return false
     }
 
-    //there's a global "settings" property now.  In qmlscene we'll have to fake it somehow.
-
-    //MockSettings {
-    //    id: settings
-    //}
-
     AOGInterface {
         id: aog
         objectName: "aog"
@@ -150,18 +130,6 @@ Window {
         objectName: "fieldInterface"
     }
 
-    /* only use in a mock setting.  Normally C++ will provide
-       this as a CVehicle instance.
-    MockVehicle {
-        id: vehicleInterface
-        objectName: "vehicleInterface"
-    }
-
-    MockTracks {
-        id: trk
-        }
-    */
-
     Interfaces.BoundaryInterface {
         id: boundaryInterface
         objectName: "boundaryInterface"
@@ -170,10 +138,6 @@ Window {
     Interfaces.RecordedPathInterface {
         id: recordedPathInterface
         objectName: "recordedPathInterface"
-    }
-
-    UnitConversion {
-        id: utils
     }
 
     Comp.TimedMessage {
@@ -328,9 +292,9 @@ Window {
             anchors.right: rightColumn.left
             anchors.topMargin: topLine.height + 10
             anchors.margins: 10
-            visible: settings.setMenu_isSpeedoOn
+            visible: Settings.menu_isSpeedoOn
 
-            speed: utils.speed_to_unit(aog.speedKph)
+            speed: Utils.speed_to_unit(aog.speedKph)
         }
 
         SteerCircle { //the IMU indicator on the bottom right -- Called the "SteerCircle" in AOG
@@ -433,7 +397,7 @@ Window {
 
             Comp.OutlineText{
                 id: simulatorOnText
-                visible: settings.setMenu_isSimulatorOn
+                visible: Settings.menu_isSimulatorOn
                 anchors.top: parent.top
                 anchors.topMargin: lightbar.height+ 10
                 anchors.horizontalCenter: lightbar.horizontalCenter
@@ -445,11 +409,11 @@ Window {
             Comp.OutlineText{
                 id: ageAlarm //Lost RTK count up display
                 property int age: aog.age
-                visible: settings.setGPS_isRTK
+                visible: Settings.gps_isRTK
                 anchors.top: simulatorOnText.bottom
                 anchors.topMargin: 30
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Lost RTK"
+                text: qsTr("Lost RTK")
                 font.pixelSize: 65
                 color: "#cc5200"
                 onAgeChanged: {
@@ -489,8 +453,8 @@ Window {
                 anchors.margins: 5
                 dotDistance: aog.avgPivDistance / 10 //avgPivotDistance is averaged
                 visible: (aog.offlineDistance != 32000 &&
-                          (settings.setMenu_isLightbarOn === true ||
-                           settings.setMenu_isLightbarOn === "true")) ?
+                          (Settings.menu_isLightBarOn === true ||
+                           Settings.menu_isLightBarOn === "true")) ?
                              true : false
             }
 
@@ -510,7 +474,7 @@ Window {
                                   aog.currentABLine_heading :
                                   0
 
-                visible: (utils.isTrue(settings.setDisplay_topTrackNum) &&
+                visible: (Utils.isTrue(Settings.display_topTrackNum) &&
                           ((aog.currentABLine > -1) ||
                            (aog.currentABCurve > -1)))
                 //TODO add contour
@@ -521,14 +485,14 @@ Window {
                 anchors.top: tracknum.bottom
                 anchors.margins: 30
                 anchors.left: parent.horizontalCenter
-                visible: settings.setFeature_isTramOn
+                visible: Settings.feature_isTramOn
             }
             TramIndicators{
                 id: tramRight
                 anchors.top: tracknum.bottom
                 anchors.margins: 30
                 anchors.right: parent.horizontalCenter
-                visible: settings.setFeature_isTramOn
+                visible: Settings.feature_isTramOn
             }
 
             //Components- this is where the windows that get displayed over the
@@ -549,7 +513,7 @@ Window {
                 id: blockageData
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                visible: (aog.blockageConnected & settings.setSeed_blockageIsOn) ? true : false
+                visible: (aog.blockageConnected & Settings.seed_blockageIsOn) ? true : false
             }
 
             SimController{
@@ -558,7 +522,7 @@ Window {
                 anchors.bottom: timeText.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottomMargin: 8
-                visible: utils.isTrue(settings.setMenu_isSimulatorOn)
+                visible: Utils.isTrue(Settings.menu_isSimulatorOn)
                 height: 60 * theme.scaleHeight
                 onHeightChanged: anchors.bottomMargin = (8 * theme.scaleHeight)
             }
@@ -594,7 +558,7 @@ Window {
             }
             Comp.BlockageRows {
                 id: blockageRows
-                visible: (aog.blockageConnected & settings.setSeed_blockageIsOn) ? true : false  // need connect with c++ Dim
+                visible: (aog.blockageConnected & Settings.seed_blockageIsOn) ? true : false  // need connect with c++ Dim
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 8
@@ -641,7 +605,7 @@ Window {
                 id: compass
                 anchors.top: parent.top
                 anchors.right: zoomBtns.left
-                heading: -utils.radians_to_deg(aog.heading)
+                heading: -Utils.radians_to_deg(aog.heading)
             }
             Column{
                 id: zoomBtns
@@ -938,7 +902,7 @@ Window {
             onSelectedColorChanged: {
 
                 //just use the Day setting. AOG has them locked to the same color anyways
-                settings.setDisplay_colorSectionsDay = cpSectionColor.selectedColor;
+                Settings.display_colorSectionsDay = cpSectionColor.selectedColor;
 
                 //change the color on the fly. In AOG, we had to cycle the sections off
                 //and back on. This does for us.

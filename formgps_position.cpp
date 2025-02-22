@@ -725,7 +725,7 @@ void FormGPS::UpdateFixPosition()
     else
     {
         //auto track routine
-        if (trk.isAutoTrack && !isBtnAutoSteerOn && trk.autoTrack3SecTimer > 1)
+        if (trk.isAutoTrack && !isBtnAutoSteerOn && trk.autoTrack3SecTimer >= 1)
         {
             trk.autoTrack3SecTimer = 0;
 
@@ -1783,7 +1783,7 @@ void FormGPS::InitializeFirstFewGPSPositions()
             //TODO determine if it is day from wall clock and date
             isDayTime = true;
 
-            SetZoom();
+            camera.SetZoom();
         }
         return;
     }

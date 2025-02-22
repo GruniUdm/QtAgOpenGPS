@@ -8,7 +8,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtQml.Models
-import Interfaces
+import Interface
 import AOG
 import "../components"
 import ".."
@@ -53,7 +53,7 @@ MoveablePopup {
         color: aog.backgroundColor
         TopLine{
             id: topLine
-            titleText: "Tracks"
+            titleText: qsTr("Tracks")
 
             onBtnCloseClicked: {
                 trackPickerDialog.close()

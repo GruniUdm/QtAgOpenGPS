@@ -13,8 +13,7 @@
 #include <QMatrix4x4>
 #include <QOpenGLFunctions>
 #include "glutils.h"
-#include "aogproperty.h"
-#include "aogrenderer.h"
+#include "newsettings.h"
 #include <QTime>
 
 //here for now.  Put in another module for use in other places.
@@ -749,7 +748,7 @@ void FormHeadache::btnExit_Click() {
 
 void FormHeadache::isSectionControlled(bool wellIsIt) {
     bnd->isSectionControlledByHeadland = wellIsIt;
-    property_setHeadland_isSectionControlled = wellIsIt;
+    settings->setValue(SETTINGS_headland_isSectionControlled, wellIsIt);
 }
 
 void FormHeadache::btnBndLoop_Click() {

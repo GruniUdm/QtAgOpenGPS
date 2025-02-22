@@ -4,6 +4,7 @@
 // IMU settings (reset, offset, zero, etc
 import QtQuick
 import QtQuick.Controls.Fusion
+import Settings
 
 import ".."
 import "../components"
@@ -25,7 +26,7 @@ Rectangle{
         text: qsTr("Remove Offset")
         icon.source: prefix + "/images/Config/ConDa_RemoveOffset.png"
         onClicked: {
-            settings.setIMU_rollZero = 0
+            Settings.imu_rollZero = 0
         }
     }
     IconButtonColor{
@@ -38,8 +39,8 @@ Rectangle{
         isChecked: false
         onClicked: {
             if (aog.imuRollDegrees != 88888) {
-                var roll = aog.imuRollDegrees + settings.setIMU_rollZero
-                settings.setIMU_rollZero = roll;
+                var roll = aog.imuRollDegrees + Settings.imu_rollZero
+                Settings.imu_rollZero = roll;
                 aog.changeImuRoll(roll)
             }
         }
@@ -50,7 +51,7 @@ Rectangle{
         anchors.left: zeroRollBtn.right
         anchors.verticalCenter: zeroRollBtn.verticalCenter
         anchors.leftMargin: 20 * theme.scaleWidth
-        text: Number(settings.setIMU_rollZero).toLocaleString(Qt.locale(), 'f', 2);
+        text: Number(Settings.imu_rollZero).toLocaleString(Qt.locale(), 'f', 2);
     }
 
     IconButtonTransparent {
@@ -60,7 +61,7 @@ Rectangle{
         anchors.leftMargin: 20 * theme.scaleWidth
 
         icon.source: prefix + "/images/UpArrow64.png"
-        onClicked: settings.setIMU_rollZero += 0.1
+        onClicked: Settings.imu_rollZero += 0.1
     }
 
     IconButtonTransparent {
@@ -70,7 +71,7 @@ Rectangle{
         anchors.leftMargin: 5 * theme.scaleWidth
 
         icon.source: prefix + "/images/DnArrow64.png"
-        onClicked: settings.setIMU_rollZero -= 0.1
+        onClicked: Settings.imu_rollZero -= 0.1
     }
 
     IconButtonColor{
@@ -94,8 +95,8 @@ Rectangle{
         text: qsTr("Invert Roll")
         icon.source: prefix + "/images/Config/ConDa_InvertRoll.png"
         checkable: true
-        checked: settings.setIMU_invertRoll
-        onCheckedChanged: settings.setIMU_invertRoll = checked
+        checked: Settings.imu_invertRoll
+        onCheckedChanged: Settings.imu_invertRoll = checked
     }
     Rectangle{
         id: rollFilterSlider
@@ -111,12 +112,12 @@ Rectangle{
             anchors.fill: parent
             from: 0
             to: 98
-            property double boundValue: settings.setIMU_rollFilter
-            value: settings.setIMU_rollFilter * 100
-            onValueChanged: settings.setIMU_rollFilter = value / 100.0
-            leftTopText: "Less"
-            centerTopText: "Roll Filter"
-            rightTopText: "More"
+            property double boundValue: Settings.imu_rollFilter
+            value: Settings.imu_rollFilter * 100
+            onValueChanged: Settings.imu_rollFilter = value / 100.0
+            leftTopText: qsTr("Less")
+            centerTopText: qsTr("Roll Filter")
+            rightTopText: qsTr("More")
         }
     }
     Image {

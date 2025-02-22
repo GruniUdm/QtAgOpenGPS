@@ -5,6 +5,9 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -50,9 +53,9 @@ Item {
             SpinBoxM{
                 objectName: "UturnRadius"
                 from: 2
-                boundValue: settings.set_youTurnRadius
-                stepSize: settings.setMenu_isMetric ?  1 : 5
-                onValueChanged: settings.set_youTurnRadius = value
+                boundValue: Settings.youturn_radius
+                stepSize: Settings.menu_isMetric ?  1 : 5
+                onValueChanged: Settings.youturn_radius = value
                 to: 100
                 editable: true
 				decimals: 1
@@ -60,8 +63,8 @@ Item {
             SpinBoxM{
                 objectName: "UturnDistance"
                 from: 0
-                boundValue: settings.set_youTurnDistanceFromBoundary
-                onValueChanged: settings.set_youTurnDistanceFromBoundary = value
+                boundValue: Settings.youturn_distanceFromBoundary
+                onValueChanged: Settings.youturn_distanceFromBoundary = value
                 to: 100
                 editable: true
 				decimals: 1
@@ -69,35 +72,35 @@ Item {
             SpinBoxM{
                 objectName: "UturnExtensionLength"
                 from: 3
-                boundValue: settings.set_youTurnExtensionLength
-                onValueChanged: settings.set_youTurnExtensionLength = value
+                boundValue: Settings.youturn_extensionLength
+                onValueChanged: Settings.youturn_extensionLength = value
                 to:50
                 editable: true
             }
             SpinBoxM{
                 objectName: "UturnSmoothing"
                 from: 8
-                boundValue: settings.setAS_uTurnSmoothing
-                onValueChanged: settings.setAS_uTurnSmoothing = value
+                boundValue: Settings.as_uTurnSmoothing
+                onValueChanged: Settings.as_uTurnSmoothing = value
                 to:50
                 editable: true
             }
             Text{
-                text: utils.m_unit()
+                text: Utils.m_unit()
                 font.bold: true
             }
             Text{
-                text: utils.m_unit()
+                text: Utils.m_unit()
                 font.bold: true
             }
             Text{
-                text: utils.m_unit() + " \n" + qsTr("Set Extension
+                text: Utils.m_unit() + " \n" + qsTr("Set Extension
 Length to 2 or
 3x Radius")
                 font.bold: true
             }
             Text{
-                text: utils.m_unit() + " \n" + qsTr("Set Smoothing
+                text: Utils.m_unit() + " \n" + qsTr("Set Smoothing
  to 3 or 4x
 Radius")
                 font.bold: true
@@ -137,15 +140,15 @@ Radius")
                     id: uTurnUBtn
                     icon.source: prefix + "/images/YouTurnU.png"
                     checkable: true
-                    isChecked: settings.set_uTurnStyle === 0
-                    onClicked: settings.set_uTurnStyle = 1
+                    isChecked: Settings.youturn_style === 0
+                    onClicked: Settings.youturn_style = 1
                 }
                 IconButtonColor{
                     id: uTurnHBtn
                     checkable: true
                     icon.source: prefix + "/images/YouTurnH.png"
-                    isChecked: settings.set_uTurnStyle === 1
-                    onClicked: settings.set_uTurnStyle = 1
+                    isChecked: Settings.youturn_style === 1
+                    onClicked: Settings.youturn_style = 1
                 }
             }
         }

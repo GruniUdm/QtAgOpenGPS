@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import Settings
 
 import ".."
 import "../components"
@@ -40,27 +41,27 @@ Drawer {
                 objectName: "btnFieldDriveIn"
                 Layout.fillWidth: true
                 isChecked: false
-                text: "Drive In"
+                text: qsTr("Drive In")
                 icon.source: prefix + "/images/AutoManualIsAuto.png"
                 onClicked: { fieldMenu.visible = false ; fieldOpen.sortBy = 2 ; fieldOpen.visible = true; }
             }
             IconButtonTextBeside{
                 objectName: "btnFieldISOXML"
                 isChecked: false
-                text: "ISO-XML"
+                text: qsTr("ISO-XML")
                 icon.source: prefix + "/images/ISOXML.png"
             }
             IconButtonTextBeside{
                 objectName: "btnFieldFromKML"
                 isChecked: false
-                text: "From KML"
+                text: qsTr("From KML")
                 icon.source: prefix + "/images/BoundaryLoadFromGE.png"
                 onClicked: fieldFromKML.visible = true
             }
             IconButtonTextBeside{
                 objectName: "btnFieldFromExisting"
                 isChecked: false
-                text: "From Existing"
+                text: qsTr("From Existing")
                 icon.source: prefix + "/images/FileExisting.png"
                 onClicked: {
                     fieldMenu.visible = false
@@ -70,7 +71,7 @@ Drawer {
             IconButtonTextBeside{
                 objectName: "New"
                 isChecked: false
-                text: "New"
+                text: qsTr("New")
                 icon.source: prefix + "/images/FileNew.png"
                 onClicked: {
                     fieldMenu.visible = false
@@ -80,14 +81,14 @@ Drawer {
             IconButtonTextBeside{
                 objectName: "btnFieldResume"
                 isChecked: false
-                text: "Resume"
+                text: qsTr("Resume")
                 icon.source: prefix + "/images/FilePrevious.png"
-                enabled: settings.setF_CurrentDir !== "Default" && !aog.isJobStarted
+                enabled: Settings.f_currentDir !== "Default" && !aog.isJobStarted
                 onEnabledChanged: fieldToResumeText.visible = enabled
 
                 onClicked: {
                     fieldMenu.visible = false
-                    fieldInterface.field_open(settings.setF_CurrentDir)
+                    fieldInterface.field_open(Settings.f_currentDir)
                 }
                 Text{ //show which field will be enabled
                     id: fieldToResumeText
@@ -97,13 +98,13 @@ Drawer {
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 5
                     font.pixelSize: 20
-                    text: settings.setF_CurrentDir
+                    text: Settings.f_currentDir
                 }
             }
             IconButtonTextBeside{
                 objectName: "btnFieldClose"
                 isChecked: false
-                text: "Close"
+                text: qsTr("Close")
                 icon.source: prefix + "/images/FileClose.png"
                 enabled: aog.isJobStarted
                 onClicked: {
@@ -115,7 +116,7 @@ Drawer {
             IconButtonTextBeside{
                 objectName: "btnFieldOpen"
                 isChecked: false
-                text: "Open"
+                text: qsTr("Open")
                 icon.source: prefix + "/images/FileOpen.png"
                 onClicked: {
                     fieldMenu.visible = false

@@ -7,6 +7,7 @@ import QtQuick.Layouts
 import Qt.labs.folderlistmodel
 import QtQuick.Controls.Fusion
 import QtQuick.Controls.Material
+import AOG
 
 import ".."
 import "../components"
@@ -44,7 +45,7 @@ MoveablePopup {
             anchors.top: recordBoundaryWindow.top
             anchors.margins: 5
             objectName: "boundaryRecordOffset"
-            text: "Centimeter"
+            text: qsTr("Centimeter")
             from: 0
             to: 1968
             boundValue: boundaryInterface.createBndOffset
@@ -92,7 +93,7 @@ MoveablePopup {
                 width: boundaryDelete.width
                 spacing: 20 * theme.scaleHeight
                 Text{
-                    text: qsTr("Area:") + " " + utils.area_to_unit_string(boundaryInterface.area,1) + " " + utils.area_unit()
+                    text: qsTr("Area:") + " " + Utils.area_to_unit_string(boundaryInterface.area,1) + " " + Utils.area_unit()
                 }
                 Text{
                     text: qsTr("Points:") + " " + boundaryInterface.pts
