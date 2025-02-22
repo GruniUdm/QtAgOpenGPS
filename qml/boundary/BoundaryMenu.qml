@@ -30,7 +30,7 @@ Item {
         anchors.centerIn: parent
         TopLine{
             id: topLine
-            titleText: "Start or Delete A Boundary"
+            titleText: qsTr("Start or Delete A Boundary")
         }
         Rectangle{
             id: boundaryMain

@@ -14,3 +14,4 @@ branchnotes.txt
 __pycache__
 CMakeCache.txt
 *.patch
+.qtc

@@ -413,7 +413,7 @@ Window {
                 anchors.top: simulatorOnText.bottom
                 anchors.topMargin: 30
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Lost RTK"
+                text: qsTr("Lost RTK")
                 font.pixelSize: 65
                 color: "#cc5200"
                 onAgeChanged: {

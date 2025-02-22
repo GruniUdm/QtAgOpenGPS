@@ -18,7 +18,7 @@ Rectangle {
         
         from: 4 //centimetres
         to: 240 //centimetres
-        text: "section width"
+        text: qsTr("section width")
 
         value: 2.3 * 1
 
@@ -30,7 +30,7 @@ Rectangle {
     Button {
         id: test_button
         anchors.top: test.bottom
-        text: "Click to change number"
+        text: qsTr("Click to change number")
         onClicked: test.setValue(0.5) //metres
     }
 }

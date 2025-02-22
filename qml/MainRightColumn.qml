@@ -27,7 +27,7 @@ ColumnLayout {
         checkable: true
         icon.source: prefix + "/images/ColorUnlocked.png"
         iconChecked: prefix + "/images/ColorLocked.png"
-        buttonText: "Lock"
+        buttonText: qsTr("Lock")
         onClicked: {
             aog.btnContourLock()
             if (aog.btnIsContourLocked)
@@ -55,7 +55,7 @@ ColumnLayout {
         checkable: true
         icon.source: prefix + "/images/ContourOff.png"
         iconChecked: prefix + "/images/ContourOn.png"
-        buttonText: "Contour"
+        buttonText: qsTr("Contour")
         onClicked: {
             aog.btnContour()
         }
@@ -111,7 +111,7 @@ ColumnLayout {
         checkable: true
         icon.source: prefix + "/images/ManualOff.png"
         iconChecked: prefix + "/images/ManualOn.png"
-        buttonText: "Manual"
+        buttonText: qsTr("Manual")
         onCheckedChanged: {
             if (checked) {
                 btnSectionAuto.checked = false;
@@ -131,7 +131,7 @@ ColumnLayout {
         checkable: true
         icon.source: prefix + "/images/SectionMasterOff.png"
         iconChecked: prefix + "/images/SectionMasterOn.png"
-        buttonText: "Auto"
+        buttonText: qsTr("Auto")
         onCheckedChanged: {
             if (checked) {
                 btnSectionManual.checked = false;
@@ -149,7 +149,7 @@ ColumnLayout {
         checkable: true
         icon.source: prefix + "/images/YouTurnNo.png"
         iconChecked: prefix + "/images/YouTurn80.png"
-        buttonText: "AutoUturn"
+        buttonText: qsTr("AutoUturn")
         visible: aog.isTrackOn
         enabled: aog.isBtnAutoSteerOn
         onClicked: aog.autoYouTurn()

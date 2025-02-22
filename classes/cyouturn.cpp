@@ -2866,7 +2866,7 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
             onA = A;
             double distancePiv = glm::Distance(ytList[A], pivot);
 
-            if (distancePiv > 1 || (B >= ptCount - 1))
+            if (A > 0 && distancePiv > 2 || (B >= ptCount - 1))
             {
                 {
                     CompleteYouTurn();
