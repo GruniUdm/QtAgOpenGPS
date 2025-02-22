@@ -233,13 +233,14 @@ double ratecontrol::RateApplied()
 void ratecontrol::getfrommodule (int ID, QByteArray pgn_data)
 {   BtnState = ID;
     ModID = pgn_data[5];
-    appRate =  (pgn_data[8] << 16 | pgn_data[7] << 8 | pgn_data[6]) / 1000.0;
+    //appRate =  (pgn_data[8] << 16 | pgn_data[7] << 8 | pgn_data[6]) / 1000.0;
+    appRate =   (qint32)((uint8_t(pgn_data[8]) << 16) + (uint8_t(pgn_data[8]) << 8) + uint8_t(pgn_data[6]));
     cQuantity = (pgn_data[11] << 16 | pgn_data[10] << 8 | pgn_data[9]) / 1000.0;
     PWMsetting = (qint16)(pgn_data[13] << 8 | pgn_data[12]);  // need to cast to 16 bit integer to preserve the sign bit
-    SensorReceiving = ((pgn_data[14] & 0b00000001) == 0b00000001);
-
+    SensorReceiving = ((pgn_data[14] & 0b00100000) == 0b00100000);
+    //SensorReceiving = pgn_data[14] & (1<<5);
     qDebug() << "Rate ";
-    qDebug() << TargetRate;
+    qDebug() << appRate;
 }
 
 void ratecontrol::getsettings (int ID, QVector<int> set_data)

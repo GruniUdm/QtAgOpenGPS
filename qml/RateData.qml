@@ -12,18 +12,14 @@ Rectangle{
     width: 200 * theme.scaleWidth
     height: childrenRect.height + 30
     color: "#4d4d4d"
+    property double errRate: aog.actualRate;
     Column{
         id: column
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.margins: 15 * theme.scaleWidth
-        Comp.TextLine{ color: "red"; font.pixelSize: 30; text: qsTr("Target Rate ")+Settings.rate_Product0[10]}
-        Comp.TextLine{ color:(aog.product0stat)?"green":"red"; font.pixelSize: 30; text: qsTr("Instant Rate ")+aog.actualRate}
-        Comp.TextLine{ color:(aog.product0stat)?"green":"red"; font.pixelSize: 30; text: qsTr("Current ate ")+aog.smoothRate}
-        Component.onCompleted:{ if (aog.product0stat & aog.actualRate < Settings.rate_Product0[10]*0.9){
-            timedMessage.addMessage(2000, qsTr("Low rate. Increase speed!"))}
-            else if (aog.product0stat & aog.actualRate > Settings.rate_Product0[10] * 1.1){
-            timedMessage.addMessage(2000, qsTr("High rate. Reduce speed!"));}
-        }
+        Comp.TextLine{color:(aog.product0stat)?"green":"red"; font.pixelSize: 30; text: qsTr("Target ")+Settings.rate_Product0[10]}
+        Comp.TextLine{color:((aog.actualRate < Settings.rate_Product0[10]*0.9)||(aog.actualRate > Settings.rate_Product0[10] * 1.1))?"red":"green"; font.pixelSize: 30; text: qsTr("Instant ")+Math.round(aog.actualRate, 0)}
+        Comp.TextLine{ color:((aog.actualRate < Settings.rate_Product0[10]*0.9)||(aog.actualRate > Settings.rate_Product0[10] * 1.1))?"red":"green"; font.pixelSize: 30; text: qsTr("Current ")+Math.round(aog.smoothRate, 0); onTextChanged: {errormessage()}}
     }
 
             Comp.IconButtonColor{
@@ -51,5 +47,11 @@ Rectangle{
                 anchors.top: column.bottom
                 onClicked: Settings.rate_Product0[10]<10?Settings.rate_Product0[10]=0:Settings.rate_Product0[10]-=10
         }
+
+            function errormessage() { if (aog.actualRate < Settings.rate_Product0[10]*0.9){
+                timedMessage.addMessage(2000, qsTr("Low rate. Increase speed!"));}
+                else if (aog.actualRate > Settings.rate_Product0[10] * 1.1){
+                timedMessage.addMessage(2000, qsTr("High rate. Reduce speed!"));}
+            }
 
 }
