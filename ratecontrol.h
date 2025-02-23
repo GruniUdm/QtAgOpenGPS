@@ -8,7 +8,7 @@ class ratecontrol : public QObject
     Q_OBJECT
 public:
     int ModID;
-    int ManualPWM = 0;
+    double ManualPWM = 0;
     double cUPM;
     double cQuantity;
     double MeterCal;

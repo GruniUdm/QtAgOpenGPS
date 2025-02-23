@@ -19,14 +19,10 @@ void ratecontrol::rate_bump(bool up)
         if (ManualPWM > -250) ManualPWM -=10;
         else ManualPWM = -255;
     }
-    qDebug() << "rate_bump";
-    qDebug() << ManualPWM;
 }
 void ratecontrol::rate_auto()
 {
     ManualPWM = 0;
-    qDebug() << "Rate auto";
-    qDebug() << ManualPWM;
 }
 
 void ratecontrol::aogset(int toolwidth, double aogspeed)
@@ -40,8 +36,12 @@ int ratecontrol::Command()
     int Result = 0;
     Result |= (1<<(ControlType+1));
     if (BtnState > 0) Result |= (1<<6);
-    if (ManualPWM == 0) Result |= (1<<6);
+    if ((BtnState > 0) || (ManualPWM == 0)) Result |= (1<<4);
+    //if (ManualPWM == 0) Result |= (1<<6);
+    qDebug() << "BtnState";
+    qDebug() << BtnState;
     return Result;
+
 }
 
 bool ratecontrol::ProductOn()
@@ -228,6 +228,7 @@ double ratecontrol::RateApplied()
     }
 
     return Result;
+
 }
 
 void ratecontrol::getfrommodule (int ID, QByteArray pgn_data)
@@ -239,8 +240,6 @@ void ratecontrol::getfrommodule (int ID, QByteArray pgn_data)
     PWMsetting = (qint16)(pgn_data[13] << 8 | pgn_data[12]);  // need to cast to 16 bit integer to preserve the sign bit
     SensorReceiving = ((pgn_data[14] & 0b00100000) == 0b00100000);
     //SensorReceiving = pgn_data[14] & (1<<5);
-    qDebug() << "Rate ";
-    qDebug() << appRate;
 }
 
 void ratecontrol::getsettings (int ID, QVector<int> set_data)

@@ -241,7 +241,7 @@ public:
     int MaxPWM = 10;
     int PIDScale = 11;
 
-    PGN32502();
+    PGN32502();// : pgn(QByteArray( "\x80\x81\xF6\x7E\x07\x00\x00\x00\x00\x00\x00\x00\xCC", 13)){}
     void loadSettings();
     void MakeCRC();
 };
