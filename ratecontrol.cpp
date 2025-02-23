@@ -35,11 +35,9 @@ int ratecontrol::Command()
 {
     int Result = 0;
     Result |= (1<<(ControlType+1));
-    if (BtnState > 0) Result |= (1<<6);
-    if ((BtnState > 0) || (ManualPWM == 0)) Result |= (1<<4);
+    if (aBtnState > 0) Result |= (1<<6);
+    if ((mBtnState > 0) || (ManualPWM == 0)) Result |= (1<<4);
     //if (ManualPWM == 0) Result |= (1<<6);
-    qDebug() << "BtnState";
-    qDebug() << BtnState;
     return Result;
 
 }
@@ -70,7 +68,7 @@ double ratecontrol::SmoothRate()
         {
             double Rt = Ra / TargetRate;
 
-            if (Rt >= .9 && Rt <= 1.1 && BtnState>0)
+            if (Rt >= .9 && Rt <= 1.1 && aBtnState>0)
             {
                 Result = TargetRate;
             }
@@ -149,8 +147,10 @@ double ratecontrol::TargetUPM() // returns units per minute set rate
 
     // added this back in to change from lb/min to ft^3/min, Moved from PGN32614.
     if (ProdDensity > 0) { Result /= ProdDensity; }
-
+    qDebug() << "TargetUPM";
+    qDebug() << Result;
     return Result;
+
 }
 
 double ratecontrol::RateApplied()
@@ -232,18 +232,17 @@ double ratecontrol::RateApplied()
 }
 
 void ratecontrol::getfrommodule (int ID, QByteArray pgn_data)
-{   BtnState = ID;
+{   aBtnState = ID;
     ModID = pgn_data[5];
-    //appRate =  (pgn_data[8] << 16 | pgn_data[7] << 8 | pgn_data[6]) / 1000.0;
     appRate =   (qint32)((uint8_t(pgn_data[8]) << 16) + (uint8_t(pgn_data[8]) << 8) + uint8_t(pgn_data[6]));
     cQuantity = (pgn_data[11] << 16 | pgn_data[10] << 8 | pgn_data[9]) / 1000.0;
     PWMsetting = (qint16)(pgn_data[13] << 8 | pgn_data[12]);  // need to cast to 16 bit integer to preserve the sign bit
     SensorReceiving = ((pgn_data[14] & 0b00100000) == 0b00100000);
-    //SensorReceiving = pgn_data[14] & (1<<5);
+
 }
 
 void ratecontrol::getsettings (int ID, QVector<int> set_data)
-{
+{   mBtnState = ID;
     ModID = set_data[0];
     ProdDensity = set_data[1];
     OnScreen = set_data[2];

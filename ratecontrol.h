@@ -25,7 +25,8 @@ public:
     void getsettings(int ID, QVector<int> set_data);
     int PWMsetting;
     int SensorReceiving;
-    int BtnState;
+    int aBtnState;
+    int mBtnState;
     explicit ratecontrol(QObject *parent = nullptr);
 
 private:

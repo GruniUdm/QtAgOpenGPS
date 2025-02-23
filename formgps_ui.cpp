@@ -782,6 +782,46 @@ void FormGPS::modules_send_238() {
     qDebug() << settings->value(SETTINGS_ardMac_user1).value<int>();
     SendPgnToLoop(p_238.pgn);
 }
+
+void FormGPS::modules_send_235() {
+
+    qDebug() << "Sending 235 message to AgIO";
+    p_235.pgn[p_235.sec0Lo] = char(tool.section[0].sectionWidth * 100);
+    p_235.pgn[p_235.sec0Hi] = char((int)((tool.section[0].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec1Lo] = char(tool.section[1].sectionWidth * 100);
+    p_235.pgn[p_235.sec1Hi] = char((int)((tool.section[1].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec2Lo] = char(tool.section[2].sectionWidth * 100);
+    p_235.pgn[p_235.sec2Hi] = char((int)((tool.section[2].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec3Lo] = char(tool.section[3].sectionWidth * 100);
+    p_235.pgn[p_235.sec3Hi] = char((int)((tool.section[3].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec4Lo] = char(tool.section[4].sectionWidth * 100);
+    p_235.pgn[p_235.sec4Hi] = char((int)((tool.section[4].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec5Lo] = char(tool.section[5].sectionWidth * 100);
+    p_235.pgn[p_235.sec5Hi] = char((int)((tool.section[5].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec6Lo] = char(tool.section[6].sectionWidth * 100);
+    p_235.pgn[p_235.sec6Hi] = char((int)((tool.section[6].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec7Lo] = char(tool.section[7].sectionWidth * 100);
+    p_235.pgn[p_235.sec7Hi] = char((int)((tool.section[7].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec8Lo] = char(tool.section[8].sectionWidth * 100);
+    p_235.pgn[p_235.sec8Hi] = char((int)((tool.section[8].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec9Lo] = char(tool.section[9].sectionWidth * 100);
+    p_235.pgn[p_235.sec9Hi] = char((int)((tool.section[9].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec10Lo] = char(tool.section[10].sectionWidth * 100);
+    p_235.pgn[p_235.sec10Hi] = char((int)((tool.section[10].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec11Lo] = char(tool.section[11].sectionWidth * 100);
+    p_235.pgn[p_235.sec11Hi] = char((int)((tool.section[11].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec12Lo] = char(tool.section[12].sectionWidth * 100);
+    p_235.pgn[p_235.sec12Hi] = char((int)((tool.section[12].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec13Lo] = char(tool.section[13].sectionWidth * 100);
+    p_235.pgn[p_235.sec13Hi] = char((int)((tool.section[13].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec14Lo] = char(tool.section[14].sectionWidth * 100);
+    p_235.pgn[p_235.sec14Hi] = char((int)((tool.section[14].sectionWidth * 100)) >> 8);
+    p_235.pgn[p_235.sec15Lo] = char(tool.section[15].sectionWidth * 100);
+    p_235.pgn[p_235.sec15Hi] = char((int)((tool.section[15].sectionWidth * 100)) >> 8);
+
+    SendPgnToLoop(p_235.pgn);
+}
+
 void FormGPS::modules_send_251() {
 	//qDebug() << "Sending 251 message to AgIO";
     p_251.pgn[p_251.set0] = settings->value(SETTINGS_ardSteer_setting0).value<int>();
@@ -996,8 +1036,8 @@ void FormGPS::Timer1_Tick()
     if (err > 0) lblError.ForeColor = Color.Red;
     else lblError.ForeColor = Color.DarkGreen;
 
-    lblAV_Act.Text = mf.actAngVel.ToString("N1");
-    lblAV_Set.Text = mf.setAngVel.ToString("N1");
+    lblAV_Act.Text = actAngVel.ToString("N1");
+    lblAV_Set.Text = setAngVel.ToString("N1");
 
     lblPWMDisplay.Text = mc.pwmDisplay.ToString();
 
@@ -1021,14 +1061,14 @@ void FormGPS::Timer1_Tick()
         counter = 0;
     }
 
-    if (secondCntr++ > 2)
+    if (tool.secondCntr++ > 2)
     {
         secondCntr = 0;
 
         if (tabControl1.SelectedTab == tabPPAdv)
         {
             lblHoldAdv = vehicle.goalPointLookAheadHold.ToString("N1");
-            lblAcqAdv = (vehicle.goalPointLookAheadHold * mf.vehicle.goalPointAcquireFactor).ToString("N1");
+            lblAcqAdv = (vehicle.goalPointLookAheadHold * vehicle.goalPointAcquireFactor).ToString("N1");
             lblDistanceAdv = vehicle.goalDistance.ToString("N1");
             lblAcquirePP = lblAcqAdv.Text;
         }

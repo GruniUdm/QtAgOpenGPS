@@ -192,7 +192,7 @@ import "components" as Comp
                 Layout.alignment: Qt.AlignCenter
                 implicitWidth: theme.buttonSize
                 height:parent.height
-                visible: (Settings.rate_Product0[2]>0)?true:false
+                visible: (Settings.rate_Product0[2]>0)
                 onClicked: {
                     rateData.visible = !rateData.visible
                     gpsData.visible = false

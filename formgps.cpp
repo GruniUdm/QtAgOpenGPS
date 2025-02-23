@@ -601,7 +601,7 @@ void FormGPS::processSectionLookahead() {
 
 
         SendPgnToLoop(p_239.pgn);
-
+        SendPgnToLoop(p_235.pgn);
         SendPgnToLoop(p_229.pgn);
     }
         SendPgnToLoop(ModulePIDdata.pgn);

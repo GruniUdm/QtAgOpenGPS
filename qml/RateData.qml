@@ -8,7 +8,7 @@ import "components" as Comp
 import Settings
 import AOG
 Rectangle{
-    id: c
+    id: rcData
     width: 200 * theme.scaleWidth
     height: childrenRect.height + 30
     color: "#4d4d4d"
@@ -48,9 +48,9 @@ Rectangle{
                 onClicked: Settings.rate_Product0[10]<10?Settings.rate_Product0[10]=0:Settings.rate_Product0[10]-=10
         }
 
-            function errormessage() { if (aog.actualRate < Settings.rate_Product0[10]*0.9){
+            function errormessage() { if (aog.actualRate < Settings.rate_Product0[10]*0.9 & aog.product0stat & Settings.rate_Product0[2]){
                 timedMessage.addMessage(2000, qsTr("Low rate. Increase speed!"));}
-                else if (aog.actualRate > Settings.rate_Product0[10] * 1.1){
+                else if (aog.actualRate > Settings.rate_Product0[10] * 1.1 & aog.product0stat & Settings.rate_Product0[2]){
                 timedMessage.addMessage(2000, qsTr("High rate. Reduce speed!"));}
             }
 

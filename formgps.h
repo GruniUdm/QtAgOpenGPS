@@ -683,6 +683,7 @@ public slots:
 
     //modules ui callback
     void modules_send_238();
+    void modules_send_235();
 	void modules_send_251();
     void modules_send_252();
     void modules_send_PGN32502();
