@@ -308,7 +308,7 @@ Window{
             Settings.as_guidanceLookAheadTime = 1.5;
             Settings.as_uTurnCompensation = 1;
 
-            Settings.vehicle_isStanlyUsed = false;
+            Settings.vehicle_isStanleyUsed = false;
             //mf.isStanleyUsed = false; TODO
 
             Settings.as_isSteerInReverse = false;
@@ -595,9 +595,9 @@ Window{
                     spacing: 30 * theme.scaleWidth
                     IconButtonColor{
                         text: qsTr("Stanley/Pure")
-                        isChecked: Settings.menu_isPureOn
+                        isChecked: !Settings.vehicle_isStanleyUsed
                         checkable: true
-                        onCheckedChanged: Settings.menu_isPureOn = checked
+                        onCheckedChanged: Settings.vehicle_isStanleyUsed = !checked
                         colorChecked: "white"
                         icon.source: prefix + "/images/ModeStanley.png"
                         iconChecked: prefix + "/images/ModePurePursuit.png"
