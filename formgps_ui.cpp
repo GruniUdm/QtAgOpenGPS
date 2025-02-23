@@ -28,6 +28,10 @@ void FormGPS::setupGui()
     /* Load the QML UI and display it in the main area of the GUI */
     setProperty("title","QtAgOpenGPS");
 
+    // Load the translation file
+    QString language = "ru"; // Change this variable to "en", "fr" or "ru" as needed
+    loadTranslation(language);
+
     connect(this, SIGNAL(objectCreated(QObject*,QUrl)),
             this, SLOT(on_qml_created(QObject*,QUrl)), Qt::QueuedConnection);
 
@@ -53,18 +57,7 @@ void FormGPS::setupGui()
     qmlRegisterSingletonInstance("Interface", 1, 0, "TracksInterface", &trk);
     qmlRegisterSingletonInstance("Interface", 1, 0, "VehicleInterface", &vehicle);
     qmlRegisterSingletonInstance("Settings", 1, 0, "Settings", settings);
-
-    // translate the QML
-    QString language = "ru"; // Change this variable to "en", "fr" or "ru" as needed
-    QString translationPath = QString("qml_%1.qm").arg(language);
-    QTranslator translator;
-    if (translator.load(translationPath)) {
-        qDebug() << "Translation loaded from" << translationPath;
-        QCoreApplication::installTranslator(&translator);
-    } else {
-        qDebug() << "Translation not loaded";
-    }
-
+   
 #ifdef LOCAL_QML
     // Look for QML files relative to our current directory
     QStringList search_pathes = { "..",
@@ -1031,5 +1024,24 @@ void FormGPS::Timer1_Tick()
             //lblPercentFS.Text = mc.sensorData.ToString();
     }
     */
+}
+
+ //Translation fonctions for Desktop and Android
+void FormGPS::loadTranslation(const QString &language) {
+    QString translationPath;
+    #ifdef Q_OS_ANDROID
+        translationPath = QString("assets:/i18n/qml_%1.qm").arg(language);
+        qDebug() << "Translation found for ANDROID : " << QString("assets:/i18n/qml_%1.qm").arg(language);
+    #else
+        translationPath = QString("qml_%1.qm").arg(language);
+        qDebug() << "Translation found for Desktop :" << QString("qml_%1.qm").arg(language);
+    #endif
+    QCoreApplication::removeTranslator(&translator);
+    if (translator.load(translationPath)) {
+        qDebug() << "Translation sucessfully loaded from" << translationPath;
+        QCoreApplication::installTranslator(&translator);
+    } else {
+        qDebug() << "Translation not loaded";
+    }
 }
 

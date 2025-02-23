@@ -22,7 +22,7 @@ set(CMAKE_AUTORCC ON)
 # find_package(Qt6 REQUIRED COMPONENTS Gui)
 # find_package(Qt6 REQUIRED COMPONENTS OpenGL)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
- find_package(Qt6 REQUIRED COMPONENTS QuickWidgets) #used only for opengl ?
+find_package(Qt6 REQUIRED COMPONENTS QuickWidgets) #used only for opengl ?
 find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools) #for i18n internationalization support
@@ -116,8 +116,23 @@ qt_add_executable(QtAgOpenGPS
     android/res/xml/qtprovider_paths.xml
 )
 
+
+
+
+if(ANDROID)
+    set(LOCAL_QML OFF)
+    message("Local QML is off on Android")
+else()
+    option(LOCAL_QML "Load QML from disc instead of compiling them in.")
+endif()
+
+if(NOT LOCAL_QML AND NOT ANDROID)
+    message("Local QML is off. Turn on for faster QML development")
+    message("See https://github.com/torriem/QtAgOpenGPS/wiki/Building-QtAgOpenGPS-without-compiling-resources-with-QMake for more information")
+endif()
+
 ###### Handling Local QML Handling QML in module in LOCAL_QML OFF######
-if(NOT LOCAL_QML)
+if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
     # Function to process image files in a given directory (non-recursive)
     function(process_files DIR OUT_VAR)
         file(GLOB_RECURSE IMAGE_FILES "${DIR}/*.*")
@@ -213,7 +228,12 @@ if(NOT LOCAL_QML)
         ${SHADER_REL_PATHS}
     )  
 
-else()
+else() #LOCAL_QML ON
+    message("Local QML is ON!")
+    add_compile_definitions(LOCAL_QML)
+
+    # Display the qrc file in the project tree without compiling it
+    add_custom_target(AOGQML SOURCES agopengps.qrc)
 
     set(aog_qml_singletons
         qml/AOG/Utils.qml
@@ -245,29 +265,32 @@ endif()
   TS_FILE_DIR i18n
   )
 
-# Function to process translated QM files in a given directory
-function(process_qm_files DIR OUT_VAR)
-file(GLOB QM_FILES "${DIR}/*.qm")
-set(REL_PATHS)
-foreach(QM_FILE ${QM_FILES})
-   file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${QM_FILE}")
-   set_source_files_properties(${QM_FILE} PROPERTIES
-       QT_RESOURCE_ALIAS "${REL_PATH}")
-   # message(WARNING "file: ${REL_PATH}")
-   list(APPEND REL_PATHS "${REL_PATH}")
-endforeach()
-set(${OUT_VAR} ${REL_PATHS} PARENT_SCOPE)
-endfunction()
+  # Copy all .qm files to the Android assets directory (need first to run make + rebuild and then run the app)
+  if (ANDROID)
+      message("Setting up translation copy task for Android")
 
-# Process QM files in the i18n directory
-process_qm_files("${CMAKE_CURRENT_SOURCE_DIR}/i18n" QM_REL_PATHS)
+      # Define source and destination paths
+      set(QM_SOURCE_DIR "${CMAKE_BINARY_DIR}")  # Where .qm files are generated
+      set(QM_DEST_DIR "${CMAKE_BINARY_DIR}/android-build-QtAgOpenGPS/assets/i18n")
 
-# Add the translation files to the resources
-qt_add_resources(QtAgOpenGPS "translations"
-PREFIX "/"
-FILES
-${QM_REL_PATHS}
-)
+      # Ensure the destination directory exists
+      file(MAKE_DIRECTORY ${QM_DEST_DIR})
+
+      # Find all .qm files dynamically
+      file(GLOB QM_FILES "${QM_SOURCE_DIR}/*.qm")
+
+      # Only copy if .qm files exist
+      if (QM_FILES)
+          add_custom_command(
+              TARGET QtAgOpenGPS POST_BUILD
+              COMMAND ${CMAKE_COMMAND} -E copy_if_different ${QM_FILES} ${QM_DEST_DIR}
+              COMMENT "Copying all .qm translation files to Android assets directory"
+          )
+          message("Copying all .qm translation files to Android assets directory ${QM_DEST_DIR} : files are ${QM_FILES}")
+      else()
+          message(WARNING "No .qm files found in ${QM_SOURCE_DIR}. Skipping translation copy.")
+      endif()
+  endif()
 
 ###### End script for Translation ######
 
@@ -283,24 +306,6 @@ set(qml_mockup_files
 )
 
 add_custom_target(MockQML SOURCES ${qml_mockup_files})
-
-if(ANDROID)
-    set(LOCAL_QML OFF)
-else()
-        option(LOCAL_QML "Load QML from disc instead of compiling them in.")
-endif()
-
-if(LOCAL_QML)
-    add_compile_definitions(LOCAL_QML)
-
-    # Display the qrc file in the project tree without compiling it
-    add_custom_target(AOGQML SOURCES agopengps.qrc)
-
-    message("Local QML is ON!")
-elseif(NOT ANDROID)
-    message("Local QML is off. Turn on for faster QML development")
-    message("See https://github.com/torriem/QtAgOpenGPS/wiki/Building-QtAgOpenGPS-without-compiling-resources-with-QMake for more information")
-endif()
 
 # Where to look for header files
 target_include_directories(QtAgOpenGPS PRIVATE
@@ -326,9 +331,9 @@ target_compile_definitions(QtAgOpenGPS PRIVATE
 )
 
 set_target_properties(QtAgOpenGPS PROPERTIES
-    WIN32_EXECUTABLE ON
-    MACOSX_BUNDLE ON
-    QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+   # QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
 )
 
 add_subdirectory(QtAgIO)

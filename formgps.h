@@ -809,6 +809,16 @@ public slots:
 signals:
     void do_processSectionLookahead();
     void do_processOverlapCount();
+
+    /*******************
+     * Tranlation function*
+     * formgps_ui.cpp *
+     *******************/
+
+private:
+    QTranslator translator;
+    void loadTranslation(const QString &language);
+
 };
 
 #endif // FORMGPS_H
