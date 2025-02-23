@@ -538,12 +538,11 @@ Window {
                 anchors.rightMargin: (50 * theme.scaleWidth)
                 font.pixelSize: 20
                 color: "#cc5200"
-                text: new Date().toLocaleTimeString(Qt.locale())
                 Timer{
                     interval: 100
                     repeat: true
                     running: true
-                    onTriggered: timeText.text = new Date().toLocaleTimeString(Qt.locale())
+                    onTriggered: timeText.text = Qt.formatTime(new Date(), "HH:mm:ss")
                 }
             }
             Comp.SectionButtons {
