@@ -16,6 +16,7 @@ cmkbuild*
 branchnotes.txt
 CMakeCache.txt
 *.patch
+.qtc
 cmake/
 
 # Python cache and patch files

@@ -725,7 +725,7 @@ void FormGPS::UpdateFixPosition()
     else
     {
         //auto track routine
-        if (trk.isAutoTrack && !isBtnAutoSteerOn && trk.autoTrack3SecTimer > 1)
+        if (trk.isAutoTrack && !isBtnAutoSteerOn && trk.autoTrack3SecTimer >= 1)
         {
             trk.autoTrack3SecTimer = 0;
 

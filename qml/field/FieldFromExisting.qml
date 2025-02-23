@@ -183,7 +183,7 @@ Dialog {
                 width: marker.width
                 height: marker.height
                 icon.source: prefix + "/images/FlagRed.png"
-                text: "Flags"
+                text: qsTr("Flags")
             }
             IconButtonColor{
                 id: btnKeepMapping
@@ -192,7 +192,7 @@ Dialog {
                 width: marker.width
                 height: marker.height
                 icon.source: prefix + "/images/ManualOff.png"
-                text: "Mapping"
+                text: qsTr("Mapping")
             }
             IconButtonColor{
                 id: btnKeepHeadland
@@ -201,7 +201,7 @@ Dialog {
                 width: marker.width
                 height: marker.height
                 icon.source: prefix + "/images/HeadlandMenu.png"
-                text: "Headland"
+                text: qsTr("Headland")
             }
             IconButtonColor{
                 id: btnKeepLines
@@ -210,7 +210,7 @@ Dialog {
                 width: marker.width
                 height: marker.height
                 icon.source: prefix + "/images/ABLineEdit.png"
-                text: "Lines"
+                text: qsTr("Lines")
             }
         }
         Row{
