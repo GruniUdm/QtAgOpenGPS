@@ -188,7 +188,7 @@ class CPGN_EB
 {
 public:
     QByteArray pgn;
-    //where in the pgn is which pin
+    //where in the pgn is which pin  //235 pgn
     int sec0Lo  = 5;
     int sec1Lo  = 7;
     int sec2Lo  = 9;

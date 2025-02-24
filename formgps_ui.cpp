@@ -818,7 +818,8 @@ void FormGPS::modules_send_235() {
     p_235.pgn[p_235.sec14Hi] = char((int)((tool.section[14].sectionWidth * 100)) >> 8);
     p_235.pgn[p_235.sec15Lo] = char(tool.section[15].sectionWidth * 100);
     p_235.pgn[p_235.sec15Hi] = char((int)((tool.section[15].sectionWidth * 100)) >> 8);
-
+    qDebug() << "p_235.pgn[p_235.sec0Lo]";
+    qDebug() << p_235.pgn[p_235.sec0Lo];
     SendPgnToLoop(p_235.pgn);
 }
 
