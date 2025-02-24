@@ -34,7 +34,7 @@ qt_policy(SET QTP0004 NEW)
 # Qt standard project setup with internationalization support
 qt_standard_project_setup(REQUIRES 6.5
     I18N_SOURCE_LANGUAGE en
-    I18N_TRANSLATED_LANGUAGES fr ru
+    I18N_TRANSLATED_LANGUAGES en fr ru
 )
 
 # Create the executable
@@ -258,39 +258,22 @@ endif()
 
 ###### Script for Translation ######
 
-  # Add translations
-  qt_add_translations(QtAgOpenGPS
-  RESOURCE_PREFIX /qt/qml/AOG/i18n
-  TS_FILE_BASE qml 
-  TS_FILE_DIR i18n
-  )
+if(ANDROID)
+    set(QM_OUTPUT_DIR "${CMAKE_BINARY_DIR}/android-build-QtAgOpenGPS/assets/i18n")
+else()
+    set(QM_OUTPUT_DIR "${CMAKE_BINARY_DIR}")
+endif()
 
-  # Copy all .qm files to the Android assets directory (need first to run make + rebuild and then run the app)
-  if (ANDROID)
-      message("Setting up translation copy task for Android")
+file(GLOB TS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/i18n/*.ts")
 
-      # Define source and destination paths
-      set(QM_SOURCE_DIR "${CMAKE_BINARY_DIR}")  # Where .qm files are generated
-      set(QM_DEST_DIR "${CMAKE_BINARY_DIR}/android-build-QtAgOpenGPS/assets/i18n")
+set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${QM_OUTPUT_DIR}")
 
-      # Ensure the destination directory exists
-      file(MAKE_DIRECTORY ${QM_DEST_DIR})
-
-      # Find all .qm files dynamically
-      file(GLOB QM_FILES "${QM_SOURCE_DIR}/*.qm")
-
-      # Only copy if .qm files exist
-      if (QM_FILES)
-          add_custom_command(
-              TARGET QtAgOpenGPS POST_BUILD
-              COMMAND ${CMAKE_COMMAND} -E copy_if_different ${QM_FILES} ${QM_DEST_DIR}
-              COMMENT "Copying all .qm translation files to Android assets directory"
-          )
-          message("Copying all .qm translation files to Android assets directory ${QM_DEST_DIR} : files are ${QM_FILES}")
-      else()
-          message(WARNING "No .qm files found in ${QM_SOURCE_DIR}. Skipping translation copy.")
-      endif()
-  endif()
+qt_add_translations(QtAgOpenGPS
+    RESOURCE_PREFIX /qt/qml/AOG/i18n
+    TS_FILE_BASE qml
+    TS_FILE_DIR i18n
+)
+message("Translation path for QM files: ${QM_OUTPUT_DIR}")
 
 ###### End script for Translation ######
 
