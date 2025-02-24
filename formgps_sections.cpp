@@ -389,7 +389,11 @@ void FormGPS::doBlockageMonitoring()
 void FormGPS::doRateControl()
 {
     rc.getfrommodule(autoBtnState,RateSensor.pgn);
-    double width = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    int width = 0;
+    for (int j = 0; j < MAXSECTIONS; j++)
+    {
+        if (tool.section[j].isSectionOn) width += tool.section[j].sectionWidth;
+    }
     rc.aogset(width, pn.vtgSpeed);
     QVector<int> rateconfig0 = toVector<int>(settings->value(SETTINGS_rate_Product0));
     rc.getsettings(manualBtnState, rateconfig0);
@@ -408,4 +412,5 @@ void FormGPS::doRateControl()
 
     SendPgnToLoop(ModuleRateSettings.pgn);
     qDebug() << "doRateControl";
+
 }

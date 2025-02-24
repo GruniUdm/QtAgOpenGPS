@@ -785,7 +785,7 @@ void FormGPS::modules_send_238() {
 
 void FormGPS::modules_send_235() {
 
-    qDebug() << "Sending 235 message to AgIO";
+    //qDebug() << "Sending 235 message to AgIO";
     p_235.pgn[p_235.sec0Lo] = char(tool.section[0].sectionWidth * 100);
     p_235.pgn[p_235.sec0Hi] = char((int)((tool.section[0].sectionWidth * 100)) >> 8);
     p_235.pgn[p_235.sec1Lo] = char(tool.section[1].sectionWidth * 100);
@@ -818,8 +818,7 @@ void FormGPS::modules_send_235() {
     p_235.pgn[p_235.sec14Hi] = char((int)((tool.section[14].sectionWidth * 100)) >> 8);
     p_235.pgn[p_235.sec15Lo] = char(tool.section[15].sectionWidth * 100);
     p_235.pgn[p_235.sec15Hi] = char((int)((tool.section[15].sectionWidth * 100)) >> 8);
-    qDebug() << "p_235.pgn[p_235.sec0Lo]";
-    qDebug() << p_235.pgn[p_235.sec0Lo];
+
     SendPgnToLoop(p_235.pgn);
 }
 
