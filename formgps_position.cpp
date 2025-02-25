@@ -1254,12 +1254,18 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("lblCalcSteerAngleOuter", lblCalcSteerAngleOuter);
     aog->setProperty("lblDiameter", lblDiameter);
     aog->setProperty("startSA", isSA);
+    aog->setProperty("lblmodeActualXTE", vehicle.modeActualXTE);
+    aog->setProperty("lblmodeActualHeadingError", vehicle.modeActualHeadingError);
+
+    //Rate
     aog->setProperty("actualRate", rc.RateApplied());
     aog->setProperty("smoothRate", rc.CurrentRate());
     aog->setProperty("actualRatePWM", rc.ManualPWM);
     aog->setProperty("product0stat", (rc.SensorReceiving & isConnectedRC));
-    aog->setProperty("lblmodeActualXTE", vehicle.modeActualXTE);
-    aog->setProperty("lblmodeActualHeadingError", vehicle.modeActualHeadingError);
+    aog->setProperty("actualRate1", rc.RateApplied());
+    aog->setProperty("smoothRate1", rc.CurrentRate());
+    aog->setProperty("actualRatePWM1", rc.ManualPWM);
+    aog->setProperty("product1stat", (rc.SensorReceiving & isConnectedRC1));
 
     //TODO: access this in QML directly from trk.howManyPathsAway property
     aog->setProperty("current_trackNum", trk.getHowManyPathsAway());

@@ -239,8 +239,8 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(aog, SIGNAL(modules_send_252()), this, SLOT(modules_send_252()));
     // RateControl settings
     connect(aog, SIGNAL(modules_send_PGN32502()), this, SLOT(modules_send_PGN32502()));
-    connect(aog, SIGNAL(rate_bump_pwm(bool)), &rc, SLOT(rate_bump(bool)));
-    connect(aog, SIGNAL(rate_pwm_auto()), &rc, SLOT(rate_auto()));
+    connect(aog, SIGNAL(rate_bump_pwm(bool, int)), &rc, SLOT(rate_bump(bool, int)));
+    connect(aog, SIGNAL(rate_pwm_auto(int)), &rc, SLOT(rate_auto(int)));
     // Blockage monitoring
     connect(aog, SIGNAL(doBlockageMonitoring()), this, SLOT(doBlockageMonitoring()));
 

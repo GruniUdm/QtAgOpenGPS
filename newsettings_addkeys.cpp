@@ -304,7 +304,10 @@ void NewSettings::setupKeys() {
     addKey("youturn/toolWidths", 2, QMetaType(QMetaType::Double));
     addKey("youturn/youMoveDistance", 0.25, QMetaType(QMetaType::Double));
     addKey("rate/ProductName", toVariant(QVector<QString>{"ProductName0", "ProductName1", "ProductName2","ProductName3" }), QMetaType(METATYPE_QVECTOR_STRING));
-    addKey("rate/Product0", toVariant(QVector<double>{1,1,1,0,1,0,0,100,10,0,0,100,0,0,1,0,0,1,0}), QMetaType(METATYPE_QVECTOR_DOUBLE));
+    addKey("rate/Product0", toVariant(QVector<double>{0,0,1,10,1,0,100,255,1,800,100,1,0,0,1,0,0,1,0}), QMetaType(METATYPE_QVECTOR_DOUBLE));
     addKey("test/testColorRgbF", QColor::fromRgbF(1.0,0.5,0.5,0.2), QMetaType(QMetaType::QColor));
+    addKey("rate/Product1", toVariant(QVector<double>{1,0,1,10,1,0,100,255,1,800,100,1,0,0,1,0,0,1,0}), QMetaType(METATYPE_QVECTOR_DOUBLE));
+    addKey("rate/Product2", toVariant(QVector<double>{2,0,1,10,1,0,100,255,1,800,100,1,0,0,1,0,0,1,0}), QMetaType(METATYPE_QVECTOR_DOUBLE));
+    addKey("rate/Product3", toVariant(QVector<double>{3,0,1,10,1,0,100,255,1,800,100,1,0,0,1,0,0,1,0}), QMetaType(METATYPE_QVECTOR_DOUBLE));
 }
 

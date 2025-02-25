@@ -309,4 +309,7 @@
 #define SETTINGS_rate_ProductName "rate/ProductName"
 #define SETTINGS_rate_Product0 "rate/Product0"
 #define SETTINGS_test_testColorRgbF "test/testColorRgbF"
+#define SETTINGS_rate_Product1 "rate/Product1"
+#define SETTINGS_rate_Product2 "rate/Product2"
+#define SETTINGS_rate_Product3 "rate/Product3"
 #endif

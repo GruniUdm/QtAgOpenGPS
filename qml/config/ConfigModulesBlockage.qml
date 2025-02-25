@@ -59,6 +59,7 @@ Rectangle{
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 10
+        font.bold: true
         text: qsTr("Planter Monitor")
     }
 

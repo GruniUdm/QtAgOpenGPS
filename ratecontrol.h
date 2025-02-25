@@ -53,23 +53,10 @@ private:
     double cMinUPM;
     double cMinUPMbySpeed;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 signals:
 public slots:
-    void rate_auto();
-    void rate_bump(bool up);
+    void rate_auto(int ID);
+    void rate_bump(bool up, int ID);
 
 };
 

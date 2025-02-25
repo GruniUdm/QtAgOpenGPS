@@ -7,7 +7,7 @@ ratecontrol::ratecontrol(QObject *parent)
 {
 
 }
-void ratecontrol::rate_bump(bool up)
+void ratecontrol::rate_bump(bool up, int ID)
 {
 
     if (up) {
@@ -20,7 +20,7 @@ void ratecontrol::rate_bump(bool up)
         else ManualPWM = -255;
     }
 }
-void ratecontrol::rate_auto()
+void ratecontrol::rate_auto(int ID)
 {
     ManualPWM = 0;
 }

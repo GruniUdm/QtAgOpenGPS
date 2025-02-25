@@ -158,6 +158,10 @@ Item {
     property double	smoothRate: 0
     property double	actualRatePWM: 0
     property bool product0stat: false
+    property double	actualRate1: 0
+    property double	smoothRate1: 0
+    property double	actualRatePWM1: 0
+    property bool product1stat: false
 
 
     onSteerAngleActualChanged: steerAngleActualRounded = Math.round(steerAngleActual*100)/100
@@ -241,8 +245,8 @@ Item {
 
 
     signal doBlockageMonitoring()
-    signal rate_bump_pwm(bool up)
-    signal rate_pwm_auto()
+    signal rate_bump_pwm(bool up, int ID)
+    signal rate_pwm_auto(int ID)
 
     signal sim_bump_speed(bool up)
     signal sim_zero_speed()

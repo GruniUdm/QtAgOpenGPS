@@ -513,13 +513,13 @@ Window {
                 id: blockageData
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                visible: (aog.blockageConnected & Settings.seed_blockageIsOn) ? true : false
+                visible: (aog.blockageConnected && Settings.seed_blockageIsOn) ? true : false
             }
             RateData{ //window that displays Machine data
                 id: rateData
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                visible: (aog.product0stat & Settings.rate_Product0[2]>0) ? true : false
+                visible: (aog.product0stat && Settings.rate_Product0[2]>0) ? true : false
             }
 
             SimController{
