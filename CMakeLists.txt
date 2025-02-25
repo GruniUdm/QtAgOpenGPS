@@ -175,7 +175,7 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         set(${ARGV1} ${REL_PATHS} PARENT_SCOPE)
     endfunction()
 
-    # Process QML files for each directory
+    # Process QML files for each directory 
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml" QML_REL_PATHS)
     #process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/AOG" AOG_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/boundary" BOUNDARY_REL_PATHS)

@@ -95,8 +95,8 @@ void FormGPS::setupGui()
     rootContext()->setContextProperty("prefix","local:");
     load("local:/qml/MainWindow.qml");
 #else
-    rootContext()->setContextProperty("prefix","");
-    load(QUrl("qrc:/qml/MainWindow.qml"));
+    rootContext()->setContextProperty("prefix","qrc:/AOG");
+    load(QUrl("qrc:/AOG/MainWindow.qml"));
 #endif
 }
 
@@ -1033,7 +1033,7 @@ void FormGPS::loadTranslation(const QString &language) {
         translationPath = QString("assets:/i18n/qml_%1.qm").arg(language);
         qDebug() << "Translation load initiated for ANDROID";
     #else
-        translationPath = QString(":i18n/qml_%1.qm").arg(language);
+        translationPath = QString("i18n/qml_%1.qm").arg(language);
         qDebug() << "Translation initiated for Desktop";
     #endif
     QCoreApplication::removeTranslator(&translator);
