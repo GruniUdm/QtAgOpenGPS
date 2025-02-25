@@ -25,9 +25,10 @@ void ratecontrol::rate_auto()
     ManualPWM = 0;
 }
 
-void ratecontrol::aogset(int toolwidth, double aogspeed)
+void ratecontrol::aogset(double setwidth, double toolwidth, double aogspeed)
 {
     width = toolwidth;
+    swidth = setwidth;
     speed = aogspeed;
 }
 
@@ -108,7 +109,7 @@ double ratecontrol::TargetUPM() // returns units per minute set rate
         {
             // Constant UPM
             // same upm no matter how many sections are on
-            double HPM = width * speed / 600.0;
+            double HPM = swidth * speed / 600.0;
             Result = TargetRate * HPM * 2.47;
         }
         else
@@ -120,11 +121,11 @@ double ratecontrol::TargetUPM() // returns units per minute set rate
 
     case 1:
         // hectares
-        if (AppMode == 2)
+        if (AppMode == 1)
         {
             // Constant UPM
             // same upm no matter how many sections are on
-            double HPM = width * speed / 600.0;
+            double HPM = swidth * speed / 600.0;
             Result = TargetRate * HPM;
         }
         else
@@ -147,8 +148,6 @@ double ratecontrol::TargetUPM() // returns units per minute set rate
 
     // added this back in to change from lb/min to ft^3/min, Moved from PGN32614.
     if (ProdDensity > 0) { Result /= ProdDensity; }
-    qDebug() << "TargetUPM";
-    qDebug() << Result;
     return Result;
 
 }
@@ -160,17 +159,18 @@ double ratecontrol::RateApplied()
     {
     case 0:
         // acres
-        if (AppMode == 0 || 2)
-        {
-            // section controlled UPM or Document applied
-            if (HectaresPerMinute > 0) Result = appRate / (HectaresPerMinute * 2.47);
-        }
-        else if (AppMode == 1)
+        if (AppMode == 1)
         {
             // Constant UPM
             // same upm no matter how many sections are on
-            double HPM = width * speed / 600.0;
+            double HPM = swidth * speed / 600.0;
             if (HPM > 0) Result = appRate / (HPM * 2.47);
+        }
+
+        else if (AppMode == 0 || 2)
+        {
+            // section controlled UPM or Document applied
+            if (HectaresPerMinute > 0) Result = appRate / (HectaresPerMinute * 2.47);
         }
         else
         {
@@ -181,17 +181,17 @@ double ratecontrol::RateApplied()
 
     case 1:
         // hectares
-        if (AppMode == 0 || 2)
-        {
-            // section controlled UPM or Document applied
-            if (HectaresPerMinute > 0) Result = appRate / HectaresPerMinute;
-        }
-        else if (AppMode == 1)
+        if (AppMode == 1)
         {
             // Constant UPM
             // same upm no matter how many sections are on
-            double HPM = width * speed / 600.0;
+            double HPM = swidth * speed / 600.0;
             if (HPM > 0) Result = appRate / HPM;
+        }
+        else if (AppMode == 0 || 2)
+        {
+            // section controlled UPM or Document applied
+            if (HectaresPerMinute > 0) Result = appRate / HectaresPerMinute;
         }
         else
         {
@@ -238,7 +238,6 @@ void ratecontrol::getfrommodule (int ID, QByteArray pgn_data)
     cQuantity = (pgn_data[11] << 16 | pgn_data[10] << 8 | pgn_data[9]) / 1000.0;
     PWMsetting = (qint16)(pgn_data[13] << 8 | pgn_data[12]);  // need to cast to 16 bit integer to preserve the sign bit
     SensorReceiving = ((pgn_data[14] & 0b00100000) == 0b00100000);
-
 }
 
 void ratecontrol::getsettings (int ID, QVector<int> set_data)
@@ -252,4 +251,5 @@ void ratecontrol::getsettings (int ID, QVector<int> set_data)
     AppMode = set_data[11];
     ControlType = set_data[12];
     CoverageUnits = set_data[13];
+
 }

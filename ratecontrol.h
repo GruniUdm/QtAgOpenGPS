@@ -21,7 +21,7 @@ public:
     double CurrentRate();
     int Command();
     void getfrommodule(int ID, QByteArray pgn_data);
-    void aogset(int toolwidth, double aogspeed);
+    void aogset(double setwidth, double toolwidth, double aogspeed);
     void getsettings(int ID, QVector<int> set_data);
     int PWMsetting;
     int SensorReceiving;
@@ -45,6 +45,7 @@ private:
     int AppMode;
     double appRate;
     double width;
+    double swidth;
     double speed;
 
     double ProdDensity = 0;

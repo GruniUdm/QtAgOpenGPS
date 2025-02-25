@@ -389,19 +389,19 @@ void FormGPS::doBlockageMonitoring()
 void FormGPS::doRateControl()
 {
     rc.getfrommodule(autoBtnState,RateSensor.pgn);
-    int width = 0;
+    double width = 0;
     for (int j = 0; j < MAXSECTIONS; j++)
     {
         if (tool.section[j].isSectionOn) width += tool.section[j].sectionWidth;
     }
-    rc.aogset(width, pn.vtgSpeed);
+    double settings_width = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    rc.aogset(settings_width, width, pn.vtgSpeed);
     QVector<int> rateconfig0 = toVector<int>(settings->value(SETTINGS_rate_Product0));
     rc.getsettings(manualBtnState, rateconfig0);
-    double TargetUPM = rc.TargetUPM();
+    double TargetUPM = rc.TargetUPM()*1000;
     ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMLO] = (char)((int)rc.ManualPWM);
     ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMHI] = (char)((int)rc.ManualPWM >> 8);
     ModuleRateSettings.pgn[ModuleRateSettings.ID] = rc.ModID;
-    TargetUPM *= 1000;
     ModuleRateSettings.pgn[ModuleRateSettings.RateSetLo] = (char)((int)TargetUPM);
     ModuleRateSettings.pgn[ModuleRateSettings.RateSetMd] = (char)((int)TargetUPM >> 8);
     ModuleRateSettings.pgn[ModuleRateSettings.RateSetHI] = (char)((int)TargetUPM >> 16);
