@@ -24,7 +24,7 @@ public:
     void aogset(double setwidth, double toolwidth, double aogspeed);
     void getsettings(int ID, QVector<int> set_data);
     int PWMsetting;
-    int SensorReceiving;
+    bool SensorReceiving;
     int aBtnState;
     int mBtnState;
     explicit ratecontrol(QObject *parent = nullptr);

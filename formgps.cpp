@@ -709,6 +709,21 @@ void FormGPS::tmrWatchdog_timeout()
         oneFifthSecond++;
     }
 
+    if (rateCounter++ >= 40)
+    {
+        rateCounter = 50;
+        isConnectedRC = false;
+    }
+    else isConnectedRC = true;
+
+    if (blockageCounter++ >= 40)
+    {
+        blockageCounter = 50;
+        isConnectedBlockage = false;
+    }
+    else isConnectedBlockage = true;
+
+
     ////////////////////////////////////////////// 10 second ///////////////////////////////////////////////////////
     //every 10 second update status
     if (tenSeconds != 0)

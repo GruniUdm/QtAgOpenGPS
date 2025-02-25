@@ -1214,6 +1214,7 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("blockage_min2_i", tool.blockage_min2_i);
     aog->setProperty("blockage_max_i", tool.blockage_max_i);
     aog->setProperty("blockage_blocked", tool.blockage_blocked);
+    aog->setProperty("blockageConnected", isConnectedBlockage);
 
     double tool_lat, tool_lon;
     pn.ConvertLocalToWGS84(vehicle.pivotAxlePos.northing, vehicle.pivotAxlePos.easting, tool_lat, tool_lon);
@@ -1256,7 +1257,7 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("actualRate", rc.RateApplied());
     aog->setProperty("smoothRate", rc.CurrentRate());
     aog->setProperty("actualRatePWM", rc.ManualPWM);
-    aog->setProperty("product0stat", rc.SensorReceiving);
+    aog->setProperty("product0stat", (rc.SensorReceiving & isConnectedRC));
     aog->setProperty("lblmodeActualXTE", vehicle.modeActualXTE);
     aog->setProperty("lblmodeActualHeadingError", vehicle.modeActualHeadingError);
 

@@ -227,10 +227,11 @@ public:
     bool isPureDisplayOn = true, isSkyOn = true, isRollMeterOn = false, isTextureOn = true;
     bool isDay = true, isDayTime = true, isBrightnessOn = true;
     bool isKeyboardOn = true, isAutoStartAgIO = true, isSvennArrowOn = true;
-    bool isConnectedBlockage = false; //Dim
     bool isUTurnOn = true, isLateralOn = true;
-
-
+    unsigned int rateCounter = 0;
+    unsigned int blockageCounter = 0;
+    bool isConnectedRC = false;
+    bool isConnectedBlockage = false; //Dim
     //sunrise, sunset
 
     bool isFlashOnOff = false;
@@ -412,7 +413,6 @@ public:
 
     //tally counters for display
     //public double totalSquareMetersWorked = 0, totalUserSquareMeters = 0, userSquareMetersAlarm = 0;
-
 
     double /*avgSpeed --> CVehicle,*/ previousSpeed;//for average speed
     double crossTrackError; //for average cross track error

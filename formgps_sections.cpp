@@ -318,9 +318,8 @@ void FormGPS::DoRemoteSwitches()
 
 void FormGPS::doBlockageMonitoring()
 {
-    isConnectedBlockage = true;
+    blockageCounter = 0;
     QObject *aog = qmlItem(mainWindow,"aog");
-    aog->setProperty("blockageConnected", isConnectedBlockage);
     int k=0;
     int k1 = settings->value(SETTINGS_seed_blockRow1).value<int>();
     int k2 = settings->value(SETTINGS_seed_blockRow2).value<int>();
@@ -387,20 +386,22 @@ void FormGPS::doBlockageMonitoring()
 }
 
 void FormGPS::doRateControl()
-{
+{   rateCounter = 0;
     rc.getfrommodule(autoBtnState,RateSensor.pgn);
+
     double width = 0;
     for (int j = 0; j < MAXSECTIONS; j++)
     {
         if (tool.section[j].isSectionOn) width += tool.section[j].sectionWidth;
     }
+
     double settings_width = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
     rc.aogset(settings_width, width, pn.vtgSpeed);
+
     QVector<int> rateconfig0 = toVector<int>(settings->value(SETTINGS_rate_Product0));
     rc.getsettings(manualBtnState, rateconfig0);
+
     double TargetUPM = rc.TargetUPM()*1000;
-    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMLO] = (char)((int)rc.ManualPWM);
-    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMHI] = (char)((int)rc.ManualPWM >> 8);
     ModuleRateSettings.pgn[ModuleRateSettings.ID] = rc.ModID;
     ModuleRateSettings.pgn[ModuleRateSettings.RateSetLo] = (char)((int)TargetUPM);
     ModuleRateSettings.pgn[ModuleRateSettings.RateSetMd] = (char)((int)TargetUPM >> 8);
@@ -409,8 +410,10 @@ void FormGPS::doRateControl()
     ModuleRateSettings.pgn[ModuleRateSettings.FlowCalMd] = (char)((int)rc.MeterCal >> 8);
     ModuleRateSettings.pgn[ModuleRateSettings.FlowCalHI] = (char)((int)rc.MeterCal >> 16);
     ModuleRateSettings.pgn[ModuleRateSettings.Command] = rc.Command();
+    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMLO] = (char)((int)rc.ManualPWM);
+    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMHI] = (char)((int)rc.ManualPWM >> 8);
 
     SendPgnToLoop(ModuleRateSettings.pgn);
-    qDebug() << "doRateControl";
+    //qDebug() << "doRateControl";
 
 }

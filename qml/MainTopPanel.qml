@@ -187,12 +187,12 @@ import "components" as Comp
             }
 
             Comp.IconButton {
-                id: btnMachineInfo
+                id: btnRateInfo
                 icon.source: prefix + "/images/spray2.png"
                 Layout.alignment: Qt.AlignCenter
                 implicitWidth: theme.buttonSize
                 height:parent.height
-                visible: (Settings.rate_Product0[2]>0)
+                visible: (aog.product0stat & Settings.rate_Product0[2]>0)
                 onClicked: {
                     rateData.visible = !rateData.visible
                     gpsData.visible = false
