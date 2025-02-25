@@ -102,18 +102,18 @@ qt_add_executable(QtAgOpenGPS
     classes/vec4.h classes/vec4.cpp
     classes/vecfix2fix.h
     classes/qmlblockage.h classes/qmlblockage.cpp
-    LICENSE
-    TODO.md
-    README.md
-    android/AndroidManifest.xml
-    android/build.gradle
-    android/gradle.properties
-    android/gradle/wrapper/gradle-wrapper.jar
-    android/gradle/wrapper/gradle-wrapper.properties
-    android/gradlew
-    android/gradlew.bat
-    android/res/values/libs.xml
-    android/res/xml/qtprovider_paths.xml
+    # LICENSE
+    # TODO.md
+    # README.md
+    # android/AndroidManifest.xml
+    # android/build.gradle
+    # android/gradle.properties
+    # android/gradle/wrapper/gradle-wrapper.jar
+    # android/gradle/wrapper/gradle-wrapper.properties
+    # android/gradlew
+    # android/gradlew.bat
+    # android/res/values/libs.xml
+    # android/res/xml/qtprovider_paths.xml
 )
 
 
