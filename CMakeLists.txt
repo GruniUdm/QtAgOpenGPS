@@ -188,6 +188,8 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/tracks" TRACKS_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/wizards" WIZARDS_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/singletons" SINGLETONS_REL_PATHS) #adding singletons
+    # process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/Interface" INTERFACE_REL_PATHS)
+    # process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/SETTINGS" SETTINGS_REL_PATHS)
 
     # Combine all relative paths
     set(ALL_REL_PATHS
@@ -203,6 +205,8 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         ${TRACKS_REL_PATHS}
         ${WIZARDS_REL_PATHS}
         ${SINGLETONS_REL_PATHS} # adding singletons relative paths
+        # ${INTERFACE_REL_PATHS}
+        # ${SETTINGS_REL_PATHS}
     )
 
     # message(WARNING "All relative paths: ${ALL_REL_PATHS}")
