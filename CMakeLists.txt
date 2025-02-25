@@ -261,16 +261,19 @@ endif()
 
 ###### Script for Translation ######
 
+# Set the output directory for the QM files
 if(ANDROID)
+    # Android requires QM files to be in the assets directory
     set(QM_OUTPUT_DIR "${CMAKE_BINARY_DIR}/android-build-QtAgOpenGPS/assets/i18n")
 else()
-    set(QM_OUTPUT_DIR "${CMAKE_BINARY_DIR}")
+    set(QM_OUTPUT_DIR "${CMAKE_BINARY_DIR}/i18n")
 endif()
 
+# Find all TS translation files
 file(GLOB TS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/i18n/*.ts")
-
 set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${QM_OUTPUT_DIR}")
 
+# process all TS files (lupdate and lrelease)
 qt_add_translations(QtAgOpenGPS
     RESOURCE_PREFIX /qt/qml/AOG/i18n
     TS_FILE_BASE qml

@@ -1031,17 +1031,17 @@ void FormGPS::loadTranslation(const QString &language) {
     QString translationPath;
     #ifdef Q_OS_ANDROID
         translationPath = QString("assets:/i18n/qml_%1.qm").arg(language);
-        qDebug() << "Translation found for ANDROID : " << QString("assets:/i18n/qml_%1.qm").arg(language);
+        qDebug() << "Translation load initiated for ANDROID";
     #else
-        translationPath = QString("qml_%1.qm").arg(language);
-        qDebug() << "Translation found for Desktop :" << QString("qml_%1.qm").arg(language);
+        translationPath = QString(":i18n/qml_%1.qm").arg(language);
+        qDebug() << "Translation initiated for Desktop";
     #endif
     QCoreApplication::removeTranslator(&translator);
     if (translator.load(translationPath)) {
         qDebug() << "Translation sucessfully loaded from" << translationPath;
         QCoreApplication::installTranslator(&translator);
     } else {
-        qDebug() << "Translation not loaded";
+        qDebug() << "Translation not loaded, file not found in :" << translationPath;
     }
 }
 
