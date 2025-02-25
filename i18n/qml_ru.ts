@@ -5,6 +5,7 @@
     <name>ABCurvePicker</name>
     <message>
         <location filename="../qml/ABCurvePicker.qml" line="16"/>
+        <location filename="../qml/ABCurvePicker.qml" line="60"/>
         <source>AB Curve</source>
         <translation type="unfinished">Кривая АВ</translation>
     </message>
@@ -13,6 +14,7 @@
     <name>ABLinePicker</name>
     <message>
         <location filename="../qml/ABLinePicker.qml" line="20"/>
+        <location filename="../qml/ABLinePicker.qml" line="65"/>
         <source>AB Line</source>
         <translation type="unfinished">Линия АВ</translation>
     </message>
@@ -89,6 +91,11 @@
 <context>
     <name>BoundaryMenu</name>
     <message>
+        <location filename="../qml/boundary/BoundaryMenu.qml" line="33"/>
+        <source>Start or Delete A Boundary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/boundary/BoundaryMenu.qml" line="116"/>
         <source>Delete All Boundaries?</source>
         <translation>Удалить все границы?</translation>
@@ -105,6 +112,11 @@
         <location filename="../qml/boundary/BoundaryRecord.qml" line="29"/>
         <source>Record Boundary</source>
         <translation type="unfinished">Запись</translation>
+    </message>
+    <message>
+        <location filename="../qml/boundary/BoundaryRecord.qml" line="48"/>
+        <source>Centimeter</source>
+        <translation type="unfinished">Сантиметр</translation>
     </message>
     <message>
         <location filename="../qml/boundary/BoundaryRecord.qml" line="96"/>
@@ -296,6 +308,46 @@
 <context>
     <name>ConfigFeatures</name>
     <message>
+        <location filename="../qml/config/ConfigFeatures.qml" line="37"/>
+        <source>Tram Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigFeatures.qml" line="43"/>
+        <source>Headland</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigFeatures.qml" line="49"/>
+        <source>Boundary</source>
+        <translation type="unfinished">Граница</translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigFeatures.qml" line="55"/>
+        <source>Rec Path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigFeatures.qml" line="71"/>
+        <source>Tools Menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigFeatures.qml" line="79"/>
+        <source>AB Smooth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigFeatures.qml" line="85"/>
+        <source>Hide Contour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigFeatures.qml" line="91"/>
+        <source>WebCam</source>
+        <translation type="unfinished">Вебкамера</translation>
+    </message>
+    <message>
         <location filename="../qml/config/ConfigFeatures.qml" line="97"/>
         <source>Offset Fix</source>
         <translation>Исправление смещения</translation>
@@ -314,6 +366,11 @@
         <location filename="../qml/config/ConfigFeatures.qml" line="146"/>
         <source>Auto Start AgIO</source>
         <translation type="unfinished">Автозапуск AgIO</translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigFeatures.qml" line="163"/>
+        <source>Sound</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/config/ConfigFeatures.qml" line="170"/>
@@ -700,6 +757,11 @@
         <translation>Тип антенны</translation>
     </message>
     <message>
+        <location filename="../qml/config/ConfigSources.qml" line="52"/>
+        <source>Dual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/config/ConfigSources.qml" line="64"/>
         <source>Antenna Offset error!</source>
         <translation>Ошибка смещения антенны!</translation>
@@ -708,6 +770,11 @@
         <location filename="../qml/config/ConfigSources.qml" line="64"/>
         <source>You have antenna offset set to &quot;left&quot;. Dual requires it set to &quot;right&quot;. Change it or you will have offset errors</source>
         <translation type="unfinished">У вас смещение антенны установлено налево. Для двойной антенны требуется установить направо. Измените это, иначе у вас будут ошибки смещения</translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigSources.qml" line="81"/>
+        <source>Fix</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/config/ConfigSources.qml" line="117"/>
@@ -735,6 +802,21 @@
         <location filename="../qml/config/ConfigSources.qml" line="220"/>
         <source>Heading Distance</source>
         <translation type="unfinished">Расстояние до линии</translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigSources.qml" line="242"/>
+        <source>IMU &lt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigSources.qml" line="245"/>
+        <source>&gt; GPS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigSources.qml" line="247"/>
+        <source>Fusion</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/config/ConfigSources.qml" line="270"/>
@@ -779,6 +861,21 @@
         <location filename="../qml/config/ConfigSourcesRoll.qml" line="95"/>
         <source>Invert Roll</source>
         <translation>Инвертировать крен</translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigSourcesRoll.qml" line="118"/>
+        <source>Less</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigSourcesRoll.qml" line="119"/>
+        <source>Roll Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/config/ConfigSourcesRoll.qml" line="120"/>
+        <source>More</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1005,6 +1102,26 @@ Radius</source>
         <source>This field exists already; please change the new name.</source>
         <translation type="unfinished">Это поле уже существует,измените название.</translation>
     </message>
+    <message>
+        <location filename="../qml/field/FieldFromExisting.qml" line="186"/>
+        <source>Flags</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldFromExisting.qml" line="195"/>
+        <source>Mapping</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldFromExisting.qml" line="204"/>
+        <source>Headland</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldFromExisting.qml" line="213"/>
+        <source>Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>FieldFromKML</name>
@@ -1020,6 +1137,49 @@ Radius</source>
     </message>
 </context>
 <context>
+    <name>FieldMenu</name>
+    <message>
+        <location filename="../qml/field/FieldMenu.qml" line="44"/>
+        <source>Drive In</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldMenu.qml" line="51"/>
+        <source>ISO-XML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldMenu.qml" line="57"/>
+        <source>From KML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldMenu.qml" line="64"/>
+        <source>From Existing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldMenu.qml" line="74"/>
+        <source>New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldMenu.qml" line="84"/>
+        <source>Resume</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldMenu.qml" line="107"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldMenu.qml" line="119"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>FieldNew</name>
     <message>
         <location filename="../qml/field/FieldNew.qml" line="28"/>
@@ -1030,6 +1190,11 @@ Radius</source>
         <location filename="../qml/field/FieldNew.qml" line="48"/>
         <source>Enter Field Name</source>
         <translation type="unfinished">Введите название поля</translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldNew.qml" line="56"/>
+        <source>New Field Name</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/field/FieldNew.qml" line="73"/>
@@ -1043,6 +1208,26 @@ Radius</source>
         <location filename="../qml/field/FieldOpen.qml" line="29"/>
         <source>Open Field</source>
         <translation>Открыть поле</translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldOpen.qml" line="79"/>
+        <source>Delete Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldOpen.qml" line="99"/>
+        <source>Toggle Sort</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldOpen.qml" line="112"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldOpen.qml" line="127"/>
+        <source>Use Selected</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1071,6 +1256,16 @@ Radius</source>
 <context>
     <name>FieldToolsMenu</name>
     <message>
+        <location filename="../qml/field/FieldToolsMenu.qml" line="35"/>
+        <source>Boundary</source>
+        <translation type="unfinished">Граница</translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldToolsMenu.qml" line="45"/>
+        <source>Headland</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/field/FieldToolsMenu.qml" line="54"/>
         <source>No Boundaries</source>
         <translation type="unfinished"></translation>
@@ -1078,6 +1273,21 @@ Radius</source>
     <message>
         <location filename="../qml/field/FieldToolsMenu.qml" line="54"/>
         <source>Create A Boundary First</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldToolsMenu.qml" line="59"/>
+        <source>Headland (Build)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldToolsMenu.qml" line="69"/>
+        <source>Tram Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/field/FieldToolsMenu.qml" line="76"/>
+        <source>Recorded Path</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1271,13 +1481,13 @@ Radius</source>
         <translation>Создайте новое поле.</translation>
     </message>
     <message>
-        <location filename="../formgps_ui.cpp" line="948"/>
-        <location filename="../formgps_ui.cpp" line="959"/>
+        <location filename="../formgps_ui.cpp" line="941"/>
+        <location filename="../formgps_ui.cpp" line="952"/>
         <source> m</source>
         <translation> м</translation>
     </message>
     <message>
-        <location filename="../formgps_ui.cpp" line="957"/>
+        <location filename="../formgps_ui.cpp" line="950"/>
         <source>°</source>
         <translation>°</translation>
     </message>
@@ -1417,17 +1627,17 @@ Radius</source>
         <translation>Не удалось найти URL: </translation>
     </message>
     <message>
-        <location filename="../QtAgIO/formloop_ui.cpp" line="130"/>
+        <location filename="../QtAgIO/formloop_ui.cpp" line="131"/>
         <source>UDP Listen Only Mode Activated!!</source>
         <translation type="unfinished">Режим только прослушивания UDP активирован!</translation>
     </message>
     <message>
-        <location filename="../QtAgIO/formloop_ui.cpp" line="130"/>
+        <location filename="../QtAgIO/formloop_ui.cpp" line="131"/>
         <source>Warning!! Will Not Send To Modules!!</source>
         <translation type="unfinished">Предупреждение! Не будет отправлено модулям!</translation>
     </message>
     <message>
-        <location filename="../QtAgIO/formloop_ui.cpp" line="133"/>
+        <location filename="../QtAgIO/formloop_ui.cpp" line="134"/>
         <source>UDP Listen Only Mode Deactivated</source>
         <translation type="unfinished">Режим  прослушивания UDP отключен</translation>
     </message>
@@ -1526,6 +1736,59 @@ Radius</source>
     </message>
 </context>
 <context>
+    <name>HamburgerMenu</name>
+    <message>
+        <location filename="../qml/HamburgerMenu.qml" line="29"/>
+        <source>Languages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/HamburgerMenu.qml" line="34"/>
+        <source>Directories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/HamburgerMenu.qml" line="39"/>
+        <source>Colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/HamburgerMenu.qml" line="43"/>
+        <source>Section Colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/HamburgerMenu.qml" line="47"/>
+        <source>Enter Sim Coords</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/HamburgerMenu.qml" line="55"/>
+        <source>Simulator On</source>
+        <translation type="unfinished">Симулятор включен</translation>
+    </message>
+    <message>
+        <location filename="../qml/HamburgerMenu.qml" line="68"/>
+        <source>Reset All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/HamburgerMenu.qml" line="73"/>
+        <source>HotKeys</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/HamburgerMenu.qml" line="78"/>
+        <source>About...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/HamburgerMenu.qml" line="83"/>
+        <source>Help</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>HeadAcheDesigner</name>
     <message>
         <location filename="../qml/HeadAcheDesigner.qml" line="434"/>
@@ -1542,11 +1805,49 @@ Radius</source>
     </message>
 </context>
 <context>
+    <name>LineDrawer</name>
+    <message>
+        <location filename="../qml/tracks/LineDrawer.qml" line="25"/>
+        <source>Click 2 points on the Boundary to Begin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/tracks/LineDrawer.qml" line="39"/>
+        <source>nothing to see here yet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/tracks/LineDrawer.qml" line="96"/>
+        <source>Boundary Curve</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>LineEditor</name>
+    <message>
+        <location filename="../qml/LineEditor.qml" line="18"/>
+        <source>Edit AB</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <location filename="../qml/LineEditor.qml" line="37"/>
         <source>cm</source>
         <translation>см</translation>
+    </message>
+    <message>
+        <location filename="../qml/LineEditor.qml" line="77"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/LineEditor.qml" line="86"/>
+        <source>For Now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/LineEditor.qml" line="96"/>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1555,6 +1856,44 @@ Radius</source>
         <location filename="../qml/LineName.qml" line="24"/>
         <source>AB </source>
         <translation>AB </translation>
+    </message>
+</context>
+<context>
+    <name>MainBottomRow</name>
+    <message>
+        <location filename="../qml/MainBottomRow.qml" line="56"/>
+        <source>YouSkips</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainBottomRow.qml" line="61"/>
+        <source>Reset Tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainBottomRow.qml" line="73"/>
+        <source>Tram Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainBottomRow.qml" line="88"/>
+        <source>HydLift</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainBottomRow.qml" line="100"/>
+        <source>Headland</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainBottomRow.qml" line="115"/>
+        <source>Flag</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainBottomRow.qml" line="122"/>
+        <source>Track</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1593,6 +1932,34 @@ Radius</source>
         <location filename="../qml/MainLeftColumn.qml" line="97"/>
         <source>Steer config</source>
         <translation type="unfinished">Настр. оборудования</translation>
+    </message>
+</context>
+<context>
+    <name>MainRightColumn</name>
+    <message>
+        <location filename="../qml/MainRightColumn.qml" line="30"/>
+        <source>Lock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainRightColumn.qml" line="58"/>
+        <source>Contour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainRightColumn.qml" line="114"/>
+        <source>Manual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainRightColumn.qml" line="134"/>
+        <source>Auto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainRightColumn.qml" line="152"/>
+        <source>AutoUturn</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1655,9 +2022,57 @@ Radius</source>
         <translation>Симулятор включен</translation>
     </message>
     <message>
+        <location filename="../qml/MainWindow.qml" line="417"/>
+        <source>Lost RTK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/MainWindow.qml" line="424"/>
         <source>Age: </source>
         <translation>Возраст: </translation>
+    </message>
+</context>
+<context>
+    <name>MainWindowTest</name>
+    <message>
+        <location filename="../qml/MainWindowTest.qml" line="20"/>
+        <source>File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindowTest.qml" line="34"/>
+        <source>Load Vehicle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindowTest.qml" line="38"/>
+        <source>Save Vehicle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindowTest.qml" line="44"/>
+        <source>Start Field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindowTest.qml" line="50"/>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindowTest.qml" line="54"/>
+        <source>Tools</source>
+        <translation type="unfinished">Инструменты</translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindowTest.qml" line="63"/>
+        <source>0 kph</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/MainWindowTest.qml" line="83"/>
+        <source>Blah</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1756,6 +2171,14 @@ Radius</source>
     </message>
 </context>
 <context>
+    <name>SimController</name>
+    <message>
+        <location filename="../qml/SimController.qml" line="35"/>
+        <source>Reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>StartUp</name>
     <message>
         <location filename="../qml/StartUp.qml" line="30"/>
@@ -1826,6 +2249,41 @@ Radius</source>
         <translation type="unfinished">Конфигурация автопилота</translation>
     </message>
     <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="49"/>
+        <source>Sensors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="56"/>
+        <source>Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="61"/>
+        <source>Settings</source>
+        <translation type="unfinished">Настройки</translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="66"/>
+        <source>Steer Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="352"/>
+        <source>Count Sensor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="361"/>
+        <source>Pressure Turn Sensor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="369"/>
+        <source>Current Turn Sensor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="379"/>
         <source>Off at %</source>
         <translation>Выкл на %</translation>
@@ -1836,6 +2294,31 @@ Radius</source>
         <translation>Счетчики</translation>
     </message>
     <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="458"/>
+        <source>Danfoss</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="474"/>
+        <source>Invert Motor Dir</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="482"/>
+        <source>Invert Relays</source>
+        <translation type="unfinished">Инвертировать реле</translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="515"/>
+        <source>Single</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="516"/>
+        <source>Differential</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="518"/>
         <source>A2D Converter</source>
         <translation>A2D Конвертер</translation>
@@ -1844,6 +2327,21 @@ Radius</source>
         <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="530"/>
         <source>IMU X or Y Axis</source>
         <translation>IMU ось X или Y</translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="545"/>
+        <source>None</source>
+        <translation type="unfinished">Нет</translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="546"/>
+        <source>Switch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="547"/>
+        <source>Button</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../qml/steerconfig/SteerConfigSettings.qml" line="549"/>
@@ -1957,6 +2455,72 @@ Switch- Pushed On, Release Off</source>
         <translation type="unfinished">Настройки автоуправления</translation>
     </message>
     <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="145"/>
+        <source>WAS Zero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="157"/>
+        <source>Counts per Degree</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="169"/>
+        <source>AckerMann</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="180"/>
+        <source>Max Steer Angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="195"/>
+        <source>Proportional Gain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="206"/>
+        <source>Maximum Limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="217"/>
+        <source>Minimum to Move</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="232"/>
+        <source>Agressiveness</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="243"/>
+        <source>OverShoot Reduction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="254"/>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="302"/>
+        <source>Integral</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="269"/>
+        <source>Acquire Look Ahead</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="280"/>
+        <source>Hold Look Ahead</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="291"/>
+        <source>Look Ahead Speed Gain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/steerconfig/SteerConfigWindow.qml" line="446"/>
         <source>0r +5</source>
         <translation>0 или +5</translation>
@@ -2030,6 +2594,11 @@ Switch- Pushed On, Release Off</source>
 </context>
 <context>
     <name>TrackList</name>
+    <message>
+        <location filename="../qml/tracks/TrackList.qml" line="56"/>
+        <source>Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <location filename="../qml/tracks/TrackList.qml" line="154"/>
         <source>Track not visible!</source>
@@ -2151,6 +2720,21 @@ Switch- Pushed On, Release Off</source>
 <context>
     <name>TramLinesEditor</name>
     <message>
+        <location filename="../qml/TramLinesEditor.qml" line="34"/>
+        <source>Tram Lines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/TramLinesEditor.qml" line="48"/>
+        <source>2.00 m</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/TramLinesEditor.qml" line="70"/>
+        <source>10 cm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../qml/TramLinesEditor.qml" line="93"/>
         <source>Mode</source>
         <translation>Режим</translation>
@@ -2159,6 +2743,21 @@ Switch- Pushed On, Release Off</source>
         <location filename="../qml/TramLinesEditor.qml" line="117"/>
         <source>Passes</source>
         <translation>Проходы</translation>
+    </message>
+    <message>
+        <location filename="../qml/TramLinesEditor.qml" line="148"/>
+        <source>Seed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/TramLinesEditor.qml" line="151"/>
+        <source>Spray</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/TramLinesEditor.qml" line="154"/>
+        <source>Track</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2299,169 +2898,169 @@ Switch- Pushed On, Release Off</source>
 <context>
     <name>Utils</name>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="23"/>
-        <location filename="../qml/AOG/Utils.qml" line="76"/>
+        <location filename="../qml/singletons/Utils.qml" line="23"/>
+        <location filename="../qml/singletons/Utils.qml" line="76"/>
         <source>N</source>
         <comment>compass bearing</comment>
         <translation type="unfinished">С</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="27"/>
-        <location filename="../qml/AOG/Utils.qml" line="80"/>
+        <location filename="../qml/singletons/Utils.qml" line="27"/>
+        <location filename="../qml/singletons/Utils.qml" line="80"/>
         <source>NE</source>
         <comment>compass bearing</comment>
         <translation type="unfinished">СВ</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="31"/>
-        <location filename="../qml/AOG/Utils.qml" line="84"/>
+        <location filename="../qml/singletons/Utils.qml" line="31"/>
+        <location filename="../qml/singletons/Utils.qml" line="84"/>
         <source>E</source>
         <comment>compass bearing</comment>
         <translation type="unfinished">В</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="35"/>
-        <location filename="../qml/AOG/Utils.qml" line="88"/>
+        <location filename="../qml/singletons/Utils.qml" line="35"/>
+        <location filename="../qml/singletons/Utils.qml" line="88"/>
         <source>SE</source>
         <comment>compass bearing</comment>
         <translation type="unfinished">ЮВ</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="39"/>
-        <location filename="../qml/AOG/Utils.qml" line="92"/>
+        <location filename="../qml/singletons/Utils.qml" line="39"/>
+        <location filename="../qml/singletons/Utils.qml" line="92"/>
         <source>S</source>
         <comment>compass bearing</comment>
         <translation type="unfinished">Ю</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="43"/>
-        <location filename="../qml/AOG/Utils.qml" line="96"/>
+        <location filename="../qml/singletons/Utils.qml" line="43"/>
+        <location filename="../qml/singletons/Utils.qml" line="96"/>
         <source>SW</source>
         <comment>compass bearing</comment>
         <translation type="unfinished">ЮЗ</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="47"/>
-        <location filename="../qml/AOG/Utils.qml" line="100"/>
+        <location filename="../qml/singletons/Utils.qml" line="47"/>
+        <location filename="../qml/singletons/Utils.qml" line="100"/>
         <source>W</source>
         <comment>compass bearing</comment>
         <translation type="unfinished">З</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="51"/>
-        <location filename="../qml/AOG/Utils.qml" line="104"/>
+        <location filename="../qml/singletons/Utils.qml" line="51"/>
+        <location filename="../qml/singletons/Utils.qml" line="104"/>
         <source>NW</source>
         <comment>compass bearing</comment>
         <translation type="unfinished">СЗ</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="53"/>
-        <location filename="../qml/AOG/Utils.qml" line="106"/>
+        <location filename="../qml/singletons/Utils.qml" line="53"/>
+        <location filename="../qml/singletons/Utils.qml" line="106"/>
         <source>??</source>
         <comment>unknown compass bearing</comment>
         <translation type="unfinished">??</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="115"/>
+        <location filename="../qml/singletons/Utils.qml" line="115"/>
         <source>km/h</source>
         <comment>abbreviation for kilometers per hour</comment>
         <translation type="unfinished">км/ч</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="117"/>
+        <location filename="../qml/singletons/Utils.qml" line="117"/>
         <source>MPH</source>
         <comment>abbreviation for miles per hour</comment>
         <translation type="unfinished">миль/ч</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="143"/>
+        <location filename="../qml/singletons/Utils.qml" line="143"/>
         <source>cm</source>
         <comment>centimeter abbreviation</comment>
         <translation type="unfinished">см</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="145"/>
+        <location filename="../qml/singletons/Utils.qml" line="145"/>
         <source>in</source>
         <comment>inches abbreviation</comment>
         <translation type="unfinished">дюйм</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="150"/>
+        <location filename="../qml/singletons/Utils.qml" line="150"/>
         <source>Centimeter</source>
         <comment>centimeter unit</comment>
         <translation type="unfinished">Сантиметр</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="152"/>
+        <location filename="../qml/singletons/Utils.qml" line="152"/>
         <source>Inches</source>
         <comment>inches unit</comment>
         <translation type="unfinished">Дюймы</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="179"/>
+        <location filename="../qml/singletons/Utils.qml" line="179"/>
         <source>m</source>
         <comment>metre abbreviation</comment>
         <translation type="unfinished">м</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="181"/>
+        <location filename="../qml/singletons/Utils.qml" line="181"/>
         <source>ft</source>
         <comment>imperial feet abbreviation</comment>
         <translation type="unfinished">фут</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="185"/>
+        <location filename="../qml/singletons/Utils.qml" line="185"/>
         <source>per hectare</source>
         <translation type="unfinished">на гектар</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="187"/>
+        <location filename="../qml/singletons/Utils.qml" line="187"/>
         <source>per acre</source>
         <translation type="unfinished">на акр</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="192"/>
+        <location filename="../qml/singletons/Utils.qml" line="192"/>
         <source>metres</source>
         <translation type="unfinished">метры</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="194"/>
+        <location filename="../qml/singletons/Utils.qml" line="194"/>
         <source>feet</source>
         <comment>imperial feet</comment>
         <translation type="unfinished">футы</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="232"/>
+        <location filename="../qml/singletons/Utils.qml" line="232"/>
         <source>km</source>
         <comment>kilometre abbreviation</comment>
         <translation type="unfinished">км</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="234"/>
+        <location filename="../qml/singletons/Utils.qml" line="234"/>
         <source>mi</source>
         <comment>imperial miles abbreviation</comment>
         <translation type="unfinished">миль</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="274"/>
+        <location filename="../qml/singletons/Utils.qml" line="274"/>
         <source>ha</source>
         <comment>hectares abbreviation</comment>
         <translation type="unfinished">га</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="276"/>
+        <location filename="../qml/singletons/Utils.qml" line="276"/>
         <source>ac</source>
         <comment>acres abbreviation</comment>
         <translation type="unfinished">акр</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="304"/>
+        <location filename="../qml/singletons/Utils.qml" line="304"/>
         <source>ha/hr</source>
         <comment>Abbreviation for hectares per hour</comment>
         <translation type="unfinished">га/ч</translation>
     </message>
     <message>
-        <location filename="../qml/AOG/Utils.qml" line="306"/>
+        <location filename="../qml/singletons/Utils.qml" line="306"/>
         <source>ac/hr</source>
         <comment>Abbreviation for acres per hour</comment>
         <translation type="unfinished">акр/ч</translation>
