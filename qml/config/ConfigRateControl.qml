@@ -25,7 +25,6 @@ Rectangle{
 
         moduleID.value = Settings.rate_Product0[0]
         prodDensityBox.value = Settings.rate_Product0[1]
-        //cboxRateProductNames = Settings.rate_Product0[1];
         cboxIsRateControlOn.checked = (Settings.rate_Product0[2]>0)?true:false
         rateKP.value = Settings.rate_Product0[3]
         rateKI.value = Settings.rate_Product0[4]
@@ -38,6 +37,7 @@ Rectangle{
         cboxRateMode.currentIndex = Settings.rate_Product0[11]
         cboxRateControlType.currentIndex = Settings.rate_Product0[12];
         cboxRateCoverageUnits.currentIndex = Settings.rate_Product0[13];
+        productName0.text = Settings.rate_ProductName[0];
 
         mandatory.visible = false
 
@@ -59,7 +59,7 @@ Rectangle{
         Settings.rate_Product0[11] = Number(cboxRateMode.currentIndex)
         Settings.rate_Product0[12] = Number(cboxRateControlType.currentIndex)
         Settings.rate_Product0[13] = Number(cboxRateCoverageUnits.currentIndex)
-        console.debug(Settings.rate_Product0[13])
+        Settings.rate_ProductName[0] = productName0.text;
         mandatory.visible = false
         aog.modules_send_PGN32502();
 
@@ -71,13 +71,39 @@ Rectangle{
         anchors.topMargin: 10
         text: qsTr("Rate Control")
     }
+    RowLayout{
+        id: topRateButtons
+        anchors.right: parent.right
+        anchors.rightMargin: 20 * theme.scaleWidth
+        anchors.leftMargin: 20 * theme.scaleWidth
+        anchors.left: parent.left
+        anchors.top: top.bottom
+        anchors.bottomMargin: 10 * theme.scaleHeight
+        height: children.height
 
+        IconButton{
+            id: rateProductPrev
+            Layout.alignment: Qt.AlignLeft
+            icon.source: prefix + "/images/ArrowLeft.png"
+        }
+        TextField{
+            id: productName0
+            Layout.alignment: Qt.AlignCenter
+            selectByMouse: true
+            placeholderText: qsTr("Product Name")
+        }
+        IconButtonTransparent{
+            id: rateProductNext
+            icon.source: prefix + "/images/ArrowRight.png"
+            Layout.alignment: Qt.AlignRight
+        }
+    }
     GridLayout{
         flow: Grid.LeftToRight
         columns: 5
         rows: 3
         anchors.bottom: back.top
-        anchors.top: parent.top
+        anchors.top: topRateButtons.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.topMargin: 20 * theme.scaleHeight

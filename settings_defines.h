@@ -306,7 +306,7 @@
 #define SETTINGS_youturn_style "youturn/style"
 #define SETTINGS_youturn_toolWidths "youturn/toolWidths"
 #define SETTINGS_youturn_youMoveDistance "youturn/youMoveDistance"
-#define SETTINGS_test_testStrings "test/testStrings"
+#define SETTINGS_rate_ProductName "rate/ProductName"
 #define SETTINGS_rate_Product0 "rate/Product0"
 #define SETTINGS_test_testColorRgbF "test/testColorRgbF"
 #endif

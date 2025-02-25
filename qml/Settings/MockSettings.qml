@@ -307,7 +307,7 @@ Item {
 	property double youturn_style: 0
 	property double youturn_toolWidths: 2
 	property double youturn_youMoveDistance: 0.25
-	property var test_testStrings: [ "one", "two", "trheep", "four}"  ]
+    property var rate_ProductName: [ "ProductName0","ProductName1","ProductName2","ProductName3"  ]
     property var rate_Product0: [ 0,0,0,10,0,0,100,255,1,800,100,1,1,2,1,0,0,1,0 ]
 	property color test_testColorRgbF: "#ff7f7f33"
 }
