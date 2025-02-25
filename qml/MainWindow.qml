@@ -29,7 +29,7 @@ Window {
     //We draw native opengl to this root object
     id: mainWindow
     objectName: "mainWindow"
-    property string prefix: "../.." //make image show in QtDS
+    //property string prefix: "../.." //make image show in QtDS
 
     height: theme.defaultHeight
     width: theme.defaultWidth
