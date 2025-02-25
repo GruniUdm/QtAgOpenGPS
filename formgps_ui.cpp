@@ -29,7 +29,7 @@ void FormGPS::setupGui()
     setProperty("title","QtAgOpenGPS");
 
     // Load the translation file
-    QString language = "ru"; // Change this variable to "en", "fr" or "ru" as needed
+    QString language = "fr"; // Change this variable to "en", "fr" or "ru" as needed
     loadTranslation(language);
 
     connect(this, SIGNAL(objectCreated(QObject*,QUrl)),
