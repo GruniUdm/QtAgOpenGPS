@@ -1,4 +1,0 @@
-module AOG
-AOGRenderer 1.0 MockAOGRenderer.qml
-singleton Utils 1.0 Utils.qml
-

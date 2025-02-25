@@ -163,11 +163,12 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         file(GLOB QML_FILES "${DIR}/*.qml" "${DIR}/*.js")
         set(REL_PATHS)
         foreach(QML_FILE ${QML_FILES})
-            if(NOT QML_FILE MATCHES "Test.*\\.qml$")  #Remove Test*.qml files from the list
+            if(NOT QML_FILE MATCHES "*.Test.*\\.qml$")  #Remove Test*.qml files from the list
                 file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/qml" "${QML_FILE}")
                 set_source_files_properties(${QML_FILE} PROPERTIES
                     QT_RESOURCE_ALIAS "${REL_PATH}")
-                # message(WARNING "file: ${REL_PATH}")
+                #message(WARNING "file QML_FILE: ${QML_FILE}")
+                #message(WARNING "file REL_PATH: ${REL_PATH}")
                 list(APPEND REL_PATHS "qml/${REL_PATH}")
             endif()
         endforeach()
@@ -186,6 +187,7 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/steerconfig" STEERCONFIG_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/tracks" TRACKS_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/wizards" WIZARDS_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/singletons" SINGLETONS_REL_PATHS) #adding singletons
 
     # Combine all relative paths
     set(ALL_REL_PATHS
@@ -200,16 +202,13 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         ${STEERCONFIG_REL_PATHS}
         ${TRACKS_REL_PATHS}
         ${WIZARDS_REL_PATHS}
+        ${SINGLETONS_REL_PATHS} # adding singletons relative paths
     )
 
     # message(WARNING "All relative paths: ${ALL_REL_PATHS}")
 
-    #add singletons (AOG/ path)
-    set(aog_qml_singletons
-        qml/AOG/Utils.qml
-    )
-
-    set_source_files_properties(${aog_qml_singletons}
+    #add singletons (singletons/ path)
+    set_source_files_properties(${SINGLETONS_REL_PATHS}
         PROPERTIES QT_QML_SINGLETON_TYPE TRUE
     )
 
@@ -220,7 +219,6 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         RESOURCE_PREFIX "/"
         QML_FILES
         ${ALL_REL_PATHS} #all qml files
-        ${aog_qml_singletons} #singletons
         SOURCES
         aogrenderer.cpp
         aogrenderer.h
@@ -239,8 +237,11 @@ else() #LOCAL_QML ON
     add_custom_target(AOGQML SOURCES agopengps.qrc)
 
     set(aog_qml_singletons
-        qml/AOG/Utils.qml
+        qml/singletons/Utils.qml
     )
+
+    set_source_files_properties("qml/singletons/Utils.qml" PROPERTIES
+                    QT_RESOURCE_ALIAS "singletons/Utils.qml")
 
     set_source_files_properties(${aog_qml_singletons}
         PROPERTIES QT_QML_SINGLETON_TYPE TRUE
@@ -249,6 +250,7 @@ else() #LOCAL_QML ON
     qt_add_qml_module(QtAgOpenGPS
         URI AOG
         VERSION 1.0
+        RESOURCE_PREFIX "/"
         QML_FILES ${aog_qml_singletons}
         SOURCES
             aogrenderer.cpp
