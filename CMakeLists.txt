@@ -133,13 +133,13 @@ endif()
 
 ###### Handling Local QML Handling QML in module in LOCAL_QML OFF######
 if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
-    # Function to process image files in a given directory (non-recursive)
+    # Function to process resource files in a given directory (recursive)
     function(process_files DIR OUT_VAR)
-        file(GLOB_RECURSE IMAGE_FILES "${DIR}/*.*")
+        file(GLOB_RECURSE RESOURCE_FILES "${DIR}/*.*")
         set(REL_PATHS)
-        foreach(IMAGE_FILE ${IMAGE_FILES})
-            file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${IMAGE_FILE}")
-            set_source_files_properties(${IMAGE_FILE} PROPERTIES
+        foreach(RESOURCE_FILE ${RESOURCE_FILES})
+            file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${RESOURCE_FILE}")
+            set_source_files_properties(${RESOURCE_FILE} PROPERTIES
                 QT_RESOURCE_ALIAS "${REL_PATH}")
             # message(WARNING "file: ${REL_PATH}")
             list(APPEND REL_PATHS "${REL_PATH}")
@@ -147,12 +147,14 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         set(${OUT_VAR} ${REL_PATHS} PARENT_SCOPE)
     endfunction()
 
-    # Process image files for each directory
+    # Process image files in images/ directory
     process_files("${CMAKE_CURRENT_SOURCE_DIR}/images" IMAGE_REL_PATHS)
 
-    # Process shader files for each directory
+    # Process shader files in shaders/ directory
     process_files("${CMAKE_CURRENT_SOURCE_DIR}/shaders" SHADER_REL_PATHS)
 
+    # Process sound files in sound/ directory
+    process_files("${CMAKE_CURRENT_SOURCE_DIR}/sounds" SOUND_REL_PATHS)
 
     # message(WARNING "All image relative paths: ${IMAGE_REL_PATHS}")
     
@@ -226,6 +228,7 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         RESOURCES
         ${IMAGE_REL_PATHS}
         ${SHADER_REL_PATHS}
+        ${SOUND_REL_PATHS}
     )  
 
 else() #LOCAL_QML ON
