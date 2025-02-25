@@ -163,7 +163,7 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         file(GLOB QML_FILES "${DIR}/*.qml" "${DIR}/*.js")
         set(REL_PATHS)
         foreach(QML_FILE ${QML_FILES})
-            if(NOT QML_FILE MATCHES "*.Test.*\\.qml$")  #Remove Test*.qml files from the list
+            if(NOT QML_FILE MATCHES ".*\\.Test\\..*\\.qml$")  #Remove *Test*.qml files from the list
                 file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/qml" "${QML_FILE}")
                 set_source_files_properties(${QML_FILE} PROPERTIES
                     QT_RESOURCE_ALIAS "${REL_PATH}")
