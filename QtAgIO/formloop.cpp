@@ -4,8 +4,8 @@
 #include <QQuickWindow>
 #include <QQmlApplicationEngine>
 #include "qmlsettings.h"
-#include "bluetoothdevicelist.h"
-#include "bluetoothmanager.h"
+#include "src/bluetoothdevicelist.h"
+#include "src/bluetoothmanager.h"
 
 extern QMLSettings qml_settings;
 FormLoop::FormLoop(QObject *parent) : QObject(parent),

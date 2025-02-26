@@ -11,8 +11,8 @@
 #include <QHostInfo>
 #include <QDir>
 #include "agioproperty.h"
-#include "bluetoothdevicelist.h"
-#include "bluetoothmanager.h"
+#include "src/bluetoothdevicelist.h"
+#include "src/bluetoothmanager.h"
 
 extern QMLSettings qml_settings;
 

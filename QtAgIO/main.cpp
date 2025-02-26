@@ -5,7 +5,7 @@
 #include <QStandardPaths>
 #include "formloop.h"
 #include "agioproperty.h"
-#include "bluetoothdevicelist.h"
+#include "src/bluetoothdevicelist.h"
 
 AgIOSettings *settings;
 

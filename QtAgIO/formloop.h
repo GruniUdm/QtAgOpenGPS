@@ -6,11 +6,11 @@
 #include <QNetworkDatagram>
 #include <QString>
 #include <QByteArray>
-#include "CTraffic.h"
-#include "CScanReply.h"
+#include "src/CTraffic.h"
+#include "src/CScanReply.h"
 #include <QUdpSocket>
 #include <QQmlApplicationEngine>
-#include "glm.h"
+#include "src/glm.h"
 #include <cmath>
 #include <QSettings>
 #include "agiosettings.h"
