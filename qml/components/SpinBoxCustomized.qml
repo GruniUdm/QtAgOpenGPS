@@ -33,7 +33,9 @@ Item {
     //valueChanged signal
 
     function setValue(value) {
+        spinBox_Customized.value = value
         spinner.value = value
+        text_input.text = spinner.textFromValue(spinner.value, spinner.locale)
     }
 
     onBoundValueChanged: {
