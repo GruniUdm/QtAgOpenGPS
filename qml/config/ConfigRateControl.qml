@@ -108,7 +108,7 @@ if (ID === 0) {
         Settings.rate_Product0[12] = Number(cboxRateControlType.currentIndex)
         Settings.rate_Product0[13] = Number(cboxRateCoverageUnits.currentIndex)
         Settings.rate_ProductName[0] = productName.text;}
-if (ID === 1) {
+if (prodID === 1) {
         Settings.rate_Product1[0] = moduleID.value;
         Settings.rate_Product1[1] = prodDensityBox.value
         Settings.rate_Product1[2] = cboxIsRateControlOn.checked?1:0
@@ -228,9 +228,9 @@ if (ID === 3) {
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: Settings.rate_Product0[0]
+            //boundValue: Settings.rate_Product0[0]
             onValueModified: {
-                Settings.rate_Product[0] = value
+                //Settings.rate_Product[0] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -246,9 +246,9 @@ if (ID === 3) {
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: Settings.rate_Product[1]
+            //boundValue: Settings.rate_Product[1]
             onValueModified: {
-                Settings.rate_Product[1] = value
+                //Settings.rate_Product[1] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -264,9 +264,9 @@ if (ID === 3) {
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: Settings.rate_Product[3]
+            //boundValue: Settings.rate_Product[3]
             onValueModified: {
-                Settings.rate_Product[3] = value
+                //Settings.rate_Product[3] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -282,9 +282,9 @@ if (ID === 3) {
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: Settings.rate_Product[4]
+            //boundValue: Settings.rate_Product[4]
             onValueModified: {
-                Settings.rate_Product[4] = value
+                //Settings.rate_Product[4] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -300,9 +300,9 @@ if (ID === 3) {
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: Settings.rate_Product[5]
+            //boundValue: Settings.rate_Product[5]
             onValueModified:{
-                Settings.rate_Product[5] = value
+                //Settings.rate_Product[5] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -319,9 +319,9 @@ if (ID === 3) {
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: Settings.rate_Product[6]
+            //boundValue: Settings.rate_Product[6]
             onValueModified: {
-                Settings.rate_Product[6] = value
+                //Settings.rate_Product[6] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -339,9 +339,9 @@ if (ID === 3) {
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: Settings.rate_Product[7]
+            //boundValue: Settings.rate_Product[7]
             onValueModified:{
-                Settings.rate_Product[7] = value
+                //Settings.rate_Product[7] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -359,9 +359,9 @@ if (ID === 3) {
             to:255
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: Settings.rate_Product[8]
+            //boundValue: Settings.rate_Product[8]
             onValueModified:{
-                Settings.rate_Product[8] = value
+                //Settings.rate_Product[8] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -379,9 +379,9 @@ if (ID === 3) {
             to:1000
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: Settings.rate_Product0[10]
+            //boundValue: Settings.rate_Product0[10]
             onValueModified:{
-                Settings.rate_Product0[10] = value
+                //Settings.rate_Product0[10] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -399,9 +399,9 @@ if (ID === 3) {
             to:1000
             editable: true
             enabled: cboxIsRateControlOn.checked
-            boundValue: Settings.rate_Product[9]
+            //boundValue: Settings.rate_Product[9]
             onValueModified:{
-                Settings.rate_Product[9] = value
+                //Settings.rate_Product[9] = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -492,7 +492,7 @@ if (ID === 3) {
         enabled: cboxIsRateControlOn.checked
         icon.source: prefix + "/images/UpArrow64.png"
         onClicked: {
-            load_settings(moduleID.value)
+            load_settings(prodID)
             mandatory.visible = true
         }
     }
@@ -571,7 +571,7 @@ if (ID === 3) {
             anchors.rightMargin: 5
             text: qsTr("Send + Save")
         }
-        onClicked: save_settings(moduleID.value)
+        onClicked: save_settings(prodID)
 
 
     }
