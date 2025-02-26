@@ -185,8 +185,8 @@ if (ID === 3) {
             id: rateProductPrev
             Layout.alignment: Qt.AlignLeft
             icon.source: prefix + "/images/ArrowLeft.png"
-            onClicked: {
-                if (prodID > 0) {prodID--} {
+            onClicked: {prodID--
+                if (prodID < 0) {prodID = 3} {
                     load_settings(prodID)
                 }
             }
@@ -201,8 +201,8 @@ if (ID === 3) {
             id: rateProductNext
             icon.source: prefix + "/images/ArrowRight.png"
             Layout.alignment: Qt.AlignRight
-            onClicked: {
-                if (prodID < 4) {prodID++} {
+            onClicked: {prodID++
+                if (prodID > 3) {prodID = 0} {
                     load_settings(prodID)
                 }
             }
