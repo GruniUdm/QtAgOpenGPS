@@ -16,7 +16,9 @@ qt_standard_project_setup()
 # Create the AgIO executable
 qt_add_executable(QtAgIO
     main.cpp
-    #$<$<NOT:$<BOOL:${LOCAL_QML}>>:agio.qrc>
+)
+
+list(APPEND MODULE_CPP_FILES
     agioproperties.cpp
     agioproperty.h agioproperty.cpp
     agiosettings.h agiosettings.cpp
@@ -31,10 +33,10 @@ qt_add_executable(QtAgIO
     qmlsettings_addkeys.cpp
     qmlutil.h
     formloop_formudp.cpp
-    inc/CTraffic.h src/CTraffic.cpp
-    inc/CScanReply.h src/CScanReply.cpp
-    inc/bluetoothdevicelist.h src/bluetoothdevicelist.cpp
-    inc/bluetoothmanager.h src/bluetoothmanager.cpp
+    src/CTraffic.h src/CTraffic.cpp
+    src/CScanReply.h src/CScanReply.cpp
+    src/bluetoothdevicelist.h src/bluetoothdevicelist.cpp
+    src/bluetoothmanager.h src/bluetoothmanager.cpp
     interfaceproperty.h
 )
 
@@ -109,6 +111,8 @@ qt_add_qml_module(QtAgIO
     RESOURCE_PREFIX "/"
     QML_FILES
     ${QTAGIO_ALL_REL_PATHS}
+    SOURCES
+    ${MODULE_CPP_FILES}
     RESOURCES
     ${QTAGIO_IMAGE_REL_PATHS}
 )  
@@ -116,11 +120,11 @@ qt_add_qml_module(QtAgIO
 ###### End of Handling Local QML Handling QML in module for QtAgIO######
 
 
-target_include_directories(QtAgIO
-    PRIVATE src
-    PUBLIC inc
-    PRIVATE .
-)
+# target_include_directories(QtAgIO
+#     PRIVATE src
+#     PUBLIC inc
+#     PRIVATE .
+# )
 
 #this is needed by QtAgIO only
 
