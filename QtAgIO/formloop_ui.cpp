@@ -75,8 +75,8 @@ engine.rootContext()->setContextProperty("bluetoothDeviceList", btDevicesList);
     engine.rootContext()->setContextProperty("prefix","local:/QtAgIO");
     engine.load("local:/QtAgIO/qml/Main.qml");
 #else
-    engine.rootContext()->setContextProperty("prefix","");
-    engine.load(QUrl(QStringLiteral("qrc:/qml/Main.qml")));
+    engine.rootContext()->setContextProperty("prefix","qrc:/AGIO");
+    engine.load(QUrl(QStringLiteral("qrc:/AGIO/Main.qml")));
 #endif
 
 
