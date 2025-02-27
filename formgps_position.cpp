@@ -1206,6 +1206,7 @@ void FormGPS::UpdateFixPosition()
 	aog->setProperty("hz", gpsHz);
     //aog->setProperty("isReverse" , vehicle.isReverse);
     aog->setProperty("isReverseWithIMU", isReverseWithIMU);
+    // blockage
     aog->setProperty("blockage_avg", tool.blockage_avg);
     aog->setProperty("blockage_min1", tool.blockage_min1);
     aog->setProperty("blockage_min2", tool.blockage_min2);
@@ -1215,6 +1216,16 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("blockage_max_i", tool.blockage_max_i);
     aog->setProperty("blockage_blocked", tool.blockage_blocked);
     aog->setProperty("blockageConnected", isConnectedBlockage);
+
+    //Rate control RC
+    aog->setProperty("actualRate", rc.RateApplied());
+    aog->setProperty("smoothRate", rc.CurrentRate());
+    aog->setProperty("actualRatePWM", rc.ManualPWM[0]);
+    aog->setProperty("product0stat", (rc.SensorReceiving[0] & isConnectedRC));
+    aog->setProperty("actualRate1", rc.RateApplied());
+    aog->setProperty("smoothRate1", rc.CurrentRate());
+    aog->setProperty("actualRatePWM1", rc.ManualPWM[1]);
+    aog->setProperty("product1stat", (rc.SensorReceiving[1] & isConnectedRC1));
 
     double tool_lat, tool_lon;
     pn.ConvertLocalToWGS84(vehicle.pivotAxlePos.northing, vehicle.pivotAxlePos.easting, tool_lat, tool_lon);
@@ -1257,15 +1268,6 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("lblmodeActualXTE", vehicle.modeActualXTE);
     aog->setProperty("lblmodeActualHeadingError", vehicle.modeActualHeadingError);
 
-    //Rate
-    aog->setProperty("actualRate", rc.RateApplied());
-    aog->setProperty("smoothRate", rc.CurrentRate());
-    aog->setProperty("actualRatePWM", rc.ManualPWM[0]);
-    aog->setProperty("product0stat", (rc.SensorReceiving & isConnectedRC));
-    aog->setProperty("actualRate1", rc.RateApplied());
-    aog->setProperty("smoothRate1", rc.CurrentRate());
-    aog->setProperty("actualRatePWM1", rc.ManualPWM[1]);
-    aog->setProperty("product1stat", (rc.SensorReceiving & isConnectedRC1));
 
     //TODO: access this in QML directly from trk.howManyPathsAway property
     aog->setProperty("current_trackNum", trk.getHowManyPathsAway());

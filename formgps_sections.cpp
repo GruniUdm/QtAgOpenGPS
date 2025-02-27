@@ -406,9 +406,9 @@ void FormGPS::doRateControl()
     ModuleRateSettings.pgn[ModuleRateSettings.RateSetLo] = (char)((int)TargetUPM);
     ModuleRateSettings.pgn[ModuleRateSettings.RateSetMd] = (char)((int)TargetUPM >> 8);
     ModuleRateSettings.pgn[ModuleRateSettings.RateSetHI] = (char)((int)TargetUPM >> 16);
-    ModuleRateSettings.pgn[ModuleRateSettings.FlowCalLO] = (char)((int)rc.MeterCal);
-    ModuleRateSettings.pgn[ModuleRateSettings.FlowCalMd] = (char)((int)rc.MeterCal >> 8);
-    ModuleRateSettings.pgn[ModuleRateSettings.FlowCalHI] = (char)((int)rc.MeterCal >> 16);
+    ModuleRateSettings.pgn[ModuleRateSettings.FlowCalLO] = (char)((int)rc.MeterCal[rc.ModID]);
+    ModuleRateSettings.pgn[ModuleRateSettings.FlowCalMd] = (char)((int)rc.MeterCal[rc.ModID] >> 8);
+    ModuleRateSettings.pgn[ModuleRateSettings.FlowCalHI] = (char)((int)rc.MeterCal[rc.ModID] >> 16);
     ModuleRateSettings.pgn[ModuleRateSettings.Command] = rc.Command(rc.ModID);
     ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMLO] = (char)((int)rc.ManualPWM[rc.ModID]);
     ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMHI] = (char)((int)rc.ManualPWM[rc.ModID] >> 8);
