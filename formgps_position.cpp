@@ -1260,11 +1260,11 @@ void FormGPS::UpdateFixPosition()
     //Rate
     aog->setProperty("actualRate", rc.RateApplied());
     aog->setProperty("smoothRate", rc.CurrentRate());
-    aog->setProperty("actualRatePWM", rc.ManualPWM);
+    aog->setProperty("actualRatePWM", rc.ManualPWM[0]);
     aog->setProperty("product0stat", (rc.SensorReceiving & isConnectedRC));
     aog->setProperty("actualRate1", rc.RateApplied());
     aog->setProperty("smoothRate1", rc.CurrentRate());
-    aog->setProperty("actualRatePWM1", rc.ManualPWM);
+    aog->setProperty("actualRatePWM1", rc.ManualPWM[1]);
     aog->setProperty("product1stat", (rc.SensorReceiving & isConnectedRC1));
 
     //TODO: access this in QML directly from trk.howManyPathsAway property

@@ -12,32 +12,33 @@ void ratecontrol::rate_bump(bool up, int ID)
 
     if (up) {
 
-        if (ManualPWM < 250 ) ManualPWM += 10;
-        else ManualPWM = 255;
+        if (ManualPWM[ID] < 250 ) ManualPWM[ID] += 10;
+        else ManualPWM[ID] = 255;
 
     } else {
-        if (ManualPWM > -250) ManualPWM -=10;
-        else ManualPWM = -255;
+        if (ManualPWM[ID] > -250) ManualPWM[ID] -=10;
+        else ManualPWM[ID] = -255;
     }
 }
 void ratecontrol::rate_auto(int ID)
 {
-    ManualPWM = 0;
+    ManualPWM[ID] = 0;
 }
 
-void ratecontrol::aogset(double setwidth, double toolwidth, double aogspeed)
-{
+void ratecontrol::aogset(int aBttnState, int mBttnState, double setwidth, double toolwidth, double aogspeed)
+{   aBtnState = aBttnState;
+    mBtnState = mBttnState;
     width = toolwidth;
     swidth = setwidth;
     speed = aogspeed;
 }
 
-int ratecontrol::Command()
+int ratecontrol::Command(int ID)
 {
     int Result = 0;
     Result |= (1<<(ControlType+1));
     if (aBtnState > 0) Result |= (1<<6);
-    if ((mBtnState > 0) || (ManualPWM == 0)) Result |= (1<<4);
+    if ((mBtnState > 0) || (ManualPWM[ID] == 0)) Result |= (1<<4);
     //if (ManualPWM == 0) Result |= (1<<6);
     return Result;
 
@@ -231,17 +232,13 @@ double ratecontrol::RateApplied()
 
 }
 
-void ratecontrol::getfrommodule (int ID, QByteArray pgn_data)
-{   aBtnState = ID;
+void ratecontrol::dataformodule (QVector<int> set_data, QByteArray pgn_data)
+{
     ModID = pgn_data[5];
     appRate =   (qint32)((uint8_t(pgn_data[8]) << 16) + (uint8_t(pgn_data[8]) << 8) + uint8_t(pgn_data[6]));
     cQuantity = (pgn_data[11] << 16 | pgn_data[10] << 8 | pgn_data[9]) / 1000.0;
     PWMsetting = (qint16)(pgn_data[13] << 8 | pgn_data[12]);  // need to cast to 16 bit integer to preserve the sign bit
     SensorReceiving = ((pgn_data[14] & 0b00100000) == 0b00100000);
-}
-
-void ratecontrol::getsettings (int ID, QVector<int> set_data)
-{   mBtnState = ID;
     ModID = set_data[0];
     ProdDensity = set_data[1];
     OnScreen = set_data[2];
@@ -251,5 +248,5 @@ void ratecontrol::getsettings (int ID, QVector<int> set_data)
     AppMode = set_data[11];
     ControlType = set_data[12];
     CoverageUnits = set_data[13];
-
 }
+

@@ -3,12 +3,11 @@
 
 #include <QObject>
 
-class ratecontrol : public QObject
-{
+class ratecontrol : public QObject {
     Q_OBJECT
 public:
     int ModID;
-    double ManualPWM = 0;
+    double ManualPWM[4];
     double cUPM;
     double cQuantity;
     double MeterCal;
@@ -19,10 +18,9 @@ public:
     double RateApplied();
     double SmoothRate();
     double CurrentRate();
-    int Command();
-    void getfrommodule(int ID, QByteArray pgn_data);
-    void aogset(double setwidth, double toolwidth, double aogspeed);
-    void getsettings(int ID, QVector<int> set_data);
+    int Command(int ID);
+    void dataformodule(QVector<int> set_data, QByteArray pgn_data);
+    void aogset(int aBttnState, int mBttnState, double setwidth, double toolwidth, double aogspeed);
     int PWMsetting;
     bool SensorReceiving;
     int aBtnState;
@@ -57,7 +55,6 @@ signals:
 public slots:
     void rate_auto(int ID);
     void rate_bump(bool up, int ID);
-
 };
 
 #endif // RATECONTROL_H

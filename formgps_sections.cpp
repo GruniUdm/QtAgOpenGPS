@@ -387,7 +387,9 @@ void FormGPS::doBlockageMonitoring()
 
 void FormGPS::doRateControl()
 {   rateCounter = 0;
-    rc.getfrommodule(autoBtnState,RateSensor.pgn);
+
+    QVector<int> rateconfig0 = toVector<int>(settings->value(SETTINGS_rate_Product0));
+    rc.dataformodule(rateconfig0, RateSensor.pgn);
 
     double width = 0;
     for (int j = 0; j < MAXSECTIONS; j++)
@@ -396,10 +398,8 @@ void FormGPS::doRateControl()
     }
 
     double settings_width = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
-    rc.aogset(settings_width, width, pn.vtgSpeed);
+    rc.aogset(autoBtnState, manualBtnState, settings_width, width, pn.vtgSpeed);
 
-    QVector<int> rateconfig0 = toVector<int>(settings->value(SETTINGS_rate_Product0));
-    rc.getsettings(manualBtnState, rateconfig0);
 
     double TargetUPM = rc.TargetUPM()*1000;
     ModuleRateSettings.pgn[ModuleRateSettings.ID] = rc.ModID;
@@ -409,9 +409,9 @@ void FormGPS::doRateControl()
     ModuleRateSettings.pgn[ModuleRateSettings.FlowCalLO] = (char)((int)rc.MeterCal);
     ModuleRateSettings.pgn[ModuleRateSettings.FlowCalMd] = (char)((int)rc.MeterCal >> 8);
     ModuleRateSettings.pgn[ModuleRateSettings.FlowCalHI] = (char)((int)rc.MeterCal >> 16);
-    ModuleRateSettings.pgn[ModuleRateSettings.Command] = rc.Command();
-    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMLO] = (char)((int)rc.ManualPWM);
-    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMHI] = (char)((int)rc.ManualPWM >> 8);
+    ModuleRateSettings.pgn[ModuleRateSettings.Command] = rc.Command(rc.ModID);
+    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMLO] = (char)((int)rc.ManualPWM[rc.ModID]);
+    ModuleRateSettings.pgn[ModuleRateSettings.ManualPWMHI] = (char)((int)rc.ManualPWM[rc.ModID] >> 8);
 
     SendPgnToLoop(ModuleRateSettings.pgn);
     //qDebug() << "doRateControl";
