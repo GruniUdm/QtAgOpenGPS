@@ -154,15 +154,23 @@ Item {
     property int blockage_max_i: 0
     property int blockage_blocked: 0;
     property double imuCorrected:0
-    property double	actualRate: 0
-    property double	smoothRate: 0
-    property double	actualRatePWM: 0
+    // ratecontrol
+    property double	actualRate0: 0
+    property double	smoothRate0: 0
+    property double	actualRatePWM0: 0
     property bool product0stat: false
     property double	actualRate1: 0
     property double	smoothRate1: 0
     property double	actualRatePWM1: 0
-    property bool product1stat: false
-
+    property bool product1stat: false   
+    property double	actualRate2: 0
+    property double	smoothRate2: 0
+    property double	actualRatePWM2: 0
+    property bool product2stat: false
+    property double	actualRate3: 0
+    property double	smoothRate3: 0
+    property double	actualRatePWM3: 0
+    property bool product3stat: false
 
     onSteerAngleActualChanged: steerAngleActualRounded = Math.round(steerAngleActual*100)/100
     onSteerAngleSetChanged: steerAngleSetRounded = Math.round(steerAngleSet*100)/100

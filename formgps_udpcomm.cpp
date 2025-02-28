@@ -281,6 +281,7 @@ void FormGPS::ReceiveFromAgIO()
             //
             //if (datagram_data.length() != 16)
             //    break;
+            rc.ModID = data[5];
             RateSensor.pgn[RateSensor.ID] = data[5];
             RateSensor.pgn[RateSensor.RateAppliedLO] = data[6];
             RateSensor.pgn[RateSensor.RateAppliedMD] = data[7];

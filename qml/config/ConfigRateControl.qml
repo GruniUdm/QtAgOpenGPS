@@ -519,7 +519,7 @@ Rectangle{
             anchors.bottom: parent.top
             anchors.bottomMargin: 20 * theme.scaleHeight
             anchors.horizontalCenter: parent.horizontalCenter
-            text: qsTr("Manual PWM ") + aog.actualRatePWM
+            text: qsTr("Manual PWM ") + aog.actualRatePWM0
         }
     }
     IconButtonTransparent{

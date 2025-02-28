@@ -1218,12 +1218,12 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("blockageConnected", isConnectedBlockage);
 
     //Rate control RC
-    aog->setProperty("actualRate", rc.RateApplied());
-    aog->setProperty("smoothRate", rc.CurrentRate());
-    aog->setProperty("actualRatePWM", rc.ManualPWM[0]);
+    aog->setProperty("actualRate0", rc.cRateApplied[0]);
+    aog->setProperty("smoothRate0", rc.cCurrentRate[0]);
+    aog->setProperty("actualRatePWM0", rc.ManualPWM[0]);
     aog->setProperty("product0stat", (rc.SensorReceiving[0] & isConnectedRC));
-    aog->setProperty("actualRate1", rc.RateApplied());
-    aog->setProperty("smoothRate1", rc.CurrentRate());
+    aog->setProperty("actualRate1", rc.cRateApplied[1]);
+    aog->setProperty("smoothRate1", rc.cCurrentRate[1]);
     aog->setProperty("actualRatePWM1", rc.ManualPWM[1]);
     aog->setProperty("product1stat", (rc.SensorReceiving[1] & isConnectedRC1));
 

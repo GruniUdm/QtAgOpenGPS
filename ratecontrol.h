@@ -14,10 +14,10 @@ public:
     double RateSet;
     double actualRate;
     int ControlType[4];
-    double TargetUPM();
-    double RateApplied();
-    double SmoothRate();
-    double CurrentRate();
+    double TargetUPM(int ID);
+    double RateApplied(int ID);
+    double SmoothRate(int ID);
+    double CurrentRate(int ID);
     int Command(int ID);
     void dataformodule(QVector<int> set_data, QByteArray pgn_data);
     void aogset(int aBttnState, int mBttnState, double setwidth, double toolwidth, double aogspeed);
@@ -25,10 +25,14 @@ public:
     bool SensorReceiving[4];
     int aBtnState;
     int mBtnState;
+    double cRateApplied[4];
+    double cSmoothRate[4];
+    double cCurrentRate[4];
+    double cTargetUPM[4];
     explicit ratecontrol(QObject *parent = nullptr);
 
 private:
-    bool ProductOn();
+    bool ProductOn(int ID);
     int OnScreen[4];
     int kp;
     int ki;

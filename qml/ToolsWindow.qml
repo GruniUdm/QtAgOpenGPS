@@ -220,7 +220,7 @@ import "wizards" as Wiz
     height: 300  * theme.scaleHeight
     width: 400  * theme.scaleWidth
     xval1: settings.setRate_rateSET
-    xval2: Number(aog.actualRate)
+    xval2: Number(aog.actualRate0)
     axismin: 0
     axismax: 1000
     lineName1:"RateSet"
