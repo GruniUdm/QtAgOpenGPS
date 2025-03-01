@@ -244,9 +244,11 @@ void ratecontrol::dataformodule (QVector<int> set_data, QByteArray pgn_data)
     ControlType[ID] = set_data[12];
     CoverageUnits[ID] = set_data[13];
     //ModID = pgn_data[5];
-    appRate[ModID] =   (qint32)((uint8_t(pgn_data[8]) << 16) + (uint8_t(pgn_data[8]) << 8) + uint8_t(pgn_data[6]));
+    appRate[ModID] =   (qint32)((uint8_t(pgn_data[8]) << 16) + (uint8_t(pgn_data[7]) << 8) + uint8_t(pgn_data[6]));
     cQuantity[ModID] = (pgn_data[11] << 16 | pgn_data[10] << 8 | pgn_data[9]) / 1000.0;
     PWMsetting[ModID] = (qint16)(pgn_data[13] << 8 | pgn_data[12]);  // need to cast to 16 bit integer to preserve the sign bit
     SensorReceiving[ModID] = ((pgn_data[14] & 0b00100000) == 0b00100000);
+    qDebug() << "appRate[ModID]";
+    qDebug() << appRate[ModID];
 }
 

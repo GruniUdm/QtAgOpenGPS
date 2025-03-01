@@ -74,7 +74,7 @@ Rectangle{
         id: buttonsMl
         visible: product1.checked
         anchors.top: buttonsTop.bottom
-        anchors.topMargin: 18 * theme.scaleHeight
+        anchors.topMargin: 17 * theme.scaleHeight
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width - 10 * theme.scaleWidth
         Rectangle{
@@ -119,7 +119,7 @@ Rectangle{
         id: buttonsM2
         visible: product2.checked
         anchors.top: buttonsTop.bottom
-        anchors.topMargin: 18 * theme.scaleHeight
+        anchors.topMargin: 17 * theme.scaleHeight
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width - 10 * theme.scaleWidth
         Rectangle{
@@ -163,7 +163,7 @@ Rectangle{
         id: buttonsM3
         visible: product3.checked
         anchors.top: buttonsTop.bottom
-        anchors.topMargin: 18 * theme.scaleHeight
+        anchors.topMargin: 17 * theme.scaleHeight
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width - 10 * theme.scaleWidth
         Rectangle{
@@ -207,7 +207,7 @@ Rectangle{
         id: buttonsM4
         visible: product4.checked
         anchors.top: buttonsTop.bottom
-        anchors.topMargin: 18 * theme.scaleHeight
+        anchors.topMargin: 17 * theme .scaleHeight
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width - 10 * theme.scaleWidth
         Rectangle{
