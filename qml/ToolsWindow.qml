@@ -219,7 +219,7 @@ import "wizards" as Wiz
     id: rateCharta
     height: 300  * theme.scaleHeight
     width: 400  * theme.scaleWidth
-    xval1: settings.setRate_rateSET
+    xval1: Settings.rate_Product0[10]
     xval2: Number(aog.actualRate0)
     axismin: 0
     axismax: 1000

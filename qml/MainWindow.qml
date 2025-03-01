@@ -519,8 +519,7 @@ Window {
                 id: rateData
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                visible: true
-                //visible: (aog.product0stat && Settings.rate_Product0[2]>0) ? true : false
+                visible: (aog.product0stat && Settings.rate_Product0[2]>0) ? true : false
             }
 
             SimController{

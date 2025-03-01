@@ -231,9 +231,6 @@ public:
     unsigned int rateCounter = 0;
     unsigned int blockageCounter = 0;
     bool isConnectedRC = false;
-    bool isConnectedRC1 = false;
-    bool isConnectedRC2 = false;
-    bool isConnectedRC3 = false;
     bool isConnectedBlockage = false; //Dim
     //sunrise, sunset
 

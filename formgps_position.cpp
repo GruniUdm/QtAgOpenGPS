@@ -1225,7 +1225,15 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("actualRate1", rc.cRateApplied[1]);
     aog->setProperty("smoothRate1", rc.cCurrentRate[1]);
     aog->setProperty("actualRatePWM1", rc.ManualPWM[1]);
-    aog->setProperty("product1stat", (rc.SensorReceiving[1] & isConnectedRC1));
+    aog->setProperty("product1stat", (rc.SensorReceiving[1] & isConnectedRC));
+    aog->setProperty("actualRate2", rc.cRateApplied[2]);
+    aog->setProperty("smoothRate2", rc.cCurrentRate[2]);
+    aog->setProperty("actualRatePWM2", rc.ManualPWM[2]);
+    aog->setProperty("product2stat", (rc.SensorReceiving[2] & isConnectedRC));
+    aog->setProperty("actualRate3", rc.cRateApplied[3]);
+    aog->setProperty("smoothRate3", rc.cCurrentRate[3]);
+    aog->setProperty("actualRatePWM3", rc.ManualPWM[3]);
+    aog->setProperty("product3stat", (rc.SensorReceiving[3] & isConnectedRC));
 
     double tool_lat, tool_lon;
     pn.ConvertLocalToWGS84(vehicle.pivotAxlePos.northing, vehicle.pivotAxlePos.easting, tool_lat, tool_lon);

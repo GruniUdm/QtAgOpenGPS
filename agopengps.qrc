@@ -680,5 +680,11 @@
         <file>images/RateUp.png</file>
         <file>qml/config/ConfigRateControl.qml</file>
         <file>images/Config/Con_spray2.png</file>
+        <file>images/caret-1.png</file>
+        <file>images/caret-2.png</file>
+        <file>images/caret-3.png</file>
+        <file>images/caret-4.png</file>
+        <file>images/caret-down.png</file>
+        <file>images/caret-up.png</file>
     </qresource>
 </RCC>
