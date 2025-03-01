@@ -686,5 +686,8 @@
         <file>images/caret-4.png</file>
         <file>images/caret-down.png</file>
         <file>images/caret-up.png</file>
+        <file>images/minus.png</file>
+        <file>images/plus.png</file>
+        <file>images/text-a.png</file>
     </qresource>
 </RCC>

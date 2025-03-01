@@ -59,26 +59,28 @@ MoveablePopup {
 
 
 
-            IconButtonTextBeside{
+        IconButtonColor{
             id: btnChartplus
+            icon.source: prefix + "/images/plus.png"
             anchors.right: parent.right
             anchors.top: parent.top
             width: 40 * theme.scaleWidth
             height: 50 * theme.scaleHeight
-            text: "   +"
             z: 2
             onClicked: {axismin > - 1 ? -1 : axismin = axismin+2
                         axismax < 1 ? 1 : axismax = axismax-2}
             }
 
 
-            IconButtonTextBeside{
+
+
+            IconButtonColor{
             id: btnChartauto
+            icon.source: prefix + "/images/text-a.png"
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             width: 40 * theme.scaleWidth
             height: 50 * theme.scaleHeight
-            text: "   A"
             z: 2
             onClicked: {xval1 > axismax ? axismax = (xval1 + 2) : 0
                         xval2 > axismax ? axismax = (xval2 + 2) : 0
@@ -87,13 +89,13 @@ MoveablePopup {
             }
             }
 
-            IconButtonTextBeside{
+            IconButtonColor{
             id: btnChartminus
+            icon.source: prefix + "/images/minus.png"
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             width: 40 * theme.scaleWidth
             height: 50 * theme.scaleHeight
-            text: "   -"
             z: 2
             onClicked: {axismin = axismin-2
                         axismax = axismax+2}
