@@ -24,7 +24,6 @@ MoveablePopup {
     property string chartName
     property string lineName1
     property string lineName2
-    x: 400 * theme.scaleWidth
 
     Timer {
         id:txt

@@ -18,6 +18,7 @@ import "config" as ConfigSettings //"Config" causes errors
 import "field" as Field
 import "tracks" as Tracks
 import "components" as Comp
+import "wizards" as Wiz
 
 Window {
 
@@ -784,6 +785,64 @@ Window {
             id: trackAddName
         }*/
 
+    Wiz.ChartSteer{
+        id: steerCharta
+        height: 300  * theme.scaleHeight
+        width: 400  * theme.scaleWidth
+        xval1: aog.steerAngleActual
+        xval2: aog.steerAngleSet
+        axismin: -10
+        axismax: 10
+        lineName1:"Actual"
+        lineName2: "SetPoint"
+        chartName: qsTr("Steer Chart")
+        visible: false
+        function show(){
+            steerCharta.visible = true
+        }
+    }
+
+    Wiz.ChartSteer{
+        id: xteCharta
+        height: 300  * theme.scaleHeight
+        width: 400  * theme.scaleWidth
+        xval1: aog.lblmodeActualXTE
+        xval2: Number(aog.dataSteerAngl)
+        axismin: -100
+        axismax: 100
+        lineName1:"XTE"
+        lineName2:"HE"
+        chartName: qsTr("XTE Chart")
+        visible: false
+        function show(){
+            xteCharta.visible = true
+        }
+    }
+
+    Wiz.ChartSteer{
+        id: headingCharta
+        height: 300  * theme.scaleHeight
+        width: 400  * theme.scaleWidth
+        xval1: aog.gpsHeading
+        xval2: Number(aog.lblimuCorrected)
+        axismin: -10
+        axismax: 10
+        lineName1:"Fix2fix"
+        lineName2:"IMU"
+        chartName: qsTr("Heading Chart")
+        visible: false
+        function show(){
+            headingCharta.visible = true
+        }
+    }
+    //xval1 = (glm.toDegrees(mf.gpsHeading)).ToString("N1", CultureInfo.InvariantCulture);
+    //xval2 = (glm.toDegrees(mf.imuCorrected)).ToString("N1", CultureInfo.InvariantCulture);
+
+    Wiz.Camera{
+        id: cam1
+        height: 300  * theme.scaleHeight
+        width: 400  * theme.scaleWidth
+    }
         Rectangle{//show "Are you sure?" when close button clicked
             id: closeDialog
             width: 500 * theme.scaleWidth

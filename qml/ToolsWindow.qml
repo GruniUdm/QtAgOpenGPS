@@ -8,7 +8,6 @@ import Settings
 
 import ".."
 import "components" as Comp
-import "wizards" as Wiz
 
 //Item{
 //    id: toolsWindowItem
@@ -144,13 +143,13 @@ import "wizards" as Wiz
                 id: steerChart
                 text: qsTr("Steer Chart")
                 icon.source: prefix + "/images/AutoSteerOn.png"
-                onClicked: chartsMenu.visible = !chartsMenu.visible, toolsMenu.visible = false, steerCharta.visible = true
+                onClicked: chartsMenu.visible = !chartsMenu.visible, toolsMenu.visible = false, steerCharta.show()
                 visible: true
             }
             Comp.IconButtonTextBeside{
                 id: headingChart
                 text: qsTr("Heading Chart")
-                onClicked: chartsMenu.visible = !chartsMenu.visible, toolsMenu.visible = false, headingCharta.visible = true
+                onClicked: chartsMenu.visible = !chartsMenu.visible, toolsMenu.visible = false, headingCharta.show()
                 icon.source: prefix + "/images/Config/ConS_SourcesHeading.png"
 
             }
@@ -158,7 +157,7 @@ import "wizards" as Wiz
                 id: xteChart
                 text: qsTr("XTE Chart")
                 icon.source: prefix + "/images/AutoManualIsAuto.png"
-                onClicked: chartsMenu.visible = !chartsMenu.visible, toolsMenu.visible = false, xteCharta.visible = true
+                onClicked: chartsMenu.visible = !chartsMenu.visible, toolsMenu.visible = false, xteCharta.show()
                 visible: true
             }
             Comp.IconButtonTextBeside{
@@ -167,51 +166,5 @@ import "wizards" as Wiz
                 icon.source: prefix + "/images/Config/ConDa_InvertRoll.png"
             }
         }
-    }
-    Wiz.ChartSteer{
-    id: steerCharta
-    height: 300  * theme.scaleHeight
-    width: 400  * theme.scaleWidth
-    xval1: aog.steerAngleActual
-    xval2: aog.steerAngleSet
-    axismin: -10
-    axismax: 10
-    lineName1:"Actual"
-    lineName2: "SetPoint"
-    chartName: qsTr("Steer Chart")
-    }
-
-    Wiz.ChartSteer{
-    id: xteCharta
-    height: 300  * theme.scaleHeight
-    width: 400  * theme.scaleWidth
-    xval1: aog.lblmodeActualXTE
-    xval2: Number(aog.dataSteerAngl)
-    axismin: -100
-    axismax: 100
-    lineName1:"XTE"
-    lineName2:"HE"
-    chartName: qsTr("XTE Chart")
-    }
-
-    Wiz.ChartSteer{
-    id: headingCharta
-    height: 300  * theme.scaleHeight
-    width: 400  * theme.scaleWidth
-    xval1: aog.gpsHeading
-    xval2: Number(aog.lblimuCorrected)
-    axismin: -10
-    axismax: 10
-    lineName1:"Fix2fix"
-    lineName2:"IMU"
-    chartName: qsTr("Heading Chart")
-    }
-    //xval1 = (glm.toDegrees(mf.gpsHeading)).ToString("N1", CultureInfo.InvariantCulture);
-    //xval2 = (glm.toDegrees(mf.imuCorrected)).ToString("N1", CultureInfo.InvariantCulture);
-
-    Wiz.Camera{
-    id: cam1
-    height: 300  * theme.scaleHeight
-    width: 400  * theme.scaleWidth
     }
 }
