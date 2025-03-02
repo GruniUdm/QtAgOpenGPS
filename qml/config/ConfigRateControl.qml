@@ -516,10 +516,32 @@ Rectangle{
         onClicked: aog.rate_bump_pwm(true, moduleID.value)
         enabled: cboxIsRateControlOn.checked
         Label{
+            visible: prodID == 0
             anchors.bottom: parent.top
             anchors.bottomMargin: 20 * theme.scaleHeight
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("Manual PWM ") + aog.actualRatePWM0
+        }
+        Label{
+            visible: prodID == 1
+            anchors.bottom: parent.top
+            anchors.bottomMargin: 20 * theme.scaleHeight
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: qsTr("Manual PWM ") + aog.actualRatePWM1
+        }
+        Label{
+            visible: prodID == 2
+            anchors.bottom: parent.top
+            anchors.bottomMargin: 20 * theme.scaleHeight
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: qsTr("Manual PWM ") + aog.actualRatePWM2
+        }
+        Label{
+            visible: prodID == 3
+            anchors.bottom: parent.top
+            anchors.bottomMargin: 20 * theme.scaleHeight
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: qsTr("Manual PWM ") + aog.actualRatePWM3
         }
     }
     IconButtonTransparent{
