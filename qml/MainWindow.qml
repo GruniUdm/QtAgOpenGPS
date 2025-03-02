@@ -771,10 +771,6 @@ Window {
         }
 
         /*
-        Tracks.TrackNewButtons{
-            id: trackNewButtons
-            visible: false
-        }
         Tracks.TrackNewSet{
             id: trackNewSet
             anchors.fill: parent
