@@ -752,6 +752,11 @@ Window {
             //width:1024
             visible:false
         }
+        Tracks.TrackNewButtons {
+            id: trackNewButtons
+            visible: false
+        }
+
         Tracks.LineNudge{
             id: lineNudge
             visible: false
