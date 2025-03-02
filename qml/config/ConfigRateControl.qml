@@ -37,6 +37,8 @@ Rectangle{
             cboxRateMode.currentIndex = Settings.rate_Product0[11]
             cboxRateControlType.currentIndex = Settings.rate_Product0[12];
             cboxRateCoverageUnits.currentIndex = Settings.rate_Product0[13];
+            minSpeed.setValue(Settings.rate_Product0[14])
+            minUPM.setValue(Settings.rate_Product0[15])
             productName.text = Settings.rate_ProductName[0];}
         else if (ID === 1) {
             moduleID.setValue(Settings.rate_Product1[0])
@@ -53,6 +55,8 @@ Rectangle{
             cboxRateMode.currentIndex = Settings.rate_Product1[11]
             cboxRateControlType.currentIndex = Settings.rate_Product1[12];
             cboxRateCoverageUnits.currentIndex = Settings.rate_Product1[13];
+            minSpeed.setValue(Settings.rate_Product1[14])
+            minUPM.setValue(Settings.rate_Product1[15])
             productName.text = Settings.rate_ProductName[1];}
 
         else if (ID === 2) {
@@ -70,6 +74,8 @@ Rectangle{
             cboxRateMode.currentIndex = Settings.rate_Product2[11]
             cboxRateControlType.currentIndex = Settings.rate_Product2[12];
             cboxRateCoverageUnits.currentIndex = Settings.rate_Product2[13];
+            minSpeed.setValue(Settings.rate_Product2[14])
+            minUPM.setValue(Settings.rate_Product2[15])
             productName.text = Settings.rate_ProductName[2];}
         else if (ID === 3) {
             moduleID.setValue(Settings.rate_Product3[0])
@@ -86,6 +92,8 @@ Rectangle{
             cboxRateMode.currentIndex = Settings.rate_Product3[11]
             cboxRateControlType.currentIndex = Settings.rate_Product3[12];
             cboxRateCoverageUnits.currentIndex = Settings.rate_Product3[13];
+            minSpeed.setValue(Settings.rate_Product3[14])
+            minUPM.setValue(Settings.rate_Product3[15])
             productName.text = Settings.rate_ProductName[3];}
 
         mandatory.visible = false
@@ -107,6 +115,8 @@ Rectangle{
             Settings.rate_Product0[11] = Number(cboxRateMode.currentIndex)
             Settings.rate_Product0[12] = Number(cboxRateControlType.currentIndex)
             Settings.rate_Product0[13] = Number(cboxRateCoverageUnits.currentIndex)
+            Settings.rate_Product0[14] = minSpeed.value
+            Settings.rate_Product0[15] = minUPM.value
             Settings.rate_ProductName[0] = productName.text;}
         if (prodID === 1) {
             Settings.rate_Product1[0] = moduleID.value;
@@ -123,6 +133,8 @@ Rectangle{
             Settings.rate_Product1[11] = Number(cboxRateMode.currentIndex)
             Settings.rate_Product1[12] = Number(cboxRateControlType.currentIndex)
             Settings.rate_Product1[13] = Number(cboxRateCoverageUnits.currentIndex)
+            Settings.rate_Product1[14] = minSpeed.value
+            Settings.rate_Product1[15] = minUPM.value
             Settings.rate_ProductName[1] = productName.text;}
         if (ID === 2) {
             Settings.rate_Product2[0] = moduleID.value;
@@ -139,6 +151,8 @@ Rectangle{
             Settings.rate_Product2[11] = Number(cboxRateMode.currentIndex)
             Settings.rate_Product2[12] = Number(cboxRateControlType.currentIndex)
             Settings.rate_Product2[13] = Number(cboxRateCoverageUnits.currentIndex)
+            Settings.rate_Product2[14] = minSpeed.value
+            Settings.rate_Product2[15] = minUPM.value
             Settings.rate_ProductName[2] = productName.text;}
         if (ID === 3) {
             Settings.rate_Product3[0] = moduleID.value;
@@ -155,6 +169,8 @@ Rectangle{
             Settings.rate_Product3[11] = Number(cboxRateMode.currentIndex)
             Settings.rate_Product3[12] = Number(cboxRateControlType.currentIndex)
             Settings.rate_Product3[13] = Number(cboxRateCoverageUnits.currentIndex)
+            Settings.rate_Product3[14] = minSpeed.value
+            Settings.rate_Product3[15] = minUPM.value
             Settings.rate_ProductName[3] = productName.text;}
         mandatory.visible = false
 
@@ -392,6 +408,42 @@ Rectangle{
             }
 
         }
+        SpinBoxCustomized{
+            Layout.alignment: Qt.AlignRight
+            id: minSpeed
+            from: 0
+            to:10
+            editable: true
+            enabled: cboxIsRateControlOn.checked
+            onValueModified:{
+                mandatory.visible = true
+            }
+            anchors.bottomMargin: 10 * theme.scaleHeight
+            TextLine{
+                text: qsTr("Min Speed")
+                font.bold: true
+                anchors.top: parent.bottom
+            }
+
+        }
+        SpinBoxCustomized{
+            Layout.alignment: Qt.AlignRight
+            id: minUPM
+            from: 0
+            to:100
+            editable: true
+            enabled: cboxIsRateControlOn.checked
+            onValueModified:{
+                mandatory.visible = true
+            }
+            anchors.bottomMargin: 10 * theme.scaleHeight
+            TextLine{
+                text: qsTr("Min UPM")
+                font.bold: true
+                anchors.top: parent.bottom
+            }
+
+        }
 
         ComboBoxCustomized {
             id: cboxRateControlType
@@ -459,6 +511,8 @@ Rectangle{
             ratePIDscale.boundValue = 0
             rateSensor.boundValue = 600
             setRate.boundValue = 100
+            minSpeed.boundValue = 0
+            minUPM.boundValue = 0
         }
     }
     IconButtonTransparent{

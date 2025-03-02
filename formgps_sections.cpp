@@ -409,12 +409,13 @@ void FormGPS::doRateControl()
     rc.cRateApplied[rc.ModID] = rc.RateApplied(rc.ModID);
     rc.cSmoothRate[rc.ModID] = rc.SmoothRate(rc.ModID);
     rc.cCurrentRate[rc.ModID] = rc.CurrentRate(rc.ModID);
-
+    rc.cMinUPMSpeed[rc.ModID] = rc.MinUPMSpeed(rc.ModID);
+    rc.cMinUPM[rc.ModID] = rc.MinUPM(rc.ModID);
 
     ModuleRateSettings.pgn[ModuleRateSettings.ID] = rc.ModID;
-    ModuleRateSettings.pgn[ModuleRateSettings.RateSetLo] = (char)((int)rc.cTargetUPM[rc.ModID]);
-    ModuleRateSettings.pgn[ModuleRateSettings.RateSetMd] = (char)((int)rc.cTargetUPM[rc.ModID] >> 8);
-    ModuleRateSettings.pgn[ModuleRateSettings.RateSetHI] = (char)((int)rc.cTargetUPM[rc.ModID] >> 16);
+    ModuleRateSettings.pgn[ModuleRateSettings.RateSetLo] = (char)((int)rc.cMinUPM[rc.ModID]); // target rate
+    ModuleRateSettings.pgn[ModuleRateSettings.RateSetMd] = (char)((int)rc.cMinUPM[rc.ModID] >> 8);
+    ModuleRateSettings.pgn[ModuleRateSettings.RateSetHI] = (char)((int)rc.cMinUPM[rc.ModID] >> 16);
     ModuleRateSettings.pgn[ModuleRateSettings.FlowCalLO] = (char)((int)rc.MeterCal[rc.ModID]);
     ModuleRateSettings.pgn[ModuleRateSettings.FlowCalMd] = (char)((int)rc.MeterCal[rc.ModID] >> 8);
     ModuleRateSettings.pgn[ModuleRateSettings.FlowCalHI] = (char)((int)rc.MeterCal[rc.ModID] >> 16);

@@ -113,7 +113,7 @@ double ratecontrol::TargetUPM(int ID) // returns units per minute set rate
         {
             // Constant UPM
             // same upm no matter how many sections are on
-            double HPM = swidth * speed / 600.0;
+            double HPM = swidth * cMinUPMSpeed[ID] / 600.0;
             Result = TargetRate[ID] * HPM * 2.47;
         }
         else
@@ -129,7 +129,7 @@ double ratecontrol::TargetUPM(int ID) // returns units per minute set rate
         {
             // Constant UPM
             // same upm no matter how many sections are on
-            double HPM = swidth * speed / 600.0;
+            double HPM = swidth * cMinUPMSpeed[ID] / 600.0;
             Result = TargetRate[ID] * HPM;
         }
         else
@@ -157,7 +157,7 @@ double ratecontrol::TargetUPM(int ID) // returns units per minute set rate
 }
 
 double ratecontrol::RateApplied(int ID)
-{   HectaresPerMinute = width * speed / 600.0;
+{   HectaresPerMinute = width * cMinUPMSpeed[ID] / 600.0;
     double Result = 0;
     switch (CoverageUnits[ID])
     {
@@ -167,7 +167,7 @@ double ratecontrol::RateApplied(int ID)
         {
             // Constant UPM
             // same upm no matter how many sections are on
-            double HPM = swidth * speed / 600.0;
+            double HPM = swidth * cMinUPMSpeed[ID] / 600.0;
             if (HPM > 0) Result = appRate[ID] / (HPM * 2.47);
         }
 
@@ -189,7 +189,7 @@ double ratecontrol::RateApplied(int ID)
         {
             // Constant UPM
             // same upm no matter how many sections are on
-            double HPM = swidth * speed / 600.0;
+            double HPM = swidth * cMinUPMSpeed[ID] / 600.0;
             if (HPM > 0) Result = appRate[ID] / HPM;
         }
         else if (AppMode[ID] == 0 || 2)
@@ -233,7 +233,26 @@ double ratecontrol::RateApplied(int ID)
     return Result;
 
 }
+double ratecontrol::MinUPMSpeed(int ID) {
+    double Result = 0;
 
+    if (speed < minSpeed[ID])
+        Result = 0;
+    else
+        Result = speed;
+
+    return Result;
+}
+double ratecontrol::MinUPM(int ID) {
+    double Result = 0;
+
+    if (cTargetUPM[ID] < minUPM[ID])
+        Result = 0;
+    else
+        Result = cTargetUPM[ID];
+
+    return Result;
+}
 void ratecontrol::dataformodule (QVector<int> set_data, QByteArray pgn_data)
 {
 
@@ -246,6 +265,7 @@ void ratecontrol::dataformodule (QVector<int> set_data, QByteArray pgn_data)
     AppMode[ID] = set_data[11];
     ControlType[ID] = set_data[12];
     CoverageUnits[ID] = set_data[13];
+    minSpeed[ID] = set_data[14];
     //ModID = pgn_data[5];
     appRate[ModID] =   ((qint32)((uint8_t(pgn_data[8]) << 16) + (uint8_t(pgn_data[7]) << 8) + uint8_t(pgn_data[6]))) / 1000.0;;
     cQuantity[ModID] = (pgn_data[11] << 16 | pgn_data[10] << 8 | pgn_data[9]) / 1000.0;

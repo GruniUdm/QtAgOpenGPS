@@ -19,6 +19,8 @@ public:
     double SmoothRate(int ID);
     double CurrentRate(int ID);
     int Command(int ID);
+    double MinUPMSpeed(int ID);
+    double MinUPM(int ID);
     void dataformodule(QVector<int> set_data, QByteArray pgn_data);
     void aogset(int aBttnState, int mBttnState, double setwidth, double toolwidth, double aogspeed);
     int PWMsetting[4];
@@ -29,6 +31,8 @@ public:
     double cSmoothRate[4];
     double cCurrentRate[4];
     double cTargetUPM[4];
+    double cMinUPMSpeed[4];
+    double cMinUPM[4];
     explicit ratecontrol(QObject *parent = nullptr);
 
 private:
@@ -49,11 +53,12 @@ private:
     double width;
     double swidth;
     double speed;
-
+    double minSpeed[4];
+    double minUPM[4];
     double ProdDensity[4];
     bool cEnableProdDensity = false;
-    double cMinUPM;
-    double cMinUPMbySpeed;
+
+
 
 signals:
 public slots:
