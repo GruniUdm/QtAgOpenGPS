@@ -79,7 +79,7 @@ Dialog {
             TextField{
                 id: newField
                 objectName: "fieldFromExisting"
-                placeholderText: qsTr("New field name")
+                placeholderText: focus || text ? "" : qsTr("New field name")
                 anchors.fill: parent
                 selectByMouse: true
 
@@ -120,7 +120,6 @@ Dialog {
             onClicked: newField.text = ""
             height: 50  * theme.scaleHeight
             width: 100  * theme.scaleWidth
-
         }
 
         RowLayout{
@@ -137,6 +136,7 @@ Dialog {
                 id: btnAddVehicleName
                 icon.source: prefix + "/images/Config/Con_VehicleMenu.png"
                 Text{
+                    rightPadding: 3
                     anchors.right: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: "+"
@@ -149,6 +149,7 @@ Dialog {
                 id: marker
                 icon.source: prefix + "/images/JobNameCalendar.png"
                 Text{
+                    rightPadding: 3
                     anchors.right: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: "+"
@@ -165,6 +166,7 @@ Dialog {
                 id: btnAddTime
                 icon.source: prefix + "/images/JobNameTime.png"
                 Text{
+                    rightPadding: 3
                     anchors.right: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: "+"

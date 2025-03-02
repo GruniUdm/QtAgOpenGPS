@@ -41,11 +41,6 @@ MoveablePopup {
                 trackView.currentIndex = 0
     }
 
-    TrackNewButtons {
-        id: trackNewButtons
-        visible: false
-    }
-
     Rectangle{
         anchors.fill: parent
         border.width: 1

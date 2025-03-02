@@ -17,6 +17,7 @@ Popup{
 
     function show(){
         headacheDesigner.visible = true
+        headacheCurve.isChecked = true
     }
 
     property int headacheCount: 0
@@ -400,16 +401,16 @@ Popup{
             rowSpacing: buttons.spacing
             Comp.IconButtonColor{
                 id: headacheCurve
-                //objectName: "rbtnLine"
+                objectName: "rbtnCurve"
                 checkable: true
-                isChecked: true
+                //isChecked: true
                 Layout.alignment: Qt.AlignCenter
                 icon.source: prefix + "/images/ABTrackCurve.png"
                 onClicked: curveLine = true
             }
             Comp.IconButtonColor{
                 id: headacheAB
-                //objectName: "rbtnCurve"
+                objectName: "rbtnLine"
                 checkable: true
                 Layout.alignment: Qt.AlignCenter
                 icon.source: prefix + "/images/ABTrackAB.png"

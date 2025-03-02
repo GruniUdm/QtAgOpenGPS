@@ -446,6 +446,7 @@
         <file>images/textures/z_SteerPointer.png</file>
         <file>images/textures/z_Tractor.png</file>
         <file>images/textures/z_LateralManual.png</file>
+        <file>images/textures/z_Tire.png</file>
         <file>qml/ABLinePicker.qml</file>
         <file>qml/ABCurvePicker.qml</file>
         <file>qml/LineName.qml</file>
