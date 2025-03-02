@@ -1,5 +1,8 @@
+// Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team
+// SPDX-License-Identifier: GNU General Public License v3.0 or later
+//
+// Rate control source code used from https://github.com/SK21/AOG_RC
 #include "ratecontrol.h"
-//#include "aogproperty.h"
 #include <QDebug>
 #include "newsettings.h"
 ratecontrol::ratecontrol(QObject *parent)
@@ -70,7 +73,7 @@ double ratecontrol::SmoothRate(int ID)
         {
             double Rt = Ra / TargetRate[ID];
 
-            if (Rt >= .9 && Rt <= 1.1 && aBtnState>0)
+            if (Rt >= .95 && Rt <= 1.05 && aBtnState>0)
             {
                 Result = TargetRate[ID];
             }
@@ -249,8 +252,11 @@ void ratecontrol::dataformodule (QVector<int> set_data, QByteArray pgn_data)
     PWMsetting[ModID] = (qint16)(pgn_data[13] << 8 | pgn_data[12]);  // need to cast to 16 bit integer to preserve the sign bit
     SensorReceiving[ModID] = ((pgn_data[14] & 0b00100000) == 0b00100000);
     qDebug() << "appRate[ModID]";
-    qDebug() << appRate[ModID];
+    qDebug() << cRateApplied[ModID];
     qDebug() << "TargetRate[ModID]";
     qDebug() << TargetRate[ModID];
+    qDebug() << "SmoothRate";
+    qDebug() << cSmoothRate[ModID];
+
 }
 

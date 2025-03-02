@@ -1219,19 +1219,19 @@ void FormGPS::UpdateFixPosition()
 
     //Rate control RC
     aog->setProperty("actualRate0", rc.cRateApplied[0]);
-    aog->setProperty("smoothRate0", rc.cCurrentRate[0]);
+    aog->setProperty("smoothRate0", rc.cSmoothRate[0]);
     aog->setProperty("actualRatePWM0", rc.ManualPWM[0]);
     aog->setProperty("product0stat", (rc.SensorReceiving[0] & isConnectedRC));
     aog->setProperty("actualRate1", rc.cRateApplied[1]);
-    aog->setProperty("smoothRate1", rc.cCurrentRate[1]);
+    aog->setProperty("smoothRate1", rc.cSmoothRate[1]);
     aog->setProperty("actualRatePWM1", rc.ManualPWM[1]);
     aog->setProperty("product1stat", (rc.SensorReceiving[1] & isConnectedRC));
     aog->setProperty("actualRate2", rc.cRateApplied[2]);
-    aog->setProperty("smoothRate2", rc.cCurrentRate[2]);
+    aog->setProperty("smoothRate2", rc.cSmoothRate[2]);
     aog->setProperty("actualRatePWM2", rc.ManualPWM[2]);
     aog->setProperty("product2stat", (rc.SensorReceiving[2] & isConnectedRC));
     aog->setProperty("actualRate3", rc.cRateApplied[3]);
-    aog->setProperty("smoothRate3", rc.cCurrentRate[3]);
+    aog->setProperty("smoothRate3", rc.cSmoothRate[3]);
     aog->setProperty("actualRatePWM3", rc.ManualPWM[3]);
     aog->setProperty("product3stat", (rc.SensorReceiving[3] & isConnectedRC));
 
