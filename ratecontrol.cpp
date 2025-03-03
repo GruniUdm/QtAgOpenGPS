@@ -233,7 +233,7 @@ double ratecontrol::RateApplied(int ID)
     return Result;
 
 }
-double ratecontrol::MinUPMSpeed(int ID) {
+double ratecontrol::MinUPMSpeed(int ID) { // flow start from minimal speed
     double Result = 0;
 
     if (speed < minSpeed[ID])
@@ -243,11 +243,11 @@ double ratecontrol::MinUPMSpeed(int ID) {
 
     return Result;
 }
-double ratecontrol::MinUPM(int ID) {
+double ratecontrol::MinUPM(int ID) { // minimal units per minute---
     double Result = 0;
 
-    if (cTargetUPM[ID] < minUPM[ID])
-        Result = 0;
+    if (cTargetUPM[ID] != 0 & cTargetUPM[ID] < minUPM[ID])
+        Result = minUPM[ID];
     else
         Result = cTargetUPM[ID];
 

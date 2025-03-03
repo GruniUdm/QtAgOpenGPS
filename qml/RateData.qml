@@ -14,6 +14,10 @@ Rectangle{
     height: 220 * theme.scaleHeight
     color: "#4d4d4d"
     property double errRate: aog.actualRate0;
+    onVisibleChanged: { if (rcData.visible == true) show()}
+    function show(){
+        product1.isChecked = true
+    }
 
     Comp.TopLine{
         id: rcDataTopLine
@@ -32,13 +36,14 @@ Rectangle{
         Comp.IconButtonColor{
             id: product1
             checkable: aog.product0stat
-            checked: true
+            //checked: true
             colorChecked: "green"
             icon.source: prefix + "/images/caret-1.png"
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
             visible: true
         }
+
         Comp.IconButtonColor{
             id: product2
             checkable: aog.product1stat
