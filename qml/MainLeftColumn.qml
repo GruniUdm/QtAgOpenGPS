@@ -91,6 +91,10 @@ ColumnLayout {
         id: btnAgIO
         buttonText: qsTr("AgIO")
         icon.source: prefix + "/images/AgIO.png"
+        onClicked: {
+            mainWindowAgIO.opacity = !mainWindowAgIO.opacity
+            //mainWindowAgIO.visible = !mainWindowAgIO.visible
+        }
     }
     Comp.MainWindowBtns {
         id: btnautoSteerConf

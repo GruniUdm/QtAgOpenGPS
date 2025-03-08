@@ -10,6 +10,8 @@ import QtQuick.Dialogs
 import Settings
 import Interface
 import AOG
+import AgIO
+
 
 import "interfaces" as Interfaces
 import "boundary" as Boundary
@@ -920,6 +922,10 @@ Window {
             id: closeAOG
         }
 
+    }
+
+    AgIO {
+      id: mainWindowAgIO
     }
 }
 
