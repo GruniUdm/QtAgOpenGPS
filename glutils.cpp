@@ -30,7 +30,7 @@ int textureHeight;
 #ifdef LOCAL_QML
 #define PREFIX "local:"
 #else
-#define PREFIX ":AOG"
+#define PREFIX ":/qtagopengps.org/imports/AOG"
 #endif
 
 

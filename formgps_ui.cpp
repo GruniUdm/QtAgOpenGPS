@@ -20,11 +20,30 @@
 #include <cmath>
 #include <cstring>
 #include <QTranslator>
+#include "QtAgIO/formloop.h"
+
 
 QString caseInsensitiveFilename(QString directory, QString filename);
 
 void FormGPS::setupGui()
 {
+    FormLoop *formLoop = FormLoop::instance();
+    if (!formLoop) {
+        qDebug() << "Erreur : `FormLoop::instance()` a retourné nullptr!";
+        return;
+    } else {
+        qDebug() << "✅ FormLoop::instance() est bien instancié.";
+    }
+
+
+    formLoop->setEngine(this);
+
+
+    qDebug() << "AgIO: All context properties set, loading QML...";
+
+    addImportPath("qrc:/qtagopengps.org/imports/");
+
+
     /* Load the QML UI and display it in the main area of the GUI */
     setProperty("title","QtAgOpenGPS");
 
@@ -95,8 +114,20 @@ void FormGPS::setupGui()
     rootContext()->setContextProperty("prefix","local:");
     load("local:/qml/MainWindow.qml");
 #else
-    rootContext()->setContextProperty("prefix","qrc:/AOG");
-    load(QUrl("qrc:/AOG/MainWindow.qml"));
+    rootContext()->setContextProperty("prefix","");
+    addImportPath(QString("%1/modules") 
+                             .arg(QGuiApplication::applicationDirPath()));
+    loadFromModule("AOG", "MainWindow");
+
+    if (rootObjects().isEmpty()) {
+        qDebug() << "Error: Failed to load QML!";
+        return;
+    } else {
+        qDebug() << "QML loaded successfully.";
+        formLoop->setupGUI();
+    }
+
+    qDebug() << "AgOpenGPS started successfully";
 #endif
 }
 
