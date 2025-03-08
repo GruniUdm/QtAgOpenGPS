@@ -60,31 +60,31 @@ int main(int argc, char *argv[])
         overlapPixelsWindow->show();
     }
 
-//auto start AgIO
-#ifndef __ANDROID__
-    QProcess process;
-    if(settings->value(SETTINGS_feature_isAgIOOn).value<bool>()){
-        QObject::connect(&process, &QProcess::errorOccurred, [&](QProcess::ProcessError error) {
-            if (error == QProcess::Crashed) {
-                qDebug() << "AgIO Crashed! Continuing QtAgOpenGPS like normal";
-            }
-        });
+// //auto start AgIO
+// #ifndef __ANDROID__
+//     QProcess process;
+//     if(settings->value(SETTINGS_feature_isAgIOOn).value<bool>()){
+//         QObject::connect(&process, &QProcess::errorOccurred, [&](QProcess::ProcessError error) {
+//             if (error == QProcess::Crashed) {
+//                 qDebug() << "AgIO Crashed! Continuing QtAgOpenGPS like normal";
+//             }
+//         });
 
-//start the application
-#ifdef __WIN32
-        process.start("./QtAgIO.exe");
+// //start the application
+// #ifdef __WIN32
+//         process.start("./QtAgIO.exe");
 
-#else //assume linux
-        process.start("./QtAgIO/QtAgIO");
+// #else //assume linux
+//         process.start("./QtAgIO/QtAgIO");
 
-#endif
+// #endif
 
-        // Ensure process starts successfully
-        if (!process.waitForStarted()) {
-            qWarning() << "AgIO failed to start. Continuing QtAgOpenGPS like normal";
-        }
-    }
-#endif
+//         // Ensure process starts successfully
+//         if (!process.waitForStarted()) {
+//             qWarning() << "AgIO failed to start. Continuing QtAgOpenGPS like normal";
+//         }
+//     }
+// #endif
 
 
 
