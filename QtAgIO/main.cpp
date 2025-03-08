@@ -1,28 +1,21 @@
-#include <QApplication>
+#include <QGuiApplication>
+#include <QQmlContext>
 #include <QCommandLineParser>
-#include <QCoreApplication>
 #include <QDebug>
 #include <QStandardPaths>
 #include "formloop.h"
-#include "agioproperty.h"
-#include "src/bluetoothdevicelist.h"
-
-AgIOSettings *settings;
+// This main.cpp file will be used only for test if we need to work on QAgIO as à stanalone module app
+// In this case cemakefiles need to be adapted also
 
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 
     QCoreApplication::setOrganizationName("QtAgOpenGPS");
     QCoreApplication::setOrganizationDomain("qtagopengps");
     QCoreApplication::setApplicationName("QtAgIO");
     QCoreApplication::setApplicationVersion("0.0.1");
-
-    QSettings::setDefaultFormat(QSettings::IniFormat);
-    QSettings::setPath(QSettings::IniFormat,
-                       QSettings::UserScope,
-                       QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
 
     QCommandLineParser parser;
     parser.setApplicationDescription("IO handler for AgOpenGPS and QtAgOpenGPS");
@@ -37,14 +30,39 @@ int main(int argc, char *argv[])
     // Does that do anything or is verbosity only useful for diy streams?
     qDebug().setVerbosity(parser.value(verbose).toInt());
 
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+    QSettings::setPath(QSettings::IniFormat,
+                       QSettings::UserScope,
+                       QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+    
+    // Create the engine
+    QQmlApplicationEngine engine;
 
-    settings = new AgIOSettings();
-    AgIOProperty::init_defaults();
-    settings->sync();
+    FormLoop *formLoop = FormLoop::instance();
+    if (!formLoop) {
+        qDebug() << "Error : `FormLoop::instance()` is nullptr!";
+        return -1;
+    } else {
+        qDebug() << " FormLoop::instance() is succesfully instantiated.";
+    }
 
+    formLoop->setEngine(&engine);    
+    qDebug() << "AgIO: All context properties set, loading QML...";
+    engine.addImportPath("qrc:/qtagopengps.org/imports/");
+    
+    // Now load the QML
+    engine.load(QUrl(QStringLiteral("qrc:/qtagopengps.org/imports/QtAgIO/Main.qml")));
 
-    FormLoop formLoop;
-	
-	return app.exec();
+       
+    if (engine.rootObjects().isEmpty()) {
+        qDebug() << "Error: Failed to load QML!";
+        return -1;
+    } else {
+        qDebug() << "QML loaded successfully.";
+        formLoop->setupGUI();    }
+    
+    qDebug() << "AgIO started successfully";
+    
+    return app.exec();
 }
 
