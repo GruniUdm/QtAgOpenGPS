@@ -45,7 +45,7 @@ void FormLoop::LoadUDPNetwork()
     // Initialise the socket
     udpSocket = new QUdpSocket(this);
 
-    agio = qmlItem(qml_root, "agio"); //UI connection
+    //agio = qmlItem(qml_root, "agio"); //UI connection
 
     //set up the connection
     //this is the part that listens
@@ -73,7 +73,7 @@ void FormLoop::LoadLoopback() //set up the connection that listens to loopback
 
     loopListenPort = property_setLoop_listenPort;
     loopSendPort = property_setLoop_sendPort;
-    agio = qmlItem(qml_root, "agio");
+    //agio = qmlItem(qml_root, "agio");
     loopBackSocket = new QUdpSocket(this);
     if(!loopBackSocket->bind(QHostAddress::LocalHost, loopListenPort))
     {
@@ -84,6 +84,20 @@ void FormLoop::LoadLoopback() //set up the connection that listens to loopback
         QCoreApplication::exit(0);
     } else {
         qDebug() << "loopBackSocket bound";
+
+        // Debug message to check agio
+        if (agio) {
+            qDebug() << "agio is valid";
+            const QMetaObject *metaObject = agio->metaObject();
+            for (int i = 0; i < metaObject->propertyCount(); ++i) {
+                QMetaProperty property = metaObject->property(i);
+                QVariant value = agio->property(property.name());
+                qDebug() << property.name() << ": " << value;
+            }
+        } else {
+            qDebug() << "agio is null";
+        }
+
         agio->setProperty("aogConnected", true);
     }
 

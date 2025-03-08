@@ -261,7 +261,7 @@ void FormLoop::ReconnectRequest()
 	ntripCounter = 15;
 	isNTRIP_Connected = false;
     agio->setProperty("ntripConnected", false);
-    //ShowAgIO();
+    ShowAgIO();
 	isNTRIP_Starting = false;
 	isNTRIP_Connecting = false;
 
