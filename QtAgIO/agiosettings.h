@@ -37,6 +37,9 @@ signals:
     void updateFromSettings();
 };
 
+
+#ifndef TO_VARIANT_TO_VECTOR_DEFINED
+#define TO_VARIANT_TO_VECTOR_DEFINED
 template <class T> static QVariant toVariant(const QVector<T> &list)
 {
     QVariantList variantList;
@@ -56,6 +59,8 @@ template <class T> static QVector<T> toVector(const QVariant &qv)
     }
     return dataList;
 }
+
+#endif // TO_VARIANT_TO_VECTOR_DEFINED
 
 QColor parseColor(QString setcolor);
 QVector3D parseColorVector(QString setcolor);

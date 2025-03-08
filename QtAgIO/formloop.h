@@ -19,6 +19,8 @@
 #include <QQueue>
 #include <QDateTime>
 #include <QElapsedTimer>
+#include <QObject>
+
 
 
 class FormUDP;
@@ -33,6 +35,10 @@ struct IPAndPort {
     int portToSend;
     int portToListen;
 
+	IPAndPort() : address(""), portToSend(0), portToListen(0) {}; // Ajoutez un constructeur par défaut
+    //IPAndPort(const QString &ip, int portToSend, int portToListen)
+    //    : ip(ip), portToSend(portToSend), portToListen(portToListen) {}
+
     IPAndPort(const QString &ipAddress, int sendPort, int listenPort)
         : address(ipAddress), portToSend(sendPort), portToListen(listenPort) {}
 
@@ -40,12 +46,35 @@ struct IPAndPort {
 
 class FormLoop : public QObject
 {
-
+    //This is added for future usage for Agio as C++ singleton plugin
+	//  QML_ELEMENT
 	Q_OBJECT
+  //  QML_SINGLETON
+   // Q_PROPERTY(QString status READ status WRITE setStatus NOTIFY statusChanged)
 
-	public:
-    explicit FormLoop(QObject *parent = nullptr);
-	~FormLoop();
+	public:    
+		void setContextProperty(const QString &name, const QVariant &value);
+		QString status() const { return m_status; }
+		void setStatus(const QString &value);
+
+		// intialazing formloop as an instance
+		static FormLoop* instance();
+		// Initialize an engine pointer that it will be used by formloop instance
+		void setEngine(QQmlApplicationEngine *engine);
+		void setupGUI();
+		// Getter to acess `m_engine` in formloop
+		QQmlApplicationEngine* engine() const;  
+
+    signals:
+        void statusChanged();
+
+    private:
+	    explicit FormLoop(QObject *parent = nullptr);
+        QString m_status;
+        static FormLoop *m_instance;  // Store the singleton instance of `FormLoop`
+        QQmlApplicationEngine *m_engine;  // Declare `m_engine` to store the engine reference
+
+    	//~FormLoop();
 
 		/* settings related stuff*/
 		void loadSettings();
@@ -57,7 +86,7 @@ class FormLoop : public QObject
 		// end of settings related stuff
 
 		QObject *qml_root;
-        QObject *agio;
+        //QObject *agio; // moved to plubic:
         QWidget *qmlcontainer;
 
         IPAndPort wwwNtrip; //send ntrip to module
@@ -84,6 +113,7 @@ class FormLoop : public QObject
 
     public:
 
+        QObject *agio; 
         //used to send communication check pgn= C8 or 200
         QByteArray sendIPToModules = QByteArray::fromRawData("\x80\x81\x7F\xC9\x05\xC9\xC9\xC0\xA8\x05\x47", 11);
 
@@ -102,7 +132,7 @@ class FormLoop : public QObject
         /*formloop_ui.cpp*/
 
 
-        void setupGUI();
+        //void setupGUI();
         void ShowAgIO();
 		void UpdateUIVars();
         void TimedMessageBox(int timeout, QString s1, QString s2);
@@ -168,7 +198,7 @@ class FormLoop : public QObject
 
 	private:
 
-        QQmlApplicationEngine engine;
+       //QQmlApplicationEngine engine;
 
         QByteArray helloFromAgIO = QByteArray::fromRawData("\x80\x81\x7F\xC8\x03\x38\x00\x00\x47", 9);
 
@@ -198,22 +228,22 @@ class FormLoop : public QObject
 		QString ggaSentence, vtgSentence, hdtSentence, avrSentence, paogiSentence,
                 hpdSentence, rmcSentence, pandaSentence, ksxtSentence, unknownSentence;
 
-		float hdopData, altitude = glm::FLOAT_MAX, headingTrue = glm::FLOAT_MAX,
-			  headingTrueDual = glm::FLOAT_MAX, speed = glm::FLOAT_MAX, roll = glm::FLOAT_MAX;
+        float hdopData, altitude = glmAgIO::FLOAT_MAX, headingTrue = glmAgIO::FLOAT_MAX,
+              headingTrueDual = glmAgIO::FLOAT_MAX, speed = glmAgIO::FLOAT_MAX, roll = glmAgIO::FLOAT_MAX;
 		float altitudeData, speedData, rollData, headingTrueData, headingTrueDualData, ageData;
 
-		double latitudeSend = glm::DOUBLE_MAX, longitudeSend = glm::DOUBLE_MAX, latitude, longitude;
+        double latitudeSend = glmAgIO::DOUBLE_MAX, longitudeSend = glmAgIO::DOUBLE_MAX, latitude, longitude;
 
         float previousAltitude = 0;
         bool nmeaError = false;
 
-		unsigned short satellitesData, satellitesTracked = glm::USHORT_MAX, hdopX100 = glm::USHORT_MAX, ageX100 = glm::USHORT_MAX;
+        unsigned short satellitesData, satellitesTracked = glmAgIO::USHORT_MAX, hdopX100 = glmAgIO::USHORT_MAX, ageX100 = glmAgIO::USHORT_MAX;
 
 
 		//imu data
-		unsigned short imuHeadingData, imuHeading = glm::USHORT_MAX;
-		short imuRollData, imuRoll = glm::SHORT_MAX, imuPitchData, imuPitch = glm::SHORT_MAX, 
-			  imuYawRateData, imuYawRate = glm::SHORT_MAX;
+        unsigned short imuHeadingData, imuHeading = glmAgIO::USHORT_MAX;
+        short imuRollData, imuRoll = glmAgIO::SHORT_MAX, imuPitchData, imuPitch = glmAgIO::SHORT_MAX,
+              imuYawRateData, imuYawRate = glmAgIO::SHORT_MAX;
 
 		quint8 fixQuality, fixQualityData = 255;
 
@@ -317,7 +347,7 @@ class FormLoop : public QObject
         void NTRIPDebugMode(bool doWeDebug);
 
     private:
-        BluetoothManager* bluetoothManager;
+        BluetoothManager *bluetoothManager;
     public:
         BluetoothDeviceList *btDevicesList;// for sending the list to frontend
 };

@@ -1,5 +1,5 @@
 #include <QQuickView>
-#include <QQuickWidget>
+//#include <QQuickWidget>
 #include <QQmlContext>
 #include <QScreen>
 #include <QGuiApplication>
@@ -14,114 +14,169 @@
 #include "src/bluetoothdevicelist.h"
 #include "src/bluetoothmanager.h"
 
-extern QMLSettings qml_settings;
+//extern QMLSettings qml_settings;
 
 void FormLoop::setupGUI()
 {
-    //Load the QML UI and display it in the main area of the GUI
-    setProperty("title", "QtAgIO");
+//     //Load the QML UI and display it in the main area of the GUI
+//     setProperty("title", "QtAgIO");
 
-//tell the QML what OS we are using
-#ifdef __ANDROID__
-    engine.rootContext()->setContextProperty("OS", "ANDROID");
-#elif defined(__WIN32)
-    engine.rootContext()->setContextProperty("OS", "WINDOWS");
-#else
-    engine.rootContext()->setContextProperty("OS", "LINUX");
-#endif
+// //tell the QML what OS we are using
+// #ifdef __ANDROID__
+//     engine.rootContext()->setContextProperty("OS", "ANDROID");
+// #elif defined(__WIN32)
+//     engine.rootContext()->setContextProperty("OS", "WINDOWS");
+// #else
+//     engine.rootContext()->setContextProperty("OS", "LINUX");
+// #endif
 
-    //load the QML into a view
-    engine.rootContext()->setContextProperty("screenPixelDensity",QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio());
-    engine.rootContext()->setContextProperty("mainForm", this);
-	engine.rootContext()->setContextProperty("settings", &qml_settings);
-engine.rootContext()->setContextProperty("bluetoothDeviceList", btDevicesList);
+//     //load the QML into a view
+//     engine.rootContext()->setContextProperty("screenPixelDensity",QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio());
+//     engine.rootContext()->setContextProperty("mainForm", this);
+// 	engine.rootContext()->setContextProperty("settings", &qml_settings);
+// engine.rootContext()->setContextProperty("bluetoothDeviceList", btDevicesList);
 
 
-#ifdef LOCAL_QML
-    // Look for QML files relative to our current directory
-    QStringList search_pathes = { "..",
-                                 "../..",
-                                 "../qtaog",
-                                 "../QtAgOpenGPS",
-                                 "."
-    };
+// #ifdef LOCAL_QML
+//     // Look for QML files relative to our current directory
+//     QStringList search_pathes = { "..",
+//                                  "../..",
+//                                  "../qtaog",
+//                                  "../QtAgOpenGPS",
+//                                  "."
+//     };
 
-    qWarning() << "Looking for QML.";
-    for(QString search_path : search_pathes) {
-        //look relative to current working directory
-        QDir d = QDir(QDir::currentPath() + "/../" + search_path + "/QtAgIO/qml/");
-        //qDebug() << d.absolutePath();
-        if (d.exists("AgIOInterface.qml")) {
-            QDir::addSearchPath("local",QDir::currentPath() + "/../" + search_path);
-            qWarning() << "QML path is " << search_path;
-            break;
-        }
+//     qWarning() << "Looking for QML.";
+//     for(QString search_path : search_pathes) {
+//         //look relative to current working directory
+//         QDir d = QDir(QDir::currentPath() + "/../" + search_path + "/QtAgIO/qml/");
+//         //qDebug() << d.absolutePath();
+//         if (d.exists("AgIOInterface.qml")) {
+//             QDir::addSearchPath("local",QDir::currentPath() + "/../" + search_path);
+//             qWarning() << "QML path is " << search_path;
+//             break;
+//         }
 
-        //look relative to the executable's directory
-        d = QDir(QCoreApplication::applicationDirPath() + "/../" + search_path + "/qml/");
-        //qDebug() << d.absolutePath();
-        if (d.exists("AgIOInterface.qml")) {
-            QDir::addSearchPath("local",QCoreApplication::applicationDirPath() + "/../" + search_path);
-            qWarning() << "QML path is " << search_path;
-            break;
-        }
+//         //look relative to the executable's directory
+//         d = QDir(QCoreApplication::applicationDirPath() + "/../" + search_path + "/qml/");
+//         //qDebug() << d.absolutePath();
+//         if (d.exists("AgIOInterface.qml")) {
+//             QDir::addSearchPath("local",QCoreApplication::applicationDirPath() + "/../" + search_path);
+//             qWarning() << "QML path is " << search_path;
+//             break;
+//         }
+//     }
+
+//     QObject::connect(&engine, &QQmlApplicationEngine::warnings, this, [=](const QList<QQmlError>& warnings) {
+//         for (const QQmlError& error : warnings) {
+//             qWarning() << "warning: " << error.toString();
+//         }
+//     });
+//     engine.rootContext()->setContextProperty("prefix","local:/QtAgIO");
+//     engine.load("local:/QtAgIO/qml/Main.qml");
+// #else
+//     engine.rootContext()->setContextProperty("prefix","qrc:/AGIO");
+//     engine.load(QUrl(QStringLiteral("qrc:/AGIO/Main.qml")));
+// #endif
+
+
+//     if (engine.rootObjects().isEmpty())
+//     {
+//         qDebug() << "Failed to load QML file";
+//         return;
+//     }
+    if (!m_engine) {
+        qDebug() << "Error: m_engine is nullptr!";
+            return;
     }
 
-    QObject::connect(&engine, &QQmlApplicationEngine::warnings, this, [=](const QList<QQmlError>& warnings) {
-        for (const QQmlError& error : warnings) {
-            qWarning() << "warning: " << error.toString();
+    qDebug() << "m_engine = " << m_engine;
+
+
+
+
+    if (!m_engine->rootObjects().isEmpty()) {
+        QObject *rootObject = m_engine->rootObjects().first();
+
+        qml_root = rootObject;
+
+        //have to do this for each Interface and supported data type.
+        InterfaceProperty<AgIOInterface, int>::set_qml_root(qmlItem(qml_root, "agio"));
+        InterfaceProperty<AgIOInterface, uint>::set_qml_root(qmlItem(qml_root, "agio"));
+        InterfaceProperty<AgIOInterface, bool>::set_qml_root(qmlItem(qml_root, "agio"));
+        InterfaceProperty<AgIOInterface, double>::set_qml_root(qmlItem(qml_root, "agio"));
+        //InterfaceProperty<AgIOInterface, btnStates>::set_qml_root(qmlItem(qml_root, "aog"));
+
+        agio = qmlItem(qml_root, "agio");
+
+        if (!agio) {
+            qDebug() << "Error: 'agio' QML object not found!";
+            return;
         }
-    });
-    engine.rootContext()->setContextProperty("prefix","local:/QtAgIO");
-    engine.load("local:/QtAgIO/qml/Main.qml");
-#else
-    engine.rootContext()->setContextProperty("prefix","qrc:/AGIO");
-    engine.load(QUrl(QStringLiteral("qrc:/AGIO/Main.qml")));
-#endif
 
+        //this is where the connects with the frontend happen
 
-    if (engine.rootObjects().isEmpty())
-    {
-        qDebug() << "Failed to load QML file";
-        return;
-    }
-    else
-    {
-        qDebug() << "Displaying QML File";
-    }
+        //UDP
+        connect(agio, SIGNAL(btnSendSubnet_clicked()), this, SLOT(btnSendSubnet_Click())); // btnSendSubnet_Click lives in formloop_formudp.cpp
+        connect(agio, SIGNAL(btnUDPListenOnly_clicked(bool)), this, SLOT(btnUDPListenOnly_Click(bool)));
 
-    QList<QObject*> root_context = engine.rootObjects();
+        //NTRIP
+        connect(agio, SIGNAL(configureNTRIP()), this, SLOT(ConfigureNTRIP())); //ConfigureNTRIP lives in formloop_ntripcomm.cpp
+        connect(agio, SIGNAL(ntripDebug(bool)), this, SLOT(NTRIPDebugMode(bool)));
+        connect(agio, SIGNAL(setIPFromUrl(QString)), this, SLOT(LookupNTripIP(QString)));
 
-    qml_root = root_context.first();
-
-    //have to do this for each Interface and supported data type.
-    InterfaceProperty<AgIOInterface, int>::set_qml_root(qmlItem(qml_root, "agio"));
-    InterfaceProperty<AgIOInterface, uint>::set_qml_root(qmlItem(qml_root, "agio"));
-    InterfaceProperty<AgIOInterface, bool>::set_qml_root(qmlItem(qml_root, "agio"));
-    InterfaceProperty<AgIOInterface, double>::set_qml_root(qmlItem(qml_root, "agio"));
-    //InterfaceProperty<AgIOInterface, btnStates>::set_qml_root(qmlItem(qml_root, "aog"));
-
-    agio = qmlItem(qml_root, "agio");
-
-    //this is where the connects with the frontend happen
-
-    //UDP
-    connect(agio, SIGNAL(btnSendSubnet_clicked()), this, SLOT(btnSendSubnet_Click())); // btnSendSubnet_Click lives in formloop_formudp.cpp
-    connect(agio, SIGNAL(btnUDPListenOnly_clicked(bool)), this, SLOT(btnUDPListenOnly_Click(bool)));
-
-    //NTRIP
-    connect(agio, SIGNAL(configureNTRIP()), this, SLOT(ConfigureNTRIP())); //ConfigureNTRIP lives in formloop_ntripcomm.cpp
-    connect(agio, SIGNAL(ntripDebug(bool)), this, SLOT(NTRIPDebugMode(bool)));
-    connect(agio, SIGNAL(setIPFromUrl(QString)), this, SLOT(LookupNTripIP(QString)));
-
-    //bluetooth
-    connect(agio, SIGNAL(bt_search(QString)), bluetoothManager, SLOT(userConnectBluetooth(QString)));
-    connect(agio, SIGNAL(bt_kill()), bluetoothManager, SLOT(kill()));
-    connect(agio, SIGNAL(bt_remove_device(QString)), bluetoothManager, SLOT(userRemoveDevice(QString)));
-    connect(agio, SIGNAL(bluetoothDebug(bool)), bluetoothManager, SLOT(bluetooth_console_debug(bool)));
-    connect(agio, SIGNAL(startBluetoothDiscovery()), bluetoothManager, SLOT(startBluetoothDiscovery()));
-
-
+        //bluetooth
+        connect(agio, SIGNAL(bt_search(QString)), bluetoothManager, SLOT(userConnectBluetooth(QString)));
+        connect(agio, SIGNAL(bt_kill()), bluetoothManager, SLOT(kill()));
+        connect(agio, SIGNAL(bt_remove_device(QString)), bluetoothManager, SLOT(userRemoveDevice(QString)));
+        connect(agio, SIGNAL(bluetoothDebug(bool)), bluetoothManager, SLOT(bluetooth_console_debug(bool)));
+        connect(agio, SIGNAL(startBluetoothDiscovery()), bluetoothManager, SLOT(startBluetoothDiscovery()));
+        
+        
+        loadSettings();
+        LoadLoopback();    
+        LoadUDPNetwork();
+    
+        if(property_setBluetooth_isOn)
+            bluetoothManager->startBluetoothDiscovery();
+    
+        ConfigureNTRIP();
+    
+        halfSecondTimer = new QTimer(this);
+        halfSecondTimer->setInterval(500);
+        connect(halfSecondTimer, &QTimer::timeout, this, &FormLoop::timer1_Tick);
+    
+        oneSecondTimer = new QTimer(this);
+        oneSecondTimer->setInterval(1000);
+        connect(oneSecondTimer, &QTimer::timeout, this, &FormLoop::oneSecondLoopTimer_Tick);
+        oneSecondTimer->start();
+    
+    
+        twoSecondTimer = new QTimer(this);
+        twoSecondTimer->setInterval(2000);
+        connect(twoSecondTimer, &QTimer::timeout, this, &FormLoop::TwoSecondLoop);
+        twoSecondTimer->start();
+    
+        tmr = new QTimer(this);// the timer used in formloop_ntripcomm
+        tmr->setSingleShot(false);
+        tmr->setInterval(5000);
+        connect(tmr, &QTimer::timeout, this, &FormLoop::SendGGA);
+        tmr->start();
+    
+        ntripMeterTimer = new QTimer(this);
+        ntripMeterTimer->setSingleShot(false);
+        ntripMeterTimer->setInterval(50);
+        connect(ntripMeterTimer, &QTimer::timeout, this, &FormLoop::ntripMeterTimer_Tick);
+    
+    
+        clientSocket = new QTcpSocket(this);
+    
+        FormUDp_Load();
+        swFrame.start();
+    
+    } else {
+        qDebug() << "No root objects found.";
+    }  
 }
 
 void FormLoop::btnUDPListenOnly_Click(bool isIt){
@@ -136,8 +191,8 @@ void FormLoop::btnUDPListenOnly_Click(bool isIt){
 }
 
 void FormLoop::ShowAgIO(){
-    if (!engine.rootObjects().isEmpty()) {
-        QObject *rootObject = engine.rootObjects().first();
+    if (!m_engine->rootObjects().isEmpty()) {
+        QObject *rootObject = m_engine->rootObjects().first();
         QQuickWindow *window = qobject_cast<QQuickWindow *>(rootObject);
 
         if (window) {

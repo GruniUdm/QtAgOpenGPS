@@ -2,79 +2,155 @@
 #include "agioproperty.h"
 #include "qmlutil.h"
 #include <QQuickWindow>
-#include <QQmlApplicationEngine>
+//#include <QQmlApplicationEngine>
 #include "qmlsettings.h"
 #include "src/bluetoothdevicelist.h"
 #include "src/bluetoothmanager.h"
+#include <QQmlContext>
 
-extern QMLSettings qml_settings;
+AgIOSettings *agiosettings;
+//extern QMLSettings qml_settings;
+
+//FormLoop::FormLoop(QWidget *parent) : QQmlApplicationEngine(parent),
 FormLoop::FormLoop(QObject *parent) : QObject(parent),
-    qml_root(parent),
+    m_status("Initializing..."),
+     //qml_root(parent),
     wwwNtrip("192.168.1.100", 2101, 2102), // Example initial values
     ethUDP("192.168.1.101", 2201, 2202),
     ethModulesSet("255.255.255.255", 2301, 2302)
 {
 
-	qml_settings.setupKeys();
-	qml_settings.loadSettings();
+//     // qml_settings->setupKeys();
+//     // qml_settings->loadSettings();
+}
+
+
+void FormLoop::setEngine(QQmlApplicationEngine *engine)
+{
+     qDebug() << "Appel de setEngine avec engine:" << engine;
+    if (!m_engine) {
+        m_engine = engine;
+        qDebug() << "Engine correctement défini dans FormLoop";
+        //emit engineReady();
+    } else {
+        qDebug() << "Attention: Engine déjà défini dans FormLoop!";
+    }
+
+    agiosettings = new AgIOSettings();
+    AgIOProperty::init_defaults();
+    agiosettings->sync();
+
+
+    QMLSettings::instance()->setupKeys();
+    QMLSettings::instance()->loadSettings();
+    // qml_settings->setupKeys();
+    // qml_settings->loadSettings();
+
 
     btDevicesList = new BluetoothDeviceList(this);// I don't like this, but right now, the class
     //has to be in place when the QML starts.
 
     bluetoothManager = new BluetoothManager(this, this);
 
-	setupGUI();
-	loadSettings();
-    //loadSettings();
 
-    LoadLoopback();
-	LoadUDPNetwork();
+    //tell the QML what OS we are using
+    #ifdef __ANDROID__
+        //rootContext()->setContextProperty("OS", "ANDROID");
+        setContextProperty("OS", QString("ANDROID"));
+    #elif defined(__WIN32)
+        //setContextProperty("OS", "WINDOWS");
+        setContextProperty("OS", QString("WINDOWS"));
+    #else
+        rootContext()->setContextProperty("OS", "LINUX");
+        setContextProperty("OS", QString("LINUX"));    
+    #endif
 
-    if(property_setBluetooth_isOn)
-        bluetoothManager->startBluetoothDiscovery();
+    setContextProperty("agiosettings", QVariant::fromValue(QMLSettings::instance()));
+    setContextProperty("bluetoothDeviceList", QVariant::fromValue(btDevicesList));
 
-    ConfigureNTRIP();
+    // setupGUI();
+    // loadSettings();
 
-    halfSecondTimer = new QTimer(this);
-    halfSecondTimer->setInterval(500);
-    connect(halfSecondTimer, &QTimer::timeout, this, &FormLoop::timer1_Tick);
+    // LoadLoopback();
+    // LoadUDPNetwork();
 
-    oneSecondTimer = new QTimer(this);
-    oneSecondTimer->setInterval(1000);
-    connect(oneSecondTimer, &QTimer::timeout, this, &FormLoop::oneSecondLoopTimer_Tick);
-    oneSecondTimer->start();
+    // if(property_setBluetooth_isOn)
+    //     bluetoothManager->startBluetoothDiscovery();
 
+    // ConfigureNTRIP();
 
-	twoSecondTimer = new QTimer(this);
-	twoSecondTimer->setInterval(2000);
-	connect(twoSecondTimer, &QTimer::timeout, this, &FormLoop::TwoSecondLoop);
-	twoSecondTimer->start();
+    // halfSecondTimer = new QTimer(this);
+    // halfSecondTimer->setInterval(500);
+    // connect(halfSecondTimer, &QTimer::timeout, this, &FormLoop::timer1_Tick);
 
-    tmr = new QTimer(this);// the timer used in formloop_ntripcomm
-    tmr->setSingleShot(false);
-    tmr->setInterval(5000);
-    connect(tmr, &QTimer::timeout, this, &FormLoop::SendGGA);
-    tmr->start();
-
-    ntripMeterTimer = new QTimer(this);
-    ntripMeterTimer->setSingleShot(false);
-    ntripMeterTimer->setInterval(50);
-    connect(ntripMeterTimer, &QTimer::timeout, this, &FormLoop::ntripMeterTimer_Tick);
+    // oneSecondTimer = new QTimer(this);
+    // oneSecondTimer->setInterval(1000);
+    // connect(oneSecondTimer, &QTimer::timeout, this, &FormLoop::oneSecondLoopTimer_Tick);
+    // oneSecondTimer->start();
 
 
-    clientSocket = new QTcpSocket(this);
+    // twoSecondTimer = new QTimer(this);
+    // twoSecondTimer->setInterval(2000);
+    // connect(twoSecondTimer, &QTimer::timeout, this, &FormLoop::TwoSecondLoop);
+    // twoSecondTimer->start();
 
-    FormUDp_Load();
-    swFrame.start();
+    // tmr = new QTimer(this);// the timer used in formloop_ntripcomm
+    // tmr->setSingleShot(false);
+    // tmr->setInterval(5000);
+    // connect(tmr, &QTimer::timeout, this, &FormLoop::SendGGA);
+    // tmr->start();
+
+    // ntripMeterTimer = new QTimer(this);
+    // ntripMeterTimer->setSingleShot(false);
+    // ntripMeterTimer->setInterval(50);
+    // connect(ntripMeterTimer, &QTimer::timeout, this, &FormLoop::ntripMeterTimer_Tick);
+
+
+    // clientSocket = new QTcpSocket(this);
+
+    // FormUDp_Load();
+    // swFrame.start();
 
 }
 
-FormLoop::~FormLoop()
+QQmlApplicationEngine* FormLoop::engine() const
 {
-    /* clean up our dynamically-allocated
-     * objects.
-     */
+    return m_engine;
 }
+
+
+void FormLoop::setContextProperty(const QString &name, const QVariant &value)
+{
+    if (m_engine) {
+        m_engine->rootContext()->setContextProperty(name, value);
+    } else {
+        qDebug() << "Error: Engine not initialized, storing property: " << name;
+    }
+}
+
+void FormLoop::setStatus(const QString &value)
+{
+    if (m_status != value) {
+        m_status = value;
+        emit statusChanged();
+    }
+}
+
+FormLoop* FormLoop::instance()
+{
+    static FormLoop instance;  // ✅ Utilisation d'une instance statique locale
+    return &instance;
+}
+
+
+
+
+// FormLoop::~FormLoop()
+// {
+//     /* clean up our dynamically-allocated
+//      * objects.
+//      */
+// }
 void FormLoop::oneSecondLoopTimer_Tick(){
     DoNTRIPSecondRoutine();
 }
@@ -101,7 +177,7 @@ void FormLoop::DoTraffic()
 void FormLoop::DoHelloAlarmLogic()
 {
     bool currentHello;
-    agio = qmlItem(qml_root, "agio");
+    //agio = qmlItem(qml_root, "agio");
 
     if (isConnectedMachine)
     {
