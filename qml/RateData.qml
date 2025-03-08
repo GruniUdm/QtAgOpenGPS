@@ -8,6 +8,12 @@ import QtQuick.Layouts
 import "components" as Comp
 import Settings
 import AOG
+Comp.MoveablePopup {
+    id: rcDataPopup
+    height: 220  * theme.scaleHeight
+    width: 220  * theme.scaleWidth
+    visible: false
+    modal: false
 Rectangle{
     id: rcData
     width: 220 * theme.scaleWidth
@@ -336,4 +342,5 @@ Rectangle{
             timedMessage.addMessage(2000, qsTr("High rate. Reduce speed!"));}
     }
 
+}
 }

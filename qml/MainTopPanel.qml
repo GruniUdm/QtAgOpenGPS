@@ -158,7 +158,7 @@ import "components" as Comp
                     gpsData.visible = !gpsData.visible
                     fieldData.visible = false
                     blockageData.visible = false
-                    rateData.visible = false
+                    //rateData.visible = false
                 }
                 Connections{
                     target: aog
@@ -182,7 +182,7 @@ import "components" as Comp
                     blockageData.visible = !blockageData.visible
                     gpsData.visible = false
                     fieldData.visible = false
-                    rateData.visible = false
+                    //rateData.visible = false
                 }
             }
 
@@ -195,9 +195,9 @@ import "components" as Comp
                 visible: (aog.product0stat && Settings.rate_Product0[2]>0)
                 onClicked: {
                     rateData.visible = !rateData.visible
-                    gpsData.visible = false
-                    fieldData.visible = false
-                    blockageData.visible = false
+                    //gpsData.visible = false
+                    //fieldData.visible = false
+                    //blockageData.visible = false
                 }
             }
 
