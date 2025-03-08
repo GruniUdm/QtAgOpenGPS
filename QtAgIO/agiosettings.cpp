@@ -13,7 +13,7 @@
 
 extern QMLSettings qml_settings;
 
-QVariant unset("UNSET"); //sentinal used to identify missing values in settings
+QVariant unset("UNSET"); //sentinal used to identify missing values in agiosettings
 
 AgIOSettings::AgIOSettings(QObject *parent) : QSettings(parent)
 {

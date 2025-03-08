@@ -88,7 +88,7 @@ void FormLoop::DoNTRIPSecondRoutine()
 	}
 }
 
-void FormLoop::ConfigureNTRIP() //set the variables to the settings
+void FormLoop::ConfigureNTRIP() //set the variables to the agiosettings
 {
     if(debugNTRIP) qDebug() << "Configuring NTRIP";
     agio->setProperty("ntripStatus", 5); //Wait GPS
@@ -113,7 +113,7 @@ void FormLoop::StartNTRIP()
     if(debugNTRIP) qDebug() << "Starting NTRIP";
 	if (isNTRIP_RequiredOn)
 	{
-		//load the settings
+        //load the agiosettings
         wwwNtrip.portToSend = property_setNTRIP_casterPort; //Select correct port (usually 80 or 2101)
         mount = property_setNTRIP_mount; //Insert the correct mount
         username = property_setNTRIP_userName; //insert your username!
@@ -261,7 +261,7 @@ void FormLoop::ReconnectRequest()
 	ntripCounter = 15;
 	isNTRIP_Connected = false;
     agio->setProperty("ntripConnected", false);
-    ShowAgIO();
+    //ShowAgIO();
 	isNTRIP_Starting = false;
 	isNTRIP_Connecting = false;
 
@@ -296,7 +296,7 @@ void FormLoop::SendAuthorization()
 		return;
 	}
 
-    // Read the message from settings and send it
+    // Read the message from agiosettings and send it
     if (!property_setNTRIP_isTCP)//if we are not using TCP. Should that go in an extension also?
     //a sort of "ntrip weirdos" for all the unusual stuff to go.
     {

@@ -34,7 +34,7 @@ void QMLSettings::loadSettings() {
 
     for (QString key: qml_to_settings_map.keys()) {
         settings_key = qml_to_settings_map[key];
-        settings_value = settings->value(settings_key, unset);
+        settings_value = agiosettings->value(settings_key, unset);
 
         if (settings_value == unset) continue;
 
@@ -69,7 +69,7 @@ void QMLSettings::loadSettings() {
 void QMLSettings::updateSetting(const QString &settings_key) {
     //a QSetting key/value pair was updated, so update QML's view
     QString qml_key = settings_to_qml_map[settings_key];
-    QVariant settings_value = settings->value(settings_key,unset);
+    QVariant settings_value = agiosettings->value(settings_key,unset);
 
     if (settings_value == unset) return;
 
@@ -111,9 +111,9 @@ void QMLSettings::onValueChanged(const QString &key, const QVariant &value) {
     if (type_name == "QJSValue") {
         //assume QList<int>
         QVector<int> v = toVector<int>(value);
-        settings -> setValue_noqml(settings_key, toVariant(v));
+        agiosettings -> setValue_noqml(settings_key, toVariant(v));
     } else {
-        settings -> setValue_noqml(settings_key, value);
+        agiosettings -> setValue_noqml(settings_key, value);
     }
 
 }

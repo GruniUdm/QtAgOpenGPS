@@ -6,7 +6,7 @@
 
 class AgIOSettings;
 
-extern AgIOSettings *settings;
+extern AgIOSettings *agiosettings;
 
 class AgIOProperty
 {

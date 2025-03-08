@@ -274,9 +274,9 @@ void FormLoop::btnSendSubnet_Click()
 
     //Properties.Settings.Default.Save();
     //does the lower replace the upper? Remove if it does
-    settings->sync(); //do we still need this with the new settings class?
+    agiosettings->sync(); //do we still need this with the new agiosettings class?
 
-    // update ethUDP from settings
+    // update ethUDP from agiosettings
     int ip1 = property_setUDP_IP1;
     int ip2 = property_setUDP_IP2;
     int ip3 = property_setUDP_IP3;

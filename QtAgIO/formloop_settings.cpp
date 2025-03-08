@@ -3,5 +3,5 @@
 
 void FormLoop::loadSettings()
 {
-	//TODO: Load settings
+    //TODO: Load agiosettings
 }
