@@ -14,11 +14,13 @@ Item{
     property alias currentText: rootCombo.currentText
 
 	signal activated()
-    height: 75
+    height: 40
     width: rootCombo.width
     TextLine{
-        anchors.top: parent.top
+        anchors.bottom: rootCombo.top
+        anchors.left: rootCombo.left
         text: itemCombo.text
+        font.bold: true
     }
     ComboBox{
         id: rootCombo

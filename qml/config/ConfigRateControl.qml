@@ -248,11 +248,8 @@ Rectangle{
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            TextLine{
-                text: qsTr("Module ID: ")
-                font.bold: true
-                anchors.top: parent.bottom
-            }
+            text: qsTr("Module ID: ")
+
         }
         SpinBoxCustomized{
             id: prodDensityBox
@@ -264,11 +261,8 @@ Rectangle{
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            TextLine{
-                text: qsTr("ProdDensity: ")
-                font.bold: true
-                anchors.top: parent.bottom
-            }
+            text: qsTr("ProdDensity: ")
+
         }
         SpinBoxCustomized{
             id: rateKP
@@ -280,11 +274,8 @@ Rectangle{
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            TextLine{
-                text: qsTr("PID KP: ")
-                font.bold: true
-                anchors.top: parent.bottom
-            }
+            text: qsTr("PID KP: ")
+
         }
         SpinBoxCustomized{
             id: rateKI
@@ -296,11 +287,8 @@ Rectangle{
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            TextLine{
-                text: qsTr("PID KI: ")
-                font.bold: true
-                anchors.top: parent.bottom
-            }
+            text: qsTr("PID KI: ")
+
         }
         SpinBoxCustomized{
             id: rateKD
@@ -312,11 +300,7 @@ Rectangle{
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            TextLine{
-                text: qsTr("PID KD: ")
-                font.bold: true
-                anchors.top: parent.bottom
-            }
+            text: qsTr("PID KD: ")
 
         }
         SpinBoxCustomized{
@@ -329,11 +313,7 @@ Rectangle{
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            TextLine{
-                text: qsTr("Minimum PWM")
-                font.bold: true
-                anchors.top: parent.bottom
-            }
+            text: qsTr("Minimum PWM")
 
         }
         SpinBoxCustomized{
@@ -347,11 +327,7 @@ Rectangle{
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            TextLine{
-                text: qsTr("Maximum PWM")
-                font.bold: true
-                anchors.top: parent.bottom
-            }
+            text: qsTr("Maximum PWM")
 
         }
         SpinBoxCustomized{
@@ -365,11 +341,7 @@ Rectangle{
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            TextLine{
-                text: qsTr("PID scale")
-                font.bold: true
-                anchors.top: parent.bottom
-            }
+            text: qsTr("PID scale")
 
         }
         SpinBoxCustomized{
@@ -383,11 +355,7 @@ Rectangle{
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            TextLine{
-                text: qsTr("Rate SET")
-                font.bold: true
-                anchors.top: parent.bottom
-            }
+            text: qsTr("Rate SET")
 
         }
         SpinBoxCustomized{
@@ -401,11 +369,7 @@ Rectangle{
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            TextLine{
-                text: qsTr("Sensor Count")
-                font.bold: true
-                anchors.top: parent.bottom
-            }
+            text: qsTr("Sensor Count")
 
         }
         SpinBoxCustomized{
@@ -419,11 +383,7 @@ Rectangle{
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            TextLine{
-                text: qsTr("Min Speed")
-                font.bold: true
-                anchors.top: parent.bottom
-            }
+            text: qsTr("Min Speed")
 
         }
         SpinBoxCustomized{
@@ -437,11 +397,7 @@ Rectangle{
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            TextLine{
-                text: qsTr("Min UPM")
-                font.bold: true
-                anchors.top: parent.bottom
-            }
+            text: qsTr("Min UPM")
 
         }
 

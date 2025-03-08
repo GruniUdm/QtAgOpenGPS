@@ -152,6 +152,7 @@ Item {
 		anchors.bottom: spinner.top
 		anchors.left: spinner.left
 		font.pixelSize: spinBox_Customized.fontPixelSize
+        font.bold: true
 		onVisibleChanged: {
 			if (visible)
 			height = text.height 
