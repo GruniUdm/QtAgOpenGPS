@@ -1,4 +1,5 @@
 import QtQuick
+import AgIO 1.0
 
 Item {
 	id: ntripInterface

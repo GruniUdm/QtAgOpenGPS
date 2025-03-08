@@ -1,5 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
+import AgIO 1.0
+
 ComboBox {
     property string pinNumber: ""
     id: pinButtons

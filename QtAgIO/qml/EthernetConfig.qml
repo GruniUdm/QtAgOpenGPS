@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 import QtQuick.Layouts
+import AgIO 1.0
 import "components" as Comp
 
 Window {
@@ -11,9 +12,9 @@ Window {
     visible: true
     title: qsTr("Ethernet Configuration")
     function load_settings(){
-        spIP1.value = settings.setUDP_IP1
-        spIP2.value = settings.setUDP_IP2
-        spIP3.value = settings.setUDP_IP3
+        spIP1.value = agiosettings.setUDP_IP1
+        spIP2.value = agiosettings.setUDP_IP2
+        spIP3.value = agiosettings.setUDP_IP3
     }
 
     Rectangle {
@@ -84,14 +85,14 @@ Window {
             Comp.IconButtonText {
                 id: ethIPSet
                 text: qsTr("IP Set")
-                icon.source: prefix + "/images/SubnetSend.png"
+                icon.source: "../images/SubnetSend.png"
                 Layout.alignment: Qt.AlignCenter
                 onClicked: {
-                    settings.setUDP_IP1 = spIP1.value
-                    settings.setUDP_IP2 = spIP2.value
-                    settings.setUDP_IP3 = spIP3.value
+                    agiosettings.setUDP_IP1 = spIP1.value
+                    agiosettings.setUDP_IP2 = spIP2.value
+                    agiosettings.setUDP_IP3 = spIP3.value
                     timedMessage.addMessage(2000, "IP Address Change", ("IP address changed to " +
-                                                                        settings.setUDP_IP1 + "." + settings.setUDP_IP2 + "." + settings.setUDP_IP3 + "!"))
+                                                                        agiosettings.setUDP_IP1 + "." + agiosettings.setUDP_IP2 + "." + agiosettings.setUDP_IP3 + "!"))
                     agio.btnSendSubnet_clicked()
                 }
                 implicitWidth: btnOK.width
@@ -100,7 +101,7 @@ Window {
             Comp.IconButtonTransparent {
                 id: btnOK
                 Layout.alignment: Qt.AlignCenter
-                icon.source: prefix + "/images/OK64.png"
+                icon.source: "../images/OK64.png"
                 onClicked: ethernetConfig.visible = false
             }
         }

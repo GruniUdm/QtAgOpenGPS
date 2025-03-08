@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 import QtQuick.Layouts
+import AgIO 1.0
 import "components" as Comp
 
 Window {
@@ -67,12 +68,12 @@ Window {
 			}
 			TextField {
 				id: ntripURL
-                text: settings.setNTRIP_url
+                text: agiosettings.setNTRIP_url
 				width: parent.width
 				selectByMouse: true
 				onTextChanged: 
                     if (text.length > 0) {
-                        settings.setNTRIP_url = text
+                        agiosettings.setNTRIP_url = text
                     }
 
 			}
@@ -83,7 +84,7 @@ Window {
             }
 
             Comp.Text {
-                text: "IP: " + settings.setNTRIP_ipAddress
+                text: "IP: " + agiosettings.setNTRIP_ipAddress
 
 			}
 		}
@@ -102,10 +103,10 @@ Window {
 			}
 			TextField {
 				id: ntripUser
-                text: settings.setNTRIP_userName
+                text: agiosettings.setNTRIP_userName
 				width: parent.width
 				selectByMouse: true
-                onTextChanged: settings.setNTRIP_userName = text
+                onTextChanged: agiosettings.setNTRIP_userName = text
 			}
 
             Comp.Spacer{}
@@ -115,8 +116,8 @@ Window {
 			}
 			TextField {
 				id: ntripPass
-                text: settings.setNTRIP_userPassword
-                onTextChanged: settings.setNTRIP_userPassword = text
+                text: agiosettings.setNTRIP_userPassword
+                onTextChanged: agiosettings.setNTRIP_userPassword = text
 				width: parent.width
 				selectByMouse: true
 			}
@@ -130,15 +131,15 @@ Window {
 			}
 			TextField {
 				id: ntripMount
-                text: settings.setNTRIP_mount
-                onTextChanged: settings.setNTRIP_mount = text
+                text: agiosettings.setNTRIP_mount
+                onTextChanged: agiosettings.setNTRIP_mount = text
 				width: parent.width
 				selectByMouse: true
 			}
             Comp.Spacer{}
             Comp.SpinBoxCustomized { //ntrip caster port number
-                value: settings.setNTRIP_casterPort
-                onValueChanged: settings.setNTRIP_casterPort = value
+                value: agiosettings.setNTRIP_casterPort
+                onValueChanged: agiosettings.setNTRIP_casterPort = value
 				from: 0
 				to: 65535
                 text: qsTr("Caster Port:")
@@ -146,7 +147,7 @@ Window {
             Comp.Text {
                 text: qsTr("Default: 2101")
                 color: "red"
-                visible: settings.setNTRIP_casterPort !== 2101
+                visible: agiosettings.setNTRIP_casterPort !== 2101
             }
         }
 	}
@@ -164,9 +165,9 @@ Window {
 			text: qsTr("NTRIP On")
 			height: parent.height
 			width: height * 2.5
-            isChecked: utils.isTrue(settings.setNTRIP_isOn)
+            isChecked: utils.isTrue(agiosettings.setNTRIP_isOn)
             onClicked: {
-                settings.setNTRIP_isOn = !utils.isTrue(settings.setNTRIP_isOn)
+                agiosettings.setNTRIP_isOn = !utils.isTrue(agiosettings.setNTRIP_isOn)
                 ntripOn.statusChanged = true;
             }
 		}
@@ -175,14 +176,14 @@ Window {
             visible: false //not sure if we even want/need this
 			height: parent.height
 			width: height
-			icon.source: prefix + "/images/Cancel64.png"
+            icon.source: "../images/Cancel64.png"
             onClicked: ntrip.visible = false
 		}
         Comp.IconButtonTransparent {
 			id: btnSave
 			height: parent.height
 			width: height
-			icon.source: prefix + "/images/OK64.png"
+            icon.source: "../images/OK64.png"
             onClicked: {
                 agio.configureNTRIP()
                 ntrip.close()

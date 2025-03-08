@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Fusion
+import AgIO 1.0
 
 TextField {
     id: latlon_textfield

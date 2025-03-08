@@ -1,5 +1,5 @@
 import QtQuick
-
+import AgIO 1.0
 /* More or less a modified version of TimedMessage
  */
 Rectangle {

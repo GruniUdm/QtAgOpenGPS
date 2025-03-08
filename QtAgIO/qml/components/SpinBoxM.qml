@@ -1,5 +1,5 @@
 import QtQuick
-
+import AgIO 1.0
 //This is a spinbox for displaying dimensions that are either
 //cm or inches
 
@@ -41,7 +41,7 @@ Item {
     }
 
     Connections {
-        target: settings
+        target: agiosettings
         function onSetMenu_isMetricChanged() {
             spinner.value = utils.m_to_unit(value)
         }

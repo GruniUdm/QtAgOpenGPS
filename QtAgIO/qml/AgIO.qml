@@ -1,11 +1,12 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls.Fusion
-import "components" as Comp
+import AgIO 1.0
 
-Window {
+Item {
 
-    property string imagePath: prefix + "/images/"
+    //property string prefix : ""
+    //property string imagePath: prefix + "QtAgIO/"
 
     AgIOTheme {
         id: theme
@@ -20,24 +21,24 @@ Window {
         id: utils
     }
 
-    id: mainWindow
-    //height: theme.defaultHeight
-    //width: theme.defaultWidth
-    height: 500
-    width: 300
+    id: mainWindowAgIO
+    height: theme.defaultHeight
+    width: theme.defaultWidth
+    //height: 500
+    //width: 300
     visible: true
     onVisibleChanged: console.log("Visible!")
 
     //This is a popup message that dismisses itself after a timeout
-    Comp.TimedMessage {
+    TimedMessage {
         id: timedMessage
         objectName: "timedMessage"
     }
     Component.onCompleted: {//shows a window to warn us we might need to open up a port on the firewall
-        if(utils.isTrue(settings.run_isFirstRun)){
+        if(utils.isTrue(agiosettings.get(run_isFirstRun))){
             if(OS == "LINUX")
                 isFirewall.show()
-            settings.run_isFirstRun = false
+            agiosettings.run_isFirstRun = false
         }
     }
 
@@ -83,7 +84,7 @@ Window {
 
                 }
             Text{
-                text: (settings.setNTRIP_isOn === false ? "Off":
+                text: (agiosettings.setNTRIP_isOn === false ? "Off":
                     agio.ntripStatus === 0 ? "Invalid" :
                     agio.ntripStatus === 1 ? "Authorizing" :
                     agio.ntripStatus === 2 ? "Waiting" :
@@ -112,15 +113,15 @@ Window {
             anchors.bottomMargin: 5 * theme.scaleHeight
             anchors.topMargin: 15 * theme.scaleHeight
             anchors.leftMargin: 5 * theme.scaleWidth
-            Comp.IconButtonColor {
+            IconButtonColor {
                 id: btnEthernetStatus
                 text: qsTr("Ethernet")
-                icon.source: imagePath + "B_UDP.png"
+                icon.source: "../images/B_UDP.png"
                 color: agio.ethernetConnected ? "green" : "red"
                 onClicked: ethernetConfig.visible = !ethernetConfig.visible
             }
-            Comp.IconButtonTransparent {
-                icon.source: prefix + "/images/Nmea.png"
+            IconButtonTransparent {
+                icon.source: "../images/Nmea.png"
                 width: btnEthernetStatus.width
                 height: btnEthernetStatus.height
                 visible: true
@@ -135,34 +136,34 @@ Window {
             anchors.bottomMargin: 5 * theme.scaleHeight
             anchors.topMargin: 5 * theme.scaleHeight
             anchors.leftMargin: 5 * theme.scaleWidth
-            Comp.IconButtonColor {
+            IconButtonColor {
                 id: btnModuleIMU
                 text: qsTr("IMU")
-                icon.source: imagePath + "B_IMU.png"
+                icon.source: "../images/B_IMU.png"
                 color: agio.imuConnected ? "green" : "red"
             }
-            Comp.IconButtonColor {
+            IconButtonColor {
                 id: btnModuleSteer
                 text: qsTr("Steer")
-                icon.source: imagePath + "Com_AutosteerModule.png"
+                icon.source: "../images/Com_AutosteerModule.png"
                 color: agio.steerConnected ? "green" : "red"
             }
-            Comp.IconButtonColor {
+            IconButtonColor {
                 id: btnModuleGPS
                 text: qsTr("GPS")
-                icon.source: imagePath + "B_GPS.png"
+                icon.source: "../images/B_GPS.png"
                 color: agio.gpsConnected ? "green" : "red"
             }
-            Comp.IconButtonColor {
+            IconButtonColor {
                 id: btnModuleMachine
                 text: qsTr("Machine")
-                icon.source: imagePath + "B_Machine.png"
+                icon.source: "../images/B_Machine.png"
                 color: agio.machineConnected ? "green" : "red"
             }
-            Comp.IconButtonColor {
+            IconButtonColor {
                 id: btnModuleBlockage
                 text: qsTr("Blockage")
-                icon.source: imagePath + "B_Blockage.png"
+                icon.source: "../images/B_Blockage.png"
                 color: agio.blockageConnected ? "green" : "red"
             }
 
@@ -175,32 +176,32 @@ Window {
             anchors.leftMargin: 5 * theme.scaleWidth
             anchors.bottomMargin: 5 * theme.scaleHeight
             spacing: (width - (btnHide.implicitWidth * 3)) / 2 //fill the parent up with equal space
-            Comp.IconButtonText {
+            IconButtonText {
                 id: btnSettings
                 implicitWidth: btnNTRIP.width
                 implicitHeight: btnNTRIP.height
                 text: qsTr("Settings")
-                icon.source: imagePath + "Settings48.png"
+                icon.source: "../images/Settings48.png"
                 onClicked: settingsWindow.visible = true
             }
-            Comp.IconButton {
+            IconButtonText {
                 id: btnNTRIP
-                icon.source: imagePath + "NtripSettings.png"
+                icon.source: "../images/NtripSettings.png"
                 onClicked: ntrip.visible = !ntrip.visible
             }
-            Comp.IconButtonText {
+            IconButtonText {
                 id: btnHide
                 implicitWidth: btnNTRIP.width
                 implicitHeight: btnNTRIP.height
                 text: qsTr("Hide")
-                icon.source: imagePath + "AgIOBtn.png"
-                onClicked: mainWindow.showMinimized()
+                icon.source: "../images/AgIOBtn.png"
+                onClicked: mainWindowAgIO.opacity = 0.5
             }
         }
     }
 
     /************** - Put all child windows here - ********************/
-    Comp.Message {
+    Message {
         id: message
     }
     NTrip{
@@ -257,6 +258,6 @@ a firewall enabled? If you do,
     }
     CloseAgIO{
         id: closeAgIO
-        visible: false
+        //visible: false
     }
 }

@@ -2,15 +2,16 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 import QtQuick.Layouts
+import AgIO 1.0
 import "components" as Comp
 import "interfaces"
 
-Window{
+Rectangle{
     id: advancedMenu
     height: 300
     width: 300
     visible: false
-    title: qsTr("Advanced")
+    //title: qsTr("Advanced")
 
     Rectangle{
         id: content

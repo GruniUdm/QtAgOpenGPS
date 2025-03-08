@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 import QtQuick.Layouts
-
+import AgIO 1.0
 import "components" as Comp
 import "interfaces"
 

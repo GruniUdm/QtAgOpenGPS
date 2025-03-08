@@ -1,4 +1,6 @@
 import QtQuick
+import AgIO 1.0
+
 /*
 Image {
     id: image

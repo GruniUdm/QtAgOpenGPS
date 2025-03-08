@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Window
 import QtQuick.Layouts
 import QtQml.Models
+import AgIO 1.0
 import "components" as Comp
 
 Window{
@@ -20,19 +21,19 @@ Window{
         anchors.margins: 10
         border.width: 2
         ListView{
-            property var deviceList: settings.setBluetooth_deviceList
+            property var deviceList: agiosettings.setBluetooth_deviceList
             id: knownDevicesList
             anchors.fill: parent
             Connections {
-                target: settings
+                target: agiosettings
                 function onSetBluetooth_deviceListChanged() {
-                    var rawList = settings.setBluetooth_deviceList;
+                    var rawList = agiosettings.setBluetooth_deviceList;
                     knownDevicesList.model = Array.isArray(rawList) ? rawList : [rawList];
                     console.log("modelchanged")
                 }
             }
             Component.onCompleted: {
-                var rawList = settings.setBluetooth_deviceList;
+                var rawList = agiosettings.setBluetooth_deviceList;
                 knownDevicesList.model = Array.isArray(rawList) ? rawList : [rawList];
             }
 

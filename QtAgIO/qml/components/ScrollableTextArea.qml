@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import AgIO 1.0
 
 ScrollView{
     id: scrollViewRoot

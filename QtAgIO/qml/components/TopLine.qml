@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-//the top line on most of the little windows. Basically
+import AgIO 1.0
+///the top line on most of the little windows. Basically
 //a title, help button, and close button
 
 Rectangle{

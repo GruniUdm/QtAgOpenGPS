@@ -1,11 +1,12 @@
 import QtQuick
 import QtQuick.Controls.Fusion
+import AgIO 1.0
 import QtMultimedia
 
 /* This type contains the sounds, colors, and perhaps screen sizes,
  *Sounds will track AgIOInterface.qml, and react when needed as set
  by the features page.
- *Colors will follow the settings files, and change based on day/night
+ *Colors will follow the agiosettings files, and change based on day/night
  mode, so we don't need an if statement in every object.
  *Screen sizes-We'll see.
  */
@@ -19,8 +20,8 @@ Item {
 
 	property int defaultHeight: 500
 	property int defaultWidth: 350
-	property double scaleHeight: mainWindow.height / defaultHeight
-	property double scaleWidth: mainWindow.width / defaultWidth
+    property double scaleHeight: mainWindowAgIO.height / defaultHeight
+    property double scaleWidth: mainWindowAgIO.width / defaultWidth
 
 	property color backgroundColor: "ghostWhite"
 	property color textColor: "black"
@@ -28,12 +29,12 @@ Item {
 	property color blackDayWhiteNight: "black"
 	property color whiteDayBlackNight: "white"
 	Connections{
-		target: mainWindow
+        target: mainWindowAgIO
 		function onHeightChanged(){
-			scaleHeight = mainWindow.height / defaultHeight
+            scaleHeight = mainWindowAgIO.height / defaultHeight
 		}
 		function onWidthChanged(){
-			scaleWidth = mainWindow.width / defaultWidth
+            scaleWidth = mainWindowAgIO.width / defaultWidth
 		}
 	}
 

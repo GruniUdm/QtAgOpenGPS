@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
+import AgIO 1.0
 
-import "components" as Comp
 Drawer{
     id: settingsWindow
     width: 200
@@ -15,11 +15,11 @@ Drawer{
         color: theme.blackDayWhiteNight
     }
 
-    Comp.ScrollViewExpandableColumn{
+    ScrollViewExpandableColumn{
         id: toolsColumn
         anchors.fill: parent
 
-        Comp.ButtonColor{
+        ButtonColor{
             id: advancedOptions
             width: 180
             height: 50
@@ -29,15 +29,15 @@ Drawer{
                 advancedMenu.showMenu()
             }
         }
-        Comp.ButtonColor{
+        ButtonColor{
             id: bluetooth
             width: 180
             height: 50
             text: qsTr("Bluetooth")
             onClicked: {
                 settingsWindow.close()
-                if(!utils.isTrue(settings.setBluetooth_isOn)){ //start bt if off
-                    settings.setBluetooth_isOn = true
+                if(!utils.isTrue(agiosettings.setBluetooth_isOn)){ //start bt if off
+                    agiosettings.setBluetooth_isOn = true
                     agio.startBluetoothDiscovery()
                     console.log("ssb")
                 }

@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
-
+import AgIO 1.0
 /*This type defines a message box that pops up until the user clicks
  * it. For example, when loopback error, like port already taken.
  * We can expand on it eventually, but for now, it will have an "OK"
