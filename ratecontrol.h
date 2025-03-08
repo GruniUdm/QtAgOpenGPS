@@ -50,8 +50,8 @@ private:
     int CoverageUnits[4];
     int AppMode[4];
     double appRate[4];
-    double width;
-    double swidth;
+    double width; // tool width section control
+    double swidth; // tool width fot constant upm
     double speed;
     double minSpeed[4];
     double minUPM[4];
