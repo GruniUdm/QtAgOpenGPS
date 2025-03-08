@@ -11,7 +11,17 @@
  * about how this all works to fix it :).
  */
 
-QMLSettings qml_settings;
+// defining qml_seettings as a global variable
+//QMLSettings *qml_settings = nullptr;
+
+// instantiate a QSettings object and load the settings file this replaces qml_settings
+QMLSettings* QMLSettings::instance(QQmlEngine *engine, QJSEngine *scriptEngine)
+{
+    Q_UNUSED(engine)
+    Q_UNUSED(scriptEngine)
+    static QMLSettings instance;
+    return &instance;
+}
 
 QMLSettings::QMLSettings(QObject *parent) :  QQmlPropertyMap(parent) {
     //connect to our own signal so we can map to QSetting and then perform the change

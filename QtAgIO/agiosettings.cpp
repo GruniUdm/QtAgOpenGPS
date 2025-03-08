@@ -11,7 +11,7 @@
 #include <QFile>
 #include "qmlsettings.h"
 
-extern QMLSettings qml_settings;
+//extern QMLSettings qml_settings;
 
 QVariant unset("UNSET"); //sentinal used to identify missing values in agiosettings
 
@@ -48,14 +48,17 @@ QVector<int> AgIOSettings::value(const QString &key, const QVector<int> &default
 void AgIOSettings::setValue(const QString &key, const QVector<int> &value_list)
 {
     QSettings::setValue(key,toVariant(value_list));
-    qml_settings.updateSetting(key);
+    //qml_settings->updateSetting(key);
+    QMLSettings::instance()->updateSetting(key);
+
     //emit updateFromSettings();
 }
 
 void AgIOSettings::setValue(const QString &key, const QVariant &value)
 {
     QSettings::setValue(key,value);
-    qml_settings.updateSetting(key);
+    //qml_settings->updateSetting(key);
+    QMLSettings::instance()->updateSetting(key);
     //emit updateFromSettings();
 }
 
@@ -176,7 +179,8 @@ bool AgIOSettings::loadJson(QString filename)
             QSettings::setValue(key, v);
         }
 
-        qml_settings.updateSetting(key);
+        //qml_settings->updateSetting(key);
+        QMLSettings::instance()->updateSetting(key);
     }
 
     return true;
