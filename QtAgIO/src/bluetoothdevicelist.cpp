@@ -1,6 +1,6 @@
 #include "bluetoothdevicelist.h"
-#include "formloop.h"
-#include "agioproperty.h"
+#include "../formloop.h"
+#include "../agioproperty.h"
 
 BluetoothDeviceList::BluetoothDeviceList(QObject *parent)
     : QAbstractListModel(parent)

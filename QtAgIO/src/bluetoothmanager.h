@@ -4,7 +4,7 @@
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothDeviceInfo>
 #include <QBluetoothSocket>
-#include "formloop.h"
+#include "../formloop.h"
 
 
 class BluetoothManager : public QObject

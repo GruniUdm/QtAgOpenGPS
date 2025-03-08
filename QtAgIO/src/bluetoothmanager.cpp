@@ -1,6 +1,7 @@
 #include "bluetoothmanager.h"
-#include "properties.h"
+#include "../properties.h"
 #include "bluetoothdevicelist.h"
+#include "formloop.h"
 
 BluetoothManager::BluetoothManager(FormLoop* loop, QObject* parent)
     : QObject(parent), formLoop(loop) {
