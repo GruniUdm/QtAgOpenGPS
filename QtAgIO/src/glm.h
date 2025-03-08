@@ -1,6 +1,6 @@
 #include <limits>
 
-namespace glm {
+namespace glmAgIO {
     static const double DOUBLE_MAX = std::numeric_limits<double>::max();
     static const double DOUBLE_MIN = std::numeric_limits<double>::min();
     static const double FLOAT_MAX = std::numeric_limits<float>::max();

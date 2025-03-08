@@ -240,55 +240,55 @@ void FormLoop::ParseNMEA(QString& buffer)
 
         //longitude
         std::memcpy(nmeaPGN.data() + 5, &longitudeSend, 8);
-        longitudeSend = glm::DOUBLE_MAX;
+        longitudeSend = glmAgIO::DOUBLE_MAX;
 
         //latitude
         std::memcpy(nmeaPGN.data() + 13, &latitudeSend, 8);
-        latitudeSend = glm::DOUBLE_MAX;
+        latitudeSend = glmAgIO::DOUBLE_MAX;
 
         //the different dual antenna headings
         std::memcpy(nmeaPGN.data() + 21, &headingTrueDual, 4);
-        headingTrueDual = glm::FLOAT_MAX;
+        headingTrueDual = glmAgIO::FLOAT_MAX;
 
         //single antenna heading in degrees
         std::memcpy(nmeaPGN.data() + 25, &headingTrue, 4);
-        headingTrue = glm::FLOAT_MAX;
+        headingTrue = glmAgIO::FLOAT_MAX;
 
         //speed converted to kmh from knots
         std::memcpy(nmeaPGN.data() + 29, &speed, 4);
-        speed = glm::FLOAT_MAX;
+        speed = glmAgIO::FLOAT_MAX;
 
         //roll value in degrees
         std::memcpy(nmeaPGN.data() + 33, &roll, 4);
-        this->roll = glm::FLOAT_MAX;
+        this->roll = glmAgIO::FLOAT_MAX;
 
         //altitude in meters
         std::memcpy(nmeaPGN.data() + 37, &altitude, 4);
-        this->altitude = glm::FLOAT_MAX;
+        this->altitude = glmAgIO::FLOAT_MAX;
 
         std::memcpy(nmeaPGN.data() + 41, &satellitesTracked, 2);
-        satellitesTracked = glm::USHORT_MAX;
+        satellitesTracked = glmAgIO::USHORT_MAX;
 
         nmeaPGN[43] = fixQuality;
-        fixQuality = glm::BYTE_MAX;
+        fixQuality = glmAgIO::BYTE_MAX;
 
         std::memcpy(nmeaPGN.data() + 44, &hdopX100, 2);
-        hdopX100 = glm::USHORT_MAX;
+        hdopX100 = glmAgIO::USHORT_MAX;
 
         std::memcpy(nmeaPGN.data() + 46, &ageX100, 2);
-        ageX100 = glm::USHORT_MAX;
+        ageX100 = glmAgIO::USHORT_MAX;
 
         std::memcpy(nmeaPGN.data() + 48, &imuHeading, 2);
-        imuHeading = glm::USHORT_MAX;
+        imuHeading = glmAgIO::USHORT_MAX;
 
         std::memcpy(nmeaPGN.data() + 50, &imuRoll, 2);
-        imuRoll = glm::SHORT_MAX;
+        imuRoll = glmAgIO::SHORT_MAX;
 
         std::memcpy(nmeaPGN.data() + 52, &imuPitch, 2);
-        imuPitch = glm::SHORT_MAX;
+        imuPitch = glmAgIO::SHORT_MAX;
 
         std::memcpy(nmeaPGN.data() + 54, &imuYawRate, 2);//note warning
-        imuYawRate = glm::SHORT_MAX;
+        imuYawRate = glmAgIO::SHORT_MAX;
 
 
         int CK_A = 0;
@@ -370,7 +370,7 @@ void FormLoop::ParseKSXT()
             roll = rollK;
             rollData = rollK;
         } else {
-            roll = glm::FLOAT_MIN;
+            roll = glmAgIO::FLOAT_MIN;
             rollData = 0;
         }
 
@@ -599,7 +599,7 @@ void FormLoop::ParseHPD()
         }
         else
         {
-            roll = glm::FLOAT_MIN;
+            roll = glmAgIO::FLOAT_MIN;
             rollData = 0;
         }
     }
