@@ -1,44 +1,83 @@
-cmake_minimum_required(VERSION 3.22)
+# cmake_minimum_required(VERSION 3.22)
 
-project(QtAgIO
-        VERSION 0.0
-        HOMEPAGE_URL https://github.com/torriem/QtAgOpenGPS
-        LANGUAGES CXX
-)
+# project(QtAgIO
+#         VERSION 0.0
+#         HOMEPAGE_URL https://github.com/torriem/QtAgOpenGPS
+#         LANGUAGES CXX
+# )
 
 
 #Qt magic
-find_package(Qt6 REQUIRED COMPONENTS Quick Bluetooth Widgets QuickWidgets)
-qt_standard_project_setup()
+# find_package(Qt6 REQUIRED COMPONENTS
+#     Quick
+#     Bluetooth
+#     Network
+#     Gui
+#     Bluetooth
+# #    Widgets
+# #    QuickWidgets
+# )
+# qt_standard_project_setup(REQUIRES 6.8)
 
 
 
-# Create the AgIO executable
-qt_add_executable(QtAgIO
-    main.cpp
-)
+# # Create the AgIO executable
+# qt_add_executable(QtAgIO
+#     main.cpp
+# )
 
-list(APPEND MODULE_CPP_FILES
-    agioproperties.cpp
-    agioproperty.h agioproperty.cpp
-    agiosettings.h agiosettings.cpp
-    formloop.h formloop.cpp
-    formloop_udpcomm.cpp
-    formloop_nmea.cpp
-    formloop_ntripcomm.cpp
-    formloop_ui.cpp
-    formloop_settings.cpp
-    properties.h
-    qmlsettings.h qmlsettings.cpp
-    qmlsettings_addkeys.cpp
-    qmlutil.h
-    formloop_formudp.cpp
-    src/CTraffic.h src/CTraffic.cpp
-    src/CScanReply.h src/CScanReply.cpp
-    src/bluetoothdevicelist.h src/bluetoothdevicelist.cpp
-    src/bluetoothmanager.h src/bluetoothmanager.cpp
-    interfaceproperty.h
-)
+
+
+
+
+
+# qt_policy(SET QTP0001 NEW)
+# qt_policy(SET QTP0004 NEW)
+
+# qt_add_qml_module(QtAgIO
+#     URI QtAgIO
+#     VERSION 1.0
+#     RESOURCE_PREFIX /qtagopengps.org/imports
+#     QML_FILES
+#         Main.qml
+
+#     DEPENDENCIES QtQuick
+# )
+
+
+
+
+# target_link_libraries(QtAgIO PRIVATE
+#     AgIOplugin
+#     Qt6::Network
+#     Qt6::Gui
+# #    Qt6::Widgets
+#     Qt6::Quick
+# #    Qt6::QuickWidgets
+#     Qt6::Bluetooth
+# )
+
+# list(APPEND MODULE_CPP_FILES
+#     agioproperties.cpp
+#     agioproperty.h agioproperty.cpp
+#     agiosettings.h agiosettings.cpp
+#     formloop.h formloop.cpp
+#     formloop_udpcomm.cpp
+#     formloop_nmea.cpp
+#     formloop_ntripcomm.cpp
+#     formloop_ui.cpp
+#     formloop_settings.cpp
+#     properties.h
+#     qmlsettings.h qmlsettings.cpp
+#     qmlsettings_addkeys.cpp
+#     qmlutil.h
+#     formloop_formudp.cpp
+#     src/CTraffic.h src/CTraffic.cpp
+#     src/CScanReply.h src/CScanReply.cpp
+#     src/bluetoothdevicelist.h src/bluetoothdevicelist.cpp
+#     src/bluetoothmanager.h src/bluetoothmanager.cpp
+#     interfaceproperty.h
+# )
 
 # if(LOCAL_QML)
 #     add_compile_definitions(LOCAL_QML)
@@ -59,7 +98,7 @@ function(process_files DIR OUT_VAR)
     file(GLOB_RECURSE RESOURCE_FILES "${DIR}/*.*")
     set(REL_PATHS)
     foreach(RESOURCE_FILE ${RESOURCE_FILES})
-        file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/" "${RESOURCE_FILE}")
+        file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${RESOURCE_FILE}")
         set_source_files_properties(${RESOURCE_FILE} PROPERTIES
             QT_RESOURCE_ALIAS "${REL_PATH}")
         #message(WARNING "QtAgIO image file: ${REL_PATH}")
@@ -102,20 +141,108 @@ set(QTAGIO_ALL_REL_PATHS
     ${QTAGIO_COMPONENTS_REL_PATHS}
 )
 
+# target_sources(QtAgIOplugin
+#   PRIVATE
+#     agio_plugin.h agio_plugin.cpp
+# )
+
 # message(WARNING "All relative paths: ${ALL_REL_PATHS}")
 
 # Configure QML module with relative paths
+
+qt_add_library(QtAgIO STATIC)
+
 qt_add_qml_module(QtAgIO
-    URI AGIO
+    URI AgIO
     VERSION 1.0
-    RESOURCE_PREFIX "/"
+    RESOURCE_PREFIX /qtagopengps.org/imports
     QML_FILES
-    ${QTAGIO_ALL_REL_PATHS}
+        ${QTAGIO_ALL_REL_PATHS}
     SOURCES
-    ${MODULE_CPP_FILES}
+        #${MODULE_CPP_FILES}
+        agioproperties.cpp
+        agioproperty.h agioproperty.cpp
+        agiosettings.h agiosettings.cpp
+        formloop.h formloop.cpp
+        formloop_udpcomm.cpp
+        formloop_nmea.cpp
+        formloop_ntripcomm.cpp
+        formloop_ui.cpp
+        formloop_settings.cpp
+        properties.h
+        qmlsettings.h qmlsettings.cpp
+        qmlsettings_addkeys.cpp
+        qmlutil.h
+        formloop_formudp.cpp
+        src/CTraffic.h src/CTraffic.cpp
+        src/CScanReply.h src/CScanReply.cpp
+        src/bluetoothdevicelist.h src/bluetoothdevicelist.cpp
+        src/bluetoothmanager.h src/bluetoothmanager.cpp
+        interfaceproperty.h
     RESOURCES
-    ${QTAGIO_IMAGE_REL_PATHS}
-)  
+        ${QTAGIO_IMAGE_REL_PATHS}
+    #PLUGIN_TARGET QtAgIOplugin
+    DEPENDENCIES QtQuick
+)
+
+target_link_libraries(QtAgIO PRIVATE
+    Qt6::Network
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::Quick
+#    Qt6::QuickWidgets
+    Qt6::Bluetooth
+)
+
+# set_target_properties(AgIO PROPERTIES
+#     OUTPUT_NAME AgIO
+# )
+
+# target_sources(QtAgIOplugin PRIVATE
+#     main.cpp
+#     agioproperties.cpp
+#     agioproperty.h agioproperty.cpp
+#     agiosettings.h agiosettings.cpp
+#     formloop.h formloop.cpp
+#     formloop_udpcomm.cpp
+#     formloop_nmea.cpp
+#     formloop_ntripcomm.cpp
+#     formloop_ui.cpp
+#     formloop_settings.cpp
+#     properties.h
+#     qmlsettings.h qmlsettings.cpp
+#     qmlsettings_addkeys.cpp
+#     qmlutil.h
+#     formloop_formudp.cpp
+#     src/CTraffic.h src/CTraffic.cpp
+#     src/CScanReply.h src/CScanReply.cpp
+#     src/bluetoothdevicelist.h src/bluetoothdevicelist.cpp
+#     src/bluetoothmanager.h src/bluetoothmanager.cpp
+#     interfaceproperty.h
+# )
+
+# #set_target_properties(QtAgIOplugin PROPERTIES AUTOMOC ON)
+# target_link_libraries(QtAgIOplugin PRIVATE
+#         Qt6::Network
+#         Qt6::Widgets
+#         Qt6::Quick
+#         Qt6::QuickWidgets
+#         Qt6::Bluetooth
+#     )
+
+# install(TARGETS QtAgIO
+#     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/QtAgIO"
+#     LIBRARY DESTINATION "${CMAKE_INSTALL_BINDIR}/QtAgIO"
+# )
+# install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qmldir
+#     DESTINATION "${CMAKE_INSTALL_BINDIR}/QtAgIO"
+# )
+
+#Because sources files are not in root directory
+# target_include_directories(QtAgIOlib PRIVATE
+#     .
+#     src
+# )
 
 ###### End of Handling Local QML Handling QML in module for QtAgIO######
 
@@ -129,18 +256,10 @@ qt_add_qml_module(QtAgIO
 #this is needed by QtAgIO only
 
 # Libraries to link
-target_link_libraries(QtAgIO PRIVATE
-    Qt6::Core
-    Qt6::Network
-    Qt6::Gui
-    Qt6::Widgets
-    Qt6::Quick
-    Qt6::QuickWidgets
-    Qt6::Bluetooth
-)
 
-target_compile_options(QtAgIO PRIVATE 
-    -Wall 
-    -Werror
-)
+
+# target_compile_options(QtAgIO PRIVATE
+#     -Wall
+#     -Werror
+# )
 

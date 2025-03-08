@@ -19,23 +19,35 @@ set(CMAKE_AUTORCC ON)
 # Find required libraries
 # find_package(Qt6 REQUIRED COMPONENTS Core)
  find_package(Qt6 REQUIRED COMPONENTS Widgets) #used only for opengl ?
-# find_package(Qt6 REQUIRED COMPONENTS Gui)
+ find_package(Qt6 REQUIRED COMPONENTS Gui)
 # find_package(Qt6 REQUIRED COMPONENTS OpenGL)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS QuickWidgets) #used only for opengl ?
 find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools) #for i18n internationalization support
+find_package(Qt6 REQUIRED COMPONENTS Bluetooth)
+find_package(Qt6 REQUIRED COMPONENTS Network)
+
+
 
 # Add Qt policies
 qt_policy(SET QTP0001 NEW)
 qt_policy(SET QTP0004 NEW)
 
 # Qt standard project setup with internationalization support
-qt_standard_project_setup(REQUIRES 6.5
+qt_standard_project_setup(REQUIRES 6.8
     I18N_SOURCE_LANGUAGE en
     I18N_TRANSLATED_LANGUAGES en fr ru
 )
+
+# Because modules are not in top folder//
+    set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/)
+    set(QML_IMPORT_PATH ${QT_QML_OUTPUT_DIRECTORY}
+    CACHE STRING "Import paths for Qt Creator's code model"
+    FORCE
+    )
+# //
 
 # Create the executable
 qt_add_executable(QtAgOpenGPS
@@ -216,7 +228,7 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
     qt_add_qml_module(QtAgOpenGPS
         URI AOG
         VERSION 1.0
-        RESOURCE_PREFIX "/"
+        RESOURCE_PREFIX /qtagopengps.org/imports
         QML_FILES
         ${ALL_REL_PATHS} #all qml files
         SOURCES
@@ -250,7 +262,7 @@ else() #LOCAL_QML ON
     qt_add_qml_module(QtAgOpenGPS
         URI AOG
         VERSION 1.0
-        RESOURCE_PREFIX "/"
+        RESOURCE_PREFIX /qtagopengps.org/imports
         QML_FILES ${aog_qml_singletons}
         SOURCES
             aogrenderer.cpp
@@ -304,11 +316,13 @@ target_include_directories(QtAgOpenGPS PRIVATE
     classes
 )
 
+add_subdirectory(QtAgIO)
 # Libraries to link
 target_link_libraries(QtAgOpenGPS PRIVATE
+    QtAgIOplugin
 #   Qt6::Core
     Qt6::Widgets
-#   Qt6::Gui
+    Qt6::Gui
 #   Qt6::OpenGL
     Qt6::Quick
     Qt6::QuickWidgets
@@ -327,4 +341,30 @@ set_target_properties(QtAgOpenGPS PROPERTIES
    # QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
 )
 
-add_subdirectory(QtAgIO)
+install(TARGETS QtAgOpenGPS
+    #BUNDLE  DESTINATION .
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}QtAgOpenGPS"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_BINDIR}QtAgOpenGPS"
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qmldir
+    DESTINATION "${CMAKE_INSTALL_BINDIR}/QtAgOpenGPS"
+)
+
+# target_compile_options(QtAgOpenGPS PRIVATE
+#     -Wall
+#     -Werror
+# )
+
+# qt_generate_deploy_qml_app_script(
+#     TARGET QtAgOpenGPS
+#     OUTPUT_SCRIPT deploy_script
+#     MACOS_BUNDLE_POST_BUILD
+#     NO_UNSUPPORTED_PLATFORM_ERROR
+#     DEPLOY_USER_QML_MODULES_ON_UNSUPPORTED_PLATFORM
+# )
+# install(SCRIPT ${deploy_script})
+
+
+
+
