@@ -61,7 +61,7 @@ void FormLoop::setEngine(QQmlApplicationEngine *engine)
         //setContextProperty("OS", "WINDOWS");
         setContextProperty("OS", QString("WINDOWS"));
     #else
-        rootContext()->setContextProperty("OS", "LINUX");
+        //rootContext()->setContextProperty("OS", "LINUX");
         setContextProperty("OS", QString("LINUX"));    
     #endif
 
