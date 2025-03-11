@@ -14,7 +14,7 @@ Item{
     property alias currentText: rootCombo.currentText
 
 	signal activated()
-    height: 40
+    implicitHeight: 40 * theme.scaleHeight
     width: rootCombo.width
     TextLine{
         anchors.bottom: rootCombo.top

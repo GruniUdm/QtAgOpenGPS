@@ -17,162 +17,161 @@ Rectangle{
     visible: false
 
     onVisibleChanged: {
-        if (visible) load_settings(0)
+        if (visible) load_settings(0);
     }
     property int prodID: 0;
 
     function load_settings(ID) {
         if (ID === 0) {
-            moduleID.setValue(Settings.rate_Product0[0])
-            prodDensityBox.setValue(Settings.rate_Product0[1])
-            cboxIsRateControlOn.checked = (Settings.rate_Product0[2]>0)?true:false
-            rateKP.setValue(Settings.rate_Product0[3])
-            rateKI.setValue(Settings.rate_Product0[4])
-            rateKD.setValue(Settings.rate_Product0[5])
-            rateMinPWM.setValue(Settings.rate_Product0[6])
-            rateMaxPWM.setValue(Settings.rate_Product0[7])
-            ratePIDscale.setValue(Settings.rate_Product0[8])
-            rateSensor.setValue(Settings.rate_Product0[9])
-            setRate.setValue(Settings.rate_Product0[10])
-            cboxRateMode.currentIndex = Settings.rate_Product0[11]
+            moduleID.setValue(Settings.rate_Product0[0]);
+            prodDensityBox.setValue(Settings.rate_Product0[1]);
+            cboxIsRateControlOn.checked = (Settings.rate_Product0[2]>0)?true:false;
+            rateKP.setValue(Settings.rate_Product0[3]);
+            rateKI.setValue(Settings.rate_Product0[4]);
+            rateKD.setValue(Settings.rate_Product0[5]);
+            rateMinPWM.setValue(Settings.rate_Product0[6]);
+            rateMaxPWM.setValue(Settings.rate_Product0[7]);
+            ratePIDscale.setValue(Settings.rate_Product0[8]);
+            rateSensor.setValue(Settings.rate_Product0[9]);
+            setRate.setValue(Settings.rate_Product0[10]);
+            cboxRateMode.currentIndex = Settings.rate_Product0[11];
             cboxRateControlType.currentIndex = Settings.rate_Product0[12];
             cboxRateCoverageUnits.currentIndex = Settings.rate_Product0[13];
-            minSpeed.setValue(Settings.rate_Product0[14])
-            minUPM.setValue(Settings.rate_Product0[15])
+            minSpeed.setValue(Settings.rate_Product0[14]);
+            minUPM.setValue(Settings.rate_Product0[15]);
             productName.text = Settings.rate_ProductName[0];}
         else if (ID === 1) {
-            moduleID.setValue(Settings.rate_Product1[0])
-            prodDensityBox.setValue(Settings.rate_Product1[1])
-            cboxIsRateControlOn.checked = (Settings.rate_Product1[2]>0)?true:false
-            rateKP.setValue(Settings.rate_Product1[3])
-            rateKI.setValue(Settings.rate_Product1[4])
-            rateKD.setValue(Settings.rate_Product1[5])
-            rateMinPWM.setValue(Settings.rate_Product1[6])
-            rateMaxPWM.setValue(Settings.rate_Product1[7])
-            ratePIDscale.setValue(Settings.rate_Product1[8])
-            rateSensor.setValue(Settings.rate_Product1[9])
-            setRate.setValue(Settings.rate_Product1[10])
-            cboxRateMode.currentIndex = Settings.rate_Product1[11]
+            moduleID.setValue(Settings.rate_Product1[0]);
+            prodDensityBox.setValue(Settings.rate_Product1[1]);
+            cboxIsRateControlOn.checked = (Settings.rate_Product1[2]>0)?true:false;
+            rateKP.setValue(Settings.rate_Product1[3]);
+            rateKI.setValue(Settings.rate_Product1[4]);
+            rateKD.setValue(Settings.rate_Product1[5]);
+            rateMinPWM.setValue(Settings.rate_Product1[6]);
+            rateMaxPWM.setValue(Settings.rate_Product1[7]);
+            ratePIDscale.setValue(Settings.rate_Product1[8]);
+            rateSensor.setValue(Settings.rate_Product1[9]);
+            setRate.setValue(Settings.rate_Product1[10]);
+            cboxRateMode.currentIndex = Settings.rate_Product1[11];
             cboxRateControlType.currentIndex = Settings.rate_Product1[12];
             cboxRateCoverageUnits.currentIndex = Settings.rate_Product1[13];
-            minSpeed.setValue(Settings.rate_Product1[14])
-            minUPM.setValue(Settings.rate_Product1[15])
+            minSpeed.setValue(Settings.rate_Product1[14]);
+            minUPM.setValue(Settings.rate_Product1[15]);
             productName.text = Settings.rate_ProductName[1];}
 
         else if (ID === 2) {
-            moduleID.setValue(Settings.rate_Product2[0])
-            prodDensityBox.setValue(Settings.rate_Product2[1])
-            cboxIsRateControlOn.checked = (Settings.rate_Product2[2]>0)?true:false
-            rateKP.setValue(Settings.rate_Product2[3])
-            rateKI.setValue(Settings.rate_Product2[4])
-            rateKD.setValue(Settings.rate_Product2[5])
-            rateMinPWM.setValue(Settings.rate_Product2[6])
-            rateMaxPWM.setValue(Settings.rate_Product2[7])
-            ratePIDscale.setValue(Settings.rate_Product2[8])
-            rateSensor.setValue(Settings.rate_Product2[9])
-            setRate.setValue(Settings.rate_Product2[10])
-            cboxRateMode.currentIndex = Settings.rate_Product2[11]
+            moduleID.setValue(Settings.rate_Product2[0]);
+            prodDensityBox.setValue(Settings.rate_Product2[1]);
+            cboxIsRateControlOn.checked = (Settings.rate_Product2[2]>0)?true:false;
+            rateKP.setValue(Settings.rate_Product2[3]);
+            rateKI.setValue(Settings.rate_Product2[4]);
+            rateKD.setValue(Settings.rate_Product2[5]);
+            rateMinPWM.setValue(Settings.rate_Product2[6]);
+            rateMaxPWM.setValue(Settings.rate_Product2[7]);
+            ratePIDscale.setValue(Settings.rate_Product2[8]);
+            rateSensor.setValue(Settings.rate_Product2[9]);
+            setRate.setValue(Settings.rate_Product2[10]);
+            cboxRateMode.currentIndex = Settings.rate_Product2[11];
             cboxRateControlType.currentIndex = Settings.rate_Product2[12];
             cboxRateCoverageUnits.currentIndex = Settings.rate_Product2[13];
-            minSpeed.setValue(Settings.rate_Product2[14])
-            minUPM.setValue(Settings.rate_Product2[15])
+            minSpeed.setValue(Settings.rate_Product2[14]);
+            minUPM.setValue(Settings.rate_Product2[15]);
             productName.text = Settings.rate_ProductName[2];}
         else if (ID === 3) {
-            moduleID.setValue(Settings.rate_Product3[0])
-            prodDensityBox.setValue(Settings.rate_Product3[1])
-            cboxIsRateControlOn.checked = (Settings.rate_Product3[2]>0)?true:false
-            rateKP.setValue(Settings.rate_Product3[3])
-            rateKI.setValue(Settings.rate_Product3[4])
-            rateKD.setValue(Settings.rate_Product3[5])
-            rateMinPWM.setValue(Settings.rate_Product3[6])
-            rateMaxPWM.setValue(Settings.rate_Product3[7])
-            ratePIDscale.setValue(Settings.rate_Product3[8])
-            rateSensor.setValue(Settings.rate_Product3[9])
-            setRate.setValue(Settings.rate_Product3[10])
-            cboxRateMode.currentIndex = Settings.rate_Product3[11]
+            moduleID.setValue(Settings.rate_Product3[0]);
+            prodDensityBox.setValue(Settings.rate_Product3[1]);
+            cboxIsRateControlOn.checked = (Settings.rate_Product3[2]>0)?true:false;
+            rateKP.setValue(Settings.rate_Product3[3]);
+            rateKI.setValue(Settings.rate_Product3[4]);
+            rateKD.setValue(Settings.rate_Product3[5]);
+            rateMinPWM.setValue(Settings.rate_Product3[6]);
+            rateMaxPWM.setValue(Settings.rate_Product3[7]);
+            ratePIDscale.setValue(Settings.rate_Product3[8]);
+            rateSensor.setValue(Settings.rate_Product3[9]);
+            setRate.setValue(Settings.rate_Product3[10]);
+            cboxRateMode.currentIndex = Settings.rate_Product3[11];
             cboxRateControlType.currentIndex = Settings.rate_Product3[12];
             cboxRateCoverageUnits.currentIndex = Settings.rate_Product3[13];
-            minSpeed.setValue(Settings.rate_Product3[14])
-            minUPM.setValue(Settings.rate_Product3[15])
+            minSpeed.setValue(Settings.rate_Product3[14]);
+            minUPM.setValue(Settings.rate_Product3[15]);
             productName.text = Settings.rate_ProductName[3];}
 
-        mandatory.visible = false
+        mandatory.visible = false;
     }
 
     function save_settings(ID) {
         if (ID === 0) {
             Settings.rate_Product0[0] = moduleID.value;
-            Settings.rate_Product0[1] = prodDensityBox.value
-            Settings.rate_Product0[2] = cboxIsRateControlOn.checked?1:0
-            Settings.rate_Product0[3] = rateKP.value
-            Settings.rate_Product0[4] = rateKI.value
-            Settings.rate_Product0[5] = rateKD.value
-            Settings.rate_Product0[6] = rateMinPWM.value
-            Settings.rate_Product0[7] = rateMaxPWM.value
-            Settings.rate_Product0[8] = ratePIDscale.value
-            Settings.rate_Product0[9] = rateSensor.value
-            Settings.rate_Product0[10] = setRate.value
-            Settings.rate_Product0[11] = Number(cboxRateMode.currentIndex)
-            Settings.rate_Product0[12] = Number(cboxRateControlType.currentIndex)
-            Settings.rate_Product0[13] = Number(cboxRateCoverageUnits.currentIndex)
-            Settings.rate_Product0[14] = minSpeed.value
-            Settings.rate_Product0[15] = minUPM.value
+            Settings.rate_Product0[1] = prodDensityBox.value;
+            Settings.rate_Product0[2] = cboxIsRateControlOn.checked?1:0;
+            Settings.rate_Product0[3] = rateKP.value;
+            Settings.rate_Product0[4] = rateKI.value;
+            Settings.rate_Product0[5] = rateKD.value;
+            Settings.rate_Product0[6] = rateMinPWM.value;
+            Settings.rate_Product0[7] = rateMaxPWM.value;
+            Settings.rate_Product0[8] = ratePIDscale.value;
+            Settings.rate_Product0[9] = rateSensor.value;
+            Settings.rate_Product0[10] = setRate.value;
+            Settings.rate_Product0[11] = Number(cboxRateMode.currentIndex);
+            Settings.rate_Product0[12] = Number(cboxRateControlType.currentIndex);
+            Settings.rate_Product0[13] = Number(cboxRateCoverageUnits.currentIndex);
+            Settings.rate_Product0[14] = minSpeed.value;
+            Settings.rate_Product0[15] = minUPM.value;
             Settings.rate_ProductName[0] = productName.text;}
         if (prodID === 1) {
             Settings.rate_Product1[0] = moduleID.value;
-            Settings.rate_Product1[1] = prodDensityBox.value
-            Settings.rate_Product1[2] = cboxIsRateControlOn.checked?1:0
-            Settings.rate_Product1[3] = rateKP.value
-            Settings.rate_Product1[4] = rateKI.value
-            Settings.rate_Product1[5] = rateKD.value
-            Settings.rate_Product1[6] = rateMinPWM.value
-            Settings.rate_Product1[7] = rateMaxPWM.value
-            Settings.rate_Product1[8] = ratePIDscale.value
-            Settings.rate_Product1[9] = rateSensor.value
-            Settings.rate_Product1[10] = setRate.value
-            Settings.rate_Product1[11] = Number(cboxRateMode.currentIndex)
-            Settings.rate_Product1[12] = Number(cboxRateControlType.currentIndex)
-            Settings.rate_Product1[13] = Number(cboxRateCoverageUnits.currentIndex)
-            Settings.rate_Product1[14] = minSpeed.value
-            Settings.rate_Product1[15] = minUPM.value
+            Settings.rate_Product1[1] = prodDensityBox.value;
+            Settings.rate_Product1[2] = cboxIsRateControlOn.checked?1:0;
+            Settings.rate_Product1[3] = rateKP.value;
+            Settings.rate_Product1[4] = rateKI.value;
+            Settings.rate_Product1[5] = rateKD.value;
+            Settings.rate_Product1[6] = rateMinPWM.value;
+            Settings.rate_Product1[7] = rateMaxPWM.value;
+            Settings.rate_Product1[8] = ratePIDscale.value;
+            Settings.rate_Product1[9] = rateSensor.value;
+            Settings.rate_Product1[10] = setRate.value;
+            Settings.rate_Product1[11] = Number(cboxRateMode.currentIndex);
+            Settings.rate_Product1[12] = Number(cboxRateControlType.currentIndex);
+            Settings.rate_Product1[13] = Number(cboxRateCoverageUnits.currentIndex);
+            Settings.rate_Product1[14] = minSpeed.value;
+            Settings.rate_Product1[15] = minUPM.value;
             Settings.rate_ProductName[1] = productName.text;}
         if (ID === 2) {
             Settings.rate_Product2[0] = moduleID.value;
-            Settings.rate_Product2[1] = prodDensityBox.value
-            Settings.rate_Product2[2] = cboxIsRateControlOn.checked?1:0
-            Settings.rate_Product2[3] = rateKP.value
-            Settings.rate_Product2[4] = rateKI.value
-            Settings.rate_Product2[5] = rateKD.value
-            Settings.rate_Product2[6] = rateMinPWM.value
-            Settings.rate_Product2[7] = rateMaxPWM.value
-            Settings.rate_Product2[8] = ratePIDscale.value
-            Settings.rate_Product2[9] = rateSensor.value
-            Settings.rate_Product2[10] = setRate.value
-            Settings.rate_Product2[11] = Number(cboxRateMode.currentIndex)
-            Settings.rate_Product2[12] = Number(cboxRateControlType.currentIndex)
-            Settings.rate_Product2[13] = Number(cboxRateCoverageUnits.currentIndex)
-            Settings.rate_Product2[14] = minSpeed.value
-            Settings.rate_Product2[15] = minUPM.value
+            Settings.rate_Product2[1] = prodDensityBox.value;
+            Settings.rate_Product2[2] = cboxIsRateControlOn.checked?1:0;
+            Settings.rate_Product2[3] = rateKP.value;
+            Settings.rate_Product2[4] = rateKI.value;
+            Settings.rate_Product2[5] = rateKD.value;
+            Settings.rate_Product2[6] = rateMinPWM.value;
+            Settings.rate_Product2[7] = rateMaxPWM.value;
+            Settings.rate_Product2[8] = ratePIDscale.value;
+            Settings.rate_Product2[9] = rateSensor.value;
+            Settings.rate_Product2[10] = setRate.value;
+            Settings.rate_Product2[11] = Number(cboxRateMode.currentIndex);
+            Settings.rate_Product2[12] = Number(cboxRateControlType.currentIndex);
+            Settings.rate_Product2[13] = Number(cboxRateCoverageUnits.currentIndex);
+            Settings.rate_Product2[14] = minSpeed.value;
+            Settings.rate_Product2[15] = minUPM.value;
             Settings.rate_ProductName[2] = productName.text;}
         if (ID === 3) {
             Settings.rate_Product3[0] = moduleID.value;
-            Settings.rate_Product3[1] = prodDensityBox.value
-            Settings.rate_Product3[2] = cboxIsRateControlOn.checked?1:0
-            Settings.rate_Product3[3] = rateKP.value
-            Settings.rate_Product3[4] = rateKI.value
-            Settings.rate_Product3[5] = rateKD.value
-            Settings.rate_Product3[6] = rateMinPWM.value
-            Settings.rate_Product3[7] = rateMaxPWM.value
-            Settings.rate_Product3[8] = ratePIDscale.value
-            Settings.rate_Product3[9] = rateSensor.value
-            Settings.rate_Product3[10] = setRate.value
-            Settings.rate_Product3[11] = Number(cboxRateMode.currentIndex)
-            Settings.rate_Product3[12] = Number(cboxRateControlType.currentIndex)
-            Settings.rate_Product3[13] = Number(cboxRateCoverageUnits.currentIndex)
-            Settings.rate_Product3[14] = minSpeed.value
-            Settings.rate_Product3[15] = minUPM.value
+            Settings.rate_Product3[1] = prodDensityBox.value;
+            Settings.rate_Product3[2] = cboxIsRateControlOn.checked?1:0;
+            Settings.rate_Product3[3] = rateKP.value;
+            Settings.rate_Product3[5] = rateKD.value;
+            Settings.rate_Product3[6] = rateMinPWM.value;
+            Settings.rate_Product3[7] = rateMaxPWM.value;
+            Settings.rate_Product3[8] = ratePIDscale.value;
+            Settings.rate_Product3[9] = rateSensor.value;
+            Settings.rate_Product3[10] = setRate.value;
+            Settings.rate_Product3[11] = Number(cboxRateMode.currentIndex);
+            Settings.rate_Product3[12] = Number(cboxRateControlType.currentIndex);
+            Settings.rate_Product3[13] = Number(cboxRateCoverageUnits.currentIndex);
+            Settings.rate_Product3[14] = minSpeed.value;
+            Settings.rate_Product3[15] = minUPM.value;
             Settings.rate_ProductName[3] = productName.text;}
-        mandatory.visible = false
+        mandatory.visible = false;
 
         aog.modules_send_PGN32502();
 
@@ -184,7 +183,7 @@ Rectangle{
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 10
         font.bold: true
-        text: qsTr("Rate Control")
+        text: qsTr("Rate Control");
     }
 
     RowLayout{
@@ -203,7 +202,7 @@ Rectangle{
             icon.source: prefix + "/images/ArrowLeft.png"
             onClicked: {prodID--
                 if (prodID < 0) {prodID = 3} {
-                    load_settings(prodID)
+                    load_settings(prodID);
                 }
             }
         }
@@ -211,7 +210,7 @@ Rectangle{
             id: productName
             Layout.alignment: Qt.AlignCenter
             selectByMouse: true
-            placeholderText: qsTr("Product Name")
+            placeholderText: qsTr("Product Name");
         }
         IconButtonTransparent{
             id: rateProductNext
@@ -219,7 +218,7 @@ Rectangle{
             Layout.alignment: Qt.AlignRight
             onClicked: {prodID++
                 if (prodID > 3) {prodID = 0} {
-                    load_settings(prodID)
+                    load_settings(prodID);
                 }
             }
         }
@@ -245,10 +244,10 @@ Rectangle{
             editable: true
             enabled: cboxIsRateControlOn.checked
             onValueModified: {
-                mandatory.visible = true
+                mandatory.visible = true;
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            text: qsTr("Module ID: ")
+            text: qsTr("Module ID: ");
 
         }
         SpinBoxCustomized{
@@ -258,10 +257,10 @@ Rectangle{
             editable: true
             enabled: cboxIsRateControlOn.checked
             onValueModified: {
-                mandatory.visible = true
+                mandatory.visible = true;
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            text: qsTr("ProdDensity: ")
+            text: qsTr("ProdDensity: ");
 
         }
         SpinBoxCustomized{
@@ -271,10 +270,10 @@ Rectangle{
             editable: true
             enabled: cboxIsRateControlOn.checked
             onValueModified: {
-                mandatory.visible = true
+                mandatory.visible = true;
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            text: qsTr("PID KP: ")
+            text: qsTr("PID KP: ");
 
         }
         SpinBoxCustomized{
@@ -284,10 +283,10 @@ Rectangle{
             editable: true
             enabled: cboxIsRateControlOn.checked
             onValueModified: {
-                mandatory.visible = true
+                mandatory.visible = true;
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            text: qsTr("PID KI: ")
+            text: qsTr("PID KI: ");
 
         }
         SpinBoxCustomized{
@@ -297,10 +296,10 @@ Rectangle{
             editable: true
             enabled: cboxIsRateControlOn.checked
             onValueModified:{
-                mandatory.visible = true
+                mandatory.visible = true;
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            text: qsTr("PID KD: ")
+            text: qsTr("PID KD: ");
 
         }
         SpinBoxCustomized{
@@ -310,10 +309,10 @@ Rectangle{
             editable: true
             enabled: cboxIsRateControlOn.checked
             onValueModified: {
-                mandatory.visible = true
+                mandatory.visible = true;
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            text: qsTr("Minimum PWM")
+            text: qsTr("Minimum PWM");
 
         }
         SpinBoxCustomized{
@@ -324,10 +323,10 @@ Rectangle{
             editable: true
             enabled: cboxIsRateControlOn.checked
             onValueModified:{
-                mandatory.visible = true
+                mandatory.visible = true;
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            text: qsTr("Maximum PWM")
+            text: qsTr("Maximum PWM");
 
         }
         SpinBoxCustomized{
@@ -338,10 +337,10 @@ Rectangle{
             editable: true
             enabled: cboxIsRateControlOn.checked
             onValueModified:{
-                mandatory.visible = true
+                mandatory.visible = true;
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            text: qsTr("PID scale")
+            text: qsTr("PID scale");
 
         }
         SpinBoxCustomized{
@@ -352,10 +351,10 @@ Rectangle{
             editable: true
             enabled: cboxIsRateControlOn.checked
             onValueModified:{
-                mandatory.visible = true
+                mandatory.visible = true;
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            text: qsTr("Rate SET")
+            text: qsTr("Rate SET");
 
         }
         SpinBoxCustomized{
@@ -366,10 +365,10 @@ Rectangle{
             editable: true
             enabled: cboxIsRateControlOn.checked
             onValueModified:{
-                mandatory.visible = true
+                mandatory.visible = true;
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            text: qsTr("Sensor Count")
+            text: qsTr("Sensor Count");
 
         }
         SpinBoxCustomized{
@@ -380,10 +379,10 @@ Rectangle{
             editable: true
             enabled: cboxIsRateControlOn.checked
             onValueModified:{
-                mandatory.visible = true
+                mandatory.visible = true;
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            text: qsTr("Min Speed")
+            text: qsTr("Min Speed");
 
         }
         SpinBoxCustomized{
@@ -394,10 +393,10 @@ Rectangle{
             editable: true
             enabled: cboxIsRateControlOn.checked
             onValueModified:{
-                mandatory.visible = true
+                mandatory.visible = true;
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
-            text: qsTr("Min UPM")
+            text: qsTr("Min UPM");
 
         }
 
@@ -406,14 +405,14 @@ Rectangle{
             enabled: cboxIsRateControlOn.checked
             editable: false
             model: ListModel {
-                ListElement {text: qsTr("Standard")}
-                ListElement {text: qsTr("Combo Close")}
-                ListElement {text: qsTr("Motor")}
-                ListElement {text: qsTr("Combo Timed")}
-                ListElement {text: qsTr("Fan")}
+                ListElement {text: qsTr("Standard");}
+                ListElement {text: qsTr("Combo Close");}
+                ListElement {text: qsTr("Motor");}
+                ListElement {text: qsTr("Combo Timed");}
+                ListElement {text: qsTr("Fan");}
             }
-            text: qsTr("Control Type")
-            onActivated: mandatory.visible = true
+            text: qsTr("Control Type");
+            onActivated: mandatory.visible = true;
         }
 
         ComboBoxCustomized {
@@ -421,26 +420,26 @@ Rectangle{
             enabled: cboxIsRateControlOn.checked
             editable: false
             model: ListModel {
-                ListElement {text: qsTr("Section UPM")}
-                ListElement {text: qsTr("Constant UPM")}
-                ListElement {text: qsTr("Applied rate")}
-                ListElement {text: qsTr("Target rate")}
+                ListElement {text: qsTr("Section UPM");}
+                ListElement {text: qsTr("Constant UPM");}
+                ListElement {text: qsTr("Applied rate");}
+                ListElement {text: qsTr("Target rate");}
             }
-            text: qsTr("Mode")
-            onActivated: mandatory.visible = true
+            text: qsTr("Mode");
+            onActivated: mandatory.visible = true;
         }
         ComboBoxCustomized {
             id: cboxRateCoverageUnits
             enabled: cboxIsRateControlOn.checked
             editable: false
             model: ListModel {
-                ListElement {text: qsTr("Acres")}
-                ListElement {text: qsTr("Hectare")}
-                ListElement {text: qsTr("Minutes")}
-                ListElement {text: qsTr("Hours")}
+                ListElement {text: qsTr("Acres");}
+                ListElement {text: qsTr("Hectare");}
+                ListElement {text: qsTr("Minutes");}
+                ListElement {text: qsTr("Hours");}
             }
-            text: qsTr("Coverage Units")
-            onActivated: mandatory.visible = true
+            text: qsTr("Coverage Units");
+            onActivated: mandatory.visible = true;
         }
 
 
@@ -459,16 +458,16 @@ Rectangle{
         enabled: cboxIsRateControlOn.checked
         icon.source: prefix + "/images/back-button.png"
         onClicked: {
-            rateMinPWM.boundValue = 100
-            rateMaxPWM.boundValue = 255
-            rateKP.boundValue = 10
-            rateKI.boundValue = 0
-            rateKD.boundValue = 0
-            ratePIDscale.boundValue = 0
-            rateSensor.boundValue = 600
-            setRate.boundValue = 100
-            minSpeed.boundValue = 0
-            minUPM.boundValue = 0
+            rateMinPWM.boundValue = 100;
+            rateMaxPWM.boundValue = 255;
+            rateKP.boundValue = 10;
+            rateKI.boundValue = 0;
+            rateKD.boundValue = 0;
+            ratePIDscale.boundValue = 0;
+            rateSensor.boundValue = 600;
+            setRate.boundValue = 100;
+            minSpeed.boundValue = 0;
+            minUPM.boundValue = 0;
         }
     }
     IconButtonTransparent{
@@ -482,8 +481,8 @@ Rectangle{
         enabled: cboxIsRateControlOn.checked
         icon.source: prefix + "/images/UpArrow64.png"
         onClicked: {
-            load_settings(prodID)
-            mandatory.visible = true
+            load_settings(prodID);
+            mandatory.visible = true;
         }
     }
     IconButtonColor{
@@ -581,7 +580,7 @@ Rectangle{
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.left
             anchors.rightMargin: 5
-            text: qsTr("Send + Save")
+            text: qsTr("Send + Save");
         }
         onClicked: save_settings(prodID)
 
