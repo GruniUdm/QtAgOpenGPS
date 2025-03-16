@@ -368,13 +368,12 @@ void CTrack::NudgeRefCurve(CTrk &track, double distAway)
     }
 }
 
-void CTrack::DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera)
+void CTrack::DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera, const CVehicle &vehicle)
 {
-    if (idx >= 0) {
-        if (gArr[idx].mode == TrackMode::AB)
-            ABLine.DrawABLineNew(gl, mvp, camera);
-        else if (gArr[idx].mode == TrackMode::Curve)
-            curve.DrawCurveNew(gl, mvp);
+    if (ABLine.isMakingABLine && getNewMode() == TrackMode::AB) {
+        ABLine.DrawABLineNew(gl, mvp, camera, vehicle);
+    } else if (curve.isMakingCurve && getNewMode() == TrackMode::Curve) {
+        curve.DrawCurveNew(gl, mvp);
     }
 }
 
@@ -655,11 +654,17 @@ void CTrack::mark_start(double easting, double northing, double heading)
         ABLine.desPtA.easting = easting;
         ABLine.desPtA.northing = northing;
 
+        ABLine.isDesPtBSet = false;
+
+        /*
+        //we put this in ABLine.DrawABLineNew() so it can adjust the
+        //line as the tractor moves.
         ABLine.desLineEndA.easting = ABLine.desPtA.easting - (sin(heading) * 1000);
         ABLine.desLineEndA.northing = ABLine.desPtA.northing - (cos(heading) * 1000);
 
         ABLine.desLineEndB.easting = ABLine.desPtA.easting + (sin(heading) * 1000);
         ABLine.desLineEndB.northing = ABLine.desPtA.northing + (cos(heading) * 1000);
+        */
 
         break;
 
@@ -696,6 +701,7 @@ void CTrack::mark_end(int refSide, double easting, double northing)
     case TrackMode::AB:
         newTrack.ptB.easting = easting;
         newTrack.ptB.northing = northing;
+        ABLine.isDesPtBSet = true;
 
         ABLine.desHeading = atan2(easting - ABLine.desPtA.easting,
                                   northing - ABLine.desPtA.northing);
@@ -703,7 +709,7 @@ void CTrack::mark_end(int refSide, double easting, double northing)
 
         newTrack.heading = ABLine.desHeading;
 
-        setNewName("AB " + locale.toString(glm::toDegrees(ABLine.desHeading), 'g', 1) + QChar(0x00B0));
+        setNewName("AB " + locale.toString(glm::toDegrees(ABLine.desHeading), 'f', 1) + QChar(0x00B0));
 
         //after we're sure we want this, we'll shift it over
         break;
@@ -764,7 +770,7 @@ void CTrack::mark_end(int refSide, double easting, double northing)
             }
             //else no nudge, center ref line
 
-       }
+        }
         else
         {
             curve.isMakingCurve = false;

@@ -105,7 +105,7 @@ public:
     void NudgeRefABLine(CTrk &track, double dist);
     void NudgeRefCurve(CTrk &track, double distAway);
 
-    void DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera);
+    void DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera, const CVehicle &vehicle);
     void DrawTrack(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                    bool isFontOn,
                    bool isRateMapOn,

@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtQml.Models
 import AOG
+import Interface
 
 import "../components"
 import ".."
@@ -119,15 +120,20 @@ Item{
 			columns: 2
 
 			// pick left or right 
-			IconButtonTransparent { 
+            IconButtonTransparent {
+                id: setABRefSide
 				Layout.alignment: Qt.AlignCenter
 				Layout.columnSpan: 2
 				icon.source: prefix + "/images/BoundaryRight.png"
-				onClicked: {
-                    if (icon.source === prefix + "/images/BoundaryRight.png") {
+                property bool refSideRight: true
+
+                onClicked: {
+                    refSideRight = !refSideRight
+
+                    if (refSideRight) {
+                        icon.source = prefix + "/images/BoundaryRight.png"
+                    } else {
 						icon.source = prefix + "/images/BoundaryLeft.png"
-					} else {
-						icon.source = prefix + "/images/BoundaryRight.png"
 					}
 				}
 			}
@@ -136,6 +142,8 @@ Item{
 				icon.source: prefix + "/images/LetterABlue.png"
 				onClicked: {
 					btnB.enabled = true
+                    TracksInterface.start_new(2)
+                    TracksInterface.mark_start(aog.easting, aog.northing, aog.heading)
 				}
 			}
 			IconButtonTransparent {
@@ -143,7 +151,11 @@ Item{
 				Layout.alignment: Qt.AlignCenter
 				enabled: false
 				icon.source: prefix + "/images/LetterBBlue.png"
-				onClicked: btnABOk.enabled = true
+                onClicked: {
+                    btnABOk.enabled = true
+                    TracksInterface.mark_end( setABRefSide.refSideRight ? 1 : -1, aog.easting, aog.northing)
+                }
+
 			}
 			IconButtonTransparent {
 				Layout.alignment: Qt.AlignCenter
@@ -157,8 +169,8 @@ Item{
 				icon.source: prefix + "/images/OK64.png"
 				onClicked: {
 					setAB.visible = false
-					trackAddName.show("AB "+"not added"+"°")
-				}
+                    trackAddName.show(TracksInterface.newName)
+                }
 			}
 		}
 	}

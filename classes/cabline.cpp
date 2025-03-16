@@ -323,11 +323,23 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
     //mf.setAngVel = glm::toDegrees(mf.setAngVel);
 }
 void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
-                            const CCamera &camera)
+                            const CCamera &camera,
+                            const CVehicle &vehicle)
 {
     GLHelperOneColor gldraw;
     QColor color;
     double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
+
+    if (!isDesPtBSet) {
+        double heading = atan2(vehicle.steerAxlePos.easting - desPtA.easting,
+                               vehicle.steerAxlePos.northing - desPtA.easting);
+
+        desLineEndA.easting = desPtA.easting - (sin(heading) * 1000);
+        desLineEndA.northing = desPtA.northing - (cos(heading) * 1000);
+
+        desLineEndB.easting = desPtA.easting + (sin(heading) * 1000);
+        desLineEndB.northing = desPtA.northing + (cos(heading) * 1000);
+    }
 
     gldraw.append(QVector3D(desLineEndA.easting, desLineEndA.northing, 0.0));
     gldraw.append(QVector3D(desLineEndB.easting, desLineEndB.northing, 0.0));
@@ -335,7 +347,8 @@ void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 
     color.setRgbF(0.2f, 0.950f, 0.20f);
     drawText3D(camera,gl,mvp, desPtA.easting, desPtA.northing, "&A", 1.0, true, color);
-    drawText3D(camera,gl,mvp, desPtB.easting, desPtB.northing, "&B", 1.0, true, color);
+    if (isDesPtBSet)
+        drawText3D(camera,gl,mvp, desPtB.easting, desPtB.northing, "&B", 1.0, true, color);
 }
 
 void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
