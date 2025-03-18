@@ -147,8 +147,8 @@ Item{
 				onClicked: {
 					btnB.enabled = true
                     TracksInterface.start_new(2)
-                    TracksInterface.mark_start(aog.easting, aog.northing, aog.heading)
                     TracksInterface.newRefSide = setABRefSide.refSideRight ? 1 : -1
+                    TracksInterface.mark_start(aog.easting, aog.northing, aog.heading)
                 }
 			}
 			IconButtonTransparent {

@@ -76,7 +76,7 @@ public:
     //put a pointer to ourselves as a model.  This class is both
     //a list model, and also a bunch of properties
     Q_PROPERTY(QObject* model READ getModel CONSTANT)
-    Q_PROPERTY(int newRefSide MEMBER newRefSide NOTIFY newRefSideChanged)
+    Q_PROPERTY(int newRefSide READ getNewRefSide WRITE setNewRefSide NOTIFY newRefSideChanged)
 
     int idx, autoTrack3SecTimer;
 
@@ -145,6 +145,9 @@ public:
     int getNewMode(void);
     void setNewMode(TrackMode);
 
+    int getNewRefSide(void);
+    void setNewRefSide(int which_side);
+
     QString getCurrentName(void);
 
     int getHowManyPathsAway();
@@ -162,6 +165,8 @@ public:
     // QML model interface
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     virtual QVariant data(const QModelIndex &index, int role) const override;
+
+    void update_ab_refline();
 
 protected:
     // QML model interface

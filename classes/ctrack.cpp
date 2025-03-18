@@ -452,35 +452,12 @@ void CTrack::AddPathPoint(Vec3 point)
 {
     if (curve.isMakingCurve) {
         curve.desList.append(point);
-    } else if (ABLine.isMakingABLine) {
-        if (ABLine.isDesPtBSet) {
-            ABLine.desHeading = atan2(ABLine.desPtB.easting - ABLine.desPtA.easting,
-                                      ABLine.desPtB.northing - ABLine.desPtA.northing);
-        } else {
-            ABLine.desHeading = atan2(point.easting - ABLine.desPtA.easting,
-                                      point.northing - ABLine.desPtA.northing);
-        }
+    } else if (ABLine.isMakingABLine && !ABLine.isDesPtBSet) {
+        //set the B point to current so we can draw a preview line
+        ABLine.desPtB.easting = point.easting;
+        ABLine.desPtB.northing = point.northing;
 
-        double dist = 0;
-        double vehicle_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
-        double vehicle_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
-        double vehicle_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
-
-        if (newRefSide > 0) {
-            // right side
-            dist = (vehicle_toolWidth - vehicle_toolOverlap) * 0.5 + vehicle_toolOffset;
-        } else if (newRefSide < 0) {
-            // left side
-            dist = (vehicle_toolWidth - vehicle_toolOverlap) * -0.5 + vehicle_toolOffset;
-        }
-
-        qDebug() << dist;
-
-        ABLine.desLineEndA.easting = ABLine.desPtA.easting - (sin(ABLine.desHeading) * 1000) + cos(ABLine.desHeading) * dist ;
-        ABLine.desLineEndA.northing = ABLine.desPtA.northing - (cos(ABLine.desHeading) * 1000) + sin(ABLine.desHeading) * dist;
-
-        ABLine.desLineEndB.easting = ABLine.desPtA.easting + (sin(ABLine.desHeading) * 1000) + cos(ABLine.desHeading) * dist;
-        ABLine.desLineEndB.northing = ABLine.desPtA.northing + (cos(ABLine.desHeading) * 1000) + sin(ABLine.desHeading) * dist;
+        update_ab_refline();
     }
 }
 
@@ -533,6 +510,22 @@ void CTrack::setNewName(QString new_name)
         curve.desName= new_name;
 
     emit newNameChanged();
+}
+
+int CTrack::getNewRefSide()
+{
+    return newRefSide;
+}
+
+void CTrack::setNewRefSide(int which_side)
+{
+    if (newRefSide != which_side) {
+        newRefSide = which_side;
+        if (getNewMode() == TrackMode::AB)
+            update_ab_refline();
+
+        emit newRefSideChanged();
+    }
 }
 
 QString CTrack::getCurrentName(void)
@@ -607,6 +600,39 @@ double CTrack::getTrackNudge(int index)
     return gArr[index].nudgeDistance;
 }
 
+void CTrack::update_ab_refline()
+{
+    double dist;
+    double heading90;
+    double vehicle_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double vehicle_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double vehicle_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+
+    ABLine.desHeading = atan2(ABLine.desPtB.easting - ABLine.desPtA.easting,
+                              ABLine.desPtB.northing - ABLine.desPtA.northing);
+    if (ABLine.desHeading < 0) ABLine.desHeading += glm::twoPI;
+
+    heading90 = ABLine.desHeading + glm::PIBy2;
+    if (heading90 > glm::twoPI)
+        heading90 -= glm::twoPI;
+
+    // update the ABLine desLineA and B
+
+    if (newRefSide > 0) {
+        // right side
+        dist = (vehicle_toolWidth - vehicle_toolOverlap) * 0.5 + vehicle_toolOffset;
+    } else if (newRefSide < 0) {
+        // left side
+        dist = (vehicle_toolWidth - vehicle_toolOverlap) * -0.5 + vehicle_toolOffset;
+    }
+
+    ABLine.desLineEndA.easting = ABLine.desPtA.easting - (sin(ABLine.desHeading) * 1000) + sin(heading90) * dist ;
+    ABLine.desLineEndA.northing = ABLine.desPtA.northing - (cos(ABLine.desHeading) * 1000) + cos(heading90) * dist;
+
+    ABLine.desLineEndB.easting = ABLine.desPtA.easting + (sin(ABLine.desHeading) * 1000) + sin(heading90) * dist;
+    ABLine.desLineEndB.northing = ABLine.desPtA.northing + (cos(ABLine.desHeading) * 1000) + cos(heading90) * dist;
+}
+
 void CTrack::select(int index)
 {
     //reset to generate new reference
@@ -673,18 +699,13 @@ void CTrack::mark_start(double easting, double northing, double heading)
         ABLine.isMakingABLine = true;
         ABLine.desPtA.easting = easting;
         ABLine.desPtA.northing = northing;
+        //temporarily set the B point based on current heading
+        ABLine.desPtB.easting = easting + sin(heading) * 1000;
+        ABLine.desPtB.northing = easting + cos(heading) * 1000;
 
         ABLine.isDesPtBSet = false;
 
-        /*
-        //we put this in ABLine.DrawABLineNew() so it can adjust the
-        //line as the tractor moves.
-        ABLine.desLineEndA.easting = ABLine.desPtA.easting - (sin(heading) * 1000);
-        ABLine.desLineEndA.northing = ABLine.desPtA.northing - (cos(heading) * 1000);
-
-        ABLine.desLineEndB.easting = ABLine.desPtA.easting + (sin(heading) * 1000);
-        ABLine.desLineEndB.northing = ABLine.desPtA.northing + (cos(heading) * 1000);
-        */
+        update_ab_refline();
 
         break;
 
@@ -715,6 +736,9 @@ void CTrack::mark_end(int refSide, double easting, double northing)
     //mark "B" location for AB Line or AB curve, or NOP for waterPivot
     int cnt;
     double aveLineHeading = 0;
+    double dist = 0;
+    double heading90;
+
     newRefSide = refSide;
 
     switch(getNewMode()) {
@@ -727,11 +751,7 @@ void CTrack::mark_end(int refSide, double easting, double northing)
         ABLine.desPtB.northing = northing;
         ABLine.isDesPtBSet = true;
 
-        ABLine.desHeading = atan2(easting - ABLine.desPtA.easting,
-                                  northing - ABLine.desPtA.northing);
-        if (ABLine.desHeading < 0) ABLine.desHeading += glm::twoPI;
-
-        // update the ABLine desLineA and B if B is already set
+        update_ab_refline();
 
         newTrack.heading = ABLine.desHeading;
 
