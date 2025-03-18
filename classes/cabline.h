@@ -110,7 +110,7 @@ public:
                           CGuidance &gyd,
                           CNMEA &pn);
     void DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
-                       const CCamera &camera, const CVehicle &vehicle);
+                       const CCamera &camera);
 
     void DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                      bool isFontOn, bool isRateMapOn,

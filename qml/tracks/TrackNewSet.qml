@@ -129,6 +129,10 @@ Item{
 
                 onClicked: {
                     refSideRight = !refSideRight
+                    if (refSideRight)
+                        TracksInterface.newRefSide = 1
+                    else
+                        TracksInterface.newRefSide = -1
 
                     if (refSideRight) {
                         icon.source = prefix + "/images/BoundaryRight.png"
@@ -144,7 +148,8 @@ Item{
 					btnB.enabled = true
                     TracksInterface.start_new(2)
                     TracksInterface.mark_start(aog.easting, aog.northing, aog.heading)
-				}
+                    TracksInterface.newRefSide = setABRefSide.refSideRight ? 1 : -1
+                }
 			}
 			IconButtonTransparent {
 				id: btnB
@@ -160,7 +165,10 @@ Item{
 			IconButtonTransparent {
 				Layout.alignment: Qt.AlignCenter
 				icon.source: prefix + "/images/Cancel64.png"
-				onClicked: setAB.visible = false
+                onClicked: {
+                    setAB.visible = false
+                    TracksInterface.cancel_new()
+                }
 			}
 			IconButtonTransparent {
 				id: btnABOk

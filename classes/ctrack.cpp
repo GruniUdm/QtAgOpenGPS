@@ -371,7 +371,7 @@ void CTrack::NudgeRefCurve(CTrk &track, double distAway)
 void CTrack::DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera, const CVehicle &vehicle)
 {
     if (ABLine.isMakingABLine && getNewMode() == TrackMode::AB) {
-        ABLine.DrawABLineNew(gl, mvp, camera, vehicle);
+        ABLine.DrawABLineNew(gl, mvp, camera);
     } else if (curve.isMakingCurve && getNewMode() == TrackMode::Curve) {
         curve.DrawCurveNew(gl, mvp);
     }
@@ -453,14 +453,34 @@ void CTrack::AddPathPoint(Vec3 point)
     if (curve.isMakingCurve) {
         curve.desList.append(point);
     } else if (ABLine.isMakingABLine) {
-        ABLine.desHeading = atan2(point.easting - ABLine.desPtA.easting,
-                                  point.northing - ABLine.desPtA.northing);
+        if (ABLine.isDesPtBSet) {
+            ABLine.desHeading = atan2(ABLine.desPtB.easting - ABLine.desPtA.easting,
+                                      ABLine.desPtB.northing - ABLine.desPtA.northing);
+        } else {
+            ABLine.desHeading = atan2(point.easting - ABLine.desPtA.easting,
+                                      point.northing - ABLine.desPtA.northing);
+        }
 
-        ABLine.desLineEndA.easting = ABLine.desPtA.easting - (sin(ABLine.desHeading) * 1000);
-        ABLine.desLineEndA.northing = ABLine.desPtA.northing - (cos(ABLine.desHeading) * 1000);
+        double dist = 0;
+        double vehicle_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+        double vehicle_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
+        double vehicle_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
 
-        ABLine.desLineEndB.easting = ABLine.desPtA.easting + (sin(ABLine.desHeading) * 1000);
-        ABLine.desLineEndB.northing = ABLine.desPtA.northing + (cos(ABLine.desHeading) * 1000);
+        if (newRefSide > 0) {
+            // right side
+            dist = (vehicle_toolWidth - vehicle_toolOverlap) * 0.5 + vehicle_toolOffset;
+        } else if (newRefSide < 0) {
+            // left side
+            dist = (vehicle_toolWidth - vehicle_toolOverlap) * -0.5 + vehicle_toolOffset;
+        }
+
+        qDebug() << dist;
+
+        ABLine.desLineEndA.easting = ABLine.desPtA.easting - (sin(ABLine.desHeading) * 1000) + cos(ABLine.desHeading) * dist ;
+        ABLine.desLineEndA.northing = ABLine.desPtA.northing - (cos(ABLine.desHeading) * 1000) + sin(ABLine.desHeading) * dist;
+
+        ABLine.desLineEndB.easting = ABLine.desPtA.easting + (sin(ABLine.desHeading) * 1000) + cos(ABLine.desHeading) * dist;
+        ABLine.desLineEndB.northing = ABLine.desPtA.northing + (cos(ABLine.desHeading) * 1000) + sin(ABLine.desHeading) * dist;
     }
 }
 
@@ -701,11 +721,17 @@ void CTrack::mark_end(int refSide, double easting, double northing)
     case TrackMode::AB:
         newTrack.ptB.easting = easting;
         newTrack.ptB.northing = northing;
+
+        //set desPtB in ABLine just so display updates.
+        ABLine.desPtB.easting = easting;
+        ABLine.desPtB.northing = northing;
         ABLine.isDesPtBSet = true;
 
         ABLine.desHeading = atan2(easting - ABLine.desPtA.easting,
                                   northing - ABLine.desPtA.northing);
         if (ABLine.desHeading < 0) ABLine.desHeading += glm::twoPI;
+
+        // update the ABLine desLineA and B if B is already set
 
         newTrack.heading = ABLine.desHeading;
 
@@ -829,6 +855,7 @@ void CTrack::finish_new(QString name)
 
     }
 
+    newTrack.isVisible = true;
     gArr.append(newTrack);
     setIdx(gArr.count() - 1);
     reloadModel();
