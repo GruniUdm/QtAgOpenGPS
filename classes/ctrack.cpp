@@ -528,6 +528,30 @@ void CTrack::setNewRefSide(int which_side)
     }
 }
 
+double CTrack::getNewHeading()
+{
+    if (getNewMode() == TrackMode::AB)
+        return ABLine.desHeading;
+    return 0;
+}
+
+void CTrack::setNewHeading(double new_heading)
+{
+    QLocale locale;
+    if (getNewMode() == TrackMode::AB) {
+        if (new_heading != ABLine.desHeading) {
+            //calculate the B point 10 meters from the A point
+
+            mark_end(newRefSide, ABLine.desPtA.easting + sin(new_heading) * 10,
+                     ABLine.desPtA.northing + cos(new_heading) * 10);
+
+            //update the new line heading as well as recalculate the ref line
+            setNewName("A+ " + locale.toString(glm::toDegrees(ABLine.desHeading), 'f', 1) + QChar(0x00B0));
+            emit newHeadingChanged();
+        }
+    }
+}
+
 QString CTrack::getCurrentName(void)
 {
     if (idx > -1) {
@@ -686,6 +710,7 @@ void CTrack::prev()
 void CTrack::start_new(int mode)
 {
     newTrack = CTrk();
+    newTrack.nudgeDistance = 0;
     setNewMode((TrackMode)mode);
     setNewName("");
 }
@@ -736,8 +761,6 @@ void CTrack::mark_end(int refSide, double easting, double northing)
     //mark "B" location for AB Line or AB curve, or NOP for waterPivot
     int cnt;
     double aveLineHeading = 0;
-    double dist = 0;
-    double heading90;
 
     newRefSide = refSide;
 
@@ -930,7 +953,16 @@ void CTrack::nudge(double dist_m)
 
 void CTrack::delete_track(int index)
 {
+    //if we are using the track we are deleting, cancel
+    //autosteer
+    if (idx == index) idx = -1;
+
+    //otherwise we'll have to adjust the current index after
+    //deleting this track.
+    if (idx > index) idx--;
+
     gArr.removeAt(index);
+    reloadModel();
 }
 
 void CTrack::swapAB(int idx)

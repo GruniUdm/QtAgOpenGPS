@@ -54,16 +54,25 @@ Item{
 			columns: 2
 
 			// pick left or right 
-			IconButtonTransparent { 
+            IconButtonTransparent {
+                id: setAPRefSide
 				Layout.alignment: Qt.AlignCenter
 				icon.source: prefix + "/images/BoundaryRight.png"
+                property bool refSideRight: true
+
 				onClicked: {
-                    if (icon.source === prefix + "/images/BoundaryRight.png") {
-						icon.source = prefix + "/images/BoundaryLeft.png"
-					} else {
-						icon.source = prefix + "/images/BoundaryRight.png"
-					}
-				}
+                    refSideRight = !refSideRight
+                    if (refSideRight)
+                        TracksInterface.newRefSide = 1
+                    else
+                        TracksInterface.newRefSide = -1
+
+                    if (refSideRight) {
+                        icon.source = prefix + "/images/BoundaryRight.png"
+                    } else {
+                        icon.source = prefix + "/images/BoundaryLeft.png"
+                    }
+                }
 			}
 			IconButtonTransparent {
 				Layout.alignment: Qt.AlignCenter
@@ -72,6 +81,11 @@ Item{
 					aPlusHeading.enabled = true
                     aPlusHeading.text = (Number(Utils.radians_to_deg(aog.heading)).toLocaleString(Qt.locale(), 'f', 4))
 					btnAPlusOk.enabled = true
+                    TracksInterface.start_new(2)
+                    TracksInterface.newRefSide = setAPRefSide.refSideRight ? 1 : -1
+                    TracksInterface.mark_start(aog.easting, aog.northing, Number(aPlusHeading.text))
+                    TracksInterface.newHeading = -1
+                    TracksInterface.newHeading = Number(aPlusHeading.text)
 				}
 			}
 			NumberTextField {
@@ -84,11 +98,18 @@ Item{
 				Layout.columnSpan: 2
 				implicitWidth: 200
 				implicitHeight: 50
+
+                onTextChanged: {
+                    TracksInterface.newHeading = (Utils.deg_to_radians(Number(text)))
+                }
 			}	
 			IconButtonTransparent {
 				Layout.alignment: Qt.AlignCenter
 				icon.source: prefix + "/images/Cancel64.png"
-				onClicked: setAPlus.visible = false
+                onClicked: {
+                    setAPlus.visible = false
+                    TracksInterface.cancel_new()
+                }
 			}
 			IconButtonTransparent {
 				id: btnAPlusOk
@@ -97,7 +118,7 @@ Item{
 				icon.source: prefix + "/images/OK64.png"
 				onClicked: {
 					setAPlus.visible = false
-					trackAddName.show("A+ "+aPlusHeading.text+"°")
+                    trackAddName.show(TracksInterface.newName)
 				}
 			}
 		}

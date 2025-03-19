@@ -91,6 +91,7 @@ public:
     //creating new track
     Q_PROPERTY (int newMode READ getNewMode NOTIFY newModeChanged)
     Q_PROPERTY (QString newName READ getNewName WRITE setNewName NOTIFY newNameChanged)
+    Q_PROPERTY (double newHeading READ getNewHeading WRITE setNewHeading NOTIFY newHeadingChanged)
 
     Q_PROPERTY (int count READ rowCount NOTIFY countChanged())
     Q_PROPERTY (QString currentName READ getCurrentName NOTIFY currentNameChanged)
@@ -148,6 +149,9 @@ public:
     int getNewRefSide(void);
     void setNewRefSide(int which_side);
 
+    double getNewHeading(void);
+    void setNewHeading(double new_heading);
+
     QString getCurrentName(void);
 
     int getHowManyPathsAway();
@@ -185,6 +189,7 @@ signals:
     void newModeChanged();
     void newNameChanged();
     void newRefSideChanged();
+    void newHeadingChanged();
     void countChanged();
     void currentNameChanged();
 
