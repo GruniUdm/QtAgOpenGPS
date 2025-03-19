@@ -96,6 +96,8 @@ public:
     Q_PROPERTY (int count READ rowCount NOTIFY countChanged())
     Q_PROPERTY (QString currentName READ getCurrentName NOTIFY currentNameChanged)
 
+    QVector<Vec2> designRefLine;
+
     explicit CTrack(QObject* parent = nullptr);
     ~CTrack();
 

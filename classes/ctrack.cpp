@@ -370,8 +370,18 @@ void CTrack::NudgeRefCurve(CTrk &track, double distAway)
 
 void CTrack::DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera, const CVehicle &vehicle)
 {
+    GLHelperOneColor gldraw;
+    QColor color;
+    double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
+
     if (ABLine.isMakingABLine && getNewMode() == TrackMode::AB) {
         ABLine.DrawABLineNew(gl, mvp, camera);
+
+        gldraw.append(QVector3D(designRefLine[0].easting, designRefLine[0].northing, 0.0));
+        gldraw.append(QVector3D(designRefLine[1].easting, designRefLine[1].northing, 0.0));
+        color.setRgbF(0.930f, 0.4f, 0.4f);
+        gldraw.draw(gl, mvp, color, GL_LINES, lineWidth);
+
     } else if (curve.isMakingCurve && getNewMode() == TrackMode::Curve) {
         curve.DrawCurveNew(gl, mvp);
     }
@@ -637,10 +647,8 @@ void CTrack::update_ab_refline()
     if (ABLine.desHeading < 0) ABLine.desHeading += glm::twoPI;
 
     heading90 = ABLine.desHeading + glm::PIBy2;
-    if (heading90 > glm::twoPI)
-        heading90 -= glm::twoPI;
 
-    // update the ABLine desLineA and B
+    // update the ABLine desLineA and B and the design reference lines
 
     if (newRefSide > 0) {
         // right side
@@ -650,11 +658,17 @@ void CTrack::update_ab_refline()
         dist = (vehicle_toolWidth - vehicle_toolOverlap) * -0.5 + vehicle_toolOffset;
     }
 
-    ABLine.desLineEndA.easting = ABLine.desPtA.easting - (sin(ABLine.desHeading) * 1000) + sin(heading90) * dist ;
-    ABLine.desLineEndA.northing = ABLine.desPtA.northing - (cos(ABLine.desHeading) * 1000) + cos(heading90) * dist;
+    ABLine.desLineEndA.easting = ABLine.desPtA.easting - (sin(ABLine.desHeading) * 1000);
+    ABLine.desLineEndA.northing = ABLine.desPtA.northing - (cos(ABLine.desHeading) * 1000);
 
-    ABLine.desLineEndB.easting = ABLine.desPtA.easting + (sin(ABLine.desHeading) * 1000) + sin(heading90) * dist;
-    ABLine.desLineEndB.northing = ABLine.desPtA.northing + (cos(ABLine.desHeading) * 1000) + cos(heading90) * dist;
+    designRefLine[0].easting = ABLine.desLineEndA.easting + sin(heading90) * dist;
+    designRefLine[0].northing = ABLine.desLineEndA.northing + cos(heading90) * dist;
+
+    ABLine.desLineEndB.easting = ABLine.desPtA.easting + (sin(ABLine.desHeading) * 1000);
+    ABLine.desLineEndB.northing = ABLine.desPtA.northing + (cos(ABLine.desHeading) * 1000);
+
+    designRefLine[1].easting = ABLine.desLineEndB.easting + sin(heading90) * dist;
+    designRefLine[1].northing = ABLine.desLineEndB.northing + cos(heading90) * dist;
 }
 
 void CTrack::select(int index)
@@ -713,6 +727,9 @@ void CTrack::start_new(int mode)
     newTrack.nudgeDistance = 0;
     setNewMode((TrackMode)mode);
     setNewName("");
+    designRefLine.clear();
+    designRefLine.append(Vec2());
+    designRefLine.append(Vec2());
 }
 
 void CTrack::mark_start(double easting, double northing, double heading)
@@ -900,7 +917,11 @@ void CTrack::finish_new(QString name)
 
     newTrack.isVisible = true;
     gArr.append(newTrack);
-    setIdx(gArr.count() - 1);
+
+    //emit saveTracks();
+
+    //save tracks and activate the latest one
+    select(gArr.count() - 1);
     reloadModel();
 
 }
