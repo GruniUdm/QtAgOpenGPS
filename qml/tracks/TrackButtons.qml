@@ -47,7 +47,9 @@ Comp.TimedRectangle {
         Comp.IconButtonTransparent{
             icon.source: prefix + "/images/AddNew.png"
             Layout.alignment: Qt.AlignCenter
-            onClicked: trackNewSet.show()
+            onClicked: {
+                trackNewButtons.show()
+            }
         }
         Comp.IconButtonTransparent{
             icon.source: prefix + "/images/ABDraw.png"
