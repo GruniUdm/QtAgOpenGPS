@@ -222,15 +222,23 @@ Item{
 
 			// pick left or right 
 			IconButtonTransparent { 
+                id: setABCurveRefSide
 				Layout.alignment: Qt.AlignCenter
 				Layout.columnSpan: 2
-				icon.source: prefix + "/images/BoundaryRight.png"
-				onClicked: {
-                    if (icon.source === prefix + "/images/BoundaryRight.png") {
-						icon.source = prefix + "/images/BoundaryLeft.png"
-					} else {
-						icon.source = prefix + "/images/BoundaryRight.png"
-					}
+                icon.source: prefix + "/images/BoundaryRight.png"
+                property bool refSideRight: true
+                onClicked: {
+                    refSideRight = !refSideRight
+                    if (refSideRight)
+                        TracksInterface.newRefSide = 1
+                    else
+                        TracksInterface.newRefSide = -1
+
+                    if (refSideRight) {
+                        icon.source = prefix + "/images/BoundaryRight.png"
+                    } else {
+                        icon.source = prefix + "/images/BoundaryLeft.png"
+                    }
 				}
 			}
 			IconButtonTransparent {
@@ -240,6 +248,9 @@ Item{
 				onClicked: {
 					btnBCurve.enabled = true
 					btnRecord.enabled = true
+                    TracksInterface.start_new(4)
+                    TracksInterface.newRefSide = setABCurveRefSide.refSideRight ? 1 : -1
+                    TracksInterface.mark_start(aog.easting, aog.northing, aog.heading)
 				}
 			}
 			IconButtonTransparent {
@@ -248,8 +259,9 @@ Item{
 				enabled: false
 				icon.source: prefix + "/images/LetterBBlue.png"
 				onClicked: {
-					setABCurve.visible = false
-					trackAddName.show("Cu "+aog.heading+"°")
+                    setABCurve.visible = false
+                    TracksInterface.mark_end(setABCurveRefSide.refSideRight ? 1 : -1, aog.easting, aog.northing)
+                    trackAddName.show(TracksInterface.newName)
 				}
 			}
 			Text {
@@ -265,12 +277,23 @@ Item{
 				checkable: true
 				icon.source: prefix + "/images/boundaryPause.png"
 				iconChecked: prefix + "/images/BoundaryRecord.png"
-				onCheckedChanged: checked ? btnBCurve.enabled = false : btnBCurve.enabled = true
+                onCheckedChanged: {
+                    if (checked) {
+                        btnBCurve.enabled = false
+                        TracksInterface.pause(true)
+                    } else {
+                        btnBCurve.enabled = true
+                        TracksInterface.pause(false)
+                    }
+                }
 			}
 			IconButtonTransparent {
 				Layout.alignment: Qt.AlignCenter
 				icon.source: prefix + "/images/Cancel64.png"
-				onClicked: setABCurve.visible = false
+                onClicked: {
+                    setABCurve.visible = false
+                    TracksInterface.cancel_new()
+                }
 			}
 		}
 	}
