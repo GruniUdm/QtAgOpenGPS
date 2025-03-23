@@ -902,9 +902,9 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             pn.longitude = pn.lonStart;
 
             sim.latitude = pn.latStart;
-            settings->setValue(SETTINGS_gps_simLatitude, pn.latStart);
+            settings->setValue(SETTINGS_gps_simLatitude, (double)pn.latStart);
             sim.longitude = pn.lonStart;
-            settings->setValue(SETTINGS_gps_simLongitude, pn.lonStart);
+            settings->setValue(SETTINGS_gps_simLongitude, (double)pn.lonStart);
         }
         pn.SetLocalMetersPerDegree();
     }

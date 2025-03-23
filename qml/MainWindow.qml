@@ -425,7 +425,7 @@ Window {
                     else
                         text = "Lost RTK"
                 }
-                onTextChanged: if (text.length > 0)
+                onTextChanged: if (ageAlarm.text.length > 0)
                                    console.log("rtk alarm sound")
 
             }
@@ -771,19 +771,20 @@ Window {
             anchors.fill: parent
         }
 
-        /*
+        Tracks.TrackNewButtons{
+            id: trackNewButtons
+            visible: false
+        }
         Tracks.TrackNewSet{
             id: trackNewSet
             anchors.fill: parent
         }
-        */
         Tracks.TrackList{
             id: trackList
         }
-        /*
         Tracks.TracksNewAddName{
             id: trackAddName
-        }*/
+        }
 
     Wiz.ChartSteer{
         id: steerCharta

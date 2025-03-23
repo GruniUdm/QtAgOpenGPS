@@ -1,18 +1,19 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Interface
 
 import ".."
 import "../components"
 
 MoveablePopup {
 	id: trackAddName
-	property string defaultText: "blah"
 	width: 200 * theme.scaleWidth
 	height: 300 * theme.scaleHeight
+
 	function show(textString) {
 		trackAddName.visible = true
-		trackAddName.defaultText = textString
+        trackName.text = textString
 	}
 
 	GridLayout {
@@ -57,7 +58,7 @@ MoveablePopup {
 			icon.source: prefix + "/images/OK64.png"
 			onClicked: {
 				trackAddName.visible = false
-				trackList.show()
+                TracksInterface.finish_new(trackName.text)
 			}
 		}
 	}

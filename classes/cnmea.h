@@ -10,6 +10,7 @@
 #include "vec2.h"
 #include "glm.h"
 #include <QTextStream>
+#include "interfaceproperty.h"
 
 class CNMEA : public QObject
 {
@@ -22,7 +23,8 @@ public:
     double prevLatitude, prevLongitude;
 
     //local plane geometry
-    double latStart, lonStart;
+    InterfaceProperty<AOGInterface,double> latStart = InterfaceProperty<AOGInterface,double>("latStart");
+    InterfaceProperty<AOGInterface,double> lonStart = InterfaceProperty<AOGInterface,double>("lonStart");
 
     double mPerDegreeLat, mPerDegreeLon;
 

@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtQml.Models
 import AOG
+import Interface
 
 import "../components"
 import ".."
@@ -53,16 +54,25 @@ Item{
 			columns: 2
 
 			// pick left or right 
-			IconButtonTransparent { 
+            IconButtonTransparent {
+                id: setAPRefSide
 				Layout.alignment: Qt.AlignCenter
 				icon.source: prefix + "/images/BoundaryRight.png"
+                property bool refSideRight: true
+
 				onClicked: {
-                    if (icon.source === prefix + "/images/BoundaryRight.png") {
-						icon.source = prefix + "/images/BoundaryLeft.png"
-					} else {
-						icon.source = prefix + "/images/BoundaryRight.png"
-					}
-				}
+                    refSideRight = !refSideRight
+                    if (refSideRight)
+                        TracksInterface.newRefSide = 1
+                    else
+                        TracksInterface.newRefSide = -1
+
+                    if (refSideRight) {
+                        icon.source = prefix + "/images/BoundaryRight.png"
+                    } else {
+                        icon.source = prefix + "/images/BoundaryLeft.png"
+                    }
+                }
 			}
 			IconButtonTransparent {
 				Layout.alignment: Qt.AlignCenter
@@ -71,6 +81,11 @@ Item{
 					aPlusHeading.enabled = true
                     aPlusHeading.text = (Number(Utils.radians_to_deg(aog.heading)).toLocaleString(Qt.locale(), 'f', 4))
 					btnAPlusOk.enabled = true
+                    TracksInterface.start_new(2)
+                    TracksInterface.newRefSide = setAPRefSide.refSideRight ? 1 : -1
+                    TracksInterface.mark_start(aog.easting, aog.northing, Number(aPlusHeading.text))
+                    TracksInterface.newHeading = -1
+                    TracksInterface.newHeading = Utils.deg_to_radians(Number(aPlusHeading.text))
 				}
 			}
 			NumberTextField {
@@ -83,11 +98,18 @@ Item{
 				Layout.columnSpan: 2
 				implicitWidth: 200
 				implicitHeight: 50
+
+                onTextChanged: {
+                    TracksInterface.newHeading = (Utils.deg_to_radians(Number(text)))
+                }
 			}	
 			IconButtonTransparent {
 				Layout.alignment: Qt.AlignCenter
 				icon.source: prefix + "/images/Cancel64.png"
-				onClicked: setAPlus.visible = false
+                onClicked: {
+                    setAPlus.visible = false
+                    TracksInterface.cancel_new()
+                }
 			}
 			IconButtonTransparent {
 				id: btnAPlusOk
@@ -96,7 +118,7 @@ Item{
 				icon.source: prefix + "/images/OK64.png"
 				onClicked: {
 					setAPlus.visible = false
-					trackAddName.show("A+ "+aPlusHeading.text+"°")
+                    trackAddName.show(TracksInterface.newName)
 				}
 			}
 		}
@@ -119,15 +141,24 @@ Item{
 			columns: 2
 
 			// pick left or right 
-			IconButtonTransparent { 
+            IconButtonTransparent {
+                id: setABRefSide
 				Layout.alignment: Qt.AlignCenter
 				Layout.columnSpan: 2
 				icon.source: prefix + "/images/BoundaryRight.png"
-				onClicked: {
-                    if (icon.source === prefix + "/images/BoundaryRight.png") {
+                property bool refSideRight: true
+
+                onClicked: {
+                    refSideRight = !refSideRight
+                    if (refSideRight)
+                        TracksInterface.newRefSide = 1
+                    else
+                        TracksInterface.newRefSide = -1
+
+                    if (refSideRight) {
+                        icon.source = prefix + "/images/BoundaryRight.png"
+                    } else {
 						icon.source = prefix + "/images/BoundaryLeft.png"
-					} else {
-						icon.source = prefix + "/images/BoundaryRight.png"
 					}
 				}
 			}
@@ -136,19 +167,29 @@ Item{
 				icon.source: prefix + "/images/LetterABlue.png"
 				onClicked: {
 					btnB.enabled = true
-				}
+                    TracksInterface.start_new(2)
+                    TracksInterface.newRefSide = setABRefSide.refSideRight ? 1 : -1
+                    TracksInterface.mark_start(aog.easting, aog.northing, aog.heading)
+                }
 			}
 			IconButtonTransparent {
 				id: btnB
 				Layout.alignment: Qt.AlignCenter
 				enabled: false
 				icon.source: prefix + "/images/LetterBBlue.png"
-				onClicked: btnABOk.enabled = true
+                onClicked: {
+                    btnABOk.enabled = true
+                    TracksInterface.mark_end( setABRefSide.refSideRight ? 1 : -1, aog.easting, aog.northing)
+                }
+
 			}
 			IconButtonTransparent {
 				Layout.alignment: Qt.AlignCenter
 				icon.source: prefix + "/images/Cancel64.png"
-				onClicked: setAB.visible = false
+                onClicked: {
+                    setAB.visible = false
+                    TracksInterface.cancel_new()
+                }
 			}
 			IconButtonTransparent {
 				id: btnABOk
@@ -157,8 +198,8 @@ Item{
 				icon.source: prefix + "/images/OK64.png"
 				onClicked: {
 					setAB.visible = false
-					trackAddName.show("AB "+"not added"+"°")
-				}
+                    trackAddName.show(TracksInterface.newName)
+                }
 			}
 		}
 	}
@@ -181,15 +222,23 @@ Item{
 
 			// pick left or right 
 			IconButtonTransparent { 
+                id: setABCurveRefSide
 				Layout.alignment: Qt.AlignCenter
 				Layout.columnSpan: 2
-				icon.source: prefix + "/images/BoundaryRight.png"
-				onClicked: {
-                    if (icon.source === prefix + "/images/BoundaryRight.png") {
-						icon.source = prefix + "/images/BoundaryLeft.png"
-					} else {
-						icon.source = prefix + "/images/BoundaryRight.png"
-					}
+                icon.source: prefix + "/images/BoundaryRight.png"
+                property bool refSideRight: true
+                onClicked: {
+                    refSideRight = !refSideRight
+                    if (refSideRight)
+                        TracksInterface.newRefSide = 1
+                    else
+                        TracksInterface.newRefSide = -1
+
+                    if (refSideRight) {
+                        icon.source = prefix + "/images/BoundaryRight.png"
+                    } else {
+                        icon.source = prefix + "/images/BoundaryLeft.png"
+                    }
 				}
 			}
 			IconButtonTransparent {
@@ -199,6 +248,9 @@ Item{
 				onClicked: {
 					btnBCurve.enabled = true
 					btnRecord.enabled = true
+                    TracksInterface.start_new(4)
+                    TracksInterface.newRefSide = setABCurveRefSide.refSideRight ? 1 : -1
+                    TracksInterface.mark_start(aog.easting, aog.northing, aog.heading)
 				}
 			}
 			IconButtonTransparent {
@@ -207,8 +259,9 @@ Item{
 				enabled: false
 				icon.source: prefix + "/images/LetterBBlue.png"
 				onClicked: {
-					setABCurve.visible = false
-					trackAddName.show("Cu "+aog.heading+"°")
+                    setABCurve.visible = false
+                    TracksInterface.mark_end(setABCurveRefSide.refSideRight ? 1 : -1, aog.easting, aog.northing)
+                    trackAddName.show(TracksInterface.newName)
 				}
 			}
 			Text {
@@ -224,12 +277,23 @@ Item{
 				checkable: true
 				icon.source: prefix + "/images/boundaryPause.png"
 				iconChecked: prefix + "/images/BoundaryRecord.png"
-				onCheckedChanged: checked ? btnBCurve.enabled = false : btnBCurve.enabled = true
+                onCheckedChanged: {
+                    if (checked) {
+                        btnBCurve.enabled = false
+                        TracksInterface.pause(true)
+                    } else {
+                        btnBCurve.enabled = true
+                        TracksInterface.pause(false)
+                    }
+                }
 			}
 			IconButtonTransparent {
 				Layout.alignment: Qt.AlignCenter
 				icon.source: prefix + "/images/Cancel64.png"
-				onClicked: setABCurve.visible = false
+                onClicked: {
+                    setABCurve.visible = false
+                    TracksInterface.cancel_new()
+                }
 			}
 		}
 	}
@@ -247,8 +311,24 @@ Item{
 				lonPointA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
 				latPointB.text = parseFloat((aog.latitude).toFixed(7)) //aog.latitude
 				lonPointB.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+
+                TracksInterface.start_new(2)
+                TracksInterface.newRefSide = 0; //in this mode ref line is where the tractor is
+
+                update_ab();
 			}
 		}
+
+        function update_ab() {
+            var pta = aog.convertWGS84ToLocal(Number(latPointA.text),
+                                              Number(lonPointA.text))
+            var ptb = aog.convertWGS84ToLocal(Number(latPointB.text),
+                                              Number(lonPointB.text))
+
+            TracksInterface.mark_start(pta[1], pta[0], 0)
+            TracksInterface.mark_end(0, ptb[1], ptb[0])
+        }
+
 		GridLayout {
 			id: latLonLatLonLayout
 			anchors.centerIn: parent
@@ -279,7 +359,7 @@ Item{
 				onClicked: {
 					latPointB.text = parseFloat((aog.latitude).toFixed(7)) //aog.latitude 
 					lonPointB.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
-				}
+                }
 			}
 			/*
 			 * figure out rounding
@@ -287,7 +367,10 @@ Item{
 			 */
 			IconButtonTransparent {
 				icon.source: prefix + "/images/Cancel64.png"
-				onClicked: latLonLatLon.visible = false
+                onClicked: {
+                    latLonLatLon.visible = false
+                    TracksInterface.cancel_new()
+                }
 				Layout.row: 8
 				Layout.column: 0
 			}
@@ -308,6 +391,9 @@ Item{
 					anchors.bottom: parent.top
 					anchors.left: parent.left
 				}
+                onTextChanged: {
+                    latLonLatLon.update_ab()
+                }
 			}
 			Text {
 				Layout.alignment: Qt.AlignRight
@@ -330,7 +416,10 @@ Item{
 					anchors.bottom: parent.top
 					anchors.left: parent.left
 				}
-			}
+                onTextChanged: {
+                    latLonLatLon.update_ab()
+                }
+            }
 			NumberTextField {
 				id: latPointB
 				Layout.alignment: Qt.AlignRight
@@ -346,7 +435,10 @@ Item{
 					anchors.bottom: parent.top
 					anchors.left: parent.left
 				}
-			}
+                onTextChanged: {
+                    latLonLatLon.update_ab()
+                }
+            }
 			Text {
 				Layout.alignment: Qt.AlignRight
 				Layout.column: 1
@@ -368,7 +460,10 @@ Item{
 					anchors.bottom: parent.top
 					anchors.left: parent.left
 				}
-			}
+                onTextChanged: {
+                    latLonLatLon.update_ab()
+                }
+            }
 			IconButtonTransparent {
 				icon.source: prefix + "/images/OK64.png"
 				Layout.row: 8
@@ -376,7 +471,7 @@ Item{
 				Layout.alignment: Qt.AlignRight
 				onClicked: {
 					latLonLatLon.visible = false
-					trackAddName.show("AB "+NA+"°")
+                    trackAddName.show(TracksInterface.newName)
 				}
 			}
 		}
@@ -394,8 +489,21 @@ Item{
 				latPointAA.text = parseFloat((aog.latitude).toFixed(7))
 				lonPointAA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
 				latLonHeadingEntry.text = parseFloat((aog.heading).toFixed(4))	
+                TracksInterface.start_new(2)
+                TracksInterface.newRefSide = 0; //in this mode ref line is where the tractor is
+
+                update_a_heading()
 			}
 		}
+
+        function update_a_heading() {
+            var pta = aog.convertWGS84ToLocal(Number(latPointAA.text),
+                                              Number(lonPointAA.text))
+
+            TracksInterface.mark_start(pta[1], pta[0], 0)
+            TracksInterface.newHeading = Utils.deg_to_radians(Number(latLonHeadingEntry.text))
+        }
+
 		GridLayout {
 			id: latLonHeadingLayout
 			anchors.centerIn: parent
@@ -418,7 +526,10 @@ Item{
 
 			IconButtonTransparent {
 				icon.source: prefix + "/images/Cancel64.png"
-				onClicked: latLonHeading.visible = false
+                onClicked: {
+                    latLonHeading.visible = false
+                    TracksInterface.cancel_new()
+                }
 				Layout.row: 4
 				Layout.column: 0
 			}
@@ -438,7 +549,10 @@ Item{
 					text: qsTr("Latitude (+- 90)")
 					anchors.bottom: parent.top
 					anchors.left: parent.left
-				}
+                }
+                onTextChanged: {
+                    latLonHeading.update_a_heading()
+                }
 			}
 			NumberTextField {
 				id: lonPointAA
@@ -455,7 +569,10 @@ Item{
 					anchors.bottom: parent.top
 					anchors.left: parent.left
 				}
-			}
+                onTextChanged: {
+                    latLonHeading.update_a_heading()
+                }
+            }
 			NumberTextField {
 				id: latLonHeadingEntry
 				bottomVal: 0
@@ -472,7 +589,10 @@ Item{
 					anchors.bottom: parent.top
 					anchors.left: parent.left
 				}
-			}	
+                onTextChanged: {
+                    latLonHeading.update_a_heading()
+                }
+            }
 			IconButtonTransparent {
 				icon.source: prefix + "/images/OK64.png"
 				Layout.row: 4
@@ -480,7 +600,7 @@ Item{
 				Layout.alignment: Qt.AlignRight
 				onClicked: {
 					latLonHeading.visible = false
-					trackAddName.show("A+ "+latLonHeading.text+"°")
+                    trackAddName.show(TracksInterface.newName)
 				}
 			}
 		}

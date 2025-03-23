@@ -76,7 +76,7 @@ public:
     //put a pointer to ourselves as a model.  This class is both
     //a list model, and also a bunch of properties
     Q_PROPERTY(QObject* model READ getModel CONSTANT)
-    Q_PROPERTY(int newRefSide MEMBER newRefSide NOTIFY newRefSideChanged)
+    Q_PROPERTY(int newRefSide READ getNewRefSide WRITE setNewRefSide NOTIFY newRefSideChanged)
 
     int idx, autoTrack3SecTimer;
 
@@ -91,9 +91,12 @@ public:
     //creating new track
     Q_PROPERTY (int newMode READ getNewMode NOTIFY newModeChanged)
     Q_PROPERTY (QString newName READ getNewName WRITE setNewName NOTIFY newNameChanged)
+    Q_PROPERTY (double newHeading READ getNewHeading WRITE setNewHeading NOTIFY newHeadingChanged)
 
     Q_PROPERTY (int count READ rowCount NOTIFY countChanged())
     Q_PROPERTY (QString currentName READ getCurrentName NOTIFY currentNameChanged)
+
+    QVector<Vec2> designRefLine;
 
     explicit CTrack(QObject* parent = nullptr);
     ~CTrack();
@@ -105,7 +108,7 @@ public:
     void NudgeRefABLine(CTrk &track, double dist);
     void NudgeRefCurve(CTrk &track, double distAway);
 
-    void DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera);
+    void DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera, const CVehicle &vehicle);
     void DrawTrack(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                    bool isFontOn,
                    bool isRateMapOn,
@@ -145,6 +148,12 @@ public:
     int getNewMode(void);
     void setNewMode(TrackMode);
 
+    int getNewRefSide(void);
+    void setNewRefSide(int which_side);
+
+    double getNewHeading(void);
+    void setNewHeading(double new_heading);
+
     QString getCurrentName(void);
 
     int getHowManyPathsAway();
@@ -163,6 +172,8 @@ public:
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     virtual QVariant data(const QModelIndex &index, int role) const override;
 
+    void update_ab_refline();
+
 protected:
     // QML model interface
     virtual QHash<int, QByteArray> roleNames() const override;
@@ -180,6 +191,7 @@ signals:
     void newModeChanged();
     void newNameChanged();
     void newRefSideChanged();
+    void newHeadingChanged();
     void countChanged();
     void currentNameChanged();
 

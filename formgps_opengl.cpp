@@ -381,6 +381,8 @@ void FormGPS::oglMain_Paint()
                 trk.DrawTrack(gl, projection*modelview, isFontOn, worldGrid.isRateMap, yt, camera, gyd);
             }
 
+            trk.DrawTrackNew(gl, projection*modelview, camera, vehicle);
+
             //if (recPath.isRecordOn)
             recPath.DrawRecordedLine(gl, projection*modelview);
             recPath.DrawDubins(gl, projection*modelview);

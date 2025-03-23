@@ -1195,13 +1195,13 @@ void FormGPS::UpdateFixPosition()
 
     aog->setProperty("latitude",pn.latitude);
     aog->setProperty("longitude",pn.longitude);
-    aog->setProperty("easting",pn.fix.easting);
-    aog->setProperty("northing",pn.fix.northing);
-    aog->setProperty("heading", gpsHeading);
+    aog->setProperty("easting",vehicle.pivotAxlePos.easting);
+    aog->setProperty("northing",vehicle.pivotAxlePos.northing);
+    aog->setProperty("heading", vehicle.pivotAxlePos.heading);
     aog->setProperty("fusedHeading", vehicle.fixHeading);
-    aog->setProperty("toolEasting", vehicle.pivotAxlePos.easting);
-    aog->setProperty("toolNorthing", vehicle.pivotAxlePos.northing);
-    aog->setProperty("toolHeading", vehicle.pivotAxlePos.heading);
+    aog->setProperty("toolEasting", vehicle.toolPos.easting);
+    aog->setProperty("toolNorthing", vehicle.toolPos.northing);
+    aog->setProperty("toolHeading", vehicle.toolPos.heading);
     aog->setProperty("rawHz", nowHz);
 	aog->setProperty("hz", gpsHz);
     //aog->setProperty("isReverse" , vehicle.isReverse);

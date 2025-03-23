@@ -73,6 +73,7 @@ public:
     //design
     Vec2 desPtA = Vec2(0.2, 0.15);
     Vec2 desPtB = Vec2(0.2, 0.15);
+    bool isDesPtBSet = false;
 
     Vec2 desLineEndA = Vec2(0.3, 0.3);
     Vec2 desLineEndB = Vec2(0.3, 0.3);
