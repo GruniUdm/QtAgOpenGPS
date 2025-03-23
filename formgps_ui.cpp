@@ -147,6 +147,8 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     autoBtnState = btnStates::Off;
     isPatchesChangingColor = false;
     isOutOfBounds = false;
+    pn.latStart = 0;
+    pn.lonStart = 0;
 
     //hook up our AOGInterface properties
     QObject *aog = qmlItem(mainWindow, "aog");

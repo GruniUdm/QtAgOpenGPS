@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Fusion
 import AOG
+import Interface
 import "../components" as Comp
 
 import ".."
@@ -46,9 +47,9 @@ Comp.TimedRectangle {
         Comp.IconButtonTransparent{
             icon.source: prefix + "/images/AddNew.png"
             Layout.alignment: Qt.AlignCenter
-				onClicked: {
-                    trackNewButtons.show()
-				}
+			onClicked: {
+                   trackNewButtons.show()
+			}
         }
         Comp.IconButtonTransparent{
             icon.source: prefix + "/images/ABDraw.png"
