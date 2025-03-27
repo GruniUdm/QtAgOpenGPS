@@ -1239,7 +1239,7 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("angVel", ahrs.angVel);
     aog->setProperty("isYouTurnRight", yt.isYouTurnRight);
     aog->setProperty("distancePivotToTurnLine", distancePivotToTurnLine);
-    aog->setProperty("lblimuCorrected", imuCorrected);
+    aog->setProperty("imuCorrected", imuCorrected);
     aog->setProperty("vehicle_xy",vehicle.pivot_axle_xy);
     aog->setProperty("vehicle_bounding_box",vehicle.bounding_box);
 

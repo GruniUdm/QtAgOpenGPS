@@ -10,6 +10,9 @@
 #include "aogrenderer.h"
 #include <QProcess>
 #include <QSysInfo>
+#ifdef  Q_OS_ANDROID
+#include <QtCore/private/qandroidextras_p.h>
+#endif
 
 QLabel *grnPixelsWindow;
 QLabel *overlapPixelsWindow;
@@ -18,6 +21,19 @@ NewSettings *settings;
 #ifndef TESTING
 int main(int argc, char *argv[])
 {
+#ifdef  Q_OS_ANDROID
+    QNativeInterface::QAndroidApplication::runOnAndroidMainThread([]() {
+        QJniObject activity = QtAndroidPrivate::activity();
+        if (activity.isValid()) {
+            QJniObject window = activity.callObjectMethod("getWindow", "()Landroid/view/Window;");
+            if (window.isValid()) {
+                const int FLAG_KEEP_SCREEN_ON = 128;
+                window.callMethod<void>("addFlags", "(I)V", FLAG_KEEP_SCREEN_ON);
+            }
+        }
+    });
+#endif
+
     qputenv("QSG_RENDER_LOOP", "threaded");
 
     QLoggingCategory::setFilterRules(QStringLiteral("qt.scenegraph.general=true"));

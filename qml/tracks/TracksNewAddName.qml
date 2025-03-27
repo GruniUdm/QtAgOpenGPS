@@ -31,7 +31,8 @@ MoveablePopup {
 		TextField {
 			id: trackName
 			Layout.columnSpan: 2
-			text: trackAddName.defaultText
+            //text: trackAddName.defaultText //?
+            text: "1"
 		}
 		IconButtonTransparent{
 			Layout.columnSpan: 2

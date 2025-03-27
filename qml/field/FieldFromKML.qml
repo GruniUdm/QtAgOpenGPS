@@ -35,6 +35,7 @@ Dialog{
         border.color: "darkgray"
         border.width: 1
         Text {
+            id: newFieldLabel
             anchors.left: parent.left
             anchors.bottom: parent.top
             font.bold: true

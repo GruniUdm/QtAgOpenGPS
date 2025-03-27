@@ -55,6 +55,8 @@ Item {
 	property bool autoTrackBtnState: false
     property double distancePivotToTurnLine: -2222
 
+    property bool isPatchesChangingColor: false
+
 
     //sections 0-15 are used for on-screen buttons if
     //not using zones.  If using zones the rest are used
@@ -164,7 +166,7 @@ Item {
     property rect vehicle_bounding_box: Qt.rect(0,0,0,0)
 
     property int lblmodeActualXTE: 0
-    property int lblmodeActualHeadingError: 0
+    property double lblmodeActualHeadingError: 0
 
     //onVehicle_xyChanged: console.log("vehicle xy is", vehicle_xy);
     //onVehicle_bounding_boxChanged: console.log("vehicle box is", vehicle_bounding_box);
