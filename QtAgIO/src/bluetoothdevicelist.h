@@ -21,7 +21,6 @@ public:
     Q_INVOKABLE QString get(int row) const;
 signals:
     void modelChanged();
-    void setBluetooth_deviceListChanged(); // Add this signal
 
 };
 
