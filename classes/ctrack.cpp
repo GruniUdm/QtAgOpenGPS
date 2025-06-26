@@ -741,6 +741,8 @@ void CTrack::mark_start(double easting, double northing, double heading)
     switch(getNewMode()) {
     case TrackMode::AB:
         curve.desList.clear();
+        newTrack.ptA.easting = easting;
+        newTrack.ptA.northing = northing;
         ABLine.isMakingABLine = true;
         ABLine.desPtA.easting = easting;
         ABLine.desPtA.northing = northing;
@@ -1047,7 +1049,9 @@ void CTrack::changeName(int index, QString new_name)
 
 void CTrack::setVisible(int index, bool isVisible)
 {
-    gArr[index].isVisible = isVisible;
+    if (index >=0 && index <= gArr.count() ) {
+        gArr[index].isVisible = isVisible;
+    }
     reloadModel();
 }
 

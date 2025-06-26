@@ -588,6 +588,7 @@ public:
 
     // void SendPgnToLoop(QByteArray byteData);  // ❌ REMOVED - AgIOService Workers only
     void DisableSim();
+    void LoadKMLBoundary(const std::string& filename);
     // void ReceiveFromAgIO(); // ❌ REMOVED - AgIOService Workers only
 
     /******************
@@ -692,6 +693,7 @@ public slots:
     void field_open(QString field_name);
     void field_new(QString field_name);
     void field_new_from(QString existing, QString field_name, int flags);
+    void field_new_from_KML(QString field_name, QString file_name);
     void field_delete(QString field_name);
 
     //modules ui callback

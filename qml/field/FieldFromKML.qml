@@ -123,7 +123,8 @@ Dialog{
     FileDialog {
         id: fileDialog
         onAccepted: {
-            console.log("Selected file:", fileDialog.selectedFile)
+            console.log("Selected file:", fileDialog.selectedFile);
+            fieldInterface.field_new_from_KML(newField.text.trim(), fileDialog.selectedFile);
         }
     }
 
@@ -142,6 +143,10 @@ Dialog{
         IconButtonTransparent{
             objectName: "btnSave"
             icon.source: prefix + "/images/OK64.png"
+            onClicked: {
+                fieldFromKML.visible = false
+                newField.text = ""
+            }
         }
     }
 }
