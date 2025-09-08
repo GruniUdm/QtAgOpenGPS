@@ -35,3 +35,14 @@ __pycache__
 project.json.qtds
 *.txt.*
 *.qtds.*
+.vs/CMake Overview
+.vs/ProjectSettings.json
+.vs/slnx.sqlite
+.vs/VSWorkspaceState.json
+.vs/qtagio/CopilotIndices/17.14.878.3237/CodeChunks.db
+.vs/qtagio/CopilotIndices/17.14.878.3237/SemanticSymbols.db
+.vs/qtagio/FileContentIndex/5773bc29-ceee-4f1d-9494-4df84103ac3e.vsidx
+.vs/qtagio/v17/.wsuo
+.vs/qtagio/v17/Browse.VC.db
+.vs/qtagio/v17/DocumentLayout.json
+.vs/qtagio/v17/workspaceFileList.bin
