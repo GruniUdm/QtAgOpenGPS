@@ -42,7 +42,7 @@ void FormGPS::setupGui()
 
     qDebug() << "AgIO: All context properties set, loading QML...";
 
-    addImportPath("qrc:/qtagopengps.org/imports/");
+    addImportPath("qrc:/qt/qml/");
 
 
     /* Load the QML UI and display it in the main area of the GUI */
@@ -78,7 +78,6 @@ void FormGPS::setupGui()
     rootContext()->setContextProperty("tram", &tram);
     qmlRegisterSingletonInstance("Interface", 1, 0, "TracksInterface", &trk);
     qmlRegisterSingletonInstance("Interface", 1, 0, "VehicleInterface", &vehicle);
-    qmlRegisterSingletonInstance("Settings", 1, 0, "Settings", settings);
 
 #ifdef LOCAL_QML
     // Look for QML files relative to our current directory
