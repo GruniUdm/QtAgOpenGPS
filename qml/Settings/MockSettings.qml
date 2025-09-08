@@ -6,6 +6,8 @@
 //This mirrors the structure of the real Settings.Settings used
 //in the compiled binary.
 
+import QtQuick
+
 pragma singleton
 
 Item {
