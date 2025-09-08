@@ -2,7 +2,7 @@
 #include <math.h>
 #include <QFile>
 #include "cyouturn.h"
-#include "newsettings.h"
+#include "settings.h"
 #include "cabline.h"
 #include "cvehicle.h"
 #include "cnmea.h"

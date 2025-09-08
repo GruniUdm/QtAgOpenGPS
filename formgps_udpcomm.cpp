@@ -7,7 +7,7 @@
 #include "cnmea.h"
 #include <QHostAddress>
 #include "qmlutil.h"
-#include "newsettings.h"
+#include "settings.h"
 
 #define BitConverter_ToDouble(data,position) (*(reinterpret_cast<double *>(&(data[position]))))
 #define BitConverter_ToSingle(data,position) (*(reinterpret_cast<float *>(&(data[position]))))

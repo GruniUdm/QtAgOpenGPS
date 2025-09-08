@@ -5,7 +5,7 @@
 // we are using sections or zones.
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 import AOG
 
 

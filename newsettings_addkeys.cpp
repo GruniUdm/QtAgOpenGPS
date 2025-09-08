@@ -1,9 +1,9 @@
 // Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
-#include "newsettings.h"
+#include "settings.h"
 
-void NewSettings::setupKeys() {
+void Settings::setupKeys() {
 
     addKey("ab/lineLength", 1600, QMetaType(QMetaType::Double));
     addKey("ardMac/hydLowerTime", 4, QMetaType(QMetaType::Int));

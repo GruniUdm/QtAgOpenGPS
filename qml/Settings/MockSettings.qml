@@ -2,15 +2,24 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 
-//This is a mock Settings singleton for use in qml viewer or QtDS
-//This mirrors the structure of the real Settings.Settings used
-//in the compiled binary.
+//This forwards to the real Settings singleton from AOG module
+//Provides backward compatibility for "import Settings"
 
 import QtQuick
+import AOG
 
 pragma singleton
 
-Item {
+// Forward all properties to the real Settings singleton
+QtObject {
+    // Expose the real Settings singleton
+    property alias settings: newSettings
+    
+    Settings {
+        id: newSettings
+    }
+    
+    // Forward all commonly used properties for backward compatibility
 	property double ab_lineLength: 1600
 	property int ardMac_hydLowerTime: 4
 	property int ardMac_hydRaiseTime: 3

@@ -1,7 +1,7 @@
 #include "cboundary.h"
 #include "glm.h"
 #include "glutils.h"
-#include "newsettings.h"
+#include "settings.h"
 #include "cvehicle.h"
 #include "cmodulecomm.h"
 

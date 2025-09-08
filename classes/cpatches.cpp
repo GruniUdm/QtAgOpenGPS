@@ -1,7 +1,7 @@
 #include "cpatches.h"
 #include "cfielddata.h"
 #include "ctool.h"
-#include "newsettings.h"
+#include "settings.h"
 
 CPatches::CPatches() {
    triangleList = QSharedPointer<PatchTriangleList>( new PatchTriangleList);

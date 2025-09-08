@@ -8,7 +8,7 @@
 #include "cvehicle.h"
 #include "ccontour.h"
 #include "cabline.h"
-#include "newsettings.h"
+#include "settings.h"
 #include <QGuiApplication>
 #include <QQmlEngine>
 #include <functional>

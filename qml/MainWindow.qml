@@ -7,7 +7,6 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Effects
 import QtQuick.Dialogs
-import Settings
 import Interface
 import AOG
 import AgIO as AgIOModule

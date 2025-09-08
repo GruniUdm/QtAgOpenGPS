@@ -4,7 +4,7 @@
 // Top left button menu
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 
 import "components" as Comp
 

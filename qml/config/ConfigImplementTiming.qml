@@ -4,7 +4,7 @@
 // Where we set the timing for section on/off
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 
 import ".."
 import "../components"

@@ -6,7 +6,7 @@
 #include "qmlutil.h"
 #include "common.h"
 #include "cpgn.h"
-#include "newsettings.h"
+#include "settings.h"
 
 
 /* SectionSetPosition(), SectionCalcWidths(), and SectionCalcMulti() are all in CTool */

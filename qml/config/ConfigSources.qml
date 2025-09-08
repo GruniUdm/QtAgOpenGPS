@@ -4,7 +4,7 @@
 // GPS heading source (dual/single)
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 
 import ".."
 import "../components"

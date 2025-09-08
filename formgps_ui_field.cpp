@@ -4,7 +4,7 @@
 // GUI to backend field interface
 #include "formgps.h"
 #include "qmlutil.h"
-#include "newsettings.h"
+#include "settings.h"
 
 void FormGPS::field_update_list() {
 

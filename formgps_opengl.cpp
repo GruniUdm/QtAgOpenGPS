@@ -22,7 +22,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
-#include "newsettings.h"
+#include "settings.h"
 #include "cpgn.h"
 
 #include <assert.h>

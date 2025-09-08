@@ -3,7 +3,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-import Settings
+//import Settings
 //This is a the row of on-screen section-control buttonw
 
 Rectangle {

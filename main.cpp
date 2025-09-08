@@ -6,7 +6,7 @@
 #include <QApplication>
 #include <QCoreApplication>
 #include <QLabel>
-#include "newsettings.h"
+#include "settings.h"
 #include "aogrenderer.h"
 #include <QProcess>
 #include <QSysInfo>
@@ -17,7 +17,7 @@
 
 QLabel *grnPixelsWindow;
 QLabel *overlapPixelsWindow;
-NewSettings *settings;
+Settings *settings;
 
 #ifndef TESTING
 int main(int argc, char *argv[])
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     qRegisterMetaTypeStreamOperators<QVector<int> >("QVector<int>");
 #endif
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
-    settings = new NewSettings();
+    settings = new Settings();
     //AOGProperty::init_defaults();
     settings->sync();
     FormGPS w;

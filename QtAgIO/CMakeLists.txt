@@ -93,6 +93,13 @@
 
 ###### Handling Local QML Handling QML in module for QtAgIO######
 
+# Qt Design Studio configuration (from official examples)
+set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/)
+set(QML_IMPORT_PATH ${QT_QML_OUTPUT_DIRECTORY}
+    CACHE STRING "Import paths for Qt Creator's code model"
+    FORCE
+)
+
 # Function to process resource files in a given directory (recursive)
 function(process_files DIR OUT_VAR)
     file(GLOB_RECURSE RESOURCE_FILES "${DIR}/*.*")
@@ -118,12 +125,15 @@ function(process_qml_files DIR)
     set(REL_PATHS)
     foreach(QML_FILE ${QML_FILES})
         
-            file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/qml" "${QML_FILE}")
+            file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${QML_FILE}")
+            # Create alias relative to qml/ directory for module structure
+            file(RELATIVE_PATH MODULE_REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/qml" "${QML_FILE}")
             set_source_files_properties(${QML_FILE} PROPERTIES
-                QT_RESOURCE_ALIAS "${REL_PATH}")
+                QT_RESOURCE_ALIAS "${MODULE_REL_PATH}")
             #message(WARNING "file QtAgIO QML_FILE: ${QML_FILE}")
             #message(WARNING "file QtAgIO REL_PATH: ${REL_PATH}")
-            list(APPEND REL_PATHS "qml/${REL_PATH}")
+            # Use relative path from project root for qt_add_qml_module
+            list(APPEND REL_PATHS "${REL_PATH}")
        
     endforeach()
     set(${ARGV1} ${REL_PATHS} PARENT_SCOPE)
@@ -148,20 +158,14 @@ set(QTAGIO_ALL_REL_PATHS
 
 # message(WARNING "All relative paths: ${ALL_REL_PATHS}")
 
-# Configure QML module with relative paths
-
-qt_add_library(QtAgIO STATIC)
-
+# Configure QML module with official Qt Design Studio pattern
 qt_add_qml_module(QtAgIO
+    STATIC
     URI AgIO
     VERSION 1.0
-    DESIGNER_SUPPORTED
-    NO_PLUGIN
-    RESOURCE_PREFIX /qtagopengps.org/imports
     QML_FILES
         ${QTAGIO_ALL_REL_PATHS}
     SOURCES
-        #${MODULE_CPP_FILES}
         agioproperties.cpp
         agioproperty.h agioproperty.cpp
         agiosettings.h agiosettings.cpp
@@ -176,6 +180,7 @@ qt_add_qml_module(QtAgIO
         qmlsettings_addkeys.cpp
         qmlutil.h
         formloop_formudp.cpp
+        formloop_serial.cpp
         src/CTraffic.h src/CTraffic.cpp
         src/CScanReply.h src/CScanReply.cpp
         src/bluetoothdevicelist.h src/bluetoothdevicelist.cpp
@@ -183,11 +188,7 @@ qt_add_qml_module(QtAgIO
         interfaceproperty.h
     RESOURCES
         ${QTAGIO_IMAGE_REL_PATHS}
-    #PLUGIN_TARGET QtAgIOplugin
-    DEPENDENCIES QtQuick
-    RESOURCES images/BlueTooth.png
-    SOURCES formloop_serial.cpp
-    QML_FILES
+        images/BlueTooth.png
 )
 
 target_link_libraries(QtAgIO PRIVATE

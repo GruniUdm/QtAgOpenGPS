@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include "glm.h"
-#include "newsettings.h"
+#include "settings.h"
 
 CSim::CSim(QObject *parent) : QObject(parent)
 {

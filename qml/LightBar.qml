@@ -4,7 +4,7 @@
 // Main screen lightbar
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 import AOG
 import 'components' as Comp
 

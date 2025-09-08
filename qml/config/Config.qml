@@ -7,7 +7,7 @@ import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 //import QtQuick.Extras 1.4
 import QtQuick.Dialogs
-import Settings
+//import Settings
 import Qt.labs.folderlistmodel
 import AOG
 

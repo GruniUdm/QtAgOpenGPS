@@ -4,7 +4,7 @@
 // Buttons that are shown across the top of "SteerConfigSettings.qml"
 import QtQuick
 import QtQuick.Layouts
-import Settings
+//import Settings
 import "../components"
 
 IconButtonTextBeside{

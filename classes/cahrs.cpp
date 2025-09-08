@@ -1,5 +1,5 @@
 #include "cahrs.h"
-#include "newsettings.h"
+#include "settings.h"
 #include <QDebug>
 
 CAHRS::CAHRS(QObject *parent) : QObject(parent)

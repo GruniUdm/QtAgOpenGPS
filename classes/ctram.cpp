@@ -5,7 +5,7 @@
 #include "glutils.h"
 #include "cboundary.h"
 #include "ccamera.h"
-#include "newsettings.h"
+#include "settings.h"
 #include "glm.h"
 
 //TODO: move all these to own file, centralize the names we're using

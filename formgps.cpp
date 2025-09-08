@@ -11,7 +11,7 @@
 #include <QLocale>
 #include <QLabel>
 #include <QQuickWindow>
-#include "newsettings.h"
+#include "settings.h"
 
 extern QLabel *grnPixelsWindow;
 extern QLabel *overlapPixelsWindow;

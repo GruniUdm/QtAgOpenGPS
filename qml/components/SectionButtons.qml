@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 
 //This is a the row of on-screen section-control buttonw
 

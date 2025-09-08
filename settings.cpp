@@ -1,4 +1,4 @@
-#include "newsettings.h"
+#include "settings.h"
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -9,16 +9,16 @@ const int METATYPE_QVECTOR_INT = qRegisterMetaType<QVector<int>>("QVector<int>")
 const int METATYPE_QVECTOR_DOUBLE = qRegisterMetaType<QVector<double>>("QVector<double>");
 const int METATYPE_QVECTOR_STRING = qRegisterMetaType<QVector<QString>>("QVector<QString>");
 
-NewSettings::NewSettings(QObject *parent)
+Settings::Settings(QObject *parent)
     : QQmlPropertyMap{parent}
 {
     setupKeys();
 
     connect (this, &QQmlPropertyMap::valueChanged,
-            this, &NewSettings::onValueChanged);
+            this, &Settings::onValueChanged);
 }
 
-void NewSettings::addKey(const QString settings_key,
+void Settings::addKey(const QString settings_key,
                          const QVariant &default_value,
                          const QMetaType type)
 {
@@ -69,7 +69,7 @@ void NewSettings::addKey(const QString settings_key,
     settings.sync();
 }
 
-void NewSettings::onValueChanged(const QString &qml_key,
+void Settings::onValueChanged(const QString &qml_key,
                                  const QVariant &value)
 {
     QString settings_key = qml_key.split('_').join('/');
@@ -93,7 +93,7 @@ void NewSettings::onValueChanged(const QString &qml_key,
     settings.sync();
 }
 
-QVariant NewSettings::value(const QString &key)
+QVariant Settings::value(const QString &key)
 {
     QVariant notfound("NOTFOUND"); //sentinal
     QVariant value = settings.value(key,notfound);
@@ -105,14 +105,14 @@ QVariant NewSettings::value(const QString &key)
     return settings.value(key);
 }
 
-QVector<int> NewSettings::valueIntVec(const QString &key)
+QVector<int> Settings::valueIntVec(const QString &key)
 {
     QVariant val;
     val = settings.value(key);
     return toVector<int>(val);
 }
 
-void NewSettings::setValue(const QString &key, const QVariant &value)
+void Settings::setValue(const QString &key, const QVariant &value)
 {
     QVariant notfound("NOTFOUND"); //sentinal
     QVariant existing_value = settings.value(key,notfound);
@@ -132,7 +132,7 @@ void NewSettings::setValue(const QString &key, const QVariant &value)
     settings.sync();
 }
 
-void NewSettings::setValue(const QString &key, const QVector<int> &value_list)
+void Settings::setValue(const QString &key, const QVector<int> &value_list)
 {
     QVariant qv = toVariant(value_list);
     settings.setValue(key, qv);
@@ -142,7 +142,7 @@ void NewSettings::setValue(const QString &key, const QVector<int> &value_list)
     insert(qml_key, qv);
 }
 
-QJsonObject NewSettings::toJson()
+QJsonObject Settings::toJson()
 {
     //b = QVariant(QColor::fromRgbF(1,0.5,0.2));
     QVariant b;
@@ -188,7 +188,7 @@ QJsonObject NewSettings::toJson()
     return blah;
 }
 
-bool NewSettings::loadJson(QString filename)
+bool Settings::loadJson(QString filename)
 {
     QFile loadfile(filename);
     if (!loadfile.open(QIODevice::ReadOnly))
@@ -236,7 +236,7 @@ bool NewSettings::loadJson(QString filename)
     return true;
 }
 
-bool NewSettings::saveJson(QString filename)
+bool Settings::saveJson(QString filename)
 {
     QFile savefile(filename);
     if (!savefile.open(QIODevice::WriteOnly))
@@ -252,11 +252,11 @@ bool NewSettings::saveJson(QString filename)
 
 }
 
-void NewSettings::sync() {
+void Settings::sync() {
     settings.sync();
 }
 
-QVariant NewSettings::updateValue(const QString &key, const QVariant &input)
+QVariant Settings::updateValue(const QString &key, const QVariant &input)
 {
     return QQmlPropertyMap::updateValue(key, input);
 }

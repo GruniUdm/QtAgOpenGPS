@@ -10,7 +10,7 @@
 #include "cboundary.h"
 #include "cyouturn.h"
 #include "cahrs.h"
-#include "newsettings.h"
+#include "settings.h"
 #include "cnmea.h"
 //#include "common.h"
 

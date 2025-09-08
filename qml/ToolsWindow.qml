@@ -5,7 +5,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Settings
+//import Settings
 import AOG
 import Interface
 import "components" as Comp

@@ -4,7 +4,7 @@
 // Menu displayed when the "Field Tools" button is clicked
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 
 import ".."
 import "../components"

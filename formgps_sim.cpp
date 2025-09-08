@@ -5,7 +5,7 @@
 #include "formgps.h"
 #include "classes/csim.h"
 #include "qmlutil.h"
-#include "newsettings.h"
+#include "settings.h"
 
 /* Callback for Simulator new position */
 void FormGPS::simConnectSlots()

@@ -1,5 +1,5 @@
 #include "cdubins.h"
-#include "newsettings.h"
+#include "settings.h"
 #include "glm.h"
 
 static const double driveDistance = 0.05;

@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import Settings
+//import Settings
 import Interface
 import AOG
 import "components" as Comp

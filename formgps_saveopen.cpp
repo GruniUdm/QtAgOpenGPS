@@ -5,7 +5,7 @@
 #include "formgps.h"
 #include <QDir>
 #include "cboundarylist.h"
-#include "newsettings.h"
+#include "settings.h"
 #include "qmlutil.h"
 #include <QString>
 

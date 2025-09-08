@@ -5,7 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtMultimedia
-import Settings
+import AOG
 
 /* This type contains the sounds, colors, and perhaps screen sizes,
   *Sounds will track AOGInterface.qml, and react when needed as set

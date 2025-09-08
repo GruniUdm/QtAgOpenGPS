@@ -3,7 +3,7 @@
 #include "cnmea.h"
 #include "vec2.h"
 #include "glm.h"
-#include "newsettings.h"
+#include "settings.h"
 
 
 CNMEA::CNMEA(QObject *parent) : QObject(parent)

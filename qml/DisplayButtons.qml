@@ -4,7 +4,7 @@
 // The panel with display controls (+, -, 2d/3d etc.
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 import AOG
 import "components" as Comp
 

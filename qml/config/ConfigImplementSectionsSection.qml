@@ -4,7 +4,7 @@
 // Displayed by ConfigImplementSections, if we are using Sections, not Zones
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 import AOG
 
 

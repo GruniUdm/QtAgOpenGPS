@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import AOG
-import Settings
+//import Settings
 import "components" as Comp
 
 ColumnLayout {

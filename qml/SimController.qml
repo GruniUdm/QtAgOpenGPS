@@ -4,7 +4,7 @@
 // Sim controller panel on main screen
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 import "components" as Comp
 
 Rectangle{

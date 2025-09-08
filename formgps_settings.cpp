@@ -3,7 +3,7 @@
 //
 // This loads the setting (or some of them) into variables, that we can access later
 #include "formgps.h"
-#include "newsettings.h"
+#include "settings.h"
 
 void FormGPS::loadSettings()
 {

@@ -1,5 +1,5 @@
 #include "cboundary.h"
-#include "newsettings.h"
+#include "settings.h"
 
 CBoundary::CBoundary(QObject *parent) : QObject(parent)
 {

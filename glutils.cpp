@@ -8,7 +8,7 @@
 #include "ccamera.h"
 #include <assert.h>
 #include <math.h>
-#include "newsettings.h"
+#include "settings.h"
 
 //module-level symbols
 QOpenGLShaderProgram *simpleColorShader = 0;

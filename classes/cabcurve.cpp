@@ -18,7 +18,7 @@
 #include "cahrs.h"
 #include "cguidance.h"
 #include "ctrack.h"
-#include "newsettings.h"
+#include "settings.h"
 
 CABCurve::CABCurve(QObject *parent) : QObject(parent)
 {

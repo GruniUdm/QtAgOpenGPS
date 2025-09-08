@@ -14,7 +14,7 @@
 #include <QColor>
 #include "glutils.h"
 #include "cnmea.h"
-#include "newsettings.h"
+#include "settings.h"
 
 //??? why does CABLine refer to mf.ABLine? Isn't there only one instance and
 //thus was can just use "this."  If this is wrong, we'll remove this and fix it.

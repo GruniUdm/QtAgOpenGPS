@@ -4,7 +4,7 @@
 // Config dimensions for rear 3pt mounted implement 
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 import AOG
 
 

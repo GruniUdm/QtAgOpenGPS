@@ -1,5 +1,5 @@
 #include "cpgn.h"
-#include "newsettings.h"
+#include "settings.h"
 
 CPGN_FC::CPGN_FC(): pgn(QByteArray( "\x80\x81\x7f\xfc\x08\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 14))
 {

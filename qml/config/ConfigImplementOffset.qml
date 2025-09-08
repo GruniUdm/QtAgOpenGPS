@@ -8,7 +8,7 @@ import QtQuick.Layouts
 //import QtQuick.Extras 1.4
 import QtQuick.Dialogs
 import Qt.labs.folderlistmodel
-import Settings
+//import Settings
 import AOG
 
 

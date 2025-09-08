@@ -13,7 +13,7 @@
 #include <QMatrix4x4>
 #include <QOpenGLFunctions>
 #include "glutils.h"
-#include "newsettings.h"
+#include "settings.h"
 #include <QTime>
 
 //here for now.  Put in another module for use in other places.

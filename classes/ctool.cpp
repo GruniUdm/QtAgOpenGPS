@@ -1,7 +1,7 @@
 #include "ctool.h"
 #include "cvehicle.h"
 #include "glm.h"
-#include "newsettings.h"
+#include "settings.h"
 #include "glutils.h"
 #include "ccamera.h"
 #include "ctram.h"

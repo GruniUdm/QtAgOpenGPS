@@ -5,7 +5,7 @@
 #include "cabline.h"
 #include "cabcurve.h"
 #include "glm.h"
-#include "newsettings.h"
+#include "settings.h"
 
 CGuidance::CGuidance() {}
 

@@ -5,7 +5,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 //import QtQuick.Controls.Styles 1.4
 
 import ".."

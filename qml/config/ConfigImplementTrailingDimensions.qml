@@ -4,7 +4,7 @@
 // Set the dimensions for a drawn implement
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 import AOG
 
 

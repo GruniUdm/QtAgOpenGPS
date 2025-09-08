@@ -4,7 +4,7 @@
 //
 import QtQuick
 import AOG
-import Settings
+//import Settings
 import "components" as Comp
 
 Comp.OutlineText {

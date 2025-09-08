@@ -1,6 +1,6 @@
 #include "cboundary.h"
 #include "glm.h"
-#include "newsettings.h"
+#include "settings.h"
 #include "cabline.h"
 #include "cfielddata.h"
 

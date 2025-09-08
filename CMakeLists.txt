@@ -53,6 +53,13 @@ qt_standard_project_setup(REQUIRES 6.8
         CACHE STRING "Import paths for Qt Creator's code model"
         FORCE
     )
+    
+    # Configure Designer-specific import paths
+    set(QML_DESIGNER_IMPORT_PATH 
+        ${CMAKE_BINARY_DIR}
+        CACHE STRING "Import paths for Qt Design Studio designer mode"
+        FORCE
+    )
 # //
 
 # Create the executable
@@ -60,7 +67,7 @@ qt_add_executable(QtAgOpenGPS
     main.cpp
     $<$<NOT:$<BOOL:${LOCAL_QML}>>:agopengps.qrc>
     aogrenderer.h aogrenderer.cpp
-    newsettings.h newsettings.cpp
+    settings.h settings.cpp
     newsettings_addkeys.cpp
     settings_defines.h
     btnenum.h
@@ -151,6 +158,13 @@ endif()
 
 ###### Handling Local QML Handling QML in module in LOCAL_QML OFF######
 if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
+    
+    # Qt Design Studio configuration (from official examples)
+    set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/)
+    set(QML_IMPORT_PATH ${QT_QML_OUTPUT_DIRECTORY}
+        CACHE STRING "Import paths for Qt Creator's code model"
+        FORCE
+    )
     # Function to process resource files in a given directory (recursive)
     function(process_files DIR OUT_VAR)
         file(GLOB_RECURSE RESOURCE_FILES "${DIR}/*.*")
@@ -182,12 +196,15 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         set(REL_PATHS)
         foreach(QML_FILE ${QML_FILES})
             if(NOT QML_FILE MATCHES ".*\\.Test\\..*\\.qml$")  #Remove *Test*.qml files from the list
-                file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/qml" "${QML_FILE}")
+                file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${QML_FILE}")
+                # Create alias relative to qml/ directory for module structure
+                file(RELATIVE_PATH MODULE_REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/qml" "${QML_FILE}")
                 set_source_files_properties(${QML_FILE} PROPERTIES
-                    QT_RESOURCE_ALIAS "${REL_PATH}")
+                    QT_RESOURCE_ALIAS "${MODULE_REL_PATH}")
                 #message(WARNING "file QML_FILE: ${QML_FILE}")
                 #message(WARNING "file REL_PATH: ${REL_PATH}")
-                list(APPEND REL_PATHS "qml/${REL_PATH}")
+                # Use relative path from project root for qt_add_qml_module
+                list(APPEND REL_PATHS "${REL_PATH}")
             endif()
         endforeach()
         set(${ARGV1} ${REL_PATHS} PARENT_SCOPE)
@@ -230,17 +247,17 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         PROPERTIES QT_QML_SINGLETON_TYPE TRUE
     )
 
-    # Configure QML module with relative paths
+    # Qt Design Studio qt_add_qml_module (official pattern)
     qt_add_qml_module(QtAgOpenGPS
         URI AOG
         VERSION 1.0
-        DESIGNER_SUPPORTED
-        RESOURCE_PREFIX /qtagopengps.org/imports
         QML_FILES
         ${ALL_REL_PATHS} #all qml files
         SOURCES
         aogrenderer.cpp
         aogrenderer.h
+        settings.cpp
+        settings.h
 
         RESOURCES
         ${IMAGE_REL_PATHS}
@@ -256,29 +273,6 @@ else() #LOCAL_QML ON
 
     # Display the qrc file in the project tree without compiling it
     add_custom_target(AOGQML SOURCES agopengps.qrc)
-
-    set(aog_qml_singletons
-        qml/singletons/Utils.qml
-    )
-
-    set_source_files_properties("qml/singletons/Utils.qml" PROPERTIES
-                    QT_RESOURCE_ALIAS "singletons/Utils.qml")
-
-    set_source_files_properties(${aog_qml_singletons}
-        PROPERTIES QT_QML_SINGLETON_TYPE TRUE
-    )
-
-    qt_add_qml_module(QtAgOpenGPS
-        URI AOG
-        VERSION 1.0
-        DESIGNER_SUPPORTED
-        RESOURCE_PREFIX /qtagopengps.org/imports
-        QML_FILES ${aog_qml_singletons}
-        SOURCES
-            aogrenderer.cpp
-            aogrenderer.h
-            DEPENDENCIES Qt6::QtQuick
-        )
 
 endif()
 ###### End Script of Handling QML in module ######

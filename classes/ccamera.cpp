@@ -1,6 +1,6 @@
 #include "ccamera.h"
 #include <QOpenGLContext>
-#include "newsettings.h"
+#include "settings.h"
 #include <math.h>
 #include "glm.h"
 

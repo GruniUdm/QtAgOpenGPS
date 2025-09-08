@@ -4,7 +4,7 @@
 // GUI to backend vehicle interface
 #include "formgps.h"
 #include "qmlutil.h"
-#include "newsettings.h"
+#include "settings.h"
 
 QString caseInsensitiveFilename(QString directory, QString filename);
 

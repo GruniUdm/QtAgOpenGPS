@@ -9,16 +9,17 @@
 #include <QPoint>
 #include <QSize>
 #include <QRect>
+#include <QtQml/qqmlregistration.h>
 
 #include "settings_defines.h"
 
-class NewSettings;
+class Settings;
 
 extern const int METATYPE_QVECTOR_INT;
 extern const int METATYPE_QVECTOR_DOUBLE;
 extern const int METATYPE_QVECTOR_STRING;
 
-extern NewSettings *settings;
+extern Settings *settings;
 
 /* This class helps bridge between QSettings and QML/Javascript.
  * An instance of QSettings is kept inside this class and a
@@ -37,16 +38,18 @@ extern NewSettings *settings;
  * update QSettings.
  */
 
-class NewSettings : public QQmlPropertyMap
+class Settings : public QQmlPropertyMap
 {
     Q_OBJECT
+    QML_SINGLETON
+    QML_ELEMENT
 
 private:
     QSettings settings;
     QMap<QString, QMetaType> settings_type_map;
 
 public:
-    explicit NewSettings(QObject *parent = nullptr);
+    explicit Settings(QObject *parent = nullptr);
 
 
     //all keys must be predeclared by calling this method

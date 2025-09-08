@@ -3,7 +3,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QRgb>
-#include "newsettings.h"
+#include "settings.h"
 #include "ccamera.h"
 #include "cboundary.h"
 #include "ctool.h"

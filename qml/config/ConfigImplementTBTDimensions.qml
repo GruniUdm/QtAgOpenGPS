@@ -4,7 +4,7 @@
 // Window where we set dimensions for the TBT implement, or a drawn implement behind a drawn implement
 import QtQuick
 import QtQuick.Controls.Fusion
-import Settings
+//import Settings
 import AOG
 
 

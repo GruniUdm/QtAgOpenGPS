@@ -5,7 +5,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Dialogs
-import Settings
+//import Settings
 import AOG
 
 

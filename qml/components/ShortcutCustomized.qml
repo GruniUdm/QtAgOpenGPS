@@ -3,7 +3,7 @@
 //
 // An attemt to make shortcut keys easier. Not used right now
 import QtQuick
-import Settings
+//import Settings
 
 Shortcut{
 	id: shortcut

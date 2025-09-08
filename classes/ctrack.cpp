@@ -9,7 +9,7 @@
 #include "glm.h"
 #include "cabcurve.h"
 #include "cabline.h"
-#include "newsettings.h"
+#include "settings.h"
 #include "cyouturn.h"
 #include "cboundary.h"
 #include "ctram.h"
