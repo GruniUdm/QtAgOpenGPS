@@ -103,6 +103,7 @@ ColumnLayout {
         implicitWidth: theme.buttonSize
         implicitHeight: theme.buttonSize
         onCheckedChanged: checked ? aog.autoTrackBtnState = 1 : aog.autoTrackBtnState = 0
+        onClicked: aog.btnAutoTrack()
     }
 
     Comp.MainWindowBtns {
@@ -150,8 +151,8 @@ ColumnLayout {
         icon.source: prefix + "/images/YouTurnNo.png"
         iconChecked: prefix + "/images/YouTurn80.png"
         buttonText: qsTr("AutoUturn")
-        visible: aog.isTrackOn
-        enabled: aog.isBtnAutoSteerOn
+        visible: TracksInterface.idx > -1
+        //enabled: aog.isBtnAutoSteerOn
         onClicked: aog.autoYouTurn()
     }
     Comp.MainWindowBtns {

@@ -975,8 +975,9 @@ void CABCurve::DrawCurveNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
     GLHelperOneColor gldraw;
 
     for (int h = 0; h < desList.count(); h++) gldraw.append(QVector3D(desList[h].easting, desList[h].northing, 0));
-
+    gl->glLineWidth(5);
     gldraw.draw(gl, mvp, QColor::fromRgbF(0.95f, 0.42f, 0.750f), GL_LINE_STRIP, 4.0f); //TODO is 4 pixels right?  check main form call
+    gl->glLineWidth(1);
 }
 
 void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
@@ -1000,8 +1001,9 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     {
         for (int h = 0; h < desList.count(); h++)
             gldraw.append(QVector3D(desList[h].easting, desList[h].northing, 0));
-
+        gl->glLineWidth(lineWidth);
         gldraw.draw(gl,mvp,QColor::fromRgbF(0.95f, 0.42f, 0.750f),GL_LINE_STRIP,lineWidth);
+        gl->glLineWidth(1);
     }
 
     int ptCount = track.curvePts.count();
@@ -1014,9 +1016,9 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
         for (int h = 0; h < ptCount; h++) {
             gldraw.append(QVector3D(track.curvePts[h].easting, track.curvePts[h].northing, 0));
         }
-
+        gl->glLineWidth(lineWidth);
         gldraw.draw(gl,mvp,QColor::fromRgbF(0.96, 0.2f, 0.2f), GL_LINES, 4.0);
-
+        gl->glLineWidth(1);
         if (isFontOn)
         {
             color.setRgbF(0.40f, 0.90f, 0.95f);
@@ -1033,8 +1035,9 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 
             for (int h = 0; h < smooList.count(); h++)
                 gldraw.append(QVector3D(smooList[h].easting, smooList[h].northing, 0));
-
+            gl->glLineWidth(lineWidth);
             gldraw.draw(gl,mvp,QColor::fromRgbF(0.930f, 0.92f, 0.260f),GL_LINES,lineWidth);
+            gl->glLineWidth(1);
         }
         else //normal. Smoothing window is not open.
         {
@@ -1048,19 +1051,24 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 
                 //ablines and curves are a line - the rest a loop
 
-                if(track.mode <= (int)TrackMode::Curve)
+                if(track.mode <= (int)TrackMode::Curve){
+                    gl->glLineWidth(lineWidth);
                     gldraw.draw(gl,mvp,color,GL_LINE_STRIP,lineWidth);
-                else
+                    gl->glLineWidth(1);}
+                else{
+                    gl->glLineWidth(lineWidth);
                     gldraw.draw(gl,mvp,color,GL_LINE_LOOP,lineWidth);
+                    gl->glLineWidth(1);}
 
                 if (!vehicle_isStanleyUsed && camera.camSetDistance > -200)
                 {
                     gldraw.clear();
                     //Draw lookahead Point
                     color.setRgbF(1.0f, 0.95f, 0.195f);
-
+                    gl->glLineWidth(lineWidth);
                     gldraw.append(QVector3D(goalPointCu.easting, goalPointCu.northing, 0.0));
                     gldraw.draw(gl,mvp,color,GL_POINTS,8.0f);
+                    gl->glLineWidth(1);
                 }
 
                 yt.DrawYouTurn(gl,mvp);
@@ -1068,8 +1076,9 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                 gldraw.clear();
                 for (int h = 0; h < curList.count(); h++)
                     gldraw.append(QVector3D(curList[h].easting, curList[h].northing, 0));
-
+                gl->glLineWidth(lineWidth);
                 gldraw.draw(gl, mvp, QColor::fromRgbF(0.920f, 0.6f, 0.950f), GL_POINTS, 3.0f);
+                gl->glLineWidth(1);
             }
         }
     }
@@ -1082,8 +1091,9 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
             gldraw.append(QVector3D(track.ptA.easting, track.ptA.northing, 0));
             for (int h = 0; h < curList.count(); h++)
                 gldraw.append(QVector3D(curList[h].easting, curList[h].northing, 0));
-
+            gl->glLineWidth(lineWidth);
             gldraw.draw(gl, mvp, QColor::fromRgbF(0.95f, 0.2f, 0.95f),GL_LINE_STRIP, lineWidth);
+            gl->glLineWidth(1);
 
             if (!vehicle_isStanleyUsed && camera.camSetDistance > -200)
             {

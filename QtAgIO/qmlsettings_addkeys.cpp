@@ -28,4 +28,11 @@ void QMLSettings::setupKeys() {
     addKey(QString("run_isFirstRun"), QString("run/isFirstRun"), "bool");
     addKey(QString("setBluetooth_isOn"),QString("bluetooth/isOn"),"bool");
     addKey(QString("setBluetooth_deviceList"), QString("bluetooth/deviceList"), "QStringList");
+    addKey(QString("setGnss_SerialPort"), QString("serial/gpsSerialport"), "QString");
+    addKey(QString("setGnss_BaudRate"), QString("serial/gpsBaudrate"), "QString");
+    addKey(QString("setImu_SerialPort"), QString("serial/imuSerialport"), "QString");
+    addKey(QString("setImu_BaudRate"), QString("serial/imuBaudrate"), "QString");
+    addKey(QString("setSteer_SerialPort"), QString("serial/steerSerialport"), "QString");
+    addKey(QString("setSteer_BaudRate"), QString("serial/steerBaudrate"), "QString");
+
 }

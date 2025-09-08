@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Settings
 import AOG
+import Interface
 import "components" as Comp
 
 RowLayout{
@@ -19,16 +20,18 @@ RowLayout{
             height = 0
         else
             height = children.height
+        cbYouSkipNumber.currentIndex = Settings.youturn_skipWidth-1
 
     }
     ComboBox {
         id: cbYouSkipNumber
-        editable: true
+        editable: false
         Layout.alignment: Qt.AlignCenter
         implicitWidth: theme.buttonSize
         implicitHeight: theme.buttonSize
         model: ListModel {
             id: model
+            ListElement {text: "0"}
             ListElement {text: "1"}
             ListElement {text: "2"}
             ListElement {text: "3"}
@@ -40,20 +43,31 @@ RowLayout{
             ListElement {text: "9"}
             ListElement {text: "10"}
         }
-        onAccepted: {
+        onCurrentIndexChanged: {
             if (cbYouSkipNumber.find(currentText) === -1){
                 model.append({text: editText})
                 curentIndex = cbYouSkipNumber.find(editText)
             }
+            Settings.youturn_skipWidth = cbYouSkipNumber.currentIndex+1
         }
+
     }
-    Comp.MainWindowBtns {
+    Comp.IconButton3State {
         id: btnYouSkip // the "Fancy Skip" button
-        isChecked: false
-        checkable: true
-        icon.source: prefix + "/images/YouSkipOff.png"
-        iconChecked: prefix + "/images/YouSkipOn.png"
-        buttonText: qsTr("YouSkips")
+        //property bool isOn: false
+        //isChecked: isOn
+        //checkable: true
+        icon1: prefix + "/images/YouSkipOff.png"
+        icon2: prefix + "/images/YouSkipOn.png"
+        icon3: prefix + "/images/YouSkipOn2.png"
+        icon4: prefix + "/images/YouSkipOn2.png"
+        //iconChecked: prefix + "/images/YouSkipOn.png"
+        //buttonText: qsTr("YouSkips")
+        onClicked:
+         {
+            //isOn = !isOn
+            aog.isYouSkipOn()
+        }
     }
     Comp.MainWindowBtns { //reset trailing tool to straight back
         id: btnResetTool
@@ -104,7 +118,11 @@ RowLayout{
         id: btnFlag
         objectName: "btnFlag"
         isChecked: false
-        icon.source: prefix + "/images/FlagRed.png"
+        icon.source: prefix + contextFlag.icon
+        onClicked: {
+            flags.show();
+            aog.btnFlag();
+        }
         onPressAndHold: {
             if (contextFlag.visible) {
                 contextFlag.visible = false;
@@ -115,12 +133,38 @@ RowLayout{
         buttonText: qsTr("Flag")
     }
 
+    Comp.MainWindowBtns{
+        icon.source: prefix + "/images/SnapLeft.png"
+        onClicked: TracksInterface.nudge(Settings.as_snapDistance/-100) //spinbox returns cm, convert to metres
+        visible: Settings.feature_isNudgeOn && TracksInterface.idx > -1
+    }
+    Comp.MainWindowBtns{
+        icon.source: prefix + "/images/SnapToPivot.png"
+        onClicked: TracksInterface.nudge_center()
+        visible: Settings.feature_isNudgeOn && TracksInterface.idx > -1
+    }
+    Comp.MainWindowBtns{
+        icon.source: prefix + "/images/SnapRight.png"
+        onClicked: TracksInterface.nudge(Settings.as_snapDistance/100) //spinbox returns cm, convert to metres
+        visible: Settings.feature_isNudgeOn && TracksInterface.idx > -1
+    }
+
     Comp.MainWindowBtns {
+        property bool isOn: false
         id: btnTrack
-        icon.source: prefix + "/images/TrackOff.png"
+        icon.source: prefix + "/images/TrackOn.png"
         iconChecked: prefix + "/images/TrackOn.png"
         buttonText: qsTr("Track")
-        onClicked: trackButtons.visible = !trackButtons.visible
+        //onClicked: trackButtons.visible = !trackButtons.visible
+        onClicked: {if (isOn == false && trk.rowCount() > 0) {
+                        TracksInterface.select(0);
+                        btnTrack.isChecked = false;
+                        isOn = true;
+                    }
+                    else {
+                        trackButtons.visible = !trackButtons.visible;
+                        }
+                    }
     }
 
 }

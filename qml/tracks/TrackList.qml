@@ -103,7 +103,7 @@ MoveablePopup {
                 icon.source: prefix + "/images/ABSwapPoints.png"
                 onClicked: {
                     if(trackView.currentIndex > -1)
-                        linesInterface.abLine_swapHeading(trackView.currentIndex);
+                        TracksInterface.swapAB(trackView.currentIndex);
                 }
             }
             IconButtonTransparent{

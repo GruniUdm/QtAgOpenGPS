@@ -7,6 +7,7 @@ import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import Settings
 import AOG
+import Interface
 
 import ".."
 import "../components" as Comp

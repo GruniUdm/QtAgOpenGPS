@@ -13,7 +13,7 @@ void CAHRS::loadSettings()
     rollFilter = settings->value(SETTINGS_imu_rollFilter).value<double>();
 
     //is the auto steer in auto turn on mode or not
-    isAutoSteerAuto = settings->value(SETTINGS_as_isAutoSteerAutoOn).value<bool>();
+    isAutoSteerAuto = true; //settings->value(SETTINGS_as_isAutoSteerAutoOn).value<bool>();
     isRollInvert = settings->value(SETTINGS_imu_invertRoll).value<bool>();
     isDualAsIMU = settings->value(SETTINGS_imu_isDualAsIMU).value<bool>();
     isReverseOn = settings->value(SETTINGS_imu_isReverseOn).value<bool>();

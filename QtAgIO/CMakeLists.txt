@@ -183,6 +183,9 @@ qt_add_qml_module(QtAgIO
         ${QTAGIO_IMAGE_REL_PATHS}
     #PLUGIN_TARGET QtAgIOplugin
     DEPENDENCIES QtQuick
+    RESOURCES images/BlueTooth.png
+    SOURCES formloop_serial.cpp
+    QML_FILES
 )
 
 target_link_libraries(QtAgIO PRIVATE
@@ -192,6 +195,7 @@ target_link_libraries(QtAgIO PRIVATE
     Qt6::Quick
 #    Qt6::QuickWidgets
     Qt6::Bluetooth
+    Qt6::SerialPort
 )
 
 # set_target_properties(AgIO PROPERTIES

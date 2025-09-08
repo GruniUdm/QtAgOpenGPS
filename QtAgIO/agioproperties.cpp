@@ -27,4 +27,10 @@ AgIOProperty property_setNTRIP_url("comm/ntripURL", "test.test");
 AgIOProperty property_setRun_isFirstRun("run/isFirstRun", true);
 AgIOProperty property_setBluetooth_isOn("bluetooth/isOn", false);
 AgIOProperty property_setBluetooth_deviceList("bluetooth/deviceList", "");
+AgIOProperty property_setGnss_SerialPort("serial/gpsSerialport", "ttyHSL2");
+AgIOProperty property_setGnss_BaudRate("serial/gpsBaudrate", "921600");
+AgIOProperty property_setImu_SerialPort("serial/imuSerialport", "ttyHSL0");
+AgIOProperty property_setImu_BaudRate("serial/imuBaudrate", "115200");
+AgIOProperty property_setSteer_SerialPort("serial/steerSerialport", "ttyHSL3");
+AgIOProperty property_setSteer_BaudRate("serial/steerBaudrate", "460800");
 

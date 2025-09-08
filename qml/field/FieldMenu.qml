@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import Settings
+import Interface
 
 import ".."
 import "../components"
@@ -43,7 +44,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("Drive In")
                 icon.source: prefix + "/images/AutoManualIsAuto.png"
-                onClicked: { fieldMenu.visible = false ; fieldOpen.sortBy = 2 ; fieldOpen.visible = true; }
+                onClicked: { fieldMenu.visible = false ; fieldOpen.sortBy = 2 ; fieldOpen.visible = true; TracksInterface.select(-1);}
             }
             IconButtonTextBeside{
                 objectName: "btnFieldISOXML"
@@ -65,7 +66,7 @@ Drawer {
                 icon.source: prefix + "/images/FileExisting.png"
                 onClicked: {
                     fieldMenu.visible = false
-                    fieldFromExisting.visible = true
+                    fieldFromExisting.show()
                 }
             }
             IconButtonTextBeside{

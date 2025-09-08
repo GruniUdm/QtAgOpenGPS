@@ -2467,25 +2467,71 @@ void CYouTurn::SmoothYouTurn(int smPts)
 
 //called to initiate turn
 void CYouTurn::YouTurnTrigger(CTrack &trk, CVehicle &vehicle)
-{
+{   qDebug()<<"CYouTurn you skip";
     //trigger pulled
     isYouTurnTriggered = true;
 
     if (isGoingStraightThrough)
         isYouTurnRight = !isYouTurnRight;
 
-    if (alternateSkips && rowSkipsWidth2 > 1)
+    if (alternateSkips == 1 && rowSkipsWidth2 > 1)
     {
             if (--turnSkips == 0)
-            {
-                isYouTurnRight = !isYouTurnRight;
+            {   qDebug()<<"turnSkips" << turnSkips;
                 turnSkips = rowSkipsWidth2 * 2 - 1;
+                isYouTurnRight = !isYouTurnRight;
             }
             else if ((previousBigSkip = !previousBigSkip))
-                rowSkipsWidth = rowSkipsWidth2 - 1;
+            { rowSkipsWidth = rowSkipsWidth2 - 1;
+                qDebug()<<"previousBigSkip";}
             else
-                rowSkipsWidth = rowSkipsWidth2;
+            { rowSkipsWidth = rowSkipsWidth2;
+                qDebug()<<"rowSkipsWidth"<< rowSkipsWidth;}
     }
+
+    else if (alternateSkips == 2 && rowSkipsWidth2 > 1)
+    {   qDebug()<<"turnSkips" << turnSkips;
+
+        if (--turnSkips == 0) // считаем повороты
+        {   // 2
+
+            turnSkips = rowSkipsWidth2;
+            rowSkipsWidth = floor(rowSkipsWidth2*1.5);
+            qDebug()<<"rowSkipsWidth" << rowSkipsWidth;
+            previousBigSkip = !previousBigSkip;
+            if (rowSkipsWidth2 % 2 != 0){
+            isYouTurnRight = !isYouTurnRight;
+            }
+        }
+        else if (previousBigSkip) {rowSkipsWidth = rowSkipsWidth2-1;
+            previousBigSkip = !previousBigSkip;}
+
+        else rowSkipsWidth = rowSkipsWidth - 1;
+    }
+
+    else if (alternateSkips == 3 && rowSkipsWidth2 > 1)
+    {   qDebug()<<"turnSkips" << turnSkips;
+
+        if (--turnSkips == 0) // считаем повороты
+        {   // 2
+
+            turnSkips = rowSkipsWidth2;
+            rowSkipsWidth = rowSkipsWidth2-floor(rowSkipsWidth2*0.5);
+            qDebug()<<"rowSkipsWidth" << rowSkipsWidth;
+            previousBigSkip = !previousBigSkip;
+            isYouTurnRight = !isYouTurnRight;
+            if (rowSkipsWidth2 % 2 == 0){
+                rowSkipsWidth = rowSkipsWidth2-floor(rowSkipsWidth2*0.5) + 1;
+                if (!previousBigSkip) isYouTurnRight = !isYouTurnRight;
+            }
+
+        }
+        else if (previousBigSkip) {rowSkipsWidth = 1;
+            previousBigSkip = !previousBigSkip;}
+
+        else rowSkipsWidth = rowSkipsWidth+1;
+    }
+
     else isYouTurnRight = !isYouTurnRight;
 
     if (uTurnStyle == 0)
@@ -2514,7 +2560,7 @@ void CYouTurn::YouTurnTrigger(CTrack &trk, CVehicle &vehicle)
             if (!isGoingStraightThrough)
                 trk.curve.isLateralTriggered = true;
             trk.curve.isCurveValid = false;
-            trk.curve.lastHowManyPathsAway = 98888;
+            //trk.curve.lastHowManyPathsAway = 98888;
         }
     }
 }
@@ -2533,6 +2579,8 @@ void CYouTurn::Set_Alternate_skips()
     rowSkipsWidth2 = rowSkipsWidth;
     turnSkips = rowSkipsWidth2 * 2 - 1;
     previousBigSkip = false;
+    if (alternateSkips == 2){ turnSkips = rowSkipsWidth2;}
+    if (alternateSkips == 3){ turnSkips = rowSkipsWidth2; rowSkipsWidth = 1;}
 }
 
 
@@ -2829,7 +2877,7 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
             if (steerAngleYT < -0.74) steerAngleYT = -0.74;
 
             //add them up and clamp to max in vehicle settings
-            steerAngleYT = glm::toDegrees((steerAngleYT + abFixHeadingDelta) * -1.0);
+            steerAngleYT = glm::toDegrees((steerAngleYT + abFixHeadingDelta * vehicle.uturnCompensation) * -1.0);
             if (steerAngleYT < -maxSteerAngle) steerAngleYT = -maxSteerAngle;
             if (steerAngleYT > maxSteerAngle) steerAngleYT = maxSteerAngle;
         }
@@ -2894,7 +2942,7 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
 
             //sharp turns on you turn.
             //update base on autosteer settings and distance from line
-            double goalPointDistance = 0.8 * vehicle.UpdateGoalPointDistance();
+            double goalPointDistance = 0.5*vehicle.UpdateGoalPointDistance();
 
             isHeadingSameWay = true;
             bool reverseHeading = !vehicle.isReverse;

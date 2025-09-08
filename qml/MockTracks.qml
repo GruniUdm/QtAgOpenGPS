@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 // For when we use qmlscene
-import QtQuick 2.15
+import QtQuick
 
 Item {
 

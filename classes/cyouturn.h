@@ -78,7 +78,9 @@ public:
 
     int rowSkipsWidth = 1, uTurnSmoothing;
 
-    bool alternateSkips = false, previousBigSkip = true;
+    //bool alternateSkips = false, previousBigSkip = true;
+    int alternateSkips = 0;
+    bool previousBigSkip = true;
     int rowSkipsWidth2 = 3, turnSkips = 2;
 
     /// <summary>  /// distance from headland as offset where to start turn shape /// </summary>

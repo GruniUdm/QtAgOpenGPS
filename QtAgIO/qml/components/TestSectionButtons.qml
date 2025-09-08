@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-import AgIO 1.0
+import AgIO
 //This is a the row of on-screen section-control buttonw
 
 Rectangle {

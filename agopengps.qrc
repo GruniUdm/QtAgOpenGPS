@@ -159,6 +159,7 @@
         <file>images/PointStart.png</file>
         <file>images/YouSkipOff.png</file>
         <file>images/YouSkipOn.png</file>
+        <file>images/YouSkipOn2.png</file>
         <file>images/ABLineEdit.png</file>
         <file>images/SnapToPivot.png</file>
         <file>images/SectionMapping.png</file>
@@ -446,6 +447,7 @@
         <file>images/textures/z_SteerPointer.png</file>
         <file>images/textures/z_Tractor.png</file>
         <file>images/textures/z_LateralManual.png</file>
+        <file>images/textures/z_Tire.png</file>
         <file>qml/ABLinePicker.qml</file>
         <file>qml/ABCurvePicker.qml</file>
         <file>qml/LineName.qml</file>
@@ -481,6 +483,8 @@
         <file>images/Images/z_Tractor.png</file>
         <file>images/Images/z_TurnCancel.png</file>
         <file>images/Images/z_TurnManual.png</file>
+        <file>images/Images/z_TurnLeft.png</file>
+        <file>images/Images/z_TurnRight.png</file>
         <file>images/textures/z_Tool.png</file>
         <file>qml/Compass.qml</file>
         <file>qml/SteerCircle.qml</file>
@@ -517,6 +521,7 @@
         <file>images/Config/SectionLookAheadDelay.gif</file>
         <file>images/Config/ConS_ImplementPivot.png</file>
         <file>images/Config/ConS_ImplementOffset.png</file>
+        <file>images/Config/ConS_Alarm.png</file>
         <file>qml/interfaces/BoundaryInterface.qml</file>
         <file>qml/boundary/BoundaryTable.qml</file>
         <file>qml/boundary/BoundaryRecord.qml</file>
@@ -575,6 +580,7 @@
         <file>qml/config/ConfigTrams.qml</file>
         <file>qml/config/ConfigVehiclePicker.qml</file>
         <file>qml/config/ConfigYouTurn.qml</file>
+        <file>qml/config/SetColors.qml</file>
         <file>qml/field/FieldData.qml</file>
         <file>qml/field/FieldFromExisting.qml</file>
         <file>qml/field/FieldFromKML.qml</file>
@@ -583,6 +589,8 @@
         <file>qml/field/FieldOpen.qml</file>
         <file>qml/field/FieldTable.qml</file>
         <file>qml/field/FieldToolsMenu.qml</file>
+        <file>qml/field/Flags.qml</file>
+        <file>qml/field/FlagLatLon.qml</file>
         <file>qml/tracks/LineDrawer.qml</file>
         <file>qml/tracks/TrackButtons.qml</file>
         <file>qml/tracks/LineNudge.qml</file>
@@ -623,6 +631,7 @@
         <file>qml/components/ButtonColor.qml</file>
         <file>qml/components/ExpandableColumn.qml</file>
         <file>qml/components/ScrollViewExpandableColumn.qml</file>
+        <file>qml/components/IconButton3State.qml</file>
         <file>images/TrashContourRef.png</file>
         <file>qml/RecPath.qml</file>
         <file>qml/interfaces/RecordedPathInterface.qml</file>
@@ -673,6 +682,7 @@
         <file>qml/TramIndicators.qml</file>
         <file>qml/wizards/ChartSteer.qml</file>
         <file>qml/wizards/Camera.qml</file>
+		<file>qml/wizards/WasWizard.qml</file>
         <file>qml/wizards/PlayerMenuBar.qml</file>
     </qresource>
 </RCC>

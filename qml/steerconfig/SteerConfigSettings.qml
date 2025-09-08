@@ -25,6 +25,7 @@ Window{
     onVisibleChanged:{
         if(visible){
             settingsArea.load_settings()
+            sensorsBtn.isChecked = true
             console.log("Settings loaded")
         }
     }
@@ -48,23 +49,37 @@ Window{
 			id: sensorsBtn
             buttonText: qsTr("Sensors")
             icon.source: prefix + "/images/Config/ConD_Speedometer.png"
-            implicitWidth: parent.width /4 -4
-            checked: true //because one has to be to start things off
+            implicitWidth: parent.width /5 -5
+            //checked: true //because one has to be to start things off
+            onClicked: settingsWindow.visible = false
         }
         SteerConfigTopButtons{
 			id: configBtn
+            implicitWidth: parent.width /5 -5
             buttonText: qsTr("Config")
             icon.source: prefix + "/images/Config/ConS_Pins.png"
+            onClicked: settingsWindow.visible = false
         }
         SteerConfigTopButtons{
 			id: settingsBtn
+            implicitWidth: parent.width /5 -5
             buttonText: qsTr("Settings")
-            icon.source: prefix + "/images/Config/ConS_ImplementConfig.png"
+            icon.source: prefix + "/images/Config/ConS_ModulesSteer.png"
+            onClicked: settingsWindow.show()
+        }
+        SteerConfigTopButtons{
+            id: steerSafetyBtn
+            implicitWidth: parent.width /5 -5
+            buttonText: qsTr("Safety")
+            icon.source: prefix + "/images/Config/ConS_Alarm.png"
+            onClicked: settingsWindow.visible = false
         }
         SteerConfigTopButtons{
 			id: steerSettingsBtn
+            implicitWidth: parent.width /5 -5
             buttonText: qsTr("Steer Settings")
             icon.source: prefix + "/images/Config/ConS_ImplementConfig.png"
+            onClicked: settingsWindow.visible = false
         }
 	}
 	Item{
@@ -562,8 +577,13 @@ Window{
         //region settingsTab
         Item{
             id: settingsWindow
-            visible: settingsBtn.checked
+            visible: false
             anchors.fill: parent
+            function show(){
+                settingsWindow.visible = true
+                stanleyPure.isChecked = !Settings.vehicle_isStanleyUsed
+            }
+
             Column {
                 anchors.top: parent.top
                 anchors.topMargin: 30 * theme.scaleHeight
@@ -594,8 +614,9 @@ Window{
                 Row{
                     spacing: 30 * theme.scaleWidth
                     IconButtonColor{
+                        id: stanleyPure
                         text: qsTr("Stanley/Pure")
-                        isChecked: !Settings.vehicle_isStanleyUsed
+                        //stanleyPure.isChecked: !Settings.vehicle_isStanleyUsed
                         checkable: true
                         onCheckedChanged: Settings.vehicle_isStanleyUsed = !checked
                         colorChecked: "white"
@@ -613,208 +634,25 @@ Window{
             }
         }
         //endregion settingsTab
-        //region steerSettingsTab
+        //region safetySettingsTab
         Item{
-            id: steerSettingsWindow
+            id: steerSafetyWindow
             anchors.fill: parent
-            visible: steerSettingsBtn.checked
-            /*    Rectangle{
-                        id: lightbarrect
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        height: 150
-                        width: 400
-                        anchors.margins: 20
-                        color: "transparent"
-                        Text{
-                            id: lightbartitletxt
-                            text: qsTr("LightBar - Distance per pixel")
-                            anchors.top: parent.top
-                            anchors.left: parent.left
-                        }
+            visible: steerSafetyBtn.checked
 
-                        Image {
-                            id: lightbarimage
-                            source: prefix + "/images/Config/ConV_CmPixel.png"
-                            anchors.left: parent.left
-                            anchors.top: lightbartitletxt.bottom
-                            anchors.bottom: parent.bottom
-                            width: parent.width*.5
-                            SpinBoxCM{
-                                id: lightbarCmPerPixel
-                                anchors.top: parent.top
-                                anchors.topMargin: 25
-                                height: 50
-                                anchors.left: parent.right
-                                anchors.leftMargin: 10
-                                from: 0
-                                to: 15
-                                boundValue: Settings.display_lightbarCmPerPixel
-                                onValueModified: Settings.display_lightbarCmPerPixel = value
-                                editable: true
-                                text: Utils.cm_unit() + " " + qsTr("per pixel","As in units per pixel")
-                            }
-                        }
-                    }
-                    */
-            IconButtonColor{
-                anchors.right: parent.right
-                anchors.top:parent.top
-                anchors.topMargin: 20 * theme.scaleHeight
-                anchors.bottomMargin: 20 * theme.scaleHeight
-                anchors.leftMargin: 20 * theme.scaleWidth
-                anchors.rightMargin: 20 * theme.scaleWidth
-                icon.source: prefix + "/images/AutoSteerOff.png"
-                iconChecked: prefix + "/images/AutoSteerOn.png"
-                checkable: true
-                color: "red"
-                isChecked: Settings.as_isAutoSteerAutoOn
-                onCheckableChanged: Settings.as_isAutoSteerAutoOn = checked
-                text: qsTr("Steer Switch Control")
-                font.pixelSize:15
-                implicitWidth: 120 * theme.scaleWidth
-                implicitHeight: 150 * theme.scaleHeight
-            }
-
-            //}
-            //}
-            Rectangle{
-                id: linewidthrect
-                anchors.left: parent.left
-                anchors.top: nudgedistrect.bottom
-                height: 150 * theme.scaleHeight
-                width: 250 * theme.scaleWidth
-                anchors.topMargin: 20 * theme.scaleHeight
-                anchors.bottomMargin: 20 * theme.scaleHeight
-                anchors.leftMargin: 20 * theme.scaleWidth
-                anchors.rightMargin: 20 * theme.scaleWidth
-                color: "transparent"
-                TextLine{
-                    id: linewidthtitletxt
-                    text: qsTr("Line Width")
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                }
-
-                Image {
-                    id: linewidthimage
-                    source: prefix + "/images/Config/ConV_LineWith.png"
-                    anchors.left: parent.left
-                    anchors.top: linewidthtitletxt.bottom
-                    anchors.bottom: parent.bottom
-                    width: parent.width*.5
-                    SpinBoxCustomized{
-                        id: linewidthSetting
-                        anchors.top: parent.top
-                        anchors.topMargin: 25
-                        height: 50 * theme.scaleHeight
-                        anchors.left: parent.right
-                        anchors.leftMargin: 10 * theme.scaleWidth
-                        from: 1
-                        to: 8
-                        boundValue: Settings.display_lineWidth
-                        onValueModified: Settings.display_lineWidth = value
-                        text: qsTr("pixels")
-                        editable: true
-                    }
-                }
-            }
-            Rectangle{
-                id: nudgedistrect
-                anchors.top: parent.top
-                anchors.horizontalCenter: parent.horizontalCenter
-                height: 100 * theme.scaleHeight
-                width: 350 * theme.scaleWidth
-                anchors.topMargin: 20 * theme.scaleHeight
-                anchors.bottomMargin: 20 * theme.scaleHeight
-                anchors.leftMargin: 20 * theme.scaleWidth
-                anchors.rightMargin: 20 * theme.scaleWidth
-                color: "transparent"
-                TextLine{
-                    id: nudgedisttitletxt
-                    text: qsTr("Nudge Distance")
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                }
-
-                Image {
-                    id: nudgedistimage
-                    source: prefix + "/images/Config/ConV_SnapDistance.png"
-                    anchors.left: parent.left
-                    anchors.top: nudgedisttitletxt.bottom
-                    anchors.bottom: parent.bottom
-                    width: parent.width*.5
-                    SpinBoxCM{
-                        id: snapDistance
-                        anchors.top: parent.top
-                        anchors.topMargin: 25
-                        height: 50 * theme.scaleHeight
-                        anchors.left: parent.right
-                        anchors.leftMargin: 10 * theme.scaleWidth
-                        from: 0
-                        to: 1000
-                        boundValue: Settings.as_snapDistance
-                        onValueModified: Settings.as_snapDistance = value
-                        editable: true
-                        text: Utils.cm_unit()
-                    }
-                }
-            }
-            Rectangle{
-                id: lineacqLAheadrect
-                anchors.left: linewidthrect.right
-                anchors.verticalCenter: linewidthrect.verticalCenter
-                anchors.topMargin: 50 * theme.scaleHeight
-                anchors.bottomMargin: 50 * theme.scaleHeight
-                anchors.leftMargin: 50 * theme.scaleWidth
-                anchors.rightMargin: 50 * theme.scaleWidth
-                height: 100 * theme.scaleHeight
-                width: 350 * theme.scaleWidth
-                color: "transparent"
-                TextLine{
-                    id: lineacqLAheadtitletxt
-                    text: qsTr("Line Acquire Look Ahead")
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                }
-
-                Image {
-                    id: lineacqLAheadimage
-                    source: prefix + "/images/Config/ConV_GuidanceLookAhead.png"
-                    anchors.left: parent.left
-                    anchors.top: lineacqLAheadtitletxt.bottom
-                    anchors.bottom: parent.bottom
-                    width: parent.width*.5
-                    SpinBoxCustomized{
-                        id: lineacqLAheadSetting
-                        anchors.top: parent.top
-                        anchors.topMargin: 25 * theme.scaleHeight
-                        height: 50 * theme.scaleHeight
-                        anchors.left: parent.right
-                        anchors.leftMargin: 10 * theme.scaleWidth
-                        from: 0.1
-                        to: 10
-                        boundValue: Settings.as_guidanceLookAheadTime
-                        onValueModified: Settings.as_guidanceLookAheadTime = value
-                        editable: true
-                        text: qsTr("Seconds")
-                        decimals: 2
-                    }
-                }
-            }
             GridLayout{
                 id: safety
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.top: linewidthrect.bottom
+                anchors.top: parent.top
                 anchors.topMargin: 10 * theme.scaleHeight
-                anchors.bottomMargin: 10 * theme.scaleHeight
+                anchors.bottomMargin: 100 * theme.scaleHeight
                 anchors.leftMargin: 70 * theme.scaleWidth
                 anchors.rightMargin: 70 * theme.scaleWidth
                 flow: Grid.TopToBottom
-                rows: 4
-                columns: 4
+                rows: 8
+                columns: 2
                 Text{ text: qsTr("Manual Turns Limit"); Layout.alignment: Qt.AlignCenter}
                 Image{
                     source: prefix + "/images/Config/con_VehicleFunctionSpeedLimit.png"
@@ -890,6 +728,228 @@ Window{
                 Text{ text: qsTr("Degrees/sec"); Layout.alignment: Qt.AlignCenter}
             }
         }
+        //endregion steerSafetySettings
+    }
+        //region steerSettingsTab
+        Item{
+            id: steerSettingsWindow
+            anchors.fill: parent
+            visible: steerSettingsBtn.checked
+            /*    Rectangle{
+                        id: lightbarrect
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        height: 150
+                        width: 400
+                        anchors.margins: 20
+                        color: "transparent"
+                        Text{
+                            id: lightbartitletxt
+                            text: qsTr("LightBar - Distance per pixel")
+                            anchors.top: parent.top
+                            anchors.left: parent.left
+                        }
+
+                        Image {
+                            id: lightbarimage
+                            source: prefix + "/images/Config/ConV_CmPixel.png"
+                            anchors.left: parent.left
+                            anchors.top: lightbartitletxt.bottom
+                            anchors.bottom: parent.bottom
+                            width: parent.width*.5
+                            SpinBoxCM{
+                                id: lightbarCmPerPixel
+                                anchors.top: parent.top
+                                anchors.topMargin: 25
+                                height: 50
+                                anchors.left: parent.right
+                                anchors.leftMargin: 10
+                                from: 0
+                                to: 15
+                                boundValue: Settings.display_lightbarCmPerPixel
+                                onValueModified: Settings.display_lightbarCmPerPixel = value
+                                editable: true
+                                text: Utils.cm_unit() + " " + qsTr("per pixel","As in units per pixel")
+                            }
+                        }
+                    }
+                    */
+
+        GridLayout{
+            //id: safety
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.topMargin: 100 * theme.scaleHeight
+            anchors.bottomMargin: 100 * theme.scaleHeight
+            anchors.leftMargin: 70 * theme.scaleWidth
+            anchors.rightMargin: 70 * theme.scaleWidth
+            flow: Grid.TopToBottom
+            rows: 2
+            columns: 2
+
+
+
+            //}
+            //}
+            Rectangle{
+                id: linewidthrect
+                // anchors.left: parent.left
+                // anchors.top: nudgedistrect.bottom
+                height: 150 * theme.scaleHeight
+                width: 350 * theme.scaleWidth
+                // anchors.topMargin: 20 * theme.scaleHeight
+                // anchors.bottomMargin: 20 * theme.scaleHeight
+                // anchors.leftMargin: 20 * theme.scaleWidth
+                // anchors.rightMargin: 20 * theme.scaleWidth
+                color: "transparent"
+                TextLine{
+                    id: linewidthtitletxt
+                    text: qsTr("Line Width")
+                    anchors.top: parent.top
+                    //anchors.left: parent.left
+                    Layout.alignment: Qt.AlignCenter
+                }
+
+                Image {
+                    id: linewidthimage
+                    source: prefix + "/images/Config/ConV_LineWith.png"
+                    anchors.left: parent.left
+                    anchors.top: linewidthtitletxt.bottom
+                    anchors.bottom: parent.bottom
+                    width: parent.width*.5
+                    SpinBoxCustomized{
+                        id: linewidthSetting
+                        anchors.top: parent.top
+                        anchors.topMargin: 25
+                        height: 50 * theme.scaleHeight
+                        anchors.left: parent.right
+                        anchors.leftMargin: 10 * theme.scaleWidth
+                        from: 1
+                        to: 8
+                        boundValue: Settings.display_lineWidth
+                        onValueModified: Settings.display_lineWidth = value
+                        text: qsTr("pixels")
+                        editable: true
+                    }
+                }
+            }
+
+            Rectangle{
+                id: nudgedistrect
+                // anchors.top: parent.top
+                // anchors.horizontalCenter: parent.horizontalCenter
+                height: 150 * theme.scaleHeight
+                width: 350 * theme.scaleWidth
+                // anchors.topMargin: 20 * theme.scaleHeight
+                // anchors.bottomMargin: 20 * theme.scaleHeight
+                // anchors.leftMargin: 20 * theme.scaleWidth
+                // anchors.rightMargin: 20 * theme.scaleWidth
+                color: "transparent"
+                TextLine{
+                    id: nudgedisttitletxt
+                    text: qsTr("Nudge Distance")
+                    anchors.top: parent.top
+                    //anchors.left: parent.left
+                    Layout.alignment: Qt.AlignCenter
+                }
+
+                Image {
+                    id: nudgedistimage
+                    source: prefix + "/images/Config/ConV_SnapDistance.png"
+                    anchors.left: parent.left
+                    anchors.top: nudgedisttitletxt.bottom
+                    anchors.bottom: parent.bottom
+                    width: parent.width*.5
+                    SpinBoxCM{
+                        id: snapDistance
+                        anchors.top: parent.top
+                        anchors.topMargin: 25
+                        height: 50 * theme.scaleHeight
+                        anchors.left: parent.right
+                        anchors.leftMargin: 10 * theme.scaleWidth
+                        from: 0
+                        to: 1000
+                        boundValue: Settings.as_snapDistance
+                        onValueModified: Settings.as_snapDistance = value
+                        editable: true
+                        text: Utils.cm_unit()
+                    }
+                }
+            }
+            IconButtonColor{
+                // anchors.right: parent.right
+                // anchors.top:parent.top
+                // anchors.topMargin: 20 * theme.scaleHeight
+                // anchors.bottomMargin: 20 * theme.scaleHeight
+                // anchors.leftMargin: 20 * theme.scaleWidth
+                // anchors.rightMargin: 20 * theme.scaleWidth
+                icon.source: prefix + "/images/AutoSteerOff.png"
+                iconChecked: prefix + "/images/AutoSteerOn.png"
+                checkable: true
+                visible: false
+                color: "red"
+                isChecked: Settings.as_isAutoSteerAutoOn
+                onCheckableChanged: Settings.as_isAutoSteerAutoOn = checked
+                //text: qsTr("Steer Switch Control")
+                font.pixelSize:15
+                implicitWidth: 120 * theme.scaleWidth
+                implicitHeight: 150 * theme.scaleHeight
+                Layout.alignment: Qt.AlignCenter
+                TextLine{
+                    text: qsTr("Steer Switch Control")
+                    anchors.bottom: parent.top
+                    anchors.bottomMargin: 20 * theme.scaleHeight
+                    //anchors.left: parent.left
+                    Layout.alignment: Qt.AlignCenter
+                }
+            }
+            Rectangle{
+                id: lineacqLAheadrect
+                // anchors.left: linewidthrect.right
+                // anchors.verticalCenter: linewidthrect.verticalCenter
+                // anchors.topMargin: 50 * theme.scaleHeight
+                // anchors.bottomMargin: 50 * theme.scaleHeight
+                // anchors.leftMargin: 50 * theme.scaleWidth
+                // anchors.rightMargin: 50 * theme.scaleWidth
+                height: 150 * theme.scaleHeight
+                width: 350 * theme.scaleWidth
+                color: "transparent"
+                TextLine{
+                    id: lineacqLAheadtitletxt
+                    text: qsTr("Line Acquire Look Ahead")
+                    anchors.top: parent.top
+                    //anchors.left: parent.left
+                    Layout.alignment: Qt.AlignCenter
+                }
+
+                Image {
+                    id: lineacqLAheadimage
+                    source: prefix + "/images/Config/ConV_GuidanceLookAhead.png"
+                    anchors.left: parent.left
+                    anchors.top: lineacqLAheadtitletxt.bottom
+                    anchors.bottom: parent.bottom
+                    width: parent.width*.5
+                    SpinBoxOneDecimal{
+                        id: lineacqLAheadSetting
+                        anchors.top: parent.top
+                        anchors.topMargin: 40 * theme.scaleHeight
+                        //height: 50 * theme.scaleHeight
+                        anchors.left: parent.right
+                        anchors.leftMargin: 10 * theme.scaleWidth
+                        from: 0.1
+                        to: 10
+                        boundValue: Settings.as_guidanceLookAheadTime
+                        onValueModified: Settings.as_guidanceLookAheadTime = value
+                        editable: true
+                        text: qsTr("Seconds")
+                        decimals: 1
+                    }
+                }
+            }
+        }
+
         //endregion steerSettings
     }
     RowLayout{
@@ -936,7 +996,8 @@ Window{
             Layout.alignment: Qt.AlignLeft
             icon.source: prefix + "/images/ToolAcceptChange.png"
             implicitWidth: 130
-            onClicked: { settingsArea.save_settings() ; unsaved.visible = false }
+            onClicked: { settingsArea.save_settings() ; unsaved.visible = false ;
+            aog.settings_reload();}
         }
         IconButtonTransparent{
             icon.source: prefix + "/images/SwitchOff.png"

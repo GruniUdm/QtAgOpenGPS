@@ -9,8 +9,12 @@
 QString caseInsensitiveFilename(QString directory, QString filename);
 
 void FormGPS::vehicle_saveas(QString vehicle_name) {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Vehicles";
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Vehicles";
+                            + "/" + QCoreApplication::applicationName() + "/Vehicles";
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -28,8 +32,12 @@ void FormGPS::vehicle_saveas(QString vehicle_name) {
 }
 
 void FormGPS::vehicle_load(QString vehicle_name) {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Vehicles";
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
                             + "/" + QCoreApplication::applicationName() + "/Vehicles";
+#endif
 
     QDir loadDir(directoryName);
     if (!loadDir.exists()) {
@@ -49,8 +57,12 @@ void FormGPS::vehicle_load(QString vehicle_name) {
 }
 
 void FormGPS::vehicle_delete(QString vehicle_name) {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Vehicles";
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
                             + "/" + QCoreApplication::applicationName() + "/Vehicles";
+#endif
 
     QDir vehicleDir(directoryName);
     if (vehicleDir.exists()) {
@@ -60,8 +72,12 @@ void FormGPS::vehicle_delete(QString vehicle_name) {
 }
 
 void FormGPS::vehicle_update_list() {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Vehicles";
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
                             + "/" + QCoreApplication::applicationName() + "/Vehicles";
+#endif
 
     QDir vehicleDirectory(directoryName);
     if(!vehicleDirectory.exists()) {

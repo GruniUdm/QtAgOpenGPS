@@ -12,17 +12,16 @@ import AOG
 import ".."
 import "../components"
 
-MoveablePopup {
+Drawer {
     id: steerConfigWindow
-    closePolicy: Popup.NoAutoClose
-    height: pwmWindow.visible ? 700 * theme.scaleHeight : 500 * theme.scaleHeight
-    modal: false
+    width: 270 * theme.scaleWidth
+    height: mainWindow.height
     visible: false
-    width:350 * theme.scaleWidth
-    x: Settings.window_steerSettingsLocation.x
-    y: Settings.window_steerSettingsLocation.y
+    modal: true
+
     function show (){
         steerConfigWindow.visible = true
+        steerBtn.isChecked = true
 	}
 
 	Rectangle{
@@ -32,17 +31,20 @@ MoveablePopup {
         border.width: 1
         color: aog.backgroundColor
         visible: true
-        TopLine{
-			id:topLine
-            onBtnCloseClicked:  steerConfigWindow.close()
-            titleText: qsTr("Auto Steer Config")
-        }
-		Item{
+        // TopLine{
+        //     id:topLine
+        //     onBtnCloseClicked:  steerConfigWindow.close()
+        //     titleText: qsTr("Auto Steer Config")
+        // }
+        Item{
 			id: steerSlidersConfig
             anchors.left: parent.left
-            anchors.top: topLine.bottom
-            height: 475 * theme.scaleHeight
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: 575 * theme.scaleHeight
             width: steerConfigWindow.width
+            anchors.rightMargin: 2 * theme.scaleHeight
+            anchors.leftMargin: 2 * theme.scaleHeight
             ButtonGroup {
 				buttons: buttonsTop.children
 			}
@@ -56,7 +58,7 @@ MoveablePopup {
 				IconButtonColor{
 					id: steerBtn
                     checkable: true
-                    checked: true
+                    //checked: true
                     colorChecked: "lightgray"
                     icon.source: prefix + "/images/Steer/ST_SteerTab.png"
                     implicitHeight: 50 * theme.scaleHeight
@@ -77,7 +79,7 @@ MoveablePopup {
                     icon.source: prefix + "/images/Steer/ST_StanleyTab.png"
                     implicitHeight: 50 * theme.scaleHeight
                     implicitWidth: parent.width /3 - 5 * theme.scaleWidth
-                    visible: !Settings.menu_isPureOn
+                    visible: Settings.vehicle_isStanleyUsed
                 }
 				IconButtonColor{
 					id: ppBtn
@@ -86,7 +88,7 @@ MoveablePopup {
                     icon.source: prefix + "/images/Steer/Sf_PPTab.png"
                     implicitHeight: 50 * theme.scaleHeight
                     implicitWidth: parent.width /3 - 5 * theme.scaleWidth
-                    visible: Settings.menu_isPureOn
+                    visible: !Settings.vehicle_isStanleyUsed
                 }
             }
 
@@ -101,7 +103,7 @@ MoveablePopup {
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 
-            Item{
+            Rectangle{
                 id: slidersArea
                 anchors.top: wasbar.bottom
                 anchors.right: parent.right
@@ -117,6 +119,7 @@ MoveablePopup {
                     anchors.top: parent.top
                     anchors.topMargin: 5 * theme.scaleHeight
                     width: parent.width * 0.4
+                    Layout.alignment: Qt.AlignLeft
 
                     /* Here, we just set which Sliders we want to see, and the
                       ColumnLayout takes care of the rest. No need for
@@ -127,10 +130,10 @@ MoveablePopup {
 
 
                     IconButtonTransparent { //was zero button
-                        width: height*2
+                        implicitWidth: 80 * theme.scaleWidth
+                        implicitHeight: 50 * theme.scaleHeight
                         Layout.alignment: Qt.AlignCenter
                         icon.source: prefix + "/images/SteerCenter.png"
-                        implicitHeight: parent.height /5 -20* theme.scaleHeight
                         //visible: false
                         visible: steerBtn.checked
                         onClicked:  {Settings.as_wasOffset -= cpDegSlider.value *aog.steerAngleActual;
@@ -143,7 +146,6 @@ MoveablePopup {
                         property int wasOffset: Settings.as_wasOffset
                         id: wasZeroSlider
                         centerTopText: qsTr("WAS Zero")
-                        width: 200 * theme.scaleWidth
                         from: -4000
                         leftText: Utils.decimalRound(value / cpDegSlider.value, 2)
                         //onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
@@ -151,6 +153,8 @@ MoveablePopup {
                         to: 4000
                         value: Settings.as_wasOffset / cpDegSlider.value
                         visible: steerBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: cpDegSlider
@@ -161,8 +165,9 @@ MoveablePopup {
                         stepSize: 1
                         to: 255
                         value: Math.round(Settings.as_countsPerDegree, 0)
-                        width: 200 * theme.scaleWidth
                         visible: steerBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: ackermannSlider
@@ -174,6 +179,8 @@ MoveablePopup {
                         to: 200
                         value: Math.round(Settings.as_ackerman, 0)
                         visible: steerBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: maxSteerSlider
@@ -185,6 +192,8 @@ MoveablePopup {
                         to: 80
                         value: Math.round(Settings.vehicle_maxSteerAngle)
                         visible: steerBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
 
                     //endregion WAStab
@@ -200,6 +209,8 @@ MoveablePopup {
                         to: 200
                         value: Math.round(Settings.as_Kp, 0)
                         visible: gainBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: maxLimitSlider
@@ -211,6 +222,8 @@ MoveablePopup {
                         to: 254
                         value: Math.round(Settings.as_highSteerPWM, 0)
                         visible: gainBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: min2moveSlider
@@ -222,6 +235,8 @@ MoveablePopup {
                         to: 100
                         value: Math.round(Settings.as_minSteerPWM, 0)
                         visible: gainBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
 
                     //endregion PWMtab
@@ -237,6 +252,8 @@ MoveablePopup {
                         leftText: Math.round(value * 10)/10
                         value: Settings.vehicle_stanleyDistanceErrorGain
                         visible: stanleyBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: overShootReductionSlider
@@ -248,6 +265,8 @@ MoveablePopup {
                         leftText: Math.round(value * 10) / 10
                         value: Settings.vehicle_stanleyHeadingErrorGain
                         visible: stanleyBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: integralStanleySlider
@@ -259,6 +278,8 @@ MoveablePopup {
                         to: 100
                         value: Math.round(Settings.vehicle_stanleyIntegralGainAB * 100, 0)
                         visible: stanleyBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
 
                     //endregion StanleyTab
@@ -274,6 +295,8 @@ MoveablePopup {
                         to: 7
                         value: Settings.vehicle_goalPointLookAhead
                         visible: ppBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: holdLookAheadSlider
@@ -285,6 +308,8 @@ MoveablePopup {
                         to: 7
                         value: Settings.vehicle_goalPointLookAheadHold
                         visible: ppBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: lookAheadSpeedGainSlider
@@ -296,6 +321,8 @@ MoveablePopup {
                         leftText: Math.round(value * 10) / 10
                         value: Settings.vehicle_goalPointLookAheadMult
                         visible: ppBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: ppIntegralSlider
@@ -307,6 +334,8 @@ MoveablePopup {
                         leftText: Math.round(value *10) / 10
                         value: Settings.vehicle_purePursuitIntegralGainAB *100
                         visible: ppBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     //endregion PurePursuitTab
                 }

@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-import AgIO 1.0
+import AgIO
 //import QtQuick.Controls.Styles 1.4
 
 /* This type defines a popup message box that displays a message for
@@ -12,10 +12,10 @@ import AgIO 1.0
  *
  * The following methods are defined as javascript functions:
  * cancelAllMessages() - cancel all displayed messages and close popup
- * addMessage(timeout, title, message) - Popup (if not open already) 
- *        and display a title and message, and timeout after 
+ * addMessage(timeout, title, message) - Popup (if not open already)
+ *        and display a title and message, and timeout after
  *        timeout milliseconds.
- */ 
+ */
 Window {
     //padding: 5
     //x: parent.width / 2
@@ -126,41 +126,41 @@ Window {
             repeat: true
 
             onTriggered: function() {
-                for (var i=0; i < timedMessageModel.rowCount(); i++) {
-                    timedMessageModel.get(i).timeout -= 100;
-                    if (timedMessageModel.get(i).timeout < 0) {
-                        //console.warn("Removed item " + i)
-                        timedMessageModel.remove(i)
-                        i-- //our iteration is now broken
-                    }
-                }
-                
-                if (timedMessageModel.rowCount() === 0) {
-                    close()
-                    //timedMessage.visible = false
-                }
+                // for (var i=0; i < timedMessageModel.rowCount(); i++) {
+                //     timedMessageModel.get(i).timeout -= 100;
+                //     if (timedMessageModel.get(i).timeout < 0) {
+                //         //console.warn("Removed item " + i)
+                //         timedMessageModel.remove(i)
+                //         i-- //our iteration is now broken
+                //     }
+                // }
 
-                if (timedMessageModel.rowCount() > 3) {
-                    timedMessageR.height = 240;
-                } else {
-                    timedMessageR.height = timedMessageModel.rowCount() * 80
-                }
+                // if (timedMessageModel.rowCount() === 0) {
+                //     close()
+                //     //timedMessage.visible = false
+                // }
+
+                // if (timedMessageModel.rowCount() > 3) {
+                //     timedMessageR.height = 240;
+                // } else {
+                //     timedMessageR.height = timedMessageModel.rowCount() * 80
+                // }
             }
         }
     }
 
     //onClosed: cancelAllMessages()
-        
+
     function cancelAllMessages() {
-    	timedMessageModel.clear();
+        timedMessageModel.clear();
         //console.debug("canceling all messages.")
     }
 
     function addMessage(timeout: int, title: string, message: string) {
         //console.debug(timeout + " " + title + " " + message)
         timedMessage.show()
-            
-    	timedMessageModel.append( { timeout: timeout, title: title, message: message });
+
+        timedMessageModel.append( { timeout: timeout, title: title, message: message });
 
         if (timedMessageModel.rowCount() > 3) {
             timedMessageR.height = 240;

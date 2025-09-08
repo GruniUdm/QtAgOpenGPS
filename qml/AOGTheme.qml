@@ -105,11 +105,11 @@ Item {
             }
         }
         function onAutoBtnStateChanged(){
-            if(Settings.sound_isSectionsOn)
+            if(Settings.sound_isSectionOn)
                 sectionOn.play()
         }
         function onManualBtnStateChanged(){
-            if(Settings.sound_isSectionsOn)
+            if(Settings.sound_isSectionOn)
                 sectionOff.play()
         }
         function onAgeChanged(){

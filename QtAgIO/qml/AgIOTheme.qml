@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-import AgIO 1.0
+import AgIO
 import QtMultimedia
 
 /* This type contains the sounds, colors, and perhaps screen sizes,

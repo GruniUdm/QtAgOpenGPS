@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import Settings
+import AOG
 import "components" as Comp
 
 Comp.TimedRectangle{
@@ -69,12 +70,13 @@ Comp.TimedRectangle{
             width: 70
             height: 70
             radius: 10
-            icon.source: prefix + "/images/WindowNightMode.png"
-            iconChecked: prefix + "/images/WindowDayMode.png"
+            icon.source: prefix + "/images/WindowDayMode.png"
+            iconChecked: prefix + "/images/WindowNightMode.png"
             checkable: true
             isChecked: Settings.display_isDayMode
             onCheckedChanged: Settings.display_isDayMode = checked
-            onClicked: displayButtons.resetTimer()
+            onClicked: {displayButtons.resetTimer()
+                aog.settings_reload()}
         }
         Comp.IconButtonTransparent {
             id: btnBrightnessDown
@@ -83,7 +85,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/BrightnessDn.png"
             onClicked: displayButtons.resetTimer()
-			visible: false //todo
+            visible: Settings.display_isBrightnessOn
         }
         Comp.IconButtonTransparent {
             id: btnTiltUp
@@ -137,12 +139,13 @@ Comp.TimedRectangle{
         }
         Comp.IconButtonTransparent {
             id: btnBrightnessUp
-			visible: false //todo
+            //visible: false //todo
             width: 70
             height: 70
             radius: 10
             icon.source: prefix + "/images/BrightnessUp.png"
             onClicked: displayButtons.resetTimer()
+            visible: Settings.display_isBrightnessOn
         }
     }
 }

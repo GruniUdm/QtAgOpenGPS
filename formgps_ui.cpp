@@ -21,6 +21,7 @@
 #include <cstring>
 #include <QTranslator>
 #include "QtAgIO/formloop.h"
+#include <algorithm>
 
 
 QString caseInsensitiveFilename(QString directory, QString filename);
@@ -46,9 +47,11 @@ void FormGPS::setupGui()
 
     /* Load the QML UI and display it in the main area of the GUI */
     setProperty("title","QtAgOpenGPS");
+    addImportPath(":/");
 
     // Load the translation file
-    QString language = "fr"; // Change this variable to "en", "fr" or "ru" as needed
+    //QString language = "en"; // Change this variable to "en", "fr" or "ru" as needed
+    QString language = settings->value(SETTINGS_menu_language).value<QString>();
     loadTranslation(language);
 
     connect(this, SIGNAL(objectCreated(QObject*,QUrl)),
@@ -76,7 +79,7 @@ void FormGPS::setupGui()
     qmlRegisterSingletonInstance("Interface", 1, 0, "TracksInterface", &trk);
     qmlRegisterSingletonInstance("Interface", 1, 0, "VehicleInterface", &vehicle);
     qmlRegisterSingletonInstance("Settings", 1, 0, "Settings", settings);
-   
+
 #ifdef LOCAL_QML
     // Look for QML files relative to our current directory
     QStringList search_pathes = { "..",
@@ -115,8 +118,8 @@ void FormGPS::setupGui()
     load("local:/qml/MainWindow.qml");
 #else
     rootContext()->setContextProperty("prefix","");
-    addImportPath(QString("%1/modules") 
-                             .arg(QGuiApplication::applicationDirPath()));
+    //load(QUrl("qrc:/qml/MainWindow.qml"));
+    addImportPath(QString("%1/modules").arg(QGuiApplication::applicationDirPath()));
     loadFromModule("AOG", "MainWindow");
 
     if (rootObjects().isEmpty()) {
@@ -182,6 +185,8 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     autoBtnState = btnStates::Off;
     isPatchesChangingColor = false;
     isOutOfBounds = false;
+    pn.latStart = 0;
+    pn.lonStart = 0;
 
     //hook up our AOGInterface properties
     QObject *aog = qmlItem(mainWindow, "aog");
@@ -191,7 +196,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     //react to UI changing this property
     connect(aog,SIGNAL(sectionButtonStateChanged()), &tool.sectionButtonState, SLOT(onStatesUpdated()));
-    connect(aog,SIGNAL(rowCountChanged()), &tool.blockageRowState, SLOT(onRowsUpdated())); //Dim
+    //connect(aog,SIGNAL(rowCountChanged()), &tool.blockageRowState, SLOT(onRowsUpdated())); //Dim
 
     openGLControl = mainWindow->findChild<AOGRendererInSG *>("openglcontrol");
     //This is a bit hackish, but all rendering is done in this item, so
@@ -222,6 +227,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(aog, SIGNAL(btnContour()), this, SLOT(onBtnContour_clicked()));
     connect(aog, SIGNAL(btnContourLock()), this, SLOT(onBtnContourLock_clicked()));
     connect(aog, SIGNAL(btnContourPriority(bool)), this, SLOT(onBtnContourPriority_clicked(bool)));
+    connect(aog, SIGNAL(isYouSkipOn()), this, SLOT(onBtnYouSkip_clicked()));
 
     connect(aog, SIGNAL(btnResetSim()), this, SLOT(onBtnResetSim_clicked()));
     connect(aog, SIGNAL(sim_rotate()), this, SLOT(onBtnRotateSim_clicked()));
@@ -236,11 +242,11 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(aog,SIGNAL(lateral(bool)), this, SLOT(onBtnLateral_clicked(bool)));
     connect(aog,SIGNAL(autoYouTurn()), this, SLOT(onBtnAutoYouTurn_clicked()));
     connect(aog,SIGNAL(swapAutoYouTurnDirection()), this, SLOT(onBtnSwapAutoYouTurnDirection_clicked()));
-
+    connect(aog,SIGNAL(btnResetCreatedYouTurn()), this, SLOT(onBtnResetCreatedYouTurn_clicked()));
+    connect(aog,SIGNAL(btnAutoTrack()), this, SLOT(onBtnAutoTrack_clicked()));
 
     connect(mainWindow, SIGNAL(save_everything()), this, SLOT(FileSaveEverythingBeforeClosingField()));
     //connect(qml_root,SIGNAL(closing(QQuickCloseEvent *)), this, SLOT(fileSaveEverythingBeforeClosingField(QQuickCloseEvent *)));
-
 
     //connect settings dialog box
     connect(aog,SIGNAL(settings_reload()), this, SLOT(on_settings_reload()));
@@ -261,6 +267,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(fieldInterface,SIGNAL(field_update_list()), this, SLOT(field_update_list()));
     connect(fieldInterface,SIGNAL(field_close()), this, SLOT(field_close()));
     connect(fieldInterface,SIGNAL(field_open(QString)), this, SLOT(field_open(QString)));
+    qDebug()<< "connect to SIGNAL";
     connect(fieldInterface,SIGNAL(field_new(QString)), this, SLOT(field_new(QString)));
     connect(fieldInterface,SIGNAL(field_new_from(QString,QString,int)), this, SLOT(field_new_from(QString,QString,int)));
     connect(fieldInterface,SIGNAL(field_delete(QString)), this, SLOT(field_delete(QString)));
@@ -329,25 +336,45 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
             SLOT(onBtnPerimeter_clicked()));
     */
 
-    btnFlag = qmlItem(mainWindow,"btnFlag");
-    connect(btnFlag,SIGNAL(clicked()),this,
-            SLOT(onBtnFlag_clicked()));
+    // btnFlag = qmlItem(mainWindow,"btnFlag");
+    // connect(btnFlag,SIGNAL(clicked()),this,
+    //         SLOT(onBtnFlag_clicked()));
 
 
     //Any objects we don't need to access later we can just store
     //temporarily
-    QObject *temp;
-    temp = qmlItem(mainWindow,"btnRedFlag");
-    connect(temp,SIGNAL(clicked()),this,SLOT(onBtnRedFlag_clicked()));
-    temp = qmlItem(mainWindow,"btnGreenFlag");
-    connect(temp,SIGNAL(clicked()),this,SLOT(onBtnGreenFlag_clicked()));
-    temp = qmlItem(mainWindow,"btnYellowFlag");
-    connect(temp,SIGNAL(clicked()),this,SLOT(onBtnYellowFlag_clicked()));
+    //QObject *flag = qmlItem(mainWindow, "flag");
+    connect(aog, SIGNAL(btnFlag()), this, SLOT(onBtnFlag_clicked()));
+    connect(aog, SIGNAL(btnRedFlag()), this, SLOT(onBtnRedFlag_clicked()));
+    connect(aog, SIGNAL(btnGreenFlag()), this, SLOT(onBtnGreenFlag_clicked()));
+    connect(aog, SIGNAL(btnYellowFlag()), this, SLOT(onBtnYellowFlag_clicked()));
+    connect(aog, SIGNAL(btnDeleteFlag()), this, SLOT(onBtnDeleteFlag_clicked()));
+    connect(aog, SIGNAL(btnDeleteAllFlags()), this, SLOT(onBtnDeleteAllFlags_clicked()));
+    connect(aog, SIGNAL(btnNextFlag()), this, SLOT(onBtnNextFlag_clicked()));
+    connect(aog, SIGNAL(btnPrevFlag()), this, SLOT(onBtnPrevFlag_clicked()));
+    connect(aog, SIGNAL(btnCancelFlag()), this, SLOT(onBtnCancelFlag_clicked()));
+    connect(aog, SIGNAL(btnRed(double, double, int)), this, SLOT(onBtnRed_clicked(double, double, int)));
 
-    btnDeleteFlag = qmlItem(mainWindow,"btnDeleteFlag");
-    connect(btnDeleteFlag,SIGNAL(clicked()),this,SLOT(onBtnDeleteFlag_clicked()));
-    btnDeleteAllFlags = qmlItem(mainWindow,"btnDeleteAllFlags");
-    connect(btnDeleteAllFlags,SIGNAL(clicked()),this,SLOT(onBtnDeleteAllFlags_clicked()));
+
+
+    connect(aog, SIGNAL(stopDataCollection()), this, SLOT(StopDataCollection()));
+    connect(aog, SIGNAL(startDataCollection()), this, SLOT(StartDataCollection()));
+    connect(aog, SIGNAL(resetData()), this, SLOT(ResetData()));
+    connect(aog, SIGNAL(applyOffsetToCollectedData(double)), this, SLOT(ApplyOffsetToCollectedData(double)));
+    connect(aog, SIGNAL(smartCalLabelClick()), this, SLOT(SmartCalLabelClick()));
+    connect(aog, SIGNAL(on_btnSmartZeroWAS_clicked()), this, SLOT(on_btnSmartZeroWAS_clicked()));
+    // QObject *temp;
+    // temp = qmlItem(mainWindow,"btnRedFlag");
+    // connect(temp,SIGNAL(clicked()),this,SLOT(onBtnRedFlag_clicked()));
+    // temp = qmlItem(mainWindow,"btnGreenFlag");
+    // connect(temp,SIGNAL(clicked()),this,SLOT(onBtnGreenFlag_clicked()));
+    // temp = qmlItem(mainWindow,"btnYellowFlag");
+    // connect(temp,SIGNAL(clicked()),this,SLOT(onBtnYellowFlag_clicked()));
+
+    // btnDeleteFlag = qmlItem(mainWindow,"btnDeleteFlag");
+    // connect(btnDeleteFlag,SIGNAL(clicked()),this,SLOT(onBtnDeleteFlag_clicked()));
+    // btnDeleteAllFlags = qmlItem(mainWindow,"btnDeleteAllFlags");
+    // connect(btnDeleteAllFlags,SIGNAL(clicked()),this,SLOT(onBtnDeleteAllFlags_clicked()));
     contextFlag = qmlItem(mainWindow, "contextFlag");
 
     //txtDistanceOffABLine = qmlItem(qml_root,"txtDistanceOffABLine");
@@ -474,8 +501,28 @@ void FormGPS::onBtnTramlines_clicked(){
     qDebug()<<"tramline";
 }
 void FormGPS::onBtnYouSkip_clicked(){
-    qDebug()<<"you skip";
+    qDebug()<<"you skip clicked";
+    yt.alternateSkips = yt.alternateSkips+1;
+    if (yt.alternateSkips > 3) yt.alternateSkips = 0;
+    qDebug()<<"you skip clicked"<<yt.alternateSkips;
+    if (yt.alternateSkips > 0)
+    {
+        //btnYouSkipEnable.Image = Resources.YouSkipOn;
+        //make sure at least 1
+        if (yt.rowSkipsWidth < 2)
+        {
+            yt.rowSkipsWidth = 2;
+            //cboxpRowWidth.Text = "1";
+        }
+        yt.Set_Alternate_skips();
+        yt.ResetCreatedYouTurn();
+
+        //if (!yt.isYouTurnBtnOn) btnAutoYouTurn.PerformClick();
+    }
+
 }
+
+
 void FormGPS::onBtnResetDirection_clicked(){
     qDebug()<<"reset Direction";
     // c#Array.Clear(stepFixPts, 0, stepFixPts.Length);
@@ -494,10 +541,27 @@ void FormGPS::onBtnFlag_clicked() {
 
     if(isGPSPositionInitialized) {
         int nextflag = flagPts.size() + 1;
-        //CFlag flagPt(pn.latitude, pn.longitude, pn.easting, pn.northing, flagColor, nextflag);
-        //flagPts.append(flagPt);
+        QString notes = notes.number(nextflag);
+        CFlag flagPt(pn.latitude, pn.longitude, pn.fix.easting, pn.fix.northing, gpsHeading, flagColor, nextflag, notes);
+        flagPts.append(flagPt);
         flagsBufferCurrent = false;
-        //TODO: FileSaveFlags();
+        contextFlag->setProperty("ptlat",pn.latitude);
+        contextFlag->setProperty("ptlon",pn.longitude);
+        contextFlag->setProperty("ptId",nextflag);
+        contextFlag->setProperty("ptText",notes);
+        //FileSaveFlags();
+    }
+}
+void FormGPS::onBtnRed_clicked(double lat, double lon, int color)
+{   qDebug()<<"onBtnRed_clicked";
+    if(isGPSPositionInitialized) {
+    double east, nort, ptHeading = 0;
+    int nextflag = flagPts.size() + 1;
+    QString notes = notes.number(nextflag);
+    pn.ConvertWGS84ToLocal((double)lat, (double)lon, nort, east);
+    CFlag flagPt(lat, lon, east, nort, ptHeading, color, nextflag, notes);
+    flagPts.append(flagPt);
+    FileSaveFlags();
     }
 }
 
@@ -593,32 +657,34 @@ void FormGPS::onBtnZoomOut_clicked(){
 }
 
 void FormGPS::onBtnRedFlag_clicked()
-{
+{   qDebug()<<"onBtnRedFlag_clicked";
     flagColor = 0;
     contextFlag->setProperty("visible",false);
-    btnFlag->setProperty("icon","/images/FlagRed.png");
+    contextFlag->setProperty("icon","/images/FlagRed.png");
 }
 
 void FormGPS::onBtnGreenFlag_clicked()
-{
+{   qDebug()<<"onBtnGreenFlag_clicked";
     flagColor = 1;
     contextFlag->setProperty("visible",false);
-    btnFlag->setProperty("icon","/images/FlagGrn.png");
+    contextFlag->setProperty("icon","/images/FlagGrn.png");
 }
 
 void FormGPS::onBtnYellowFlag_clicked()
-{
+{   qDebug()<<"onBtnYellowFlag_clicked";
     flagColor = 2;
     contextFlag->setProperty("visible",false);
-    btnFlag->setProperty("icon","/images/FlagYel.png");
+    contextFlag->setProperty("icon","/images/FlagYel.png");
 }
 
 void FormGPS::onBtnDeleteFlag_clicked()
-{
+{   qDebug()<<"onBtnDeleteFlag_clicked";
     //delete selected flag and set selected to none
-    flagPts.remove(flagNumberPicked - 1);
+    if (flagNumberPicked>0) {
+    if (flagPts.size() > 0) {
+    flagPts.remove(flagNumberPicked-1, 1);
     flagsBufferCurrent = false;
-    flagNumberPicked = 0;
+    flagNumberPicked = flagNumberPicked-1;
 
     int flagCnt = flagPts.size();
     if (flagCnt > 0) {
@@ -626,18 +692,83 @@ void FormGPS::onBtnDeleteFlag_clicked()
             flagPts[i].ID = i + 1;
     }
     contextFlag->setProperty("visible",false);
+    if (flagNumberPicked>0) {
+        contextFlag->setProperty("ptlat",flagPts[flagNumberPicked-1].latitude);
+        contextFlag->setProperty("ptlon",flagPts[flagNumberPicked-1].longitude);
+        contextFlag->setProperty("ptId",flagPts[flagNumberPicked-1].ID);
+        contextFlag->setProperty("ptText",flagPts[flagNumberPicked-1].notes);
+    }
+    else    {
+        contextFlag->setProperty("ptlat",0);
+        contextFlag->setProperty("ptlon",0);
+        contextFlag->setProperty("ptId",0);
+        contextFlag->setProperty("ptText","");
+    }
+    }
 }
+    else if (flagPts.size() > 0) {
+        flagPts.remove(flagPts.size()-1, 1);
 
+        contextFlag->setProperty("visible",false);
+        if (flagPts.size()>0) {
+            contextFlag->setProperty("ptlat",flagPts[flagPts.size()-1].latitude);
+            contextFlag->setProperty("ptlon",flagPts[flagPts.size()-1].longitude);
+            contextFlag->setProperty("ptId",flagPts[flagPts.size()-1].ID);
+            contextFlag->setProperty("ptText",flagPts[flagPts.size()-1].notes);
+        }
+        else    {
+            contextFlag->setProperty("ptlat",0);
+            contextFlag->setProperty("ptlon",0);
+            contextFlag->setProperty("ptId",0);
+            contextFlag->setProperty("ptText","");
+        }
+    }
+}
 void FormGPS::onBtnDeleteAllFlags_clicked()
-{
+{   qDebug()<<"onBtnDeleteAllFlag_clicked";
     contextFlag->setProperty("visible",false);
     flagPts.clear();
     flagsBufferCurrent = false;
     flagNumberPicked = 0;
     //TODO: FileSaveFlags
 }
+void FormGPS::onBtnNextFlag_clicked()
+{   qDebug()<<"onBtnNextFlag_clicked";
+
+    if (flagNumberPicked<flagPts.size()){
+        flagNumberPicked = flagNumberPicked + 1;}
+    else flagNumberPicked = 0;
+    if (flagNumberPicked>0){
+        contextFlag->setProperty("ptlat",flagPts[flagNumberPicked-1].latitude);
+        contextFlag->setProperty("ptlon",flagPts[flagNumberPicked-1].longitude);
+        contextFlag->setProperty("ptId",flagPts[flagNumberPicked-1].ID);
+        contextFlag->setProperty("ptText",flagPts[flagNumberPicked-1].notes);
+    }
+}
+void FormGPS::onBtnPrevFlag_clicked()
+{   qDebug()<<"onBtnPrevFlag_clicked";
+
+if (flagNumberPicked>1){
+        flagNumberPicked = flagNumberPicked -1 ;}
+else {flagNumberPicked = flagPts.size();
+
+}
+if (flagNumberPicked>0){
+contextFlag->setProperty("ptlat",flagPts[flagNumberPicked-1].latitude);
+contextFlag->setProperty("ptlon",flagPts[flagNumberPicked-1].longitude);
+contextFlag->setProperty("ptId",flagPts[flagNumberPicked-1].ID);
+contextFlag->setProperty("ptText",flagPts[flagNumberPicked-1].notes);
+}
+}
+void FormGPS::onBtnCancelFlag_clicked()
+{
+    flagNumberPicked = 0;
+    FileSaveFlags();
+}
+
 void FormGPS::onBtnAutoYouTurn_clicked(){
     qDebug()<<"activate youturn";
+    yt.loadSettings();
     yt.isTurnCreationTooClose = false;
 
 //     if (bnd.bndArr.Count == 0)    this needs to be moved to qml
@@ -683,6 +814,18 @@ void FormGPS::onBtnSwapAutoYouTurnDirection_clicked()
      }
      //else if (yt.isYouTurnBtnOn)
          //btnAutoYouTurn.PerformClick();
+ }
+
+ void FormGPS::onBtnResetCreatedYouTurn_clicked()
+ {
+     qDebug()<<"ResetCreatedYouTurnd";
+     yt.ResetYouTurn();
+ }
+
+ void FormGPS::onBtnAutoTrack_clicked()
+ {
+     trk.isAutoTrack = !trk.isAutoTrack;
+     qDebug()<<"isAutoTrack";
  }
 
 void FormGPS::onBtnManUTurn_clicked(bool right)
@@ -815,18 +958,18 @@ void FormGPS::modules_send_238() {
     SendPgnToLoop(p_238.pgn);
 }
 void FormGPS::modules_send_251() {
-	//qDebug() << "Sending 251 message to AgIO";
+    //qDebug() << "Sending 251 message to AgIO";
     p_251.pgn[p_251.set0] = settings->value(SETTINGS_ardSteer_setting0).value<int>();
     p_251.pgn[p_251.set1] = settings->value(SETTINGS_ardSteer_setting1).value<int>();
     p_251.pgn[p_251.maxPulse] = settings->value(SETTINGS_ardSteer_maxPulseCounts).value<int>();
-	p_251.pgn[p_251.minSpeed] = 5; //0.5 kmh THIS IS CHANGED IN AOG FIXES
+    p_251.pgn[p_251.minSpeed] = 5; //0.5 kmh THIS IS CHANGED IN AOG FIXES
 
     if (settings->value(SETTINGS_as_isConstantContourOn).value<bool>())
-		p_251.pgn[p_251.angVel] = 1;
-	else p_251.pgn[p_251.angVel] = 0;
+        p_251.pgn[p_251.angVel] = 1;
+    else p_251.pgn[p_251.angVel] = 0;
 
-	qDebug() << p_251.pgn;
-	SendPgnToLoop(p_251.pgn);
+    qDebug() << p_251.pgn;
+    SendPgnToLoop(p_251.pgn);
 }
 
 void FormGPS::modules_send_252() {
@@ -1074,5 +1217,255 @@ void FormGPS::loadTranslation(const QString &language) {
     } else {
         qDebug() << "Translation not loaded, file not found in :" << translationPath;
     }
+}
+
+// Начало сбора данных
+void FormGPS::StartDataCollection()
+{
+    IsCollectingData = true;
+    LastCollectionTime = QDateTime::currentDateTime();
+    qDebug()<< "StartDataCollection";
+}
+
+// Завершение сбора данных
+void FormGPS::StopDataCollection()
+{
+    IsCollectingData = false;
+    qDebug()<<"StopDataCollection";
+}
+
+// Полностью сбрасываем историю и аналитику
+void FormGPS::ResetData()
+{
+    steerAngleHistory.clear();
+    SampleCount = 0;
+    RecommendedWASZero = 0;
+    ConfidenceLevel = 0;
+    HasValidRecommendation = false;
+    Mean = 0;
+    StandardDeviation = 0;
+    Median = 0;
+}
+
+// Применяем смещение к историческим данным
+void FormGPS::ApplyOffsetToCollectedData(double appliedOffsetDegrees)
+{
+    if (steerAngleHistory.empty()) return;
+
+    for (size_t i = 0; i < steerAngleHistory.size(); ++i)
+    {
+        steerAngleHistory[i] += appliedOffsetDegrees;
+    }
+
+    if (SampleCount >= MIN_SAMPLES_FOR_ANALYSIS)
+    {
+        PerformStatisticalAnalysis();
+    }
+
+    qDebug() << "Smart WAS: Applied " << appliedOffsetDegrees << "° offset to "
+             << steerAngleHistory.size() << " collected samples.";
+}
+
+// Добавляем новую запись угла направления
+void FormGPS::AddSteerAngleSample(double guidanceSteerAngle, double currentSpeed)
+{   //qDebug()<<"AddSteerAngleSample";
+    if (!IsCollectingData || !ShouldCollectSample(guidanceSteerAngle, currentSpeed))
+        return;
+
+    steerAngleHistory.push_back(guidanceSteerAngle);
+    LastCollectionTime = QDateTime::currentDateTime();
+
+    if (steerAngleHistory.size() > MAX_SAMPLES)
+    {
+        steerAngleHistory.pop_front();  // удаляем самый старый элемент
+    }
+
+    SampleCount = steerAngleHistory.size();
+
+    if (SampleCount >= MIN_SAMPLES_FOR_ANALYSIS)
+    {
+        PerformStatisticalAnalysis();
+    }
+
+}
+
+// Возвращаем поправочный коэффициент на основе текущих данных
+int FormGPS::GetRecommendedWASOffsetAdjustment(int currentCPD)
+{
+    if (!HasValidRecommendation) return 0;
+
+    return static_cast<int>(std::round(RecommendedWASZero * currentCPD));
+}
+
+// Проверяем подходит ли данный образец для сбора
+bool FormGPS::ShouldCollectSample(double steerAngle, double speed)
+{
+    if (speed < MIN_SPEED_THRESHOLD) return false;
+    if (std::abs(steerAngle) > MAX_ANGLE_THRESHOLD) return false;
+    if (!isBtnAutoSteerOn) return false;
+    if (std::abs(vehicle.guidanceLineDistanceOff) > 15000) return false;
+
+    return true;
+}
+
+// Основная процедура статистического анализа
+void FormGPS::PerformStatisticalAnalysis()
+{
+    if (steerAngleHistory.size() < MIN_SAMPLES_FOR_ANALYSIS) return;
+
+    auto sortedData = steerAngleHistory;
+    std::sort(sortedData.begin(), sortedData.end()); // сортируем массив
+
+    Mean = std::accumulate(steerAngleHistory.begin(), steerAngleHistory.end(), 0.0) /
+           steerAngleHistory.size();
+
+    Median = CalculateMedian(sortedData);
+    StandardDeviation = CalculateStandardDeviation(steerAngleHistory, Mean);
+
+    RecommendedWASZero = -Median; // отрицательная коррекция приближает к центру
+
+    CalculateConfidenceLevel(sortedData);
+
+    HasValidRecommendation = ConfidenceLevel > 50.0 &&
+                             SampleCount >= MIN_SAMPLES_FOR_ANALYSIS;
+    //qDebug()<<"HasValidRecommendation"<<HasValidRecommendation;
+}
+
+// Функция для нахождения медианы
+double FormGPS::CalculateMedian(QVector<double> sortedData)
+{
+    int count = sortedData.size();
+    if (count == 0) return 0;
+
+    if (count % 2 == 0)
+    {
+        return (sortedData[count / 2 - 1] + sortedData[count / 2]) / 2.0;
+    }
+    else
+    {
+        return sortedData[count / 2];
+    }
+}
+
+// Расчет стандартного отклонения
+double FormGPS::CalculateStandardDeviation(QVector<double> data, double mean)
+{
+    if (data.size() < 2) return 0;
+
+    double sumOfSquares = 0.0;
+    for (double d : data)
+    {
+        sumOfSquares += std::pow(d - mean, 2);
+    }
+
+    return std::sqrt(sumOfSquares / (data.size() - 1));
+}
+
+// Подсчет коэффициента уверенности
+void FormGPS::CalculateConfidenceLevel(QVector<double> sortedData)
+{
+    if (sortedData.size() < MIN_SAMPLES_FOR_ANALYSIS)
+    {
+        ConfidenceLevel = 0;
+        return;
+    }
+
+    double oneStdDevRange = StandardDeviation;
+    double twoStdDevRange = 2 * StandardDeviation;
+
+    int withinOneStdDev = 0;
+    int withinTwoStdDev = 0;
+
+    for (double angle : sortedData)
+    {
+        double deviationFromMedian = std::abs(angle - Median);
+        if (deviationFromMedian <= oneStdDevRange) withinOneStdDev++;
+        if (deviationFromMedian <= twoStdDevRange) withinTwoStdDev++;
+    }
+
+    double oneStdDevPercentage = static_cast<double>(withinOneStdDev) / sortedData.size();
+    double twoStdDevPercentage = static_cast<double>(withinTwoStdDev) / sortedData.size();
+
+    // ожидаемое нормальное распределение данных
+    double expectedOneStdDev = 0.68;
+    double expectedTwoStdDev = 0.95;
+
+    // считаем баллы для каждой метрики
+    double oneStdDevScore = std::max(0.0, 1 - std::abs(oneStdDevPercentage - expectedOneStdDev) / expectedOneStdDev);
+    double twoStdDevScore = std::max(0.0, 1 - std::abs(twoStdDevPercentage - expectedTwoStdDev) / expectedTwoStdDev);
+    double magnitudeScore = std::max(0.0, 1 - std::abs(RecommendedWASZero) / 10.0); // штрафуем большие поправки
+    double sampleSizeFactor = std::min(1.0, static_cast<double>(sortedData.size()) / (MIN_SAMPLES_FOR_ANALYSIS * 3)); // размер выборки влияет положительно
+
+    // объединяем факторы
+    ConfidenceLevel = ((oneStdDevScore * 0.3 + twoStdDevScore * 0.3 + magnitudeScore * 0.2 + sampleSizeFactor * 0.2) * 100);
+    ConfidenceLevel = std::clamp(ConfidenceLevel, 0.0, 100.0);
+}
+
+void FormGPS::SmartCalLabelClick()
+{
+    // Сброс калибровки Smart WAS при клике на любую статусную метку
+    if (IsCollectingData)
+    {
+        ResetData();
+
+        // Покажите короткое подтверждение сброса
+        TimedMessageBox(1500, "Reset To Default", "CalibrationDataReset");
+    }
+    qDebug()<<"SmartCalLabelClick";
+}
+
+void FormGPS::on_btnSmartZeroWAS_clicked()
+{
+    if (!IsCollectingData)
+    {   TimedMessageBox(2000, "SmartCalibrationErro", "gsSmartWASNotAvailable");
+        return;
+    }
+
+    if (!HasValidRecommendation)
+    {
+        if (SampleCount < 200)
+        {
+            TimedMessageBox(2000, tr("Need at least 200 samples for calibration. Drive on guidance lines to collect more data."), QString(tr("Insufficient Data")) + " " +
+                                                                         QString::number(SampleCount, 'f', 1));
+        }
+        else
+        {
+            TimedMessageBox(2000, tr("Calibration confidence is low. Need at least 70% confidence. Drive more consistently on guidance lines."), QString(tr("Low Confidence")) + " " +
+                                                                                                                                      QString::number(ConfidenceLevel, 'f', 1));
+        }
+        return;
+    }
+
+    // Получаем рекомендацию по смещению
+    int recommendedOffsetAdjustment = GetRecommendedWASOffsetAdjustment(settings->value(SETTINGS_as_countsPerDegree).value<int>());
+    int newOffset = settings->value(SETTINGS_as_wasOffset).value<int>() + recommendedOffsetAdjustment;
+
+    // Проверяем новое значение смещения на допустимый диапазон
+    if (std::abs(newOffset) > 3900)
+    {
+        TimedMessageBox(2000, tr("Recommended adjustment {0} exceeds safe range (±50). Please check WAS sensor alignment"), QString(tr("Exceeded Range")) + " " +
+                                                                                                                                  QString::number(newOffset, 'f', 1));
+        qDebug() << "Smart Zero превысил диапазон:" << newOffset;
+        return;
+    }
+
+    // Применяем смещение нуля WAS
+    settings->setValue(SETTINGS_as_wasOffset, newOffset);
+
+    // Критически важно: применяем смещение к ранее собранным данным
+    ApplyOffsetToCollectedData(RecommendedWASZero);
+
+    // Сообщаем об успешной настройке
+    TimedMessageBox(2000, tr("%1 образцов, %2% уверенности, коррекция %3°")
+                                  .arg(SampleCount)
+                                  .arg(QString::number(ConfidenceLevel, 'f', 1))
+                                  .arg(QString::number(RecommendedWASZero, 'f', 2)),
+    QString(tr("Смещение успешно применено")));
+
+
+    qDebug() << "Настройка Smart WAS выполнена -"
+             << "Образцы:" << SampleCount
+             << ", Уверенность:" << QString::number(ConfidenceLevel, 'f', 1) << "%,"
+             << "Корректировка:" << QString::number(RecommendedWASZero, 'f', 2) << "°";
 }
 

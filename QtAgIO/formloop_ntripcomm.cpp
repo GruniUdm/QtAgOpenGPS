@@ -415,13 +415,13 @@ void FormLoop::ntripMeterTimer_Tick()
 
 void FormLoop::SendNTRIP(QByteArray data)
 {
-	//serial send out GPS port
-	/* don't worry about serial
-	 *
+    //serial send out GPS port
+    // don't worry about serial
+
 	if (isSendToSerial)
 	{
 		SendGPSPort(data);
-	}*/
+    }
 
 	//send out UDP Port
 	if (isSendToUDP)

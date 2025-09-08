@@ -15,9 +15,7 @@
 #include <QOpenGLBuffer>
 #include <QQmlApplicationEngine>
 //#include <QSerialPort>
-
 #include "common.h"
-
 #include "vecfix2fix.h"
 #include "vec2.h"
 #include "vec3.h"
@@ -47,6 +45,10 @@
 
 #include "formheadland.h"
 #include "formheadache.h"
+
+#include <QVector>
+#include <QDateTime>
+#include <QDebug>
 
 //forward declare classes referred to below, to break circular
 //references in the code
@@ -121,6 +123,9 @@ public:
 
     //current fields and field directory
     QString fieldsDirectory, currentFieldDirectory, displayFieldName;
+
+    // android directory
+    QString androidDirectory = "/storage/emulated/0/Documents/";
 
 
     bool leftMouseDownOnOpenGL; //mousedown event in opengl window
@@ -198,7 +203,7 @@ public:
     QString ablinesdirectory;
 
     //colors for sections and field background
-    uchar flagColor = 0;
+    int flagColor = 0;
 
     //how many cm off line per big pixel
     int lightbarCmPerPixel = 2;
@@ -711,6 +716,8 @@ public slots:
     void onBtnSwapAutoYouTurnDirection_clicked();
     void onBtnContourPriority_clicked(bool isRight);
     void onBtnContourLock_clicked();
+    void onBtnResetCreatedYouTurn_clicked();
+    void onBtnAutoTrack_clicked();
     //bottom row
     void onBtnResetTool_clicked();
     void onBtnHeadland_clicked();
@@ -739,6 +746,10 @@ public slots:
     void onBtnYellowFlag_clicked();
     void onBtnDeleteFlag_clicked();
     void onBtnDeleteAllFlags_clicked();
+    void onBtnNextFlag_clicked();
+    void onBtnPrevFlag_clicked();
+    void onBtnCancelFlag_clicked();
+    void onBtnRed_clicked(double lat, double lon, int color);
 
     void SwapDirection();
     void turnOffBoundAlarm();
@@ -757,6 +768,8 @@ public slots:
     void btnFreeDrive_clicked();
     void btnFreeDriveZero_clicked();
     void btnStartSA_clicked();
+
+
 
     /***************************
      * from OpenGL.Designer.cs *
@@ -818,6 +831,52 @@ signals:
 private:
     QTranslator translator;
     void loadTranslation(const QString &language);
+
+public:
+    // Публичные свойства was wizard
+    bool IsCollectingData = false;
+    int SampleCount = 0;
+    double RecommendedWASZero = 0;
+    double ConfidenceLevel = 0;
+    bool HasValidRecommendation = false;
+    QDateTime LastCollectionTime;
+
+    // Средние показатели распределения
+    double Mean;
+    double StandardDeviation;
+    double Median;
+
+    // Методы для работы с данными
+
+    void ApplyOffsetToCollectedData(double appliedOffsetDegrees);
+    int GetRecommendedWASOffsetAdjustment(int currentCPD);
+
+protected:
+    // Вектор для хранения истории углов
+    QVector<double> steerAngleHistory;
+
+    // Критерии проверки собираемых данных
+    static constexpr int MAX_SAMPLES = 2000;          // Максимальное число хранимых образцов
+    static constexpr int MIN_SAMPLES_FOR_ANALYSIS = 200; // Минимальное число образцов для анализа
+    static constexpr double MIN_SPEED_THRESHOLD = 2.0;  // км/ч — минимальная скорость для начала записи
+    static constexpr double MAX_ANGLE_THRESHOLD = 25.0; // Градусы — максимальный угол для включения записи
+
+    // Личные вспомогательные методы
+    bool ShouldCollectSample(double steerAngle, double speed);
+    void PerformStatisticalAnalysis();
+    double CalculateMedian(QVector<double> sortedData);
+    double CalculateStandardDeviation(QVector<double> data, double mean);
+    void CalculateConfidenceLevel(QVector<double> sortedData);
+    void AddSteerAngleSample(double guidanceSteerAngle, double currentSpeed);
+
+public slots:
+    void StartDataCollection();
+    void StopDataCollection();
+    void ResetData();
+    void SmartCalLabelClick();
+    void on_btnSmartZeroWAS_clicked();
+
+
 
 };
 

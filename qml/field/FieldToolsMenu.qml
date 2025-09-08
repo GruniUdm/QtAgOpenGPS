@@ -62,7 +62,11 @@ Drawer {
                 //width: 300
                 onClicked: {
                     fieldToolsMenu.visible = false
-                    headacheDesigner.show()
+                    if (boundaryInterface.count > 0) {
+                        headacheDesigner.show()
+                    }else{
+                        timedMessage.addMessage(2000, qsTr("No Boundaries"), qsTr("Create A Boundary First"))
+                    }
                 }
             }
             IconButtonTextBeside{
@@ -80,6 +84,25 @@ Drawer {
                 onClicked:{
                     fieldToolsMenu.visible = false
                     recPath.show()
+                }
+            }
+            IconButtonTextBeside {
+                id: delAppliedArea
+                icon.source: prefix + "/images/TrashApplied.png"
+                text: qsTr("Delete Applied Area")
+                onClicked: {aog.deleteAppliedArea()
+                fieldToolsMenu.visible = false}
+            }
+            IconButtonTextBeside {
+                id: btnflagLatLon
+                objectName: "btnFlag"
+                icon.source:  prefix + "/images/FlagRed.png";
+                text: qsTr("Flag by Lat Lon")
+                visible: true
+                onClicked: {
+                    fieldToolsMenu.visible = false
+                    flagLatLon.show();
+                    //aog.btnFlag();
                 }
             }
         }

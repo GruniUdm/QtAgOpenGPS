@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 //
-import QtQuick 2.0
+import QtQuick
 import AOG
 import Settings
 import "components" as Comp

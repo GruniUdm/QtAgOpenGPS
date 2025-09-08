@@ -20,6 +20,7 @@ import "config" as ConfigSettings //"Config" causes errors
 import "field" as Field
 import "tracks" as Tracks
 import "components" as Comp
+import "wizards" as Wiz
 
 Window {
 
@@ -427,7 +428,7 @@ Window {
                     else
                         text = "Lost RTK"
                 }
-                onTextChanged: if (text.length > 0)
+                onTextChanged: if (ageAlarm.text.length > 0)
                                    console.log("rtk alarm sound")
 
             }
@@ -516,7 +517,7 @@ Window {
                 id: blockageData
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                visible: (aog.blockageConnected & Settings.seed_blockageIsOn) ? true : false
+                visible: (aog.blockageConnected && Settings.seed_blockageIsOn) ? true : false
             }
 
             SimController{
@@ -541,13 +542,26 @@ Window {
                 anchors.rightMargin: (50 * theme.scaleWidth)
                 font.pixelSize: 20
                 color: "#cc5200"
-                text: new Date().toLocaleTimeString(Qt.locale())
+                property string currentTime: "HH:mm:ss"
+                text: currentTime
+
                 Timer{
-                    interval: 100
+                    id: timer
+                    interval: 1000
                     repeat: true
-                    running: true
-                    onTriggered: timeText.text = new Date().toLocaleTimeString(Qt.locale())
+                    running: aog.rawHz>10?
+                    onTriggered: timeText.text = Qt.formatTime(new Date(), "HH:mm:ss")
                 }
+
+                // Connections {
+                //     target: timer
+                //     onTriggered: {
+                //         if (timeText.visible) {
+                //             timeText.currentTime = Qt.formatTime(new Date(), "HH:mm:ss")
+                //         }
+                //     }
+                // }
+
             }
             Comp.SectionButtons {
                 id: sectionButtons
@@ -561,11 +575,11 @@ Window {
             }
             Comp.BlockageRows {
                 id: blockageRows
-                visible: (aog.blockageConnected & Settings.seed_blockageIsOn) ? true : false  // need connect with c++ Dim
+                visible: (aog.blockageConnected & Settings.seed_blockageIsOn) ? true : false
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 8
-                height: 100 * theme.scaleHeight
+                height: 120 * theme.scaleHeight
                 //width: 800  * theme.scaleWidth
 
             }
@@ -609,6 +623,7 @@ Window {
                 anchors.top: parent.top
                 anchors.right: zoomBtns.left
                 heading: -Utils.radians_to_deg(aog.heading)
+                visible: Settings.menu_isCompassOn
             }
             Column{
                 id: zoomBtns
@@ -768,8 +783,10 @@ Window {
             id: setSimCoords
             anchors.fill: parent
         }
-
-        /*
+        ConfigSettings.SetColors{
+            id: setColors
+            anchors.fill: parent
+        }
         Tracks.TrackNewButtons{
             id: trackNewButtons
             visible: false
@@ -778,14 +795,79 @@ Window {
             id: trackNewSet
             anchors.fill: parent
         }
-        */
+
         Tracks.TrackList{
             id: trackList
         }
-        /*
+
         Tracks.TracksNewAddName{
             id: trackAddName
-        }*/
+        }
+        Wiz.ChartSteer{
+            id: steerCharta
+            height: 300  * theme.scaleHeight
+            width: 400  * theme.scaleWidth
+            xval1: aog.steerAngleActual
+            xval2: aog.steerAngleSet
+            axismin: -10
+            axismax: 10
+            lineName1:"Actual"
+            lineName2: "SetPoint"
+            chartName: qsTr("Steer Chart")
+            visible: false
+            function show(){
+                steerCharta.visible = true
+            }
+        }
+
+        Wiz.ChartSteer{
+            id: xteCharta
+            height: 300  * theme.scaleHeight
+            width: 400  * theme.scaleWidth
+            xval1: aog.lblmodeActualXTE
+            xval2: Number(aog.dataSteerAngl)
+            axismin: -100
+            axismax: 100
+            lineName1:"XTE"
+            lineName2:"HE"
+            chartName: qsTr("XTE Chart")
+            visible: false
+            function show(){
+                xteCharta.visible = true
+            }
+        }
+
+        Wiz.ChartSteer{
+            id: headingCharta
+            height: 300  * theme.scaleHeight
+            width: 400  * theme.scaleWidth
+            xval1: aog.gpsHeading
+            xval2: Number(aog.lblimuCorrected)
+            axismin: -10
+            axismax: 10
+            lineName1:"Fix2fix"
+            lineName2:"IMU"
+            chartName: qsTr("Heading Chart")
+            visible: false
+            function show(){
+                headingCharta.visible = true
+            }
+        }
+
+        Wiz.Camera{
+            id: cam1
+            height: 300  * theme.scaleHeight
+            width: 400  * theme.scaleWidth
+        }
+        Wiz.WasWizard{
+            id: wasWizard
+            height: 300  * theme.scaleHeight
+            width: 400  * theme.scaleWidth
+            visible: false
+            function show(){
+                wasWizard.visible = true
+            }
+        }
 
         Rectangle{//show "Are you sure?" when close button clicked
             id: closeDialog
@@ -837,7 +919,14 @@ Window {
             }
             Field.FieldOpen{
                 id: fieldOpen
-                x: 100    }
+                x: 100
+            }
+            Field.Flags{
+                id: flags
+            }
+            Field.FlagLatLon{
+                id: flagLatLon
+            }
 
             y: 75
         }
@@ -856,6 +945,12 @@ Window {
         anchors.leftMargin: theme.buttonSize + 10
         //anchors.topMargin: btnFlag.y
         border.color: "#c3ecc0"
+        property string icon: "/images/FlagRed.png";
+        property double ptlat: 0
+        property double ptlon: 0
+        property double ptId: 0
+        property string ptText: ""
+
 
         Grid {
             id: contextFlagGrid
@@ -875,28 +970,33 @@ Window {
                 id: redFlag
                 objectName: "btnRedFlag"
                 icon.source: prefix + "/images/FlagRed.png";
+                onClicked: aog.btnRedFlag()
             }
             Comp.IconButton {
                 id: greenFlag
                 objectName: "btnGreenFlag"
                 icon.source: prefix + "/images/FlagGrn.png";
+                onClicked: aog.btnGreenFlag()
             }
             Comp.IconButton {
                 id: yellowFlag
                 objectName: "btnYellowFlag"
                 icon.source: prefix + "/images/FlagYel.png";
+                onClicked: aog.btnYellowFlag()
             }
             Comp.IconButton {
                 id: deleteFlag
                 objectName: "btnDeleteFlag"
                 icon.source: prefix + "/images/FlagDelete.png"
-                enabled: false
+                //enabled: false
+                onClicked: aog.btnDeleteFlag()
             }
             Comp.IconButton {
                 id: deleteAllFlags
                 objectName: "btnDeleteAllFlags"
                 icon.source: prefix + "/images/FlagDeleteAll.png"
-                enabled: false
+                //enabled: false
+                onClicked: aog.btnDeleteAllFlags()
             }
         }
         /********************************dialogs***********************/
@@ -918,6 +1018,7 @@ Window {
                 }
             }
         }
+
         CloseAOG{
             id: closeAOG
         }

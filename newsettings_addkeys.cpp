@@ -27,7 +27,7 @@ void NewSettings::setupKeys() {
     addKey("as/deadZoneDistance", 1, QMetaType(QMetaType::Int));
     addKey("as/deadZoneHeading", 10, QMetaType(QMetaType::Int));
     addKey("as/functionSpeedLimit", 12, QMetaType(QMetaType::Int));
-    addKey("as/guidanceLookAheadTime", 1.5, QMetaType(QMetaType::Double));
+    addKey("as/guidanceLookAheadTime", 0.4, QMetaType(QMetaType::Double));
     addKey("as/highSteerPWM", 180, QMetaType(QMetaType::Int));
     addKey("as/isAutoSteerAutoOn", false, QMetaType(QMetaType::Bool));
     addKey("as/isConstantContourOn", false, QMetaType(QMetaType::Bool));
@@ -147,6 +147,7 @@ void NewSettings::setupKeys() {
     addKey("feature/isUTurnOn", true, QMetaType(QMetaType::Bool));
     addKey("feature/isWebCamOn", false, QMetaType(QMetaType::Bool));
     addKey("feature/isYouTurnOn", true, QMetaType(QMetaType::Bool));
+    addKey("feature/isNudgeOn", true, QMetaType(QMetaType::Bool));
     addKey("gps/ageAlarm", 20, QMetaType(QMetaType::Int));
     addKey("gps/dualHeadingOffset", 0, QMetaType(QMetaType::Double));
     addKey("gps/dualReverseDetectionDistance", 0.25, QMetaType(QMetaType::Double));
@@ -173,6 +174,7 @@ void NewSettings::setupKeys() {
     addKey("jobMenu/location", QPoint(200, 200), QMetaType(QMetaType::QPoint));
     addKey("jobMenu/size", "640, 530", QMetaType(QMetaType::QString));
     addKey("key/hotKeys", "ACFGMNPTYVW12345678", QMetaType(QMetaType::QString));
+    addKey("menu/language", "ru", QMetaType(QMetaType::QString));
     addKey("menu/isCompassOn", true, QMetaType(QMetaType::Bool));
     addKey("menu/isGridOn", true, QMetaType(QMetaType::Bool));
     addKey("menu/isLightBarNotSteerBar", false, QMetaType(QMetaType::Bool));

@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-import AgIO 1.0
+import AgIO
 
 Button {
     implicitWidth: 120 * theme.scaleWidth

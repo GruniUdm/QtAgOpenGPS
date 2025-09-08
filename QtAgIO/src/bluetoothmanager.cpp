@@ -87,9 +87,11 @@ void BluetoothManager::connected(){
     deviceConnecting = false;
     deviceConnected = true;
 
+
     devicesNotAvailable.clear(); // reset so we start over when connection is lost
 
     formLoop->agio->setProperty("connectedBTDevices", connectedDeviceName);
+    formLoop->agio->setProperty("bluetoothConnected", deviceConnected);
 
     if(consoleDebug) qDebug() << "Waiting for incoming data...";
 }
@@ -98,6 +100,7 @@ void BluetoothManager::disconnected(){
     deviceConnecting = false;
     connectedDeviceName.clear();
     formLoop->agio->setProperty("connectedBTDevices", ""); // tell the frontend nothing is connected
+
     //restart the discoveryAgent
 
     discoveryAgent->stop();
@@ -111,12 +114,20 @@ void BluetoothManager::disconnected(){
         formLoop->TimedMessageBox(2000, "Bluetooth Device Disconnected!", "Disconnected from device " + connectedDeviceName);
     }
     deviceConnected = false;
+    formLoop->agio->setProperty("bluetoothConnected", deviceConnected);
+
 }
 
 void BluetoothManager::readData(){
     QByteArray data = socket->readAll();
     rawBuffer += QString::fromLatin1(data);
     formLoop->ParseNMEA(rawBuffer);
+}
+
+void BluetoothManager::sendData(QByteArray data){
+    if(deviceConnected) {
+        socket->write(data);
+    }
 }
 
 void BluetoothManager::discoveryFinished(){

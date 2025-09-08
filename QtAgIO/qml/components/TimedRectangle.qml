@@ -1,5 +1,5 @@
 import QtQuick
-import AgIO 1.0
+import AgIO
 /* More or less a modified version of TimedMessage
  */
 Rectangle {
@@ -23,11 +23,11 @@ Rectangle {
         running: true
         repeat: true
         onTriggered: {
-            timerR.timeout = timerR.timeout - interval
-            if(timerR.timeout < 0){
-                timer.running = false
-                timerR.visible = false
-            }
+            // timerR.timeout = timerR.timeout - interval
+            // if(timerR.timeout < 0){
+            //     timer.running = false
+            //     timerR.visible = false
+            // }
         }
     }
 }

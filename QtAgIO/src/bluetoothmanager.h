@@ -48,5 +48,6 @@ private slots:
     void bluetooth_console_debug(bool doWeDebug);
 public slots:
     void startBluetoothDiscovery();
+    void sendData(QByteArray data);
 };
 #endif  //BLUETOOTHMANAGER_H

@@ -290,8 +290,8 @@ void FormGPS::DoRemoteSwitches()
                         if ((tool.zoneRanges[i + 1] > 0) && ((mc.ssP[mc.swOffGr0] & Bit) == Bit)
                             && ((mc.ss[mc.swOffGr0] & Bit) != Bit) && (tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState == btnStates::Off))
                         {
-                        tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState = btnStates::Auto;
-                        tool.sectionButtonState.set(tool.zoneRanges[i + 1] - 1,btnStates::Auto);
+                            tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState = btnStates::Auto;
+                            tool.sectionButtonState.set(tool.zoneRanges[i + 1] - 1,btnStates::Auto);
 
                         }
                     }
@@ -318,10 +318,8 @@ void FormGPS::DoRemoteSwitches()
 
 void FormGPS::doBlockageMonitoring()
 {
-    isConnectedBlockage = true;
-    QObject *aog = qmlItem(mainWindow,"aog");
-    aog->setProperty("blockageConnected", isConnectedBlockage);
-    int k=0;
+    QObject *aog = qmlItem(mainWindow, "aog");
+    int k = 0;
     int k1 = settings->value(SETTINGS_seed_blockRow1).value<int>();
     int k2 = settings->value(SETTINGS_seed_blockRow2).value<int>();
     int k3 = settings->value(SETTINGS_seed_blockRow3).value<int>();
@@ -329,27 +327,27 @@ void FormGPS::doBlockageMonitoring()
     int k5 = settings->value(SETTINGS_seed_numRows).value<int>();
     int k6 = settings->value(SETTINGS_seed_blockCountMin).value<int>();
     double k7 = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double rowwidth = k7/k5;
-    if (pn.vtgSpeed != 0) {
-    for(int i=0;i<k1;i++)
-        mc.blockageseccount[k++]=mc.blockageseccount1[i]*7.2/rowwidth/pn.vtgSpeed;
-    for(int i=0;i<k2;i++)
-        mc.blockageseccount[k++]=mc.blockageseccount2[i]*7.2/rowwidth/pn.vtgSpeed;
-    for(int i=0;i<k3;i++)
-        mc.blockageseccount[k++]=mc.blockageseccount3[i]*7.2/rowwidth/pn.vtgSpeed;
-    for(int i=0;i<k4;i++)
-        mc.blockageseccount[k++]=mc.blockageseccount4[i]*7.2/rowwidth/pn.vtgSpeed;
-    for(int s=0; s< k5; s++) {
-        tool.blockageRowState.set(s, mc.blockageseccount[s]);
-    }
-    }
-    int i;
-    double avg=0;
-    for(i=0; i < k5; i++) avg+=(mc.blockageseccount[i]);
-    avg/=k5;
+    double rowwidth = k7 / k5;
+    if (pn.vtgSpeed != 0 && rowwidth != 0) {
+        for (int i = 0; i < k1 && i < (sizeof(mc.blockageseccount1) / sizeof(mc.blockageseccount1[0])); i++)
+            mc.blockageseccount[k++] = floor(mc.blockageseccount1[i] * 7.2 / rowwidth / pn.vtgSpeed);
+        for (int i = 0; i < k2 && i < (sizeof(mc.blockageseccount2) / sizeof(mc.blockageseccount2[0])); i++)
+            mc.blockageseccount[k++] = floor(mc.blockageseccount2[i] * 7.2 / rowwidth / pn.vtgSpeed);
+        for (int i = 0; i < k3 && i < (sizeof(mc.blockageseccount3) / sizeof(mc.blockageseccount3[0])); i++)
+            mc.blockageseccount[k++] = floor(mc.blockageseccount3[i] * 7.2 / rowwidth / pn.vtgSpeed);
+        for (int i = 0; i < k4 && i < (sizeof(mc.blockageseccount4) / sizeof(mc.blockageseccount4[0])); i++)
+            mc.blockageseccount[k++] = floor(mc.blockageseccount4[i] * 7.2 / rowwidth / pn.vtgSpeed);
+        if(QDateTime::currentMSecsSinceEpoch() - mc.blockage_lastUpdate >= 3000){
+            qDebug() << "!!!blockageRowState.set Start!!!";
+            tool.blockageRowState.set(mc.blockageseccount, (sizeof(mc.blockageseccount)/sizeof(mc.blockageseccount[0])));
+            qDebug() << "!!!blockageRowState.set END!!!";
+            mc.blockage_lastUpdate = QDateTime::currentMSecsSinceEpoch();
+
+    double avg = std::accumulate(std::begin(mc.blockageseccount), std::end(mc.blockageseccount), 0);
+    avg /= k5;
     int max = 0;
-    int i_max=0;
-    for (int i = 0; i < k5; ++i) {
+    int i_max = 0;
+    for (int i = 0; i < k5 && i < (sizeof(mc.blockageseccount) / sizeof(mc.blockageseccount[0])); ++i) {
         if (mc.blockageseccount[i] > max) {
             max = (mc.blockageseccount[i]);
             i_max = i;
@@ -357,33 +355,36 @@ void FormGPS::doBlockageMonitoring()
     }
     int min1 = 65535;
     int min2 = 65535;
-    int i_min1=0;
-    int i_min2=0;
-    for (int i = 0; i < k5; ++i) {
+    int i_min1 = 0;
+    int i_min2 = 0;
+    for (int i = 0; i < k5 && i < (sizeof(mc.blockageseccount) / sizeof(mc.blockageseccount[0])); ++i) {
         if (mc.blockageseccount[i] < min1) {
             min1 = (mc.blockageseccount[i]);
             i_min1 = i;
         }
     }
-    for(i=0; i<k5; i++)
-        if(mc.blockageseccount[i]<min2 && i_min1!=i)
-        {
-            min2=(mc.blockageseccount[i]);
-            i_min2=i;
+    for (int i = 0; i < k5 && i < (sizeof(mc.blockageseccount) / sizeof(mc.blockageseccount[0])); i++)
+        if (mc.blockageseccount[i] < min2 && i_min1 != i) {
+            min2 = (mc.blockageseccount[i]);
+            i_min2 = i;
         }
-    int count=0;
-    for (int i = 0; i < k5; i++)
-    if (mc.blockageseccount[i] < k6) count++;
-
+    int count = 0;
+    for (int i = 0; i < k5 && i < (sizeof(mc.blockageseccount) / sizeof(mc.blockageseccount[0])); i++)
+        if (mc.blockageseccount[i] < k6)
+            count++;
 
     tool.blockage_avg = avg;
     tool.blockage_min1 = min1;
     tool.blockage_min2 = min2;
     tool.blockage_max = max;
-    tool.blockage_min1_i = (i_min1+1);
-    tool.blockage_min2_i = (i_min2+1);
-    tool.blockage_max_i = i_max+1;
+    tool.blockage_min1_i = (i_min1 + 1);
+    tool.blockage_min2_i = (i_min2 + 1);
+    tool.blockage_max_i = i_max + 1;
     tool.blockage_blocked = count;
+
+    aog->setProperty("blockageConnected", true);
+        }
+    }
 }
 
 

@@ -5,8 +5,9 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import Settings
 import AOG
-
+import Interface
 
 import ".."
 import "../components" as Comp
@@ -40,10 +41,12 @@ Comp.MoveablePopup {
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapLeftHalf.png"
                         Layout.alignment: Qt.AlignLeft
+                        onClicked: TracksInterface.ref_nudge((Settings.vehicle_toolWidth - Settings.vehicle_toolOverlap)/-2)
                     }
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapRightHalf.png"
                         Layout.alignment: Qt.AlignRight
+                        onClicked: TracksInterface.ref_nudge((Settings.vehicle_toolWidth - Settings.vehicle_toolOverlap)/2)
                     }
                 }
                 RowLayout{
@@ -52,15 +55,21 @@ Comp.MoveablePopup {
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapLeft.png"
                         Layout.alignment: Qt.AlignLeft
+                        onClicked: TracksInterface.ref_nudge(Settings.as_snapDistanceRef/-100)
                     }
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapRight.png"
                         Layout.alignment: Qt.AlignRight
+                        onClicked: TracksInterface.ref_nudge(Settings.as_snapDistanceRef/100)
                     }
                 }
-                TextField{
+                Comp.SpinBoxCM{
+                    id: offset
                     Layout.alignment: Qt.AlignCenter
-                    implicitWidth: 75
+                    from: 1
+                    to: 10000
+                    boundValue: Settings.as_snapDistanceRef
+                    onValueModified: Settings.as_snapDistanceRef = value
                 }
             }
         }

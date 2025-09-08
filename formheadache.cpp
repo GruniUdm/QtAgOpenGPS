@@ -748,6 +748,7 @@ void FormHeadache::btnExit_Click() {
 
 void FormHeadache::isSectionControlled(bool wellIsIt) {
     bnd->isSectionControlledByHeadland = wellIsIt;
+    qDebug() << "isSectionControlledByHeadland" << wellIsIt;
     settings->setValue(SETTINGS_headland_isSectionControlled, wellIsIt);
 }
 
@@ -879,7 +880,7 @@ void FormHeadache::btnBndLoop_Click() {
         {
             Vec3 pt(hdArr[i].easting, hdArr[i].northing, hdArr[i].heading);
 
-            bnd->bndList[0].hdLine.append(pt);
+            //bnd->bndList[0].hdLine.append(pt);  //???????
             delta = 0;
         }
     }

@@ -143,6 +143,12 @@ Item {
             anchors.topMargin: 20 * theme.scaleHeight
             anchors.bottomMargin: 20 * theme.scaleHeight
             DisplayAndFeaturesBtns{
+                text: qsTr("Nudge Controls")
+                icon.source: prefix	+ "/images/SnapToPivot.png"
+                isChecked: Settings.feature_isNudgeOn
+                onCheckedChanged: Settings.feature_isNudgeOn = checked
+            }
+            DisplayAndFeaturesBtns{
                 text: qsTr("Auto Start AgIO")
                 icon.source: prefix	+ "/images/AgIO.png"
                 isChecked: Settings.feature_isAgIOOn

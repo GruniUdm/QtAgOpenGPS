@@ -48,8 +48,12 @@ void FormGPS::ExportFieldAs_ISOXMLv4()
 
 void FormGPS::FileSaveHeadLines()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -119,9 +123,12 @@ void FormGPS::FileSaveHeadLines()
 
 void FormGPS::FileLoadHeadLines()
 {
-    //current field directory should already exist
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir loadDir(directoryName);
     if (!loadDir.exists()) {
@@ -212,8 +219,12 @@ void FormGPS::FileLoadHeadLines()
 
 void FormGPS::FileSaveTracks()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -296,8 +307,12 @@ void FormGPS::FileLoadTracks()
     trk.gArr.clear();
 
     //current field directory should already exist
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir loadDir(directoryName);
     if (!loadDir.exists()) {
@@ -412,8 +427,12 @@ void FormGPS::FileLoadTracks()
 
 void FormGPS::FileSaveCurveLines()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -473,8 +492,12 @@ void FormGPS::FileLoadCurveLines()
     //CurveLines.txtfile
 
     //current field directory should already exist
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir loadDir(directoryName);
     if (!loadDir.exists()) {
@@ -575,8 +598,12 @@ void FormGPS::FileLoadCurveLines()
 
 void FormGPS::FileSaveABLines()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -627,8 +654,12 @@ void FormGPS::FileLoadABLines()
     //run before FileLoadCurveLines().
 
     //current field directory should already exist
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir loadDir(directoryName);
     if (!loadDir.exists()) {
@@ -777,7 +808,7 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
             //Check for latest boundary files, then above line string is num of points
             if (line == "True" || line == "False")
             {
-               line = reader.readLine(); //number of points
+                line = reader.readLine(); //number of points
             }
 
             int numPoints = line.toInt();
@@ -791,8 +822,8 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
                     line = reader.readLine();
                     QStringList words = line.split(',');
                     Vec3 vecPt( words[0].toDouble(),
-                                words[1].toDouble(),
-                                words[2].toDouble() );
+                               words[1].toDouble(),
+                               words[2].toDouble() );
                     pointList.append(vecPt);
                 }
 
@@ -822,8 +853,12 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
 
 bool FormGPS::FileOpenField(QString fieldDir, int flags)
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + fieldDir;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + fieldDir;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + fieldDir;
+#endif
 
     QString filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Field.txt");
 
@@ -842,7 +877,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
     //and open a new job
     JobNew();
-
+    bnd.loadSettings();
     //Saturday, February 11, 2017  -->  7:26:52 AM
     //$FieldDir
     //Bob_Feb11
@@ -902,9 +937,9 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             pn.longitude = pn.lonStart;
 
             sim.latitude = pn.latStart;
-            settings->setValue(SETTINGS_gps_simLatitude, pn.latStart);
+            settings->setValue(SETTINGS_gps_simLatitude, (double)pn.latStart);
             sim.longitude = pn.lonStart;
-            settings->setValue(SETTINGS_gps_simLongitude, pn.lonStart);
+            settings->setValue(SETTINGS_gps_simLongitude, (double)pn.lonStart);
         }
         pn.SetLocalMetersPerDegree();
     }
@@ -968,8 +1003,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                     {
                         double temp = 0;
                         temp = (*triStrip[0].triangleList)[j].x() * ((*triStrip[0].triangleList)[j + 1].y() - (*triStrip[0].triangleList)[j + 2].y()) +
-                                 (*triStrip[0].triangleList)[j + 1].x() * ((*triStrip[0].triangleList)[j + 2].y() - (*triStrip[0].triangleList)[j].y()) +
-                                     (*triStrip[0].triangleList)[j + 2].x() * ((*triStrip[0].triangleList)[j].y() - (*triStrip[0].triangleList)[j + 1].y());
+                               (*triStrip[0].triangleList)[j + 1].x() * ((*triStrip[0].triangleList)[j + 2].y() - (*triStrip[0].triangleList)[j].y()) +
+                               (*triStrip[0].triangleList)[j + 2].x() * ((*triStrip[0].triangleList)[j].y() - (*triStrip[0].triangleList)[j + 1].y());
 
                         fd.workedAreaTotal += fabs((temp * 0.5));
                     }
@@ -978,7 +1013,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                 //was old version prior to v4
                 if (isv3)
                 {
-                        //Append the current list to the field file
+                    //Append the current list to the field file
                 }
             }
             lock.unlock();
@@ -1141,7 +1176,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             //Check for latest boundary files, then above line string is num of points
             if (line == "True" || line == "False")
             {
-               line = reader.readLine(); //number of points
+                line = reader.readLine(); //number of points
             }
 
             int numPoints = line.toInt();
@@ -1154,8 +1189,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                     line = reader.readLine();
                     QStringList words = line.split(',');
                     Vec3 vecPt( words[0].toDouble(),
-                                words[1].toDouble(),
-                                words[2].toDouble() );
+                               words[1].toDouble(),
+                               words[2].toDouble() );
 
                     //if (turnheading)
                     //{
@@ -1466,8 +1501,12 @@ void FormGPS::FileCreateField()
 
     //get the directory and make sure it exists, create if not
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1524,8 +1563,12 @@ void FormGPS::FileCreateElevation()
 
     //get the directory and make sure it exists, create if not
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1579,8 +1622,12 @@ void FormGPS::FileSaveSections()
 
     //get the directory and make sure it exists, create if not
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     myFilename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Sections.txt");
     QFile sectionFile(myFilename);
@@ -1603,8 +1650,8 @@ void FormGPS::FileSaveSections()
         for (int i=0; i < count2; i++)
         {
             writer << qSetRealNumberPrecision(3)
-                   << (*triList)[i].x() << "," << (*triList)[i].y()
-                   << "," << (*triList)[i].z() << Qt::endl;
+            << (*triList)[i].x() << "," << (*triList)[i].y()
+            << "," << (*triList)[i].z() << Qt::endl;
         }
     }
 
@@ -1620,8 +1667,12 @@ void FormGPS::FileCreateSections()
 
     //get the directory and make sure it exists, create if not
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     myFilename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Sections.txt");
     QFile sectionFile(myFilename);
@@ -1638,8 +1689,12 @@ void FormGPS::FileCreateSections()
 void FormGPS::FileCreateBoundary()
 {
     //Create Boundary.txt, overwriting it if it exists.
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1668,8 +1723,12 @@ void FormGPS::FileCreateBoundary()
 void FormGPS::FileCreateFlags()
 {
     //create a new flags file, overwriting if it alraedy existis.
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1696,8 +1755,12 @@ void FormGPS::FileCreateContour()
 
     //get the directory and make sure it exists, create if not
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     myFilename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Contour.txt");
     QFile contourFile(myFilename);
@@ -1722,8 +1785,12 @@ void FormGPS::FileSaveContour()
 
     //get the directory and make sure it exists, create if not
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     myFilename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Contour.txt");
     QFile contourFile(myFilename);
@@ -1746,9 +1813,9 @@ void FormGPS::FileSaveContour()
         for (int i = 0; i < count2; i++)
         {
             writer << qSetRealNumberPrecision(3)
-                   << (*triList)[i].easting << ","
-                   << (*triList)[i].northing << ","
-                   << (*triList)[i].heading << Qt::endl;
+            << (*triList)[i].easting << ","
+            << (*triList)[i].northing << ","
+            << (*triList)[i].heading << Qt::endl;
         }
     }
 
@@ -1758,8 +1825,12 @@ void FormGPS::FileSaveContour()
 
 void FormGPS::FileSaveBoundary()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1805,8 +1876,12 @@ void FormGPS::FileSaveBoundary()
 
 void FormGPS::FileSaveTram()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1840,8 +1915,8 @@ void FormGPS::FileSaveTram()
         for (int i = 0; i < tram.tramBndOuterArr.count(); i++)
         {
             writer << qSetRealNumberPrecision(3)
-                   << tram.tramBndOuterArr[i].easting << ","
-                   << tram.tramBndOuterArr[i].northing << Qt::endl;
+            << tram.tramBndOuterArr[i].easting << ","
+            << tram.tramBndOuterArr[i].northing << Qt::endl;
         }
 
         //inner track of outer boundary tram
@@ -1850,8 +1925,8 @@ void FormGPS::FileSaveTram()
         for (int i = 0; i < tram.tramBndInnerArr.count(); i++)
         {
             writer << qSetRealNumberPrecision(3)
-                   << tram.tramBndInnerArr[i].easting << ","
-                   << tram.tramBndInnerArr[i].northing << Qt::endl;
+            << tram.tramBndInnerArr[i].easting << ","
+            << tram.tramBndInnerArr[i].northing << Qt::endl;
         }
     }
 
@@ -1871,9 +1946,9 @@ void FormGPS::FileSaveTram()
 
             for (int h = 0; h < tram.tramList[i]->count(); h++)
             {
-            writer << qSetRealNumberPrecision(3)
-                       << (*tram.tramList[i])[h].easting << ","
-                       << (*tram.tramList[i])[h].northing << Qt::endl;
+                writer << qSetRealNumberPrecision(3)
+                << (*tram.tramList[i])[h].easting << ","
+                << (*tram.tramList[i])[h].northing << Qt::endl;
             }
         }
     }
@@ -1881,8 +1956,12 @@ void FormGPS::FileSaveTram()
 
 void FormGPS::FileSaveBackPic()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1928,8 +2007,12 @@ void FormGPS::FileSaveBackPic()
 
 void FormGPS::FileSaveHeadland()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1975,8 +2058,12 @@ void FormGPS::FileSaveHeadland()
 
 void FormGPS::FileCreateRecPath()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2009,8 +2096,12 @@ void FormGPS::FileCreateRecPath()
 
 void FormGPS::FileSaveRecPath()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2057,8 +2148,12 @@ void FormGPS::FileSaveRecPath()
 void FormGPS::FileLoadRecPath()
 {
     //current field directory should already exist
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir loadDir(directoryName);
     if (!loadDir.exists()) {
@@ -2120,8 +2215,12 @@ void FormGPS::FileSaveFlags()
     //$Offsets
     //533172,5927719,12 - offset easting, northing, zone
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2168,8 +2267,12 @@ void FormGPS::FileSaveFlags()
 
 void FormGPS::FileSaveNMEA()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2201,8 +2304,12 @@ void FormGPS::FileSaveNMEA()
 
 void FormGPS::FileSaveElevation()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2234,8 +2341,12 @@ void FormGPS::FileSaveElevation()
 
 void FormGPS::FileSaveSingleFlagKML2(int flagNumber)
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2289,8 +2400,12 @@ void FormGPS::FileSaveSingleFlagKML2(int flagNumber)
 
 void FormGPS::FileSaveSingleFlagKML(int flagNumber)
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2343,8 +2458,12 @@ void FormGPS::FileSaveSingleFlagKML(int flagNumber)
 
 void FormGPS::FileMakeKMLFromCurrentPosition(double lat, double lon)
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {

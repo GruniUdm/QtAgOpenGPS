@@ -20,6 +20,9 @@
 #include <QDateTime>
 #include <QElapsedTimer>
 #include <QObject>
+#include <QtSerialPort/QSerialPort>
+//#include <QSerialPortInfo>
+#include <QObject>
 
 
 
@@ -163,6 +166,29 @@ class FormLoop : public QObject
     private:
         int loopListenPort;
         int loopSendPort;
+
+    public:
+        void SendGPSPort(QByteArray byteData);
+        void openSerialPort(QString comName, int baud);
+        void writeToSerialPort(QString message);
+        bool getConnectionStatus();
+        void closeSerialPort();
+
+    public slots:
+
+        void openSerialPortSlot(QString comName, int baud);
+        void writeToSerialPortSlot(QString message);
+        void readFromSerialPort();
+        bool getConnectionStatusSlot();
+        void closeSerialPortSlot();
+
+    private:
+        QSerialPort *serialPort;
+
+    signals:
+
+        QString getData(QString data);
+
 
     public slots:
         void timer1_Tick();

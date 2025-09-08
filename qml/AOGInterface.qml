@@ -55,17 +55,21 @@ Item {
 	property bool autoTrackBtnState: false
     property double distancePivotToTurnLine: -2222
 
+    property bool isPatchesChangingColor: false
+
 
     //sections 0-15 are used for on-screen buttons if
     //not using zones.  If using zones the rest are used
     //for mapping zones to sections
 
     property variant sectionButtonState: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
-    property variant rowCount: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
+    property variant blockageRowCount: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
     property bool isContourBtnOn: false
     property bool btnIsContourLocked: false
     property bool isBtnAutoSteerOn: false
     property bool isYouTurnBtnOn: false
+    property bool isYouTurnTriggered: false
+
 
     property bool loopbackConnected: true
 
@@ -164,7 +168,7 @@ Item {
     property rect vehicle_bounding_box: Qt.rect(0,0,0,0)
 
     property int lblmodeActualXTE: 0
-    property int lblmodeActualHeadingError: 0
+    property double lblmodeActualHeadingError: 0
 
     //onVehicle_xyChanged: console.log("vehicle xy is", vehicle_xy);
     //onVehicle_bounding_boxChanged: console.log("vehicle box is", vehicle_bounding_box);
@@ -216,14 +220,17 @@ Item {
     signal btnContourLock()
     signal btnContourPriority(bool right)
 
+    signal btnAutoTrack()
+
     signal isHydLiftOn()
     signal btnResetSim()
-
+    signal isYouSkipOn()
 
     signal uturn(bool turn_right)
     signal lateral(bool go_right)
     signal autoYouTurn()
     signal swapAutoYouTurnDirection()
+    signal btnResetCreatedYouTurn()
 
     //general settings
     signal settings_reload() //tell backend classes to reload settings from store
@@ -252,6 +259,31 @@ Item {
     signal centerOgl()
 
     signal deleteAppliedArea();
+
+    signal btnFlag();
+    signal btnRedFlag();
+    signal btnGreenFlag();
+    signal btnYellowFlag();
+    signal btnDeleteFlag();
+    signal btnDeleteAllFlags();
+    signal btnNextFlag();
+    signal btnPrevFlag();
+    signal btnCancelFlag();
+    signal btnRed(double lat, double lon, int color);
+
+    // was wizard
+    signal startDataCollection();
+    signal stopDataCollection();
+    signal resetData();
+    signal applyOffsetToCollectedData(double appliedOffsetDegrees);
+    signal smartCalLabelClick();
+    signal on_btnSmartZeroWAS_clicked();
+
+    property bool isCollectingData: false
+    property int sampleCount: 0
+    property double confidenceLevel: 0
+    property bool hasValidRecommendation: false
+
 
     property double mPerDegreeLat
     property double mPerDegreeLon

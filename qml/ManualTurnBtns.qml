@@ -14,6 +14,7 @@ Grid{
         implicitHeight: 65 * theme.scaleHeight
         implicitWidth: 85 * theme.scaleWidth
         imageFillMode: Image.Stretch
+        visible: Settings.feature_isYouTurnOn
         icon.source: prefix + "/images/qtSpecific/z_TurnManualL.png"
         onClicked: {
             if (Settings.as_functionSpeedLimit > aog.speedKph) {
@@ -30,6 +31,7 @@ Grid{
         implicitHeight: 65 * theme.scaleHeight
         implicitWidth: 85 * theme.scaleWidth
         imageFillMode: Image.Stretch
+        visible: Settings.feature_isYouTurnOn
         icon.source: prefix + "/images/qtSpecific/z_TurnManualR.png"
         onClicked: {
             if (Settings.as_functionSpeedLimit > aog.speedKph)
@@ -44,6 +46,7 @@ Grid{
         implicitWidth: 85 * theme.scaleWidth
         imageFillMode: Image.Stretch
         icon.source: prefix + "/images/qtSpecific/z_LateralManualL.png"
+        visible: Settings.feature_isLateralOn
         onClicked: {
             if (Settings.as_functionSpeedLimit > aog.speedKph)
                 aog.lateral(false)
@@ -56,6 +59,7 @@ Grid{
         implicitHeight: 65 * theme.scaleHeight
         implicitWidth: 85 * theme.scaleWidth
         imageFillMode: Image.Stretch
+        visible: Settings.feature_isLateralOn
         icon.source: prefix + "/images/qtSpecific/z_LateralManualR.png"
         onClicked: {
             if (Settings.as_functionSpeedLimit > aog.speedKph)

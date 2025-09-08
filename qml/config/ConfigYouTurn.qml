@@ -141,7 +141,7 @@ Radius")
                     icon.source: prefix + "/images/YouTurnU.png"
                     checkable: true
                     isChecked: Settings.youturn_style === 0
-                    onClicked: Settings.youturn_style = 1
+                    onClicked: Settings.youturn_style = 0
                 }
                 IconButtonColor{
                     id: uTurnHBtn

@@ -8,6 +8,7 @@ import Settings
 import AOG
 import "components" as Comp
 
+
 Popup{
     id: headacheDesigner
     width: parent.width
@@ -17,6 +18,7 @@ Popup{
 
     function show(){
         headacheDesigner.visible = true
+        headacheCurve.isChecked = true
     }
 
     property int headacheCount: 0
@@ -366,8 +368,8 @@ Popup{
             }
             Comp.IconButtonTransparent{
                 //objectName: "cBoxIsSectionControlled"
-                icon.source: prefix + "/images/HeadlandSectionOff.png"
-                iconChecked: prefix + "/images/HeadlandSectionOn.png"
+                icon.source: prefix + "/images/HeadlandSectionOn.png"
+                iconChecked: prefix + "/images/HeadlandSectionOff.png"
                 checkable: true
                 Layout.alignment: Qt.AlignCenter
                 isChecked: Settings.headland_isSectionControlled
@@ -400,16 +402,16 @@ Popup{
             rowSpacing: buttons.spacing
             Comp.IconButtonColor{
                 id: headacheCurve
-                //objectName: "rbtnLine"
+                objectName: "rbtnCurve"
                 checkable: true
-                isChecked: true
+                //isChecked: true
                 Layout.alignment: Qt.AlignCenter
                 icon.source: prefix + "/images/ABTrackCurve.png"
                 onClicked: curveLine = true
             }
             Comp.IconButtonColor{
                 id: headacheAB
-                //objectName: "rbtnCurve"
+                objectName: "rbtnLine"
                 checkable: true
                 Layout.alignment: Qt.AlignCenter
                 icon.source: prefix + "/images/ABTrackAB.png"

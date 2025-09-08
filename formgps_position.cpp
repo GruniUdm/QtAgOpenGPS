@@ -115,7 +115,7 @@ void FormGPS::UpdateFixPosition()
                 stepFixPts[0].isSet = 1;
 
                 gpsHeading = atan2(pn.fix.easting - stepFixPts[2].easting,
-                                        pn.fix.northing - stepFixPts[2].northing);
+                                   pn.fix.northing - stepFixPts[2].northing);
 
                 if (gpsHeading < 0) gpsHeading += glm::twoPI;
                 else if (gpsHeading > glm::twoPI) gpsHeading -= glm::twoPI;
@@ -270,7 +270,7 @@ void FormGPS::UpdateFixPosition()
                 goto byPass;
 
             newGPSHeading = atan2(pn.fix.easting - stepFixPts[currentStepFix].easting,
-                                              pn.fix.northing - stepFixPts[currentStepFix].northing);
+                                  pn.fix.northing - stepFixPts[currentStepFix].northing);
             if (newGPSHeading < 0) newGPSHeading += glm::twoPI;
 
             if (ahrs.isReverseOn)
@@ -300,10 +300,10 @@ void FormGPS::UpdateFixPosition()
 
             if (vehicle.isReverse)
                 newGPSHeading -= glm::toRadians(vehicle.antennaPivot / 1
-                                               * mc.actualSteerAngleDegrees * ahrs.reverseComp);
+                                                * mc.actualSteerAngleDegrees * ahrs.reverseComp);
             else
                 newGPSHeading -= glm::toRadians(vehicle.antennaPivot / 1
-                                               * mc.actualSteerAngleDegrees * ahrs.forwardComp);
+                                                * mc.actualSteerAngleDegrees * ahrs.forwardComp);
 
             if (newGPSHeading < 0) newGPSHeading += glm::twoPI;
             else if (newGPSHeading >= glm::twoPI) newGPSHeading -= glm::twoPI;
@@ -384,7 +384,7 @@ void FormGPS::UpdateFixPosition()
                 goto byPass;
 
             newGPSHeading = atan2(pn.fix.easting - stepFixPts[currentStepFix].easting,
-                                              pn.fix.northing - stepFixPts[currentStepFix].northing);
+                                  pn.fix.northing - stepFixPts[currentStepFix].northing);
             if (newGPSHeading < 0) newGPSHeading += glm::twoPI;
 
             if (ahrs.isReverseOn)
@@ -644,7 +644,7 @@ void FormGPS::UpdateFixPosition()
         {
             //most recent heading
             double newHeading = atan2(pn.fix.easting - lastReverseFix.easting,
-                                           pn.fix.northing - lastReverseFix.northing);
+                                      pn.fix.northing - lastReverseFix.northing);
 
             if (newHeading < 0) newHeading += glm::twoPI;
 
@@ -689,9 +689,9 @@ void FormGPS::UpdateFixPosition()
     if (vehicle.fixHeading >= glm::twoPI)
         vehicle.fixHeading-= glm::twoPI;
 
-//#endregion
+    //#endregion
 
-//#region Corrected Position for GPS_OUT
+    //#region Corrected Position for GPS_OUT
     //NOTE: Michael, I'm not sure about this entire region
 
     double rollCorrectedLat;
@@ -711,9 +711,9 @@ void FormGPS::UpdateFixPosition()
 
     SendPgnToLoop(pgnRollCorrectedLatLon);
 
-//#endregion
+    //#endregion
 
-//#region AutoSteer
+    //#region AutoSteer
 
     //preset the values
     vehicle.guidanceLineDistanceOff = 32000;
@@ -725,9 +725,9 @@ void FormGPS::UpdateFixPosition()
     else
     {
         //auto track routine
-        if (trk.isAutoTrack && !isBtnAutoSteerOn && trk.autoTrack3SecTimer >= 1)
+        if (trk.isAutoTrack && !isBtnAutoSteerOn)
         {
-            trk.autoTrack3SecTimer = 0;
+            //trk.autoTrack3SecTimer = 0;
 
             trk.SwitchToClosestRefTrack(vehicle.steerAxlePos, vehicle);
         }
@@ -866,6 +866,13 @@ void FormGPS::UpdateFixPosition()
 
     //out serial to autosteer module  //indivdual classes load the distance and heading deltas
     SendPgnToLoop(p_254.pgn);
+
+    // Smart WAS Calibration data collection
+    if (IsCollectingData && abs(vehicle.guidanceLineDistanceOff) < 500) // Within 50cm of guidance line
+    {
+        // Convert guidanceLineSteerAngle from centidegrees to degrees and collect data
+        AddSteerAngleSample(vehicle.guidanceLineSteerAngle * 0.01, abs(vehicle.avgSpeed));
+    }
 
     //for average cross track error
     if (vehicle.guidanceLineDistanceOff < 29000)
@@ -1086,7 +1093,7 @@ void FormGPS::UpdateFixPosition()
                         else
                         {
                             yt.BuildCurveDubinsYouTurn(yt.isYouTurnRight, vehicle.pivotAxlePos,
-                                                        vehicle,bnd,trk,secondsSinceStart);
+                                                       vehicle,bnd,trk,secondsSinceStart);
                         }
                     }
 
@@ -1105,7 +1112,7 @@ void FormGPS::UpdateFixPosition()
                     //distance from current pivot to first point of youturn pattern
                     distancePivotToTurnLine = glm::Distance(yt.ytList[5], vehicle.pivotAxlePos);
 
-                    if ((distancePivotToTurnLine <= 20.0) && (distancePivotToTurnLine >= 18.0) && !yt.isYouTurnTriggered)
+                    //if ((distancePivotToTurnLine <= 20.0) && (distancePivotToTurnLine >= 18.0) && !yt.isYouTurnTriggered)
 
                     /* moved to QML
                     if (!sounds.isBoundAlarming)
@@ -1113,7 +1120,7 @@ void FormGPS::UpdateFixPosition()
                         if (sounds.isTurnSoundOn) sounds.sndBoundaryAlarm.Play();
                         sounds.isBoundAlarming = true;
                     }*/
-
+                    //yt.YouTurnTrigger(trk, vehicle);
                     //if we are close enough to pattern, trigger.
                     if ((distancePivotToTurnLine <= 1.0) && (distancePivotToTurnLine >= 0) && !yt.isYouTurnTriggered)
                     {
@@ -1195,15 +1202,15 @@ void FormGPS::UpdateFixPosition()
 
     aog->setProperty("latitude",pn.latitude);
     aog->setProperty("longitude",pn.longitude);
-    aog->setProperty("easting",pn.fix.easting);
-    aog->setProperty("northing",pn.fix.northing);
-    aog->setProperty("heading", gpsHeading);
+    aog->setProperty("easting",vehicle.pivotAxlePos.easting);
+    aog->setProperty("northing",vehicle.pivotAxlePos.northing);
+    aog->setProperty("heading", vehicle.pivotAxlePos.heading);
     aog->setProperty("fusedHeading", vehicle.fixHeading);
-    aog->setProperty("toolEasting", vehicle.pivotAxlePos.easting);
-    aog->setProperty("toolNorthing", vehicle.pivotAxlePos.northing);
-    aog->setProperty("toolHeading", vehicle.pivotAxlePos.heading);
+    aog->setProperty("toolEasting", vehicle.toolPos.easting);
+    aog->setProperty("toolNorthing", vehicle.toolPos.northing);
+    aog->setProperty("toolHeading", vehicle.toolPos.heading);
     aog->setProperty("rawHz", nowHz);
-	aog->setProperty("hz", gpsHz);
+    aog->setProperty("hz", gpsHz);
     //aog->setProperty("isReverse" , vehicle.isReverse);
     aog->setProperty("isReverseWithIMU", isReverseWithIMU);
     aog->setProperty("blockage_avg", tool.blockage_avg);
@@ -1225,7 +1232,7 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("avgPivDistance", avgPivDistance); //mm!
     aog->setProperty("offlineDistance", vehicle.guidanceLineDistanceOff);
     aog->setProperty("speedKph", vehicle.avgSpeed);
-/*            lblIMUHeading.Text = mf.GyroInDegrees;
+    /*            lblIMUHeading.Text = mf.GyroInDegrees;
             lblFix2FixHeading.Text = mf.GPSHeading;
             lblFuzeHeading.Text = (mf.fixHeading * 57.2957795).ToString("N1");
 */
@@ -1239,7 +1246,7 @@ void FormGPS::UpdateFixPosition()
     aog->setProperty("angVel", ahrs.angVel);
     aog->setProperty("isYouTurnRight", yt.isYouTurnRight);
     aog->setProperty("distancePivotToTurnLine", distancePivotToTurnLine);
-    aog->setProperty("lblimuCorrected", imuCorrected);
+    aog->setProperty("imuCorrected", imuCorrected);
     aog->setProperty("vehicle_xy",vehicle.pivot_axle_xy);
     aog->setProperty("vehicle_bounding_box",vehicle.bounding_box);
 
@@ -1259,6 +1266,12 @@ void FormGPS::UpdateFixPosition()
 
     //TODO: access this in QML directly from trk.howManyPathsAway property
     aog->setProperty("current_trackNum", trk.getHowManyPathsAway());
+    aog->setProperty("isYouTurnTriggered", yt.isYouTurnTriggered);
+
+    // was wizard
+    aog->setProperty("sampleCount", SampleCount);
+    aog->setProperty("confidenceLevel", ConfidenceLevel);
+    aog->setProperty("hasValidRecommendation", HasValidRecommendation);
 
     if (!timerSim.isActive())
         //if running simulator pretend steer module
@@ -1470,9 +1483,9 @@ void FormGPS::CalculatePositionHeading()
 
         vehicle.toolPos.heading = vehicle.toolPivotPos.heading;
         vehicle.toolPos.easting = vehicle.tankPos.easting +
-                          (sin(vehicle.toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
+                                  (sin(vehicle.toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
         vehicle.toolPos.northing = vehicle.tankPos.northing +
-                           (cos(vehicle.toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
+                                   (cos(vehicle.toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
 
     }
 
@@ -1540,7 +1553,7 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
         {
             //only one first left point, the rest are all rights moved over to left
             tool.section[j].leftPoint = Vec2(cosHeading * (tool.section[j].positionLeft) + easting,
-                               sinHeading * (tool.section[j].positionLeft) + northing);
+                                             sinHeading * (tool.section[j].positionLeft) + northing);
 
             left = tool.section[j].leftPoint - tool.section[j].lastLeftPoint;
 
@@ -1567,7 +1580,7 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
         }
 
         tool.section[j].rightPoint = Vec2(cosHeading * (tool.section[j].positionRight) + easting,
-                            sinHeading * (tool.section[j].positionRight) + northing);
+                                          sinHeading * (tool.section[j].positionRight) + northing);
         /*
         qDebug() << j << ": " << tool.section[j].leftPoint.easting << "," <<
                                  tool.section[j].leftPoint.northing <<" " <<

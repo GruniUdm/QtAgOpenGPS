@@ -43,14 +43,14 @@ Dialog {
         border.width: 8 * theme.scaleWidth
         visible: true
         anchors.fill: parent
-        TopLine{
-            id: topLine
-        }
+        // TopLine{
+        //     id: topLine
+        // }
 
         ScrollView {
             id: leftColumnView
-            anchors.top: topLine.bottom
-            anchors.left: topLine.left
+            anchors.top: parent.top
+            anchors.left: parent.left
             width: 110 * theme.scaleWidth
             anchors.bottom: bottomLine.top
 
@@ -281,7 +281,7 @@ Dialog {
         }
         Rectangle{
             id: mainConfig
-            anchors.top: topLine.bottom
+            anchors.top: parent.top
             anchors.right: parent.right
             anchors.left: leftColumnView.right
             anchors.bottom: bottomLine.top

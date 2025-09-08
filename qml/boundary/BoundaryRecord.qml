@@ -36,7 +36,7 @@ MoveablePopup {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         color: "lightgray"
-        border.color: "aqua"
+        border.color: "black"
         border.width: 2
         SpinBoxCM{
             height: 80  * theme.scaleHeight

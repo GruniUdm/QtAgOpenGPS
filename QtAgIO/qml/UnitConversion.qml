@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 //
-import QtQuick 2.0
-import AgIO 1.0
+import QtQuick
+import AgIO
 //a collection of functions to do unit and coordinate conversions
 
 Item {

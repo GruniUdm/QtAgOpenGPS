@@ -93,14 +93,14 @@ Item {
                 text: qsTr("Svenn Arrow")
                 icon.source: prefix + "/images/SvennArrow.png"
                 isChecked: Settings.display_isSvennArrowOn
-                onCheckedChanged: Settings.display_isSvennArrowOn
+                onCheckedChanged: Settings.display_isSvennArrowOn = checked
             }
             DisplayAndFeaturesBtns{
                 id: compass
                 text: qsTr("Compass")
                 icon.source: prefix + "/images/Images/z_Compass.png"
                 isChecked: Settings.menu_isCompassOn
-                onCheckedChanged: Settings.menu_isCompassOn
+                onCheckedChanged: Settings.menu_isCompassOn = checked
             }
             /*DisplayAndFeaturesBtns{ //appears there is no setting for this
                 id: speedo

@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-import AgIO 1.0
+import AgIO
 /* This type contains properties, signals, and functions to interface
    the C++ backend with the QML gui, while abstracting and limiting
    how much the C++ needs to know about the QML structure of the GUI,
@@ -29,6 +29,7 @@ Item {
 	property bool imuConnected: false
 	property bool machineConnected: false
     property bool blockageConnected: false
+    property bool bluetoothConnected: false
 
     property int ntripStatus: 0
     property int tripBytes: 0
@@ -83,6 +84,7 @@ Item {
     property string connectedBTDevices: ""
     signal bluetoothDebug(bool doWeDebug);
     signal startBluetoothDiscovery()
+
 
 }
 

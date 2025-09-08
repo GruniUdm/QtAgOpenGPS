@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 // Sim controller panel on main screen
-import QtQuick 2.0
+import QtQuick
 import QtQuick.Controls.Fusion
 import Settings
 import "components" as Comp
@@ -11,6 +11,7 @@ Rectangle{
     color: boundaryInterface.isOutOfBounds ? "darksalmon" : "gray"
     height: 60 * theme.scaleHeight
     width: 650 * theme.scaleWidth
+    z: 100
 	function changedSteerDir(isRight){
 		if(isRight){
 			steerSlider.value = steerSlider.value + 10

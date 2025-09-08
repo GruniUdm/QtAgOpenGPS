@@ -32,12 +32,15 @@ void FormGPS::ReceiveFromAgIO()
     QByteArray datagram_data;
 
     //TODO: is this right or should we just work with one datagram at a time?
-    datagram_data = udpSocket->receiveDatagram().data();
+    //datagram_data = udpSocket->receiveDatagram().data();
 
     while (udpSocket->hasPendingDatagrams()) {
         //receive all the data
-        datagram_data.append(udpSocket->receiveDatagram().data());
-    }
+        //qDebug() << "receive all the data";
+        datagram_data.resize(int(udpSocket->pendingDatagramSize()));
+        udpSocket->readDatagram(datagram_data.data(), datagram_data.size());
+    }   
+    //qDebug() << "received all data successfully";
 
     char *data = datagram_data.data();
 
@@ -66,14 +69,14 @@ void FormGPS::ReceiveFromAgIO()
         case 0xD6:
             if (udpWatch.elapsed() < udpWatchLimit) //simple filter to remove any sentences if we
             {                                        //just received one, like with wifi, or some network delay.
-				udpWatchCounts++;
+                udpWatchCounts++;
                 //TODO implement nmea logging
                 /*
                 if (isLogNMEA) pn.logNMEASentence.Append("*** "
                                +  DateTime.UtcNow.ToString("ss.ff -> ", CultureInfo.InvariantCulture)
                                + udpWatch.ElapsedMilliseconds + "\r\n");
                 */
-               return;
+                return;
             }
             udpWatch.restart();
 
@@ -282,11 +285,22 @@ void FormGPS::ReceiveFromAgIO()
                 break;
 
             int i = data[6];
+            // qDebug() << "data[6]: " << data[6];
+            // qDebug() << "data[5]]: " << data[5];
+            // qDebug() << " mc.blockageseccount1: " << mc.blockageseccount1;
+            // qDebug() << " mc.blockageseccount1[0]" << mc.blockageseccount1[0];
+            // qDebug() << "data[5]]: " << data[5] << " mc.blockageseccount1: " << mc.blockageseccount2 << " mc.blockageseccount1[0]" << mc.blockageseccount2[0];
+            // qDebug() << "data[5]]: " << data[5] << " mc.blockageseccount1: " << mc.blockageseccount3 << " mc.blockageseccount1[0]" << mc.blockageseccount3[0];
+            // qDebug() << "data[5]]: " << data[5] << " mc.blockageseccount1: " << mc.blockageseccount4 << " mc.blockageseccount1[0]" << mc.blockageseccount4[0];
             //mc.blockageseccount[data[5]*16+i] = data[7];
-            if (data[5] == 0) mc.blockageseccount1[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
-            if (data[5] == 1) mc.blockageseccount2[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
-            if (data[5] == 2) mc.blockageseccount3[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
-            if (data[5] == 3) mc.blockageseccount4[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
+            if (data[5] == 0 && i >= 0 && i < (sizeof(mc.blockageseccount1) / sizeof(mc.blockageseccount1[0])))
+                mc.blockageseccount1[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
+            if (data[5] == 1 && i >= 0 && i < (sizeof(mc.blockageseccount2) / sizeof(mc.blockageseccount2[0])))
+                mc.blockageseccount2[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
+            if (data[5] == 2 && i >= 0 && i < (sizeof(mc.blockageseccount3) / sizeof(mc.blockageseccount3[0])))
+                mc.blockageseccount3[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
+            if (data[5] == 3 && i >= 0 && i < (sizeof(mc.blockageseccount4) / sizeof(mc.blockageseccount4[0])))
+                mc.blockageseccount4[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
             doBlockageMonitoring();
             //qDebug() << mc.blockageseccount1[1];
             break;
@@ -311,7 +325,7 @@ void FormGPS::DisableSim()
 void FormGPS::StartLoopbackServer()
 {
     int port = 15550; //property?
-	qDebug() << "StartLoopbackServer" << port;
+    qDebug() << "StartLoopbackServer" << port;
 
     if(udpSocket) stopUDPServer();
 
@@ -330,7 +344,7 @@ void FormGPS::StartLoopbackServer()
 
     connect(udpSocket,SIGNAL(readyRead()),this,SLOT(ReceiveFromAgIO()));
 
-	udpWatch.restart();
+    udpWatch.restart();
 }
 
 void FormGPS::stopUDPServer()

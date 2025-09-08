@@ -16,12 +16,11 @@ Rectangle{
         id: column
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.margins: 15 * theme.scaleHeight
-        Comp.TextLine{ color: "white"; font.pixelSize: 30; text: qsTr("Max: ")+ Utils.area_to_unit_string(aog.blockage_max*10000, 0)}
-
-        Comp.TextLine{ color: "white"; font.pixelSize: 30; text: qsTr("Row N max  ")+aog.blockage_max_i}
-        Comp.TextLine{ color: "white"; font.pixelSize: 30; text: qsTr("Avg ")+ Utils.area_to_unit_string(aog.blockage_avg*10000, 0)}
-        Comp.TextLine{ color: "white"; font.pixelSize: 30; text: qsTr("Min ")+Utils.area_to_unit_string(aog.blockage_min1*10000, 0) +(" ")+ Utils.area_to_unit_string(aog.blockage_min2*10000, 0)}
-        Comp.TextLine{ color: "red"; font.pixelSize: 30; text: qsTr("Rows ")+aog.blockage_min1_i+(" ")+aog.blockage_min2_i}
-        Comp.TextLine{ color: "red"; font.pixelSize: 30; text: qsTr("Blocked ")+aog.blockage_blocked}
+        Text{ color: "white"; font.pointSize: 20; text: qsTr("Max: ")+ Utils.area_to_unit_string(aog.blockage_max*10000, 0)}
+        Text{ color: "white"; font.pointSize: 20; text: qsTr("Row N max  ")+aog.blockage_max_i}
+        Text{ color: "white"; font.pointSize: 20; text: qsTr("Avg ")+ Utils.area_to_unit_string(aog.blockage_avg*10000, 0)}
+        Text{ color: "white"; font.pointSize: 20; text: qsTr("Min ")+Utils.area_to_unit_string(aog.blockage_min1*10000, 0) +(" ")+ Utils.area_to_unit_string(aog.blockage_min2*10000, 0)}
+        Text{ color: "red"; font.pointSize: 20; text: qsTr("Rows ")+aog.blockage_min1_i+(" ")+aog.blockage_min2_i}
+        Text{ color: "red"; font.pointSize: 20; text: qsTr("Blocked ")+aog.blockage_blocked}
         }
 }

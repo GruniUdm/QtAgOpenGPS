@@ -132,7 +132,10 @@ void FormLoop::setupGUI()
         connect(agio, SIGNAL(bluetoothDebug(bool)), bluetoothManager, SLOT(bluetooth_console_debug(bool)));
         connect(agio, SIGNAL(startBluetoothDiscovery()), bluetoothManager, SLOT(startBluetoothDiscovery()));
         
-        
+        qDebug() << "getConnectionStatusSlot() == false!!! OK";
+        //openSerialPortSlot("ttyHSL2", 921600);
+        openSerialPortSlot(property_setGnss_SerialPort, property_setGnss_BaudRate);
+        qDebug() << "openSerialPortSlot Ok!!!";
         loadSettings();
         LoadLoopback();    
         LoadUDPNetwork();

@@ -165,7 +165,7 @@ void FormGPS::oglMain_Paint()
     int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
     double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
     double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
-
+    //gl->glViewport(oglX,oglY,width,height);
     /*
 #ifdef GL_POINT_SPRITE
     //not compatible with OpenGL ES
@@ -381,6 +381,8 @@ void FormGPS::oglMain_Paint()
                 trk.DrawTrack(gl, projection*modelview, isFontOn, worldGrid.isRateMap, yt, camera, gyd);
             }
 
+            trk.DrawTrackNew(gl, projection*modelview, camera, vehicle);
+
             //if (recPath.isRecordOn)
             recPath.DrawRecordedLine(gl, projection*modelview);
             recPath.DrawDubins(gl, projection*modelview);
@@ -410,17 +412,20 @@ void FormGPS::oglMain_Paint()
                     DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,lineWidth,color);
                 }
             }
-
+            if (flagPts.count()>0) DrawFlags(gl, projection*modelview);
             //Direct line to flag if flag selected
             if (flagNumberPicked > 0)
             {
+
                 gldraw1.clear();
+                gl->glLineWidth(2);
                 //TODO: implement with shader: GL.LineStipple(1, 0x0707);
                 gldraw1.append(QVector3D(vehicle.pivotAxlePos.easting, vehicle.pivotAxlePos.northing, 0));
                 gldraw1.append(QVector3D(flagPts[flagNumberPicked-1].easting, flagPts[flagNumberPicked-1].northing, 0));
                 gldraw1.draw(gl, projection*modelview,
                              QColor::fromRgbF(0.930f, 0.72f, 0.32f),
                              GL_LINES, lineWidth);
+                gl->glLineWidth(1);
             }
 
             //draw the vehicle/implement
@@ -554,7 +559,7 @@ void FormGPS::openGLControl_Initialized()
 
     //Load all the textures
     //qDebug() << "initializing Open GL.";
-    loadGLTextures();
+    initializeTextures();
     //qDebug() << "textures loaded.";
     initializeShaders();
     //qDebug() << "shaders loaded.";
@@ -1035,7 +1040,7 @@ void FormGPS::DrawFlags(QOpenGLFunctions *gl, QMatrix4x4 mvp)
         gldraw.clear();
 
         double offSet = (camera.zoomValue * camera.zoomValue * 0.01);
-        gl->glLineWidth(4.0f);
+        gl->glLineWidth(4);
         gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting, flagPts[flagNumberPicked - 1].northing + offSet, 0));
         gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting - offSet, flagPts[flagNumberPicked - 1].northing, 0));
         gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting, flagPts[flagNumberPicked - 1].northing - offSet, 0));
@@ -1043,6 +1048,7 @@ void FormGPS::DrawFlags(QOpenGLFunctions *gl, QMatrix4x4 mvp)
         gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting, flagPts[flagNumberPicked - 1].northing + offSet, 0));
         gldraw.draw(gl, mvp, QColor::fromRgbF(0.980f, 0.0f, 0.980f),
                     GL_LINE_STRIP, 4.0);
+        gl->glLineWidth(1);
     }
 }
 
@@ -1109,12 +1115,6 @@ void FormGPS::CalcFrustum(const QMatrix4x4 &mvp)
     //frustum[21] = clip[7] - clip[5];
     //frustum[22] = clip[11] - clip[9];
     //frustum[23] = clip[15] - clip[13];
-}
-
-void FormGPS::loadGLTextures()
-{
-
-    initializeTextures();
 }
 
 //determine mins maxs of patches and whole field.

@@ -7,8 +7,13 @@
 #include "newsettings.h"
 
 void FormGPS::field_update_list() {
+
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields";
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
                             + "/" + QCoreApplication::applicationName() + "/Fields";
+#endif
 
     QObject *fieldInterface = qmlItem(mainWindow, "fieldInterface");
     QList<QVariant> fieldList;
@@ -29,10 +34,12 @@ void FormGPS::field_update_list() {
 }
 
 void FormGPS::field_close() {
+    qDebug() << "field_close";
     FileSaveEverythingBeforeClosingField();
 }
 
 void FormGPS::field_open(QString field_name) {
+    qDebug() << "field_open";
     FileSaveEverythingBeforeClosingField();
     if (! FileOpenField(field_name)) {
         TimedMessageBox(8000, tr("Saved field does not exist."), QString(tr("Cannot find the requested saved field.")) + " " +
@@ -66,6 +73,7 @@ void FormGPS::field_new(QString field_name) {
 }
 
 void FormGPS::field_new_from(QString existing, QString field_name, int flags) {
+    qDebug() << "field_new_from";
     lock.lockForWrite();
     FileSaveEverythingBeforeClosingField();
     if (! FileOpenField(existing,flags)) { //load whatever is requested from existing field
@@ -101,8 +109,12 @@ void FormGPS::field_new_from(QString existing, QString field_name, int flags) {
 }
 
 void FormGPS::field_delete(QString field_name) {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + field_name;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
                             + "/" + QCoreApplication::applicationName() + "/Fields/" + field_name;
+#endif
 
     QDir fieldDir(directoryName);
 
@@ -110,7 +122,8 @@ void FormGPS::field_delete(QString field_name) {
         TimedMessageBox(8000,tr("Cannot find saved field"),QString(tr("Cannot find saved field to delete.")) + " " + field_name);
         return;
     }
-
-    QFile::moveToTrash(directoryName);
+    if(!QFile::moveToTrash(directoryName)){
+        fieldDir.removeRecursively();
+    }
     field_update_list();
 }

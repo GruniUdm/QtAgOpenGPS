@@ -7,6 +7,8 @@
 #include "src/bluetoothdevicelist.h"
 #include "src/bluetoothmanager.h"
 #include <QQmlContext>
+#include <QSerialPortInfo>
+#include <QSerialPort>
 
 AgIOSettings *agiosettings;
 //extern QMLSettings qml_settings;
@@ -110,6 +112,28 @@ void FormLoop::setEngine(QQmlApplicationEngine *engine)
 
     // FormUDp_Load();
     // swFrame.start();
+    QSerialPortInfo serialPortInfo;
+    QList<QSerialPortInfo> ports = serialPortInfo.availablePorts();
+    QList<qint32> bauds = serialPortInfo.standardBaudRates();
+    QStringList portsName;
+    QStringList baudsStr;
+
+
+    foreach (QSerialPortInfo port, ports) {
+
+        portsName.append(port.portName());
+
+    }
+
+    foreach (qint32 baud, bauds) {
+
+        baudsStr.append(QString::number(baud));
+
+    }
+
+    //setContextProperty("serialTerminal",&serialTerminal);
+    setContextProperty("portsNameModel",QVariant::fromValue(portsName));
+    setContextProperty("baudsModel",QVariant::fromValue(baudsStr));
 
 }
 
@@ -248,7 +272,12 @@ void FormLoop::DoHelloAlarmLogic()
             agio->setProperty("blockageConnected", currentHello);
 
             if (currentHello) qDebug() << "Connected to Blockage";
-            else qDebug() << "Not connected to Blockage";
+            else
+            {
+                qDebug() << "Not connected to Blockage";
+                isConnectedBlockage = false;
+            }
+
 
             lastHelloBlockage = currentHello;
             ShowAgIO();

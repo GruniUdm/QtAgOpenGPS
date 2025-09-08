@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 // Set line name
-import QtQuick 2.0
+import QtQuick
 import QtQuick.Controls.Fusion
 import AOG
 import "components" as Comp

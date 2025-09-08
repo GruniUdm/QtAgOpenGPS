@@ -1,207 +1,25 @@
+// Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team
+// SPDX-License-Identifier: GNU General Public License v3.0 or later
+//
+// Main menu when we click the "Field" button on main screen. "New, Drive In, Open, Close, etc"
 import QtQuick
-import QtQuick.Window
 import QtQuick.Controls.Fusion
-import AgIO 1.0
+import QtQuick.Layouts
+import Settings
+import QtQuick.Window
+import AgIO
 
-Item {
+import "components" as Comp
 
-    //property string prefix : ""
-    //property string imagePath: prefix + "QtAgIO/"
 
-    AgIOTheme {
-        id: theme
-        objectName: "theme"
-    }
-    AgIOInterface {
-        id: agio
-        objectName: "agio"
-    }
-
-    UnitConversion {
-        id: utils
-    }
-
+Drawer {
     id: mainWindowAgIO
-    height: theme.defaultHeight
-    width: theme.defaultWidth
-    //height: 500
-    //width: 300
-    visible: true
-    onVisibleChanged: console.log("Visible!")
+    width: 270 * theme.scaleWidth
+    height: mainWindow.height
+    visible: false
+    modal: true
 
-    //This is a popup message that dismisses itself after a timeout
-    TimedMessage {
-        id: timedMessage
-        objectName: "timedMessage"
-    }
-    Component.onCompleted: {//shows a window to warn us we might need to open up a port on the firewall
-        if(utils.isTrue(agiosettings.get(run_isFirstRun))){
-            if(OS == "LINUX")
-                isFirewall.show()
-            agiosettings.run_isFirstRun = false
-        }
-    }
-
-    Rectangle {
-        id: background
-        color: theme.backgroundColor
-        anchors.fill: parent
-        border.width: 2
-        border.color: theme.blackDayWhiteNight
-
-        Column{
-            id: latLonColumn
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.topMargin: 10
-            anchors.leftMargin: 10
-            spacing: 3
-            height: childrenRect.height
-            width: childrenRect.width
-            Text{
-                text: qsTr("Lat: ") + (Number(agio.latitude).toLocaleString(Qt.locale(), 'f', 7))
-            }
-            Text{
-                text: qsTr("Lon: ") + (Number(agio.longitude).toLocaleString(Qt.locale(), 'f', 7))
-            }
-        }
-        Column{
-            id: ntripColumn
-            anchors.left: parent.left
-            anchors.top: latLonColumn.bottom
-            anchors.topMargin: 40
-            anchors.leftMargin: 10
-            spacing: 3
-            height: children.height
-            width: children.width
-            Text{
-                text: "kb"
-                property int tripBytes: agio.tripBytes
-                onTripBytesChanged: {
-                    const kilobytes = tripBytes >> 10; // Shift right by 10 bits to convert to KB
-                    text = kilobytes.toLocaleString() + " kb"; // Format with commas and add "kb"
-                }
-
-                }
-            Text{
-                text: (agiosettings.setNTRIP_isOn === false ? "Off":
-                    agio.ntripStatus === 0 ? "Invalid" :
-                    agio.ntripStatus === 1 ? "Authorizing" :
-                    agio.ntripStatus === 2 ? "Waiting" :
-                    agio.ntripStatus === 3 ? "Send GGA" :
-                    agio.ntripStatus === 4 ? "Listening NTRIP":
-                    agio.ntripStatus === 5 ? "Wait GPS":
-                    "Unknown")
-            }
-
-           Button {
-               property int ntripCounter: agio.ntripCounter
-               text: ""
-               onNtripCounterChanged: {
-                    if (ntripCounter > 59) text = (ntripCounter >> 6) + " Min";
-                    else if (ntripCounter < 60 && ntripCounter > 25) text = ntripCounter + " Secs";
-                    else text = "In " + (Math.abs(ntripCounter - 25)) + " secs";
-               }
-            }
-        }
-
-        Column {
-            id: commStatus
-            anchors.top: ntripColumn.bottom
-            anchors.left: parent.left
-            anchors.bottom: bottomButtons.top
-            anchors.bottomMargin: 5 * theme.scaleHeight
-            anchors.topMargin: 15 * theme.scaleHeight
-            anchors.leftMargin: 5 * theme.scaleWidth
-            IconButtonColor {
-                id: btnEthernetStatus
-                text: qsTr("Ethernet")
-                icon.source: "../images/B_UDP.png"
-                color: agio.ethernetConnected ? "green" : "red"
-                onClicked: ethernetConfig.visible = !ethernetConfig.visible
-            }
-            IconButtonTransparent {
-                icon.source: "../images/Nmea.png"
-                width: btnEthernetStatus.width
-                height: btnEthernetStatus.height
-                visible: true
-                onClicked: gpsInfo.visible = !gpsInfo.visible
-            }
-        }
-        Column {
-            id: moduleStatus
-            anchors.top: parent.top
-            anchors.left: commStatus.right
-            anchors.bottom: bottomButtons.top
-            anchors.bottomMargin: 5 * theme.scaleHeight
-            anchors.topMargin: 5 * theme.scaleHeight
-            anchors.leftMargin: 5 * theme.scaleWidth
-            IconButtonColor {
-                id: btnModuleIMU
-                text: qsTr("IMU")
-                icon.source: "../images/B_IMU.png"
-                color: agio.imuConnected ? "green" : "red"
-            }
-            IconButtonColor {
-                id: btnModuleSteer
-                text: qsTr("Steer")
-                icon.source: "../images/Com_AutosteerModule.png"
-                color: agio.steerConnected ? "green" : "red"
-            }
-            IconButtonColor {
-                id: btnModuleGPS
-                text: qsTr("GPS")
-                icon.source: "../images/B_GPS.png"
-                color: agio.gpsConnected ? "green" : "red"
-            }
-            IconButtonColor {
-                id: btnModuleMachine
-                text: qsTr("Machine")
-                icon.source: "../images/B_Machine.png"
-                color: agio.machineConnected ? "green" : "red"
-            }
-            IconButtonColor {
-                id: btnModuleBlockage
-                text: qsTr("Blockage")
-                icon.source: "../images/B_Blockage.png"
-                color: agio.blockageConnected ? "green" : "red"
-            }
-
-        }
-        Row {
-            id: bottomButtons
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            width: parent.width - 10 * theme.scaleWidth
-            anchors.leftMargin: 5 * theme.scaleWidth
-            anchors.bottomMargin: 5 * theme.scaleHeight
-            spacing: (width - (btnHide.implicitWidth * 3)) / 2 //fill the parent up with equal space
-            IconButtonText {
-                id: btnSettings
-                implicitWidth: btnNTRIP.width
-                implicitHeight: btnNTRIP.height
-                text: qsTr("Settings")
-                icon.source: "../images/Settings48.png"
-                onClicked: settingsWindow.visible = true
-            }
-            IconButtonText {
-                id: btnNTRIP
-                icon.source: "../images/NtripSettings.png"
-                onClicked: ntrip.visible = !ntrip.visible
-            }
-            IconButtonText {
-                id: btnHide
-                implicitWidth: btnNTRIP.width
-                implicitHeight: btnNTRIP.height
-                text: qsTr("Hide")
-                icon.source: "../images/AgIOBtn.png"
-                onClicked: mainWindowAgIO.opacity = 0.5
-            }
-        }
-    }
-
-    /************** - Put all child windows here - ********************/
-    Message {
+    Comp.Message {
         id: message
     }
     NTrip{
@@ -211,10 +29,47 @@ Item {
     EthernetConfig {
         id: ethernetConfig
         visible: false
-        onVisibleChanged: {
-            if(visible)
-                ethernetConfig.load_settings()
-        }
+        // onVisibleChanged: {
+        //     if(visible)
+        //         ethernetConfig.load_settings()
+        // }
+    }
+    Comp.SerialTerminalAgio {
+        id: gnssConfig
+        visible: false
+        portBaud: agiosettings.setGnss_BaudRate
+        portName: agiosettings.setGnss_SerialPort
+        saveConfig: false
+        onSaveConfigChanged: {
+            agiosettings.setGnss_SerialPort = gnssConfig.portName
+            agiosettings.setGnss_BaudRate = gnssConfig.portBaud
+            }
+    }
+    Comp.SerialTerminalAgio {
+        id: imuConfig
+        visible: false
+        portBaud: agiosettings.setImu_BaudRate
+        portName: agiosettings.setImu_SerialPort
+        saveConfig: false
+        onSaveConfigChanged: {
+            agiosettings.setImu_SerialPort = imuConfig.portName
+            agiosettings.setImu_BaudRate = imuConfig.portBaud
+            }
+    }
+    Comp.SerialTerminalAgio {
+        id: autosteerConfig
+        visible: false
+        portBaud: agiosettings.setSteer_BaudRate
+        portName: agiosettings.setSteer_SerialPort
+        saveConfig: false
+        onSaveConfigChanged: {
+            agiosettings.setSteer_SerialPort = steerConfig.portName
+            agiosettings.setSteer_BaudRate = steerConfig.portBaud
+            }
+    }
+    AgIOInterface {
+        id: agio
+        objectName: "agio"
     }
     GPSInfo {
         id: gpsInfo
@@ -238,26 +93,123 @@ Item {
         id: bluetoothMenu
         visible: false
     }
+    UnitConversion {
+        id: utils
+    }
 
-    Window{//warn that we will need to open the firewall if we are using Linux
-        //I've forgotten this several times--a real pain.
-        modality: Qt.WindowModal
-        id: isFirewall
-        visible: false
-        width: 200
-        height: 200
-        title: qsTr("Firewall")
+    contentItem: Rectangle{
+        id: windowAgIO
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.right: parent.right
+        height: mainWindowAgIO.height
 
-        Text{
-            anchors.centerIn: parent
-            text: qsTr("We noticed this is your first
-time running AgIO. Do you have
-a firewall enabled? If you do,
- you must allow AgIO through.")
+        //border.color: "lightblue"
+        //border.width: 2
+        color: "black"
+
+        Comp.ScrollViewExpandableColumn{
+            id: mainWindowAgIOColumn
+            anchors.fill: parent
+            IconButtonTextBeside{
+                //objectName: bluetooth
+                text: qsTr("Bluetooth")
+                icon.source: "../images/BlueTooth.png"
+                color: agio.bluetoothConnected ? "green" : "red"
+                onClicked: {
+                    settingsWindow.close()
+                    if(!utils.isTrue(agiosettings.setBluetooth_isOn)){ //start bt if off
+                        agiosettings.setBluetooth_isOn = true
+                        agio.startBluetoothDiscovery()
+                        console.log("ssb")
+                    }
+                    bluetoothMenu.visible = true
+                }
+            }
+            Comp.IconButtonTextBeside {
+                //objectName: btnModuleIMU
+                isChecked: false
+                text: qsTr("IMU")
+                icon.source: "../images/B_IMU.png"
+                color: agio.imuConnected ? "green" : "red"
+                onClicked: imuConfig.visible = !imuConfig.visible
+            }
+            Comp.IconButtonTextBeside {
+                //objectName: btnModuleSteer
+                isChecked: false
+                text: qsTr("Steer")
+                icon.source: "../images/Com_AutosteerModule.png"
+                color: agio.steerConnected ? "green" : "red"
+                onClicked: autosteerConfig.visible = !autosteerConfig.visible
+            }
+            Comp.IconButtonTextBeside {
+                //objectName: btnModuleGPS
+                isChecked: false
+                text: qsTr("GPS")
+                icon.source: "../images/B_GPS.png"
+                color: agio.gpsConnected ? "green" : "red"
+                onClicked: gnssConfig.visible = !gnssConfig.visible
+            }
+            Comp.IconButtonTextBeside {
+                //objectName: btnModuleMachine
+                isChecked: false
+                text: qsTr("Machine")
+                icon.source: "../images/B_Machine.png"
+                color: agio.machineConnected ? "green" : "red"
+            }
+            Comp.IconButtonTextBeside {
+                //objectName: btnModuleBlockage
+                isChecked: false
+                text: qsTr("Blockage")
+                icon.source: "../images/B_Blockage.png"
+                color: agio.blockageConnected ? "green" : "red"
+                visible: Settings.seed_blockageIsOn
+            }
+            Comp.IconButtonTextBeside {
+                //objectName: btnEthernetStatus
+                isChecked: false
+                text: qsTr("Ethernet")
+                icon.source: "../images/B_UDP.png"
+                color: agio.ethernetConnected ? "green" : "red"
+                onClicked: ethernetConfig.visible = !ethernetConfig.visible
+            }
+            Comp.IconButtonTextBeside {
+                isChecked: false
+                text: qsTr("Nmea")
+                icon.source: "../images/Nmea.png"
+                onClicked: gpsInfo.visible = !gpsInfo.visible
+            }
+            // Comp.IconButtonTextBeside {
+            //     //objectName: btnSettings
+            //     isChecked: false
+            //     text: qsTr("Settings")
+            //     icon.source: "../images/Settings48.png"
+            //     onClicked: settingsWindow.visible = true
+            // }
+            Comp.IconButtonTextBeside {
+                //objectName: btnNTRIP
+                isChecked: false
+                text: (agiosettings.setNTRIP_isOn === false ? "Off":
+                    agio.ntripStatus === 0 ? "Invalid" :
+                    agio.ntripStatus === 1 ? "Authorizing" :
+                    agio.ntripStatus === 2 ? "Waiting" :
+                    agio.ntripStatus === 3 ? "Send GGA" :
+                    agio.ntripStatus === 4 ? "Listening NTRIP":
+                    agio.ntripStatus === 5 ? "Wait GPS":
+                    "Unknown")
+
+                icon.source: "../images/NtripSettings.png"
+                color:  (agiosettings.setNTRIP_isOn === false ? "red":
+                    agio.ntripStatus === 0 ? "red" :
+                    agio.ntripStatus === 1 ? "yellow" :
+                    agio.ntripStatus === 2 ? "yellow" :
+                    agio.ntripStatus === 3 ? "yellow" :
+                    agio.ntripStatus === 4 ? "green":
+                    agio.ntripStatus === 5 ? "red":
+                    "red")
+                onClicked: ntrip.visible = !ntrip.visible
+            }
+            }
         }
     }
-    CloseAgIO{
-        id: closeAgIO
-        //visible: false
-    }
-}

@@ -117,9 +117,10 @@ void FormGPS::processSectionLookahead() {
 
     //10 % min is required for overlap, otherwise it never would be on.
     int pixLimit = (int)((double)(tool.section[0].rpSectionWidth * rpOnHeight) / (double)(5.0));
-
+    //bnd.isSectionControlledByHeadland = true;
     if ((rpOnHeight < rpToolHeight && bnd.isHeadlandOn && bnd.isSectionControlledByHeadland)) rpHeight = rpToolHeight + 2;
     else rpHeight = rpOnHeight + 2;
+    //qDebug() << bnd.isSectionControlledByHeadland << "headland sections";
 
     if (rpHeight > 290) rpHeight = 290;
     if (rpHeight < 8) rpHeight = 8;
@@ -1014,6 +1015,7 @@ void FormGPS::FileSaveEverythingBeforeClosingField()
 
     if (! isJobStarted) return;
 
+    qDebug() << "Test3";
     lock.lockForWrite();
     //turn off contour line if on
     if (ct.isContourOn) ct.StopContourLine(contourSaveList);
@@ -1031,13 +1033,14 @@ void FormGPS::FileSaveEverythingBeforeClosingField()
         if (triStrip[j].isDrawing) triStrip[j].TurnMappingOff(tool, fd);
     }
     lock.unlock();
+    qDebug() << "Test4";
 
     //FileSaveHeadland();
     FileSaveBoundary();
     FileSaveSections();
     FileSaveContour();
     FileSaveTracks();
-
+    FileSaveFlags();
     ExportFieldAs_KML();
     //ExportFieldAs_ISOXMLv3()
     //ExportFieldAs_ISOXMLv4()
@@ -1048,5 +1051,5 @@ void FormGPS::FileSaveEverythingBeforeClosingField()
 
     JobClose();
     //Text = "AgOpenGPS";
-
+    qDebug() << "Test5";
 }

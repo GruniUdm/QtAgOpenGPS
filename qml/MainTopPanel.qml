@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Settings
 import AOG
+import AgIO
 import Interface
 import "components" as Comp
 
@@ -76,10 +77,11 @@ import "components" as Comp
               3: Field
               4: App
               Else: Line*/
-            running: true
+            running: false
             interval: 2000
             repeat: true
             onTriggered: {
+                playTimer.restart
                 increment++
                 if(increment == 0){
                     playText.mainString = Qt.formatDateTime(new Date(), "MM-dd-yyyy HH:mm:ss")

@@ -117,7 +117,7 @@ Dialog {
                 onClicked: {
                     fieldTable.clear_selection()
                     fieldOpen.close()
-                    closeDialog()
+                    //closeDialog()
                 }
             }
             IconButtonTransparent {

@@ -1,27 +1,40 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
+import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-import AgIO 1.0
+import AgIO
+
 import "components" as Comp
+Drawer{
 
-Window {
-	id: ntrip
-    height: 490
-    width: 648
-	visible: true
-    title: qsTr("NTRIP RTK")
+    width: 270 * theme.scaleWidth
+    height: mainWindow.height
+    modal: true
+    id: ntrip
 
-	Rectangle {
-		id: source
-		visible: true
-		color: theme.backgroundColor
-		anchors.top: parent.top
-		anchors.left: parent.left
-		anchors.right: parent.right
-		anchors.bottom: bottomButtons.top
-		border.width: 2
-		border.color: theme.blackDayWhiteNight
+    //anchors.centerIn: parent
+    visible: false
+    // function show(){
+    //     parent.visible = true
+    // }
+
+    // Comp.TopLine{
+    //     id: topLine
+    //     titleText: qsTr("NTRIP RTK settings")
+    //     onBtnCloseClicked:  ntrip.close()
+    // }
+
+    Rectangle {
+        id: source
+        visible: true
+        color: theme.backgroundColor
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: bottomButtons.top
+        border.width: 2
+        border.color: theme.blackDayWhiteNight
 
         /*Comp.TextLine {
             anchors.top: parent.top
@@ -55,22 +68,30 @@ Window {
 
 		ColumnLayout {
 			id: leftColumn
-			anchors.top: parent.verticalCenter
+            anchors.top: parent.top
 			anchors.left: parent.left
-            width: parent.width / 2 - (30 * theme.scaleWidth)
+            width: parent.width
 			anchors.bottom: parent.bottom
-            anchors.leftMargin: 15 * theme.scaleWidth
-            anchors.rightMargin: 15 * theme.scaleWidth
+            spacing: 5
             anchors.topMargin: 15 * theme.scaleHeight
             anchors.bottomMargin: 15 * theme.scaleHeight
             Comp.Text {
 				text: qsTr("Enter Broadcaster URL or IP")
+                Layout.alignment: Qt.AlignHCenter
+                //font.bold: true
+                font.pixelSize: 18
+                //anchors.bottom: ntripURL.top
+
 			}
 			TextField {
 				id: ntripURL
                 text: agiosettings.setNTRIP_url
-				width: parent.width
+                Layout.maximumWidth: 200 * theme.scaleWidth
+                Layout.fillWidth : true
+                height: 49
 				selectByMouse: true
+                Layout.alignment: Qt.AlignHCenter
+                horizontalAlignment: Qt.AlignHCenter
 				onTextChanged: 
                     if (text.length > 0) {
                         agiosettings.setNTRIP_url = text
@@ -81,60 +102,76 @@ Window {
 				text: qsTr("Verify")
                 onClicked: agio.setIPFromUrl(ntripURL.text)
                 width: parent.width * .9
+                Layout.alignment: Qt.AlignHCenter
             }
 
             Comp.Text {
                 text: "IP: " + agiosettings.setNTRIP_ipAddress
-
+                Layout.alignment: Qt.AlignHCenter
+                //font.bold: true
+                font.pixelSize: 18
 			}
-		}
-		ColumnLayout {
-			id: rightColumn
-            anchors.top: parent.top
-			anchors.right: parent.right
-			anchors.bottom: parent.bottom
-            width: parent.width / 2 - (30 * theme.scaleWidth)
-            anchors.leftMargin: 15 * theme.scaleWidth
-            anchors.rightMargin: 15 * theme.scaleWidth
-            anchors.topMargin: 15 * theme.scaleHeight
-            anchors.bottomMargin: 15 * theme.scaleHeight
+
+
             Comp.Text {
 				text: qsTr("Username")
+                Layout.alignment: Qt.AlignHCenter
+                //font.bold: true
+                font.pixelSize: 18
+                //anchors.bottom: ntripUser.top
 			}
 			TextField {
 				id: ntripUser
                 text: agiosettings.setNTRIP_userName
-				width: parent.width
+                Layout.maximumWidth: 200 * theme.scaleWidth
+                Layout.fillWidth : true
 				selectByMouse: true
                 onTextChanged: agiosettings.setNTRIP_userName = text
+                Layout.alignment: Qt.AlignHCenter
+                horizontalAlignment: Qt.AlignHCenter
 			}
 
-            Comp.Spacer{}
+            //Comp.Spacer{}
 
             Comp.Text {
 				text: qsTr("Password")
+                Layout.alignment: Qt.AlignHCenter
+                //font.bold: true
+                font.pixelSize: 18
+                //anchors.bottom: ntripPass.top
 			}
 			TextField {
 				id: ntripPass
                 text: agiosettings.setNTRIP_userPassword
                 onTextChanged: agiosettings.setNTRIP_userPassword = text
-				width: parent.width
-				selectByMouse: true
+                Layout.maximumWidth: 200 * theme.scaleWidth
+                Layout.fillWidth : true
+                selectByMouse: true
+                Layout.alignment: Qt.AlignHCenter
+                horizontalAlignment: Qt.AlignHCenter
 			}
-            Comp.Spacer{}
-            Comp.ButtonColor {
-				text: qsTr("Get Source Table")
-                width: parent.width * .9
-			}
+            //Comp.Spacer{}
+   //          Comp.ButtonColor {
+            // 	text: qsTr("Get Source Table")
+   //              width: parent.width * .9
+            // }
             Comp.Text {
 				text: qsTr("Mount:", "Ntrip Mountpoint")
+                Layout.alignment: Qt.AlignHCenter
+                //font.bold: true
+                font.pixelSize: 18
+                //anchors.bottom: ntripMount.top
+
 			}
 			TextField {
 				id: ntripMount
                 text: agiosettings.setNTRIP_mount
                 onTextChanged: agiosettings.setNTRIP_mount = text
-				width: parent.width
+                Layout.maximumWidth: 200 * theme.scaleWidth
+                Layout.fillWidth : true
 				selectByMouse: true
+                Layout.alignment: Qt.AlignHCenter
+                horizontalAlignment: Qt.AlignHCenter
 			}
             Comp.Spacer{}
             Comp.SpinBoxCustomized { //ntrip caster port number
@@ -143,14 +180,18 @@ Window {
 				from: 0
 				to: 65535
                 text: qsTr("Caster Port:")
+                Layout.alignment: Qt.AlignHCenter
 			}
             Comp.Text {
                 text: qsTr("Default: 2101")
                 color: "red"
                 visible: agiosettings.setNTRIP_casterPort !== 2101
+                Layout.alignment: Qt.AlignHCenter
+                //font.bold: true
+                font.pixelSize: 18
             }
         }
-	}
+    }
 	Row {
 		height: 50* theme.scaleHeight
 		id: bottomButtons
@@ -158,13 +199,13 @@ Window {
 		anchors.right: parent.right
 		anchors.bottomMargin: 5 * theme.scaleHeight
 		anchors.rightMargin: 5 * theme.scaleWidth
-		spacing: 5 * theme.scaleWidth
+        spacing: 25 * theme.scaleWidth
         Comp.ButtonColor {
 			id: ntripOn
             property bool statusChanged: false
 			text: qsTr("NTRIP On")
 			height: parent.height
-			width: height * 2.5
+            width: height * 3.5
             isChecked: utils.isTrue(agiosettings.setNTRIP_isOn)
             onClicked: {
                 agiosettings.setNTRIP_isOn = !utils.isTrue(agiosettings.setNTRIP_isOn)
@@ -182,7 +223,7 @@ Window {
         Comp.IconButtonTransparent {
 			id: btnSave
 			height: parent.height
-			width: height
+            width: height
             icon.source: "../images/OK64.png"
             onClicked: {
                 agio.configureNTRIP()
@@ -194,3 +235,4 @@ Window {
         }
 	}
 }
+

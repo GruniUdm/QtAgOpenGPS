@@ -30,7 +30,7 @@ int textureHeight;
 #ifdef LOCAL_QML
 #define PREFIX "local:"
 #else
-#define PREFIX ":/qtagopengps.org/imports/AOG"
+#define PREFIX ":"
 #endif
 
 
@@ -466,7 +466,7 @@ void drawText3D(const CCamera &camera, QOpenGLFunctions *gl,
         if (camera.camFollowing) mvp.rotate(-camera.camHeading, 0, 1, 0);
         size = -camera.camSetDistance;
         size = pow(size, 0.8);
-        size /= 800;
+        size /= 300;
     }
 
     else
@@ -474,7 +474,7 @@ void drawText3D(const CCamera &camera, QOpenGLFunctions *gl,
         if (camera.camFollowing) mvp.rotate(-camera.camHeading, 0, 0, 1);
         size = -camera.camSetDistance;
         size = pow(size, 0.85);
-        size /= 1000;
+        size /= 500;
     }
 
     double u_step = (double)GlyphWidth / (double)textureWidth;
@@ -486,7 +486,7 @@ void drawText3D(const CCamera &camera, QOpenGLFunctions *gl,
         char idx = text.at(n).toLatin1();
         double u = (double)(idx % GlyphsPerLine) * u_step;
         double v = (double)(idx / GlyphsPerLine) * v_step;
-        gldraw.clear();
+        //gldraw.clear();
 
         //1
         vt.texcoord = QVector2D(u, v + v_step);

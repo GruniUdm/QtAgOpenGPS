@@ -83,6 +83,7 @@
         <file>qml/components/TitleFrame.qml</file>
         <file>qml/components/TopLine.qml</file>
         <file>qml/components/What_Are_Components.txt</file>
+        <file>qml/components/SerialTerminalAgio.qml</file>
         <file>qml/NTrip.qml</file>
         <file>qml/interfaces/NTripInterface.qml</file>
         <file>qml/components/Text.qml</file>

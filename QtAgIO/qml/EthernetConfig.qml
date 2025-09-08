@@ -2,15 +2,21 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 import QtQuick.Layouts
-import AgIO 1.0
+import AgIO
 import "components" as Comp
 
-Window {
+Drawer{
+
+    width: 270 * theme.scaleWidth
+    height: mainWindow.height
+    modal: true
     id: ethernetConfig
-    height: 190
-    width: 280
-    visible: true
-    title: qsTr("Ethernet Configuration")
+
+    visible: false
+    onVisibleChanged: {
+        load_settings()
+    }
+
     function load_settings(){
         spIP1.value = agiosettings.setUDP_IP1
         spIP2.value = agiosettings.setUDP_IP2
@@ -28,18 +34,16 @@ Window {
         border.width: 2
         border.color: theme.blackDayWhiteNight
 
-        GridLayout {
+        ColumnLayout {
             id: column
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.bottom: bottomButtons.top
-            anchors.bottomMargin: 10
-            anchors.leftMargin: 5
-            anchors.rightMargin: 5
-            rows: 3
-            columns: 3
-            flow: Grid.LeftToRight
+            anchors.bottomMargin: 10 * theme.scaleHeight
+            anchors.leftMargin: 5 * theme.scaleWidth
+            anchors.rightMargin: 5 * theme.scaleWidth
+
             Comp.Text {
                 Layout.alignment: Qt.AlignCenter
                 Layout.columnSpan: 3

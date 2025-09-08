@@ -8,6 +8,7 @@ import Settings
 import AOG
 import "components" as Comp
 
+
 Popup{
     id: headlandDesigner
     width: parent.width
@@ -17,6 +18,7 @@ Popup{
     //color: "ghostwhite"
     function show(){
         headlandDesigner.visible = true
+        headlandCurve.isChecked = true
     }
 
     property int sliceCount: 0
@@ -364,16 +366,16 @@ Popup{
         }
         Comp.IconButtonColor{
             id: headlandCurve
-            objectName: "rbtnLine"
+            objectName: "rbtnCurve"
             checkable: true
-            isChecked: true
+            //isChecked: true
             icon.source: prefix + "/images/ABTrackCurve.png"
             Layout.alignment: Qt.AlignCenter
             onClicked: curveLine = true
         }
         Comp.IconButtonColor{
             id: headlandAB
-            objectName: "rbtnCurve"
+            objectName: "rbtnLine"
             checkable: true
             icon.source: prefix + "/images/ABTrackAB.png"
             Layout.alignment: Qt.AlignCenter
@@ -441,12 +443,12 @@ Popup{
         }
         Comp.IconButtonTransparent{
             objectName: "cBoxIsSectionControlled"
-            icon.source: prefix + "/images/HeadlandSectionOff.png"
-            iconChecked: prefix + "/images/HeadlandSectionOn.png"
+            icon.source: prefix + "/images/HeadlandSectionOn.png"
+            iconChecked: prefix + "/images/HeadlandSectionOff.png"
             checkable: true
             isChecked: Settings.headland_isSectionControlled
             Layout.alignment: Qt.AlignCenter
-            onCheckedChanged: isSectionControlled(checked)
+            onCheckedChanged: headlandDesigner.isSectionControlled(checked)
         }
         Comp.IconButtonTransparent{
             icon.source: prefix + "/images/SwitchOff.png"

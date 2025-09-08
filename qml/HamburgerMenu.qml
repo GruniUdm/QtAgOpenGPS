@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 // Top left button menu
-import QtQuick 2.0
+import QtQuick
 import QtQuick.Controls.Fusion
 import Settings
 
@@ -27,8 +27,8 @@ Drawer{
 
             Comp.IconButtonTextBeside{
                 text: qsTr("Languages")
-                onClicked: console.log("")
-                visible: false//todo
+                onClicked: languagesMenu.visible = !languagesMenu.visible
+                visible: true
             }
             Comp.IconButtonTextBeside{
                 text: qsTr("Directories")
@@ -36,8 +36,12 @@ Drawer{
                 visible: false//todo
             }
             Comp.IconButtonTextBeside{
-                text: qsTr("Colors")
-                onClicked: console.log("")
+                text: qsTr("Set Colors")
+                onClicked: {
+                    console.log("showing")
+                    hamburgerMenuRoot.visible = false
+                    setColors.show()
+                }
             }
             Comp.IconButtonTextBeside{
                 text: qsTr("Section Colors")
@@ -57,7 +61,6 @@ Drawer{
                 onIsCheckedChanged: {
                     checked = isChecked
                 }
-
                 checkable: true
                 checked: isChecked
                 onCheckedChanged: {
@@ -83,6 +86,68 @@ Drawer{
                 text: qsTr("Help")
                 onClicked: console.log("")
                 visible: false//todo
+            }
+        }
+    }
+    Drawer {
+        id: languagesMenu
+        width: 270 * theme.scaleWidth
+        height: mainWindow.height
+        modal: true
+
+        contentItem: Rectangle{
+            id: languagesMenuContent
+            anchors.fill: parent
+            height: languagesMenu.height
+            color: aog.blackDayWhiteNight
+        }
+
+        Grid {
+            id: grid2
+            height: childrenRect.height
+            width: childrenRect.width
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.topMargin: 5
+            spacing: 10
+            flow: Grid.TopToBottom
+            rows: 5
+            columns: 1
+
+            Comp.IconButtonTextBeside{
+                text: qsTr("English")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    Settings.menu_language = "en"
+                    aog.settings_save()}
+            }
+            Comp.IconButtonTextBeside{
+                text: qsTr("French")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    Settings.menu_language = "fr"
+                    aog.settings_save()}
+            }
+            Comp.IconButtonTextBeside{
+                text: qsTr("Russian")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    Settings.menu_language = "ru"
+                    aog.settings_save()}
+            }
+            Comp.IconButtonTextBeside{
+                text: qsTr("Srpski")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    Settings.menu_language = "sr"
+                    aog.settings_save()}
+            }
+            Comp.IconButtonTextBeside{
+                text: qsTr("Deutch")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    Settings.menu_language = "de"
+                    aog.settings_save()}
             }
         }
     }

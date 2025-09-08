@@ -67,6 +67,7 @@ Rectangle{
         IconButton{
             icon.source: prefix + "/images/SectionOffBoundary.png"
             iconChecked: prefix + "/images/SectionOnBoundary.png"
+            checkable: true
             anchors.bottom: parent.bottom
             implicitWidth: 100 * theme.scaleWidth
             implicitHeight: 100 * theme.scaleHeight

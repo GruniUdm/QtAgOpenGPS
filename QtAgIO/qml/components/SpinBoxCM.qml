@@ -1,5 +1,5 @@
 import QtQuick
-import AgIO 1.0
+import AgIO
 //This is a spinbox for displaying dimensions that are either
 //cm or inches
 

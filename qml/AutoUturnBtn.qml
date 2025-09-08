@@ -18,20 +18,30 @@ Item{
         visible: false
         anchors.fill: parent
     }
+    Image{
+        id: turnCancelImage
+        source: prefix + "/images/Images/z_TurnCancel.png"
+        visible: false
+        anchors.fill: parent
+    }
     MultiEffect{
         id: colorAutoUTurn
         anchors.fill: parent
-        source: autoTurnImage
-        visible: aog.autoTrackBtnState
+        source: aog.isYouTurnTriggered?turnCancelImage:autoTurnImage
+        //visible: TracksInterface.idx > -1
+        visible: aog.isYouTurnBtnOn
         //color: "#E5E54B"
-        colorizationColor: if(aog.distancePivotToTurnLine > 0)
-                               "#4CF24C"
+        colorizationColor: if (aog.isYouTurnTriggered)
+                                "red"
+                           else if(aog.distancePivotToTurnLine > 0)
+                                "#4CF24C"
                            else
                                "#F7A266"
         colorization: 1.0
         MouseArea{
             anchors.fill: parent
-            onClicked: aog.swapAutoYouTurnDirection()
+            onClicked: aog.isYouTurnTriggered?aog.btnResetCreatedYouTurn():aog.swapAutoYouTurnDirection()
+
         }
         Text{
             id: distance

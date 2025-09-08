@@ -247,6 +247,7 @@ QVector3D FormHeadland::mouseClickToField(int mouseX, int mouseY) {
 }
 
 void FormHeadland::load_headline() {
+    qDebug() << "load_headline";
     hdl->idx = -1;
 
     start = 99999; end = 99999;

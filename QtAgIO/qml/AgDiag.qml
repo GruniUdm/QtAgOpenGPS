@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
-import AgIO 1.0
+import AgIO
 
 Item {
     /*Dialog {

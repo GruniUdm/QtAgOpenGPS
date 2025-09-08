@@ -17,9 +17,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
 # Find required libraries
-# find_package(Qt6 REQUIRED COMPONENTS Core)
+#find_package(Qt6 REQUIRED COMPONENTS Core)
  find_package(Qt6 REQUIRED COMPONENTS Widgets) #used only for opengl ?
  find_package(Qt6 REQUIRED COMPONENTS Gui)
+ find_package(Qt6 REQUIRED COMPONENTS SerialPort)
 # find_package(Qt6 REQUIRED COMPONENTS OpenGL)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS QuickWidgets) #used only for opengl ?
@@ -38,7 +39,7 @@ qt_policy(SET QTP0004 NEW)
 # Qt standard project setup with internationalization support
 qt_standard_project_setup(REQUIRES 6.8
     I18N_SOURCE_LANGUAGE en
-    I18N_TRANSLATED_LANGUAGES en fr ru
+    I18N_TRANSLATED_LANGUAGES en fr ru sr de
 )
 
 # Because modules are not in top folder//
@@ -117,7 +118,7 @@ qt_add_executable(QtAgOpenGPS
     # LICENSE
     # TODO.md
     # README.md
-    # android/AndroidManifest.xml
+     android/AndroidManifest.xml
     # android/build.gradle
     # android/gradle.properties
     # android/gradle/wrapper/gradle-wrapper.jar
@@ -239,6 +240,8 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         ${IMAGE_REL_PATHS}
         ${SHADER_REL_PATHS}
         ${SOUND_REL_PATHS}
+        RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
+
     )  
 
 else() #LOCAL_QML ON
@@ -328,6 +331,7 @@ target_link_libraries(QtAgOpenGPS PRIVATE
     Qt6::QuickWidgets
     Qt6::Network
     Qt6::Multimedia
+    Qt6::SerialPort
 )
 
 # Compile defines
@@ -338,7 +342,7 @@ target_compile_definitions(QtAgOpenGPS PRIVATE
 set_target_properties(QtAgOpenGPS PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
-   # QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
+    QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
 )
 
 install(TARGETS QtAgOpenGPS

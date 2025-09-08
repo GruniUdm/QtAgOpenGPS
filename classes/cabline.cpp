@@ -328,14 +328,15 @@ void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     GLHelperOneColor gldraw;
     QColor color;
     double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
-
+    gl->glLineWidth(lineWidth);
     gldraw.append(QVector3D(desLineEndA.easting, desLineEndA.northing, 0.0));
     gldraw.append(QVector3D(desLineEndB.easting, desLineEndB.northing, 0.0));
     gldraw.draw(gl, mvp, QColor::fromRgbF(0.95f, 0.70f, 0.50f), GL_LINES, lineWidth);
-
+    gl->glLineWidth(1);
     color.setRgbF(0.2f, 0.950f, 0.20f);
     drawText3D(camera,gl,mvp, desPtA.easting, desPtA.northing, "&A", 1.0, true, color);
-    drawText3D(camera,gl,mvp, desPtB.easting, desPtB.northing, "&B", 1.0, true, color);
+    if (isDesPtBSet)
+        drawText3D(camera,gl,mvp, desPtB.easting, desPtB.northing, "&B", 1.0, true, color);
 }
 
 void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
@@ -385,7 +386,9 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     gldraw.append(QVector3D(track.endPtB.easting, track.endPtB.northing, 0));
 
     //TODO: figure out a way to make the line dashed
+    gl->glLineWidth(lineWidth);
     gldraw.draw(gl, mvp, color, GL_LINES, 4.0f);
+    gl->glLineWidth(1);
 
     if (!isRateMapOn)
     {
@@ -420,9 +423,11 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     //draw current AB line
     color.setRgbF(0.95, 0.2f, 0.950f);
     gldraw.clear();
+    gl->glLineWidth(lineWidth);
     gldraw.append(QVector3D(currentLinePtA.easting, currentLinePtA.northing, 0));
     gldraw.append(QVector3D(currentLinePtB.easting, currentLinePtB.northing, 0));
     gldraw.draw(gl,mvp,color,GL_LINES,lineWidth);
+    gl->glLineWidth(1);
 
     if (isSideGuideLines && camera.camSetDistance > tool_toolWidth * -120)
     {
@@ -470,8 +475,9 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
             gldraw.append(QVector3D((cosHeading * (-toolWidth)) + currentLinePtA.easting, (sinHeading * (-toolWidth)) + currentLinePtA.northing, 0));
             gldraw.append(QVector3D((cosHeading * (-toolWidth)) + currentLinePtB.easting, (sinHeading * (-toolWidth)) + currentLinePtB.northing, 0));
         }
-
+        gl->glLineWidth(lineWidth);
         gldraw.draw(gl,mvp,color,GL_LINES,lineWidth);
+        gl->glLineWidth(1);
     }
 
     if (!isStanleyUsed && camera.camSetDistance > -200)

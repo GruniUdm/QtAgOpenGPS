@@ -15,6 +15,7 @@ Rectangle{
         id: column
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.margins: 15 * theme.scaleHeight
+        Comp.TextLine{ color: "white"; text: qsTr("Serial ")+ aog.satellitesTracked}
         Comp.TextLine{ color: "white"; text: qsTr("Lat ", "abbreviation for latitude")+(Number(aog.latitude).toLocaleString(Qt.locale(), 'f', 9))}
         Comp.TextLine{ color: "white"; text: qsTr("Lon ", "abbreviation for longitude")+(Number(aog.longitude).toLocaleString(Qt.locale(), 'f', 9))}
         Comp.TextLine{ color: "white"; text: qsTr("N ", "abbreviation for northing") + (Number(aog.northing).toLocaleString(Qt.locale(), 'f', 3))}

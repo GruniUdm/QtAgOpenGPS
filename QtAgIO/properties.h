@@ -31,5 +31,13 @@ extern AgIOProperty property_setNTRIP_url;
 extern AgIOProperty property_run_isFirstRun;
 extern AgIOProperty property_setBluetooth_isOn;
 extern AgIOProperty property_setBluetooth_deviceList;
+extern AgIOProperty property_setGnss_SerialPort;
+extern AgIOProperty property_setGnss_BaudRate;
+extern AgIOProperty property_setImu_SerialPort;
+extern AgIOProperty property_setImu_BaudRate;
+extern AgIOProperty property_setSteer_SerialPort;
+extern AgIOProperty property_setSteer_BaudRate;
+
+
 
 #endif

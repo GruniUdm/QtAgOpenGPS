@@ -3,74 +3,25 @@ import QtQuick.Controls
 import QtQuick.Window
 import QtQuick.Layouts
 import QtQml.Models
-import AgIO 1.0
+import AgIO
 import "components" as Comp
 
-Window{
+Drawer {
     id: bluetoothMenu
-    title: qsTr("Bluetooth")
-    width: 500
-    height: 500
-    Comp.TitleFrame{
-        id: knownTitleFrame
-        title: qsTr("Known Devices (Click to remove)")
-        anchors.left: parent.left
-        anchors.top: parent.verticalCenter
-        anchors.bottom: parent.bottom
-        anchors.right: parent.horizontalCenter
-        anchors.margins: 10
-        border.width: 2
-        ListView{
-            property var deviceList: agiosettings.setBluetooth_deviceList
-            id: knownDevicesList
-            anchors.fill: parent
-            Connections {
-                target: agiosettings
-                function onSetBluetooth_deviceListChanged() {
-                    var rawList = agiosettings.setBluetooth_deviceList;
-                    knownDevicesList.model = Array.isArray(rawList) ? rawList : [rawList];
-                    console.log("modelchanged")
-                }
-            }
-            Component.onCompleted: {
-                var rawList = agiosettings.setBluetooth_deviceList;
-                knownDevicesList.model = Array.isArray(rawList) ? rawList : [rawList];
-            }
+    width: 270 * theme.scaleWidth
+    height: mainWindow.height
+    visible: false
+    modal: true
 
-            model: deviceList
 
-            delegate: RadioButton{
-                width: knownDevicesList.width
-                id: knownControl
-
-                indicator: Rectangle{
-                    anchors.fill: parent
-                    color: knownControl.down ? "blue" : devicesTitleFrame.color
-                    visible: true
-                    anchors.margins: 5
-                    border.color: "black"
-                    border.width: 1
-                    radius: 3
-                    Text{
-                        text: modelData
-                        anchors.centerIn: parent
-                    }
-                    MouseArea{
-                        anchors.fill: parent
-                        onClicked: agio.bt_remove_device(modelData)
-                    }
-                }
-            }
-        }
-    }
 
     Comp.TitleFrame{
         id: devicesTitleFrame
         title: qsTr("Connect to Device:")
+        height: mainWindow.height*0.7
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        anchors.left: parent.horizontalCenter
+        anchors.left: parent.left
         anchors.margins: 10
         border.width: 2
         ListView{
@@ -129,6 +80,59 @@ Window{
                 update_list()
             }
 
+        }
+
+    }
+    Comp.TitleFrame{
+        id: knownTitleFrame
+        title: qsTr("Known Devices (Click to remove)")
+        anchors.left: parent.left
+        anchors.top: devicesTitleFrame.bottom
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.margins: 10
+        border.width: 2
+        ListView{
+            property var deviceList: agiosettings.setBluetooth_deviceList
+            id: knownDevicesList
+            anchors.fill: parent
+            Connections {
+                target: agiosettings
+                function onSetBluetooth_deviceListChanged() {
+                    var rawList = agiosettings.setBluetooth_deviceList;
+                    knownDevicesList.model = Array.isArray(rawList) ? rawList : [rawList];
+                    console.log("modelchanged")
+                }
+            }
+            Component.onCompleted: {
+                var rawList = agiosettings.setBluetooth_deviceList;
+                knownDevicesList.model = Array.isArray(rawList) ? rawList : [rawList];
+            }
+
+            model: deviceList
+
+            delegate: RadioButton{
+                width: knownDevicesList.width
+                id: knownControl
+
+                indicator: Rectangle{
+                    anchors.fill: parent
+                    color: knownControl.down ? "blue" : devicesTitleFrame.color
+                    visible: true
+                    anchors.margins: 5
+                    border.color: "black"
+                    border.width: 1
+                    radius: 3
+                    Text{
+                        text: modelData
+                        anchors.centerIn: parent
+                    }
+                    MouseArea{
+                        anchors.fill: parent
+                        onClicked: agio.bt_remove_device(modelData)
+                    }
+                }
+            }
         }
     }
 }

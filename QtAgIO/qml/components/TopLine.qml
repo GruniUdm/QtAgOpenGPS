@@ -1,11 +1,13 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-import AgIO 1.0
+import AgIO
 ///the top line on most of the little windows. Basically
 //a title, help button, and close button
 
 Rectangle{
     property string titleText: ""
+    signal btnCloseClicked()
+    signal btnHelpClicked()
     id: topLine
     anchors.top: parent.top
     anchors.left: parent.left
@@ -38,5 +40,6 @@ Rectangle{
         anchors.right: parent.right
         anchors.rightMargin: 2
         anchors.verticalCenter: parent.verticalCenter
+        onClicked: topLine.btnCloseClicked()
     }
 }

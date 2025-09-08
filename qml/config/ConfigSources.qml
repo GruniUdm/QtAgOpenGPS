@@ -55,7 +55,7 @@ Rectangle{
 
                 property string headingSource: Settings.gps_headingFromWhichSource
 
-                checked: (Settings.gps_headingFromWhichSource === "Dual" ? true: false)
+                isChecked: (Settings.gps_headingFromWhichSource === "Dual" ? true: false)
 
                 onCheckedChanged: {
 					if (checked){
@@ -84,7 +84,7 @@ Rectangle{
 
                 property string headingSource: Settings.gps_headingFromWhichSource
 
-                checked: (Settings.gps_headingFromWhichSource === "Fix" ? true : false)
+                isChecked: (Settings.gps_headingFromWhichSource === "Fix" ? true : false)
 
                 onCheckedChanged: {
                     if(checked)
