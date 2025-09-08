@@ -46,3 +46,4 @@ project.json.qtds
 .vs/qtagio/v17/Browse.VC.db
 .vs/qtagio/v17/DocumentLayout.json
 .vs/qtagio/v17/workspaceFileList.bin
+.claude/settings.local.json

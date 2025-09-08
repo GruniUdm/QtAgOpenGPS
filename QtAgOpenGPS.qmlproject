@@ -10,7 +10,7 @@ Project {
     enableCMakeGeneration: false
     enablePythonGeneration: false
     widgetApp: true
-    importPaths: [ "qml","images" ]
+    importPaths: [ "qml", "images", "build", "build/Desktop_Qt_6_8_2_llvm_mingw_64_bit-Debug" ]
 
     qdsVersion: "4.6"
     quickVersion: "6.8"

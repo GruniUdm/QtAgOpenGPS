@@ -155,6 +155,8 @@ qt_add_library(QtAgIO STATIC)
 qt_add_qml_module(QtAgIO
     URI AgIO
     VERSION 1.0
+    DESIGNER_SUPPORTED
+    NO_PLUGIN
     RESOURCE_PREFIX /qtagopengps.org/imports
     QML_FILES
         ${QTAGIO_ALL_REL_PATHS}
