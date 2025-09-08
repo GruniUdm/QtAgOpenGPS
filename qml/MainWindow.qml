@@ -10,7 +10,7 @@ import QtQuick.Dialogs
 import Settings
 import Interface
 import AOG
-import AgIO
+import AgIO as AgIOModule
 
 
 import "interfaces" as Interfaces
@@ -25,7 +25,7 @@ import "wizards" as Wiz
 Window {
 
 
-    AOGTheme{
+    AOGTheme {
         id: theme
         objectName: "theme"
     }
@@ -35,6 +35,7 @@ Window {
     //property string prefix: "../.." //make image show in QtDS
 
     height: theme.defaultHeight
+    color: "#0d0d0d"
     width: theme.defaultWidth
 
     onVisibleChanged: if(Settings.display_isStartFullscreen){
@@ -249,7 +250,8 @@ Window {
             //                color: "blue"
             //                anchors.fill: resetDirection
             //            }
-        }
+
+        } // MouseArea
 
     }
 
@@ -1022,11 +1024,11 @@ Window {
         CloseAOG{
             id: closeAOG
         }
-
     }
 
-    AgIO {
-      id: mainWindowAgIO
-    }
+
+    AgIOModule.AgIO {
+        id: mainWindowAgIO
+     }
 }
 
