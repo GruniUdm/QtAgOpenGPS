@@ -16,7 +16,7 @@ import AOG
   */
 
 Item {
-    id: aogTheme
+    id: theme
 
     property int defaultHeight: 768
     property int defaultWidth: 1024
