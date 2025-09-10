@@ -1,6 +1,5 @@
 // Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
-
 // Displays the main QML page. All other QML windows are children of this one.
 //Loaded by formgps_ui.cpp.
 import QtQuick
@@ -8,7 +7,7 @@ import QtQuick.Window
 import QtQuick.Effects
 import QtQuick.Dialogs
 import Interface
-import AOG
+//import AOG
 import AgIO as AgIOModule
 
 
@@ -22,15 +21,19 @@ import "components" as Comp
 import "wizards" as Wiz
 
 Window {
-
+    //We draw native opengl to this root object
+    id: mainWindow
+    objectName: "mainWindow"
 
     AOGTheme {
         id: theme
         objectName: "theme"
     }
-    //We draw native opengl to this root object
-    id: mainWindow
-    objectName: "mainWindow"
+
+    AOGInterface {
+        id: aog
+        objectName: "aog"
+    }
     //property string prefix: "../.." //make image show in QtDS
 
     height: theme.defaultHeight
@@ -124,10 +127,6 @@ Window {
         else return false
     }
 
-    AOGInterface {
-        id: aog
-        objectName: "aog"
-    }
 
     Interfaces.FieldInterface {
         id: fieldInterface
@@ -1027,7 +1026,7 @@ Window {
 
 
     AgIOModule.AgIO {
-        id: mainWindowAgIO
-     }
+          id: mainWindowAgIO
+    }
 }
 

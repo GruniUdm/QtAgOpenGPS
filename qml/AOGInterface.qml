@@ -22,20 +22,17 @@ import QtQuick.Controls.Fusion
 
 
 Item {
-    id: aogInterface
+    id: aog
 
-    // AOGTheme{
-    //     id: aogTheme
-    // }
-
-    Connections{
-        target: theme
-        property color backgroundColor: theme.backgroundColor
-        property color textColor: theme.textColor
-        property color borderColor: theme.borderColor
-        property color blackDayWhiteNight: theme.blackDayWhiteNight
-        property color whiteDayBlackNight: theme.whiteDayBlackNight
-    }
+    // AOGTheme is already created in MainWindow.qml as 'theme'
+    // We can access it directly since it's in the parent scope
+    
+    // Expose theme colors as aog properties for compatibility
+    property color backgroundColor: theme.backgroundColor
+    property color textColor: theme.textColor
+    property color borderColor: theme.borderColor
+    property color blackDayWhiteNight: theme.blackDayWhiteNight
+    property color whiteDayBlackNight: theme.whiteDayBlackNight
     /*
     Connections {
         target: Settings
