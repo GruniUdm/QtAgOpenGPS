@@ -17,7 +17,7 @@ Item {
         id: dianmeaError
         title: qsTr("NMEA Error!")
         text: qsTr("Your elevation changed 1 M between GGA Sentences
-Either you are recieving NMEA from two sources, or you just rolled your vehicle.")
+Either you are recieving NMEA from two sources, or you just rolled your vehicle->")
              {
             visible: true
             id: dontShowAgainCheckbox

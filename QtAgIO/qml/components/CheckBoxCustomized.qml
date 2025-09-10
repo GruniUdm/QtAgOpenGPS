@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Fusion
 import AgIO
 /*The default CheckBox has the text with about 70% opacity.
   So it's almost useless to us. If I can't see it on my computer,

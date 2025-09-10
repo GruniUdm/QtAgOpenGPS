@@ -163,6 +163,7 @@ qt_add_qml_module(QtAgIO
     STATIC
     URI AgIO
     VERSION 1.0
+    #RESOURCE_PREFIX "/"
     QML_FILES
         ${QTAGIO_ALL_REL_PATHS}
     SOURCES
