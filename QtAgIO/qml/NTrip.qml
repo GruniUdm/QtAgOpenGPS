@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Window
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-import AgIO
+import AOG
 
 import "components" as Comp
 Drawer{
@@ -85,7 +85,7 @@ Drawer{
 			}
 			TextField {
 				id: ntripURL
-                text: agiosettings.setNTRIP_url
+                text: AgIOSettings.setNTRIP_url
                 Layout.maximumWidth: 200 * theme.scaleWidth
                 Layout.fillWidth : true
                 height: 49
@@ -94,7 +94,7 @@ Drawer{
                 horizontalAlignment: Qt.AlignHCenter
 				onTextChanged: 
                     if (text.length > 0) {
-                        agiosettings.setNTRIP_url = text
+                        AgIOSettings.setNTRIP_url = text
                     }
 
 			}
@@ -106,7 +106,7 @@ Drawer{
             }
 
             Comp.Text {
-                text: "IP: " + agiosettings.setNTRIP_ipAddress
+                text: "IP: " + AgIOSettings.setNTRIP_ipAddress
                 Layout.alignment: Qt.AlignHCenter
                 //font.bold: true
                 font.pixelSize: 18
@@ -122,11 +122,11 @@ Drawer{
 			}
 			TextField {
 				id: ntripUser
-                text: agiosettings.setNTRIP_userName
+                text: AgIOSettings.setNTRIP_userName
                 Layout.maximumWidth: 200 * theme.scaleWidth
                 Layout.fillWidth : true
 				selectByMouse: true
-                onTextChanged: agiosettings.setNTRIP_userName = text
+                onTextChanged: AgIOSettings.setNTRIP_userName = text
                 Layout.alignment: Qt.AlignHCenter
                 horizontalAlignment: Qt.AlignHCenter
 			}
@@ -142,8 +142,8 @@ Drawer{
 			}
 			TextField {
 				id: ntripPass
-                text: agiosettings.setNTRIP_userPassword
-                onTextChanged: agiosettings.setNTRIP_userPassword = text
+                text: AgIOSettings.setNTRIP_userPassword
+                onTextChanged: AgIOSettings.setNTRIP_userPassword = text
                 Layout.maximumWidth: 200 * theme.scaleWidth
                 Layout.fillWidth : true
                 selectByMouse: true
@@ -165,8 +165,8 @@ Drawer{
 			}
 			TextField {
 				id: ntripMount
-                text: agiosettings.setNTRIP_mount
-                onTextChanged: agiosettings.setNTRIP_mount = text
+                text: AgIOSettings.setNTRIP_mount
+                onTextChanged: AgIOSettings.setNTRIP_mount = text
                 Layout.maximumWidth: 200 * theme.scaleWidth
                 Layout.fillWidth : true
 				selectByMouse: true
@@ -175,8 +175,8 @@ Drawer{
 			}
             Comp.Spacer{}
             Comp.SpinBoxCustomized { //ntrip caster port number
-                value: agiosettings.setNTRIP_casterPort
-                onValueChanged: agiosettings.setNTRIP_casterPort = value
+                value: AgIOSettings.setNTRIP_casterPort
+                onValueChanged: AgIOSettings.setNTRIP_casterPort = value
 				from: 0
 				to: 65535
                 text: qsTr("Caster Port:")
@@ -185,7 +185,7 @@ Drawer{
             Comp.Text {
                 text: qsTr("Default: 2101")
                 color: "red"
-                visible: agiosettings.setNTRIP_casterPort !== 2101
+                visible: AgIOSettings.setNTRIP_casterPort !== 2101
                 Layout.alignment: Qt.AlignHCenter
                 //font.bold: true
                 font.pixelSize: 18
@@ -206,9 +206,9 @@ Drawer{
 			text: qsTr("NTRIP On")
 			height: parent.height
             width: height * 3.5
-            isChecked: utils.isTrue(agiosettings.setNTRIP_isOn)
+            isChecked: utils.isTrue(AgIOSettings.setNTRIP_isOn)
             onClicked: {
-                agiosettings.setNTRIP_isOn = !utils.isTrue(agiosettings.setNTRIP_isOn)
+                AgIOSettings.setNTRIP_isOn = !utils.isTrue(AgIOSettings.setNTRIP_isOn)
                 ntripOn.statusChanged = true;
             }
 		}

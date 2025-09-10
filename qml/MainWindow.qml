@@ -8,7 +8,7 @@ import QtQuick.Effects
 import QtQuick.Dialogs
 // Interface import removed - now QML_SINGLETON
 //import AOG
-//import AgIO as AgIOModule
+import AgIO 
 
 
 import "interfaces" as Interfaces
@@ -50,6 +50,7 @@ Window {
         console.log("Settings available:", typeof Settings !== 'undefined')
         console.log("TracksInterface available:", typeof TracksInterface !== 'undefined')
         console.log("VehicleInterface available:", typeof VehicleInterface !== 'undefined')
+        console.log("AgIOSettings available:", typeof AgIOSettings !== 'undefined')
         
         if (typeof Settings !== 'undefined') {
             console.log("Settings.display_isStartFullscreen:", Settings.display_isStartFullscreen)
@@ -67,6 +68,13 @@ Window {
             console.log("VehicleInterface.vehicle_list length:", VehicleInterface.vehicle_list ? VehicleInterface.vehicle_list.length : "undefined")
             console.log("VehicleInterface identity:", VehicleInterface)
         }
+        
+        if (typeof AgIOSettings !== 'undefined') {
+            console.log("AgIOSettings identity:", AgIOSettings)
+            console.log("AgIOSettings keys:", AgIOSettings.keys ? AgIOSettings.keys() : "no keys method")
+            console.log("AgIOSettings test property:", AgIOSettings.setNTRIP_isOn)
+        }
+        
         console.log("=== END FACTORY FUNCTION DEBUG ===")
     }
 
@@ -1051,8 +1059,8 @@ Window {
     }
 
 
-    // AgIOModule.AgIO {
-    //       id: mainWindowAgIO
-    // }
+    AgIO {
+          id: mainWindowAgIO
+    }
 }
 

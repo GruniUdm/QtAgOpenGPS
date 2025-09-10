@@ -3,7 +3,7 @@
 //
 //
 import QtQuick
-import AgIO
+//import AgIO
 //a collection of functions to do unit and coordinate conversions
 
 Item {
@@ -104,7 +104,7 @@ Item {
     }
 
     function isMetric() {
-        return (agiosettings.setMenu_isMetric === true || agiosettings.setMenu_isMetric === "true")
+        return (AgIOSettings.setMenu_isMetric === true || AgIOSettings.setMenu_isMetric === "true")
     }
 
     function speed_unit() {
@@ -347,7 +347,7 @@ Item {
 
         return EARTH_RADIUS * e;
     }
-    function readBit(byteVal, position) {//will not work with the agiosettings bytes
+    function readBit(byteVal, position) {//will not work with the AgIOSettings bytes
         return (byteVal >> position) & 1;
     }
     function setBit(byteVal, position, isTrue) { //ditto

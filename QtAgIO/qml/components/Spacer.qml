@@ -1,5 +1,5 @@
 import QtQuick
-import AgIO
+//import AgIO
 
 Item {
     height: 25 * theme.scaleHeight

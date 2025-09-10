@@ -1,16 +1,16 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-import AgIO
+//import AgIO
 /* This type contains properties, signals, and functions to interface
    the C++ backend with the QML gui, while abstracting and limiting
    how much the C++ needs to know about the QML structure of the GUI,
    and how much the QML needs to know about the backends.
 
    This type also exposes the QSettings object for QML to use. However
-   there are not change signals in the agiosettings object, so we'll provide
+   there are not change signals in the AgIOSettings object, so we'll provide
    a signal here to let the backend know QML touched a setting.  Also
    a javascript function here that C++ can call to let QML objects know
-   something in agiosettings changed.
+   something in AgIOSettings changed.
 
 */
 

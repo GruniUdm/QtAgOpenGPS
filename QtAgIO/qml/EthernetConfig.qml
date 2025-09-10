@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 import QtQuick.Layouts
-import AgIO
+//import AgIO
 import "components" as Comp
 
 Drawer{
@@ -18,9 +18,9 @@ Drawer{
     }
 
     function load_settings(){
-        spIP1.value = agiosettings.setUDP_IP1
-        spIP2.value = agiosettings.setUDP_IP2
-        spIP3.value = agiosettings.setUDP_IP3
+        spIP1.value = AgIOSettings.setUDP_IP1
+        spIP2.value = AgIOSettings.setUDP_IP2
+        spIP3.value = AgIOSettings.setUDP_IP3
     }
 
     Rectangle {
@@ -92,11 +92,11 @@ Drawer{
                 icon.source: "../images/SubnetSend.png"
                 Layout.alignment: Qt.AlignCenter
                 onClicked: {
-                    agiosettings.setUDP_IP1 = spIP1.value
-                    agiosettings.setUDP_IP2 = spIP2.value
-                    agiosettings.setUDP_IP3 = spIP3.value
+                    AgIOSettings.setUDP_IP1 = spIP1.value
+                    AgIOSettings.setUDP_IP2 = spIP2.value
+                    AgIOSettings.setUDP_IP3 = spIP3.value
                     timedMessage.addMessage(2000, "IP Address Change", ("IP address changed to " +
-                                                                        agiosettings.setUDP_IP1 + "." + agiosettings.setUDP_IP2 + "." + agiosettings.setUDP_IP3 + "!"))
+                                                                        AgIOSettings.setUDP_IP1 + "." + AgIOSettings.setUDP_IP2 + "." + AgIOSettings.setUDP_IP3 + "!"))
                     agio.btnSendSubnet_clicked()
                 }
                 implicitWidth: btnOK.width

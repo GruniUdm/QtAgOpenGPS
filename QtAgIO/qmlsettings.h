@@ -13,11 +13,9 @@ class QMLSettings : public QQmlPropertyMap
 {
     Q_OBJECT
 
-    //this below is for future usage as c++ module plugin
-    //adding the QML_ELEMENT macro to the class makes it available to QML
-    //QML_ELEMENT
-    //adding the QML_SINGLETON macro to the class makes qml_settings a singleton
-    //QML_SINGLETON
+    //Qt 6.8 modern singleton pattern - in AgIO module
+    QML_NAMED_ELEMENT(AgIOSettings)
+    QML_SINGLETON
 
 public:
     QMap<QString, QString> qml_to_settings_map; //map of qml property keys to agiosettings path keys
@@ -31,9 +29,17 @@ public:
 
     void loadSettings();
 
-    //add QMLSettings as element of formloop instance
-    static QMLSettings *instance(QQmlEngine *engine = nullptr, QJSEngine *scriptEngine = nullptr);
+    //Qt 6.8 factory function for QML_SINGLETON
+    static QMLSettings *create(QQmlEngine *engine, QJSEngine *scriptEngine);
+    
+    //FormLoop integration - same pattern as FormGPS
+    static void setFormLoopInstance(QMLSettings* instance);
+    static QMLSettings *instance();
     void updateSetting(const QString &settings_key);
+
+private:
+    static QMLSettings* s_formloop_instance;
+    
 public slots:
     void onValueChanged(const QString &key, const QVariant &value);
 };

@@ -1,5 +1,5 @@
 import QtQuick
-import AgIO
+//import AgIO
 
 IconButton {
     id: icon_button_transparent

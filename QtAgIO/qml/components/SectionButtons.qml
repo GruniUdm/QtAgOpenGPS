@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-import AgIO
+//import AgIO
 //This is a the row of on-screen section-control buttonw
 
 Rectangle {
@@ -21,7 +21,7 @@ Rectangle {
     color: "transparent"
 
     property bool triState: true
-    property int numSections: (agiosettings.setTool_isSectionsNotZones ? agiosettings.setVehicle_numSections : agiosettings.setTool_zones[0])
+    property int numSections: (AgIOSettings.setTool_isSectionsNotZones ? AgIOSettings.setVehicle_numSections : AgIOSettings.setTool_zones[0])
     property var buttonState: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
     property color offColor: "Crimson"
     property color offTextColor: "White"
@@ -35,7 +35,7 @@ Rectangle {
     //methods
     function setColors() {
         //same colors for sections and zones
-        if (agiosettings.setDisplay_isDayMode) {
+        if (AgIOSettings.setDisplay_isDayMode) {
             sectionButtons.offColor = "Red"
             sectionButtons.offTextColor = "Black"
 
@@ -76,10 +76,10 @@ Rectangle {
 
             //get the left-most section in the zone
             if (sectionNo===0) zone_left = 0
-            else zone_left = agiosettings.setTool_zones[sectionNo]
+            else zone_left = AgIOSettings.setTool_zones[sectionNo]
 
             //get the right-most section in the zone
-            zone_right = agiosettings.setTool_zones[sectionNo+1]
+            zone_right = AgIOSettings.setTool_zones[sectionNo+1]
 
             //set all sections between left and right
             for (j = zone_left ; j < zone_right ; j++) {
@@ -96,7 +96,7 @@ Rectangle {
         var temp2 = sectionButtons.buttonState
         var i,j
 
-        if (agiosettings.setTool_isSectionsNotZones) {
+        if (AgIOSettings.setTool_isSectionsNotZones) {
             //1:1 correlation between buttons and sections
             for (i=0; i < 65 ; i++) {
                 if (i < numSections)
@@ -117,10 +117,10 @@ Rectangle {
 
                 //get the left-most section in the zone
                 if (i===0) zone_left = 0
-                else zone_left = agiosettings.setTool_zones[i]
+                else zone_left = AgIOSettings.setTool_zones[i]
 
                 //get the right-most section in the zone
-                zone_right = agiosettings.setTool_zones[i+1]
+                zone_right = AgIOSettings.setTool_zones[i+1]
 
                 //set all sections between left and right
                 for (j = zone_left ; j < zone_right ; j++) {
@@ -149,7 +149,7 @@ Rectangle {
     }
 
     Connections {
-        target: agiosettings
+        target: AgIOSettings
         function onSetDisplay_isDayModeChanged() {
             setColors()
         }

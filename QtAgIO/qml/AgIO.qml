@@ -5,9 +5,8 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-//import Settings
 import QtQuick.Window
-import AgIO
+import AOG
 
 import "components" as Comp
 
@@ -37,34 +36,34 @@ Drawer {
     Comp.SerialTerminalAgio {
         id: gnssConfig
         visible: false
-        portBaud: agiosettings.setGnss_BaudRate
-        portName: agiosettings.setGnss_SerialPort
+        portBaud: AgIOSettings.setGnss_BaudRate
+        portName: AgIOSettings.setGnss_SerialPort
         saveConfig: false
         onSaveConfigChanged: {
-            agiosettings.setGnss_SerialPort = gnssConfig.portName
-            agiosettings.setGnss_BaudRate = gnssConfig.portBaud
+            AgIOSettings.setGnss_SerialPort = gnssConfig.portName
+            AgIOSettings.setGnss_BaudRate = gnssConfig.portBaud
             }
     }
     Comp.SerialTerminalAgio {
         id: imuConfig
         visible: false
-        portBaud: agiosettings.setImu_BaudRate
-        portName: agiosettings.setImu_SerialPort
+        portBaud: AgIOSettings.setImu_BaudRate
+        portName: AgIOSettings.setImu_SerialPort
         saveConfig: false
         onSaveConfigChanged: {
-            agiosettings.setImu_SerialPort = imuConfig.portName
-            agiosettings.setImu_BaudRate = imuConfig.portBaud
+            AgIOSettings.setImu_SerialPort = imuConfig.portName
+            AgIOSettings.setImu_BaudRate = imuConfig.portBaud
             }
     }
     Comp.SerialTerminalAgio {
         id: autosteerConfig
         visible: false
-        portBaud: agiosettings.setSteer_BaudRate
-        portName: agiosettings.setSteer_SerialPort
+        portBaud: AgIOSettings.setSteer_BaudRate
+        portName: AgIOSettings.setSteer_SerialPort
         saveConfig: false
         onSaveConfigChanged: {
-            agiosettings.setSteer_SerialPort = steerConfig.portName
-            agiosettings.setSteer_BaudRate = steerConfig.portBaud
+            AgIOSettings.setSteer_SerialPort = steerConfig.portName
+            AgIOSettings.setSteer_BaudRate = steerConfig.portBaud
             }
     }
     AgIOInterface {
@@ -119,8 +118,8 @@ Drawer {
                 color: agio.bluetoothConnected ? "green" : "red"
                 onClicked: {
                     settingsWindow.close()
-                    if(!utils.isTrue(agiosettings.setBluetooth_isOn)){ //start bt if off
-                        agiosettings.setBluetooth_isOn = true
+                    if(!utils.isTrue(AgIOSettings.setBluetooth_isOn)){ //start bt if off
+                        AgIOSettings.setBluetooth_isOn = true
                         agio.startBluetoothDiscovery()
                         console.log("ssb")
                     }
@@ -190,7 +189,7 @@ Drawer {
             Comp.IconButtonTextBeside {
                 //objectName: btnNTRIP
                 isChecked: false
-                text: (agiosettings.setNTRIP_isOn === false ? "Off":
+                text: (AgIOSettings.setNTRIP_isOn === false ? "Off":
                     agio.ntripStatus === 0 ? "Invalid" :
                     agio.ntripStatus === 1 ? "Authorizing" :
                     agio.ntripStatus === 2 ? "Waiting" :
@@ -200,7 +199,7 @@ Drawer {
                     "Unknown")
 
                 icon.source: "../images/NtripSettings.png"
-                color:  (agiosettings.setNTRIP_isOn === false ? "red":
+                color:  (AgIOSettings.setNTRIP_isOn === false ? "red":
                     agio.ntripStatus === 0 ? "red" :
                     agio.ntripStatus === 1 ? "yellow" :
                     agio.ntripStatus === 2 ? "yellow" :

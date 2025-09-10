@@ -14,12 +14,41 @@
 // defining qml_seettings as a global variable
 //QMLSettings *qml_settings = nullptr;
 
-// instantiate a QSettings object and load the settings file this replaces qml_settings
-QMLSettings* QMLSettings::instance(QQmlEngine *engine, QJSEngine *scriptEngine)
+// Static pointer to FormLoop instance - same pattern as FormGPS
+QMLSettings* QMLSettings::s_formloop_instance = nullptr;
+
+// Qt 6.8 factory function for QML_SINGLETON  
+QMLSettings* QMLSettings::create(QQmlEngine *engine, QJSEngine *scriptEngine)
 {
-    Q_UNUSED(engine)
     Q_UNUSED(scriptEngine)
+    
+    qDebug() << "🔥🔥🔥 QMLSettings::create() CALLED! FormLoop instance:" << s_formloop_instance;
+    
+    // Qt documentation: factory function must ALWAYS return a valid instance
+    if (!s_formloop_instance) {
+        qWarning() << "⚠️ QMLSettings factory called before FormLoop - creating temporary instance";
+        return new QMLSettings(engine);  // Create temporary instance, FormLoop will replace later
+    }
+    
+    return s_formloop_instance;
+}
+
+// Method for FormLoop to register its instance
+void QMLSettings::setFormLoopInstance(QMLSettings* instance) {
+    s_formloop_instance = instance;
+    qDebug() << "✅ QMLSettings FormLoop instance registered:" << instance;
+}
+
+// Internal instance method for C++ access  
+QMLSettings* QMLSettings::instance()
+{
+    if (s_formloop_instance) {
+        return s_formloop_instance;
+    }
+    
+    // Fallback for early C++ access
     static QMLSettings instance;
+    qDebug() << "⚠️ QMLSettings using fallback instance:" << &instance;
     return &instance;
 }
 

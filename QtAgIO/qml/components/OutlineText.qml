@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-import AgIO
+//import AgIO
 
 Label {
     id: outlineText

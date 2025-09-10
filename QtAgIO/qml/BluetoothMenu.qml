@@ -3,7 +3,7 @@ import QtQuick.Controls.Fusion
 import QtQuick.Window
 import QtQuick.Layouts
 import QtQml.Models
-import AgIO
+import AOG
 import "components" as Comp
 
 Drawer {
@@ -93,19 +93,19 @@ Drawer {
         anchors.margins: 10
         border.width: 2
         ListView{
-            property var deviceList: agiosettings.setBluetooth_deviceList
+            property var deviceList: AgIOSettings.setBluetooth_deviceList
             id: knownDevicesList
             anchors.fill: parent
             Connections {
-                target: agiosettings
+                target: AgIOSettings
                 function onSetBluetooth_deviceListChanged() {
-                    var rawList = agiosettings.setBluetooth_deviceList;
+                    var rawList = AgIOSettings.setBluetooth_deviceList;
                     knownDevicesList.model = Array.isArray(rawList) ? rawList : [rawList];
                     console.log("modelchanged")
                 }
             }
             Component.onCompleted: {
-                var rawList = agiosettings.setBluetooth_deviceList;
+                var rawList = AgIOSettings.setBluetooth_deviceList;
                 knownDevicesList.model = Array.isArray(rawList) ? rawList : [rawList];
             }
 

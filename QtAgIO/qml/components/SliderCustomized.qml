@@ -1,5 +1,5 @@
 import QtQuick.Controls.Fusion
-import AgIO
+//import AgIO
 import QtQuick
 
 Slider{

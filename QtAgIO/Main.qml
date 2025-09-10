@@ -1,5 +1,5 @@
 import QtQuick
-import AgIO 1.0
+//import AgIO 1.0
 
 //this file only for test when using AgIO as standalone app for test
 

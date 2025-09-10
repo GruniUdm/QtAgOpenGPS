@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Dialogs
-import AgIO
+//import AgIO
 
 MessageDialog {
     buttons: MessageDialog.Ok

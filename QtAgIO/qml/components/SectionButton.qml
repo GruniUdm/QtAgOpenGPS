@@ -1,5 +1,5 @@
 import QtQuick
-import AgIO
+//import AgIO
 
 /*
 Image {

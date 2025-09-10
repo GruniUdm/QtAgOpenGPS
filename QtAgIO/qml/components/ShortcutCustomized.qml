@@ -1,9 +1,9 @@
 import QtQuick
-import AgIO
+//import AgIO
 
 Shortcut{
 	id: shortcut
 	property int hotkeys: 0
-    property var hotkeysVar: agiosettings.setKey_hotkeys
+    property var hotkeysVar: AgIOSettings.setKey_hotkeys
 	sequences: [hotkeysVar[hotkeys], ("Shift+"+ hotkeysVar[hotkeys])]
 }

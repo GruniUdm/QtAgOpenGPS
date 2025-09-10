@@ -9,6 +9,7 @@
 #include <QQmlContext>
 #include <QSerialPortInfo>
 #include <QSerialPort>
+#include <QtQml>
 
 AgIOSettings *agiosettings;
 //extern QMLSettings qml_settings;
@@ -42,9 +43,12 @@ void FormLoop::setEngine(QQmlApplicationEngine *engine)
     AgIOProperty::init_defaults();
     agiosettings->sync();
 
-
-    QMLSettings::instance()->setupKeys();
-    QMLSettings::instance()->loadSettings();
+    // ===== QMLSettings maintenant géré par FormGPS =====
+    // L'instance et la configuration sont maintenant dans le module AOG principal
+    QMLSettings* qmlsettings_instance = QMLSettings::instance();
+    qmlsettings_instance->setupKeys();
+    qmlsettings_instance->loadSettings();
+    qDebug() << "FormLoop using QMLSettings instance:" << qmlsettings_instance;
     // qml_settings->setupKeys();
     // qml_settings->loadSettings();
 
@@ -67,7 +71,7 @@ void FormLoop::setEngine(QQmlApplicationEngine *engine)
         setContextProperty("OS", QString("LINUX"));    
     #endif
 
-    setContextProperty("agiosettings", QVariant::fromValue(QMLSettings::instance()));
+    // ✅ agiosettings now available via QML_SINGLETON - no setContextProperty needed
     setContextProperty("bluetoothDeviceList", QVariant::fromValue(btDevicesList));
 
     // setupGUI();

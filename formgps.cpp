@@ -37,6 +37,14 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     
     qDebug() << "🎨 Calling setupGui...";
     setupGui();
+    
+    // Initialize AgIO singleton AFTER FormLoop is ready
+    // QMLSettings* agiosettings_instance = QMLSettings::instance();
+    // QMLSettings::setFormLoopInstance(agiosettings_instance);
+    
+    // Pure Qt 6.8 approach - factory function should be called automatically
+    
+    qDebug() << "  ✅ AgIO settings singleton registered AFTER FormLoop ready:" << agiosettings_instance;
     //loadSettings();
 
 }

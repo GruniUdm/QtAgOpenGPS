@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Fusion
-import AgIO
+//import AgIO
 //This is a the row of on-screen section-control buttonw
 
 Rectangle {
@@ -9,7 +9,7 @@ Rectangle {
     height: 600
 
     MockSettings { //for testing with qmlscene only
-        id: agiosettings
+        id: agioSettings
     }
 
     AOGInterface { //for testing with qmlscene only
@@ -35,7 +35,7 @@ Rectangle {
         text: "Click me"
 
         onClicked: {
-            agiosettings.setTool_isSectionsNotZones = ! agiosettings.setTool_isSectionsNotZones
+            AgIOSettings.setTool_isSectionsNotZones = ! AgIOSettings.setTool_isSectionsNotZones
             console.debug("numSections is " + sb.numSections)
         }
 
