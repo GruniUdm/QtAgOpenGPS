@@ -11,6 +11,7 @@ Project {
     enablePythonGeneration: false
     widgetApp: true
     importPaths: [ 
+        "build",
         "qml", 
         "images", 
         "." 
