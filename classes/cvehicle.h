@@ -7,6 +7,9 @@
 #include "common.h"
 #include <QObject>
 #include <QMatrix4x4>
+#include <QtQml/qqmlregistration.h>
+#include <QQmlEngine>
+#include <QJSEngine>
 #include "interfaceproperty.h"
 
 #include <QOpenGLBuffer>
@@ -26,9 +29,34 @@ class CTrack;
 class CVehicle: public QObject
 {
     Q_OBJECT
-private:
+    QML_NAMED_ELEMENT(VehicleInterface)
+    QML_SINGLETON
 
+private:
+    // Vrai singleton pattern
+    static CVehicle* s_instance;
+    
+    // Constructeur privé pour singleton
+    explicit CVehicle(QObject *parent = 0);
+    
 public:
+    // Instance singleton (comme Settings)
+    static CVehicle* instance() {
+        if (!s_instance) {
+            s_instance = new CVehicle(nullptr);
+            qDebug() << "CVehicle singleton created:" << s_instance;
+        }
+        return s_instance;
+    }
+    
+    // Factory function pour Qt 6
+    static CVehicle* create(QQmlEngine* engine, QJSEngine* jsEngine) {
+        qDebug() << "🔥🔥🔥 CVehicle::create() CALLED! 🔥🔥🔥";
+        Q_UNUSED(engine)
+        Q_UNUSED(jsEngine)
+        
+        return instance(); // Retourne le vrai singleton
+    }
     bool isSteerAxleAhead;
     bool isPivotBehindAntenna;
 
@@ -134,7 +162,6 @@ public:
 
     void loadSettings();
 
-    explicit CVehicle(QObject *parent = 0);
     double UpdateGoalPointDistance();
     void DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview, QMatrix4x4 projection,
                      double steerAngle,

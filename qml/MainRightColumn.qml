@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 //import Settings
-import Interface
+// Interface import removed - now QML_SINGLETON
 //import AOG
 import "components" as Comp
 
@@ -74,8 +74,8 @@ ColumnLayout {
         implicitHeight: theme.buttonSize
 
         onClicked: {
-            if (trk.idx > -1) {
-                trk.next()
+            if (TracksInterface.idx > -1) {
+                TracksInterface.next()
             }
         }
     }
@@ -87,8 +87,8 @@ ColumnLayout {
         implicitHeight: theme.buttonSize
 
         onClicked: {
-            if (trk.idx > -1) {
-                trk.prev()
+            if (TracksInterface.idx > -1) {
+                TracksInterface.prev()
             }
         }
 
@@ -165,7 +165,7 @@ ColumnLayout {
         //Is remote activation of autosteer enabled? //todo. Eliminated in 6.3.3
         buttonText: (Settings.as_isAutoSteerAutoOn === true ? "R" : "M")
         onClicked: {
-            if (checked && ((trk.idx > -1) || btnContour.isChecked)) {
+            if (checked && ((TracksInterface.idx > -1) || btnContour.isChecked)) {
                 console.debug("okay to turn on autosteer button.")
                 aog.isBtnAutoSteerOn = true;
             } else {
@@ -178,7 +178,7 @@ ColumnLayout {
             target: aog
             function onIsBtnAutoSteerOnChanged() {
                 //TODO: use track interface in trk
-                if (aog.isBtnAutoSteerOn && (trk.idx > -1)) {
+                if (aog.isBtnAutoSteerOn && (TracksInterface.idx > -1)) {
                     btnAutoSteer.checked = true
                 } else {
                     //default to turning everything off

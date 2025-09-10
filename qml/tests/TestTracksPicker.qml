@@ -36,7 +36,7 @@ Rectangle {
         id: trk
 
         Component.onCompleted: {
-            trk.idx = 0
+            TracksInterface.idx = 0
         }
 
     }
@@ -50,7 +50,7 @@ Rectangle {
         id: tracksListView
         width: 400
         height: 100
-        model: trk.model
+        model: TracksInterface.model
         clip: true
     }
 

@@ -72,12 +72,16 @@ void FormGPS::setupGui()
 
     //populate vehicle_list property in vehicleInterface
     vehicle_update_list();
-    rootContext()->setContextProperty("vehicleInterface", &vehicle);
-
-    rootContext()->setContextProperty("trk", &trk);
+    
+    // ===== Instances déjà enregistrées dans le constructeur FormGPS =====
+    
+    // Les factory functions sont prêtes, les instances ont été enregistrées dans FormGPS::FormGPS()
+    // Les anciens qmlRegisterSingletonInstance sont maintenant remplacés par les factory functions
+    // qmlRegisterSingletonInstance("Interface", 1, 0, "TracksInterface", &trk);  // ✅ SUPPRIMÉ
+    // qmlRegisterSingletonInstance("Interface", 1, 0, "VehicleInterface", &vehicle);  // ✅ SUPPRIMÉ
+    
+    // Only tram still uses setContextProperty (not yet modernized)
     rootContext()->setContextProperty("tram", &tram);
-    qmlRegisterSingletonInstance("Interface", 1, 0, "TracksInterface", &trk);
-    qmlRegisterSingletonInstance("Interface", 1, 0, "VehicleInterface", &vehicle);
 
 #ifdef LOCAL_QML
     // Look for QML files relative to our current directory
@@ -257,10 +261,10 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(aog,SIGNAL(snapToPivot()), this, SLOT(onBtnSnapToPivot_clicked()));
 
     //vehicle saving and loading
-    connect(&vehicle,SIGNAL(vehicle_update_list()), this, SLOT(vehicle_update_list()));
-    connect(&vehicle,SIGNAL(vehicle_load(QString)), this, SLOT(vehicle_load(QString)));
-    connect(&vehicle,SIGNAL(vehicle_delete(QString)), this, SLOT(vehicle_delete(QString)));
-    connect(&vehicle,SIGNAL(vehicle_saveas(QString)), this, SLOT(vehicle_saveas(QString)));
+    connect(vehicle,SIGNAL(vehicle_update_list()), this, SLOT(vehicle_update_list()));
+    connect(vehicle,SIGNAL(vehicle_load(QString)), this, SLOT(vehicle_load(QString)));
+    connect(vehicle,SIGNAL(vehicle_delete(QString)), this, SLOT(vehicle_delete(QString)));
+    connect(vehicle,SIGNAL(vehicle_saveas(QString)), this, SLOT(vehicle_saveas(QString)));
 
     //field saving and loading
     connect(fieldInterface,SIGNAL(field_update_list()), this, SLOT(field_update_list()));
@@ -309,7 +313,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
 
     headland_form.bnd = &bnd;
-    headland_form.vehicle = &vehicle;
+    headland_form.vehicle = vehicle;
     headland_form.hdl = &hdl;
     headland_form.tool = &tool;
 
@@ -318,7 +322,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(&headland_form, SIGNAL(timedMessageBox(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
 
     headache_form.bnd = &bnd;
-    headache_form.vehicle = &vehicle;
+    headache_form.vehicle = vehicle;
     headache_form.hdl = &hdl;
     headache_form.tool = &tool;
 
@@ -450,13 +454,13 @@ void FormGPS::onBtnAgIO_clicked(){
     qDebug()<<"AgIO";
 }
 void FormGPS::onBtnResetTool_clicked(){
-               vehicle.tankPos.heading = vehicle.fixHeading;
-               vehicle.tankPos.easting = vehicle.hitchPos.easting + (sin(vehicle.tankPos.heading) * (tool.tankTrailingHitchLength));
-               vehicle.tankPos.northing = vehicle.hitchPos.northing + (cos(vehicle.tankPos.heading) * (tool.tankTrailingHitchLength));
+               vehicle->tankPos.heading = vehicle->fixHeading;
+               vehicle->tankPos.easting = vehicle->hitchPos.easting + (sin(vehicle->tankPos.heading) * (tool.tankTrailingHitchLength));
+               vehicle->tankPos.northing = vehicle->hitchPos.northing + (cos(vehicle->tankPos.heading) * (tool.tankTrailingHitchLength));
 
-               vehicle.toolPivotPos.heading = vehicle.tankPos.heading;
-               vehicle.toolPivotPos.easting = vehicle.tankPos.easting + (sin(vehicle.toolPivotPos.heading) * (tool.trailingHitchLength));
-               vehicle.toolPivotPos.northing = vehicle.tankPos.northing + (cos(vehicle.toolPivotPos.heading) * (tool.trailingHitchLength));
+               vehicle->toolPivotPos.heading = vehicle->tankPos.heading;
+               vehicle->toolPivotPos.easting = vehicle->tankPos.easting + (sin(vehicle->toolPivotPos.heading) * (tool.trailingHitchLength));
+               vehicle->toolPivotPos.northing = vehicle->tankPos.northing + (cos(vehicle->toolPivotPos.heading) * (tool.trailingHitchLength));
 }
 void FormGPS::onBtnHeadland_clicked(){
     qDebug()<<"Headland";
@@ -470,7 +474,7 @@ void FormGPS::onBtnHeadland_clicked(){
                    //btnHeadlandOnOff.Image = Properties.Resources.HeadlandOff;
                }
 
-               if (vehicle.isHydLiftOn && !bnd.isHeadlandOn) vehicle.isHydLiftOn = false;
+               if (vehicle->isHydLiftOn && !bnd.isHeadlandOn) vehicle->isHydLiftOn = false;
 
                if (!bnd.isHeadlandOn)
                {
@@ -481,8 +485,8 @@ void FormGPS::onBtnHeadland_clicked(){
 void FormGPS::onBtnHydLift_clicked(){
     if (bnd.isHeadlandOn)
     {
-        vehicle.isHydLiftOn = !vehicle.isHydLiftOn;
-        if (vehicle.isHydLiftOn)
+        vehicle->isHydLiftOn = !vehicle->isHydLiftOn;
+        if (vehicle->isHydLiftOn)
         {
         }
         else
@@ -493,7 +497,7 @@ void FormGPS::onBtnHydLift_clicked(){
     else
     {
         p_239.pgn[p_239.hydLift] = 0;
-        vehicle.isHydLiftOn = false;
+        vehicle->isHydLiftOn = false;
     }
 }
 void FormGPS::onBtnTramlines_clicked(){
@@ -530,7 +534,7 @@ void FormGPS::onBtnResetDirection_clicked(){
     isFirstHeadingSet = false;
 
     //TODO: most of this should be done in QML
-    vehicle.setIsReverse(false);
+    vehicle->setIsReverse(false);
     TimedMessageBox(2000, "Reset Direction", "Drive Forward > 1.5 kmh");
 }
 void FormGPS::onBtnFlag_clicked() {
@@ -823,7 +827,7 @@ void FormGPS::onBtnSwapAutoYouTurnDirection_clicked()
 
  void FormGPS::onBtnAutoTrack_clicked()
  {
-     trk.isAutoTrack = !trk.isAutoTrack;
+     trk->isAutoTrack = !trk->isAutoTrack;
      qDebug()<<"isAutoTrack";
  }
 
@@ -833,49 +837,49 @@ void FormGPS::onBtnManUTurn_clicked(bool right)
         yt.ResetYouTurn();
     }else {
         yt.isYouTurnTriggered = true;
-        yt.BuildManualYouTurn( right, true, vehicle, trk);
+        yt.BuildManualYouTurn( right, true, *vehicle, *trk);
    }
 }
 
 void FormGPS::onBtnLateral_clicked(bool right)
 {
-   yt.BuildManualYouLateral(right, vehicle, trk);
+   yt.BuildManualYouLateral(right, *vehicle, *trk);
 }
 
 void FormGPS::btnSteerAngleUp_clicked(){
-    vehicle.driveFreeSteerAngle++;
-    if (vehicle.driveFreeSteerAngle > 40) vehicle.driveFreeSteerAngle = 40;
+    vehicle->driveFreeSteerAngle++;
+    if (vehicle->driveFreeSteerAngle > 40) vehicle->driveFreeSteerAngle = 40;
 
     qDebug()<<"btnSteerAngleUp_clicked";
 }
 void FormGPS::btnSteerAngleDown_clicked(){
-    vehicle.driveFreeSteerAngle--;
-    if (vehicle.driveFreeSteerAngle < -40) vehicle.driveFreeSteerAngle = -40;
+    vehicle->driveFreeSteerAngle--;
+    if (vehicle->driveFreeSteerAngle < -40) vehicle->driveFreeSteerAngle = -40;
 
     qDebug()<<"btnSteerAngleDown_clicked";
 }
 void FormGPS::btnFreeDrive_clicked(){
 
 
-    if (vehicle.isInFreeDriveMode)
+    if (vehicle->isInFreeDriveMode)
     {
         //turn OFF free drive mode
-        vehicle.isInFreeDriveMode = false;
-        vehicle.driveFreeSteerAngle = 0;
+        vehicle->isInFreeDriveMode = false;
+        vehicle->driveFreeSteerAngle = 0;
     }
     else
     {
         //turn ON free drive mode
-        vehicle.isInFreeDriveMode = true;
-        vehicle.driveFreeSteerAngle = 0;
+        vehicle->isInFreeDriveMode = true;
+        vehicle->driveFreeSteerAngle = 0;
     }
 
     qDebug()<<"btnFreeDrive_clicked";
 }
 void FormGPS::btnFreeDriveZero_clicked(){
-    if (vehicle.driveFreeSteerAngle == 0)
-        vehicle.driveFreeSteerAngle = 5;
-    else vehicle.driveFreeSteerAngle = 0;
+    if (vehicle->driveFreeSteerAngle == 0)
+        vehicle->driveFreeSteerAngle = 5;
+    else vehicle->driveFreeSteerAngle = 0;
 
     qDebug()<<"btnFreeDriveZero_clicked";
 }
@@ -887,7 +891,7 @@ void FormGPS::btnStartSA_clicked(){
     if (!isSA)
     {
         isSA = true;
-        startFix = vehicle.pivotAxlePos;
+        startFix = vehicle->pivotAxlePos;
         dist = 0;
         diameter = 0;
         cntr = 0;
@@ -1103,7 +1107,7 @@ void FormGPS::Timer1_Tick()
 {
     if (isSA)
     {
-        dist = glm::Distance(startFix, vehicle.pivotAxlePos);
+        dist = glm::Distance(startFix, vehicle->pivotAxlePos);
         cntr++;
         if (dist > diameter)
         {
@@ -1116,7 +1120,7 @@ void FormGPS::Timer1_Tick()
         qDebug()<<diameter;
         if (cntr > 9)
         {
-            steerAngleRight = atan(vehicle.wheelbase / ((diameter - vehicle.trackWidth * 0.5) / 2));
+            steerAngleRight = atan(vehicle->wheelbase / ((diameter - vehicle->trackWidth * 0.5) / 2));
             steerAngleRight = glm::toDegrees(steerAngleRight);
 
             //lblCalcSteerAngleInner = steerAngleRight.ToString("N1") + "°";
@@ -1180,9 +1184,9 @@ void FormGPS::Timer1_Tick()
 
         if (tabControl1.SelectedTab == tabPPAdv)
         {
-            lblHoldAdv = vehicle.goalPointLookAheadHold.ToString("N1");
-            lblAcqAdv = (vehicle.goalPointLookAheadHold * mf.vehicle.goalPointAcquireFactor).ToString("N1");
-            lblDistanceAdv = vehicle.goalDistance.ToString("N1");
+            lblHoldAdv = vehicle->goalPointLookAheadHold.ToString("N1");
+            lblAcqAdv = (vehicle->goalPointLookAheadHold * mf.vehicle->goalPointAcquireFactor).ToString("N1");
+            lblDistanceAdv = vehicle->goalDistance.ToString("N1");
             lblAcquirePP = lblAcqAdv.Text;
         }
     }
@@ -1302,7 +1306,7 @@ bool FormGPS::ShouldCollectSample(double steerAngle, double speed)
     if (speed < MIN_SPEED_THRESHOLD) return false;
     if (std::abs(steerAngle) > MAX_ANGLE_THRESHOLD) return false;
     if (!isBtnAutoSteerOn) return false;
-    if (std::abs(vehicle.guidanceLineDistanceOff) > 15000) return false;
+    if (std::abs(vehicle->guidanceLineDistanceOff) > 15000) return false;
 
     return true;
 }
@@ -1467,4 +1471,6 @@ void FormGPS::on_btnSmartZeroWAS_clicked()
              << ", Уверенность:" << QString::number(ConfidenceLevel, 'f', 1) << "%,"
              << "Корректировка:" << QString::number(RecommendedWASZero, 'f', 2) << "°";
 }
+
+// TracksInterface and VehicleInterface now use QML_SINGLETON + QML_ELEMENT (same approach as Settings)
 

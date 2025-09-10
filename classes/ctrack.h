@@ -3,6 +3,9 @@
 
 #include <QVector>
 #include <QAbstractListModel>
+#include <QtQml/qqmlregistration.h>
+#include <QQmlEngine>
+#include <QJSEngine>
 #include "vec3.h"
 #include "vec2.h"
 #include "setter.h"
@@ -52,8 +55,34 @@ public:
 class CTrack : public QAbstractListModel
 {
     Q_OBJECT
+    QML_NAMED_ELEMENT(TracksInterface)
+    QML_SINGLETON
 
+private:
+    // Vrai singleton pattern
+    static CTrack* s_instance;
+    
+    // Constructeur privé pour singleton
+    explicit CTrack(QObject* parent = nullptr);
+    
 public:
+    // Instance singleton (comme Settings)
+    static CTrack* instance() {
+        if (!s_instance) {
+            s_instance = new CTrack(nullptr);
+            qDebug() << "CTrack singleton created:" << s_instance;
+        }
+        return s_instance;
+    }
+    
+    // Factory function pour Qt 6
+    static CTrack* create(QQmlEngine* engine, QJSEngine* jsEngine) {
+        qDebug() << "🔥🔥🔥 CTrack::create() CALLED! 🔥🔥🔥";
+        Q_UNUSED(engine)
+        Q_UNUSED(jsEngine)
+        
+        return instance(); // Retourne le vrai singleton
+    }
     enum RoleNames {
         index = Qt::UserRole,
         NameRole,
@@ -98,7 +127,6 @@ public:
 
     QVector<Vec2> designRefLine;
 
-    explicit CTrack(QObject* parent = nullptr);
     ~CTrack();
 
     // CTrack interface

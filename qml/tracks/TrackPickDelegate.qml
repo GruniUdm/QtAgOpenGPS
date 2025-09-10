@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import Interface
+// Interface import removed - now QML_SINGLETON
 //import AOG
 
 RadioDelegate {

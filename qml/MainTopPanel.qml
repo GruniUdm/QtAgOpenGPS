@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 
-import Interface
+// Interface import removed - now QML_SINGLETON
 import "components" as Comp
 
     Rectangle{

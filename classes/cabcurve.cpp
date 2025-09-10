@@ -411,7 +411,7 @@ void CABCurve::BuildCurveCurrentList(Vec3 pivot,
 
         double pointSpacing = distAway * 0.05;
 
-        //distAway += mf.trk.gArr[trk.idx].nudgeDistance;
+        //distAway += mf.trk->gArr[trk->idx].nudgeDistance;
 
         Vec3 currentPos(refPoint1.easting-distAway, refPoint1.northing, 0);
 

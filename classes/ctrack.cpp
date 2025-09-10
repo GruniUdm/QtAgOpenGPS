@@ -3,6 +3,8 @@
 #include <QVector>
 #include <QFuture>
 #include <QtConcurrent/QtConcurrent>
+#include <QQmlEngine>
+#include <QJSEngine>
 #include "glutils.h"
 #include "ctrack.h"
 #include "cvehicle.h"
@@ -17,6 +19,9 @@
 #include "cahrs.h"
 #include "cguidance.h"
 #include "cworldgrid.h"
+
+// Initialisation du pointeur statique pour vrai singleton
+CTrack* CTrack::s_instance = nullptr;
 
 CTrk::CTrk()
 {
@@ -39,6 +44,7 @@ CTrk::CTrk(const CTrk &orig)
 
 CTrack::CTrack(QObject* parent) : QAbstractListModel(parent)
 {
+    qDebug() << "🏗️ CTrack constructor called, parent:" << parent;
     // Initialize role names
     m_roleNames[index] = "index";
     m_roleNames[NameRole] = "name";
@@ -1056,4 +1062,6 @@ void CTrack::copy(int index, QString new_name)
     gArr.append(new_track);
     reloadModel();
 }
+
+// Removed QML_SINGLETON factory function - using qmlRegisterSingletonInstance instead
 

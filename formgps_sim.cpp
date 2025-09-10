@@ -36,7 +36,7 @@ void FormGPS::onSimNewPosition(double vtgSpeed,
 
     pn.vtgSpeed = vtgSpeed;
 
-    vehicle.AverageTheSpeed(vtgSpeed);
+    vehicle->AverageTheSpeed(vtgSpeed);
 
     pn.headingTrue = pn.headingTrueDual = headingTrue;
     //ahrs.imuHeading = pn.headingTrue;
@@ -67,9 +67,9 @@ void FormGPS::onSimTimerTimeout()
     QObject *qmlobject;
     //double stepDistance = qmlobject->property("value").toReal() / 10.0 /gpsHz;
     //sim.setSimStepDistance(stepDistance);
-    if (recPath.isDrivingRecordedPath || (isBtnAutoSteerOn && (vehicle.guidanceLineDistanceOff !=32000)))
+    if (recPath.isDrivingRecordedPath || (isBtnAutoSteerOn && (vehicle->guidanceLineDistanceOff !=32000)))
     {
-        sim.DoSimTick(vehicle.guidanceLineSteerAngle * 0.01);
+        sim.DoSimTick(vehicle->guidanceLineSteerAngle * 0.01);
     } else {
         //TODO redirect through AOGInterface
         qmlobject = qmlItem(mainWindow, "simSteer");

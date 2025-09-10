@@ -3,6 +3,8 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QRgb>
+#include <QQmlEngine>
+#include <QJSEngine>
 #include "settings.h"
 #include "ccamera.h"
 #include "cboundary.h"
@@ -15,6 +17,9 @@
 #include "cabcurve.h"
 #include "ccontour.h"
 #include "ctrack.h"
+
+// Initialisation du pointeur statique pour vrai singleton
+CVehicle* CVehicle::s_instance = nullptr;
 
 QRect find_bounding_box(int viewport_height, QVector3D p1, QVector3D p2, QVector3D p3, QVector3D p4) {
     float x_min = glm::FLOAT_MAX;
@@ -528,7 +533,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     // TODO: Track number and nudge offset need to be done in QML.
     // Probably will need CTrack to put this information in its model
 
-    if(!(bool)property_setDisplay_topTrackNum && trk.idx > -1 && !ct.isContourBtnOn) {
+    if(!(bool)property_setDisplay_topTrackNum && trk->idx > -1 && !ct.isContourBtnOn) {
         color.setRgbF(1.269, 1.25, 1.2510, 0.87); //?? why over 1.0?
 
         if (curve.isBtnCurveOn && (bool)ct.isContourBtnOn == false)
@@ -660,5 +665,6 @@ void CVehicle::setLeftTramIndicator(int value){
         leftTramState = value;
             emit leftTramStateChanged();
     }
-
 }
+
+// Removed QML_SINGLETON factory function - using qmlRegisterSingletonInstance instead

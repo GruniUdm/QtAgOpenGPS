@@ -247,10 +247,11 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         PROPERTIES QT_QML_SINGLETON_TYPE TRUE
     )
 
-    # Qt Design Studio qt_add_qml_module (official pattern)
+    # Qt 6.8 PURE OFFICIAL convention
     qt_add_qml_module(QtAgOpenGPS
         URI AOG
         VERSION 1.0
+        #RESOURCE_PREFIX "/"
         QML_FILES
         ${ALL_REL_PATHS} #all qml files
         SOURCES
@@ -258,6 +259,10 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         aogrenderer.h
         settings.cpp
         settings.h
+        classes/ctrack.cpp
+        classes/ctrack.h
+        classes/cvehicle.cpp
+        classes/cvehicle.h
 
         RESOURCES
         ${IMAGE_REL_PATHS}
@@ -305,9 +310,7 @@ message("Translation path for QM files: ${QM_OUTPUT_DIR}")
 set(qml_mockup_files
     qml/AOG/qmldir
     qml/AOG/MockAOGRenderer.qml
-    qml/Interface/qmldir
-    qml/Interface/MockTracksInterface.qml
-    qml/Interface/MockVehicleInterface.qml
+    # Interface module mocks removed - now using QML_SINGLETON + QML_ELEMENT
     qml/Settings/qmldir
     qml/Settings/MockSettings.qml
 )

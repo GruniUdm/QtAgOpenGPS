@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 //import Settings
-import Interface
+// Interface import removed - now QML_SINGLETON
 //import QtQuick.Extras 1.4
 //import AOG
 

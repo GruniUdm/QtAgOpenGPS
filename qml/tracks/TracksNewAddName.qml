@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Interface
+// Interface import removed - now QML_SINGLETON
 
 import ".."
 import "../components"

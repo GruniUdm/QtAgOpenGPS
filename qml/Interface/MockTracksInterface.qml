@@ -19,17 +19,17 @@ pragma Singleton
 Item {
     id: tracksInterface
 
-    //Assume trk.model is always updated, although I guess we could call for an update?
-    //trk.model is like this:
+    //Assume trk->model is always updated, although I guess we could call for an update?
+    //trk->model is like this:
     /*
     property var model: [
         {index: 0, name: "one", isVisible: true, mode: 2 },
         {index: 1, name: "two", isVisible: false, mode: 4 },
         {index: 2, name: "three", isVisible: true, mode: 64}
     ]*/
-    //MockTrack.qml provides a trk.model for testing
+    //MockTrack.qml provides a trk->model for testing
 
-    //to select a track, set trk.idx to the index. -1 means tracks are off.
+    //to select a track, set trk->idx to the index. -1 means tracks are off.
 
     //modes:
     //AB=2, Curve = 4, waterPivot = 64

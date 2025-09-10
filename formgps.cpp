@@ -18,11 +18,24 @@ extern QLabel *overlapPixelsWindow;
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
+    qDebug() << "🚀 FormGPS constructor START";
 
+    qDebug() << "🔗 Setting up basic connections...";
     connect(this,SIGNAL(do_processSectionLookahead()), this, SLOT(processSectionLookahead()));
     connect(this,SIGNAL(do_processOverlapCount()), this, SLOT(processOverlapCount()));
-    connect_classes(); //make all the inter-class connections
+    
+    qDebug() << "🎯 Initializing singletons FIRST...";
+    // ===== CRITIQUE : Initialiser les singletons AVANT connect_classes() =====
+    trk = CTrack::instance();
+    qDebug() << "  ✅ CTrack singleton created:" << trk;
+    
+    vehicle = CVehicle::instance();
+    qDebug() << "  ✅ CVehicle singleton created:" << vehicle;
 
+    qDebug() << "🔗 Now calling connect_classes...";
+    connect_classes(); //make all the inter-class connections (NOW trk is initialized!)
+    
+    qDebug() << "🎨 Calling setupGui...";
     setupGui();
     //loadSettings();
 
@@ -53,11 +66,11 @@ void FormGPS::processSectionLookahead() {
     if (bnd.isHeadlandOn) bnd.WhereAreToolCorners(tool);
 
     //set the look ahead for hyd Lift in pixels per second
-    vehicle.hydLiftLookAheadDistanceLeft = tool.farLeftSpeed * vehicle.hydLiftLookAheadTime * 10;
-    vehicle.hydLiftLookAheadDistanceRight = tool.farRightSpeed * vehicle.hydLiftLookAheadTime * 10;
+    vehicle->hydLiftLookAheadDistanceLeft = tool.farLeftSpeed * vehicle->hydLiftLookAheadTime * 10;
+    vehicle->hydLiftLookAheadDistanceRight = tool.farRightSpeed * vehicle->hydLiftLookAheadTime * 10;
 
-    if (vehicle.hydLiftLookAheadDistanceLeft > 200) vehicle.hydLiftLookAheadDistanceLeft = 200;
-    if (vehicle.hydLiftLookAheadDistanceRight > 200) vehicle.hydLiftLookAheadDistanceRight = 200;
+    if (vehicle->hydLiftLookAheadDistanceLeft > 200) vehicle->hydLiftLookAheadDistanceLeft = 200;
+    if (vehicle->hydLiftLookAheadDistanceRight > 200) vehicle->hydLiftLookAheadDistanceRight = 200;
 
     tool.lookAheadDistanceOnPixelsLeft = tool.farLeftSpeed * tool.lookAheadOnSetting * 10;
     tool.lookAheadDistanceOnPixelsRight = tool.farRightSpeed * tool.lookAheadOnSetting * 10;
@@ -103,8 +116,8 @@ void FormGPS::processSectionLookahead() {
     double rpToolHeight = 0;
 
     //pick the larger side
-    if (vehicle.hydLiftLookAheadDistanceLeft > vehicle.hydLiftLookAheadDistanceRight) rpToolHeight = vehicle.hydLiftLookAheadDistanceLeft;
-    else rpToolHeight = vehicle.hydLiftLookAheadDistanceRight;
+    if (vehicle->hydLiftLookAheadDistanceLeft > vehicle->hydLiftLookAheadDistanceRight) rpToolHeight = vehicle->hydLiftLookAheadDistanceLeft;
+    else rpToolHeight = vehicle->hydLiftLookAheadDistanceRight;
 
     if (tool.lookAheadDistanceOnPixelsLeft > tool.lookAheadDistanceOnPixelsRight) rpOnHeight = tool.lookAheadDistanceOnPixelsLeft;
     else rpOnHeight = tool.lookAheadDistanceOnPixelsRight;
@@ -135,7 +148,7 @@ void FormGPS::processSectionLookahead() {
     double mOn = 0, mOff = 0;
 
     //tram and hydraulics
-    if (tram.displayMode > 0 && tool.width > vehicle.trackWidth)
+    if (tram.displayMode > 0 && tool.width > vehicle->trackWidth)
     {
         tram.controlByte = 0;
         //1 pixels in is there a tram line?
@@ -156,12 +169,12 @@ void FormGPS::processSectionLookahead() {
     if (bnd.isHeadlandOn)
     {
         //calculate the slope
-        double m = (vehicle.hydLiftLookAheadDistanceRight - vehicle.hydLiftLookAheadDistanceLeft) / tool.rpWidth;
+        double m = (vehicle->hydLiftLookAheadDistanceRight - vehicle->hydLiftLookAheadDistanceLeft) / tool.rpWidth;
         int height = 1;
 
         for (int pos = 0; pos < tool.rpWidth; pos++)
         {
-            height = (int)(vehicle.hydLiftLookAheadDistanceLeft + (m * pos)) - 1;
+            height = (int)(vehicle->hydLiftLookAheadDistanceLeft + (m * pos)) - 1;
             for (int a = pos; a < height * tool.rpWidth; a += tool.rpWidth)
             {
                 if (grnPixels[a].green == 250)
@@ -178,10 +191,10 @@ void FormGPS::processSectionLookahead() {
         bnd.isToolInHeadland = bnd.isToolOuterPointsInHeadland && !isHeadlandClose;
 
         //set hydraulics based on tool in headland or not
-        bnd.SetHydPosition(autoBtnState, p_239, vehicle);
+        bnd.SetHydPosition(autoBtnState, p_239, *vehicle);
 
         //set hydraulics based on tool in headland or not
-        bnd.SetHydPosition(autoBtnState, p_239, vehicle);
+        bnd.SetHydPosition(autoBtnState, p_239, *vehicle);
 
     }
 
@@ -189,12 +202,12 @@ void FormGPS::processSectionLookahead() {
 
     int endHeight = 1, startHeight = 1;
 
-    if (bnd.isHeadlandOn && bnd.isSectionControlledByHeadland) bnd.WhereAreToolLookOnPoints(vehicle, tool);
+    if (bnd.isHeadlandOn && bnd.isSectionControlledByHeadland) bnd.WhereAreToolLookOnPoints(*vehicle, tool);
 
     for (int j = 0; j < tool.numOfSections; j++)
     {
         //Off or too slow or going backwards
-        if (tool.sectionButtonState.get(j) == btnStates::Off || vehicle.avgSpeed < vehicle.slowSpeedCutoff || tool.section[j].speedPixels < 0)
+        if (tool.sectionButtonState.get(j) == btnStates::Off || vehicle->avgSpeed < vehicle->slowSpeedCutoff || tool.section[j].speedPixels < 0)
         {
             tool.section[j].sectionOnRequest = false;
             tool.section[j].sectionOffRequest = true;
@@ -773,7 +786,7 @@ void FormGPS::tmrWatchdog_timeout()
         worldGrid.isRateTrigger = true;
 
         //Make sure it is off when it should
-        if ((!ct.isContourBtnOn && trk.idx == -1 && isBtnAutoSteerOn)
+        if ((!ct.isContourBtnOn && trk->idx == -1 && isBtnAutoSteerOn)
             ) onStopAutoSteer();
 
     } //end every 1/2 second
@@ -790,7 +803,7 @@ void FormGPS::tmrWatchdog_timeout()
 }
 
 QString FormGPS::speedKPH() {
-    double spd = vehicle.avgSpeed;
+    double spd = vehicle->avgSpeed;
 
     //convert to kph
     spd *= 0.1;
@@ -799,7 +812,7 @@ QString FormGPS::speedKPH() {
 }
 
 QString FormGPS::speedMPH() {
-    double spd = vehicle.avgSpeed;
+    double spd = vehicle->avgSpeed;
 
     //convert to mph
     spd *= 0.0621371;
@@ -843,7 +856,7 @@ void FormGPS::JobClose()
 
     //make sure hydraulic lift is off
     p_239.pgn[p_239.hydLift] = 0;
-    vehicle.isHydLiftOn = false; //this turns off the button also
+    vehicle->isHydLiftOn = false; //this turns off the button also
 
     //oglZoom.SendToBack();
 
@@ -931,11 +944,11 @@ void FormGPS::JobClose()
     //ABLine
     tram.tramList.clear();
 
-    trk.ResetCurveLine();
+    trk->ResetCurveLine();
 
     //tracks
-    trk.gArr.clear();
-    trk.idx = -1;
+    trk->gArr.clear();
+    trk->idx = -1;
 
     //clean up tram
     tram.displayMode = 0;
@@ -996,11 +1009,11 @@ void FormGPS::JobNew()
     autoBtnState = btnStates::Off;
     //btnSectionMasterAuto.Image = Properties.Resources.SectionMasterOff;
 
-    trk.ABLine.abHeading = 0.00;
+    trk->ABLine.abHeading = 0.00;
 
     camera.SetZoom();
     fileSaveCounter = 25;
-    trk.isAutoTrack = false;
+    trk->isAutoTrack = false;
     isJobStarted = true;
 }
 

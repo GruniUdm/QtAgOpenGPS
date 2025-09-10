@@ -285,7 +285,7 @@ public:
     //ABLine Instance
     //QScopedPointer<CABLine> ABLine;
 
-    CTrack trk;
+    CTrack* trk;        // Pointeur vers singleton
     CGuidance gyd;
 
     CTram tram;
@@ -295,7 +295,7 @@ public:
     CContour ct;
     CYouTurn yt;
 
-    CVehicle vehicle;
+    CVehicle* vehicle;  // Pointeur vers singleton
     CTool tool;
 
     //module communication object

@@ -14,8 +14,8 @@ void FormGPS::connect_classes()
 {
     simConnectSlots();
 
-    connect(&trk.curve,SIGNAL(stopAutoSteer()),this,SLOT(onStopAutoSteer()));
-    connect(&trk.curve,SIGNAL(TimedMessage(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
+    connect(&trk->curve,SIGNAL(stopAutoSteer()),this,SLOT(onStopAutoSteer()));
+    connect(&trk->curve,SIGNAL(TimedMessage(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
 
     connect(&ct,SIGNAL(TimedMessage(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
 
@@ -37,8 +37,8 @@ void FormGPS::connect_classes()
 
     //connect(settings, &AOGSettings::updateFromSettings, this, &FormGPS::loadSettings);
 
-    connect(&trk, SIGNAL(resetCreatedYouTurn()),&yt,SLOT(ResetCreatedYouTurn()));
-    connect(&trk, SIGNAL(saveTracks()),this,SLOT(FileSaveTracks()));
+    connect(trk, SIGNAL(resetCreatedYouTurn()),&yt,SLOT(ResetCreatedYouTurn()));
+    connect(trk, SIGNAL(saveTracks()),this,SLOT(FileSaveTracks()));
 }
 
 void FormGPS::onStopAutoSteer()

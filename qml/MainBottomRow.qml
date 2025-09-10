@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 //import Settings
 //import AOG
-import Interface
+// Interface import removed - TracksInterface now QML_SINGLETON
 import "components" as Comp
 
 RowLayout{
@@ -156,7 +156,7 @@ RowLayout{
         iconChecked: prefix + "/images/TrackOn.png"
         buttonText: qsTr("Track")
         //onClicked: trackButtons.visible = !trackButtons.visible
-        onClicked: {if (isOn == false && trk.rowCount() > 0) {
+        onClicked: {if (isOn == false && TracksInterface.count > 0) {
                         TracksInterface.select(0);
                         btnTrack.isChecked = false;
                         isOn = true;

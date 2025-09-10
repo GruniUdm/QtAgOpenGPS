@@ -278,7 +278,7 @@ Window{
         }
         function reset_all() {
             timedMessage.addMessage(2000, "Reset To Default", "Values Set to Inital Default");
-            //Settings.vehicle_maxSteerAngle = mf.vehicle.maxSteerAngle = 45; TODO
+            //Settings.vehicle_maxSteerAngle = mf.vehicle_maxSteerAngle = 45; TODO
             Settings.vehicle_maxSteerAngle = 45;
             Settings.as_countsPerDegree = 110;
 

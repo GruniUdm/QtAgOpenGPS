@@ -6,9 +6,9 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Effects
 import QtQuick.Dialogs
-import Interface
+// Interface import removed - now QML_SINGLETON
 //import AOG
-import AgIO as AgIOModule
+//import AgIO as AgIOModule
 
 
 import "interfaces" as Interfaces
@@ -43,6 +43,32 @@ Window {
     onVisibleChanged: if(Settings.display_isStartFullscreen){
                           mainWindow.showMaximized()
                       }
+
+    Component.onCompleted: {
+        // Debug factory function singletons
+        console.log("=== FACTORY FUNCTION DEBUG ===")
+        console.log("Settings available:", typeof Settings !== 'undefined')
+        console.log("TracksInterface available:", typeof TracksInterface !== 'undefined')
+        console.log("VehicleInterface available:", typeof VehicleInterface !== 'undefined')
+        
+        if (typeof Settings !== 'undefined') {
+            console.log("Settings.display_isStartFullscreen:", Settings.display_isStartFullscreen)
+        }
+        
+        if (typeof TracksInterface !== 'undefined') {
+            console.log("TracksInterface.idx:", TracksInterface.idx)
+            console.log("TracksInterface.count:", TracksInterface.count)
+            console.log("TracksInterface.model:", TracksInterface.model)
+            console.log("TracksInterface identity:", TracksInterface)
+        }
+        
+        if (typeof VehicleInterface !== 'undefined') {
+            console.log("VehicleInterface.isReverse:", VehicleInterface.isReverse)
+            console.log("VehicleInterface.vehicle_list length:", VehicleInterface.vehicle_list ? VehicleInterface.vehicle_list.length : "undefined")
+            console.log("VehicleInterface identity:", VehicleInterface)
+        }
+        console.log("=== END FACTORY FUNCTION DEBUG ===")
+    }
 
     signal save_everything()
 
@@ -1025,8 +1051,8 @@ Window {
     }
 
 
-    AgIOModule.AgIO {
-          id: mainWindowAgIO
-    }
+    // AgIOModule.AgIO {
+    //       id: mainWindowAgIO
+    // }
 }
 

@@ -100,6 +100,6 @@ void FormGPS::vehicle_update_list() {
         index++;
     }
 
-    this->vehicle.setProperty("vehicle_list", vehicleList);
+    this->vehicle->setProperty("vehicle_list", vehicleList);
 }
 

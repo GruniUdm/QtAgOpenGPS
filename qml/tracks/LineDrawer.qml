@@ -17,6 +17,15 @@ Popup{
     height: parent.height
     //color: "ghostwhite"
     closePolicy: Popup.NoAutoClose
+    
+    // Properties to hold various data
+    property var boundaryLines: []
+    property var headlandLine: []
+    property int sliceCount: 0
+    property QtObject headlandAB: QtObject {
+        property bool checked: false
+    }
+    
 	function show(){
 		lineDrawer.visible = true
     }
@@ -109,7 +118,7 @@ Popup{
 
                         PathPolyline {
                             id: ps
-                            path: shapePath.p
+                            path: shapePath.p && shapePath.p.length > 0 ? shapePath.p : []
                         }
 
 
@@ -146,7 +155,7 @@ Popup{
 
                     PathPolyline {
                         id: headlandShapePolyine
-                        path: headlandShapePath.p
+                        path: headlandShapePath.p && headlandShapePath.p.length > 0 ? headlandShapePath.p : []
                     }
                 }
             }
@@ -171,7 +180,7 @@ Popup{
 
                     PathPolyline {
                         id: sliceShapePolyLine
-                        path: sliceShapePath.p
+                        path: sliceShapePath.p && sliceShapePath.p.length > 0 ? sliceShapePath.p : []
                     }
                 }
             }

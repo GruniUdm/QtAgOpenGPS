@@ -8,7 +8,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtQml.Models
-import Interface
+// Interface import removed - now QML_SINGLETON
 //import AOG
 import "../components"
 import ".."

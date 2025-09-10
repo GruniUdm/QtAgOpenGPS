@@ -101,6 +101,6 @@ void FormGPS::loadSettings()
     pn.loadSettings();
     if(!isJobStarted)
         sim.loadSettings();
-    vehicle.loadSettings();
+    vehicle->loadSettings();
     yt.loadSettings();
 }

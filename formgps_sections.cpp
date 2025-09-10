@@ -74,7 +74,7 @@ void FormGPS::BuildMachineByte()
 
     }
 
-    p_239.pgn[p_239.speed] = (char)(vehicle.avgSpeed * 10);
+    p_239.pgn[p_239.speed] = (char)(vehicle->avgSpeed * 10);
     p_239.pgn[p_239.tram] = (char)tram.controlByte;
 }
 

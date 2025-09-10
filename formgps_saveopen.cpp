@@ -237,7 +237,7 @@ void FormGPS::FileSaveTracks()
 
     QString filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "TrackLines.txt");
 
-    int cnt = trk.gArr.count();
+    int cnt = trk->gArr.count();
 
     QFile curveFile(filename);
     if (!curveFile.open(QIODevice::WriteOnly))
@@ -256,42 +256,42 @@ void FormGPS::FileSaveTracks()
         for (int i = 0; i < cnt; i++)
         {
             //write out the name
-            writer << trk.gArr[i].name << Qt::endl;
+            writer << trk->gArr[i].name << Qt::endl;
 
             //write out the heading
-            writer << trk.gArr[i].heading << Qt::endl;
+            writer << trk->gArr[i].heading << Qt::endl;
 
             //A and B
-            writer << qSetRealNumberPrecision(3) << trk.gArr[i].ptA.easting << ","
-                   << qSetRealNumberPrecision(3) << trk.gArr[i].ptA.northing << ","
+            writer << qSetRealNumberPrecision(3) << trk->gArr[i].ptA.easting << ","
+                   << qSetRealNumberPrecision(3) << trk->gArr[i].ptA.northing << ","
                    << Qt::endl;
 
-            writer << qSetRealNumberPrecision(3) << trk.gArr[i].ptB.easting << ","
-                   << qSetRealNumberPrecision(3) << trk.gArr[i].ptB.northing << ","
+            writer << qSetRealNumberPrecision(3) << trk->gArr[i].ptB.easting << ","
+                   << qSetRealNumberPrecision(3) << trk->gArr[i].ptB.northing << ","
                    << Qt::endl;
 
             //write out the nudgedistance
-            writer << trk.gArr[i].nudgeDistance << Qt::endl;
+            writer << trk->gArr[i].nudgeDistance << Qt::endl;
 
             //write out the mode
-            writer << trk.gArr[i].mode << Qt::endl;
+            writer << trk->gArr[i].mode << Qt::endl;
 
             //visible?
-            if (trk.gArr[i].isVisible)
+            if (trk->gArr[i].isVisible)
                 writer << "True" << Qt::endl;
             else
                 writer << "False" << Qt::endl;
 
             //write out the points of ref line
-            int cnt2 = trk.gArr[i].curvePts.count();
+            int cnt2 = trk->gArr[i].curvePts.count();
 
             writer << cnt2 << Qt::endl;
-            if (trk.gArr[i].curvePts.count() > 0)
+            if (trk->gArr[i].curvePts.count() > 0)
             {
                 for (int j = 0; j < cnt2; j++)
-                    writer << qSetRealNumberPrecision(3) << trk.gArr[i].curvePts[j].easting << ","
-                           << qSetRealNumberPrecision(3) << trk.gArr[i].curvePts[j].northing << ","
-                           << qSetRealNumberPrecision(3) << trk.gArr[i].curvePts[j].heading
+                    writer << qSetRealNumberPrecision(3) << trk->gArr[i].curvePts[j].easting << ","
+                           << qSetRealNumberPrecision(3) << trk->gArr[i].curvePts[j].northing << ","
+                           << qSetRealNumberPrecision(3) << trk->gArr[i].curvePts[j].heading
                            << Qt::endl;
             }
         }
@@ -304,7 +304,7 @@ void FormGPS::FileSaveTracks()
 
 void FormGPS::FileLoadTracks()
 {
-    trk.gArr.clear();
+    trk->gArr.clear();
 
     //current field directory should already exist
 #ifdef __ANDROID__
@@ -332,7 +332,7 @@ void FormGPS::FileLoadTracks()
         FileLoadABLines();
         FileLoadCurveLines();
         FileSaveTracks();
-        trk.reloadModel();
+        trk->reloadModel();
         return;
     }
 
@@ -352,54 +352,54 @@ void FormGPS::FileLoadTracks()
         line = reader.readLine();
         if(line.isNull()) break; //no more to read
 
-        trk.gArr.append(CTrk());
-        trk.idx = trk.gArr.count() - 1;
+        trk->gArr.append(CTrk());
+        trk->idx = trk->gArr.count() - 1;
 
         //read header $CurveLine
-        trk.gArr[trk.idx].name = line;
+        trk->gArr[trk->idx].name = line;
 
-        trk.gArr[trk.idx].heading = reader.readLine().toDouble();
+        trk->gArr[trk->idx].heading = reader.readLine().toDouble();
 
         line = reader.readLine();
         QStringList words = line.split(",");
         if (words.count() < 2) {
             TimedMessageBox(1000,tr("Corrupt File!"), tr("Corrupt TracksList.txt. Not all tracks were loaded."));
-            trk.gArr.pop_back();
-            trk.idx = trk.gArr.count() - 1;
+            trk->gArr.pop_back();
+            trk->idx = trk->gArr.count() - 1;
             return;
         }
 
-        trk.gArr[trk.idx].ptA = Vec2(words[0].toDouble(),words[1].toDouble());
+        trk->gArr[trk->idx].ptA = Vec2(words[0].toDouble(),words[1].toDouble());
 
         line = reader.readLine();
         words = line.split(",");
         if (words.count() < 2) {
             TimedMessageBox(1000,tr("Corrupt File!"), tr("Corrupt TracksList.txt. Not all tracks were loaded."));
-            trk.gArr.pop_back();
-            trk.idx = trk.gArr.count() - 1;
+            trk->gArr.pop_back();
+            trk->idx = trk->gArr.count() - 1;
             return;
         }
 
-        trk.gArr[trk.idx].ptB = Vec2(words[0].toDouble(),words[1].toDouble());
+        trk->gArr[trk->idx].ptB = Vec2(words[0].toDouble(),words[1].toDouble());
 
         line = reader.readLine();
-        trk.gArr[trk.idx].nudgeDistance = line.toDouble();
+        trk->gArr[trk->idx].nudgeDistance = line.toDouble();
 
         line = reader.readLine();
-        trk.gArr[trk.idx].mode = line.toInt();
+        trk->gArr[trk->idx].mode = line.toInt();
 
         line = reader.readLine();
         if (line == "True")
-            trk.gArr[trk.idx].isVisible = true;
+            trk->gArr[trk->idx].isVisible = true;
         else
-            trk.gArr[trk.idx].isVisible = false;
+            trk->gArr[trk->idx].isVisible = false;
 
         line = reader.readLine();
         int numPoints = line.toInt();
 
         if (numPoints > 3)
         {
-            trk.gArr[trk.idx].curvePts.clear();
+            trk->gArr[trk->idx].curvePts.clear();
 
             for (int i = 0; i < numPoints; i++)
             {
@@ -407,21 +407,21 @@ void FormGPS::FileLoadTracks()
                 words = line.split(',');
                 if (words.count() < 3) {
                     TimedMessageBox(1000,tr("Corrupt File!"), tr("Corrupt TracksList.txt. Not all tracks were loaded."));
-                    trk.gArr.pop_back();
-                    trk.idx = trk.gArr.count() - 1;
+                    trk->gArr.pop_back();
+                    trk->idx = trk->gArr.count() - 1;
                     return;
                 }
 
-                trk.gArr[trk.idx].curvePts.append(Vec3(words[0].toDouble(),
+                trk->gArr[trk->idx].curvePts.append(Vec3(words[0].toDouble(),
                                                        words[1].toDouble(),
                                                        words[2].toDouble()));
             }
         }
     }
-    trk.idx = -1;
+    trk->idx = -1;
     lock.unlock();
 
-    trk.reloadModel();
+    trk->reloadModel();
 
 }
 
@@ -445,7 +445,7 @@ void FormGPS::FileSaveCurveLines()
 
     QString filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "CurveLines.txt");
 
-    int cnt = trk.gArr.count();
+    int cnt = trk->gArr.count();
 
     QFile curveFile(filename);
     if (!curveFile.open(QIODevice::WriteOnly))
@@ -462,24 +462,24 @@ void FormGPS::FileSaveCurveLines()
 
     for (int i = 0; i < cnt; i++)
     {
-        if (trk.gArr[i].mode != TrackMode::Curve) continue;
+        if (trk->gArr[i].mode != TrackMode::Curve) continue;
 
         //write out the Name
-        writer << trk.gArr[i].name << Qt::endl;
+        writer << trk->gArr[i].name << Qt::endl;
 
         //write out the heading
-        writer << trk.gArr[i].heading << Qt::endl;
+        writer << trk->gArr[i].heading << Qt::endl;
 
         //write out the points of ref line
-        int cnt2 = trk.gArr[i].curvePts.count();
+        int cnt2 = trk->gArr[i].curvePts.count();
 
         writer << cnt2 << Qt::endl;
-        if (trk.gArr[i].curvePts.count() > 0)
+        if (trk->gArr[i].curvePts.count() > 0)
         {
             for (int j = 0; j < cnt2; j++)
-                writer << qSetRealNumberPrecision(3) << trk.gArr[i].curvePts[j].easting << ","
-                       << qSetRealNumberPrecision(3) << trk.gArr[i].curvePts[j].northing << ","
-                       << qSetRealNumberPrecision(5) << trk.gArr[i].curvePts[j].heading << Qt::endl;
+                writer << qSetRealNumberPrecision(3) << trk->gArr[i].curvePts[j].easting << ","
+                       << qSetRealNumberPrecision(3) << trk->gArr[i].curvePts[j].northing << ","
+                       << qSetRealNumberPrecision(5) << trk->gArr[i].curvePts[j].heading << Qt::endl;
         }
     }
 
@@ -531,36 +531,36 @@ void FormGPS::FileLoadCurveLines()
         line = reader.readLine();
         if(line.isNull()) break; //no more to read
 
-        trk.gArr.append(CTrk());
+        trk->gArr.append(CTrk());
 
         //read header $CurveLine
         QString nam = reader.readLine();
 
         if (nam.length() > 4 && nam.mid(0,5) == "Bound")
         {
-            trk.gArr[trk.gArr.count() - 1].name = nam;
-            trk.gArr[trk.gArr.count() - 1].mode = TrackMode::bndCurve;
+            trk->gArr[trk->gArr.count() - 1].name = nam;
+            trk->gArr[trk->gArr.count() - 1].mode = TrackMode::bndCurve;
         }
         else
         {
             if (nam.length() > 2 && nam.mid(0,2) != "Cu")
-                trk.gArr[trk.gArr.count() - 1].name = "Cu " + nam;
+                trk->gArr[trk->gArr.count() - 1].name = "Cu " + nam;
             else
-                trk.gArr[trk.gArr.count() - 1].name = nam;
+                trk->gArr[trk->gArr.count() - 1].name = nam;
 
-            trk.gArr[trk.gArr.count() - 1].mode = TrackMode::Curve;
+            trk->gArr[trk->gArr.count() - 1].mode = TrackMode::Curve;
         }
 
         // get the average heading
         line = reader.readLine();
-        trk.gArr[trk.gArr.count() - 1].heading = line.toDouble();
+        trk->gArr[trk->gArr.count() - 1].heading = line.toDouble();
 
         line = reader.readLine();
         int numPoints = line.toInt();
 
         if (numPoints > 1)
         {
-            trk.gArr[trk.gArr.count() - 1].curvePts.clear();
+            trk->gArr[trk->gArr.count() - 1].curvePts.clear();
 
             for (int i = 0; i < numPoints; i++)
             {
@@ -568,27 +568,27 @@ void FormGPS::FileLoadCurveLines()
                 QStringList words = line.split(',');
                 if (words.length() < 3) {
                     qDebug() << "Corrupt CurvesList.txt.";
-                    trk.gArr.pop_back();
-                    trk.idx = -1;
+                    trk->gArr.pop_back();
+                    trk->idx = -1;
                     return;
                 }
                 Vec3 vecPt(words[0].toDouble(),
                            words[1].toDouble(),
                            words[2].toDouble());
-                trk.gArr[trk.gArr.count() - 1].curvePts.append(vecPt);
+                trk->gArr[trk->gArr.count() - 1].curvePts.append(vecPt);
             }
-            trk.gArr[trk.gArr.count() - 1].ptB.easting = trk.gArr[trk.gArr.count() - 1].curvePts[0].easting;
-            trk.gArr[trk.gArr.count() - 1].ptB.northing = trk.gArr[trk.gArr.count() - 1].curvePts[0].northing;
+            trk->gArr[trk->gArr.count() - 1].ptB.easting = trk->gArr[trk->gArr.count() - 1].curvePts[0].easting;
+            trk->gArr[trk->gArr.count() - 1].ptB.northing = trk->gArr[trk->gArr.count() - 1].curvePts[0].northing;
 
-            trk.gArr[trk.gArr.count() - 1].ptB.easting = trk.gArr[trk.gArr.count() - 1].curvePts[trk.gArr[trk.gArr.count() - 1].curvePts.count() - 1].easting;
-            trk.gArr[trk.gArr.count() - 1].ptB.northing = trk.gArr[trk.gArr.count() - 1].curvePts[trk.gArr[trk.gArr.count() - 1].curvePts.count() - 1].northing;
-            trk.gArr[trk.gArr.count() - 1].isVisible = true;
+            trk->gArr[trk->gArr.count() - 1].ptB.easting = trk->gArr[trk->gArr.count() - 1].curvePts[trk->gArr[trk->gArr.count() - 1].curvePts.count() - 1].easting;
+            trk->gArr[trk->gArr.count() - 1].ptB.northing = trk->gArr[trk->gArr.count() - 1].curvePts[trk->gArr[trk->gArr.count() - 1].curvePts.count() - 1].northing;
+            trk->gArr[trk->gArr.count() - 1].isVisible = true;
         }
         else
         {
-            if (trk.gArr.count() > 0)
+            if (trk->gArr.count() > 0)
             {
-                trk.gArr.pop_back();
+                trk->gArr.pop_back();
             }
         }
     }
@@ -627,11 +627,11 @@ void FormGPS::FileSaveABLines()
     writer.setLocale(QLocale::C);
     writer.setRealNumberNotation(QTextStream::FixedNotation);
 
-    int cnt = trk.gArr.count();
+    int cnt = trk->gArr.count();
 
     if (cnt > 0)
     {
-        for (CTrk &item : trk.gArr)
+        for (CTrk &item : trk->gArr)
         {
             if (item.mode == TrackMode::AB)
             {
@@ -697,21 +697,21 @@ void FormGPS::FileLoadABLines()
             return;
         }
 
-        trk.gArr.append(CTrk());
+        trk->gArr.append(CTrk());
 
         if (words[0].length() > 2 && words[0].mid(0,2) != "AB")
-            trk.gArr[i].name = "AB " + words[0];
+            trk->gArr[i].name = "AB " + words[0];
         else
-            trk.gArr[i].name = words[0];
+            trk->gArr[i].name = words[0];
 
-        trk.gArr[i].mode = TrackMode::AB;
+        trk->gArr[i].mode = TrackMode::AB;
 
-        trk.gArr[i].heading = glm::toRadians(words[1].toDouble());
-        trk.gArr[i].ptA.easting = words[2].toDouble();
-        trk.gArr[i].ptB.northing = words[3].toDouble();
-        trk.gArr[i].ptB.easting = trk.gArr[i].ptA.easting + (sin(trk.gArr[i].heading) * 100);
-        trk.gArr[i].ptB.northing = trk.gArr[i].ptA.northing + (cos(trk.gArr[i].heading) * 100);
-        trk.gArr[i].isVisible = true;
+        trk->gArr[i].heading = glm::toRadians(words[1].toDouble());
+        trk->gArr[i].ptA.easting = words[2].toDouble();
+        trk->gArr[i].ptB.northing = words[3].toDouble();
+        trk->gArr[i].ptB.easting = trk->gArr[i].ptA.easting + (sin(trk->gArr[i].heading) * 100);
+        trk->gArr[i].ptB.northing = trk->gArr[i].ptA.northing + (cos(trk->gArr[i].heading) * 100);
+        trk->gArr[i].isVisible = true;
     }
 
     lock.unlock();
