@@ -8,7 +8,7 @@ import QtQuick.Layouts
 //import Settings
 import Interface
 //import QtQuick.Extras 1.4
-import AOG
+//import AOG
 
 
 import ".."

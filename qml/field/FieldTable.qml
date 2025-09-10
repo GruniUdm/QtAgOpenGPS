@@ -3,7 +3,7 @@
 //
 // Loaded by FieldOpen.qml. Contains the list of fields
 import QtQuick
-import AOG
+//import AOG
 
 
 pragma ComponentBehavior: Bound

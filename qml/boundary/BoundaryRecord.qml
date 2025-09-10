@@ -7,7 +7,7 @@ import QtQuick.Layouts
 import Qt.labs.folderlistmodel
 import QtQuick.Controls.Fusion
 import QtQuick.Controls.Material
-import AOG
+//import AOG
 
 import ".."
 import "../components"

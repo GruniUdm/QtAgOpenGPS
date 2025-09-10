@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 //import Settings
-import AOG
+//import AOG
 import Interface
 import "components" as Comp
 import "wizards" as Wiz

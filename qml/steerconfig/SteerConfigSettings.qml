@@ -7,7 +7,7 @@ import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Dialogs
 //import Settings
-import AOG
+//import AOG
 
 
 import ".."

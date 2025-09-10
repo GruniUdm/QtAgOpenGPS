@@ -3,10 +3,8 @@
 //
 //
 import QtQuick
-import AOG
 
 pragma Singleton
-
 
 //a collection of functions to do unit and coordinate conversions
 

@@ -1,5 +1,5 @@
 import QtQuick
-import AOG
+//import AOG
 //import Settings
 import "components" as Comp
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //import Settings
 import QtQuick
-import AOG
+//import AOG
 
 //This is a spinbox for displaying dimensions that are either
 //cm or inches

@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Controls
-import AOG
+//import AOG
 
 
 Item{

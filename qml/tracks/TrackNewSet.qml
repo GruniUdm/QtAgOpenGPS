@@ -4,7 +4,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtQml.Models
-import AOG
+//import AOG
 import Interface
 
 import "../components"

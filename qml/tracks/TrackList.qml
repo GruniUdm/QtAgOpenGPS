@@ -9,7 +9,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtQml.Models
 import Interface
-import AOG
+//import AOG
 import "../components"
 import ".."
 

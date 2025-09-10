@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import Interface
-import AOG
+//import AOG
 
 RadioDelegate {
     id: trackDelegate

@@ -15,8 +15,8 @@ import "components" as Comp
 Item {
 
     id: mainWindowTram
-    width: parent.width
-    height: parent.height
+   // width: parent.width
+   // height: parent.height
 
 
     Popup {
@@ -24,8 +24,8 @@ Item {
         //anchors.bottom: parent.bottom
         //anchors.right: parent.right
         //anchors.top: topLine.bottom
-        height: 600  * theme.scaleHeight
-        width: 300  * theme.scaleWidth
+        height: 600 // * theme.scaleHeight
+        width: 300 // * theme.scaleWidth
         modal: false
         visible: mainWindowTram.visible
         anchors.centerIn: parent

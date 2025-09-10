@@ -5,7 +5,7 @@ import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Shapes
 //import Settings
-import AOG
+//import AOG
 import "components" as Comp
 
 

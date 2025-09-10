@@ -4,7 +4,7 @@
 // Set line name
 import QtQuick
 import QtQuick.Controls.Fusion
-import AOG
+//import AOG
 import "components" as Comp
 
 Rectangle{

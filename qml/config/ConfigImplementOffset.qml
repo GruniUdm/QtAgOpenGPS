@@ -9,7 +9,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import Qt.labs.folderlistmodel
 //import Settings
-import AOG
+//import AOG
 
 
 import ".."

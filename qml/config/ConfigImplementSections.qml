@@ -6,7 +6,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 //import Settings
-import AOG
+//import AOG
 
 
 import ".."

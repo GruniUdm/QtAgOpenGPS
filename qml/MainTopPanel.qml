@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import AOG
-import AgIO as AgIOModule
+
 import Interface
 import "components" as Comp
 
