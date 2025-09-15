@@ -73,7 +73,7 @@ void CABLine::BuildCurrentABLineList(Vec3 pivot,
 
     distanceFromRefLine -= (0.5 * widthMinusOverlap);
 
-    //isLateralTriggered = false;
+    isLateralTriggered = false;
 
     isHeadingSameWay = M_PI - fabs(fabs(pivot.heading - abHeading) - M_PI) < glm::PIBy2;
 

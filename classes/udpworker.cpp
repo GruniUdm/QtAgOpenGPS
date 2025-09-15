@@ -391,13 +391,34 @@ void UDPWorker::processUdpData(const QByteArray& data)
     if (data.isEmpty()) {
         return;
     }
-    
-    // Check for PGN data format (0x80 header for AgOpenGPS modules)
-    if (data.size() >= 3 && static_cast<uint8_t>(data[0]) == 0x80) {
-        
+
+    // Check for PGN data format (0x80 0x81 header for AgOpenGPS modules)
+    if (data.size() >= 5 && static_cast<uint8_t>(data[0]) == 0x80 && static_cast<uint8_t>(data[1]) == 0x81) {
+
+        // Enhanced checksum validation from pull request improvements
+        int Length = std::max(static_cast<int>(data[4]) + 5, 5);
+        if (data.size() >= Length) {
+            // Calculate checksum
+            char CK_A = 0;
+            for (int j = 2; j < Length; j++) {
+                CK_A += data[j];
+            }
+
+            // Verify checksum
+            if (data[Length] != CK_A) {
+                qDebug() << "❌ UDP packet checksum validation failed - discarding packet";
+                return;
+            }
+
+            qDebug() << "✅ UDP packet checksum validated - processing PGN data";
+        } else {
+            qDebug() << "⚠️ UDP packet too short for stated length - discarding";
+            return;
+        }
+
         // Enhanced PGN processing (Phase 4.5.3)
         handlePGNProtocol(data);
-        
+
         // Legacy compatibility: 0x81 specific
         if (static_cast<uint8_t>(data[1]) == 0x81) {
             processAgOpenGpsData(data);

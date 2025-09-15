@@ -5,6 +5,7 @@
 #include "formgps.h"
 #include "qmlutil.h"
 #include "classes/settingsmanager.h"
+#include <QUrl>
 
 #include <iostream>
 #include <fstream>
@@ -354,9 +355,20 @@ void FormGPS::field_new_from_KML(QString field_name, QString file_name) {
     lock.lockForWrite();
     FileSaveEverythingBeforeClosingField();
     currentFieldDirectory = field_name.trimmed();
-    settings->setValue(SETTINGS_f_currentDir, currentFieldDirectory);
+    SettingsManager::instance()->setValue(SETTINGS_f_currentDir, currentFieldDirectory);
     JobNew();
-    file_name.remove("file://");
+    // Convert QML file URL to local path using QUrl for robustness
+    QUrl fileUrl(file_name);
+    QString localPath = fileUrl.toLocalFile();
+    if (localPath.isEmpty()) {
+        // Fallback for manual parsing if QUrl fails
+        file_name.remove("file:///");
+        if (file_name.startsWith("/") && file_name.length() > 3 && file_name[2] == ':') {
+            file_name.remove(0, 1);
+        }
+        localPath = file_name;
+    }
+    file_name = localPath;
     FindLatLon(file_name.toStdString());
 
     pn.latStart = latK;
@@ -367,9 +379,9 @@ void FormGPS::field_new_from_KML(QString field_name, QString file_name) {
             pn.longitude = pn.lonStart;
 
             sim.latitude = pn.latStart;
-            settings->setValue(SETTINGS_gps_simLatitude, pn.latStart);
+            SettingsManager::instance()->setValue(SETTINGS_gps_simLatitude, (double)pn.latStart);
             sim.longitude = pn.lonStart;
-            settings->setValue(SETTINGS_gps_simLongitude, pn.lonStart);
+            SettingsManager::instance()->setValue(SETTINGS_gps_simLongitude, (double)pn.lonStart);
         }
     pn.SetLocalMetersPerDegree();
 
@@ -380,8 +392,11 @@ void FormGPS::field_new_from_KML(QString field_name, QString file_name) {
     FileCreateContour();
     FileCreateElevation();
     FileSaveFlags();
+    FileSaveABLines();     // Create empty AB lines files
+    FileSaveCurveLines();  // Create empty curve lines files
     FileCreateBoundary();
     FileSaveTram();
+    FileSaveHeadland();    // Create empty Headland.txt to prevent load errors
 
     LoadKMLBoundary(file_name.toStdString());
     lock.unlock();
