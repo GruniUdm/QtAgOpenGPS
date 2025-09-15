@@ -1,6 +1,7 @@
 #ifndef CTRACK_H
 #define CTRACK_H
 
+#include <QObject>
 #include <QVector>
 #include <QAbstractListModel>
 #include <QtQml/qqmlregistration.h>
@@ -55,34 +56,73 @@ public:
 class CTrack : public QAbstractListModel
 {
     Q_OBJECT
-    QML_NAMED_ELEMENT(TracksInterface)
-    QML_SINGLETON
+    // QML registration handled manually in main.cpp
 
-private:
-    // Vrai singleton pattern
-    static CTrack* s_instance;
-    
-    // Constructeur privé pour singleton
-    explicit CTrack(QObject* parent = nullptr);
-    
 public:
-    // Instance singleton (comme Settings)
+    // C++ singleton access (strict singleton pattern)
     static CTrack* instance() {
-        if (!s_instance) {
-            s_instance = new CTrack(nullptr);
-            qDebug() << "CTrack singleton created:" << s_instance;
-        }
+        static CTrack* s_instance = new CTrack(nullptr);
         return s_instance;
     }
-    
-    // Factory function pour Qt 6
-    static CTrack* create(QQmlEngine* engine, QJSEngine* jsEngine) {
-        qDebug() << "🔥🔥🔥 CTrack::create() CALLED! 🔥🔥🔥";
-        Q_UNUSED(engine)
-        Q_UNUSED(jsEngine)
-        
-        return instance(); // Retourne le vrai singleton
+
+    // ===== QML PROPERTIES =====
+    Q_PROPERTY(int idx MEMBER idx NOTIFY idxChanged)
+    Q_PROPERTY(QObject* model READ getModel CONSTANT)
+    Q_PROPERTY(int newRefSide READ getNewRefSide WRITE setNewRefSide NOTIFY newRefSideChanged)
+    Q_PROPERTY(bool isAutoTrack MEMBER isAutoTrack NOTIFY isAutoTrackChanged)
+    Q_PROPERTY(bool isAutoSnapToPivot MEMBER isAutoSnapToPivot NOTIFY isAutoSnapToPivotChanged)
+    Q_PROPERTY(bool isAutoSnapped MEMBER isAutoSnapped NOTIFY isAutoSnappedChanged)
+    Q_PROPERTY(int howManyPathsAway READ getHowManyPathsAway NOTIFY howManyPathsAwayChanged)
+    Q_PROPERTY(int mode READ getMode NOTIFY modeChanged)
+    Q_PROPERTY(int newMode READ getNewMode NOTIFY newModeChanged)
+    Q_PROPERTY(QString newName READ getNewName WRITE setNewName NOTIFY newNameChanged)
+    Q_PROPERTY(double newHeading READ getNewHeading WRITE setNewHeading NOTIFY newHeadingChanged)
+    Q_PROPERTY(int count READ rowCount NOTIFY countChanged())
+    Q_PROPERTY(QString currentName READ getCurrentName NOTIFY currentNameChanged)
+
+    // Membres données principales (publics pour accès externe via singleton)
+    QVector<CTrk> gArr;
+    CABCurve curve;
+    CABLine ABLine;
+    CTrk newTrack;
+    int idx, autoTrack3SecTimer;
+
+    // Membres et méthodes publiques nécessaires pour accès externe
+    bool isLine, isAutoTrack = false, isAutoSnapToPivot = false, isAutoSnapped;
+    QVector<Vec2> designRefLine;
+
+    // CTrack interface (publiques pour accès via singleton)
+    int FindClosestRefTrack(Vec3 pivot, const CVehicle &vehicle);
+    void SwitchToClosestRefTrack(Vec3 pivot, const CVehicle &vehicle);
+    void BuildCurrentLine(Vec3 pivot,
+                          double secondsSinceStart, bool isBtnAutoSteerOn,
+                          CYouTurn &yt,
+                          CVehicle &vehicle,
+                          const CBoundary &bnd,
+                          const CAHRS &ahrs,
+                          CGuidance &gyd,
+                          CNMEA &pn);
+    void ResetCurveLine();
+    void AddPathPoint(Vec3 point);
+    void DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera, const CVehicle &vehicle);
+    void DrawTrack(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
+                   bool isFontOn,
+                   bool isRateMapOn,
+                   CYouTurn &yt, const CCamera &camera,
+                   const CGuidance &gyd);
+    void DrawTrackGoalPoint(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
+    int getHowManyPathsAway();
+    int getMode() { if (idx >=0) return gArr[idx].mode; else return 0; }
+
+    void reloadModel() {
+        //force QML to reload the model to reflect changes
+        //that may have been made in C++ code.
+        beginResetModel();
+        endResetModel();
+        emit modelChanged(); //not sure if this is necessary
     }
+
+
     enum RoleNames {
         index = Qt::UserRole,
         NameRole,
@@ -94,80 +134,16 @@ public:
         endPtB,
         nudgeDistance
     };
-
-    QVector<CTrk> gArr;
-    CABCurve curve;
-    CABLine ABLine;
-    CTrk newTrack;
     int newRefSide = 0;
-
-    Q_PROPERTY(int idx MEMBER idx NOTIFY idxChanged)
-    //put a pointer to ourselves as a model.  This class is both
-    //a list model, and also a bunch of properties
-    Q_PROPERTY(QObject* model READ getModel CONSTANT)
-    Q_PROPERTY(int newRefSide READ getNewRefSide WRITE setNewRefSide NOTIFY newRefSideChanged)
-
-    int idx, autoTrack3SecTimer;
-
-    Q_PROPERTY(bool isAutoTrack MEMBER isAutoTrack NOTIFY isAutoTrackChanged)
-    Q_PROPERTY(bool isAutoSnapToPivot MEMBER isAutoSnapToPivot NOTIFY isAutoSnapToPivotChanged)
-    Q_PROPERTY(bool isAutoSnapped MEMBER isAutoSnapped NOTIFY isAutoSnappedChanged)
-    Q_PROPERTY(int howManyPathsAway READ getHowManyPathsAway NOTIFY howManyPathsAwayChanged)
-    Q_PROPERTY(int mode READ getMode NOTIFY modeChanged)
-
-    bool isLine, isAutoTrack = false, isAutoSnapToPivot = false, isAutoSnapped;
-
-    //creating new track
-    Q_PROPERTY (int newMode READ getNewMode NOTIFY newModeChanged)
-    Q_PROPERTY (QString newName READ getNewName WRITE setNewName NOTIFY newNameChanged)
-    Q_PROPERTY (double newHeading READ getNewHeading WRITE setNewHeading NOTIFY newHeadingChanged)
-
-    Q_PROPERTY (int count READ rowCount NOTIFY countChanged())
-    Q_PROPERTY (QString currentName READ getCurrentName NOTIFY currentNameChanged)
-
-    QVector<Vec2> designRefLine;
 
     ~CTrack();
 
-    // CTrack interface
-    int FindClosestRefTrack(Vec3 pivot, const CVehicle &vehicle);
-    void SwitchToClosestRefTrack(Vec3 pivot, const CVehicle &vehicle);
-
     void NudgeRefABLine(CTrk &track, double dist);
     void NudgeRefCurve(CTrk &track, double distAway);
-
-    void DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera, const CVehicle &vehicle);
-    void DrawTrack(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
-                   bool isFontOn,
-                   bool isRateMapOn,
-                   CYouTurn &yt, const CCamera &camera,
-                   const CGuidance &gyd);
-    void DrawTrackGoalPoint(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
-
-    void BuildCurrentLine(Vec3 pivot,
-                          double secondsSinceStart, bool isBtnAutoSteerOn,
-                          CYouTurn &yt,
-                          CVehicle &vehicle,
-                          const CBoundary &bnd,
-                          const CAHRS &ahrs,
-                          CGuidance &gyd,
-                          CNMEA &pn);
-
-    void ResetCurveLine();
-    void AddPathPoint(Vec3 point); //add point while building new curve or AB Line
-
     void NudgeTrack(double dist);
     void NudgeDistanceReset();
     void SnapToPivot();
     void NudgeRefTrack(double dist);
-
-    void reloadModel() {
-        //force QML to reload the model to reflect changes
-        //that may have been made in C++ code.
-        beginResetModel();
-        endResetModel();
-        emit modelChanged(); //not sure if this is necessary
-    }
 
     //getters and setters for properties
     QString getNewName(void);
@@ -184,8 +160,6 @@ public:
 
     QString getCurrentName(void);
 
-    int getHowManyPathsAway();
-    int getMode() { if (idx >=0) return gArr[idx].mode; else return 0; }
     void setIdx(int new_idx);
     SETTER(bool, isAutoTrack, setIsAutoTrack)
     SETTER(bool, isAutoSnapToPivot, setIsAutoSnapToPivot)
@@ -255,6 +229,10 @@ public slots:
 private:
     // Used by QML model interface
     QHash<int, QByteArray> m_roleNames;
+
+private:
+    // Constructeur privé pour pattern singleton strict
+    explicit CTrack(QObject* parent = nullptr);
 };
 
 #endif // CTRACK_H

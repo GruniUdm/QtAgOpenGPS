@@ -46,7 +46,7 @@ RowLayout{
         onCurrentIndexChanged: {
             if (cbYouSkipNumber.find(currentText) === -1){
                 model.append({text: editText})
-                curentIndex = cbYouSkipNumber.find(editText)
+                currentIndex = cbYouSkipNumber.find(editText)
             }
             Settings.youturn_skipWidth = cbYouSkipNumber.currentIndex+1
         }

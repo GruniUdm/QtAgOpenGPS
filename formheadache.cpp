@@ -13,8 +13,28 @@
 #include <QMatrix4x4>
 #include <QOpenGLFunctions>
 #include "glutils.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 #include <QTime>
+
+// ===== CRITICAL: Safe QML access helper function =====
+// Crash fix: secure access to headacheRenderer dimensions with default values
+struct HeadacheRendererViewport {
+    int width = 800;   // Default safe width
+    int height = 600;  // Default safe height
+};
+
+HeadacheRendererViewport getHeadacheRendererViewport(QObject* headache_designer_instance) {
+    HeadacheRendererViewport viewport;  // Initialize with safe defaults
+    QObject *renderer = qmlItem(headache_designer_instance, "headacheRenderer");
+    
+    if (renderer) {
+        viewport.width = renderer->property("width").toReal();
+        viewport.height = renderer->property("height").toReal();
+    } else {
+        qWarning() << "⚠️ HeadacheRenderer not found - using default dimensions 800x600";
+    }
+    return viewport;
+}
 
 //here for now.  Put in another module for use in other places.
 
@@ -76,8 +96,10 @@ QVector3D FormHeadache::mouseClickToField(int mouseX, int mouseY) {
     QMatrix4x4 modelview;
     QMatrix4x4 projection;
 
-    int width = qmlItem(headache_designer_instance, "headacheRenderer")->property("width").toReal();
-    int height = qmlItem(headache_designer_instance, "headacheRenderer")->property("height").toReal();
+    // CRITICAL: Use secure helper function instead of direct QML access
+    HeadacheRendererViewport viewport = getHeadacheRendererViewport(headache_designer_instance);
+    int width = viewport.width;
+    int height = viewport.height;
 
     projection.setToIdentity();
 
@@ -161,8 +183,10 @@ void FormHeadache::update_lines() {
 
     setup_matrices(modelview, projection);
 
-    int width = qmlItem(headache_designer_instance, "headacheRenderer")->property("width").toReal();
-    int height = qmlItem(headache_designer_instance, "headacheRenderer")->property("height").toReal();
+    // CRITICAL: Use secure helper function instead of direct QML access
+    HeadacheRendererViewport viewport = getHeadacheRendererViewport(headache_designer_instance);
+    int width = viewport.width;
+    int height = viewport.height;
 
     for (int j = 0; j < bnd->bndList.count(); j++)
     {
@@ -205,8 +229,10 @@ void FormHeadache::update_ab() {
 
     setup_matrices(modelview, projection);
 
-    int width = qmlItem(headache_designer_instance, "headacheRenderer")->property("width").toReal();
-    int height = qmlItem(headache_designer_instance, "headacheRenderer")->property("height").toReal();
+    // CRITICAL: Use secure helper function instead of direct QML access
+    HeadacheRendererViewport viewport = getHeadacheRendererViewport(headache_designer_instance);
+    int width = viewport.width;
+    int height = viewport.height;
 
     //draw A and B points
     if (start != 99999) {
@@ -235,8 +261,10 @@ void FormHeadache::update_headland() {
 
     setup_matrices(modelview, projection);
 
-    int width = qmlItem(headache_designer_instance, "headacheRenderer")->property("width").toReal();
-    int height = qmlItem(headache_designer_instance, "headacheRenderer")->property("height").toReal();
+    // CRITICAL: Use secure helper function instead of direct QML access
+    HeadacheRendererViewport viewport = getHeadacheRendererViewport(headache_designer_instance);
+    int width = viewport.width;
+    int height = viewport.height;
 
      //draw headland line if exists
     if (bnd->bndList.count() > 0 && bnd->bndList[0].hdLine.count()) {
@@ -269,8 +297,10 @@ void FormHeadache::update_headlines()
 
     setup_matrices(modelview, projection);
 
-    int width = qmlItem(headache_designer_instance, "headacheRenderer")->property("width").toReal();
-    int height = qmlItem(headache_designer_instance, "headacheRenderer")->property("height").toReal();
+    // CRITICAL: Use secure helper function instead of direct QML access
+    HeadacheRendererViewport viewport = getHeadacheRendererViewport(headache_designer_instance);
+    int width = viewport.width;
+    int height = viewport.height;
 
     lines.clear();
     showa = false;
@@ -749,7 +779,7 @@ void FormHeadache::btnExit_Click() {
 void FormHeadache::isSectionControlled(bool wellIsIt) {
     bnd->isSectionControlledByHeadland = wellIsIt;
     qDebug() << "isSectionControlledByHeadland" << wellIsIt;
-    settings->setValue(SETTINGS_headland_isSectionControlled, wellIsIt);
+    SettingsManager::instance()->setValue(SETTINGS_headland_isSectionControlled, wellIsIt);
 }
 
 void FormHeadache::btnBndLoop_Click() {
@@ -1090,7 +1120,7 @@ void FormHeadache::btnHeadlandOff_Click()
     update_headland();
     emit saveHeadland();
     bnd->isHeadlandOn = false;
-    vehicle->isHydLiftOn = false;
+    CVehicle::instance()->isHydLiftOn = false;
     update_ab();
     update_headland();
 }

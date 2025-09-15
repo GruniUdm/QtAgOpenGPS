@@ -12,6 +12,8 @@ import QtQuick.Controls.Fusion
    a javascript function here that C++ can call to let QML objects know
    something in AgIOSettings changed.
 
+   MIGRATION NOTE: Phase 4.1 - Modified to use AgIOService direct properties
+   for real-time data instead of static values.
 */
 
 
@@ -20,40 +22,42 @@ import QtQuick.Controls.Fusion
 Item {
     id: agioInterfaceType
 
-	//These are the status booleans for the various connections.
-	property bool ethernetConnected: false
-	property bool ntripConnected: false
-	property bool aogConnected: false
-	property bool steerConnected: false
-	property bool gpsConnected: false
-	property bool imuConnected: false
-	property bool machineConnected: false
-    property bool blockageConnected: false
-    property bool bluetoothConnected: false
+	// Connection status - direct AgIOService properties for real-time updates
+	property bool ethernetConnected: AgIOService.ethernetConnected
+	property bool ntripConnected: AgIOService.ntripConnected
+	property bool aogConnected: false // TODO: Add to AgIOService if needed
+	property bool steerConnected: false // TODO: Map to AgIOService.moduleConnected
+	property bool gpsConnected: AgIOService.gpsConnected
+	property bool imuConnected: false // TODO: Add IMU connection status to AgIOService
+	property bool machineConnected: false // TODO: Add machine connection status to AgIOService
+    property bool blockageConnected: false // TODO: Add blockage connection status to AgIOService
+    property bool bluetoothConnected: AgIOService.bluetoothConnected
 
-    property int ntripStatus: 0
-    property int tripBytes: 0
-    property int ntripCounter: 0
-    property int rawTripCount: 0
+    // NTRIP status - direct AgIOService properties for real-time monitoring
+    property int ntripStatus: AgIOService.ntripStatus
+    property string ntripStatusText: AgIOService.ntripStatusText
+    property int tripBytes: 0 // TODO: Add totalNTRIPBytes to AgIOService
+    property int ntripCounter: 0 // TODO: Add NTRIP message counter to AgIOService
+    property int rawTripCount: 0 // TODO: Add raw NTRIP count to AgIOService
 
 
-	//NMEA variables
-	property double latitude: 0
-	property double longitude: 0
-	property double altitude: 0
-	property double speed: 0
-    property double gpsHeading: 0
-    property double dualHeading: 0
-    property double imuHeading: 0
-    property double imuRoll: 0
-    property double imuPitch: 0
-    property double age: 0
-    property int hdop: 0
-	property int quality: 0
-	property int sats: 0
-	property double yawrate: 0
-    property double gpsHz: 0
-    property double nowHz:0
+	// GPS/NMEA data - direct AgIOService properties for real-time updates
+	property double latitude: AgIOService.latitude
+	property double longitude: AgIOService.longitude
+	property double altitude: 0 // TODO: Add altitude to AgIOService if available
+	property double speed: AgIOService.speed
+    property double gpsHeading: AgIOService.heading
+    property double dualHeading: 0 // TODO: Add dual heading to AgIOService if needed
+    property double imuHeading: AgIOService.imuYaw
+    property double imuRoll: AgIOService.imuRoll
+    property double imuPitch: AgIOService.imuPitch
+    property double age: AgIOService.age
+    property int hdop: 0 // TODO: Add HDOP to AgIOService if available
+	property int quality: AgIOService.gpsQuality
+	property int sats: AgIOService.satellites
+	property double yawrate: 0 // TODO: Add yaw rate to AgIOService if needed
+    property double gpsHz: 0 // TODO: Add GPS frequency to AgIOService if needed
+    property double nowHz: 0 // TODO: Add current Hz to AgIOService if needed
 
 	property string gga: ""
 	property string vtg: ""

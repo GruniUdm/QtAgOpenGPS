@@ -1,5 +1,5 @@
 #include "cpgn.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 
 CPGN_FC::CPGN_FC(): pgn(QByteArray( "\x80\x81\x7f\xfc\x08\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 14))
 {
@@ -8,14 +8,14 @@ CPGN_FC::CPGN_FC(): pgn(QByteArray( "\x80\x81\x7f\xfc\x08\x00\x00\x00\x00\x00\x0
 
 void CPGN_FC::loadSettings()
 {
-    pgn[gainProportional] = settings->value(SETTINGS_as_Kp).value<int>();
-    pgn[highPWM] = settings->value(SETTINGS_as_highSteerPWM).value<int>();
-    pgn[lowPWM] = settings->value(SETTINGS_as_lowSteerPWM).value<int>();
-    pgn[minPWM] = settings->value(SETTINGS_as_minSteerPWM).value<int>();
-    pgn[countsPerDegree] = settings->value(SETTINGS_as_countsPerDegree).value<int>();
-    pgn[wasOffsetHi] = (char)(settings->value(SETTINGS_as_wasOffset).value<int>() >> 8);;
-    pgn[wasOffsetLo] = (char)settings->value(SETTINGS_as_wasOffset).value<int>();
-    pgn[ackerman] = settings->value(SETTINGS_as_ackerman).value<int>();
+    pgn[gainProportional] = SettingsManager::instance()->value(SETTINGS_as_Kp).value<int>();
+    pgn[highPWM] = SettingsManager::instance()->value(SETTINGS_as_highSteerPWM).value<int>();
+    pgn[lowPWM] = SettingsManager::instance()->value(SETTINGS_as_lowSteerPWM).value<int>();
+    pgn[minPWM] = SettingsManager::instance()->value(SETTINGS_as_minSteerPWM).value<int>();
+    pgn[countsPerDegree] = SettingsManager::instance()->value(SETTINGS_as_countsPerDegree).value<int>();
+    pgn[wasOffsetHi] = (char)(SettingsManager::instance()->value(SETTINGS_as_wasOffset).value<int>() >> 8);;
+    pgn[wasOffsetLo] = (char)SettingsManager::instance()->value(SETTINGS_as_wasOffset).value<int>();
+    pgn[ackerman] = SettingsManager::instance()->value(SETTINGS_as_ackerman).value<int>();
 }
 
 CPGN_EE::CPGN_EE() : pgn(QByteArray("\x80\x81\x7f\xee\x08\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 14))
@@ -25,15 +25,15 @@ CPGN_EE::CPGN_EE() : pgn(QByteArray("\x80\x81\x7f\xee\x08\x00\x00\x00\x00\x00\x0
 
 void CPGN_EE::loadSettings()
 {
-    pgn[raiseTime] = settings->value(SETTINGS_ardMac_hydRaiseTime).value<int>();
-    pgn[lowerTime] = settings->value(SETTINGS_ardMac_hydLowerTime).value<int>();
-    pgn[enableHyd] = settings->value(SETTINGS_ardMac_isHydEnabled).value<int>();
-    pgn[set0] = settings->value(SETTINGS_ardMac_setting0).value<int>();
+    pgn[raiseTime] = SettingsManager::instance()->value(SETTINGS_ardMac_hydRaiseTime).value<int>();
+    pgn[lowerTime] = SettingsManager::instance()->value(SETTINGS_ardMac_hydLowerTime).value<int>();
+    pgn[enableHyd] = SettingsManager::instance()->value(SETTINGS_ardMac_isHydEnabled).value<int>();
+    pgn[set0] = SettingsManager::instance()->value(SETTINGS_ardMac_setting0).value<int>();
 
-    pgn[user1] = settings->value(SETTINGS_ardMac_user1).value<int>();
-    pgn[user2] = settings->value(SETTINGS_ardMac_user2).value<int>();
-    pgn[user3] = settings->value(SETTINGS_ardMac_user3).value<int>();
-    pgn[user4] = settings->value(SETTINGS_ardMac_user4).value<int>();
+    pgn[user1] = SettingsManager::instance()->value(SETTINGS_ardMac_user1).value<int>();
+    pgn[user2] = SettingsManager::instance()->value(SETTINGS_ardMac_user2).value<int>();
+    pgn[user3] = SettingsManager::instance()->value(SETTINGS_ardMac_user3).value<int>();
+    pgn[user4] = SettingsManager::instance()->value(SETTINGS_ardMac_user4).value<int>();
 }
 
 void CPGN_EE::MakeCRC()
@@ -53,7 +53,7 @@ CPGN_EC::CPGN_EC() : pgn(QByteArray("\x80\x81\x7f\xec\x18\x00\x00\x00\x00\x00\x0
 
 void CPGN_EC::loadSettings()
 {
-    QVector<int> words = toVector<int>(settings->value(SETTINGS_relay_pinConfig));
+    QVector<int> words = toVector<int>(SettingsManager::instance()->value(SETTINGS_relay_pinConfig));
 
     pgn[pin0] = words[0];
     pgn[pin1] = words[1];

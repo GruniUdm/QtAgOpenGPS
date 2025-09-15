@@ -4,7 +4,7 @@
 // GUI to backend field interface
 #include "formgps.h"
 #include "qmlutil.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 
 void FormGPS::field_update_list() {
 
@@ -15,7 +15,7 @@ void FormGPS::field_update_list() {
                             + "/" + QCoreApplication::applicationName() + "/Fields";
 #endif
 
-    QObject *fieldInterface = qmlItem(mainWindow, "fieldInterface");
+    // fieldInterface is now a class member, initialized in formgps_ui.cpp
     QList<QVariant> fieldList;
     QMap<QString, QVariant> field;
     int index = 0;
@@ -30,7 +30,9 @@ void FormGPS::field_update_list() {
         }
     }
 
-    fieldInterface->setProperty("field_list", fieldList);
+    if (fieldInterface) {
+        fieldInterface->setProperty("field_list", fieldList);
+    }
 }
 
 void FormGPS::field_close() {
@@ -45,16 +47,24 @@ void FormGPS::field_open(QString field_name) {
         TimedMessageBox(8000, tr("Saved field does not exist."), QString(tr("Cannot find the requested saved field.")) + " " +
                                                                 field_name);
 
-        settings->setValue(SETTINGS_f_currentDir, "Default");
+        SettingsManager::instance()->setValue(SETTINGS_f_currentDir, "Default");
     }
 }
 
 void FormGPS::field_new(QString field_name) {
     //assume the GUI will vet the name a little bit
     lock.lockForWrite();
-    FileSaveEverythingBeforeClosingField();
+
+    // CRITICAL DEADLOCK FIX: Save current field AFTER releasing lock (same as field_close fix)
+    // FileSaveEverythingBeforeClosingField() needs to acquire mutex but lock is already held
+    lock.unlock();
+    qDebug() << "Lock released, calling FileSaveEverythingBeforeClosingField(false)";
+    FileSaveEverythingBeforeClosingField(false);  // Don't save vehicle to avoid async deadlock
+    qDebug() << "FileSaveEverythingBeforeClosingField() completed, no async ops - re-acquiring lock";
+    lock.lockForWrite();
+
     currentFieldDirectory = field_name.trimmed();
-    settings->setValue(SETTINGS_f_currentDir, currentFieldDirectory);
+    SettingsManager::instance()->setValue(SETTINGS_f_currentDir, currentFieldDirectory);
     JobNew();
 
     pn.latStart = pn.latitude;
@@ -73,16 +83,30 @@ void FormGPS::field_new(QString field_name) {
 }
 
 void FormGPS::field_new_from(QString existing, QString field_name, int flags) {
-    qDebug() << "field_new_from";
-    lock.lockForWrite();
-    FileSaveEverythingBeforeClosingField();
+    qDebug() << "field_new_from - REFACTORED: save first, then create with single lock";
+
+    // STEP 1: Save current field WITHOUT any lock (cleaner approach)
+    qDebug() << "Saving current field before creating new one";
+    FileSaveEverythingBeforeClosingField(false);  // Don't save vehicle to avoid async operations
+    qDebug() << "Current field saved, proceeding to create new field";
+
+    // STEP 2: Load existing field BEFORE acquiring lock (FileOpenField has its own locks)
+    qDebug() << "Before FileOpenField(" << existing << ")";
     if (! FileOpenField(existing,flags)) { //load whatever is requested from existing field
         TimedMessageBox(8000, tr("Existing field cannot be found"), QString(tr("Cannot find the existing saved field.")) + " " +
                                                                 existing);
     }
+    qDebug() << "After FileOpenField, acquiring lock for field creation operations";
+
+    // STEP 3: Create new field with lock
+    lock.lockForWrite();
+    qDebug() << "Lock acquired, changing to new name:" << field_name;
+
     //change to new name
     currentFieldDirectory = field_name;
-    settings->setValue(SETTINGS_f_currentDir, currentFieldDirectory);
+    qDebug() << "Before SettingsManager setValue";
+    SettingsManager::instance()->setValue(SETTINGS_f_currentDir, currentFieldDirectory);
+    qDebug() << "After SettingsManager setValue";
 
     FileCreateField();
     FileCreateSections();
@@ -106,6 +130,7 @@ void FormGPS::field_new_from(QString existing, QString field_name, int flags) {
     }
     FileSaveSections();
     lock.unlock();
+    qDebug() << "field_new_from completed successfully";
 }
 
 void FormGPS::field_delete(QString field_name) {

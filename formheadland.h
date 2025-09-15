@@ -72,7 +72,6 @@ public:
     CBoundary *bnd;
     CHeadLine *hdl;
     CTool *tool;
-    CVehicle *vehicle = NULL;
     QObject *headland_designer_instance;
 
     explicit FormHeadland(QObject *parent = nullptr);

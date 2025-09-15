@@ -4,7 +4,7 @@
 // GUI to backend vehicle interface
 #include "formgps.h"
 #include "qmlutil.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 
 QString caseInsensitiveFilename(QString directory, QString filename);
 
@@ -27,7 +27,25 @@ void FormGPS::vehicle_saveas(QString vehicle_name) {
 
     QString filename = directoryName + "/" + caseInsensitiveFilename(directoryName, vehicle_name);
 
-    settings->saveJson(filename);
+    // CRITICAL: Save current vehicle AND tool settings to SettingsManager BEFORE saving JSON
+    qDebug() << "Before CVehicle::saveSettings()";
+    CVehicle::instance()->saveSettings();
+    qDebug() << "CVehicle::saveSettings() completed";
+
+    qDebug() << "Before tool.saveSettings()";
+    this->tool.saveSettings();
+    qDebug() << "tool.saveSettings() completed";
+
+    // ASYNC SOLUTION: Defer saveJson to avoid mutex deadlock (same as field_close fix)
+    qDebug() << "Scheduling async saveJson:" << filename;
+    QTimer::singleShot(50, this, [this, filename]() {
+        qDebug() << "Executing async saveJson:" << filename;
+        SettingsManager::instance()->saveJson(filename);
+        qDebug() << "Async saveJson completed:" << filename;
+        // Update vehicle list after save is complete for real-time UI refresh
+        this->vehicle_update_list();
+        qDebug() << "Vehicle list updated after save";
+    });
 
 }
 
@@ -53,7 +71,7 @@ void FormGPS::vehicle_load(QString vehicle_name) {
 
     QString filename = directoryName + "/" + caseInsensitiveFilename(directoryName, vehicle_name);
 
-    settings->loadJson(filename);
+    SettingsManager::instance()->loadJson(filename);
 }
 
 void FormGPS::vehicle_delete(QString vehicle_name) {
@@ -100,6 +118,7 @@ void FormGPS::vehicle_update_list() {
         index++;
     }
 
-    this->vehicle->setProperty("vehicle_list", vehicleList);
+    CVehicle::instance()->setProperty("vehicle_list", vehicleList);
+    emit CVehicle::instance()->vehicle_listChanged();
 }
 

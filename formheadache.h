@@ -67,7 +67,6 @@ public:
     CBoundary *bnd;
     CHeadLine *hdl;
     CTool *tool;
-    CVehicle *vehicle;
     QObject *headache_designer_instance;
 
     explicit FormHeadache(QObject *parent = nullptr);

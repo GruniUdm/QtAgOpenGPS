@@ -104,7 +104,7 @@ Item {
     }
 
     function isMetric() {
-        return (AgIOSettings.setMenu_isMetric === true || AgIOSettings.setMenu_isMetric === "true")
+        return (AgIOsetMenu_isMetric === true || AgIOsetMenu_isMetric === "true")
     }
 
     function speed_unit() {
@@ -376,7 +376,7 @@ Item {
     //     repeat: true
     //     running: true
     //     onTriggered: {
-    //         if(!agio.aogConnected){
+    //         if(!AgIOService.aogConnected){
     //             closeAgIO.open()
     //             repeat = false
     //         }

@@ -97,6 +97,7 @@ public:
     void sectionCalcMulti();
     void sectionSetPositions();
     void loadSettings();
+    void saveSettings();
 
     CTool();
     //this class needs modelview and projection as separate matrices because some

@@ -56,7 +56,7 @@ class AOGRendererInSG : public QQuickFramebufferObject
 public:
     AOGRenderer *theRenderer;
 
-    AOGRendererInSG();
+    AOGRendererInSG(QQuickItem* parent = nullptr);
 
     AOGRenderer *createRenderer() const;
 };

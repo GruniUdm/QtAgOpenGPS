@@ -21,7 +21,7 @@ bool CRecordedPath::StartDrivingRecordedPath(CVehicle &vehicle,
     if (recList.count() < 5) return false;
 
     //save a copy of where we started.
-    homePos = vehicle.pivotAxlePos;
+    homePos = CVehicle::instance()->pivotAxlePos;
 
     // Try to find the nearest point of the recordet path in relation to the current position:
     double distance = glm::DOUBLE_MAX;
@@ -73,7 +73,7 @@ bool CRecordedPath::StartDrivingRecordedPath(CVehicle &vehicle,
     Vec3 goal = Vec3(recList[idx].easting, recList[idx].northing, recList[idx].heading);
 
     //get the dubins for approach to recorded path
-    GetDubinsPath(vehicle, goal, yt);
+    GetDubinsPath(*CVehicle::instance(), goal, yt);
     shuttleListCount = shuttleDubinsList.count();
 
     //has a valid dubins path been created?
@@ -99,10 +99,10 @@ void CRecordedPath::UpdatePosition(CVehicle &vehicle, const CYouTurn &yt, bool i
         emit setSimStepDistance(shuttleDubinsList[C].speed / 50);
         //mf.sim.stepDistance = shuttleDubinsList[C].speed / 50;
 
-        pivotAxlePosRP = vehicle.steerAxlePos;
+        pivotAxlePosRP = CVehicle::instance()->steerAxlePos;
 
-        //StanleyDubinsPath(vehicle, pn, shuttleListCount);
-        PurePursuitDubins(vehicle, yt, isBtnAutoSteerOn, shuttleListCount);
+        //StanleyDubinsPath(*CVehicle::instance(), pn, shuttleListCount);
+        PurePursuitDubins(*CVehicle::instance(), yt, isBtnAutoSteerOn, shuttleListCount);
 
         //check if close to recorded path
         int cnt = shuttleDubinsList.size();
@@ -125,10 +125,10 @@ void CRecordedPath::UpdatePosition(CVehicle &vehicle, const CYouTurn &yt, bool i
 
     if (isFollowingRecPath)
     {
-        pivotAxlePosRP = vehicle.steerAxlePos;
+        pivotAxlePosRP = CVehicle::instance()->steerAxlePos;
 
-        //StanleyRecPath(vehicle, pn, recListCount);
-        PurePursuitRecPath(vehicle, recListCount);
+        //StanleyRecPath(*CVehicle::instance(), pn, recListCount);
+        PurePursuitRecPath(*CVehicle::instance(), recListCount);
 
         //if end of the line then stop
         if (!isEndOfTheRecLine)
@@ -165,9 +165,9 @@ void CRecordedPath::UpdatePosition(CVehicle &vehicle, const CYouTurn &yt, bool i
 
         emit setSimStepDistance(shuttleDubinsList[C].speed / 35);
         //mf.sim.stepDistance = shuttleDubinsList[C].speed / 35;
-        pivotAxlePosRP = vehicle.steerAxlePos;
+        pivotAxlePosRP = CVehicle::instance()->steerAxlePos;
 
-        PurePursuitDubins(vehicle, yt, isBtnAutoSteerOn, shuttleListCount);
+        PurePursuitDubins(*CVehicle::instance(), yt, isBtnAutoSteerOn, shuttleListCount);
     }
 }
 
@@ -196,7 +196,7 @@ void CRecordedPath::GetDubinsPath(CVehicle &vehicle, Vec3 goal, const CYouTurn &
     CDubins dubPath;
 
     // current psition
-    pivotAxlePosRP = vehicle.pivotAxlePos;
+    pivotAxlePosRP = CVehicle::instance()->pivotAxlePos;
 
     //bump it forward
     Vec3 pt2(pivotAxlePosRP.easting + (sin(pivotAxlePosRP.heading) * 3),
@@ -212,7 +212,7 @@ void CRecordedPath::GetDubinsPath(CVehicle &vehicle, Vec3 goal, const CYouTurn &
     //if Dubins returns 0 elements, there is an unavoidable blockage in the way.
     if (shortestDubinsList.size() > 0)
     {
-        shortestDubinsList.insert(0, vehicle.pivotAxlePos);
+        shortestDubinsList.insert(0, CVehicle::instance()->pivotAxlePos);
 
         //transfer point list to recPath class point style
         for (int i = 0; i < shortestDubinsList.size(); i++)
@@ -274,7 +274,7 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
                     / sqrt((dz * dz) + (dx * dx));
 
     //integral slider is set to 0
-    if (vehicle.purePursuitIntegralGain != 0)
+    if (CVehicle::instance()->purePursuitIntegralGain != 0)
     {
         pivotDistanceError = distanceFromCurrentLinePivot * 0.2 + pivotDistanceError * 0.8;
 
@@ -295,20 +295,20 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
 
         if (isFollowingRecPath
             && fabs(pivotDerivative) < (0.1)
-            && vehicle.avgSpeed > 2.5)
+            && CVehicle::instance()->avgSpeed > 2.5)
         //&& fabs(pivotDistanceError) < 0.2)
 
         {
             //if over the line heading wrong way, rapidly decrease integral
             if ((inty < 0 && distanceFromCurrentLinePivot < 0) || (inty > 0 && distanceFromCurrentLinePivot > 0))
             {
-                inty += pivotDistanceError * vehicle.purePursuitIntegralGain * -0.04;
+                inty += pivotDistanceError * CVehicle::instance()->purePursuitIntegralGain * -0.04;
             }
             else
             {
                 if (fabs(distanceFromCurrentLinePivot) > 0.02)
                 {
-                    inty += pivotDistanceError * vehicle.purePursuitIntegralGain * -0.02;
+                    inty += pivotDistanceError * CVehicle::instance()->purePursuitIntegralGain * -0.02;
                     if (inty > 0.2) inty = 0.2;
                     else if (inty < -0.2) inty = -0.2;
                 }
@@ -318,7 +318,7 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
     }
     else inty = 0;
 
-    if (vehicle.isReverse) inty = 0;
+    if (CVehicle::instance()->isReverse) inty = 0;
 
     // ** Pure pursuit ** - calc point on ABLine closest to current position
     double U = (((pivotAxlePosRP.easting - recList[A].easting) * dx)
@@ -329,9 +329,9 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
     rNorthRP = recList[A].northing + (U * dz);
 
     //update base on autosteer settings and distance from line
-    double goalPointDistance = vehicle.UpdateGoalPointDistance();
+    double goalPointDistance = CVehicle::instance()->UpdateGoalPointDistance();
 
-    bool ReverseHeading = !vehicle.isReverse;
+    bool ReverseHeading = !CVehicle::instance()->isReverse;
 
     int count = ReverseHeading ? 1 : -1;
     CRecPathPt start(rEastRP, rNorthRP, 0, 0, false);
@@ -360,22 +360,22 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
     double goalPointDistanceSquared = glm::DistanceSquared(goalPointRP.northing, goalPointRP.easting, pivotAxlePosRP.northing, pivotAxlePosRP.easting);
 
     //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
-    double localHeading = glm::twoPI - vehicle.fixHeading + inty;
+    double localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
 
     ppRadiusRP = goalPointDistanceSquared / (2 * (((goalPointRP.easting - pivotAxlePosRP.easting) * cos(localHeading)) + ((goalPointRP.northing - pivotAxlePosRP.northing) * sin(localHeading))));
 
     steerAngleRP = glm::toDegrees(atan(2 * (((goalPointRP.easting - pivotAxlePosRP.easting) * cos(localHeading))
-                                                + ((goalPointRP.northing - pivotAxlePosRP.northing) * sin(localHeading))) * vehicle.wheelbase / goalPointDistanceSquared));
+                                                + ((goalPointRP.northing - pivotAxlePosRP.northing) * sin(localHeading))) * CVehicle::instance()->wheelbase / goalPointDistanceSquared));
 
-    if (steerAngleRP < -vehicle.maxSteerAngle) steerAngleRP = -vehicle.maxSteerAngle;
-    if (steerAngleRP > vehicle.maxSteerAngle) steerAngleRP = vehicle.maxSteerAngle;
+    if (steerAngleRP < -CVehicle::instance()->maxSteerAngle) steerAngleRP = -CVehicle::instance()->maxSteerAngle;
+    if (steerAngleRP > CVehicle::instance()->maxSteerAngle) steerAngleRP = CVehicle::instance()->maxSteerAngle;
 
     //used for smooth mode
-    vehicle.modeActualXTE = (distanceFromCurrentLinePivot);
+    CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
 
     //Convert to centimeters
-    vehicle.guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
-    vehicle.guidanceLineSteerAngle = (short)(steerAngleRP * 100);
+    CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+    CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleRP * 100);
 }
 
 void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, bool isBtnAutoSteerOn, int ptCount)
@@ -421,7 +421,7 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
                                    / sqrt((dz * dz) + (dx * dx));
 
     //integral slider is set to 0
-    if (vehicle.purePursuitIntegralGain != 0)
+    if (CVehicle::instance()->purePursuitIntegralGain != 0)
     {
         pivotDistanceError = distanceFromCurrentLinePivot * 0.2 + pivotDistanceError * 0.8;
 
@@ -442,20 +442,20 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
 
         if (isBtnAutoSteerOn
             && fabs(pivotDerivative) < (0.1)
-            && vehicle.avgSpeed > 2.5
+            && CVehicle::instance()->avgSpeed > 2.5
             && !yt.isYouTurnTriggered)
 
         {
             //if over the line heading wrong way, rapidly decrease integral
             if ((inty < 0 && distanceFromCurrentLinePivot < 0) || (inty > 0 && distanceFromCurrentLinePivot > 0))
             {
-                inty += pivotDistanceError * vehicle.purePursuitIntegralGain * -0.04;
+                inty += pivotDistanceError * CVehicle::instance()->purePursuitIntegralGain * -0.04;
             }
             else
             {
                 if (fabs(distanceFromCurrentLinePivot) > 0.02)
                 {
-                    inty += pivotDistanceError * vehicle.purePursuitIntegralGain * -0.02;
+                    inty += pivotDistanceError * CVehicle::instance()->purePursuitIntegralGain * -0.02;
                     if (inty > 0.2) inty = 0.2;
                     else if (inty < -0.2) inty = -0.2;
                 }
@@ -465,7 +465,7 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
     }
     else inty = 0;
 
-    if (vehicle.isReverse) inty = 0;
+    if (CVehicle::instance()->isReverse) inty = 0;
 
     // ** Pure pursuit ** - calc point on ABLine closest to current position
     double U = (((pivotAxlePosRP.easting - shuttleDubinsList[A].easting) * dx)
@@ -476,9 +476,9 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
     rNorthRP = shuttleDubinsList[A].northing + (U * dz);
 
     //update base on autosteer settings and distance from line
-    double goalPointDistance = vehicle.UpdateGoalPointDistance();
+    double goalPointDistance = CVehicle::instance()->UpdateGoalPointDistance();
 
-    bool ReverseHeading = !vehicle.isReverse;
+    bool ReverseHeading = !CVehicle::instance()->isReverse;
 
     int count = ReverseHeading ? 1 : -1;
     CRecPathPt start(rEastRP, rNorthRP, 0, 0, false);
@@ -507,17 +507,17 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
     double goalPointDistanceSquared = glm::DistanceSquared(goalPointRP.northing, goalPointRP.easting, pivotAxlePosRP.northing, pivotAxlePosRP.easting);
 
     //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
-    //double localHeading = glm::twoPI - vehicle.fixHeading;
+    //double localHeading = glm::twoPI - CVehicle::instance()->fixHeading;
 
-    double localHeading = glm::twoPI - vehicle.fixHeading + inty;
+    double localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
 
     ppRadiusRP = goalPointDistanceSquared / (2 * (((goalPointRP.easting - pivotAxlePosRP.easting) * cos(localHeading)) + ((goalPointRP.northing - pivotAxlePosRP.northing) * sin(localHeading))));
 
     steerAngleRP = glm::toDegrees(atan(2 * (((goalPointRP.easting - pivotAxlePosRP.easting) * cos(localHeading))
-                                   + ((goalPointRP.northing - pivotAxlePosRP.northing) * sin(localHeading))) * vehicle.wheelbase / goalPointDistanceSquared));
+                                   + ((goalPointRP.northing - pivotAxlePosRP.northing) * sin(localHeading))) * CVehicle::instance()->wheelbase / goalPointDistanceSquared));
 
-    if (steerAngleRP < -vehicle.maxSteerAngle) steerAngleRP = -vehicle.maxSteerAngle;
-    if (steerAngleRP > vehicle.maxSteerAngle) steerAngleRP = vehicle.maxSteerAngle;
+    if (steerAngleRP < -CVehicle::instance()->maxSteerAngle) steerAngleRP = -CVehicle::instance()->maxSteerAngle;
+    if (steerAngleRP > CVehicle::instance()->maxSteerAngle) steerAngleRP = CVehicle::instance()->maxSteerAngle;
 
     if (ppRadiusRP < -500) ppRadiusRP = -500;
     if (ppRadiusRP > 500) ppRadiusRP = 500;
@@ -526,19 +526,19 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
     radiusPointRP.northing = pivotAxlePosRP.northing + (ppRadiusRP * sin(localHeading));
 
     //angular velocity in rads/sec  = 2PI * m/sec * radians/meters
-    // double angVel = glm::twoPI * 0.277777 * vehicle.pn.speed * (tan(glm::toRadians(steerAngleRP))) / vehicle.vehicle.wheelbase;
+    // double angVel = glm::twoPI * 0.277777 * CVehicle::instance()->pn.speed * (tan(glm::toRadians(steerAngleRP))) / CVehicle::instance()->CVehicle::instance()->wheelbase;
 
     //clamp the steering angle to not exceed safe angular velocity
-    //if (fabs(angVel) > mf.vehicle.maxAngularVelocity)
+    //if (fabs(angVel) > mf.CVehicle::instance()->maxAngularVelocity)
     //{
     //    steerAngleRP = glm::toDegrees(steerAngleRP > 0 ?
-    //            (atan((mf.vehicle.wheelbase * mf.vehicle.maxAngularVelocity) / (glm::twoPI * mf.avgSpeed * 0.277777)))
-    //        : (atan((mf.vehicle.wheelbase * -mf.vehicle.maxAngularVelocity) / (glm::twoPI * mf.avgSpeed * 0.277777))));
+    //            (atan((mf.CVehicle::instance()->wheelbase * mf.CVehicle::instance()->maxAngularVelocity) / (glm::twoPI * mf.avgSpeed * 0.277777)))
+    //        : (atan((mf.CVehicle::instance()->wheelbase * -mf.CVehicle::instance()->maxAngularVelocity) / (glm::twoPI * mf.avgSpeed * 0.277777))));
     //}
 
     //Convert to centimeters
-    vehicle.guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
-    vehicle.guidanceLineSteerAngle = (short)(steerAngleRP * 100);
+    CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+    CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleRP * 100);
 
 }
 

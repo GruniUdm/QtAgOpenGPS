@@ -1,9 +1,10 @@
 // Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
-#include "settings.h"
+// SettingsManager setupKeys() implementation - COPIED EXACTLY from newsettings_addkeys.cpp
+#include "classes/settingsmanager.h"
 
-void Settings::setupKeys() {
+void SettingsManager::setupKeys() {
 
     addKey("ab/lineLength", 1600, QMetaType(QMetaType::Double));
     addKey("ardMac/hydLowerTime", 4, QMetaType(QMetaType::Int));
@@ -309,4 +310,3 @@ void Settings::setupKeys() {
     addKey("test/testDoubles", toVariant(QVector<double>{1.2, 1.3, 1.4}), QMetaType(METATYPE_QVECTOR_DOUBLE));
     addKey("test/testColorRgbF", QColor::fromRgbF(1.0,0.5,0.5,0.2), QMetaType(QMetaType::QColor));
 }
-

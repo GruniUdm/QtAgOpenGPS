@@ -494,6 +494,9 @@ void FormLoop::ParseGGA()
         longitudeSend = longitude;
 
         isNMEAToSend = true;
+        
+        // Phase 5 Migration: Forward GPS data to AgIOService
+        emit gpsDataForAgIOService(latitudeSend, longitudeSend, headingTrueDual, speedData);
     }
 }
 void FormLoop::ParseVTG()

@@ -97,7 +97,7 @@ Drawer{
                     AgIOSettings.setUDP_IP3 = spIP3.value
                     timedMessage.addMessage(2000, "IP Address Change", ("IP address changed to " +
                                                                         AgIOSettings.setUDP_IP1 + "." + AgIOSettings.setUDP_IP2 + "." + AgIOSettings.setUDP_IP3 + "!"))
-                    agio.btnSendSubnet_clicked()
+                    AgIOService.btnSendSubnet_clicked()
                 }
                 implicitWidth: btnOK.width
                 implicitHeight: btnOK.height

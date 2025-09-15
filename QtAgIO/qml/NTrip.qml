@@ -42,19 +42,19 @@ Drawer{
             anchors.topMargin: 100
             anchors.leftMargin: 100
             text: "Ntrip Stat: " +
-                     (agio.ntripStatus === 0 ? "Invalid" :
-                     agio.ntripStatus === 1 ? "Authorizing" :
-                     agio.ntripStatus === 2 ? "Waiting" :
-                     agio.ntripStatus === 3 ? "Send GGA" :
-                     agio.ntripStatus === 4 ? "Listening NTRIP":
-                     agio.ntripStatus === 5 ? "Wait GPS":
+                     (AgIOService.ntripStatus === 0 ? "Invalid" :
+                     AgIOService.ntripStatus === 1 ? "Authorizing" :
+                     AgIOService.ntripStatus === 2 ? "Waiting" :
+                     AgIOService.ntripStatus === 3 ? "Send GGA" :
+                     AgIOService.ntripStatus === 4 ? "Listening NTRIP":
+                     AgIOService.ntripStatus === 5 ? "Wait GPS":
                      "Unknown")
         }*/
 
         //TODO: all the ntrip diagnostics stuff. I'm too lazy to do it now.
         /*Comp.ScrollableTextArea{
             id: rawTripTxt
-            property int rawTripCount: agio.rawTripCount
+            property int rawTripCount: AgIOService.rawTripCount
             property double blah: 0
             anchors.top: parent.top
             anchors.left: parent.left
@@ -85,7 +85,7 @@ Drawer{
 			}
 			TextField {
 				id: ntripURL
-                text: AgIOSettings.setNTRIP_url
+                text: AgIOsetNTRIP_url
                 Layout.maximumWidth: 200 * theme.scaleWidth
                 Layout.fillWidth : true
                 height: 49
@@ -94,19 +94,19 @@ Drawer{
                 horizontalAlignment: Qt.AlignHCenter
 				onTextChanged: 
                     if (text.length > 0) {
-                        AgIOSettings.setNTRIP_url = text
+                        AgIOsetNTRIP_url = text
                     }
 
 			}
             Comp.ButtonColor {
 				text: qsTr("Verify")
-                onClicked: agio.setIPFromUrl(ntripURL.text)
+                onClicked: AgIOService.setIPFromUrl(ntripURL.text)
                 width: parent.width * .9
                 Layout.alignment: Qt.AlignHCenter
             }
 
             Comp.Text {
-                text: "IP: " + AgIOSettings.setNTRIP_ipAddress
+                text: "IP: " + AgIOsetNTRIP_ipAddress
                 Layout.alignment: Qt.AlignHCenter
                 //font.bold: true
                 font.pixelSize: 18
@@ -122,11 +122,11 @@ Drawer{
 			}
 			TextField {
 				id: ntripUser
-                text: AgIOSettings.setNTRIP_userName
+                text: AgIOsetNTRIP_userName
                 Layout.maximumWidth: 200 * theme.scaleWidth
                 Layout.fillWidth : true
 				selectByMouse: true
-                onTextChanged: AgIOSettings.setNTRIP_userName = text
+                onTextChanged: AgIOsetNTRIP_userName = text
                 Layout.alignment: Qt.AlignHCenter
                 horizontalAlignment: Qt.AlignHCenter
 			}
@@ -142,8 +142,8 @@ Drawer{
 			}
 			TextField {
 				id: ntripPass
-                text: AgIOSettings.setNTRIP_userPassword
-                onTextChanged: AgIOSettings.setNTRIP_userPassword = text
+                text: AgIOsetNTRIP_userPassword
+                onTextChanged: AgIOsetNTRIP_userPassword = text
                 Layout.maximumWidth: 200 * theme.scaleWidth
                 Layout.fillWidth : true
                 selectByMouse: true
@@ -165,8 +165,8 @@ Drawer{
 			}
 			TextField {
 				id: ntripMount
-                text: AgIOSettings.setNTRIP_mount
-                onTextChanged: AgIOSettings.setNTRIP_mount = text
+                text: AgIOsetNTRIP_mount
+                onTextChanged: AgIOsetNTRIP_mount = text
                 Layout.maximumWidth: 200 * theme.scaleWidth
                 Layout.fillWidth : true
 				selectByMouse: true
@@ -175,8 +175,8 @@ Drawer{
 			}
             Comp.Spacer{}
             Comp.SpinBoxCustomized { //ntrip caster port number
-                value: AgIOSettings.setNTRIP_casterPort
-                onValueChanged: AgIOSettings.setNTRIP_casterPort = value
+                value: AgIOsetNTRIP_casterPort
+                onValueChanged: AgIOsetNTRIP_casterPort = value
 				from: 0
 				to: 65535
                 text: qsTr("Caster Port:")
@@ -185,7 +185,7 @@ Drawer{
             Comp.Text {
                 text: qsTr("Default: 2101")
                 color: "red"
-                visible: AgIOSettings.setNTRIP_casterPort !== 2101
+                visible: AgIOsetNTRIP_casterPort !== 2101
                 Layout.alignment: Qt.AlignHCenter
                 //font.bold: true
                 font.pixelSize: 18
@@ -206,9 +206,9 @@ Drawer{
 			text: qsTr("NTRIP On")
 			height: parent.height
             width: height * 3.5
-            isChecked: utils.isTrue(AgIOSettings.setNTRIP_isOn)
+            isChecked: utils.isTrue(AgIOsetNTRIP_isOn)
             onClicked: {
-                AgIOSettings.setNTRIP_isOn = !utils.isTrue(AgIOSettings.setNTRIP_isOn)
+                AgIOsetNTRIP_isOn = !utils.isTrue(AgIOsetNTRIP_isOn)
                 ntripOn.statusChanged = true;
             }
 		}
@@ -226,7 +226,7 @@ Drawer{
             width: height
             icon.source: "../images/OK64.png"
             onClicked: {
-                agio.configureNTRIP()
+                AgIOService.configureNTRIP()
                 ntrip.close()
                 //restart if anything changed
                 if(ntripOn.statusChanged)

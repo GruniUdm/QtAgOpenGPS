@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 //import Settings
 // Interface import removed - now QML_SINGLETON
-//import AOG
+import AOG
 import "components" as Comp
 
 ColumnLayout {

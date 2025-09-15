@@ -52,12 +52,16 @@ void FormLoop::LoadUDPNetwork()
     if(!udpSocket->bind(QHostAddress::Any, ethUDP.portToListen))
     {
         qDebug() << "Failed to bind udpSocket: " << udpSocket->errorString();
-        agio->setProperty("ethernetConnected", false);
+        if (agio) {
+            agio->setProperty("ethernetConnected", false);
+        }
         RestartUDPSocket();
     }else {
         udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, 1);
         qDebug() << "udpSocket bound to " << ethUDP.address << ":" << ethUDP.portToListen;
-        agio->setProperty("ethernetConnected", true);
+        if (agio) {
+            agio->setProperty("ethernetConnected", true);
+        }
         isUDPNetworkConnected = true;
     }
 
@@ -77,11 +81,15 @@ void FormLoop::LoadLoopback() //set up the connection that listens to loopback
     loopBackSocket = new QUdpSocket(this);
     if(!loopBackSocket->bind(QHostAddress::LocalHost, loopListenPort))
     {
-        qDebug() <<"Failed to bind loopBackSocket: : " << loopBackSocket->errorString();
-        qDebug() << "Exiting program due to fatal error";
-        agio->setProperty("aogConnected", false);
-
-        QCoreApplication::exit(0);
+        qDebug() <<"Failed to bind loopBackSocket on port" << loopListenPort << ": " << loopBackSocket->errorString();
+        qDebug() << "Loopback disabled - continuing without AOG communication";
+        if (agio) {
+            agio->setProperty("aogConnected", false);
+        }
+        
+        // Ne pas tuer l'application, juste désactiver le loopback
+        delete loopBackSocket;
+        loopBackSocket = nullptr;
     } else {
         qDebug() << "loopBackSocket bound";
 
@@ -98,15 +106,23 @@ void FormLoop::LoadLoopback() //set up the connection that listens to loopback
             qDebug() << "agio is null";
         }
 
-        agio->setProperty("aogConnected", true);
+        if (agio) {
+            agio->setProperty("aogConnected", true);
+        }
     }
 
-    connect(loopBackSocket, &QUdpSocket::readyRead, this, &FormLoop::ReceiveFromLoopBack);
+    if (loopBackSocket) {
+        connect(loopBackSocket, &QUdpSocket::readyRead, this, &FormLoop::ReceiveFromLoopBack);
+    }
 
 }
 
 void FormLoop::SendDataToLoopBack(QByteArray byteData)
 {
+    if (!loopBackSocket) {
+        // Loopback désactivé, ne rien envoyer
+        return;
+    }
     loopBackSocket->writeDatagram(byteData, QHostAddress::LocalHost, loopSendPort);
     /*try
 	  {
@@ -127,6 +143,10 @@ void FormLoop::SendDataToLoopBack(QByteArray byteData)
 
 void FormLoop::ReceiveFromLoopBack()
 {
+    if (!loopBackSocket) {
+        // Loopback désactivé
+        return;
+    }
 
     while (loopBackSocket->hasPendingDatagrams()){
         QByteArray byteData;
@@ -331,7 +351,7 @@ void FormLoop::ReceiveFromUDP()
             rawBuffer += QString::fromLatin1(data);
               ParseNMEA(rawBuffer);
             if(!haveWeSentToParser) {
-                  qDebug() << "sent to parser";
+                  qDebug() << "📡 FormLoop received NMEA data on port 9999, sending to parser";
                     haveWeSentToParser = true;
             }
         }

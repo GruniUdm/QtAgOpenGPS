@@ -1,5 +1,5 @@
 #include "cboundary.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 
 CBoundary::CBoundary(QObject *parent) : QObject(parent)
 {
@@ -7,5 +7,5 @@ CBoundary::CBoundary(QObject *parent) : QObject(parent)
 }
 
 void CBoundary::loadSettings() {
-    isSectionControlledByHeadland = settings->value(SETTINGS_headland_isSectionControlled).value<bool>();
+    isSectionControlledByHeadland = SettingsManager::instance()->value(SETTINGS_headland_isSectionControlled).value<bool>();
 }

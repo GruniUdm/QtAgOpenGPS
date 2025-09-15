@@ -3,7 +3,7 @@
 #include "cnmea.h"
 #include "vec2.h"
 #include "glm.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 
 
 CNMEA::CNMEA(QObject *parent) : QObject(parent)
@@ -15,7 +15,7 @@ CNMEA::CNMEA(QObject *parent) : QObject(parent)
 
 void CNMEA::loadSettings(void)
 {
-    ageAlarm  = settings->value(SETTINGS_gps_ageAlarm).value<int>();
+    ageAlarm  = SettingsManager::instance()->value(SETTINGS_gps_ageAlarm).value<int>();
 }
 
 //moved to CVehicle

@@ -3,15 +3,13 @@
 #include <QVector>
 #include <QFuture>
 #include <QtConcurrent/QtConcurrent>
-#include <QQmlEngine>
-#include <QJSEngine>
 #include "glutils.h"
 #include "ctrack.h"
 #include "cvehicle.h"
 #include "glm.h"
 #include "cabcurve.h"
 #include "cabline.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 #include "cyouturn.h"
 #include "cboundary.h"
 #include "ctram.h"
@@ -20,8 +18,7 @@
 #include "cguidance.h"
 #include "cworldgrid.h"
 
-// Initialisation du pointeur statique pour vrai singleton
-CTrack* CTrack::s_instance = nullptr;
+// Approche SomcoSoftware : Qt gère le singleton automatiquement
 
 CTrk::CTrk()
 {
@@ -132,7 +129,7 @@ int CTrack::FindClosestRefTrack(Vec3 pivot, const CVehicle &vehicle)
             //z2-z1
             double dy = endPtB.northing - endPtA.northing;
 
-            dist = ((dy * vehicle.steerAxlePos.easting) - (dx * vehicle.steerAxlePos.northing) +
+            dist = ((dy * CVehicle::instance()->steerAxlePos.easting) - (dx * CVehicle::instance()->steerAxlePos.northing) +
                     (endPtB.easting * endPtA.northing) - (endPtB.northing * endPtA.easting))
                    / sqrt((dy * dy) + (dx * dx));
 
@@ -167,7 +164,7 @@ void CTrack::SwitchToClosestRefTrack(Vec3 pivot, const CVehicle &vehicle)
 {
     int new_idx;
 
-    new_idx = FindClosestRefTrack(pivot, vehicle);
+    new_idx = FindClosestRefTrack(pivot, *CVehicle::instance());
     if (new_idx >= 0 && new_idx != idx) {
         setIdx(new_idx);
         curve.isCurveValid = false;
@@ -378,7 +375,7 @@ void CTrack::DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCa
 {
     GLHelperOneColor gldraw;
     QColor color;
-    double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
+    double lineWidth = SettingsManager::instance()->value(SETTINGS_display_lineWidth).value<double>();
 
     if (ABLine.isMakingABLine && getNewMode() == TrackMode::AB) {
         ABLine.DrawABLineNew(gl, mvp, camera);
@@ -441,16 +438,16 @@ void CTrack::BuildCurrentLine(Vec3 pivot, double secondsSinceStart,
     {
         if (gArr[idx].mode == TrackMode::AB)
         {
-            ABLine.BuildCurrentABLineList(pivot,secondsSinceStart,gArr[idx],yt,vehicle);
+            ABLine.BuildCurrentABLineList(pivot,secondsSinceStart,gArr[idx],yt,*CVehicle::instance());
 
-            ABLine.GetCurrentABLine(pivot, vehicle.steerAxlePos,isBtnAutoSteerOn,vehicle,yt,ahrs,gyd,pn);
+            ABLine.GetCurrentABLine(pivot, CVehicle::instance()->steerAxlePos,isBtnAutoSteerOn,*CVehicle::instance(),yt,ahrs,gyd,pn);
         }
         else
         {
             //build new current ref line if required
-            curve.BuildCurveCurrentList(pivot, secondsSinceStart,vehicle,gArr[idx],bnd,yt);
+            curve.BuildCurveCurrentList(pivot, secondsSinceStart,*CVehicle::instance(),gArr[idx],bnd,yt);
 
-            curve.GetCurrentCurveLine(pivot, vehicle.steerAxlePos,isBtnAutoSteerOn,vehicle,gArr[idx],yt,ahrs,gyd,pn);
+            curve.GetCurrentCurveLine(pivot, CVehicle::instance()->steerAxlePos,isBtnAutoSteerOn,*CVehicle::instance(),gArr[idx],yt,ahrs,gyd,pn);
         }
     }
     emit howManyPathsAwayChanged(); //notify QML property is changed
@@ -644,9 +641,9 @@ void CTrack::update_ab_refline()
 {
     double dist;
     double heading90;
-    double vehicle_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double vehicle_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double vehicle_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double vehicle_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double vehicle_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double vehicle_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
 
     ABLine.desHeading = atan2(ABLine.desPtB.easting - ABLine.desPtA.easting,
                               ABLine.desPtB.northing - ABLine.desPtA.northing);
@@ -776,9 +773,9 @@ void CTrack::mark_start(double easting, double northing, double heading)
 void CTrack::mark_end(int refSide, double easting, double northing)
 {
     QLocale locale;
-    double vehicle_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double vehicle_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double vehicle_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double vehicle_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double vehicle_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double vehicle_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
 
 
     //mark "B" location for AB Line or AB curve, or NOP for waterPivot
@@ -882,9 +879,9 @@ void CTrack::mark_end(int refSide, double easting, double northing)
 
 void CTrack::finish_new(QString name)
 {
-    double vehicle_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double vehicle_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double vehicle_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double vehicle_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double vehicle_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double vehicle_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
 
     double dist;
     newTrack.name = name;

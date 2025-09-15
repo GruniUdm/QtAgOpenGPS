@@ -13,19 +13,65 @@
 #include "cboundary.h"
 #include "aogrenderer.h"
 #include "cnmea.h"
+#include "qmlutil.h"
+
+// Helper function to safely get OpenGL control properties with defaults
+struct OpenGLViewport {
+    int width = 800;
+    int height = 600;
+    double shiftX = 0.0;
+    double shiftY = 0.0;
+};
+
+OpenGLViewport getOpenGLViewport(QObject* mainWindow) {
+    OpenGLViewport viewport;
+    QObject *openglControl = qmlItem(mainWindow, "openglcontrol");
+    
+    if (openglControl) {
+        viewport.width = openglControl->property("width").toReal();
+        viewport.height = openglControl->property("height").toReal();
+        viewport.shiftX = openglControl->property("shiftX").toDouble();
+        viewport.shiftY = openglControl->property("shiftY").toDouble();
+    } else {
+        qWarning() << "⚠️ OpenGL control not found - using default viewport settings";
+    }
+    
+    return viewport;
+}
 #include "glm.h"
 #include "glutils.h"
 #include "qmlutil.h"
+#include "classes/agioservice.h"  // For zero-latency GPS access
 
 //#include <QGLWidget>
 #include <QQuickView>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
-#include "settings.h"
+#include "classes/settingsmanager.h"
 #include "cpgn.h"
 
 #include <assert.h>
+#include <QElapsedTimer>  // For latency profiling
+
+// Latency profiler for real-time validation
+class LatencyProfiler {
+public:
+    static void measure(const QString& operation) {
+        static QElapsedTimer timer;
+        static bool initialized = false;
+        if (!initialized) {
+            timer.start();
+            initialized = true;
+            return;
+        }
+        qint64 elapsed = timer.nsecsElapsed();
+        if (elapsed > 1000) { // >1μs warning for AutoSteer safety
+            qWarning() << "⚠️ LATENCY:" << operation << elapsed << "ns";
+        }
+        timer.restart();
+    }
+};
 
 QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
 {
@@ -36,10 +82,12 @@ QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
     QMatrix4x4 modelview;
     QMatrix4x4 projection;
 
-    int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
-    int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
-    double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
-    double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
+    // Safe access to OpenGL viewport properties
+    OpenGLViewport viewport = getOpenGLViewport(mainWindow);
+    int width = viewport.width;
+    int height = viewport.height;
+    double shiftX = viewport.shiftX;
+    double shiftY = viewport.shiftY;
 
     projection.setToIdentity();
 
@@ -51,12 +99,12 @@ QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
     modelview.setToIdentity();
 
     //camera does translations and rotations
-    camera.SetWorldCam(modelview, vehicle->pivotAxlePos.easting, vehicle->pivotAxlePos.northing, camera.camHeading);
-    modelview.translate(vehicle->hitchPos.easting, vehicle->hitchPos.northing, 0);
-    //modelview.translate(sin(vehicle->fixHeading) * tool.hitchLength,
-    //                        cos(vehicle->fixHeading) * tool.hitchLength, 0);
+    camera.SetWorldCam(modelview, CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, camera.camHeading);
+    modelview.translate(CVehicle::instance()->hitchPos.easting, CVehicle::instance()->hitchPos.northing, 0);
+    //modelview.translate(sin(CVehicle::instance()->fixHeading) * tool.hitchLength,
+    //                        cos(CVehicle::instance()->fixHeading) * tool.hitchLength, 0);
     if (camera.camFollowing)
-        modelview.rotate(glm::toDegrees(-vehicle->fixHeading), 0.0, 0.0, 1.0);
+        modelview.rotate(glm::toDegrees(-CVehicle::instance()->fixHeading), 0.0, 0.0, 1.0);
 
     float x,y;
     x = mouseX;
@@ -75,7 +123,7 @@ QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
     mouseNorthing = worldpoint_near.y() + lambda * direction.y();
 
     QMatrix4x4 m;
-    m.rotate(-vehicle->fixHeading, 0,0,1);
+    m.rotate(-CVehicle::instance()->fixHeading, 0,0,1);
 
     QVector3D relative = QVector3D( { (float)mouseEasting, (float)mouseNorthing, 0 } );
     return relative;
@@ -90,10 +138,12 @@ QVector3D FormGPS::mouseClickToField(int mouseX, int mouseY)
     QMatrix4x4 modelview;
     QMatrix4x4 projection;
 
-    int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
-    int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
-    double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
-    double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
+    // Safe access to OpenGL viewport properties
+    OpenGLViewport viewport = getOpenGLViewport(mainWindow);
+    int width = viewport.width;
+    int height = viewport.height;
+    double shiftX = viewport.shiftX;
+    double shiftY = viewport.shiftY;
 
     projection.setToIdentity();
 
@@ -105,12 +155,12 @@ QVector3D FormGPS::mouseClickToField(int mouseX, int mouseY)
     modelview.setToIdentity();
 
     //camera does translations and rotations
-    camera.SetWorldCam(modelview, vehicle->pivotAxlePos.easting, vehicle->pivotAxlePos.northing, camera.camHeading);
-    //modelview.translate(vehicle->pivotAxlePos.easting, vehicle->pivotAxlePos.northing, 0);
-    //modelview.translate(sin(vehicle->fixHeading) * tool.hitchLength,
-    //                        cos(vehicle->fixHeading) * tool.hitchLength, 0);
+    camera.SetWorldCam(modelview, CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, camera.camHeading);
+    //modelview.translate(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, 0);
+    //modelview.translate(sin(CVehicle::instance()->fixHeading) * tool.hitchLength,
+    //                        cos(CVehicle::instance()->fixHeading) * tool.hitchLength, 0);
     //if (camera.camFollowing)
-    //    modelview.rotate(glm::toDegrees(-vehicle->fixHeading), 0.0, 0.0, 1.0);
+    //    modelview.rotate(glm::toDegrees(-CVehicle::instance()->fixHeading), 0.0, 0.0, 1.0);
 
     float x,y;
     x = mouseX;
@@ -129,7 +179,7 @@ QVector3D FormGPS::mouseClickToField(int mouseX, int mouseY)
     mouseNorthing = worldpoint_near.y() + lambda * direction.y();
 
     QMatrix4x4 m;
-    m.rotate(-vehicle->fixHeading, 0,0,1);
+    m.rotate(-CVehicle::instance()->fixHeading, 0,0,1);
 
     QVector3D fieldCoord = QVector3D( { (float)mouseEasting, (float)mouseNorthing, 0 } );
     return fieldCoord;
@@ -160,11 +210,14 @@ void FormGPS::oglMain_Paint()
         //will not update, which isn't what we want either.  Some kind of timeout?
      return;
 
-    float lineWidth = settings->value(SETTINGS_display_lineWidth).value<float>();
-    int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
-    int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
-    double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
-    double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
+    float lineWidth = SettingsManager::instance()->value(SETTINGS_display_lineWidth).value<float>();
+    
+    // Safe access to OpenGL viewport properties
+    OpenGLViewport viewport = getOpenGLViewport(mainWindow);
+    int width = viewport.width;
+    int height = viewport.height;
+    double shiftX = viewport.shiftX;
+    double shiftY = viewport.shiftY;
     //gl->glViewport(oglX,oglY,width,height);
     /*
 #ifdef GL_POINT_SPRITE
@@ -231,7 +284,7 @@ void FormGPS::oglMain_Paint()
             modelview.setToIdentity();
 
             //camera does translations and rotations
-            camera.SetWorldCam(modelview, vehicle->pivotAxlePos.easting, vehicle->pivotAxlePos.northing, camera.camHeading);
+            camera.SetWorldCam(modelview, CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, camera.camHeading);
 
             //calculate the frustum planes for culling
             CalcFrustum(projection*modelview);
@@ -349,13 +402,13 @@ void FormGPS::oglMain_Paint()
                         gldraw1.clear();
 
                         //left side of triangle
-                        QVector3D pt((vehicle->cosSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + vehicle->toolPos.easting,
-                                (vehicle->sinSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + vehicle->toolPos.northing, 0);
+                        QVector3D pt((CVehicle::instance()->cosSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + CVehicle::instance()->toolPos.easting,
+                                (CVehicle::instance()->sinSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + CVehicle::instance()->toolPos.northing, 0);
                         gldraw1.append(pt);
 
                         //Right side of triangle
-                        pt = QVector3D((vehicle->cosSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + vehicle->toolPos.easting,
-                           (vehicle->sinSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + vehicle->toolPos.northing, 0);
+                        pt = QVector3D((CVehicle::instance()->cosSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + CVehicle::instance()->toolPos.easting,
+                           (CVehicle::instance()->sinSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + CVehicle::instance()->toolPos.northing, 0);
                         gldraw1.append(pt);
 
                         int last = triStrip[j].patchList[patchCount -1]->count();
@@ -378,10 +431,10 @@ void FormGPS::oglMain_Paint()
             else// draw the current and reference AB Lines or CurveAB Ref and line
             {
                 //when switching lines, draw the ghost
-                trk->DrawTrack(gl, projection*modelview, isFontOn, worldGrid.isRateMap, yt, camera, gyd);
+                CTrack::instance()->DrawTrack(gl, projection*modelview, isFontOn, worldGrid.isRateMap, yt, camera, gyd);
             }
 
-            trk->DrawTrackNew(gl, projection*modelview, camera, *vehicle);
+            CTrack::instance()->DrawTrackNew(gl, projection*modelview, camera, *CVehicle::instance());
 
             //if (recPath.isRecordOn)
             recPath.DrawRecordedLine(gl, projection*modelview);
@@ -390,12 +443,12 @@ void FormGPS::oglMain_Paint()
             if (bnd.bndList.count() > 0 || bnd.isBndBeingMade == true)
             {
                 //draw Boundaries
-                bnd.DrawFenceLines(*vehicle, mc, gl, projection*modelview);
+                bnd.DrawFenceLines(*CVehicle::instance(), mc, gl, projection*modelview);
 
                 //draw the turnLines
                 if (yt.isYouTurnBtnOn && ! ct.isContourBtnOn)
                 {
-                    bnd.DrawFenceLines(*vehicle,mc,gl,projection*modelview);
+                    bnd.DrawFenceLines(*CVehicle::instance(),mc,gl,projection*modelview);
 
                     color.setRgbF(0.3555f, 0.6232f, 0.20f); //TODO: not sure what color turnLines should actually be
 
@@ -420,7 +473,7 @@ void FormGPS::oglMain_Paint()
                 gldraw1.clear();
                 gl->glLineWidth(2);
                 //TODO: implement with shader: GL.LineStipple(1, 0x0707);
-                gldraw1.append(QVector3D(vehicle->pivotAxlePos.easting, vehicle->pivotAxlePos.northing, 0));
+                gldraw1.append(QVector3D(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, 0));
                 gldraw1.append(QVector3D(flagPts[flagNumberPicked-1].easting, flagPts[flagNumberPicked-1].northing, 0));
                 gldraw1.draw(gl, projection*modelview,
                              QColor::fromRgbF(0.930f, 0.72f, 0.32f),
@@ -430,17 +483,17 @@ void FormGPS::oglMain_Paint()
 
             //draw the vehicle/implement
             QMatrix4x4 mv = modelview; //push matrix
-            tool.DrawTool(gl,modelview, projection,isJobStarted,*vehicle, camera,tram);
+            tool.DrawTool(gl,modelview, projection,isJobStarted,*CVehicle::instance(), camera,tram);
             double steerangle;
             if(timerSim.isActive()) steerangle = sim.steerangleAve;
             else steerangle = mc.actualSteerAngleDegrees;
-            vehicle->DrawVehicle(gl, modelview, projection, steerangle, isFirstHeadingSet,
+            CVehicle::instance()->DrawVehicle(gl, modelview, projection, steerangle, isFirstHeadingSet,
                                 QRect(0,0,width,height),camera,tool,bnd);
             modelview = mv; //pop matrix
 
             if (camera.camSetDistance > -150)
             {
-                trk->DrawTrackGoalPoint(gl, projection * modelview);
+                CTrack::instance()->DrawTrackGoalPoint(gl, projection * modelview);
             }
 
             // 2D Ortho --------------------------
@@ -462,11 +515,11 @@ void FormGPS::oglMain_Paint()
             //if this is on, vehicleInterface.isHydLiftOn is true
             if (p_239.pgn[p_239.hydLift] == 2)
             {
-                vehicle->setHydLiftDown(false); //vehicleInterface.hydLiftDown in QML
+                CVehicle::instance()->setHydLiftDown(false); //vehicleInterface.hydLiftDown in QML
             }
             else
             {
-                vehicle->setHydLiftDown(true);
+                CVehicle::instance()->setHydLiftDown(true);
             }
 
             //Reverse indicator in QML
@@ -650,11 +703,11 @@ void FormGPS::oglBack_Paint()
     modelview.translate(0, 0, -500);
 
     //rotate camera so heading matched fix heading in the world
-    //gl->glRotated(toDegrees(vehicle->fixHeadingSection), 0, 0, 1);
-    modelview.rotate(glm::toDegrees(vehicle->toolPos.heading), 0, 0, 1);
+    //gl->glRotated(toDegrees(CVehicle::instance()->fixHeadingSection), 0, 0, 1);
+    modelview.rotate(glm::toDegrees(CVehicle::instance()->toolPos.heading), 0, 0, 1);
 
-    modelview.translate(-vehicle->toolPos.easting - sin(vehicle->toolPos.heading) * 15,
-                        -vehicle->toolPos.northing - cos(vehicle->toolPos.heading) * 15,
+    modelview.translate(-CVehicle::instance()->toolPos.easting - sin(CVehicle::instance()->toolPos.heading) * 15,
+                        -CVehicle::instance()->toolPos.northing - cos(CVehicle::instance()->toolPos.heading) * 15,
                         0);
 
     //patch color
@@ -663,10 +716,10 @@ void FormGPS::oglBack_Paint()
     //to draw or not the triangle patch
     bool isDraw;
 
-    double pivEplus = vehicle->pivotAxlePos.easting + 50;
-    double pivEminus = vehicle->pivotAxlePos.easting - 50;
-    double pivNplus = vehicle->pivotAxlePos.northing + 50;
-    double pivNminus = vehicle->pivotAxlePos.northing - 50;
+    double pivEplus = CVehicle::instance()->pivotAxlePos.easting + 50;
+    double pivEminus = CVehicle::instance()->pivotAxlePos.easting - 50;
+    double pivNplus = CVehicle::instance()->pivotAxlePos.northing + 50;
+    double pivNminus = CVehicle::instance()->pivotAxlePos.northing - 50;
 
     //draw patches j= # of sections
     for (int j = 0; j < triStrip.count(); j++)
@@ -732,7 +785,7 @@ void FormGPS::oglBack_Paint()
 
     //draw 245 green for the tram tracks
 
-    if (tram.displayMode !=0 && tram.displayMode !=0 && (trk->idx > -1))
+    if (tram.displayMode !=0 && tram.displayMode !=0 && (CTrack::instance()->idx > -1))
     {
         if ((tram.displayMode == 1 || tram.displayMode == 2))
         {
@@ -961,8 +1014,15 @@ void FormGPS::MakeFlagMark(QOpenGLFunctions *gl)
     {
         if ((data1[ctr] == 255) || (data1[ctr + 1] == 255))
         {
-            flagNumberPicked = data1[ctr + 2];
-            qDebug() << flagNumberPicked;
+            int candidateFlag = data1[ctr + 2];
+            // Validate flag number is within bounds
+            if (candidateFlag > 0 && candidateFlag <= flagPts.size()) {
+                flagNumberPicked = candidateFlag;
+                qDebug() << "Valid flag picked:" << flagNumberPicked;
+            } else {
+                flagNumberPicked = 0; // Invalid flag, reset to no selection
+                qDebug() << "Invalid flag number" << candidateFlag << "- flagPts.size():" << flagPts.size();
+            }
             break;
         }
     }
@@ -992,7 +1052,7 @@ void FormGPS::DrawTramMarkers()
     {
         dot_color = 2;
     }
-    vehicle->setLeftTramIndicator(dot_color);
+    CVehicle::instance()->setLeftTramIndicator(dot_color);
     //done with left
 
     if (((tram.controlByte) & 1) == 1) dot_color = 1;
@@ -1002,7 +1062,7 @@ void FormGPS::DrawTramMarkers()
     {
         dot_color = 2;
     }
-    vehicle->setRightTramIndicator(dot_color);
+    CVehicle::instance()->setRightTramIndicator(dot_color);
 }
 
 void FormGPS::DrawFlags(QOpenGLFunctions *gl, QMatrix4x4 mvp)

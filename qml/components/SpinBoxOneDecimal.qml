@@ -16,7 +16,7 @@ Item {
     property bool editable: true
     property double boundValue
     width: spinner.width
-    height: spinner.height + (spin_message.length > 0 ? spin_message.height : 0) + (spin_text.length > 0 ? spin_text.height : 0)
+    height: spinner.height + (spin_message.length > 0 ? spin_message.height : 0) + (text.length > 0 ? 20 : 0)
 
     signal valueModified()
 

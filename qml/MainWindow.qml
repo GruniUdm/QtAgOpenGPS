@@ -8,7 +8,7 @@ import QtQuick.Effects
 import QtQuick.Dialogs
 // Interface import removed - now QML_SINGLETON
 //import AOG
-import AgIO 
+import "agio" as AgIOModule 
 
 
 import "interfaces" as Interfaces
@@ -50,10 +50,28 @@ Window {
         console.log("Settings available:", typeof Settings !== 'undefined')
         console.log("TracksInterface available:", typeof TracksInterface !== 'undefined')
         console.log("VehicleInterface available:", typeof VehicleInterface !== 'undefined')
-        console.log("AgIOSettings available:", typeof AgIOSettings !== 'undefined')
+        // AgIOSettings replaced by AgIOService in Phase 4.2
+        console.log("AgIOService available:", typeof AgIOService !== 'undefined')
         
         if (typeof Settings !== 'undefined') {
             console.log("Settings.display_isStartFullscreen:", Settings.display_isStartFullscreen)
+        }
+        
+        // Force AgIOService factory function call first
+        if (typeof AgIOService !== 'undefined') {
+            // Force singleton creation via factory function
+            var service = AgIOService;  // This should trigger factory function
+            
+            console.log("=== AGIO SERVICE TEST ===")
+            console.log("GPS Connected:", service.gpsConnected)
+            console.log("Latitude:", service.latitude)
+            console.log("Longitude:", service.longitude)
+            console.log("Vehicle XY:", service.vehicle_xy)
+            console.log("Thread test:")
+            service.testThreadCommunication()
+            console.log("=== END AGIO TEST ===")
+        } else {
+            console.log("❌ AgIOService NOT available!")
         }
         
         if (typeof TracksInterface !== 'undefined') {
@@ -69,11 +87,7 @@ Window {
             console.log("VehicleInterface identity:", VehicleInterface)
         }
         
-        if (typeof AgIOSettings !== 'undefined') {
-            console.log("AgIOSettings identity:", AgIOSettings)
-            console.log("AgIOSettings keys:", AgIOSettings.keys ? AgIOSettings.keys() : "no keys method")
-            console.log("AgIOSettings test property:", AgIOSettings.setNTRIP_isOn)
-        }
+        // AgIOSettings debug removed - replaced by AgIOService in Phase 4.2
         
         console.log("=== END FACTORY FUNCTION DEBUG ===")
     }
@@ -1059,7 +1073,7 @@ Window {
     }
 
 
-    AgIO {
+    AgIOModule.AgIO {
           id: mainWindowAgIO
     }
 }

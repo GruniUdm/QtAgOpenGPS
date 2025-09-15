@@ -67,9 +67,14 @@ class FormLoop : public QObject
 		void setupGUI();
 		// Getter to acess `m_engine` in formloop
 		QQmlApplicationEngine* engine() const;  
+		
+		// Phase 5 Migration: Connect to AgIOService for progressive replacement
+		void connectToAgIOService();
 
     signals:
         void statusChanged();
+        // Phase 5 Migration: Forward GPS data to AgIOService
+        void gpsDataForAgIOService(double lat, double lon, double heading, double speed);
 
     private:
 	    explicit FormLoop(QObject *parent = nullptr);

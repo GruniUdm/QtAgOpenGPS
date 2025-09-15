@@ -5,7 +5,7 @@
 #include "glutils.h"
 #include "cboundary.h"
 #include "ccamera.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 #include "glm.h"
 
 //TODO: move all these to own file, centralize the names we're using
@@ -23,15 +23,15 @@ CTram::CTram(QObject *parent): QObject(parent)
 
 void CTram::loadSettings()
 {
-    tramWidth = settings->value(SETTINGS_tram_width).value<double>();
-    halfWheelTrack = settings->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
-    passes = settings->value(SETTINGS_tram_passes).value<int>();
+    tramWidth = SettingsManager::instance()->value(SETTINGS_tram_width).value<double>();
+    halfWheelTrack = SettingsManager::instance()->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
+    passes = SettingsManager::instance()->value(SETTINGS_tram_passes).value<int>();
 }
 
 void CTram::IsTramOuterOrInner()
 {
-    isOuter = ((int)(tramWidth / settings->value(SETTINGS_vehicle_toolWidth).value<double>() + 0.5)) % 2 == 0;
-    if ((bool)settings->value(SETTINGS_tool_isTramOuterInverted).value<bool>()) isOuter = !isOuter;
+    isOuter = ((int)(tramWidth / SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>() + 0.5)) % 2 == 0;
+    if ((bool)SettingsManager::instance()->value(SETTINGS_tool_isTramOuterInverted).value<bool>()) isOuter = !isOuter;
 }
 
 void CTram::DrawTram(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, CCamera &camera)
@@ -93,8 +93,8 @@ void CTram::BuildTramBnd(const CBoundary &bnd)
 
 void CTram::CreateBndInnerTramTrack(const CBoundary &bnd)
 {
-    double tramWidth = settings->value(SETTINGS_tram_width).value<double>();
-    double halfWheelTrack = settings->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
+    double tramWidth = SettingsManager::instance()->value(SETTINGS_tram_width).value<double>();
+    double halfWheelTrack = SettingsManager::instance()->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
 
     int ptCount = bnd.bndList[0].fenceLine.count();
     tramBndInnerArr.clear();
@@ -143,8 +143,8 @@ void CTram::CreateBndInnerTramTrack(const CBoundary &bnd)
 
 void CTram::CreateBndOuterTramTrack(const CBoundary &bnd)
 {
-    double tramWidth = settings->value(SETTINGS_tram_width).value<double>();
-    double halfWheelTrack = settings->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
+    double tramWidth = SettingsManager::instance()->value(SETTINGS_tram_width).value<double>();
+    double halfWheelTrack = SettingsManager::instance()->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
 
     //count the points from the boundary
     int ptCount = bnd.bndList[0].fenceLine.count();

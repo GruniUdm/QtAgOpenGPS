@@ -50,7 +50,7 @@ Drawer {
                     }
                     MouseArea{
                         anchors.fill: parent
-                        onClicked: agio.bt_search(model.name)
+                        onClicked: AgIOService.bt_search(model.name)
                     }
                 }
             }
@@ -129,7 +129,7 @@ Drawer {
                     }
                     MouseArea{
                         anchors.fill: parent
-                        onClicked: agio.bt_remove_device(modelData)
+                        onClicked: AgIOService.bt_remove_device(modelData)
                     }
                 }
             }

@@ -155,7 +155,7 @@ Item {
                         //just setting the name is probably enough to get it to save the vehicle
                         Settings.vehicle_vehicleName = saveAsVehicle.text
                         saveAsVehicle.text = ""
-                        VehicleInterface.vehicle_update_list()
+                        // vehicle_update_list() is now called automatically after save completes
                     }
                 }
             }

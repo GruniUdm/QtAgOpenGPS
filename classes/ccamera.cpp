@@ -1,6 +1,6 @@
 #include "ccamera.h"
 #include <QOpenGLContext>
-#include "settings.h"
+#include "classes/settingsmanager.h"
 #include <math.h>
 #include "glm.h"
 
@@ -12,9 +12,9 @@ CCamera::CCamera()
 
 void CCamera::loadSettings()
 {
-    camPitch = settings->value(SETTINGS_display_camPitch).value<double>();
-    zoomValue = settings->value(SETTINGS_display_camZoom).value<double>();
-    camSmoothFactor = (settings->value(SETTINGS_display_camSmooth).value<double>() * 0.004) + 0.2;
+    camPitch = SettingsManager::instance()->value(SETTINGS_display_camPitch).value<double>();
+    zoomValue = SettingsManager::instance()->value(SETTINGS_display_camZoom).value<double>();
+    camSmoothFactor = (SettingsManager::instance()->value(SETTINGS_display_camSmooth).value<double>() * 0.004) + 0.2;
 }
 
 void CCamera::SetWorldCam(QMatrix4x4 &modelview,

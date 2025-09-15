@@ -10,7 +10,7 @@
 #include "cboundary.h"
 #include "cyouturn.h"
 #include "cahrs.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 #include "cnmea.h"
 //#include "common.h"
 
@@ -27,9 +27,9 @@ void CContour::SetLockToLine()
 
 void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehicle, Vec3 pivot)
 {
-    double tool_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
-    double tool_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double tool_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double tool_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
     double tool_toolHalfWidth = (tool_toolWidth - tool_toolOverlap) / 2;
 
     if (ctList.count() == 0)
@@ -184,7 +184,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
     else return;
 
     //are we going same direction as stripList was created?
-    bool isSameWay = M_PI - fabs(fabs(vehicle.fixHeading - (*stripList[stripNum])[pt].heading) - M_PI) < 1.57;
+    bool isSameWay = M_PI - fabs(fabs(CVehicle::instance()->fixHeading - (*stripList[stripNum])[pt].heading) - M_PI) < 1.57;
 
     double RefDist = (distanceFromRefLine + (isSameWay ? tool_toolOffset : -tool_toolOffset))
                      / (tool_toolWidth - tool_toolOverlap);
@@ -294,14 +294,14 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
                                        CNMEA &pn,
                                        Vec3 pivot, Vec3 steer)
 {
-    double wheelbase = settings->value(SETTINGS_vehicle_wheelbase).value<double>();
-    double maxSteerAngle = settings->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
+    double wheelbase = SettingsManager::instance()->value(SETTINGS_vehicle_wheelbase).value<double>();
+    double maxSteerAngle = SettingsManager::instance()->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
     //double maxAngularVelocity = property_setVehicle_maxAngularVelocity;
-    double stanleyHeadingErrorGain = settings->value(SETTINGS_vehicle_stanleyHeadingErrorGain).value<double>();
-    double stanleyDistanceErrorGain = settings->value(SETTINGS_vehicle_stanleyDistanceErrorGain).value<double>();
-    double purePursuitIntegralGain = settings->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
-    double as_sideHillCompensation = settings->value(SETTINGS_as_sideHillCompensation).value<double>();
-    bool isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    double stanleyHeadingErrorGain = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyHeadingErrorGain).value<double>();
+    double stanleyDistanceErrorGain = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyDistanceErrorGain).value<double>();
+    double purePursuitIntegralGain = SettingsManager::instance()->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
+    double as_sideHillCompensation = SettingsManager::instance()->value(SETTINGS_as_sideHillCompensation).value<double>();
+    bool isStanleyUsed = SettingsManager::instance()->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
 
     double minDistA = 1000000, minDistB = 1000000;
     int ptCount = ctList.count();
@@ -376,14 +376,14 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             if (abFixHeadingDelta > glm::PIBy2) abFixHeadingDelta -= M_PI;
             else if (abFixHeadingDelta < -glm::PIBy2) abFixHeadingDelta += M_PI;
 
-            if (vehicle.isReverse) abFixHeadingDelta *= -1;
+            if (CVehicle::instance()->isReverse) abFixHeadingDelta *= -1;
 
             abFixHeadingDelta *= stanleyHeadingErrorGain;
             if (abFixHeadingDelta > 0.74) abFixHeadingDelta = 0.74;
             if (abFixHeadingDelta < -0.74) abFixHeadingDelta = -0.74;
 
             steerAngleCT = atan((distanceFromCurrentLinePivot * stanleyDistanceErrorGain)
-                                     / ((fabs(vehicle.avgSpeed) * 0.277777) + 1));
+                                     / ((fabs(CVehicle::instance()->avgSpeed) * 0.277777) + 1));
 
             if (steerAngleCT > 0.74) steerAngleCT = 0.74;
             if (steerAngleCT < -0.74) steerAngleCT = -0.74;
@@ -461,7 +461,7 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
 
                 if (isBtnAutoSteerOn
                     && fabs(pivotDerivative) < (0.1)
-                    && vehicle.avgSpeed > 2.5
+                    && CVehicle::instance()->avgSpeed > 2.5
                     && !yt.isYouTurnTriggered)
                 {
                     //if over the line heading wrong way, rapidly decrease integral
@@ -483,7 +483,7 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             }
             else inty = 0;
 
-            if (vehicle.isReverse) inty = 0;
+            if (CVehicle::instance()->isReverse) inty = 0;
 
             isHeadingSameWay = M_PI - fabs(fabs(pivot.heading - ctList[A].heading) - M_PI) < glm::PIBy2;
 
@@ -498,9 +498,9 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             rNorthCT = ctList[A].northing + (U * dy);
 
             //update base on autosteer settings and distance from line
-            double goalPointDistance = vehicle.UpdateGoalPointDistance();
+            double goalPointDistance = CVehicle::instance()->UpdateGoalPointDistance();
 
-            bool ReverseHeading = vehicle.isReverse ? !isHeadingSameWay : isHeadingSameWay;
+            bool ReverseHeading = CVehicle::instance()->isReverse ? !isHeadingSameWay : isHeadingSameWay;
 
             int count = ReverseHeading ? 1 : -1;
             Vec3 start(rEastCT, rNorthCT, 0);
@@ -530,8 +530,8 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
             double localHeading;// = glm::twoPI - mf.fixHeading;
 
-            if (isHeadingSameWay) localHeading = glm::twoPI - vehicle.fixHeading + inty;
-            else localHeading = glm::twoPI - vehicle.fixHeading - inty;
+            if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
+            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading - inty;
 
             steerAngleCT = glm::toDegrees(atan(2 * (((goalPointCT.easting - pivot.easting) * cos(localHeading))
                                                         + ((goalPointCT.northing - pivot.northing) * sin(localHeading))) * wheelbase / goalPointDistanceSquared));
@@ -545,17 +545,17 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
         }
 
         //used for smooth mode
-        vehicle.modeActualXTE = (distanceFromCurrentLinePivot);
+        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
 
         //fill in the autosteer variables
-        vehicle.guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
-        vehicle.guidanceLineSteerAngle = (short)(steerAngleCT * 100);
+        CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+        CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleCT * 100);
     }
     else
     {
         //invalid distance so tell AS module
         distanceFromCurrentLinePivot = 32000; //???
-        vehicle.guidanceLineDistanceOff = 32000;
+        CVehicle::instance()->guidanceLineDistanceOff = 32000;
     }
 
 }
@@ -585,7 +585,7 @@ void CContour::StartContourLine() {
 
 //Add current position to stripList
 void CContour::AddPoint(Vec3 pivot) {
-    double tool_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double tool_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
 
     ptList->append(Vec3(pivot.easting + cos(pivot.heading) * tool_toolOffset,
                         pivot.northing - sin(pivot.heading) * tool_toolOffset,
@@ -617,8 +617,8 @@ void CContour::StopContourLine(QVector<QSharedPointer <QVector<Vec3>>> &contourS
 //build contours for boundaries
 void CContour::BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCounter)
 {
-    double tool_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double tool_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
 
     spacingInt *= 0.01;
     if (bnd.bndList.count() == 0)
@@ -669,9 +669,9 @@ void CContour::BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCo
 //draw the red follow me line
 void CContour::DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
 {
-    bool isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
-    double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
-    bool isPureDisplayOn = settings->value(SETTINGS_menu_isPureOn).value<bool>();
+    bool isStanleyUsed = SettingsManager::instance()->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    double lineWidth = SettingsManager::instance()->value(SETTINGS_display_lineWidth).value<double>();
+    bool isPureDisplayOn = SettingsManager::instance()->value(SETTINGS_menu_isPureOn).value<bool>();
 
     GLHelperOneColor gldraw;
     QColor color;

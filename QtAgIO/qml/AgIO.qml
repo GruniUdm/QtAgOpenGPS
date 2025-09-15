@@ -115,12 +115,12 @@ Drawer {
                 //objectName: bluetooth
                 text: qsTr("Bluetooth")
                 icon.source: "../images/BlueTooth.png"
-                color: agio.bluetoothConnected ? "green" : "red"
+                color: AgIOService.bluetoothConnected ? "green" : "red"
                 onClicked: {
                     settingsWindow.close()
                     if(!utils.isTrue(AgIOSettings.setBluetooth_isOn)){ //start bt if off
                         AgIOSettings.setBluetooth_isOn = true
-                        agio.startBluetoothDiscovery()
+                        AgIOService.startBluetoothDiscovery()
                         console.log("ssb")
                     }
                     bluetoothMenu.visible = true
@@ -131,7 +131,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("IMU")
                 icon.source: "../images/B_IMU.png"
-                color: agio.imuConnected ? "green" : "red"
+                color: AgIOService.imuConnected ? "green" : "red"
                 onClicked: imuConfig.visible = !imuConfig.visible
             }
             Comp.IconButtonTextBeside {
@@ -139,7 +139,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("Steer")
                 icon.source: "../images/Com_AutosteerModule.png"
-                color: agio.steerConnected ? "green" : "red"
+                color: AgIOService.steerConnected ? "green" : "red"
                 onClicked: autosteerConfig.visible = !autosteerConfig.visible
             }
             Comp.IconButtonTextBeside {
@@ -147,7 +147,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("GPS")
                 icon.source: "../images/B_GPS.png"
-                color: agio.gpsConnected ? "green" : "red"
+                color: AgIOService.gpsConnected ? "green" : "red"
                 onClicked: gnssConfig.visible = !gnssConfig.visible
             }
             Comp.IconButtonTextBeside {
@@ -155,14 +155,14 @@ Drawer {
                 isChecked: false
                 text: qsTr("Machine")
                 icon.source: "../images/B_Machine.png"
-                color: agio.machineConnected ? "green" : "red"
+                color: AgIOService.machineConnected ? "green" : "red"
             }
             Comp.IconButtonTextBeside {
                 //objectName: btnModuleBlockage
                 isChecked: false
                 text: qsTr("Blockage")
                 icon.source: "../images/B_Blockage.png"
-                color: agio.blockageConnected ? "green" : "red"
+                color: AgIOService.blockageConnected ? "green" : "red"
                 visible: Settings.seed_blockageIsOn
             }
             Comp.IconButtonTextBeside {
@@ -170,7 +170,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("Ethernet")
                 icon.source: "../images/B_UDP.png"
-                color: agio.ethernetConnected ? "green" : "red"
+                color: AgIOService.ethernetConnected ? "green" : "red"
                 onClicked: ethernetConfig.visible = !ethernetConfig.visible
             }
             Comp.IconButtonTextBeside {
@@ -190,22 +190,22 @@ Drawer {
                 //objectName: btnNTRIP
                 isChecked: false
                 text: (AgIOSettings.setNTRIP_isOn === false ? "Off":
-                    agio.ntripStatus === 0 ? "Invalid" :
-                    agio.ntripStatus === 1 ? "Authorizing" :
-                    agio.ntripStatus === 2 ? "Waiting" :
-                    agio.ntripStatus === 3 ? "Send GGA" :
-                    agio.ntripStatus === 4 ? "Listening NTRIP":
-                    agio.ntripStatus === 5 ? "Wait GPS":
+                    AgIOService.ntripStatus === 0 ? "Invalid" :
+                    AgIOService.ntripStatus === 1 ? "Authorizing" :
+                    AgIOService.ntripStatus === 2 ? "Waiting" :
+                    AgIOService.ntripStatus === 3 ? "Send GGA" :
+                    AgIOService.ntripStatus === 4 ? "Listening NTRIP":
+                    AgIOService.ntripStatus === 5 ? "Wait GPS":
                     "Unknown")
 
                 icon.source: "../images/NtripSettings.png"
                 color:  (AgIOSettings.setNTRIP_isOn === false ? "red":
-                    agio.ntripStatus === 0 ? "red" :
-                    agio.ntripStatus === 1 ? "yellow" :
-                    agio.ntripStatus === 2 ? "yellow" :
-                    agio.ntripStatus === 3 ? "yellow" :
-                    agio.ntripStatus === 4 ? "green":
-                    agio.ntripStatus === 5 ? "red":
+                    AgIOService.ntripStatus === 0 ? "red" :
+                    AgIOService.ntripStatus === 1 ? "yellow" :
+                    AgIOService.ntripStatus === 2 ? "yellow" :
+                    AgIOService.ntripStatus === 3 ? "yellow" :
+                    AgIOService.ntripStatus === 4 ? "green":
+                    AgIOService.ntripStatus === 5 ? "red":
                     "red")
                 onClicked: ntrip.visible = !ntrip.visible
             }

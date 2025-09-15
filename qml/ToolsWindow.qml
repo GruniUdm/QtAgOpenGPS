@@ -91,7 +91,7 @@ import "wizards" as Wiz
             contentItem: Rectangle{
                 id: wizardMenuContent
                 anchors.fill: parent
-                height: wizardMenuMenu.height
+                height: wizardMenu.height
                 color: aog.blackDayWhiteNight
             }
 

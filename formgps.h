@@ -28,6 +28,7 @@
 #include "cnmea.h"
 #include "cvehicle.h"
 #include "ctool.h"
+#include "agioservice.h"
 #include "cboundary.h"
 #include "cabline.h"
 #include "ctram.h"
@@ -86,6 +87,9 @@ public:
 
     //flag context menu and buttons
     QObject *contextFlag;
+    QObject *boundaryInterface;
+    QObject *fieldInterface;
+    QObject *recordedPathInterface;
     QObject *btnDeleteFlag;
     QObject *btnDeleteAllFlags;
 
@@ -177,6 +181,9 @@ public:
 
 
 private:
+    // AgIO Service (main thread for zero-latency OpenGL access)
+    AgIOService* m_agioService;
+    
     //For field saving in background
     int fileSaveCounter = 1;
     int minuteCounter = 1;
@@ -285,7 +292,7 @@ public:
     //ABLine Instance
     //QScopedPointer<CABLine> ABLine;
 
-    CTrack* trk;        // Pointeur vers singleton
+    // CTrack singleton accessible via CTrack::instance()
     CGuidance gyd;
 
     CTram tram;
@@ -565,21 +572,23 @@ public:
      * formgps_udpcomm.cpp *
      ***********************/
 private:
-    QUdpSocket *udpSocket = NULL;
+    // UDP FormGPS REMOVED - Phase 4.6: Workers → AgIOService ONLY source
+    // QUdpSocket *udpSocket = NULL;  // ❌ REMOVED - AgIOService Workers only
 
 public:
-    QElapsedTimer udpWatch;
-    int udpWatchLimit = 70;
-    int udpWatchCounts = 0;
+    // UDP FormGPS variables REMOVED - Phase 4.6: AgIOService Workers only
+    // QElapsedTimer udpWatch;        // ❌ REMOVED
+    // int udpWatchLimit = 70;        // ❌ REMOVED  
+    // int udpWatchCounts = 0;        // ❌ REMOVED
+    // bool isUDPServerOn = false;    // ❌ REMOVED
 
-    bool isUDPServerOn = false;
+    // UDP FormGPS methods REMOVED - Phase 4.6: AgIOService Workers only
+    // void StartLoopbackServer();    // ❌ REMOVED
+    // void stopUDPServer();          // ❌ REMOVED
 
-    void StartLoopbackServer();
-    void stopUDPServer();
-
-    void SendPgnToLoop(QByteArray byteData);
+    // void SendPgnToLoop(QByteArray byteData);  // ❌ REMOVED - AgIOService Workers only
     void DisableSim();
-    //void ReceiveFromAgIO(); // in slots below
+    // void ReceiveFromAgIO(); // ❌ REMOVED - AgIOService Workers only
 
     /******************
      * formgps_ui.cpp *
@@ -621,6 +630,11 @@ private:
 
 private:
     void setupGui();
+    void setupAgIOService();
+    void connectToAgIOFactoryInstance(); // New: connect to factory-created instance
+    void testAgIOConfiguration();
+    void connectFormLoopToAgIOService();
+    void cleanupAgIOService();
 
 
     /**************
@@ -790,7 +804,7 @@ public slots:
      * UDPCOMM.Designer.cs
      * formgps_udpcomm.cpp
      ***/
-    void ReceiveFromAgIO(); // in slots below
+    // void ReceiveFromAgIO(); // ❌ REMOVED - AgIOService Workers handle all UDP communication
 
     /*******************
      * simulator       *
@@ -810,7 +824,7 @@ public slots:
     /*
      * misc
      */
-    void FileSaveEverythingBeforeClosingField();
+    void FileSaveEverythingBeforeClosingField(bool saveVehicle = true);
     void FileSaveTracks();
 
     /* formgps_classcallbacks.cpp */
@@ -848,7 +862,6 @@ public:
 
     // Методы для работы с данными
 
-    void ApplyOffsetToCollectedData(double appliedOffsetDegrees);
     int GetRecommendedWASOffsetAdjustment(int currentCPD);
 
 protected:
@@ -873,6 +886,7 @@ public slots:
     void StartDataCollection();
     void StopDataCollection();
     void ResetData();
+    void ApplyOffsetToCollectedData(double appliedOffsetDegrees);
     void SmartCalLabelClick();
     void on_btnSmartZeroWAS_clicked();
 

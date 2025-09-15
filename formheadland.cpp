@@ -11,7 +11,27 @@
 #include <QMatrix4x4>
 #include <QOpenGLFunctions>
 #include "glutils.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
+
+// ===== CRITICAL: Safe QML access helper function =====
+// Crash fix: secure access to headlandRenderer dimensions with default values
+struct HeadlandRendererViewport {
+    int width = 800;   // Default safe width
+    int height = 600;  // Default safe height
+};
+
+HeadlandRendererViewport getHeadlandRendererViewport(QObject* headland_designer_instance) {
+    HeadlandRendererViewport viewport;  // Initialize with safe defaults
+    QObject *renderer = qmlItem(headland_designer_instance, "headlandRenderer");
+    
+    if (renderer) {
+        viewport.width = renderer->property("width").toReal();
+        viewport.height = renderer->property("height").toReal();
+    } else {
+        qWarning() << "⚠️ HeadlandRenderer not found - using default dimensions 800x600";
+    }
+    return viewport;
+}
 
 //here for now.  Put in another module for use in other places.
 
@@ -206,8 +226,10 @@ QVector3D FormHeadland::mouseClickToField(int mouseX, int mouseY) {
     QMatrix4x4 modelview;
     QMatrix4x4 projection;
 
-    int width = qmlItem(headland_designer_instance, "headlandRenderer")->property("width").toReal();
-    int height = qmlItem(headland_designer_instance, "headlandRenderer")->property("height").toReal();
+    // CRITICAL: Use secure helper function instead of direct QML access
+    HeadlandRendererViewport viewport = getHeadlandRendererViewport(headland_designer_instance);
+    int width = viewport.width;
+    int height = viewport.height;
 
     projection.setToIdentity();
 
@@ -302,7 +324,7 @@ void FormHeadland::setup_matrices(QMatrix4x4 &modelview, QMatrix4x4 &projection)
 }
 
 void FormHeadland::updateVehiclePosition() {
-    if (vehicle == NULL) return;
+    // Vehicle is now singleton - always available
 
     QMatrix4x4 modelview;
     QMatrix4x4 projection;
@@ -312,11 +334,13 @@ void FormHeadland::updateVehiclePosition() {
 
     setup_matrices(modelview, projection);
 
-    int width = qmlItem(headland_designer_instance, "headlandRenderer")->property("width").toReal();
-    int height = qmlItem(headland_designer_instance, "headlandRenderer")->property("height").toReal();
+    // CRITICAL: Use secure helper function instead of direct QML access
+    HeadlandRendererViewport viewport = getHeadlandRendererViewport(headland_designer_instance);
+    int width = viewport.width;
+    int height = viewport.height;
 
-    p = QVector3D(vehicle->pivotAxlePos.easting,
-                  vehicle->pivotAxlePos.northing,
+    p = QVector3D(CVehicle::instance()->pivotAxlePos.easting,
+                  CVehicle::instance()->pivotAxlePos.northing,
                   0);
     s = p.project(modelview, projection, QRect(0,0,width,height));
 
@@ -338,8 +362,10 @@ void FormHeadland::update_lines() {
 
     setup_matrices(modelview, projection);
 
-    int width = qmlItem(headland_designer_instance, "headlandRenderer")->property("width").toReal();
-    int height = qmlItem(headland_designer_instance, "headlandRenderer")->property("height").toReal();
+    // CRITICAL: Use secure helper function instead of direct QML access
+    HeadlandRendererViewport viewport = getHeadlandRendererViewport(headland_designer_instance);
+    int width = viewport.width;
+    int height = viewport.height;
 
     for (int j = 0; j < bnd->bndList.count(); j++)
     {
@@ -381,8 +407,10 @@ void FormHeadland::update_slice() {
 
     setup_matrices(modelview, projection);
 
-    int width = qmlItem(headland_designer_instance, "headlandRenderer")->property("width").toReal();
-    int height = qmlItem(headland_designer_instance, "headlandRenderer")->property("height").toReal();
+    // CRITICAL: Use secure helper function instead of direct QML access
+    HeadlandRendererViewport viewport = getHeadlandRendererViewport(headland_designer_instance);
+    int width = viewport.width;
+    int height = viewport.height;
 
     //draw A and B points
     if (start != 99999) {
@@ -427,8 +455,10 @@ void FormHeadland::update_headland() {
 
     setup_matrices(modelview, projection);
 
-    int width = qmlItem(headland_designer_instance, "headlandRenderer")->property("width").toReal();
-    int height = qmlItem(headland_designer_instance, "headlandRenderer")->property("height").toReal();
+    // CRITICAL: Use secure helper function instead of direct QML access
+    HeadlandRendererViewport viewport = getHeadlandRendererViewport(headland_designer_instance);
+    int width = viewport.width;
+    int height = viewport.height;
 
      //draw headland line if exists
     if (bnd->bndList.count() > 0 && bnd->bndList[0].hdLine.count()) {
@@ -756,7 +786,7 @@ void FormHeadland::btn_Exit_Click() {
 
 void FormHeadland::isSectionControlled(bool wellIsIt) {
     bnd->isSectionControlledByHeadland = wellIsIt;
-    settings->setValue(SETTINGS_headland_isSectionControlled, wellIsIt);
+    SettingsManager::instance()->setValue(SETTINGS_headland_isSectionControlled, wellIsIt);
 }
 
 void FormHeadland::btnBndLoop_Click() {
@@ -1074,6 +1104,6 @@ void FormHeadland::btnHeadlandOff_Click()
     update_slice();
     emit saveHeadland();
     bnd->isHeadlandOn = false;
-    vehicle->isHydLiftOn = false;
+    CVehicle::instance()->isHydLiftOn = false;
     updateVehiclePositionTimer.stop();
 }

@@ -43,21 +43,21 @@ Drawer {
                 id: ckUDPListenOnly
                 text: "UDP Listen Only"
                 checked: false
-                onCheckedChanged: agio.btnUDPListenOnly_clicked(ckUDPListenOnly.checkState)
+                onCheckedChanged: AgIOService.btnUDPListenOnly_clicked(ckUDPListenOnly.checkState)
                 //Layout.alignment: Qt.AlignLeft
             }
             Comp.CheckBoxCustomized {
                 id: ckNtripDebug
                 text: "Console NTRIP Debug"
                 checked: false
-                onCheckedChanged: agio.ntripDebug(ckNtripDebug.checkState)
+                onCheckedChanged: AgIOService.ntripDebug(ckNtripDebug.checkState)
                 //Layout.alignment: Qt.AlignRight
             }
             Comp.CheckBoxCustomized {
                 id: ckBluetoothDebug
                 text: "Console Bluetooth Debug"
                 checked: false
-                onCheckedChanged: agio.bluetoothDebug(ckBluetoothDebug.checkState)
+                onCheckedChanged: AgIOService.bluetoothDebug(ckBluetoothDebug.checkState)
                 //Layout.alignment: Qt.AlignLeft
             }
         }

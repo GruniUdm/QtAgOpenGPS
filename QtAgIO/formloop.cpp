@@ -77,22 +77,37 @@ void FormLoop::setEngine(QQmlApplicationEngine *engine)
     // setupGUI();
     // loadSettings();
 
-    // LoadLoopback();
-    // LoadUDPNetwork();
+    // Defer network initialization until QML is ready
+    // This will be called after QML is fully loaded
+    QTimer::singleShot(1000, this, [this]() {
+        // Initialize agio reference from QML
+        if (m_engine && m_engine->rootObjects().size() > 0) {
+            qml_root = m_engine->rootObjects().first();
+            agio = qmlItem(qml_root, "agio");
+            if (agio) {
+                qDebug() << "FormLoop: agio object found and initialized";
+            } else {
+                qDebug() << "FormLoop: Warning - agio object not found in QML";
+            }
+        }
+        
+        LoadLoopback();
+        LoadUDPNetwork();
+    });
 
     // if(property_setBluetooth_isOn)
     //     bluetoothManager->startBluetoothDiscovery();
 
     // ConfigureNTRIP();
 
-    // halfSecondTimer = new QTimer(this);
-    // halfSecondTimer->setInterval(500);
-    // connect(halfSecondTimer, &QTimer::timeout, this, &FormLoop::timer1_Tick);
+    halfSecondTimer = new QTimer(this);
+    halfSecondTimer->setInterval(500);
+    connect(halfSecondTimer, &QTimer::timeout, this, &FormLoop::timer1_Tick);
 
-    // oneSecondTimer = new QTimer(this);
-    // oneSecondTimer->setInterval(1000);
-    // connect(oneSecondTimer, &QTimer::timeout, this, &FormLoop::oneSecondLoopTimer_Tick);
-    // oneSecondTimer->start();
+    oneSecondTimer = new QTimer(this);
+    oneSecondTimer->setInterval(1000);
+    connect(oneSecondTimer, &QTimer::timeout, this, &FormLoop::oneSecondLoopTimer_Tick);
+    oneSecondTimer->start();
 
 
     // twoSecondTimer = new QTimer(this);
@@ -170,6 +185,13 @@ FormLoop* FormLoop::instance()
     return &instance;
 }
 
+// Phase 5 Migration: Connect to AgIOService for progressive replacement
+void FormLoop::connectToAgIOService()
+{
+    qDebug() << "📡 FormLoop::connectToAgIOService() - Phase 5 Migration";
+    // Connection will be established by FormGPS when both are ready
+}
+
 
 
 
@@ -215,7 +237,9 @@ void FormLoop::DoHelloAlarmLogic()
         //3 or not
         if (currentHello != lastHelloMachine)
         {
-            agio->setProperty("machineConnected", currentHello); //set qml
+            if (agio) {
+                agio->setProperty("machineConnected", currentHello); //set qml
+            }
 
             if (currentHello)
                 qDebug() << "Connected to machine";
@@ -236,7 +260,9 @@ void FormLoop::DoHelloAlarmLogic()
 
         if (currentHello != lastHelloAutoSteer)
         {
-            agio->setProperty("steerConnected", currentHello);
+            if (agio) {
+                agio->setProperty("steerConnected", currentHello);
+            }
 
             if (currentHello) qDebug() << "Connected to steer";
             else qDebug() << "Not connected to steer";
@@ -255,7 +281,9 @@ void FormLoop::DoHelloAlarmLogic()
 
         if (currentHello != lastHelloIMU)
         {
-            agio->setProperty("imuConnected", currentHello);
+            if (agio) {
+                agio->setProperty("imuConnected", currentHello);
+            }
 
             if (currentHello) qDebug() << "Connected to IMU";
             else qDebug() << "Not connected to IMU";
@@ -273,7 +301,9 @@ void FormLoop::DoHelloAlarmLogic()
 
         if (currentHello != lastHelloBlockage)
         {
-            agio->setProperty("blockageConnected", currentHello);
+            if (agio) {
+                agio->setProperty("blockageConnected", currentHello);
+            }
 
             if (currentHello) qDebug() << "Connected to Blockage";
             else
@@ -297,7 +327,9 @@ void FormLoop::DoHelloAlarmLogic()
     //no GPS is connected?
     if (currentHello != lastHelloGPS)
     {
-        agio->setProperty("gpsConnected", currentHello);
+        if (agio) {
+            agio->setProperty("gpsConnected", currentHello);
+        }
 
         if (currentHello) qDebug() << "Connected to GPS";
         else qDebug() << "Not connected to GPS";

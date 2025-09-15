@@ -53,7 +53,7 @@ Comp.MoveablePopup {
             //color: "red"
             visible: true
             text: qsTr("( +90 to -90 )")
-            onTextChanged: update_model()
+            // onTextChanged: update_model() // Removed - update_model not defined
             font.pointSize: 15
         }
 

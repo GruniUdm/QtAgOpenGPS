@@ -67,8 +67,9 @@ qt_add_executable(QtAgOpenGPS
     main.cpp
     $<$<NOT:$<BOOL:${LOCAL_QML}>>:agopengps.qrc>
     aogrenderer.h aogrenderer.cpp
-    settings.h settings.cpp
-    newsettings_addkeys.cpp
+    # MASSIVE MIGRATION: settings.h settings.cpp newsettings_addkeys.cpp REMOVED
+    classes/settingsmanager.h classes/settingsmanager.cpp
+    settingsmanager_addkeys.cpp
     settings_defines.h
     btnenum.h
     common.h
@@ -114,11 +115,11 @@ qt_add_executable(QtAgOpenGPS
     classes/csection.h classes/csection.cpp
     classes/csim.h classes/csim.cpp
     classes/ctool.h classes/ctool.cpp
-    classes/ctrack.h classes/ctrack.cpp
+    # classes/ctrack.h classes/ctrack.cpp      # MOVED to qt_add_qml_module (QML_ELEMENT)
     classes/ctram.h classes/ctram.cpp
     classes/cturn.cpp
     classes/cturnlines.cpp
-    classes/cvehicle.h classes/cvehicle.cpp
+    # classes/cvehicle.h classes/cvehicle.cpp  # MOVED to qt_add_qml_module (QML_ELEMENT)
     classes/cworldgrid.h classes/cworldgrid.cpp
     classes/cyouturn.h classes/cyouturn.cpp
     classes/glm.h
@@ -195,7 +196,7 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         file(GLOB QML_FILES "${DIR}/*.qml" "${DIR}/*.js")
         set(REL_PATHS)
         foreach(QML_FILE ${QML_FILES})
-            if(NOT QML_FILE MATCHES ".*\\.Test\\..*\\.qml$")  #Remove *Test*.qml files from the list
+            if(NOT QML_FILE MATCHES ".*\\.test\\..*\\.qml$")  #Remove *Test*.qml files from the list
                 file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}" "${QML_FILE}")
                 # Create alias relative to qml/ directory for module structure
                 file(RELATIVE_PATH MODULE_REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/qml" "${QML_FILE}")
@@ -213,6 +214,9 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
     # Process QML files for each directory 
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml" QML_REL_PATHS)
     #process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/AOG" AOG_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/agio" AGIO_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/agio/components" AGIO_COMPONENTS_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/agio/interfaces" AGIO_INTERFACES_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/boundary" BOUNDARY_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/components" COMPONENTS_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/config" CONFIG_REL_PATHS)
@@ -228,6 +232,9 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
     set(ALL_REL_PATHS
         ${QML_REL_PATHS}
     #   ${AOG_REL_PATHS}
+        ${AGIO_REL_PATHS}
+        ${AGIO_COMPONENTS_REL_PATHS}
+        ${AGIO_INTERFACES_REL_PATHS}
         ${BOUNDARY_REL_PATHS}
         ${COMPONENTS_REL_PATHS}
         ${CONFIG_REL_PATHS}
@@ -257,12 +264,22 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         SOURCES
         aogrenderer.cpp
         aogrenderer.h
-        settings.cpp
-        settings.h
+        classes/settingsmanager.cpp
+        classes/settingsmanager.h
         classes/ctrack.cpp
         classes/ctrack.h
         classes/cvehicle.cpp
         classes/cvehicle.h
+        classes/agioservice.cpp
+        classes/agioservice.h
+        classes/gpsworker.cpp
+        classes/gpsworker.h
+        classes/ntripworker.cpp
+        classes/ntripworker.h
+        classes/udpworker.cpp
+        classes/udpworker.h
+        classes/serialworker.cpp
+        classes/serialworker.h
 
         RESOURCES
         ${IMAGE_REL_PATHS}
@@ -323,10 +340,11 @@ target_include_directories(QtAgOpenGPS PRIVATE
     classes
 )
 
-add_subdirectory(QtAgIO)
+# QtAgIO QML module disabled - migrated to qml/agio/ in Phase 4.2
+# add_subdirectory(QtAgIO)
 # Libraries to link
 target_link_libraries(QtAgOpenGPS PRIVATE
-    QtAgIO
+    # QtAgIO  # QML module disabled - sources integrated in Phase 4.2
 #   Qt6::Core
     Qt6::Widgets
     Qt6::Gui

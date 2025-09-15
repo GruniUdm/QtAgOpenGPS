@@ -5,18 +5,18 @@
 #include "formgps.h"
 #include "classes/csim.h"
 #include "qmlutil.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 
 /* Callback for Simulator new position */
 void FormGPS::simConnectSlots()
 {
-    connect(&sim,SIGNAL(setActualSteerAngle(double)),this,SLOT(onSimNewSteerAngle(double)));
+    connect(&sim,SIGNAL(setActualSteerAngle(double)),this,SLOT(onSimNewSteerAngle(double)), Qt::QueuedConnection);
     connect(&sim,SIGNAL(newPosition(double,double,double,double,double,double,double)),
             this,SLOT(onSimNewPosition(double,double,double,double,double,double,double)),
             Qt::UniqueConnection);
     connect(&timerSim,SIGNAL(timeout()),this,SLOT(onSimTimerTimeout()),Qt::UniqueConnection);
 
-    if (settings->value(SETTINGS_menu_isSimulatorOn).value<bool>()) {
+    if (SettingsManager::instance()->value(SETTINGS_menu_isSimulatorOn).value<bool>()) {
         pn.latitude = sim.latitude;
         pn.longitude = sim.longitude;
         pn.headingTrue = 0;
@@ -36,7 +36,7 @@ void FormGPS::onSimNewPosition(double vtgSpeed,
 
     pn.vtgSpeed = vtgSpeed;
 
-    vehicle->AverageTheSpeed(vtgSpeed);
+    CVehicle::instance()->AverageTheSpeed(vtgSpeed);
 
     pn.headingTrue = pn.headingTrueDual = headingTrue;
     //ahrs.imuHeading = pn.headingTrue;
@@ -67,9 +67,9 @@ void FormGPS::onSimTimerTimeout()
     QObject *qmlobject;
     //double stepDistance = qmlobject->property("value").toReal() / 10.0 /gpsHz;
     //sim.setSimStepDistance(stepDistance);
-    if (recPath.isDrivingRecordedPath || (isBtnAutoSteerOn && (vehicle->guidanceLineDistanceOff !=32000)))
+    if (recPath.isDrivingRecordedPath || (isBtnAutoSteerOn && (CVehicle::instance()->guidanceLineDistanceOff !=32000)))
     {
-        sim.DoSimTick(vehicle->guidanceLineSteerAngle * 0.01);
+        sim.DoSimTick(CVehicle::instance()->guidanceLineSteerAngle * 0.01);
     } else {
         //TODO redirect through AOGInterface
         qmlobject = qmlItem(mainWindow, "simSteer");

@@ -14,7 +14,7 @@
 #include <QColor>
 #include "glutils.h"
 #include "cnmea.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 
 //??? why does CABLine refer to mf.ABLine? Isn't there only one instance and
 //thus was can just use "this."  If this is wrong, we'll remove this and fix it.
@@ -31,9 +31,9 @@ void CABLine::BuildCurrentABLineList(Vec3 pivot,
                                      const CYouTurn &yt,
                                      const CVehicle &vehicle)
 {
-    double tool_width = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_overlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
-    double tool_offset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double tool_width = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double tool_overlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_offset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
 
     double dx, dy;
 
@@ -66,7 +66,7 @@ void CABLine::BuildCurrentABLineList(Vec3 pivot,
     //z2-z1
     dy = refNudgePtB.northing - refNudgePtA.northing;
 
-    distanceFromRefLine = ((dy * vehicle.guidanceLookPos.easting) - (dx * vehicle.guidanceLookPos.northing) +
+    distanceFromRefLine = ((dy * CVehicle::instance()->guidanceLookPos.easting) - (dx * CVehicle::instance()->guidanceLookPos.northing) +
                            (refNudgePtB.easting * refNudgePtA.northing) -
                            (refNudgePtB.northing * refNudgePtA.easting)) /
                           sqrt((dy * dy) + (dx * dx));
@@ -132,14 +132,14 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
                                )
 {
     double dx, dy;
-    double purePursuitIntegralGain = settings->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
-    double wheelBase = settings->value(SETTINGS_vehicle_wheelbase).value<double>();
-    double maxSteerAngle = settings->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
-    bool vehicle_isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
-    double as_sideHillCompensation = settings->value(SETTINGS_as_sideHillCompensation).value<double>();
+    double purePursuitIntegralGain = SettingsManager::instance()->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
+    double wheelBase = SettingsManager::instance()->value(SETTINGS_vehicle_wheelbase).value<double>();
+    double maxSteerAngle = SettingsManager::instance()->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
+    bool vehicle_isStanleyUsed = SettingsManager::instance()->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    double as_sideHillCompensation = SettingsManager::instance()->value(SETTINGS_as_sideHillCompensation).value<double>();
 
     //Check uturn first
-    if (yt.isYouTurnTriggered && yt.DistanceFromYouTurnLine(vehicle,pn))//do the pure pursuit from youTurn
+    if (yt.isYouTurnTriggered && yt.DistanceFromYouTurnLine(*CVehicle::instance(),pn))//do the pure pursuit from youTurn
     {
         //now substitute what it thinks are AB line values with auto turn values
         steerAngleAB = yt.steerAngleYT;
@@ -150,13 +150,13 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         radiusPointAB.northing = yt.radiusPointYT.northing;
         ppRadiusAB = yt.ppRadiusYT;
 
-        vehicle.modeTimeCounter = 0;
-        vehicle.modeActualXTE = (distanceFromCurrentLinePivot);
+        CVehicle::instance()->modeTimeCounter = 0;
+        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
     }
 
     //Stanley
     else if (vehicle_isStanleyUsed)
-        gyd.StanleyGuidanceABLine(currentLinePtA, currentLinePtB, pivot, steer, isBtnAutoSteerOn, vehicle,*this, ahrs,yt);
+        gyd.StanleyGuidanceABLine(currentLinePtA, currentLinePtB, pivot, steer, isBtnAutoSteerOn, *CVehicle::instance(),*this, ahrs,yt);
 
     //Pure Pursuit
     else
@@ -176,7 +176,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
                                        / sqrt((dy * dy) + (dx * dx));
 
         //integral slider is set to 0
-        if (purePursuitIntegralGain != 0 && !vehicle.isReverse)
+        if (purePursuitIntegralGain != 0 && !CVehicle::instance()->isReverse)
         {
             pivotDistanceError = distanceFromCurrentLinePivot * 0.2 + pivotDistanceError * 0.8;
 
@@ -197,7 +197,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
 
             if (isBtnAutoSteerOn
                 && fabs(pivotDerivative) < (0.1)
-                && vehicle.avgSpeed > 2.5
+                && CVehicle::instance()->avgSpeed > 2.5
                 && !yt.isYouTurnTriggered)
             //&& fabs(pivotDistanceError) < 0.2)
 
@@ -222,7 +222,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         else inty = 0;
 
         //Subtract the two headings, if > 1.57 its going the opposite heading as refAB
-        abFixHeadingDelta = (fabs(vehicle.fixHeading - abHeading));
+        abFixHeadingDelta = (fabs(CVehicle::instance()->fixHeading - abHeading));
         if (abFixHeadingDelta >= M_PI) abFixHeadingDelta = fabs(abFixHeadingDelta - glm::twoPI);
 
         // ** Pure pursuit ** - calc point on ABLine closest to current position
@@ -235,9 +235,9 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         rNorthAB = currentLinePtA.northing + (U * dy);
 
         //update base on autosteer settings and distance from line
-        double goalPointDistance = vehicle.UpdateGoalPointDistance();
+        double goalPointDistance = CVehicle::instance()->UpdateGoalPointDistance();
 
-        if (vehicle.isReverse ? isHeadingSameWay : !isHeadingSameWay)
+        if (CVehicle::instance()->isReverse ? isHeadingSameWay : !isHeadingSameWay)
         {
             goalPointAB.easting = rEastAB - (sin(abHeading) * goalPointDistance);
             goalPointAB.northing = rNorthAB - (cos(abHeading) * goalPointDistance);
@@ -255,8 +255,8 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         //calculate the the new x in local coordinates and steering angle degrees based on wheelbase
         double localHeading;
 
-        if (isHeadingSameWay) localHeading = glm::twoPI - vehicle.fixHeading + inty;
-        else localHeading = glm::twoPI - vehicle.fixHeading - inty;
+        if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
+        else localHeading = glm::twoPI - CVehicle::instance()->fixHeading - inty;
 
         ppRadiusAB = goalPointDistanceDSquared / (2 * (((goalPointAB.easting - pivot.easting) * cos(localHeading))
                                                        + ((goalPointAB.northing - pivot.northing) * sin(localHeading))));
@@ -288,7 +288,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         //    //clamp the steering angle to not exceed safe angular velocity
         //    if famf.setAngVel) > 1000)
         //    {
-        //        //mf.setAngVel = mf.setAngVel < 0 ? -mf.vehicle.maxAngularVelocity : mf.vehicle.maxAngularVelocity;
+        //        //mf.setAngVel = mf.setAngVel < 0 ? -mf.CVehicle::instance()->maxAngularVelocity : mf.CVehicle::instance()->maxAngularVelocity;
         //        mf.setAngVel = mf.setAngVel < 0 ? -1000 : 1000;
         //    }
         //}
@@ -298,7 +298,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
             distanceFromCurrentLinePivot *= -1.0;
 
         //used for acquire/hold mode
-        vehicle.modeActualXTE = (distanceFromCurrentLinePivot);
+        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
 
         double steerHeadingError = (pivot.heading - abHeading);
         //Fix the circular error
@@ -312,14 +312,14 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         else if (steerHeadingError < -glm::PIBy2)
             steerHeadingError += M_PI;
 
-        vehicle.modeActualHeadingError = glm::toDegrees(steerHeadingError);
+        CVehicle::instance()->modeActualHeadingError = glm::toDegrees(steerHeadingError);
 
         //Convert to millimeters
-        vehicle.guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
-        vehicle.guidanceLineSteerAngle = (short)(steerAngleAB * 100);
+        CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+        CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleAB * 100);
     }
 
-    //mf.setAngVel = 0.277777 * mf.avgSpeed * (Math.Tan(glm::toRadians(steerAngleAB))) / mf.vehicle.wheelbase;
+    //mf.setAngVel = 0.277777 * mf.avgSpeed * (Math.Tan(glm::toRadians(steerAngleAB))) / mf.CVehicle::instance()->wheelbase;
     //mf.setAngVel = glm::toDegrees(mf.setAngVel);
 }
 void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
@@ -327,7 +327,7 @@ void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 {
     GLHelperOneColor gldraw;
     QColor color;
-    double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
+    double lineWidth = SettingsManager::instance()->value(SETTINGS_display_lineWidth).value<double>();
     gl->glLineWidth(lineWidth);
     gldraw.append(QVector3D(desLineEndA.easting, desLineEndA.northing, 0.0));
     gldraw.append(QVector3D(desLineEndB.easting, desLineEndB.northing, 0.0));
@@ -347,12 +347,12 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                           const CCamera &camera,
                           const CGuidance &gyd)
 {
-    double tool_toolWidth = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_toolOverlap = settings->value(SETTINGS_vehicle_toolOverlap).value<double>();
-    double tool_toolOffset = settings->value(SETTINGS_vehicle_toolOffset).value<double>();
-    bool isStanleyUsed = settings->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
-    bool isSideGuideLines = settings->value(SETTINGS_menu_isSideGuideLines).value<bool>();
-    double lineWidth = settings->value(SETTINGS_display_lineWidth).value<double>();
+    double tool_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
+    double tool_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
+    bool isStanleyUsed = SettingsManager::instance()->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    bool isSideGuideLines = SettingsManager::instance()->value(SETTINGS_menu_isSideGuideLines).value<bool>();
+    double lineWidth = SettingsManager::instance()->value(SETTINGS_display_lineWidth).value<double>();
     widthMinusOverlap = tool_toolWidth - tool_toolOverlap;
 
     GLHelperOneColor gldraw;
@@ -519,10 +519,10 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 
 void CABLine::BuildTram(const CTrk &track, CBoundary &bnd, CTram &tram)
 {
-    double tramWidth = settings->value(SETTINGS_tram_width).value<double>();
-    double tool_halfWidth = (settings->value(SETTINGS_vehicle_toolWidth).value<double>() - settings->value(SETTINGS_vehicle_toolOverlap).value<double>()) / 2.0;
-    double halfWheelTrack = settings->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
-    int tram_passes = settings->value(SETTINGS_tram_passes).value<int>();
+    double tramWidth = SettingsManager::instance()->value(SETTINGS_tram_width).value<double>();
+    double tool_halfWidth = (SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>() - SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>()) / 2.0;
+    double halfWheelTrack = SettingsManager::instance()->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
+    int tram_passes = SettingsManager::instance()->value(SETTINGS_tram_passes).value<int>();
 
     if (tram.generateMode != 1)
     {

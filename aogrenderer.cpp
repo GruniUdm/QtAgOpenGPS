@@ -68,9 +68,10 @@ void AOGRenderer::synchronize(QQuickFramebufferObject *fbo)
     }
 }
 
-AOGRendererInSG::AOGRendererInSG()
+AOGRendererInSG::AOGRendererInSG(QQuickItem* parent) : QQuickFramebufferObject(parent)
 {
     theRenderer = NULL;
+    qDebug() << "🏗️ AOGRendererInSG constructor called, parent:" << parent;
 }
 
 QOpenGLFramebufferObject *AOGRenderer::createFramebufferObject(const QSize &size)

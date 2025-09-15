@@ -1,5 +1,5 @@
 #include "cdubins.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 #include "glm.h"
 
 static const double driveDistance = 0.05;
@@ -185,7 +185,7 @@ CDubins::CDubins()
 
 void CDubins::loadSettings()
 {
-    CDubinsTurningRadius = settings->value(SETTINGS_vehicle_minTurningRadius).value<double>();
+    CDubinsTurningRadius = SettingsManager::instance()->value(SETTINGS_vehicle_minTurningRadius).value<double>();
 
 }
 

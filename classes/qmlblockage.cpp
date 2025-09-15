@@ -14,6 +14,8 @@ void qmlblockage::set(double *new_state, int size) {
         for (int i = 0; i < size; i++) {
             rows << QVariant(new_state[i]+row1);
         }
-        aog_root->setProperty("blockageRowCount", rows);
+        // CRITICAL: Force QML update in GUI thread to prevent threading violation
+        QMetaObject::invokeMethod(aog_root, "setProperty", Qt::QueuedConnection,
+                                Q_ARG(QString, "blockageRowCount"), Q_ARG(QVariant, QVariant(rows)));
     }
 }

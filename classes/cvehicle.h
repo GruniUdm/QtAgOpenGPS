@@ -29,34 +29,23 @@ class CTrack;
 class CVehicle: public QObject
 {
     Q_OBJECT
-    QML_NAMED_ELEMENT(VehicleInterface)
-    QML_SINGLETON
+    // QML registration handled manually in main.cpp
 
-private:
-    // Vrai singleton pattern
-    static CVehicle* s_instance;
-    
-    // Constructeur privé pour singleton
-    explicit CVehicle(QObject *parent = 0);
-    
 public:
-    // Instance singleton (comme Settings)
+    // C++ singleton access (strict singleton pattern - same as CTrack)
     static CVehicle* instance() {
-        if (!s_instance) {
-            s_instance = new CVehicle(nullptr);
-            qDebug() << "CVehicle singleton created:" << s_instance;
-        }
+        static CVehicle* s_instance = new CVehicle(nullptr);
         return s_instance;
     }
-    
-    // Factory function pour Qt 6
-    static CVehicle* create(QQmlEngine* engine, QJSEngine* jsEngine) {
-        qDebug() << "🔥🔥🔥 CVehicle::create() CALLED! 🔥🔥🔥";
-        Q_UNUSED(engine)
-        Q_UNUSED(jsEngine)
-        
-        return instance(); // Retourne le vrai singleton
-    }
+
+    // ===== QML PROPERTIES =====
+    Q_PROPERTY(bool isHydLiftOn MEMBER isHydLiftOn NOTIFY isHydLiftOnChanged)
+    Q_PROPERTY(bool hydLiftDown MEMBER hydLiftDown NOTIFY hydLiftDownChanged)
+    Q_PROPERTY(bool isChangingDirection MEMBER isChangingDirection NOTIFY isChangingDirectionChanged)
+    Q_PROPERTY(int leftTramState MEMBER leftTramState NOTIFY leftTramStateChanged)
+    Q_PROPERTY(int rightTramState MEMBER rightTramState NOTIFY rightTramStateChanged)
+    Q_PROPERTY(bool isReverse MEMBER isReverse NOTIFY isReverseChanged)
+    Q_PROPERTY(QList<QVariant> vehicle_list MEMBER vehicle_list NOTIFY vehicle_listChanged)
     bool isSteerAxleAhead;
     bool isPivotBehindAntenna;
 
@@ -82,11 +71,9 @@ public:
 
     //InterfaceProperty<VehicleInterface,bool> isHydLiftOn = InterfaceProperty<VehicleInterface,bool>("isHydLiftOn");
     bool isHydLiftOn = false;
-    Q_PROPERTY(bool isHydLiftOn MEMBER isHydLiftOn NOTIFY isHydLiftOnChanged)
 
     //InterfaceProperty<VehicleInterface,bool> hydLiftDown = InterfaceProperty<VehicleInterface,bool>("hydLiftDown");
     bool hydLiftDown = false;
-    Q_PROPERTY(bool hydLiftDown MEMBER hydLiftDown NOTIFY hydLiftDownChanged)
 
     double stanleyIntegralDistanceAwayTriggerAB, stanleyIntegralGainAB, purePursuitIntegralGain;
 
@@ -108,12 +95,9 @@ public:
 
     //InterfaceProperty<VehicleInterface,bool> isChangingDirection = InterfaceProperty<VehicleInterface,bool>("isChangingDirection");
     bool isChangingDirection = false;
-    Q_PROPERTY(bool isChangingDirection MEMBER isChangingDirection NOTIFY isChangingDirectionChanged)
 
     //tram indicator vars
     int leftTramState, rightTramState;
-    Q_PROPERTY(int leftTramState MEMBER leftTramState NOTIFY leftTramStateChanged)
-    Q_PROPERTY(int rightTramState MEMBER rightTramState NOTIFY rightTramStateChanged)
 
     //headings
     double fixHeading = 0.0;
@@ -152,15 +136,14 @@ public:
 
     //from Position.Designer.cs
     bool isReverse;
-    Q_PROPERTY (bool isReverse MEMBER isReverse NOTIFY isReverseChanged)
 
     QRect bounding_box;
     QPoint pivot_axle_xy;
 
-    Q_PROPERTY(QList<QVariant> vehicle_list MEMBER vehicle_list NOTIFY vehicle_listChanged)
     QList<QVariant> vehicle_list;
 
     void loadSettings();
+    void saveSettings();
 
     double UpdateGoalPointDistance();
     void DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview, QMatrix4x4 projection,
@@ -200,6 +183,10 @@ signals:
 public slots:
     void AverageTheSpeed(double newSpeed);
     //void settingsChanged(); //notify us that settings changed so buffers need to be redone.
+
+private:
+    // Private constructor for strict singleton pattern
+    explicit CVehicle(QObject* parent = nullptr);
 };
 
 #endif // CVEHICLE_H

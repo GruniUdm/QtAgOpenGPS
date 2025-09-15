@@ -6,7 +6,7 @@
 #include "qmlutil.h"
 #include "common.h"
 #include "cpgn.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 
 
 /* SectionSetPosition(), SectionCalcWidths(), and SectionCalcMulti() are all in CTool */
@@ -74,7 +74,7 @@ void FormGPS::BuildMachineByte()
 
     }
 
-    p_239.pgn[p_239.speed] = (char)(vehicle->avgSpeed * 10);
+    p_239.pgn[p_239.speed] = (char)(CVehicle::instance()->avgSpeed * 10);
     p_239.pgn[p_239.tram] = (char)tram.controlByte;
 }
 
@@ -320,13 +320,13 @@ void FormGPS::doBlockageMonitoring()
 {
     QObject *aog = qmlItem(mainWindow, "aog");
     int k = 0;
-    int k1 = settings->value(SETTINGS_seed_blockRow1).value<int>();
-    int k2 = settings->value(SETTINGS_seed_blockRow2).value<int>();
-    int k3 = settings->value(SETTINGS_seed_blockRow3).value<int>();
-    int k4 = settings->value(SETTINGS_seed_blockRow4).value<int>();
-    int k5 = settings->value(SETTINGS_seed_numRows).value<int>();
-    int k6 = settings->value(SETTINGS_seed_blockCountMin).value<int>();
-    double k7 = settings->value(SETTINGS_vehicle_toolWidth).value<double>();
+    int k1 = SettingsManager::instance()->value(SETTINGS_seed_blockRow1).value<int>();
+    int k2 = SettingsManager::instance()->value(SETTINGS_seed_blockRow2).value<int>();
+    int k3 = SettingsManager::instance()->value(SETTINGS_seed_blockRow3).value<int>();
+    int k4 = SettingsManager::instance()->value(SETTINGS_seed_blockRow4).value<int>();
+    int k5 = SettingsManager::instance()->value(SETTINGS_seed_numRows).value<int>();
+    int k6 = SettingsManager::instance()->value(SETTINGS_seed_blockCountMin).value<int>();
+    double k7 = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
     double rowwidth = k7 / k5;
     if (pn.vtgSpeed != 0 && rowwidth != 0) {
         for (int i = 0; i < k1 && i < (sizeof(mc.blockageseccount1) / sizeof(mc.blockageseccount1[0])); i++)
@@ -382,7 +382,9 @@ void FormGPS::doBlockageMonitoring()
     tool.blockage_max_i = i_max + 1;
     tool.blockage_blocked = count;
 
-    aog->setProperty("blockageConnected", true);
+    if (aog) {
+        aog->setProperty("blockageConnected", true);
+    }
         }
     }
 }

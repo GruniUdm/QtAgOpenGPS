@@ -10,7 +10,7 @@
 
 void CBoundary::SetHydPosition(btnStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle)
 {
-    if (vehicle.isHydLiftOn && vehicle.avgSpeed > 0.2 && autoBtnState == btnStates::Auto)
+    if (CVehicle::instance()->isHydLiftOn && CVehicle::instance()->avgSpeed > 0.2 && autoBtnState == btnStates::Auto)
     {
         if (isToolInHeadland)
         {
@@ -74,7 +74,7 @@ void CBoundary::WhereAreToolLookOnPoints(CVehicle &vehicle, CTool &tool)
     {
         bool isLookRightIn = false;
 
-        Vec3 toolFix = vehicle.toolPos;
+        Vec3 toolFix = CVehicle::instance()->toolPos;
         double sinAB = sin(toolFix.heading);
         double cosAB = cos(toolFix.heading);
 

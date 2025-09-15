@@ -11,7 +11,8 @@
 #include <QLocale>
 #include <QLabel>
 #include <QQuickWindow>
-#include "settings.h"
+#include "classes/settingsmanager.h"
+#include <cmath>
 
 extern QLabel *grnPixelsWindow;
 extern QLabel *overlapPixelsWindow;
@@ -21,13 +22,16 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     qDebug() << "🚀 FormGPS constructor START";
 
     qDebug() << "🔗 Setting up basic connections...";
-    connect(this,SIGNAL(do_processSectionLookahead()), this, SLOT(processSectionLookahead()));
-    connect(this,SIGNAL(do_processOverlapCount()), this, SLOT(processOverlapCount()));
+    connect(this,SIGNAL(do_processSectionLookahead()), this, SLOT(processSectionLookahead()), Qt::QueuedConnection);
+    connect(this,SIGNAL(do_processOverlapCount()), this, SLOT(processOverlapCount()), Qt::QueuedConnection);
     
-    qDebug() << "🎯 Initializing singletons FIRST...";
+    qDebug() << "🔧 Setting up AgIO service FIRST...";
+    setupAgIOService();
+    
+    qDebug() << "🎯 Initializing singletons...";
     // ===== CRITIQUE : Initialiser les singletons AVANT connect_classes() =====
-    trk = CTrack::instance();
-    qDebug() << "  ✅ CTrack singleton created:" << trk;
+    // CTrack will be auto-initialized via QML singleton pattern
+    qDebug() << "  ✅ CTrack singleton will be auto-created by Qt";
     
     vehicle = CVehicle::instance();
     qDebug() << "  ✅ CVehicle singleton created:" << vehicle;
@@ -39,21 +43,26 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     setupGui();
     
     // Initialize AgIO singleton AFTER FormLoop is ready
-    // QMLSettings* agiosettings_instance = QMLSettings::instance();
-    // QMLSettings::setFormLoopInstance(agiosettings_instance);
-    
+    // Old QMLSettings removed - now using AgIOService singleton
     // Pure Qt 6.8 approach - factory function should be called automatically
     
-    qDebug() << "  ✅ AgIO settings singleton registered AFTER FormLoop ready:" << agiosettings_instance;
+    qDebug() << "  ✅ AgIO service initialized in main thread";
     //loadSettings();
 
 }
 
 FormGPS::~FormGPS()
 {
+    qDebug() << "🔧 FormGPS destructor START";
+    
     /* clean up our dynamically-allocated
      * objects.
      */
+    
+    // Clean up AgIO service
+    cleanupAgIOService();
+    
+    qDebug() << "✅ FormGPS destructor END";
 }
 
 //This used to be part of oglBack_paint in the C# code, but
@@ -65,7 +74,7 @@ void FormGPS::processSectionLookahead() {
     //lock.lockForWrite();
     //qDebug() << "frame time after getting lock  " << swFrame.elapsed();
 
-    if (settings->value(SETTINGS_display_showBack).value<bool>()) {
+    if (SettingsManager::instance()->value(SETTINGS_display_showBack).value<bool>()) {
         grnPixelsWindow->setPixmap(QPixmap::fromImage(grnPix.mirrored()));
         overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
     }
@@ -74,11 +83,11 @@ void FormGPS::processSectionLookahead() {
     if (bnd.isHeadlandOn) bnd.WhereAreToolCorners(tool);
 
     //set the look ahead for hyd Lift in pixels per second
-    vehicle->hydLiftLookAheadDistanceLeft = tool.farLeftSpeed * vehicle->hydLiftLookAheadTime * 10;
-    vehicle->hydLiftLookAheadDistanceRight = tool.farRightSpeed * vehicle->hydLiftLookAheadTime * 10;
+    CVehicle::instance()->hydLiftLookAheadDistanceLeft = tool.farLeftSpeed * CVehicle::instance()->hydLiftLookAheadTime * 10;
+    CVehicle::instance()->hydLiftLookAheadDistanceRight = tool.farRightSpeed * CVehicle::instance()->hydLiftLookAheadTime * 10;
 
-    if (vehicle->hydLiftLookAheadDistanceLeft > 200) vehicle->hydLiftLookAheadDistanceLeft = 200;
-    if (vehicle->hydLiftLookAheadDistanceRight > 200) vehicle->hydLiftLookAheadDistanceRight = 200;
+    if (CVehicle::instance()->hydLiftLookAheadDistanceLeft > 200) CVehicle::instance()->hydLiftLookAheadDistanceLeft = 200;
+    if (CVehicle::instance()->hydLiftLookAheadDistanceRight > 200) CVehicle::instance()->hydLiftLookAheadDistanceRight = 200;
 
     tool.lookAheadDistanceOnPixelsLeft = tool.farLeftSpeed * tool.lookAheadOnSetting * 10;
     tool.lookAheadDistanceOnPixelsRight = tool.farRightSpeed * tool.lookAheadOnSetting * 10;
@@ -124,8 +133,8 @@ void FormGPS::processSectionLookahead() {
     double rpToolHeight = 0;
 
     //pick the larger side
-    if (vehicle->hydLiftLookAheadDistanceLeft > vehicle->hydLiftLookAheadDistanceRight) rpToolHeight = vehicle->hydLiftLookAheadDistanceLeft;
-    else rpToolHeight = vehicle->hydLiftLookAheadDistanceRight;
+    if (CVehicle::instance()->hydLiftLookAheadDistanceLeft > CVehicle::instance()->hydLiftLookAheadDistanceRight) rpToolHeight = CVehicle::instance()->hydLiftLookAheadDistanceLeft;
+    else rpToolHeight = CVehicle::instance()->hydLiftLookAheadDistanceRight;
 
     if (tool.lookAheadDistanceOnPixelsLeft > tool.lookAheadDistanceOnPixelsRight) rpOnHeight = tool.lookAheadDistanceOnPixelsLeft;
     else rpOnHeight = tool.lookAheadDistanceOnPixelsRight;
@@ -156,7 +165,7 @@ void FormGPS::processSectionLookahead() {
     double mOn = 0, mOff = 0;
 
     //tram and hydraulics
-    if (tram.displayMode > 0 && tool.width > vehicle->trackWidth)
+    if (tram.displayMode > 0 && tool.width > CVehicle::instance()->trackWidth)
     {
         tram.controlByte = 0;
         //1 pixels in is there a tram line?
@@ -177,12 +186,12 @@ void FormGPS::processSectionLookahead() {
     if (bnd.isHeadlandOn)
     {
         //calculate the slope
-        double m = (vehicle->hydLiftLookAheadDistanceRight - vehicle->hydLiftLookAheadDistanceLeft) / tool.rpWidth;
+        double m = (CVehicle::instance()->hydLiftLookAheadDistanceRight - CVehicle::instance()->hydLiftLookAheadDistanceLeft) / tool.rpWidth;
         int height = 1;
 
         for (int pos = 0; pos < tool.rpWidth; pos++)
         {
-            height = (int)(vehicle->hydLiftLookAheadDistanceLeft + (m * pos)) - 1;
+            height = (int)(CVehicle::instance()->hydLiftLookAheadDistanceLeft + (m * pos)) - 1;
             for (int a = pos; a < height * tool.rpWidth; a += tool.rpWidth)
             {
                 if (grnPixels[a].green == 250)
@@ -199,10 +208,10 @@ void FormGPS::processSectionLookahead() {
         bnd.isToolInHeadland = bnd.isToolOuterPointsInHeadland && !isHeadlandClose;
 
         //set hydraulics based on tool in headland or not
-        bnd.SetHydPosition(autoBtnState, p_239, *vehicle);
+        bnd.SetHydPosition(autoBtnState, p_239, *CVehicle::instance());
 
         //set hydraulics based on tool in headland or not
-        bnd.SetHydPosition(autoBtnState, p_239, *vehicle);
+        bnd.SetHydPosition(autoBtnState, p_239, *CVehicle::instance());
 
     }
 
@@ -210,12 +219,12 @@ void FormGPS::processSectionLookahead() {
 
     int endHeight = 1, startHeight = 1;
 
-    if (bnd.isHeadlandOn && bnd.isSectionControlledByHeadland) bnd.WhereAreToolLookOnPoints(*vehicle, tool);
+    if (bnd.isHeadlandOn && bnd.isSectionControlledByHeadland) bnd.WhereAreToolLookOnPoints(*CVehicle::instance(), tool);
 
     for (int j = 0; j < tool.numOfSections; j++)
     {
         //Off or too slow or going backwards
-        if (tool.sectionButtonState.get(j) == btnStates::Off || vehicle->avgSpeed < vehicle->slowSpeedCutoff || tool.section[j].speedPixels < 0)
+        if (tool.sectionButtonState.get(j) == btnStates::Off || CVehicle::instance()->avgSpeed < CVehicle::instance()->slowSpeedCutoff || tool.section[j].speedPixels < 0)
         {
             tool.section[j].sectionOnRequest = false;
             tool.section[j].sectionOffRequest = true;
@@ -608,7 +617,9 @@ void FormGPS::processSectionLookahead() {
     frameTime = frameTime * 0.90 + frameTimeRough * 0.1;
 
     QObject *aog = qmlItem(mainWindow, "aog");
-    aog->setProperty("frameTime", frameTime);
+    if (aog) {
+        aog->setProperty("frameTime", frameTime);
+    }
 
     //TODO 5 hz sections
     //if (bbCounter++ > 0)
@@ -621,9 +632,13 @@ void FormGPS::processSectionLookahead() {
     {
         p_239.pgn[p_239.geoStop] = mc.isOutOfBounds ? 1 : 0;
 
-        SendPgnToLoop(p_239.pgn);
-
-        SendPgnToLoop(p_229.pgn);
+        // SendPgnToLoop(p_239.pgn);  // ❌ REMOVED - Phase 4.6: AgIOService Workers handle PGN
+        
+        // SendPgnToLoop(p_229.pgn);  // ❌ REMOVED - Phase 4.6: Use AgIOService.sendPgn() instead
+        if (m_agioService) {
+            m_agioService->sendPgn(p_239.pgn);
+            m_agioService->sendPgn(p_229.pgn);
+        }
     }
 
 
@@ -682,10 +697,10 @@ void FormGPS::tmrWatchdog_timeout()
 {
     //TODO: replace all this with individual timers for cleaner
 
-    if (! settings->value(SETTINGS_menu_isSimulatorOn).value<bool>() && timerSim.isActive()) {
+    if (! SettingsManager::instance()->value(SETTINGS_menu_isSimulatorOn).value<bool>() && timerSim.isActive()) {
         qDebug() << "Shutting down simulator.";
         timerSim.stop();
-    } else if ( settings->value(SETTINGS_menu_isSimulatorOn).value<bool>() && ! timerSim.isActive() ) {
+    } else if ( SettingsManager::instance()->value(SETTINGS_menu_isSimulatorOn).value<bool>() && ! timerSim.isActive() ) {
         qDebug() << "Starting up simulator.";
         pn.latitude = sim.latitude;
         pn.longitude = sim.longitude;
@@ -794,7 +809,7 @@ void FormGPS::tmrWatchdog_timeout()
         worldGrid.isRateTrigger = true;
 
         //Make sure it is off when it should
-        if ((!ct.isContourBtnOn && trk->idx == -1 && isBtnAutoSteerOn)
+        if ((!ct.isContourBtnOn && CTrack::instance()->idx == -1 && isBtnAutoSteerOn)
             ) onStopAutoSteer();
 
     } //end every 1/2 second
@@ -811,7 +826,7 @@ void FormGPS::tmrWatchdog_timeout()
 }
 
 QString FormGPS::speedKPH() {
-    double spd = vehicle->avgSpeed;
+    double spd = CVehicle::instance()->avgSpeed;
 
     //convert to kph
     spd *= 0.1;
@@ -820,7 +835,7 @@ QString FormGPS::speedKPH() {
 }
 
 QString FormGPS::speedMPH() {
-    double spd = vehicle->avgSpeed;
+    double spd = CVehicle::instance()->avgSpeed;
 
     //convert to mph
     spd *= 0.0621371;
@@ -864,7 +879,7 @@ void FormGPS::JobClose()
 
     //make sure hydraulic lift is off
     p_239.pgn[p_239.hydLift] = 0;
-    vehicle->isHydLiftOn = false; //this turns off the button also
+    CVehicle::instance()->isHydLiftOn = false; //this turns off the button also
 
     //oglZoom.SendToBack();
 
@@ -952,11 +967,11 @@ void FormGPS::JobClose()
     //ABLine
     tram.tramList.clear();
 
-    trk->ResetCurveLine();
+    CTrack::instance()->ResetCurveLine();
 
     //tracks
-    trk->gArr.clear();
-    trk->idx = -1;
+    CTrack::instance()->gArr.clear();
+    CTrack::instance()->idx = -1;
 
     //clean up tram
     tram.displayMode = 0;
@@ -1017,22 +1032,17 @@ void FormGPS::JobNew()
     autoBtnState = btnStates::Off;
     //btnSectionMasterAuto.Image = Properties.Resources.SectionMasterOff;
 
-    trk->ABLine.abHeading = 0.00;
+    CTrack::instance()->ABLine.abHeading = 0.00;
 
     camera.SetZoom();
     fileSaveCounter = 25;
-    trk->isAutoTrack = false;
+    CTrack::instance()->isAutoTrack = false;
     isJobStarted = true;
 }
 
-void FormGPS::FileSaveEverythingBeforeClosingField()
+void FormGPS::FileSaveEverythingBeforeClosingField(bool saveVehicle)
 {
     qDebug() << "shutting down, saving field items.";
-
-    //update our settings to the vehicle as well
-    if(settings->value(SETTINGS_vehicle_vehicleName).value<QString>() != "Default Vehicle") {
-        vehicle_saveas(settings->value(SETTINGS_vehicle_vehicleName).value<QString>());
-    }
 
     if (! isJobStarted) return;
 
@@ -1057,20 +1067,257 @@ void FormGPS::FileSaveEverythingBeforeClosingField()
     qDebug() << "Test4";
 
     //FileSaveHeadland();
+    qDebug() << "Starting FileSaveBoundary()";
     FileSaveBoundary();
+    qDebug() << "Starting FileSaveSections()";
     FileSaveSections();
+    qDebug() << "Starting FileSaveContour()";
     FileSaveContour();
+    qDebug() << "Starting FileSaveTracks()";
     FileSaveTracks();
+    qDebug() << "Starting FileSaveFlags()";
     FileSaveFlags();
+    qDebug() << "Starting ExportFieldAs_KML()";
     ExportFieldAs_KML();
+    qDebug() << "All file operations completed";
     //ExportFieldAs_ISOXMLv3()
     //ExportFieldAs_ISOXMLv4()
 
+    // Save vehicle settings AFTER all field operations complete (conditional)
+    qDebug() << "Before vehicle_saveas check, saveVehicle=" << saveVehicle;
+    if(saveVehicle && SettingsManager::instance()->value(SETTINGS_vehicle_vehicleName).value<QString>() != "Default Vehicle") {
+        QString vehicleName = SettingsManager::instance()->value(SETTINGS_vehicle_vehicleName).value<QString>();
+        qDebug() << "Scheduling async vehicle_saveas():" << vehicleName;
+
+        // ASYNC SOLUTION: Defer vehicle_saveas to avoid mutex deadlock during field close
+        QTimer::singleShot(100, this, [this, vehicleName]() {
+            qDebug() << "Executing async vehicle_saveas():" << vehicleName;
+            vehicle_saveas(vehicleName);
+            qDebug() << "Async vehicle_saveas() completed";
+        });
+    } else {
+        qDebug() << "Skipping vehicle_saveas (saveVehicle=" << saveVehicle << ")";
+    }
+
+    qDebug() << "Before field cleanup";
     //property_setF_CurrentDir = tr("None");
     //currentFieldDirectory = (QString)property_setF_CurrentDir;
     displayFieldName = tr("None");
 
+    qDebug() << "Before JobClose()";
     JobClose();
+    qDebug() << "JobClose() completed";
     //Text = "AgOpenGPS";
     qDebug() << "Test5";
+}
+
+// AgIO Service Setup Methods
+void FormGPS::setupAgIOService()
+{
+    qDebug() << "🔧 Setting up AgIO service (main thread)...";
+    
+    // AgIOService will be created automatically by QML factory function
+    // This ensures a single instance shared between C++ and QML
+    qDebug() << "📍 AgIOService will be created by QML factory on first access";
+    
+    // Connect FormLoop GPS data to AgIOService AFTER QML initialization
+    // This will be done in setupAgIOConnection() called after QML loading
+    qDebug() << "✅ AgIOService setup deferred to QML factory pattern";
+}
+
+void FormGPS::connectToAgIOFactoryInstance()
+{
+    qDebug() << "🔗 Connecting to AgIOService factory instance...";
+    
+    // Get the factory-created singleton instance
+    m_agioService = AgIOService::instance();
+    
+    if (m_agioService) {
+        qDebug() << "✅ Connected to AgIOService singleton instance";
+        
+        // Now connect the Phase 4.2 pipeline: AgIOService → pn → vehicle → OpenGL
+        connectFormLoopToAgIOService();
+        
+        qDebug() << "🔗 Phase 4.2: AgIOService → pn → vehicle pipeline established";
+    } else {
+        qDebug() << "❌ ERROR: AgIOService singleton not found";
+    }
+}
+
+void FormGPS::testAgIOConfiguration()
+{
+    qDebug() << "\n=================================";
+    qDebug() << "📋 AgIO Configuration Test";
+    qDebug() << "=================================";
+    
+    QSettings settings("QtAgOpenGPS", "QtAgOpenGPS");
+    qDebug() << "📁 Settings file:" << settings.fileName();
+    
+    // Display NTRIP settings
+    qDebug() << "\n🌐 NTRIP Configuration:";
+    qDebug() << "  URL:" << settings.value("comm/ntripURL", "").toString();
+    qDebug() << "  Mount:" << settings.value("comm/ntripMount", "").toString();
+    qDebug() << "  Port:" << settings.value("comm/ntripCasterPort", 2101).toInt();
+    qDebug() << "  Enabled:" << settings.value("comm/ntripIsOn", false).toBool();
+    qDebug() << "  User:" << (settings.value("comm/ntripUserName", "").toString().isEmpty() ? "none" : "configured");
+    
+    // Display UDP settings
+    qDebug() << "\n📡 UDP Configuration:";
+    int ip1 = settings.value("comm/udpIP1", 192).toInt();
+    int ip2 = settings.value("comm/udpIP2", 168).toInt();
+    int ip3 = settings.value("comm/udpIP3", 5).toInt();
+    qDebug() << "  Subnet:" << QString("%1.%2.%3.xxx").arg(ip1).arg(ip2).arg(ip3);
+    qDebug() << "  Broadcast:" << QString("%1.%2.%3.255").arg(ip1).arg(ip2).arg(ip3);
+    qDebug() << "  Listen Port:" << settings.value("comm/udpListenPort", 9999).toInt();
+    qDebug() << "  Send Port:" << settings.value("comm/udpSendPort", 8888).toInt();
+    
+    qDebug() << "\n🔍 Expected Data Sources:";
+    qDebug() << "  1. GPS via UDP on port 9999 (NMEA sentences)";
+    qDebug() << "  2. GPS via Serial port (if configured)";
+    qDebug() << "  3. NTRIP corrections from" << settings.value("comm/ntripURL", "").toString();
+    qDebug() << "  4. AgOpenGPS modules on" << QString("%1.%2.%3.255").arg(ip1).arg(ip2).arg(ip3);
+    qDebug() << "=================================\n";
+}
+
+void FormGPS::connectFormLoopToAgIOService()
+{
+    qDebug() << "🔗 Phase 4.2: Connecting AgIOService → pn → vehicle ...";
+    
+    if (!m_agioService) {
+        qDebug() << "❌ Cannot connect: AgIOService is null";
+        return;
+    }
+    
+    // PHASE 4.2: Direct connection AgIOService → pn → vehicle
+    // This replaces FormLoop progressively as per architecture document
+    
+    // Connect AgIOService GPS data to pn (CNMEA) for processing
+    // SELECTIVE BLOCKING: Only block GPS/position data in simulation mode
+    // Allow other communications (steer commands, module status, etc.)
+    connect(m_agioService, &AgIOService::gpsDataChanged, this, [this]() {
+        if (!m_agioService) return;
+        
+        // SELECTIVE FIX: Block only GPS/position data when simulator is active
+        // Still allow module communications (steer, work, auto buttons, etc.)
+        if (timerSim.isActive()) {
+            return; // Let simulator handle GPS position exclusively
+        }
+        
+        // Get GPS data from AgIOService (ZERO latency - direct member access)
+        double lat = m_agioService->latitude();
+        double lon = m_agioService->longitude();
+        double heading = m_agioService->heading();
+        double speed = m_agioService->speed();
+        
+        // COMPLETE: Get all missing GPS properties from AgIOService (Qt 6 explicit getters)
+        double altitude = m_agioService->altitude();
+        double hdop = m_agioService->hdop();
+        int satellites = m_agioService->satellites();
+        double gpsHz_val = m_agioService->gpsHz();
+        double nowHz_val = m_agioService->nowHz();
+        
+        // Update pn with COMPLETE GPS data (replaces FormLoop data path)
+        pn.latitude = lat;
+        pn.longitude = lon;
+        pn.altitude = altitude;
+        pn.hdop = hdop;
+        pn.satellitesTracked = satellites;
+        
+        // Convert WGS84 to local coordinates
+        pn.ConvertWGS84ToLocal(lat, lon, pn.fix.northing, pn.fix.easting);
+        
+        // Update heading, speed and Hz values
+        pn.headingTrue = heading;
+        pn.speed = speed;
+        
+        // Update local Hz variables for QML display
+        gpsHz = gpsHz_val;
+        nowHz = nowHz_val;
+        
+        // Reset sentence counter (like original FormLoop) - enables GPS display
+        sentenceCounter = 0;
+        
+        // Update AOGInterface properties for QML display (like FormLoop UpdateUIVars)
+        QObject *aog = qmlItem(mainWindow, "aog");
+        if (aog) {
+            aog->setProperty("latitude", lat);
+            aog->setProperty("longitude", lon);
+            aog->setProperty("heading", heading);
+            aog->setProperty("speedKph", speed);
+            aog->setProperty("altitude", altitude);
+            aog->setProperty("sats", satellites);
+            aog->setProperty("hdop", hdop);
+            aog->setProperty("gpsHz", gpsHz_val);
+            aog->setProperty("nowHz", nowHz_val);
+        }
+        
+        // Trigger position update (this updates vehicle positions)
+        UpdateFixPosition();
+    }, Qt::QueuedConnection);  // CRITICAL: Force GUI thread execution to prevent threading violation
+    
+    // Connect AgIOService IMU data to ahrs structure for OpenGL display
+    connect(m_agioService, &AgIOService::imuDataChanged, this, [this]() {
+        if (!m_agioService) return;
+        
+        // Update ahrs structure with AgIOService IMU data (replaces FormLoop IMU path)
+        // Qt 6 best practice: Use explicit getters instead of property() for better performance
+        ahrs.imuRoll = m_agioService->imuRoll() / 10.0;    // Convert from integer x10 to degrees
+        ahrs.imuPitch = m_agioService->imuPitch() / 10.0;  // Convert from integer x10 to degrees
+        // Get GPS heading for pn.headingTrue (FormGPS will handle the fusion)
+        double gpsHeading = m_agioService->heading();  // GPS fix2fix heading in degrees
+        
+        // Only update IMU heading if IMU is actually connected
+        // If no IMU, keep ahrs.imuHeading = 99999 to display "#INV"
+        if (m_agioService->imuConnected()) {
+            // Real IMU heading from actual IMU sensor (not implemented yet)
+            // TODO: Get real IMU heading when available
+            ahrs.imuHeading = 99999; // Show #INV until real IMU data available
+        } else {
+            // No IMU connected - keep default value to show #INV
+            ahrs.imuHeading = 99999;
+        }
+        
+        // Update AOGInterface IMU properties for QML display
+        QObject *aog = qmlItem(mainWindow, "aog");
+        if (aog) {
+            aog->setProperty("imuRoll", ahrs.imuRoll);
+            aog->setProperty("imuPitch", ahrs.imuPitch);
+            aog->setProperty("imuHeading", ahrs.imuHeading);
+        }
+        
+        qDebug() << "🧭 GPS heading available:" << gpsHeading << "° (IMU heading not available from firmware)";
+        qDebug() << "🧭 IMU updated: Roll" << ahrs.imuRoll << "° Pitch" << ahrs.imuPitch << "° Heading" << ahrs.imuHeading << "°";
+    }, Qt::QueuedConnection);  // CRITICAL: Force GUI thread execution to prevent threading violation
+    
+    // CRITICAL: Initialize IMU with valid values to replace 88888 invalid marker
+    // This fixes the #INV display issue immediately
+    if (m_agioService) {
+        ahrs.imuRoll = m_agioService->imuRoll() / 10.0;
+        ahrs.imuPitch = m_agioService->imuPitch() / 10.0;
+        
+        double gpsHeading = m_agioService->heading();
+        // Initialize IMU with GPS heading for display
+        ahrs.imuHeading = gpsHeading; // GPS heading displayed as IMU
+        qDebug() << "🔧 GPS heading available at init:" << gpsHeading << "°";
+        
+        // QML interface will be updated when UpdateFixPosition() is called
+        
+        qDebug() << "🔧 IMU initialized: Roll" << ahrs.imuRoll << "° Pitch" << ahrs.imuPitch << "° Heading" << ahrs.imuHeading << "°";
+    }
+    
+    qDebug() << "✅ AgIOService → pn → vehicle pipeline established";
+    qDebug() << "  Data flow: AgIOService (direct member) → pn → vehicle → OpenGL";
+    qDebug() << "  This progressively replaces FormLoop as per Phase 4 architecture";
+}
+
+void FormGPS::cleanupAgIOService()
+{
+    qDebug() << "🔧 Cleaning up AgIO service...";
+    
+    if (m_agioService) {
+        m_agioService->shutdown();
+        // Note: Don't delete m_agioService as it's managed by QML singleton system
+        m_agioService = nullptr;
+        qDebug() << "✅ AgIO service cleaned up";
+    }
 }

@@ -20,8 +20,10 @@ void FormGPS::boundary_calculate_area() {
         area = fabs(area / 2);
     }
 
-    qmlItem(mainWindow,"boundaryInterface")->setProperty("area", area);
-    qmlItem(mainWindow,"boundaryInterface")->setProperty("pts", ptCount);
+    if (boundaryInterface) {
+        boundaryInterface->setProperty("area", area);
+        boundaryInterface->setProperty("pts", ptCount);
+    }
 }
 
 void FormGPS::boundary_update_list() {
@@ -36,7 +38,9 @@ void FormGPS::boundary_update_list() {
         bndMap["drive_through"] = b.isDriveThru;
         boundList.append(bndMap);
     }
-    qmlItem(mainWindow,"boundaryInterface")->setProperty("boundary_list", boundList);
+    if (boundaryInterface) {
+        boundaryInterface->setProperty("boundary_list", boundList);
+    }
 }
 
 void FormGPS::boundary_start() {
@@ -73,7 +77,9 @@ void FormGPS::boundary_stop() {
     bnd.isBndBeingMade = false;
     bnd.bndBeingMadePts.clear();
     boundary_update_list();
-    qmlItem(mainWindow,"boundaryInterface")->setProperty("count", bnd.bndList.count());
+    if (boundaryInterface) {
+        boundaryInterface->setProperty("count", bnd.bndList.count());
+    }
 }
 
 void FormGPS::boundary_add_point() {
@@ -108,7 +114,9 @@ void FormGPS::boundary_delete(int which_boundary) {
         return; //must remove other boundaries first.
 
     bnd.bndList.remove(which_boundary);
-    qmlItem(mainWindow,"boundaryInterface")->setProperty("count", bnd.bndList.count());
+    if (boundaryInterface) {
+        boundaryInterface->setProperty("count", bnd.bndList.count());
+    }
     boundary_update_list();
 }
 
@@ -121,6 +129,8 @@ void FormGPS::boundary_delete_all() {
     bnd.bndList.clear();
     FileSaveBoundary();
     bnd.BuildTurnLines(fd);
-    qmlItem(mainWindow,"boundaryInterface")->setProperty("count", bnd.bndList.count());
+    if (boundaryInterface) {
+        boundaryInterface->setProperty("count", bnd.bndList.count());
+    }
     boundary_update_list();
 }

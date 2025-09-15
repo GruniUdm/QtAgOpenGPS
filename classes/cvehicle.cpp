@@ -5,7 +5,7 @@
 #include <QRgb>
 #include <QQmlEngine>
 #include <QJSEngine>
-#include "settings.h"
+#include "classes/settingsmanager.h"
 #include "ccamera.h"
 #include "cboundary.h"
 #include "ctool.h"
@@ -18,8 +18,7 @@
 #include "ccontour.h"
 #include "ctrack.h"
 
-// Initialisation du pointeur statique pour vrai singleton
-CVehicle* CVehicle::s_instance = nullptr;
+// SomcoSoftware approach: Qt manages the singleton automatically
 
 QRect find_bounding_box(int viewport_height, QVector3D p1, QVector3D p2, QVector3D p3, QVector3D p4) {
     float x_min = glm::FLOAT_MAX;
@@ -52,46 +51,86 @@ QRect find_bounding_box(int viewport_height, QVector3D p1, QVector3D p2, QVector
 
 void CVehicle::loadSettings()
 {
-    vehicleType = settings->value(SETTINGS_vehicle_vehicleType).value<int>();
+    vehicleType = SettingsManager::instance()->value(SETTINGS_vehicle_vehicleType).value<int>();
 
-    isPivotBehindAntenna = settings->value(SETTINGS_vehicle_isPivotBehindAntenna).value<bool>();
-    isSteerAxleAhead = settings->value(SETTINGS_vehicle_isSteerAxleAhead).value<bool>();
+    isPivotBehindAntenna = SettingsManager::instance()->value(SETTINGS_vehicle_isPivotBehindAntenna).value<bool>();
+    isSteerAxleAhead = SettingsManager::instance()->value(SETTINGS_vehicle_isSteerAxleAhead).value<bool>();
 
-    antennaHeight = settings->value(SETTINGS_vehicle_antennaHeight).value<double>();
-    antennaPivot = settings->value(SETTINGS_vehicle_antennaPivot).value<double>();
-    antennaOffset = settings->value(SETTINGS_vehicle_antennaOffset).value<double>();
+    antennaHeight = SettingsManager::instance()->value(SETTINGS_vehicle_antennaHeight).value<double>();
+    antennaPivot = SettingsManager::instance()->value(SETTINGS_vehicle_antennaPivot).value<double>();
+    antennaOffset = SettingsManager::instance()->value(SETTINGS_vehicle_antennaOffset).value<double>();
 
-    trackWidth = settings->value(SETTINGS_vehicle_trackWidth).value<double>();
-    wheelbase = settings->value(SETTINGS_vehicle_wheelbase).value<double>();
+    trackWidth = SettingsManager::instance()->value(SETTINGS_vehicle_trackWidth).value<double>();
+    wheelbase = SettingsManager::instance()->value(SETTINGS_vehicle_wheelbase).value<double>();
 
-    maxAngularVelocity = settings->value(SETTINGS_vehicle_maxAngularVelocity).value<double>();
-    maxSteerAngle = settings->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
-    slowSpeedCutoff = settings->value(SETTINGS_vehicle_slowSpeedCutoff).value<double>();
-    panicStopSpeed = settings->value(SETTINGS_vehicle_panicStopSpeed).value<double>();
+    maxAngularVelocity = SettingsManager::instance()->value(SETTINGS_vehicle_maxAngularVelocity).value<double>();
+    maxSteerAngle = SettingsManager::instance()->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
+    slowSpeedCutoff = SettingsManager::instance()->value(SETTINGS_vehicle_slowSpeedCutoff).value<double>();
+    panicStopSpeed = SettingsManager::instance()->value(SETTINGS_vehicle_panicStopSpeed).value<double>();
 
-    hydLiftLookAheadTime = settings->value(SETTINGS_vehicle_hydraulicLiftLookAhead).value<double>();
+    hydLiftLookAheadTime = SettingsManager::instance()->value(SETTINGS_vehicle_hydraulicLiftLookAhead).value<double>();
 
-    goalPointLookAhead = settings->value(SETTINGS_vehicle_goalPointLookAhead).value<double>();
-    goalPointLookAheadHold = settings->value(SETTINGS_vehicle_goalPointLookAheadHold).value<double>();
-    goalPointLookAheadMult = settings->value(SETTINGS_vehicle_goalPointLookAheadMult).value<double>();
+    goalPointLookAhead = SettingsManager::instance()->value(SETTINGS_vehicle_goalPointLookAhead).value<double>();
+    goalPointLookAheadHold = SettingsManager::instance()->value(SETTINGS_vehicle_goalPointLookAheadHold).value<double>();
+    goalPointLookAheadMult = SettingsManager::instance()->value(SETTINGS_vehicle_goalPointLookAheadMult).value<double>();
 
-    stanleyDistanceErrorGain = settings->value(SETTINGS_vehicle_stanleyDistanceErrorGain).value<double>();
-    stanleyHeadingErrorGain = settings->value(SETTINGS_vehicle_stanleyHeadingErrorGain).value<double>();
-    stanleyIntegralGainAB = settings->value(SETTINGS_vehicle_stanleyIntegralGainAB).value<double>();
-    stanleyIntegralDistanceAwayTriggerAB = settings->value(SETTINGS_vehicle_stanleyIntegralDistanceAwayTriggerAB).value<double>();
-    purePursuitIntegralGain = settings->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
+    stanleyDistanceErrorGain = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyDistanceErrorGain).value<double>();
+    stanleyHeadingErrorGain = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyHeadingErrorGain).value<double>();
+    stanleyIntegralGainAB = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyIntegralGainAB).value<double>();
+    stanleyIntegralDistanceAwayTriggerAB = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyIntegralDistanceAwayTriggerAB).value<double>();
+    purePursuitIntegralGain = SettingsManager::instance()->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
 
     //how far from line before it becomes Hold
-    modeXTE = settings->value(SETTINGS_as_modeXTE).value<double>();
+    modeXTE = SettingsManager::instance()->value(SETTINGS_as_modeXTE).value<double>();
 
     //how long before hold is activated
-    modeTime = settings->value(SETTINGS_as_modeTime).value<int>();
+    modeTime = SettingsManager::instance()->value(SETTINGS_as_modeTime).value<int>();
 
-    functionSpeedLimit = settings->value(SETTINGS_as_functionSpeedLimit).value<double>();
-    maxSteerSpeed = settings->value(SETTINGS_as_maxSteerSpeed).value<double>();
-    minSteerSpeed = settings->value(SETTINGS_as_minSteerSpeed).value<double>();
+    functionSpeedLimit = SettingsManager::instance()->value(SETTINGS_as_functionSpeedLimit).value<double>();
+    maxSteerSpeed = SettingsManager::instance()->value(SETTINGS_as_maxSteerSpeed).value<double>();
+    minSteerSpeed = SettingsManager::instance()->value(SETTINGS_as_minSteerSpeed).value<double>();
 
-    uturnCompensation = settings->value(SETTINGS_as_uTurnCompensation).value<double>();
+    uturnCompensation = SettingsManager::instance()->value(SETTINGS_as_uTurnCompensation).value<double>();
+}
+
+void CVehicle::saveSettings()
+{
+    // Save all vehicle settings to SettingsManager (mirror of loadSettings)
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_vehicleType, vehicleType);
+
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_isPivotBehindAntenna, isPivotBehindAntenna);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_isSteerAxleAhead, isSteerAxleAhead);
+
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_antennaHeight, antennaHeight);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_antennaPivot, antennaPivot);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_antennaOffset, antennaOffset);
+
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_trackWidth, trackWidth);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_wheelbase, wheelbase);
+
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_maxAngularVelocity, maxAngularVelocity);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_maxSteerAngle, maxSteerAngle);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_slowSpeedCutoff, slowSpeedCutoff);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_panicStopSpeed, panicStopSpeed);
+
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_hydraulicLiftLookAhead, hydLiftLookAheadTime);
+
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_goalPointLookAhead, goalPointLookAhead);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_goalPointLookAheadHold, goalPointLookAheadHold);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_goalPointLookAheadMult, goalPointLookAheadMult);
+
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_stanleyDistanceErrorGain, stanleyDistanceErrorGain);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_stanleyHeadingErrorGain, stanleyHeadingErrorGain);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_stanleyIntegralGainAB, stanleyIntegralGainAB);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_stanleyIntegralDistanceAwayTriggerAB, stanleyIntegralDistanceAwayTriggerAB);
+    SettingsManager::instance()->setValue(SETTINGS_vehicle_purePursuitIntegralGainAB, purePursuitIntegralGain);
+
+    SettingsManager::instance()->setValue(SETTINGS_as_maxSteerSpeed, maxSteerSpeed);
+    SettingsManager::instance()->setValue(SETTINGS_as_minSteerSpeed, minSteerSpeed);
+    SettingsManager::instance()->setValue(SETTINGS_as_uTurnCompensation, uturnCompensation);
+
+    // Sync to disk immediately
+    SettingsManager::instance()->sync();
 }
 
 CVehicle::CVehicle(QObject *parent) : QObject(parent)
@@ -145,9 +184,9 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
                            CBoundary &bnd
                            )
 {
-    bool display_isVehicleImage = settings->value(SETTINGS_display_isVehicleImage).value<bool>();
-    bool display_isSvennArrowOn = settings->value(SETTINGS_display_isSvennArrowOn).value<bool>();
-    float display_lineWidth = settings->value(SETTINGS_display_lineWidth).value<float>();
+    bool display_isVehicleImage = SettingsManager::instance()->value(SETTINGS_display_isVehicleImage).value<bool>();
+    bool display_isSvennArrowOn = SettingsManager::instance()->value(SETTINGS_display_isSvennArrowOn).value<bool>();
+    float display_lineWidth = SettingsManager::instance()->value(SETTINGS_display_lineWidth).value<float>();
 
     //draw vehicle
     modelview.rotate(glm::toDegrees(-fixHeading), 0.0, 0.0, 1.0);
@@ -533,7 +572,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     // TODO: Track number and nudge offset need to be done in QML.
     // Probably will need CTrack to put this information in its model
 
-    if(!(bool)property_setDisplay_topTrackNum && trk->idx > -1 && !ct.isContourBtnOn) {
+    if(!(bool)property_setDisplay_topTrackNum && CTrack::instance()->idx > -1 && !ct.isContourBtnOn) {
         color.setRgbF(1.269, 1.25, 1.2510, 0.87); //?? why over 1.0?
 
         if (curve.isBtnCurveOn && (bool)ct.isContourBtnOn == false)

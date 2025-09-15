@@ -8,7 +8,7 @@
 #include "cvehicle.h"
 #include "ccontour.h"
 #include "cabline.h"
-#include "settings.h"
+#include "classes/settingsmanager.h"
 #include <QGuiApplication>
 #include <QQmlEngine>
 #include <functional>
@@ -20,7 +20,7 @@
 #include <cmath>
 #include <cstring>
 #include <QTranslator>
-#include "QtAgIO/formloop.h"
+// FormLoop removed - Phase 4.4: AgIOService standalone
 #include <algorithm>
 
 
@@ -28,16 +28,8 @@ QString caseInsensitiveFilename(QString directory, QString filename);
 
 void FormGPS::setupGui()
 {
-    FormLoop *formLoop = FormLoop::instance();
-    if (!formLoop) {
-        qDebug() << "Erreur : `FormLoop::instance()` a retourné nullptr!";
-        return;
-    } else {
-        qDebug() << "✅ FormLoop::instance() est bien instancié.";
-    }
-
-
-    formLoop->setEngine(this);
+    // Phase 4.5: AgIOService will be created by QML factory automatically
+    qDebug() << "🚀 AgIOService will be initialized by QML factory on first access";
 
 
     qDebug() << "AgIO: All context properties set, loading QML...";
@@ -51,7 +43,7 @@ void FormGPS::setupGui()
 
     // Load the translation file
     //QString language = "en"; // Change this variable to "en", "fr" or "ru" as needed
-    QString language = settings->value(SETTINGS_menu_language).value<QString>();
+    QString language = SettingsManager::instance()->value(SETTINGS_menu_language).value<QString>();
     loadTranslation(language);
 
     connect(this, SIGNAL(objectCreated(QObject*,QUrl)),
@@ -130,7 +122,9 @@ void FormGPS::setupGui()
         return;
     } else {
         qDebug() << "QML loaded successfully.";
-        formLoop->setupGUI();
+        
+        // Connect to the AgIOService instance created by QML factory
+        connectToAgIOFactoryInstance();
     }
 
     qDebug() << "AgOpenGPS started successfully";
@@ -153,6 +147,12 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     mainWindow->setProperty("visible",true);
 
+    // ===== CRITICAL: Initialize QML members BEFORE using them =====
+    // Crash fix: these variables MUST be initialized before InterfaceProperty
+    boundaryInterface = qmlItem(mainWindow, "boundaryInterface");
+    fieldInterface = qmlItem(mainWindow, "fieldInterface");
+    recordedPathInterface = qmlItem(mainWindow, "recordedPathInterface");
+
     //have to do this for each Interface and supported data type.
     InterfaceProperty<AOGInterface, int>::set_qml_root(qmlItem(mainWindow, "aog"));
     InterfaceProperty<AOGInterface, uint>::set_qml_root(qmlItem(mainWindow, "aog"));
@@ -160,23 +160,23 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     InterfaceProperty<AOGInterface, double>::set_qml_root(qmlItem(mainWindow, "aog"));
     InterfaceProperty<AOGInterface, btnStates>::set_qml_root(qmlItem(mainWindow, "aog"));
 
-    InterfaceProperty<FieldInterface, int>::set_qml_root(qmlItem(mainWindow, "fieldInterface"));
-    InterfaceProperty<FieldInterface, uint>::set_qml_root(qmlItem(mainWindow, "fieldInterface"));
-    InterfaceProperty<FieldInterface, bool>::set_qml_root(qmlItem(mainWindow, "fieldInterface"));
-    InterfaceProperty<FieldInterface, double>::set_qml_root(qmlItem(mainWindow, "fieldInterface"));
-    InterfaceProperty<FieldInterface, btnStates>::set_qml_root(qmlItem(mainWindow, "fieldInterface"));
+    InterfaceProperty<FieldInterface, int>::set_qml_root(fieldInterface);
+    InterfaceProperty<FieldInterface, uint>::set_qml_root(fieldInterface);
+    InterfaceProperty<FieldInterface, bool>::set_qml_root(fieldInterface);
+    InterfaceProperty<FieldInterface, double>::set_qml_root(fieldInterface);
+    InterfaceProperty<FieldInterface, btnStates>::set_qml_root(fieldInterface);
 
-    InterfaceProperty<BoundaryInterface, int>::set_qml_root(qmlItem(mainWindow, "boundaryInterface"));
-    InterfaceProperty<BoundaryInterface, uint>::set_qml_root(qmlItem(mainWindow, "boundaryInterface"));
-    InterfaceProperty<BoundaryInterface, bool>::set_qml_root(qmlItem(mainWindow, "boundaryInterface"));
-    InterfaceProperty<BoundaryInterface, double>::set_qml_root(qmlItem(mainWindow, "boundaryInterface"));
-    InterfaceProperty<BoundaryInterface, btnStates>::set_qml_root(qmlItem(mainWindow, "boundaryInterface"));
+    InterfaceProperty<BoundaryInterface, int>::set_qml_root(boundaryInterface);
+    InterfaceProperty<BoundaryInterface, uint>::set_qml_root(boundaryInterface);
+    InterfaceProperty<BoundaryInterface, bool>::set_qml_root(boundaryInterface);
+    InterfaceProperty<BoundaryInterface, double>::set_qml_root(boundaryInterface);
+    InterfaceProperty<BoundaryInterface, btnStates>::set_qml_root(boundaryInterface);
 
-    InterfaceProperty<RecordedPathInterface, int>::set_qml_root(qmlItem(mainWindow, "recordedPathInterface"));
-    InterfaceProperty<RecordedPathInterface, uint>::set_qml_root(qmlItem(mainWindow, "recordedPathInterface"));
-    InterfaceProperty<RecordedPathInterface, bool>::set_qml_root(qmlItem(mainWindow, "recordedPathInterface"));
-    InterfaceProperty<RecordedPathInterface, double>::set_qml_root(qmlItem(mainWindow, "recordedPathInterface"));
-    InterfaceProperty<RecordedPathInterface, btnStates>::set_qml_root(qmlItem(mainWindow, "recordedPathInterface"));
+    InterfaceProperty<RecordedPathInterface, int>::set_qml_root(recordedPathInterface);
+    InterfaceProperty<RecordedPathInterface, uint>::set_qml_root(recordedPathInterface);
+    InterfaceProperty<RecordedPathInterface, bool>::set_qml_root(recordedPathInterface);
+    InterfaceProperty<RecordedPathInterface, double>::set_qml_root(recordedPathInterface);
+    InterfaceProperty<RecordedPathInterface, btnStates>::set_qml_root(recordedPathInterface);
 
     QMLSectionButtons::set_aog_root(qmlItem(mainWindow, "aog"));
     qmlblockage::set_aog_root(qmlItem(mainWindow, "aog"));
@@ -193,9 +193,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     //hook up our AOGInterface properties
     QObject *aog = qmlItem(mainWindow, "aog");
-    //QObject *vehicleInterface = qmlItem(mainWindow, "vehicleInterface");
-    QObject *fieldInterface = qmlItem(mainWindow, "fieldInterface");
-    QObject *boundaryInterface = qmlItem(mainWindow, "boundaryInterface");
+    //QObject *CVehicle::instance()Interface = qmlItem(mainWindow, "vehicleInterface");
 
     //react to UI changing this property
     connect(aog,SIGNAL(sectionButtonStateChanged()), &tool.sectionButtonState, SLOT(onStatesUpdated()));
@@ -204,14 +202,18 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     openGLControl = mainWindow->findChild<AOGRendererInSG *>("openglcontrol");
     //This is a bit hackish, but all rendering is done in this item, so
     //we have to give it a way of calling our initialize and draw functions
-    openGLControl->setProperty("callbackObject",QVariant::fromValue((void *) this));
-    openGLControl->setProperty("initCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Initialized, this)));
-    openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::oglMain_Paint,this)));
+    if (openGLControl) {
+        openGLControl->setProperty("callbackObject",QVariant::fromValue((void *) this));
+        openGLControl->setProperty("initCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Initialized, this)));
+        openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::oglMain_Paint,this)));
 
-    openGLControl->setProperty("samples",settings->value(SETTINGS_display_antiAliasSamples).value<int>());
-    openGLControl->setMirrorVertically(true);
-    connect(openGLControl,SIGNAL(clicked(QVariant)),this,SLOT(onGLControl_clicked(QVariant)));
-    connect(openGLControl,SIGNAL(dragged(int,int,int,int)),this,SLOT(onGLControl_dragged(int,int,int,int)));
+        openGLControl->setProperty("samples",SettingsManager::instance()->value(SETTINGS_display_antiAliasSamples).value<int>());
+        openGLControl->setMirrorVertically(true);
+        connect(openGLControl,SIGNAL(clicked(QVariant)),this,SLOT(onGLControl_clicked(QVariant)));
+        connect(openGLControl,SIGNAL(dragged(int,int,int,int)),this,SLOT(onGLControl_dragged(int,int,int,int)));
+    } else {
+        qWarning() << "⚠️ OpenGL control not found during initialization";
+    }
 
     connect(aog,SIGNAL(sectionButtonStateChanged()), &tool.sectionButtonState, SLOT(onStatesUpdated()));
 
@@ -261,10 +263,10 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(aog,SIGNAL(snapToPivot()), this, SLOT(onBtnSnapToPivot_clicked()));
 
     //vehicle saving and loading
-    connect(vehicle,SIGNAL(vehicle_update_list()), this, SLOT(vehicle_update_list()));
-    connect(vehicle,SIGNAL(vehicle_load(QString)), this, SLOT(vehicle_load(QString)));
-    connect(vehicle,SIGNAL(vehicle_delete(QString)), this, SLOT(vehicle_delete(QString)));
-    connect(vehicle,SIGNAL(vehicle_saveas(QString)), this, SLOT(vehicle_saveas(QString)));
+    connect(CVehicle::instance(),SIGNAL(vehicle_update_list()), this, SLOT(vehicle_update_list()));
+    connect(CVehicle::instance(),SIGNAL(vehicle_load(QString)), this, SLOT(vehicle_load(QString)));
+    connect(CVehicle::instance(),SIGNAL(vehicle_delete(QString)), this, SLOT(vehicle_delete(QString)));
+    connect(CVehicle::instance(),SIGNAL(vehicle_saveas(QString)), this, SLOT(vehicle_saveas(QString)));
 
     //field saving and loading
     connect(fieldInterface,SIGNAL(field_update_list()), this, SLOT(field_update_list()));
@@ -313,7 +315,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
 
     headland_form.bnd = &bnd;
-    headland_form.vehicle = vehicle;
     headland_form.hdl = &hdl;
     headland_form.tool = &tool;
 
@@ -322,7 +323,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(&headland_form, SIGNAL(timedMessageBox(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
 
     headache_form.bnd = &bnd;
-    headache_form.vehicle = vehicle;
     headache_form.hdl = &hdl;
     headache_form.tool = &tool;
 
@@ -379,6 +379,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     // btnDeleteAllFlags = qmlItem(mainWindow,"btnDeleteAllFlags");
     // connect(btnDeleteAllFlags,SIGNAL(clicked()),this,SLOT(onBtnDeleteAllFlags_clicked()));
     contextFlag = qmlItem(mainWindow, "contextFlag");
+    // boundaryInterface, fieldInterface, recordedPathInterface already initialized above (lines 152-154)
 
     //txtDistanceOffABLine = qmlItem(qml_root,"txtDistanceOffABLine");
 
@@ -399,8 +400,8 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     isJobStarted = false;
 
-    StartLoopbackServer();
-    if (settings->value(SETTINGS_menu_isSimulatorOn).value<bool>() == false) {
+    // StartLoopbackServer(); // ❌ REMOVED - Phase 4.6: UDP FormGPS completely eliminated
+    if (SettingsManager::instance()->value(SETTINGS_menu_isSimulatorOn).value<bool>() == false) {
         qDebug() << "Stopping simulator because it's off in settings.";
         timerSim.stop();
     }
@@ -424,13 +425,19 @@ void FormGPS::onGLControl_dragged(int pressX, int pressY, int mouseX, int mouseY
 
     camera.panX += offset.x();
     camera.panY += offset.y();
-    openGLControl->update();
+    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
+    if (openGLControl) {
+        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
+    }
 }
 void FormGPS::onBtnCenterOgl_clicked(){
     qDebug()<<"center ogl";
     camera.panX = 0;
     camera.panY = 0;
-    openGLControl->update();
+    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
+    if (openGLControl) {
+        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
+    }
 }
 
 void FormGPS::onGLControl_clicked(const QVariant &event)
@@ -447,20 +454,23 @@ void FormGPS::onGLControl_clicked(const QVariant &event)
     mouseNorthing = field.y();
 
     leftMouseDownOnOpenGL = true;
-    openGLControl->update();
+    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
+    if (openGLControl) {
+        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
+    }
 }
 
 void FormGPS::onBtnAgIO_clicked(){
     qDebug()<<"AgIO";
 }
 void FormGPS::onBtnResetTool_clicked(){
-               vehicle->tankPos.heading = vehicle->fixHeading;
-               vehicle->tankPos.easting = vehicle->hitchPos.easting + (sin(vehicle->tankPos.heading) * (tool.tankTrailingHitchLength));
-               vehicle->tankPos.northing = vehicle->hitchPos.northing + (cos(vehicle->tankPos.heading) * (tool.tankTrailingHitchLength));
+               CVehicle::instance()->tankPos.heading = CVehicle::instance()->fixHeading;
+               CVehicle::instance()->tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(CVehicle::instance()->tankPos.heading) * (tool.tankTrailingHitchLength));
+               CVehicle::instance()->tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(CVehicle::instance()->tankPos.heading) * (tool.tankTrailingHitchLength));
 
-               vehicle->toolPivotPos.heading = vehicle->tankPos.heading;
-               vehicle->toolPivotPos.easting = vehicle->tankPos.easting + (sin(vehicle->toolPivotPos.heading) * (tool.trailingHitchLength));
-               vehicle->toolPivotPos.northing = vehicle->tankPos.northing + (cos(vehicle->toolPivotPos.heading) * (tool.trailingHitchLength));
+               CVehicle::instance()->toolPivotPos.heading = CVehicle::instance()->tankPos.heading;
+               CVehicle::instance()->toolPivotPos.easting = CVehicle::instance()->tankPos.easting + (sin(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength));
+               CVehicle::instance()->toolPivotPos.northing = CVehicle::instance()->tankPos.northing + (cos(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength));
 }
 void FormGPS::onBtnHeadland_clicked(){
     qDebug()<<"Headland";
@@ -474,7 +484,7 @@ void FormGPS::onBtnHeadland_clicked(){
                    //btnHeadlandOnOff.Image = Properties.Resources.HeadlandOff;
                }
 
-               if (vehicle->isHydLiftOn && !bnd.isHeadlandOn) vehicle->isHydLiftOn = false;
+               if (CVehicle::instance()->isHydLiftOn && !bnd.isHeadlandOn) CVehicle::instance()->isHydLiftOn = false;
 
                if (!bnd.isHeadlandOn)
                {
@@ -485,8 +495,8 @@ void FormGPS::onBtnHeadland_clicked(){
 void FormGPS::onBtnHydLift_clicked(){
     if (bnd.isHeadlandOn)
     {
-        vehicle->isHydLiftOn = !vehicle->isHydLiftOn;
-        if (vehicle->isHydLiftOn)
+        CVehicle::instance()->isHydLiftOn = !CVehicle::instance()->isHydLiftOn;
+        if (CVehicle::instance()->isHydLiftOn)
         {
         }
         else
@@ -497,7 +507,7 @@ void FormGPS::onBtnHydLift_clicked(){
     else
     {
         p_239.pgn[p_239.hydLift] = 0;
-        vehicle->isHydLiftOn = false;
+        CVehicle::instance()->isHydLiftOn = false;
     }
 }
 void FormGPS::onBtnTramlines_clicked(){
@@ -534,7 +544,7 @@ void FormGPS::onBtnResetDirection_clicked(){
     isFirstHeadingSet = false;
 
     //TODO: most of this should be done in QML
-    vehicle->setIsReverse(false);
+    CVehicle::instance()->setIsReverse(false);
     TimedMessageBox(2000, "Reset Direction", "Drive Forward > 1.5 kmh");
 }
 void FormGPS::onBtnFlag_clicked() {
@@ -544,14 +554,16 @@ void FormGPS::onBtnFlag_clicked() {
 
     if(isGPSPositionInitialized) {
         int nextflag = flagPts.size() + 1;
-        QString notes = notes.number(nextflag);
+        QString notes = QString::number(nextflag);
         CFlag flagPt(pn.latitude, pn.longitude, pn.fix.easting, pn.fix.northing, gpsHeading, flagColor, nextflag, notes);
         flagPts.append(flagPt);
         flagsBufferCurrent = false;
-        contextFlag->setProperty("ptlat",pn.latitude);
-        contextFlag->setProperty("ptlon",pn.longitude);
-        contextFlag->setProperty("ptId",nextflag);
-        contextFlag->setProperty("ptText",notes);
+        if (contextFlag) {
+            contextFlag->setProperty("ptlat",pn.latitude);
+            contextFlag->setProperty("ptlon",pn.longitude);
+            contextFlag->setProperty("ptId",nextflag);
+            contextFlag->setProperty("ptText",notes);
+        }
         //FileSaveFlags();
     }
 }
@@ -577,7 +589,7 @@ void FormGPS::onBtnContour_clicked(){
         //    ABLine.isABValid = false;
         //    curve.isCurveValid = false;
         //}
-        guidanceLookAheadTime = settings->value(SETTINGS_as_guidanceLookAheadTime).value<double>();
+        guidanceLookAheadTime = SettingsManager::instance()->value(SETTINGS_as_guidanceLookAheadTime).value<double>();
     }
 }
 
@@ -598,19 +610,25 @@ void FormGPS::onBtnTiltDown_clicked(){
     if (camera.camPitch < -76) camera.camPitch = -76;
 
     lastHeight = -1; //redraw the sky
-    settings->setValue(SETTINGS_display_camPitch, camera.camPitch);
-    openGLControl->update();
+    SettingsManager::instance()->setValue(SETTINGS_display_camPitch, camera.camPitch);
+    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
+    if (openGLControl) {
+        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
+    }
 }
 
 void FormGPS::onBtnTiltUp_clicked(){
-    double camPitch = settings->value(SETTINGS_display_camPitch).value<double>();
+    double camPitch = SettingsManager::instance()->value(SETTINGS_display_camPitch).value<double>();
 
     lastHeight = -1; //redraw the sky
     camera.camPitch -= ((camera.camPitch * 0.012) - 1);
     if (camera.camPitch > -58) camera.camPitch = 0;
 
-    settings->setValue(SETTINGS_display_camPitch, camera.camPitch);
-    openGLControl->update();
+    SettingsManager::instance()->setValue(SETTINGS_display_camPitch, camera.camPitch);
+    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
+    if (openGLControl) {
+        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
+    }
 }
 
 void FormGPS::onBtn2D_clicked(){
@@ -645,7 +663,10 @@ void FormGPS::onBtnZoomIn_clicked(){
     camera.camSetDistance = camera.zoomValue * camera.zoomValue * -1;
     camera.SetZoom();
     //TODO save zoom to properties
-    openGLControl->update();
+    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
+    if (openGLControl) {
+        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
+    }
 }
 
 void FormGPS::onBtnZoomOut_clicked(){
@@ -656,28 +677,37 @@ void FormGPS::onBtnZoomOut_clicked(){
     camera.SetZoom();
 
     //todo save to properties
-    openGLControl->update();
+    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
+    if (openGLControl) {
+        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
+    }
 }
 
 void FormGPS::onBtnRedFlag_clicked()
 {   qDebug()<<"onBtnRedFlag_clicked";
     flagColor = 0;
-    contextFlag->setProperty("visible",false);
-    contextFlag->setProperty("icon","/images/FlagRed.png");
+    if (contextFlag) {
+        contextFlag->setProperty("visible",false);
+        contextFlag->setProperty("icon","/images/FlagRed.png");
+    }
 }
 
 void FormGPS::onBtnGreenFlag_clicked()
 {   qDebug()<<"onBtnGreenFlag_clicked";
     flagColor = 1;
-    contextFlag->setProperty("visible",false);
-    contextFlag->setProperty("icon","/images/FlagGrn.png");
+    if (contextFlag) {
+        contextFlag->setProperty("visible",false);
+        contextFlag->setProperty("icon","/images/FlagGrn.png");
+    }
 }
 
 void FormGPS::onBtnYellowFlag_clicked()
 {   qDebug()<<"onBtnYellowFlag_clicked";
     flagColor = 2;
-    contextFlag->setProperty("visible",false);
-    contextFlag->setProperty("icon","/images/FlagYel.png");
+    if (contextFlag) {
+        contextFlag->setProperty("visible",false);
+        contextFlag->setProperty("icon","/images/FlagYel.png");
+    }
 }
 
 void FormGPS::onBtnDeleteFlag_clicked()
@@ -694,30 +724,13 @@ void FormGPS::onBtnDeleteFlag_clicked()
         for (int i = 0; i < flagCnt; i++)
             flagPts[i].ID = i + 1;
     }
-    contextFlag->setProperty("visible",false);
-    if (flagNumberPicked>0) {
-        contextFlag->setProperty("ptlat",flagPts[flagNumberPicked-1].latitude);
-        contextFlag->setProperty("ptlon",flagPts[flagNumberPicked-1].longitude);
-        contextFlag->setProperty("ptId",flagPts[flagNumberPicked-1].ID);
-        contextFlag->setProperty("ptText",flagPts[flagNumberPicked-1].notes);
-    }
-    else    {
-        contextFlag->setProperty("ptlat",0);
-        contextFlag->setProperty("ptlon",0);
-        contextFlag->setProperty("ptId",0);
-        contextFlag->setProperty("ptText","");
-    }
-    }
-}
-    else if (flagPts.size() > 0) {
-        flagPts.remove(flagPts.size()-1, 1);
-
+    if (contextFlag) {
         contextFlag->setProperty("visible",false);
-        if (flagPts.size()>0) {
-            contextFlag->setProperty("ptlat",flagPts[flagPts.size()-1].latitude);
-            contextFlag->setProperty("ptlon",flagPts[flagPts.size()-1].longitude);
-            contextFlag->setProperty("ptId",flagPts[flagPts.size()-1].ID);
-            contextFlag->setProperty("ptText",flagPts[flagPts.size()-1].notes);
+        if (flagNumberPicked > 0 && flagNumberPicked <= flagPts.size()) {
+            contextFlag->setProperty("ptlat",flagPts[flagNumberPicked-1].latitude);
+            contextFlag->setProperty("ptlon",flagPts[flagNumberPicked-1].longitude);
+            contextFlag->setProperty("ptId",flagPts[flagNumberPicked-1].ID);
+            contextFlag->setProperty("ptText",flagPts[flagNumberPicked-1].notes);
         }
         else    {
             contextFlag->setProperty("ptlat",0);
@@ -726,10 +739,33 @@ void FormGPS::onBtnDeleteFlag_clicked()
             contextFlag->setProperty("ptText","");
         }
     }
+    }
+}
+    else if (flagPts.size() > 0) {
+        flagPts.remove(flagPts.size()-1, 1);
+
+        if (contextFlag) {
+            contextFlag->setProperty("visible",false);
+            if (flagPts.size()>0) {
+                contextFlag->setProperty("ptlat",flagPts[flagPts.size()-1].latitude);
+                contextFlag->setProperty("ptlon",flagPts[flagPts.size()-1].longitude);
+                contextFlag->setProperty("ptId",flagPts[flagPts.size()-1].ID);
+                contextFlag->setProperty("ptText",flagPts[flagPts.size()-1].notes);
+            }
+            else    {
+                contextFlag->setProperty("ptlat",0);
+                contextFlag->setProperty("ptlon",0);
+                contextFlag->setProperty("ptId",0);
+                contextFlag->setProperty("ptText","");
+            }
+        }
+    }
 }
 void FormGPS::onBtnDeleteAllFlags_clicked()
 {   qDebug()<<"onBtnDeleteAllFlag_clicked";
-    contextFlag->setProperty("visible",false);
+    if (contextFlag) {
+        contextFlag->setProperty("visible",false);
+    }
     flagPts.clear();
     flagsBufferCurrent = false;
     flagNumberPicked = 0;
@@ -741,7 +777,7 @@ void FormGPS::onBtnNextFlag_clicked()
     if (flagNumberPicked<flagPts.size()){
         flagNumberPicked = flagNumberPicked + 1;}
     else flagNumberPicked = 0;
-    if (flagNumberPicked>0){
+    if (flagNumberPicked > 0 && flagNumberPicked <= flagPts.size() && contextFlag){
         contextFlag->setProperty("ptlat",flagPts[flagNumberPicked-1].latitude);
         contextFlag->setProperty("ptlon",flagPts[flagNumberPicked-1].longitude);
         contextFlag->setProperty("ptId",flagPts[flagNumberPicked-1].ID);
@@ -756,11 +792,11 @@ if (flagNumberPicked>1){
 else {flagNumberPicked = flagPts.size();
 
 }
-if (flagNumberPicked>0){
-contextFlag->setProperty("ptlat",flagPts[flagNumberPicked-1].latitude);
-contextFlag->setProperty("ptlon",flagPts[flagNumberPicked-1].longitude);
-contextFlag->setProperty("ptId",flagPts[flagNumberPicked-1].ID);
-contextFlag->setProperty("ptText",flagPts[flagNumberPicked-1].notes);
+if (flagNumberPicked > 0 && flagNumberPicked <= flagPts.size() && contextFlag){
+    contextFlag->setProperty("ptlat",flagPts[flagNumberPicked-1].latitude);
+    contextFlag->setProperty("ptlon",flagPts[flagNumberPicked-1].longitude);
+    contextFlag->setProperty("ptId",flagPts[flagNumberPicked-1].ID);
+    contextFlag->setProperty("ptText",flagPts[flagNumberPicked-1].notes);
 }
 }
 void FormGPS::onBtnCancelFlag_clicked()
@@ -827,7 +863,7 @@ void FormGPS::onBtnSwapAutoYouTurnDirection_clicked()
 
  void FormGPS::onBtnAutoTrack_clicked()
  {
-     trk->isAutoTrack = !trk->isAutoTrack;
+     CTrack::instance()->isAutoTrack = !CTrack::instance()->isAutoTrack;
      qDebug()<<"isAutoTrack";
  }
 
@@ -837,49 +873,49 @@ void FormGPS::onBtnManUTurn_clicked(bool right)
         yt.ResetYouTurn();
     }else {
         yt.isYouTurnTriggered = true;
-        yt.BuildManualYouTurn( right, true, *vehicle, *trk);
+        yt.BuildManualYouTurn( right, true, *CVehicle::instance(), *CTrack::instance());
    }
 }
 
 void FormGPS::onBtnLateral_clicked(bool right)
 {
-   yt.BuildManualYouLateral(right, *vehicle, *trk);
+   yt.BuildManualYouLateral(right, *CVehicle::instance(), *CTrack::instance());
 }
 
 void FormGPS::btnSteerAngleUp_clicked(){
-    vehicle->driveFreeSteerAngle++;
-    if (vehicle->driveFreeSteerAngle > 40) vehicle->driveFreeSteerAngle = 40;
+    CVehicle::instance()->driveFreeSteerAngle++;
+    if (CVehicle::instance()->driveFreeSteerAngle > 40) CVehicle::instance()->driveFreeSteerAngle = 40;
 
     qDebug()<<"btnSteerAngleUp_clicked";
 }
 void FormGPS::btnSteerAngleDown_clicked(){
-    vehicle->driveFreeSteerAngle--;
-    if (vehicle->driveFreeSteerAngle < -40) vehicle->driveFreeSteerAngle = -40;
+    CVehicle::instance()->driveFreeSteerAngle--;
+    if (CVehicle::instance()->driveFreeSteerAngle < -40) CVehicle::instance()->driveFreeSteerAngle = -40;
 
     qDebug()<<"btnSteerAngleDown_clicked";
 }
 void FormGPS::btnFreeDrive_clicked(){
 
 
-    if (vehicle->isInFreeDriveMode)
+    if (CVehicle::instance()->isInFreeDriveMode)
     {
         //turn OFF free drive mode
-        vehicle->isInFreeDriveMode = false;
-        vehicle->driveFreeSteerAngle = 0;
+        CVehicle::instance()->isInFreeDriveMode = false;
+        CVehicle::instance()->driveFreeSteerAngle = 0;
     }
     else
     {
         //turn ON free drive mode
-        vehicle->isInFreeDriveMode = true;
-        vehicle->driveFreeSteerAngle = 0;
+        CVehicle::instance()->isInFreeDriveMode = true;
+        CVehicle::instance()->driveFreeSteerAngle = 0;
     }
 
     qDebug()<<"btnFreeDrive_clicked";
 }
 void FormGPS::btnFreeDriveZero_clicked(){
-    if (vehicle->driveFreeSteerAngle == 0)
-        vehicle->driveFreeSteerAngle = 5;
-    else vehicle->driveFreeSteerAngle = 0;
+    if (CVehicle::instance()->driveFreeSteerAngle == 0)
+        CVehicle::instance()->driveFreeSteerAngle = 5;
+    else CVehicle::instance()->driveFreeSteerAngle = 0;
 
     qDebug()<<"btnFreeDriveZero_clicked";
 }
@@ -891,7 +927,7 @@ void FormGPS::btnStartSA_clicked(){
     if (!isSA)
     {
         isSA = true;
-        startFix = vehicle->pivotAxlePos;
+        startFix = CVehicle::instance()->pivotAxlePos;
         dist = 0;
         diameter = 0;
         cntr = 0;
@@ -941,54 +977,63 @@ void FormGPS::on_settings_reload() {
 }
 
 void FormGPS::on_settings_save() {
-    settings->sync();
+    SettingsManager::instance()->sync();
 
     loadSettings();
 }
 
 void FormGPS::modules_send_238() {
     qDebug() << "Sending 238 message to AgIO";
-    p_238.pgn[p_238.set0] = settings->value(SETTINGS_ardMac_setting0).value<int>();
-    p_238.pgn[p_238.raiseTime] = settings->value(SETTINGS_ardMac_hydRaiseTime).value<int>();
-    p_238.pgn[p_238.lowerTime] = settings->value(SETTINGS_ardMac_hydLowerTime).value<int>();
+    p_238.pgn[p_238.set0] = SettingsManager::instance()->value(SETTINGS_ardMac_setting0).value<int>();
+    p_238.pgn[p_238.raiseTime] = SettingsManager::instance()->value(SETTINGS_ardMac_hydRaiseTime).value<int>();
+    p_238.pgn[p_238.lowerTime] = SettingsManager::instance()->value(SETTINGS_ardMac_hydLowerTime).value<int>();
 
-    p_238.pgn[p_238.user1] = settings->value(SETTINGS_ardMac_user1).value<int>();
-    p_238.pgn[p_238.user2] = settings->value(SETTINGS_ardMac_user2).value<int>();
-    p_238.pgn[p_238.user3] = settings->value(SETTINGS_ardMac_user3).value<int>();
-    p_238.pgn[p_238.user4] = settings->value(SETTINGS_ardMac_user4).value<int>();
+    p_238.pgn[p_238.user1] = SettingsManager::instance()->value(SETTINGS_ardMac_user1).value<int>();
+    p_238.pgn[p_238.user2] = SettingsManager::instance()->value(SETTINGS_ardMac_user2).value<int>();
+    p_238.pgn[p_238.user3] = SettingsManager::instance()->value(SETTINGS_ardMac_user3).value<int>();
+    p_238.pgn[p_238.user4] = SettingsManager::instance()->value(SETTINGS_ardMac_user4).value<int>();
 
-    qDebug() << settings->value(SETTINGS_ardMac_user1).value<int>();
-    SendPgnToLoop(p_238.pgn);
+    qDebug() << SettingsManager::instance()->value(SETTINGS_ardMac_user1).value<int>();
+    // SendPgnToLoop(p_238.pgn); // ❌ REMOVED - Phase 4.6: AgIOService Workers handle PGN
+    if (m_agioService) {
+        m_agioService->sendPgn(p_238.pgn);
+    }
 }
 void FormGPS::modules_send_251() {
     //qDebug() << "Sending 251 message to AgIO";
-    p_251.pgn[p_251.set0] = settings->value(SETTINGS_ardSteer_setting0).value<int>();
-    p_251.pgn[p_251.set1] = settings->value(SETTINGS_ardSteer_setting1).value<int>();
-    p_251.pgn[p_251.maxPulse] = settings->value(SETTINGS_ardSteer_maxPulseCounts).value<int>();
+    p_251.pgn[p_251.set0] = SettingsManager::instance()->value(SETTINGS_ardSteer_setting0).value<int>();
+    p_251.pgn[p_251.set1] = SettingsManager::instance()->value(SETTINGS_ardSteer_setting1).value<int>();
+    p_251.pgn[p_251.maxPulse] = SettingsManager::instance()->value(SETTINGS_ardSteer_maxPulseCounts).value<int>();
     p_251.pgn[p_251.minSpeed] = 5; //0.5 kmh THIS IS CHANGED IN AOG FIXES
 
-    if (settings->value(SETTINGS_as_isConstantContourOn).value<bool>())
+    if (SettingsManager::instance()->value(SETTINGS_as_isConstantContourOn).value<bool>())
         p_251.pgn[p_251.angVel] = 1;
     else p_251.pgn[p_251.angVel] = 0;
 
     qDebug() << p_251.pgn;
-    SendPgnToLoop(p_251.pgn);
+    // SendPgnToLoop(p_251.pgn); // ❌ REMOVED - Phase 4.6: AgIOService Workers handle PGN
+    if (m_agioService) {
+        m_agioService->sendPgn(p_251.pgn);
+    }
 }
 
 void FormGPS::modules_send_252() {
     //qDebug() << "Sending 252 message to AgIO";
-    p_252.pgn[p_252.gainProportional] = settings->value(SETTINGS_as_Kp).value<int>();
-    p_252.pgn[p_252.highPWM] = settings->value(SETTINGS_as_highSteerPWM).value<int>();
-    p_252.pgn[p_252.lowPWM] = settings->value(SETTINGS_as_lowSteerPWM).value<int>();
-    p_252.pgn[p_252.minPWM] = settings->value(SETTINGS_as_minSteerPWM).value<int>();
-    p_252.pgn[p_252.countsPerDegree] = settings->value(SETTINGS_as_countsPerDegree).value<int>();
-    p_252.pgn[p_252.wasOffsetHi] = (char)(settings->value(SETTINGS_as_wasOffset).value<int>() >> 8);
-    p_252.pgn[p_252.wasOffsetLo] = (char)settings->value(SETTINGS_as_wasOffset).value<int>();
-    p_252.pgn[p_252.ackerman] = settings->value(SETTINGS_as_ackerman).value<int>();
+    p_252.pgn[p_252.gainProportional] = SettingsManager::instance()->value(SETTINGS_as_Kp).value<int>();
+    p_252.pgn[p_252.highPWM] = SettingsManager::instance()->value(SETTINGS_as_highSteerPWM).value<int>();
+    p_252.pgn[p_252.lowPWM] = SettingsManager::instance()->value(SETTINGS_as_lowSteerPWM).value<int>();
+    p_252.pgn[p_252.minPWM] = SettingsManager::instance()->value(SETTINGS_as_minSteerPWM).value<int>();
+    p_252.pgn[p_252.countsPerDegree] = SettingsManager::instance()->value(SETTINGS_as_countsPerDegree).value<int>();
+    p_252.pgn[p_252.wasOffsetHi] = (char)(SettingsManager::instance()->value(SETTINGS_as_wasOffset).value<int>() >> 8);
+    p_252.pgn[p_252.wasOffsetLo] = (char)SettingsManager::instance()->value(SETTINGS_as_wasOffset).value<int>();
+    p_252.pgn[p_252.ackerman] = SettingsManager::instance()->value(SETTINGS_as_ackerman).value<int>();
 
 
     qDebug() << p_252.pgn;
-    SendPgnToLoop(p_252.pgn);
+    // SendPgnToLoop(p_252.pgn); // ❌ REMOVED - Phase 4.6: AgIOService Workers handle PGN
+    if (m_agioService) {
+        m_agioService->sendPgn(p_252.pgn);
+    }
 }
 
 void FormGPS::headland_save() {
@@ -1007,8 +1052,8 @@ void FormGPS::headlines_save() {
     FileSaveHeadLines();
 }
 void FormGPS::onBtnResetSim_clicked(){
-    sim.latitude = settings->value(SETTINGS_gps_simLatitude).value<double>();
-    sim.longitude = settings->value(SETTINGS_gps_simLongitude).value<double>();
+    sim.latitude = SettingsManager::instance()->value(SETTINGS_gps_simLatitude).value<double>();
+    sim.longitude = SettingsManager::instance()->value(SETTINGS_gps_simLongitude).value<double>();
 }
 
 void FormGPS::onBtnRotateSim_clicked(){
@@ -1107,7 +1152,7 @@ void FormGPS::Timer1_Tick()
 {
     if (isSA)
     {
-        dist = glm::Distance(startFix, vehicle->pivotAxlePos);
+        dist = glm::Distance(startFix, CVehicle::instance()->pivotAxlePos);
         cntr++;
         if (dist > diameter)
         {
@@ -1120,7 +1165,7 @@ void FormGPS::Timer1_Tick()
         qDebug()<<diameter;
         if (cntr > 9)
         {
-            steerAngleRight = atan(vehicle->wheelbase / ((diameter - vehicle->trackWidth * 0.5) / 2));
+            steerAngleRight = atan(CVehicle::instance()->wheelbase / ((diameter - CVehicle::instance()->trackWidth * 0.5) / 2));
             steerAngleRight = glm::toDegrees(steerAngleRight);
 
             //lblCalcSteerAngleInner = steerAngleRight.ToString("N1") + "°";
@@ -1173,7 +1218,10 @@ void FormGPS::Timer1_Tick()
         p_252.pgn[p_252.gainProportional] = (char)hsbarProportionalGain;
         p_252.pgn[p_252.minPWM] = (char)hsbarMinPWM;
 
-        SendPgnToLoop(p_252.pgn);
+        // SendPgnToLoop(p_252.pgn); // ❌ REMOVED - Phase 4.6: AgIOService Workers handle PGN
+    if (m_agioService) {
+        m_agioService->sendPgn(p_252.pgn);
+    }
         toSend = false;
         counter = 0;
     }
@@ -1184,9 +1232,9 @@ void FormGPS::Timer1_Tick()
 
         if (tabControl1.SelectedTab == tabPPAdv)
         {
-            lblHoldAdv = vehicle->goalPointLookAheadHold.ToString("N1");
-            lblAcqAdv = (vehicle->goalPointLookAheadHold * mf.vehicle->goalPointAcquireFactor).ToString("N1");
-            lblDistanceAdv = vehicle->goalDistance.ToString("N1");
+            lblHoldAdv = CVehicle::instance()->goalPointLookAheadHold.ToString("N1");
+            lblAcqAdv = (CVehicle::instance()->goalPointLookAheadHold * mf.CVehicle::instance()->goalPointAcquireFactor).ToString("N1");
+            lblDistanceAdv = CVehicle::instance()->goalDistance.ToString("N1");
             lblAcquirePP = lblAcqAdv.Text;
         }
     }
@@ -1306,7 +1354,7 @@ bool FormGPS::ShouldCollectSample(double steerAngle, double speed)
     if (speed < MIN_SPEED_THRESHOLD) return false;
     if (std::abs(steerAngle) > MAX_ANGLE_THRESHOLD) return false;
     if (!isBtnAutoSteerOn) return false;
-    if (std::abs(vehicle->guidanceLineDistanceOff) > 15000) return false;
+    if (std::abs(CVehicle::instance()->guidanceLineDistanceOff) > 15000) return false;
 
     return true;
 }
@@ -1440,8 +1488,8 @@ void FormGPS::on_btnSmartZeroWAS_clicked()
     }
 
     // Получаем рекомендацию по смещению
-    int recommendedOffsetAdjustment = GetRecommendedWASOffsetAdjustment(settings->value(SETTINGS_as_countsPerDegree).value<int>());
-    int newOffset = settings->value(SETTINGS_as_wasOffset).value<int>() + recommendedOffsetAdjustment;
+    int recommendedOffsetAdjustment = GetRecommendedWASOffsetAdjustment(SettingsManager::instance()->value(SETTINGS_as_countsPerDegree).value<int>());
+    int newOffset = SettingsManager::instance()->value(SETTINGS_as_wasOffset).value<int>() + recommendedOffsetAdjustment;
 
     // Проверяем новое значение смещения на допустимый диапазон
     if (std::abs(newOffset) > 3900)
@@ -1453,7 +1501,7 @@ void FormGPS::on_btnSmartZeroWAS_clicked()
     }
 
     // Применяем смещение нуля WAS
-    settings->setValue(SETTINGS_as_wasOffset, newOffset);
+    SettingsManager::instance()->setValue(SETTINGS_as_wasOffset, newOffset);
 
     // Критически важно: применяем смещение к ранее собранным данным
     ApplyOffsetToCollectedData(RecommendedWASZero);

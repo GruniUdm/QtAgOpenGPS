@@ -14,31 +14,31 @@ void FormGPS::connect_classes()
 {
     simConnectSlots();
 
-    connect(&trk->curve,SIGNAL(stopAutoSteer()),this,SLOT(onStopAutoSteer()));
-    connect(&trk->curve,SIGNAL(TimedMessage(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
+    connect(&CTrack::instance()->curve,SIGNAL(stopAutoSteer()),this,SLOT(onStopAutoSteer()), Qt::QueuedConnection);
+    connect(&CTrack::instance()->curve,SIGNAL(TimedMessage(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)), Qt::QueuedConnection);
 
-    connect(&ct,SIGNAL(TimedMessage(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
+    connect(&ct,SIGNAL(TimedMessage(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)), Qt::QueuedConnection);
 
-    connect(&mc, SIGNAL(stopAutoSteer()),this,SLOT(onStopAutoSteer()));
-    connect(&mc, SIGNAL(turnOffAutoSections()),this,SLOT(onSectionMasterAutoOff()));
-    connect(&mc, SIGNAL(turnOffManulSections()),this,SLOT(onSectionMasterManualOff()));
+    connect(&mc, SIGNAL(stopAutoSteer()),this,SLOT(onStopAutoSteer()), Qt::QueuedConnection);
+    connect(&mc, SIGNAL(turnOffAutoSections()),this,SLOT(onSectionMasterAutoOff()), Qt::QueuedConnection);
+    connect(&mc, SIGNAL(turnOffManulSections()),this,SLOT(onSectionMasterManualOff()), Qt::QueuedConnection);
 
-    connect(&pn, SIGNAL(checkZoomWorldGrid(double,double)),&worldGrid,SLOT(checkZoomWorldGrid(double,double)));
+    connect(&pn, SIGNAL(checkZoomWorldGrid(double,double)),&worldGrid,SLOT(checkZoomWorldGrid(double,double)), Qt::QueuedConnection);
 
-    connect(&recPath, SIGNAL(setSimStepDistance(double)),&sim,SLOT(setSimStepDistance(double)));
-    connect(&recPath,SIGNAL(turnOffSectionMasterAuto()),this,SLOT(onSectionMasterAutoOff()));
-    connect(&recPath, SIGNAL(stoppedDriving()),this,SLOT(onStoppedDriving()));
+    connect(&recPath, SIGNAL(setSimStepDistance(double)),&sim,SLOT(setSimStepDistance(double)), Qt::QueuedConnection);
+    connect(&recPath,SIGNAL(turnOffSectionMasterAuto()),this,SLOT(onSectionMasterAutoOff()), Qt::QueuedConnection);
+    connect(&recPath, SIGNAL(stoppedDriving()),this,SLOT(onStoppedDriving()), Qt::QueuedConnection);
 
-    connect(&bnd,SIGNAL(TimedMessage(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
+    connect(&bnd,SIGNAL(TimedMessage(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)), Qt::QueuedConnection);
     //connect(&bnd, SIGNAL(soundHydLiftChange(bool)),sounds,SLOT(onHydLiftChange(bool)));
 
-    connect(&yt, SIGNAL(outOfBounds()),&mc,SLOT(setOutOfBounds()));
+    connect(&yt, SIGNAL(outOfBounds()),&mc,SLOT(setOutOfBounds()), Qt::QueuedConnection);
     //TODO: connect(&yt,SIGNAL(turnOffBoundAlarm()),&sounds,SLOT(onTurnOffBoundAlarm()));
 
     //connect(settings, &AOGSettings::updateFromSettings, this, &FormGPS::loadSettings);
 
-    connect(trk, SIGNAL(resetCreatedYouTurn()),&yt,SLOT(ResetCreatedYouTurn()));
-    connect(trk, SIGNAL(saveTracks()),this,SLOT(FileSaveTracks()));
+    connect(CTrack::instance(), SIGNAL(resetCreatedYouTurn()),&yt,SLOT(ResetCreatedYouTurn()), Qt::QueuedConnection);
+    connect(CTrack::instance(), SIGNAL(saveTracks()),this,SLOT(FileSaveTracks()), Qt::QueuedConnection);
 }
 
 void FormGPS::onStopAutoSteer()
