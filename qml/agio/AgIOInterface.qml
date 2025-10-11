@@ -23,38 +23,38 @@ Item {
     id: agioInterfaceType
 
 	// Connection status - direct AgIOService properties for real-time updates
-	property bool ethernetConnected: AgIOService.ethernetConnected
-	property bool ntripConnected: AgIOService.ntripConnected
+	property bool ethernetConnected: false
+	property bool ntripConnected: false
 	property bool aogConnected: false // TODO: Add to AgIOService if needed
-	property bool steerConnected: false // TODO: Map to AgIOService.moduleConnected
-	property bool gpsConnected: AgIOService.gpsConnected
+	property bool steerConnected: false // TODO: Map to SettingsManager.moduleConnected
+	property bool gpsConnected: false
 	property bool imuConnected: false // TODO: Add IMU connection status to AgIOService
 	property bool machineConnected: false // TODO: Add machine connection status to AgIOService
     property bool blockageConnected: false // TODO: Add blockage connection status to AgIOService
-    property bool bluetoothConnected: AgIOService.bluetoothConnected
+    property bool bluetoothConnected: false
 
     // NTRIP status - direct AgIOService properties for real-time monitoring
-    property int ntripStatus: AgIOService.ntripStatus
-    property string ntripStatusText: AgIOService.ntripStatusText
+    property int ntripStatus: 0
+    property string ntripStatusText: ""
     property int tripBytes: 0 // TODO: Add totalNTRIPBytes to AgIOService
     property int ntripCounter: 0 // TODO: Add NTRIP message counter to AgIOService
     property int rawTripCount: 0 // TODO: Add raw NTRIP count to AgIOService
 
 
 	// GPS/NMEA data - direct AgIOService properties for real-time updates
-	property double latitude: AgIOService.latitude
-	property double longitude: AgIOService.longitude
+	property double latitude: 0.0
+	property double longitude: 0.0
 	property double altitude: 0 // TODO: Add altitude to AgIOService if available
-	property double speed: AgIOService.speed
-    property double gpsHeading: AgIOService.heading
+	property double speed: 0.0
+    property double gpsHeading: 0.0
     property double dualHeading: 0 // TODO: Add dual heading to AgIOService if needed
-    property double imuHeading: AgIOService.imuYaw
-    property double imuRoll: AgIOService.imuRoll
-    property double imuPitch: AgIOService.imuPitch
-    property double age: AgIOService.age
+    property double imuHeading: 0.0
+    property double imuRoll: 0.0
+    property double imuPitch: 0.0
+    property double age: 0.0
     property int hdop: 0 // TODO: Add HDOP to AgIOService if available
-	property int quality: AgIOService.gpsQuality
-	property int sats: AgIOService.satellites
+	property int quality: 0
+	property int sats: 0
 	property double yawrate: 0 // TODO: Add yaw rate to AgIOService if needed
     property double gpsHz: 0 // TODO: Add GPS frequency to AgIOService if needed
     property double nowHz: 0 // TODO: Add current Hz to AgIOService if needed
@@ -72,22 +72,20 @@ Item {
     property int nmeaError: 0 // triggers if altitude changes drastically--a sign of 2 separate nmea strings
 
     //these are signals that get sent to the backend
-    signal btnSendSubnet_clicked();
-    signal ntripDebug(bool doWeDebug);
-    signal setIPFromUrl(string url);
-    signal configureNTRIP();
+    // ✅ PHASE 6.0.20: AGIO SIGNALS MODERNIZED TO AgIOService DIRECT CALLS
+    // REMOVED 10 LEGACY SIGNALS - All replaced by AgIOService methods:
+    // - btnSendSubnet_clicked() → AgIOService.sendSubnet()
+    // - ntripDebug(bool) → AgIOService.setNTRIPDebug(bool)
+    // - setIPFromUrl(string) → AgIOService.setIPFromUrl(string)
+    // - configureNTRIP() → AgIOService.configureNTRIP()
+    // - btnUDPListenOnly_clicked(bool) → AgIOService.setUDPListenOnly(bool)
+    // - bt_search(string) → AgIOService.bluetoothSearch(string)
+    // - bt_kill() → AgIOService.bluetoothKill()
+    // - bt_remove_device(string) → AgIOService.bluetoothRemoveDevice(string)
+    // - bluetoothDebug(bool) → AgIOService.setBluetoothDebug(bool)
+    // - startBluetoothDiscovery() → AgIOService.startBluetoothDiscovery()
 
-
-    //advanced Menu triggers
-    signal btnUDPListenOnly_clicked(bool isIt);
-
-    //bluetooth
-    signal bt_search(string device)
-    signal bt_kill()
-    signal bt_remove_device(string device)
     property string connectedBTDevices: ""
-    signal bluetoothDebug(bool doWeDebug);
-    signal startBluetoothDiscovery()
 
 
 }

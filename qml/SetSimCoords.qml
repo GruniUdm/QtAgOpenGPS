@@ -9,7 +9,7 @@ import "components" as Comp
 Rectangle{
     id: setSimCoordsRoot
     anchors.fill: mainWindow
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     visible: false
     function show(){
         setSimCoordsRoot.visible = true
@@ -122,8 +122,8 @@ Rectangle{
         Comp.IconButtonTransparent{
             icon.source: prefix + "/images/OK64.png"
             onClicked: {
-                settings.setGPS_simLatitude = latInput.text
-                settings.setGPS_simLongitude = lonInput.text
+                settings.gps_simLatitude = latInput.text
+                settings.gps_simLongitude = lonInput.text
                 setSimCoordsRoot.visible = false
             }
         }

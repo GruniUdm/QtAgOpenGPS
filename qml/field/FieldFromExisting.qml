@@ -58,7 +58,7 @@ Dialog {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
         Rectangle{
             id: editFieldName
             height: 50  * theme.scaleHeight
@@ -146,7 +146,8 @@ Dialog {
                     text: "+"
                 }
                 onClicked: {
-                    newField.text += " " + Settings.vehicle_vehicleName
+                    // Threading Phase 1: Add vehicle name to field
+                    newField.text += " " + SettingsManager.vehicle_vehicleName
                 }
             }
             IconButtonTransparent{
@@ -256,7 +257,7 @@ Dialog {
                             flag |= fieldInterface.loadMapping
 
                         fieldFromExisting.visible = false
-                        fieldInterface.field_new_from(fieldView.currentFieldName, newField.text.trim(), flag)
+                        aog.fieldNewFrom(fieldView.currentFieldName, newField.text.trim(), flag) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                         newField.text = ""
                         existingField.text = ""
                         fieldView.clear_selection()

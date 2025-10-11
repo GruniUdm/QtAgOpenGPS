@@ -2,9 +2,9 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 import QtQuick.Layouts
-//import AOG
+import AOG
 
-import "components" as Comp
+import "../components" as Comp
 import "interfaces"
 
 Drawer {
@@ -32,8 +32,8 @@ Drawer {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         border.width: 2
-        border.color: theme.blackDayWhiteNight
-        color: theme.backgroundColor
+        border.color: aogInterface.blackDayWhiteNight
+        color: aogInterface.backgroundColor
         ColumnLayout{
             id: contGrid
             anchors.fill: parent
@@ -44,21 +44,21 @@ Drawer {
                 id: ckUDPListenOnly
                 text: "UDP Listen Only"
                 checked: false
-                onCheckedChanged:  AgIOService.btnUDPListenOnly_clicked(ckUDPListenOnly.checkState)
+                onCheckedChanged:  AgIOService.udpListenOnly = ckUDPListenOnly.checked
                 //Layout.alignment: Qt.AlignLeft
             }
             Comp.CheckBoxCustomized {
                 id: ckNtripDebug
                 text: "Console NTRIP Debug"
                 checked: false
-                onCheckedChanged:  AgIOService.ntripDebug(ckNtripDebug.checkState)
+                onCheckedChanged:  AgIOService.ntripDebugEnabled = ckNtripDebug.checked
                 //Layout.alignment: Qt.AlignRight
             }
             Comp.CheckBoxCustomized {
                 id: ckBluetoothDebug
                 text: "Console Bluetooth Debug"
                 checked: false
-                onCheckedChanged:  AgIOService.bluetoothDebug(ckBluetoothDebug.checkState)
+                onCheckedChanged:  AgIOService.bluetoothDebugEnabled = ckBluetoothDebug.checked
                 //Layout.alignment: Qt.AlignLeft
             }
         }

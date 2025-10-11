@@ -4,7 +4,7 @@
 // Set line name
 import QtQuick
 import QtQuick.Controls.Fusion
-//import AOG
+import AOG
 import "components" as Comp
 
 Rectangle{
@@ -30,9 +30,9 @@ Rectangle{
         textInputBox.text = name
     }
 
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     border.width: 1
-    border.color: aog.blackDayWhiteNight
+    border.color: aogInterface.blackDayWhiteNight
 
     Comp.TopLine{
         id: topLine

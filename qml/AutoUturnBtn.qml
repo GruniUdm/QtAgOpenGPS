@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Controls
-//import AOG
+import AOG
 
 
 Item{
@@ -40,7 +40,7 @@ Item{
         colorization: 1.0
         MouseArea{
             anchors.fill: parent
-            onClicked: aog.isYouTurnTriggered?aog.btnResetCreatedYouTurn():aog.swapAutoYouTurnDirection()
+            onClicked: aog.isYouTurnTriggered?aog.resetCreatedYouTurn():aog.swapAutoYouTurnDirection() // Qt 6.8 MODERN: Direct Q_INVOKABLE calls
 
         }
         Text{

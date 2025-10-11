@@ -3,6 +3,7 @@
 #include <QThread>
 #include <QDateTime>
 #include <QHostAddress>
+#include "agioservice.h"  // Pour utiliser Q_DECLARE_LOGGING_CATEGORY(agioservice)
 
 NTRIPWorker::NTRIPWorker(QObject *parent)
     : QObject(parent)
@@ -19,8 +20,22 @@ NTRIPWorker::NTRIPWorker(QObject *parent)
     , m_bytesReceived(0)
     , m_packetsReceived(0)
     , m_dataRate(0.0)
+    // ✅ PHASE 5.3 - Advanced RTCM Routing Configuration
+    , m_rtcmPacketSize(256)              // Default RTCM packet size (C# compatible)
+    , m_sendToSerialEnabled(false)       // Default: no serial routing (Qt modern architecture)
+    , m_sendToUDPEnabled(true)           // Default: UDP broadcast to GPS modules
+    , m_udpBroadcastAddress("255.255.255.255")  // Default broadcast address
+    , m_udpBroadcastPort(10110)          // Standard RTCM UDP port
+    , m_totalBytesRouted(0)
+    , m_serialPacketsSent(0)
+    , m_udpPacketsSent(0)
 {
     qDebug() << "🔧 NTRIPWorker constructor - Thread:" << QThread::currentThread();
+
+    qDebug() << "✅ PHASE 5.3 - Advanced RTCM routing initialized:"
+             << "PacketSize:" << m_rtcmPacketSize
+             << "Serial:" << m_sendToSerialEnabled
+             << "UDP:" << m_sendToUDPEnabled;
     
     // Create TCP socket
     m_tcpSocket = new QTcpSocket(this);
@@ -93,22 +108,27 @@ void NTRIPWorker::stopNTRIP()
     if (!m_isRunning) {
         return;
     }
-    
-    qDebug() << "🛑 Stopping NTRIP worker";
-    
+
+    qDebug(agioservice) << "NTRIP worker stopping";
+
     m_isRunning = false;
-    
+
     // Stop timers
     m_statusTimer->stop();
     m_reconnectTimer->stop();
-    
+
+    // Reset state for next connection
+    m_headerReceived = false;
+    m_receiveBuffer.clear();
+    m_reconnectAttempts = 0;
+
     // Close connection
     cleanupConnection();
-    
+
     // Set final state
     setState(Disconnected);
-    
-    qDebug() << "✅ NTRIP worker stopped";
+
+    qDebug(agioservice) << "NTRIP worker stopped";
 }
 
 void NTRIPWorker::onTcpConnected()
@@ -398,10 +418,13 @@ void NTRIPWorker::processRtcmData(const QByteArray& data)
     if (data.isEmpty()) {
         return;
     }
-    
-    // Emit raw RTCM data for forwarding
+
+    // ✅ PHASE 5.3 - Use advanced RTCM processing with routing
+    processRTCMPackets(data);
+
+    // Emit raw RTCM data for backward compatibility
     emit ntripDataReceived(data);
-    
+
     // Update statistics
     if (m_connectionState != ReceivingData) {
         setState(ReceivingData);
@@ -410,15 +433,30 @@ void NTRIPWorker::processRtcmData(const QByteArray& data)
 
 void NTRIPWorker::cleanupConnection()
 {
-    if (m_tcpSocket) {
-        if (m_tcpSocket->state() != QAbstractSocket::UnconnectedState) {
-            m_tcpSocket->disconnectFromHost();
-            
-            // Wait a bit for graceful disconnection
-            if (!m_tcpSocket->waitForDisconnected(3000)) {
-                m_tcpSocket->abort();
-            }
-        }
+    if (!m_tcpSocket) {
+        return;
+    }
+
+    qDebug(agioservice) << "NTRIP cleanup connection, current state:" << m_tcpSocket->state();
+
+    // PHASE 6.0.38: Asynchronous disconnect (Qt modern architecture)
+    // Never use waitForDisconnected() - it blocks the thread and breaks signal/slot
+    QAbstractSocket::SocketState currentState = m_tcpSocket->state();
+
+    if (currentState == QAbstractSocket::ConnectedState ||
+        currentState == QAbstractSocket::ConnectingState ||
+        currentState == QAbstractSocket::HostLookupState) {
+        // Graceful disconnect - let Qt signals handle it asynchronously
+        m_tcpSocket->disconnectFromHost();
+        qDebug(agioservice) << "NTRIP disconnectFromHost called, state will change via signals";
+    }
+    else if (currentState != QAbstractSocket::UnconnectedState) {
+        // Force abort for other states
+        m_tcpSocket->abort();
+        qDebug(agioservice) << "NTRIP connection aborted";
+    }
+    else {
+        qDebug(agioservice) << "NTRIP socket already disconnected";
     }
 }
 
@@ -440,4 +478,199 @@ bool NTRIPWorker::validateSettings() const
     }
     
     return true;
+}
+
+// ===== PHASE 5.3 - Advanced NTRIP Configuration & RTCM Routing =====
+
+void NTRIPWorker::configurePacketSize(int size)
+{
+    qDebug() << "⚙️ Configuring RTCM packet size:" << size << "bytes";
+
+    if (size < 64 || size > 1024) {
+        qWarning() << "⚠️ Invalid packet size, using default 256 bytes";
+        m_rtcmPacketSize = 256;
+    } else {
+        m_rtcmPacketSize = size;
+    }
+
+    qDebug() << "✅ RTCM packet size configured:" << m_rtcmPacketSize << "bytes";
+}
+
+void NTRIPWorker::enableSerialRouting(bool enable)
+{
+    qDebug() << "⚙️ RTCM serial routing:" << (enable ? "enabled" : "disabled");
+
+    m_sendToSerialEnabled = enable;
+
+    if (!enable && !m_sendToUDPEnabled) {
+        qWarning() << "⚠️ Warning: Both serial and UDP routing disabled - RTCM data will not be forwarded!";
+    }
+
+    qDebug() << "✅ RTCM serial routing configured:" << m_sendToSerialEnabled;
+}
+
+void NTRIPWorker::enableUDPBroadcast(bool enable)
+{
+    qDebug() << "⚙️ RTCM UDP broadcast:" << (enable ? "enabled" : "disabled");
+
+    m_sendToUDPEnabled = enable;
+
+    if (!enable && !m_sendToSerialEnabled) {
+        qWarning() << "⚠️ Warning: Both serial and UDP routing disabled - RTCM data will not be forwarded!";
+    }
+
+    qDebug() << "✅ RTCM UDP broadcast configured:" << m_sendToUDPEnabled;
+}
+
+void NTRIPWorker::setRoutingTargets(const QStringList& serialPorts, const QString& udpAddress, int udpPort)
+{
+    qDebug() << "⚙️ Configuring RTCM routing targets:"
+             << "Serial ports:" << serialPorts
+             << "UDP:" << udpAddress << ":" << udpPort;
+
+    m_serialRoutingTargets = serialPorts;
+    m_udpBroadcastAddress = udpAddress.isEmpty() ? "255.255.255.255" : udpAddress;
+    m_udpBroadcastPort = (udpPort > 0 && udpPort < 65536) ? udpPort : 10110;
+
+    qDebug() << "✅ RTCM routing targets configured:"
+             << "Serial:" << m_serialRoutingTargets.size() << "ports"
+             << "UDP:" << m_udpBroadcastAddress << ":" << m_udpBroadcastPort;
+}
+
+void NTRIPWorker::processRTCMPackets(const QByteArray& data)
+{
+    // Add new data to buffer
+    m_rtcmBuffer.append(data);
+
+    // Process complete RTCM packets
+    while (m_rtcmBuffer.size() >= 3) { // Minimum RTCM packet size
+        // Find RTCM packet start (0xD3)
+        int packetStart = -1;
+        for (int i = 0; i < m_rtcmBuffer.size(); ++i) {
+            if (static_cast<quint8>(m_rtcmBuffer[i]) == 0xD3) {
+                packetStart = i;
+                break;
+            }
+        }
+
+        if (packetStart == -1) {
+            // No RTCM packet found, clear buffer
+            m_rtcmBuffer.clear();
+            break;
+        }
+
+        // Remove data before packet start
+        if (packetStart > 0) {
+            m_rtcmBuffer.remove(0, packetStart);
+        }
+
+        // Check if we have enough data for packet length
+        if (m_rtcmBuffer.size() < 3) break;
+
+        // Extract packet length
+        quint16 packetLength = ((static_cast<quint8>(m_rtcmBuffer[1]) & 0x03) << 8) |
+                               static_cast<quint8>(m_rtcmBuffer[2]);
+        int totalPacketSize = packetLength + 6; // Header(3) + Data + CRC(3)
+
+        // Check if complete packet is available
+        if (m_rtcmBuffer.size() < totalPacketSize) {
+            break; // Wait for more data
+        }
+
+        // Extract complete packet
+        QByteArray packet = m_rtcmBuffer.left(totalPacketSize);
+        m_rtcmBuffer.remove(0, totalPacketSize);
+
+        // Validate and route packet
+        if (isValidRTCMPacket(packet)) {
+            routeRTCMPacket(packet);
+        } else {
+            qDebug() << "⚠️ Invalid RTCM packet discarded, size:" << packet.size();
+        }
+    }
+}
+
+void NTRIPWorker::routeRTCMPacket(const QByteArray& packet)
+{
+    if (packet.isEmpty()) return;
+
+    qDebug() << "📏 Routing RTCM packet:" << packet.size() << "bytes"
+             << "Serial:" << m_sendToSerialEnabled
+             << "UDP:" << m_sendToUDPEnabled;
+
+    // Route to serial ports if enabled
+    if (m_sendToSerialEnabled) {
+        sendRTCMToSerial(packet);
+    }
+
+    // Broadcast to UDP if enabled
+    if (m_sendToUDPEnabled) {
+        sendRTCMToUDP(packet);
+    }
+
+    // Emit routing signals for AgIOService integration
+    if (m_sendToSerialEnabled) {
+        emit routeRTCMToSerial(packet);
+    }
+    if (m_sendToUDPEnabled) {
+        emit broadcastRTCMToUDP(packet);
+    }
+
+    // Update statistics
+    m_totalBytesRouted += packet.size();
+    emit rtcmPacketProcessed(packet.size(), m_sendToSerialEnabled ? "Serial" : "UDP");
+}
+
+void NTRIPWorker::sendRTCMToSerial(const QByteArray& packet)
+{
+    // This will be connected to SerialWorker via AgIOService
+    // For now, just emit the signal
+    qDebug() << "📶 Routing RTCM to serial ports:" << m_serialRoutingTargets.size() << "targets";
+
+    m_serialPacketsSent++;
+    updateRoutingStatistics("Serial", packet.size());
+}
+
+void NTRIPWorker::sendRTCMToUDP(const QByteArray& packet)
+{
+    // This will be connected to UDPWorker via AgIOService
+    // For now, just emit the signal
+    qDebug() << "📶 Broadcasting RTCM to UDP:" << m_udpBroadcastAddress << ":" << m_udpBroadcastPort;
+
+    m_udpPacketsSent++;
+    updateRoutingStatistics("UDP", packet.size());
+}
+
+bool NTRIPWorker::isValidRTCMPacket(const QByteArray& packet) const
+{
+    if (packet.size() < 6) return false; // Minimum RTCM packet size
+
+    // Check RTCM header (0xD3)
+    if (static_cast<quint8>(packet[0]) != 0xD3) {
+        return false;
+    }
+
+    // Extract and validate length
+    quint16 declaredLength = ((static_cast<quint8>(packet[1]) & 0x03) << 8) |
+                            static_cast<quint8>(packet[2]);
+    int expectedSize = declaredLength + 6;
+
+    if (packet.size() != expectedSize) {
+        return false;
+    }
+
+    // Basic length validation
+    if (declaredLength > 1023) { // RTCM maximum message length
+        return false;
+    }
+
+    return true;
+}
+
+void NTRIPWorker::updateRoutingStatistics(const QString& destination, int bytes)
+{
+    qDebug() << "📊 RTCM routing stats:" << destination << bytes << "bytes"
+             << "Total routed:" << m_totalBytesRouted
+             << "Serial packets:" << m_serialPacketsSent
+             << "UDP packets:" << m_udpPacketsSent;
 }

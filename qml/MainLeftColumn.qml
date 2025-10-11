@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-//import AOG
+import AOG
 //import Settings
 import "components" as Comp
 
@@ -21,13 +21,13 @@ ColumnLayout {
         implicitHeight: theme.buttonSize
         Layout.alignment: Qt.AlignCenter
         onClicked: {
-            aog.distanceUser = "0"
-            aog.workedAreaTotalUser = "0"
+            aog.distanceUser = parseFloat("0")
+            aog.workedAreaTotalUser = parseFloat("0")
         }
 
         background: Rectangle{
             anchors.fill: parent
-            color: aog.backgroundColor
+            color: aogInterface.backgroundColor
             radius: 10
             Text{
                 anchors.top: parent.top

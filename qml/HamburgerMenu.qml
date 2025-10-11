@@ -18,6 +18,55 @@ Drawer{
     contentItem: Rectangle{
         id: hamburgerMenuContent
         anchors.fill: parent
+
+        // PHASE6-0-20: Gestion des états de langue avec states QML
+        states: [
+            State {
+                name: "english"
+                when: SettingsManager.menu_language === "en"
+                PropertyChanges { target: btnEnglish; checked: true }
+                PropertyChanges { target: btnFrench; checked: false }
+                PropertyChanges { target: btnRussian; checked: false }
+                PropertyChanges { target: btnSerbian; checked: false }
+                PropertyChanges { target: btnGerman; checked: false }
+            },
+            State {
+                name: "french"
+                when: SettingsManager.menu_language === "fr"
+                PropertyChanges { target: btnEnglish; checked: false }
+                PropertyChanges { target: btnFrench; checked: true }
+                PropertyChanges { target: btnRussian; checked: false }
+                PropertyChanges { target: btnSerbian; checked: false }
+                PropertyChanges { target: btnGerman; checked: false }
+            },
+            State {
+                name: "russian"
+                when: SettingsManager.menu_language === "ru"
+                PropertyChanges { target: btnEnglish; checked: false }
+                PropertyChanges { target: btnFrench; checked: false }
+                PropertyChanges { target: btnRussian; checked: true }
+                PropertyChanges { target: btnSerbian; checked: false }
+                PropertyChanges { target: btnGerman; checked: false }
+            },
+            State {
+                name: "serbian"
+                when: SettingsManager.menu_language === "sr"
+                PropertyChanges { target: btnEnglish; checked: false }
+                PropertyChanges { target: btnFrench; checked: false }
+                PropertyChanges { target: btnRussian; checked: false }
+                PropertyChanges { target: btnSerbian; checked: true }
+                PropertyChanges { target: btnGerman; checked: false }
+            },
+            State {
+                name: "german"
+                when: SettingsManager.menu_language === "de"
+                PropertyChanges { target: btnEnglish; checked: false }
+                PropertyChanges { target: btnFrench; checked: false }
+                PropertyChanges { target: btnRussian; checked: false }
+                PropertyChanges { target: btnSerbian; checked: false }
+                PropertyChanges { target: btnGerman; checked: true }
+            }
+        ]
         height: fieldMenu.height
         color: "black"
 
@@ -57,14 +106,11 @@ Drawer{
             }
             Comp.IconButtonTextBeside{
                 text: qsTr("Simulator On")
-                property bool isChecked: Settings.menu_isSimulatorOn
-                onIsCheckedChanged: {
-                    checked = isChecked
-                }
+                // Threading Phase 1: Simulator mode toggle - Qt 6.8 QProperty binding
                 checkable: true
-                checked: isChecked
+                checked: SettingsManager.menu_isSimulatorOn
                 onCheckedChanged: {
-                    Settings.menu_isSimulatorOn = checked
+                    SettingsManager.menu_isSimulatorOn = checked
                 }
             }
             Comp.IconButtonTextBeside{
@@ -99,7 +145,7 @@ Drawer{
             id: languagesMenuContent
             anchors.fill: parent
             height: languagesMenu.height
-            color: aog.blackDayWhiteNight
+            color: aogInterface.blackDayWhiteNight
         }
 
         Grid {
@@ -115,38 +161,48 @@ Drawer{
             columns: 1
 
             Comp.IconButtonTextBeside{
+                id: btnEnglish
                 text: qsTr("English")
                 onClicked: {
                     hamburgerMenuRoot.visible = false
-                    Settings.menu_language = "en"
+                    // Threading Phase 1: Language selection - English
+                    SettingsManager.menu_language = "en"
                     aog.settings_save()}
             }
             Comp.IconButtonTextBeside{
+                id: btnFrench
                 text: qsTr("French")
                 onClicked: {
                     hamburgerMenuRoot.visible = false
-                    Settings.menu_language = "fr"
+                    // Threading Phase 1: Language selection - French
+                    SettingsManager.menu_language = "fr"
                     aog.settings_save()}
             }
             Comp.IconButtonTextBeside{
+                id: btnRussian
                 text: qsTr("Russian")
                 onClicked: {
                     hamburgerMenuRoot.visible = false
-                    Settings.menu_language = "ru"
+                    // Threading Phase 1: Language selection - Russian
+                    SettingsManager.menu_language = "ru"
                     aog.settings_save()}
             }
             Comp.IconButtonTextBeside{
+                id: btnSerbian
                 text: qsTr("Srpski")
                 onClicked: {
                     hamburgerMenuRoot.visible = false
-                    Settings.menu_language = "sr"
+                    // Threading Phase 1: Language selection - Serbian
+                    SettingsManager.menu_language = "sr"
                     aog.settings_save()}
             }
             Comp.IconButtonTextBeside{
+                id: btnGerman
                 text: qsTr("Deutch")
                 onClicked: {
                     hamburgerMenuRoot.visible = false
-                    Settings.menu_language = "de"
+                    // Threading Phase 1: Language selection - German
+                    SettingsManager.menu_language = "de"
                     aog.settings_save()}
             }
         }

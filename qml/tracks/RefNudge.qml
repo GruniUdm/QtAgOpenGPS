@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 //import Settings
-//import AOG
+import AOG
 // Interface import removed - now QML_SINGLETON
 
 import ".."
@@ -41,12 +41,12 @@ Comp.MoveablePopup {
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapLeftHalf.png"
                         Layout.alignment: Qt.AlignLeft
-                        onClicked: TracksInterface.ref_nudge((Settings.vehicle_toolWidth - Settings.vehicle_toolOverlap)/-2)
+                        onClicked: TracksInterface.ref_nudge((SettingsManager.vehicle_toolWidth - SettingsManager.vehicle_toolOverlap)/-2)
                     }
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapRightHalf.png"
                         Layout.alignment: Qt.AlignRight
-                        onClicked: TracksInterface.ref_nudge((Settings.vehicle_toolWidth - Settings.vehicle_toolOverlap)/2)
+                        onClicked: TracksInterface.ref_nudge((SettingsManager.vehicle_toolWidth - SettingsManager.vehicle_toolOverlap)/2)
                     }
                 }
                 RowLayout{
@@ -55,12 +55,12 @@ Comp.MoveablePopup {
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapLeft.png"
                         Layout.alignment: Qt.AlignLeft
-                        onClicked: TracksInterface.ref_nudge(Settings.as_snapDistanceRef/-100)
+                        onClicked: TracksInterface.ref_nudge(SettingsManager.as_snapDistanceRef/-100) // Threading Phase 1: Ref snap distance
                     }
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapRight.png"
                         Layout.alignment: Qt.AlignRight
-                        onClicked: TracksInterface.ref_nudge(Settings.as_snapDistanceRef/100)
+                        onClicked: TracksInterface.ref_nudge(SettingsManager.as_snapDistanceRef/100) // Threading Phase 1: Ref snap distance
                     }
                 }
                 Comp.SpinBoxCM{
@@ -68,8 +68,8 @@ Comp.MoveablePopup {
                     Layout.alignment: Qt.AlignCenter
                     from: 1
                     to: 10000
-                    boundValue: Settings.as_snapDistanceRef
-                    onValueModified: Settings.as_snapDistanceRef = value
+                    boundValue: SettingsManager.as_snapDistanceRef
+                    onValueModified: SettingsManager.as_snapDistanceRef = value // Threading Phase 1: Reference nudge distance
                 }
             }
         }

@@ -6,7 +6,7 @@ import "components" as Comp
 
     Rectangle{
         id: topLine
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
         height: 50 *theme.scaleHeight
         visible: true
 
@@ -88,11 +88,13 @@ import "components" as Comp
                             .arg(Qt.locale().toString(aog.latitude,'f',7))
                             .arg(Qt.locale().toString(aog.longitude,'f',7))
                 }else if(increment == 2){
-                    playText.mainString = Utils.m_to_ft_string(Settings.vehicle_toolWidth) + " - " + Settings.vehicle_vehicleName
+                    // Threading Phase 1: Vehicle display information
+                    playText.mainString = Utils.m_to_ft_string(SettingsManager.vehicle_toolWidth) + " - " + SettingsManager.vehicle_vehicleName
                     if(!aog.isJobStarted) //reset
                         increment = -1
                 }else if(increment == 3){
-                    playText.mainString = qsTr("Field: %1").arg(Settings.f_currentDir)
+                    // Threading Phase 1: Current field directory
+                    playText.mainString = qsTr("Field: %1").arg(SettingsManager.f_currentDir)
                 }else if(increment == 4) {
                     var percentLeft = ""
                     if (aog.areaBoundaryOuterLessInner > 0) {
@@ -176,7 +178,8 @@ import "components" as Comp
                 Layout.alignment: Qt.AlignCenter
                 implicitWidth: theme.buttonSize
                 height:parent.height
-                visible: (aog.blockageConnected & Settings.seed_blockageIsOn) ? true : false
+                // Threading Phase 1: Blockage monitoring visibility
+                visible: AgIOService.blockageConnected && SettingsManager.seed_blockageIsOn
                 onClicked: {
                     blockageData.visible = !blockageData.visible
                     gpsData.visible = false
@@ -212,7 +215,8 @@ import "components" as Comp
                     if (mainWindow.visibility == Window.FullScreen){
                         mainWindow.showNormal()
                     }else{
-                        Settings.window_size = ((mainWindow.width).toString() + ", "+  (mainWindow.height).toString())
+                        // Threading Phase 1: Save window size before fullscreen
+                        SettingsManager.window_size = ((mainWindow.width.toString() + ", "+  (mainWindow.height).toString()))
                         mainWindow.showFullScreen()
                     }
                 }
@@ -222,7 +226,7 @@ import "components" as Comp
                 width: 75 * theme.scaleWidth
                 icon.source: prefix + "/images/WindowClose.png"
                 onClicked: {
-                    mainWindow.save_everything()
+                    formGPS.applicationClosing = true  // Save vehicle when closing window (Qt 6.8 binding)
                     mainWindow.close()
                 }
             }

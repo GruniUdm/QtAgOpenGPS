@@ -4,8 +4,7 @@
 // Main screen lightbar
 import QtQuick
 import QtQuick.Controls.Fusion
-//import Settings
-//import AOG
+import AOG
 import 'components' as Comp
 
 Rectangle {
@@ -39,13 +38,14 @@ Rectangle {
 
         var limited_dotDistance = dotDistance
 
-        var limit = Settings.display_lightbarCmPerPixel * 8
+        // Threading Phase 1: Lightbar display configuration
+        var limit = SettingsManager.display_lightbarCmPerPixel * 8
         if (limited_dotDistance < -limit) limited_dotDistance = -limit
         if (limited_dotDistance > limit) limited_dotDistance = limit
 
         dots.clear()
 
-        numDots = -limited_dotDistance / Settings.display_lightbarCmPerPixel
+        numDots = -limited_dotDistance / SettingsManager.display_lightbarCmPerPixel
 
         for (i = -8 ; i < 0 ; i ++ ) {
             if (numDots < 0 && i >= numDots) {

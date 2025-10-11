@@ -33,13 +33,19 @@ public:
     ~NTRIPWorker();
 
 public slots:
-    void startNTRIP(const QString& url, const QString& user, 
+    void startNTRIP(const QString& url, const QString& user,
                    const QString& password, const QString& mount, int port);
     void stopNTRIP();
     void onTcpConnected();
     void onTcpDisconnected();
     void onTcpDataReceived();
     void onTcpError(QAbstractSocket::SocketError error);
+
+    // ✅ PHASE 5.3 - Advanced NTRIP Configuration
+    void configurePacketSize(int size);              // setNTRIP_packetSize
+    void enableSerialRouting(bool enable);           // setNTRIP_sendToSerial
+    void enableUDPBroadcast(bool enable);            // setNTRIP_sendToUDP
+    void setRoutingTargets(const QStringList& serialPorts, const QString& udpAddress, int udpPort);
 
 private slots:
     void checkConnectionStatus();
@@ -51,6 +57,11 @@ signals:
     void ntripStatusChanged(int status, const QString& statusText);
     void ntripDataReceived(const QByteArray& rtcmData);
     void errorOccurred(const QString& error);
+
+    // ✅ PHASE 5.3 - Advanced RTCM Routing Signals
+    void routeRTCMToSerial(const QByteArray& rtcmData);
+    void broadcastRTCMToUDP(const QByteArray& rtcmData);
+    void rtcmPacketProcessed(int size, const QString& destination);
 
 private:
     QTcpSocket* m_tcpSocket;
@@ -77,6 +88,20 @@ private:
     qint64 m_bytesReceived;
     int m_packetsReceived;
     double m_dataRate; // bytes/second
+
+    // ✅ PHASE 5.3 - Advanced RTCM Routing Configuration
+    int m_rtcmPacketSize;                    // setNTRIP_packetSize (default: 256)
+    bool m_sendToSerialEnabled;              // setNTRIP_sendToSerial
+    bool m_sendToUDPEnabled;                 // setNTRIP_sendToUDP
+    QStringList m_serialRoutingTargets;      // Target serial ports
+    QString m_udpBroadcastAddress;           // UDP broadcast address
+    int m_udpBroadcastPort;                  // UDP broadcast port
+
+    // RTCM packet processing
+    QByteArray m_rtcmBuffer;                 // Buffer for RTCM packet assembly
+    int m_totalBytesRouted;                  // Statistics: total bytes routed
+    int m_serialPacketsSent;                 // Statistics: packets sent to serial
+    int m_udpPacketsSent;                    // Statistics: packets sent to UDP
     
     void setState(ConnectionState newState);
     QString stateToString(ConnectionState state) const;
@@ -91,6 +116,14 @@ private:
     // Connection management
     void cleanupConnection();
     bool validateSettings() const;
+
+    // ✅ PHASE 5.3 - Advanced RTCM Processing
+    void processRTCMPackets(const QByteArray& data);
+    void routeRTCMPacket(const QByteArray& packet);
+    void sendRTCMToSerial(const QByteArray& packet);
+    void sendRTCMToUDP(const QByteArray& packet);
+    bool isValidRTCMPacket(const QByteArray& packet) const;
+    void updateRoutingStatistics(const QString& destination, int bytes);
 };
 
 #endif // NTRIPWORKER_H

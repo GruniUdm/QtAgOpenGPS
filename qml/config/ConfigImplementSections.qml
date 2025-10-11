@@ -6,7 +6,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 //import Settings
-//import AOG
+import AOG
 
 
 import ".."
@@ -16,8 +16,14 @@ import "../components"
 Rectangle{
     id: configImplementSection
     anchors.fill: parent
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     visible: false
+
+    // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
+    property bool toolIsSectionsNotZones: true
+    property int vehicleMinCoverage: 100
+    property bool toolIsSectionOffWhenOut: false
+    property double vehicleSlowSpeedCutoff: 1.0
 
     Row{
         id: bottomRow
@@ -30,10 +36,11 @@ Rectangle{
         spacing: 90 * theme.scaleWidth
         Button{
             function toggleZones(){
-                if( Utils.isTrue(Settings.tool_isSectionsNotZones)){
-                    Settings.tool_isSectionsNotZones = false
+                // Threading Phase 1: Toggle between sections and zones mode
+                if( toolIsSectionsNotZones){
+                    toolIsSectionsNotZones = false
                 }else{
-                    Settings.tool_isSectionsNotZones = true
+                    toolIsSectionsNotZones = true
                 }
             }
             width: 180 * theme.scaleWidth
@@ -44,13 +51,14 @@ Rectangle{
                 toggleZones()
             }
             background: Rectangle{
-                color: aog.backgroundColor
-                border.color: aog.blackDayWhiteNight
+                color: aogInterface.backgroundColor
+                border.color: aogInterface.blackDayWhiteNight
                 border.width: 1
                 Image{
                     id: image
 
-                    source: Utils.isTrue(Settings.tool_isSectionsNotZones) ? prefix + "/images/Config/ConT_Asymmetric.png" : prefix + "/images/Config/ConT_Symmetric.png"
+                    // Threading Phase 1: Display section/zone mode image
+                    source: toolIsSectionsNotZones ? prefix + "/images/Config/ConT_Asymmetric.png" : prefix + "/images/Config/ConT_Symmetric.png"
                     anchors.fill: parent
                 }
             }
@@ -59,10 +67,11 @@ Rectangle{
             id: percentCoverage
             from: 0
             to: 100
-            boundValue: Settings.vehicle_minCoverage
+            // Threading Phase 1: Minimum coverage percentage
+            boundValue: vehicleMinCoverage
             anchors.bottom: parent.bottom
             text: qsTr("% Coverage")
-            onValueModified: Settings.vehicle_minCoverage = value
+            onValueModified: vehicleMinCoverage = value
         }
         IconButton{
             icon.source: prefix + "/images/SectionOffBoundary.png"
@@ -77,8 +86,9 @@ Rectangle{
             colorChecked1: "green"
             colorChecked2: "green"
             colorChecked3: "green"
-            isChecked: Settings.tool_isSectionOffWhenOut
-            onCheckedChanged: Settings.tool_isSectionOffWhenOut = checked
+            // Threading Phase 1: Section off when outside boundary
+            isChecked: toolIsSectionOffWhenOut
+            onCheckedChanged: toolIsSectionOffWhenOut = checked
         }
         SpinBoxCustomized{
             //todo: this should be made english/metric
@@ -86,9 +96,10 @@ Rectangle{
             id: slowSpeedCutoff
             from: Utils.speed_to_unit(0)
             to: Utils.speed_to_unit(30)
-            boundValue: Utils.speed_to_unit(Settings.vehicle_slowSpeedCutoff)
+            // Threading Phase 1: Slow speed cutoff for sections
+            boundValue: Utils.speed_to_unit(vehicleSlowSpeedCutoff)
             anchors.bottom: parent.bottom
-            onValueModified: Settings.vehicle_slowSpeedCutoff = Utils.speed_from_unit(value)
+            onValueModified: vehicleSlowSpeedCutoff = Utils.speed_from_unit(value)
             text: Utils.speed_unit()
 
             Image{
@@ -108,7 +119,8 @@ Rectangle{
 		anchors.leftMargin: 7 * theme.scaleWidth
         anchors.bottom: bottomRow.top
         anchors.bottomMargin: 30 * theme.scaleHeight
-        visible: Utils.isTrue(Settings.tool_isSectionsNotZones)
+        // Threading Phase 1: Show sections configuration
+        visible: toolIsSectionsNotZones
     }
     ConfigImplementSectionsZones{
         id: configImplementSectionsZones
@@ -120,7 +132,8 @@ Rectangle{
 		anchors.leftMargin: 7 * theme.scaleWidth
         anchors.bottom: bottomRow.top
         anchors.bottomMargin: 30 * theme.scaleHeight
-        visible: !Utils.isTrue(Settings.tool_isSectionsNotZones)
+        // Threading Phase 1: Show zones configuration
+        visible: !toolIsSectionsNotZones
 
     }
 }

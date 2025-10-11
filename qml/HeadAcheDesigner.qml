@@ -5,7 +5,7 @@ import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Shapes
 //import Settings
-//import AOG
+import AOG
 import "components" as Comp
 
 
@@ -35,7 +35,7 @@ Popup{
     property bool showb: true
 
     signal load()
-    signal close()
+    signal closeHeadache()  // Renamed to avoid conflict with Popup.close()
     signal update_lines()
     signal save_exit()
 
@@ -61,7 +61,7 @@ Popup{
         if(visible) {
             load()
         } else {
-            close()
+            closeHeadache()
         }
     }
 
@@ -372,7 +372,8 @@ Popup{
                 iconChecked: prefix + "/images/HeadlandSectionOff.png"
                 checkable: true
                 Layout.alignment: Qt.AlignCenter
-                isChecked: Settings.headland_isSectionControlled
+                // Threading Phase 1: Headland section control
+                isChecked: SettingsManager.headland_isSectionControlled
                 onCheckedChanged: isSectionControlled(checked)
             }
             Comp.IconButtonTransparent{
@@ -421,7 +422,7 @@ Popup{
                 //objectName: "nudSetDistance"
                 from: 0
                 to: 2000
-                boundValue: numTracks.value * Settings.vehicle_toolWidth
+                boundValue: numTracks.value * SettingsManager.vehicle_toolWidth
                 Layout.alignment: Qt.AlignCenter
                 Comp.TextLine{anchors.top: parent.bottom; text: "( "+ Utils.m_unit_abbrev()+" )"}
 
@@ -433,7 +434,7 @@ Popup{
                 to: 10
                 value: 0
                 Layout.alignment: Qt.AlignCenter
-                Comp.TextLine{anchors.top: parent.bottom; text: qsTr("Tool: ")+ Utils.m_to_ft_string(Settings.vehicle_toolWidth)}
+                Comp.TextLine{anchors.top: parent.bottom; text: qsTr("Tool: ")+ Utils.m_to_ft_string(SettingsManager.vehicle_toolWidth)}
             }
             Comp.IconButtonColor{
                 id: cboxIsZoom
@@ -491,7 +492,7 @@ Popup{
                 Layout.alignment: Qt.AlignCenter
                 onClicked: {
                     save_exit()
-                    boundaryInterface.isHeadlandOn = true
+                    aog.isHeadlandOn = true
                     headacheDesigner.visible = false
                 }
             }

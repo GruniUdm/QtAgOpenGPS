@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 //import Settings
-//import AOG
+import AOG
 // Interface import removed - now QML_SINGLETON
 
 import ".."
@@ -61,12 +61,12 @@ Comp.MoveablePopup{
                     implicitWidth: parent.width
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapLeftHalf.png"
-                        onClicked: TracksInterface.nudge((Settings.vehicle_toolWidth - Settings.vehicle_toolOverlap)/-2)
+                        onClicked: TracksInterface.nudge((SettingsManager.vehicle_toolWidth - SettingsManager.vehicle_toolOverlap)/-2)
                         Layout.alignment: Qt.AlignLeft
                     }
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapRightHalf.png"
-                        onClicked: TracksInterface.nudge((Settings.vehicle_toolWidth - Settings.vehicle_toolOverlap)/2)
+                        onClicked: TracksInterface.nudge((SettingsManager.vehicle_toolWidth - SettingsManager.vehicle_toolOverlap)/2)
                         Layout.alignment: Qt.AlignRight
                     }
                 }
@@ -76,12 +76,12 @@ Comp.MoveablePopup{
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapLeft.png"
                         Layout.alignment: Qt.AlignLeft
-                        onClicked: TracksInterface.nudge(Settings.as_snapDistance/-100) //spinbox returns cm, convert to metres
+                        onClicked: TracksInterface.nudge(SettingsManager.as_snapDistance/-100) // Threading Phase 1: spinbox returns cm, convert to metres
                     }
                     Comp.IconButtonTransparent{
                         icon.source: prefix + "/images/SnapRight.png"
                         Layout.alignment: Qt.AlignRight
-                        onClicked: TracksInterface.nudge(Settings.as_snapDistance/100) //spinbox returns cm, convert to metres
+                        onClicked: TracksInterface.nudge(SettingsManager.as_snapDistance/100) // Threading Phase 1: spinbox returns cm, convert to metres
                     }
                 }
                 Comp.SpinBoxCM{
@@ -90,8 +90,8 @@ Comp.MoveablePopup{
 
                     from: 1
                     to: 1000
-                    boundValue: Settings.as_snapDistance
-                    onValueModified: Settings.as_snapDistance = value
+                    boundValue: SettingsManager.as_snapDistance
+                    onValueModified: SettingsManager.as_snapDistance = value // Threading Phase 1: Snap distance configuration
                 }
 
                 RowLayout{

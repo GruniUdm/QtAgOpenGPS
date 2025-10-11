@@ -26,16 +26,18 @@ struct OpenGLViewport {
 OpenGLViewport getOpenGLViewport(QObject* mainWindow) {
     OpenGLViewport viewport;
     QObject *openglControl = qmlItem(mainWindow, "openglcontrol");
-    
+
     if (openglControl) {
         viewport.width = openglControl->property("width").toReal();
         viewport.height = openglControl->property("height").toReal();
+        // ✅ PHASE 6.3.0 FIX: shiftX/shiftY are now Q_PROPERTY in AOGRendererInSG
         viewport.shiftX = openglControl->property("shiftX").toDouble();
         viewport.shiftY = openglControl->property("shiftY").toDouble();
     } else {
         qWarning() << "⚠️ OpenGL control not found - using default viewport settings";
+        // Defaults already set in struct definition
     }
-    
+
     return viewport;
 }
 #include "glm.h"
@@ -210,7 +212,7 @@ void FormGPS::oglMain_Paint()
         //will not update, which isn't what we want either.  Some kind of timeout?
      return;
 
-    float lineWidth = SettingsManager::instance()->value(SETTINGS_display_lineWidth).value<float>();
+    float lineWidth = SettingsManager::instance()->display_lineWidth();
     
     // Safe access to OpenGL viewport properties
     OpenGLViewport viewport = getOpenGLViewport(mainWindow);
@@ -270,7 +272,7 @@ void FormGPS::oglMain_Paint()
     //gl->glDisable(GL_TEXTURE_2D);
 
 
-    if((uint)sentenceCounter < 299)
+    if(this->sentenceCounter() < 299)
     {
         if (isGPSPositionInitialized)
         {
@@ -424,17 +426,17 @@ void FormGPS::oglMain_Paint()
             if (tram.displayMode != 0) tram.DrawTram(gl,projection*modelview,camera);
 
             //draw contour line if button on
-            if (ct.isContourBtnOn)
+            if (this->isContourBtnOn())
             {
-                ct.DrawContourLine(gl, projection*modelview);
+                ct.DrawContourLine(gl, projection*modelview, mainWindow);
             }
             else// draw the current and reference AB Lines or CurveAB Ref and line
             {
                 //when switching lines, draw the ghost
-                CTrack::instance()->DrawTrack(gl, projection*modelview, isFontOn, worldGrid.isRateMap, yt, camera, gyd);
+                track.DrawTrack(gl, projection*modelview, isFontOn, worldGrid.isRateMap, yt, camera, gyd);
             }
 
-            CTrack::instance()->DrawTrackNew(gl, projection*modelview, camera, *CVehicle::instance());
+            track.DrawTrackNew(gl, projection*modelview, camera, *CVehicle::instance());
 
             //if (recPath.isRecordOn)
             recPath.DrawRecordedLine(gl, projection*modelview);
@@ -443,12 +445,12 @@ void FormGPS::oglMain_Paint()
             if (bnd.bndList.count() > 0 || bnd.isBndBeingMade == true)
             {
                 //draw Boundaries
-                bnd.DrawFenceLines(*CVehicle::instance(), mc, gl, projection*modelview);
+                bnd.DrawFenceLines(*CVehicle::instance(), mc, gl, projection*modelview, mainWindow);
 
                 //draw the turnLines
-                if (yt.isYouTurnBtnOn && ! ct.isContourBtnOn)
+                if (this->isYouTurnBtnOn() && ! this->isContourBtnOn())
                 {
-                    bnd.DrawFenceLines(*CVehicle::instance(),mc,gl,projection*modelview);
+                    bnd.DrawFenceLines(*CVehicle::instance(),mc,gl,projection*modelview, mainWindow);
 
                     color.setRgbF(0.3555f, 0.6232f, 0.20f); //TODO: not sure what color turnLines should actually be
 
@@ -459,7 +461,7 @@ void FormGPS::oglMain_Paint()
                 }
 
                 //Draw headland
-                if (bnd.isHeadlandOn)
+                if (this->isHeadlandOn())
                 {
                     color.setRgbF(0.960f, 0.96232f, 0.30f);
                     DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,lineWidth,color);
@@ -486,17 +488,18 @@ void FormGPS::oglMain_Paint()
 
             //draw the vehicle/implement
             QMatrix4x4 mv = modelview; //push matrix
-            tool.DrawTool(gl,modelview, projection,isJobStarted,*CVehicle::instance(), camera,tram);
+            // ✅ PHASE 6.3.0: InterfaceProperty guaranteed to be initialized before rendering
+            tool.DrawTool(gl,modelview, projection,isJobStarted(),*CVehicle::instance(), camera,tram);
             double steerangle;
             if(timerSim.isActive()) steerangle = sim.steerangleAve;
             else steerangle = mc.actualSteerAngleDegrees;
             CVehicle::instance()->DrawVehicle(gl, modelview, projection, steerangle, isFirstHeadingSet,
-                                QRect(0,0,width,height),camera,tool,bnd);
+                                QRect(0,0,width,height),camera,tool,bnd,mainWindow);
             modelview = mv; //pop matrix
 
             if (camera.camSetDistance > -150)
             {
-                CTrack::instance()->DrawTrackGoalPoint(gl, projection * modelview);
+                track.DrawTrackGoalPoint(gl, projection * modelview);
             }
 
             // 2D Ortho --------------------------
@@ -515,10 +518,10 @@ void FormGPS::oglMain_Paint()
 
             if (tool.isDisplayTramControl && tram.displayMode != 0) { DrawTramMarkers(); }
 
-            //if this is on, vehicleInterface.isHydLiftOn is true
+            //if this is on, VehicleInterface.isHydLiftOn is true
             if (p_239.pgn[p_239.hydLift] == 2)
             {
-                CVehicle::instance()->setHydLiftDown(false); //vehicleInterface.hydLiftDown in QML
+                CVehicle::instance()->setHydLiftDown(false); //VehicleInterface.hydLiftDown in QML
             }
             else
             {
@@ -533,7 +536,16 @@ void FormGPS::oglMain_Paint()
             gl->glFlush();
 
             //draw the zoom window
-            if (isJobStarted)
+            // ⚡ PHASE 6.3.0 SAFETY: Verify InterfaceProperty before OpenGL access
+            bool jobStartedSafe = false;
+            try {
+                jobStartedSafe = this->isJobStarted();
+            } catch (...) {
+                // InterfaceProperty not ready, skip this rendering cycle
+                jobStartedSafe = false;
+            }
+
+            if (jobStartedSafe)
             {
                 /*TODO implement floating zoom windo
                 if (threeSeconds != zoomUpdateCounter)
@@ -676,12 +688,11 @@ void FormGPS::oglBack_Paint()
     /* use the QML context with an offscreen surface to draw
      * the lookahead triangles
      */
-    if (!backFBO ) {
+    if (!backFBO) {
         QOpenGLFramebufferObjectFormat format;
         format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-        //TODO: backFBO is leaking... delete it in the destructor?
-        //I think context has to be active to delete it...
-        backFBO = new QOpenGLFramebufferObject(QSize(500,300),format);
+        // ✅ C++17 RAII: automatic memory management, no manual delete needed
+        backFBO = std::make_unique<QOpenGLFramebufferObject>(QSize(500,300), format);
     }
 
     backFBO->bind();
@@ -788,7 +799,7 @@ void FormGPS::oglBack_Paint()
 
     //draw 245 green for the tram tracks
 
-    if (tram.displayMode !=0 && tram.displayMode !=0 && (CTrack::instance()->idx > -1))
+    if (tram.displayMode !=0 && tram.displayMode !=0 && (track.idx() > -1))
     {
         if ((tram.displayMode == 1 || tram.displayMode == 2))
         {
@@ -823,7 +834,7 @@ void FormGPS::oglBack_Paint()
 
 
         //draw 250 green for the headland
-        if (bnd.isHeadlandOn && bnd.isSectionControlledByHeadland)
+        if (this->isHeadlandOn() && bnd.isSectionControlledByHeadland)
         {
             DrawPolygonBack(gl,projection*modelview,bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
         }
@@ -907,12 +918,11 @@ void FormGPS::oglZoom_Paint()
     /* use the QML context with an offscreen surface to draw
      * the lookahead triangles
      */
-    if (!zoomFBO ) {
+    if (!zoomFBO) {
         QOpenGLFramebufferObjectFormat format;
         format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-        //TODO: zoomFBO is leaking... delete it in the destructor?
-        //I think context has to be active to delete it...
-        zoomFBO = new QOpenGLFramebufferObject(QSize(400,400),format);
+        // ✅ C++17 RAII: automatic memory management, no manual delete needed
+        zoomFBO = std::make_unique<QOpenGLFramebufferObject>(QSize(400,400), format);
     }
 
     zoomFBO->bind();
@@ -926,7 +936,7 @@ void FormGPS::oglZoom_Paint()
     gl->glCullFace(GL_BACK);
     gl->glClearColor(0, 0, 0, 1.0f);
 
-    if (isJobStarted)
+    if (isJobStarted())
     {
         gl->glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         projection.setToIdentity(); //Reset the view
@@ -1051,7 +1061,7 @@ void FormGPS::DrawTramMarkers()
     if (((tram.controlByte) & 2) == 2) dot_color = 1;// set to green #49FD49
     else dot_color = 0;//
 
-    if ((bool)tram.isLeftManualOn)
+    if ((bool)tram.isLeftManualOn())
     {
         dot_color = 2;
     }
@@ -1061,7 +1071,7 @@ void FormGPS::DrawTramMarkers()
     if (((tram.controlByte) & 1) == 1) dot_color = 1;
     else dot_color = 0;
 
-    if ((bool)tram.isRightManualOn)
+    if ((bool)tram.isRightManualOn())
     {
         dot_color = 2;
     }

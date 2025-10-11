@@ -3,16 +3,25 @@ import QtQuick.Controls.Fusion
 import QtQuick.Window
 import QtQuick.Layouts
 import QtQml.Models
-//import AOG
+import AOG
 
-import "components" as Comp
+import "../components" as Comp
 
 Drawer {
+    objectName: "bluetoothMenu"
     id: bluetoothMenu
     width: 270 * theme.scaleWidth
     height: mainWindow.height
     visible: false
     modal: true
+
+    // Qt 6.8 QProperty + BINDABLE: Use AgIOInterface instead of direct AgIOService access
+    AgIOInterface {
+        id: agioInterface
+    }
+
+    // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
+    property var setBluetoothDeviceList: []
 
 
 
@@ -51,7 +60,7 @@ Drawer {
                     }
                     MouseArea{
                         anchors.fill: parent
-                        onClicked:  AgIOService.bt_search(model.name)
+                        onClicked:  SettingsManager.bt_search = model.name
                     }
                 }
             }
@@ -68,9 +77,9 @@ Drawer {
                 // Clear the QML model
                 deviceListModel.clear()
 
-                // TODO: Populate with AgIOService.setBluetooth_deviceList data
-                // for (let i = 0; i < AgIOService.setBluetooth_deviceList.length; ++i) {
-                //     let name = AgIOService.setBluetooth_deviceList[i];
+                // TODO: Populate with SettingsManager.setBluetooth_deviceList data
+                // for (let i = 0; i < SettingsManager.setBluetooth_deviceList.length; ++i) {
+                //     let name = SettingsManager.setBluetooth_deviceList[i];
                 //     deviceListModel.append({"name": name});
                 // }
 
@@ -94,23 +103,14 @@ Drawer {
         anchors.margins: 10
         border.width: 2
         ListView{
-            property var deviceList: AgIOService.setBluetooth_deviceList
+            property var deviceList: []
             id: knownDevicesList
             anchors.fill: parent
-            Connections {
-                target: AgIOService
-                function onSetBluetooth_deviceListChanged() {
-                    var rawList = AgIOService.setBluetooth_deviceList;
-                    knownDevicesList.model = Array.isArray(rawList) ? rawList : [rawList];
-                    console.log("modelchanged")
-                }
+            // Qt 6.8 QProperty + BINDABLE: Direct property binding (automatic updates)
+            model: {
+                var rawList = setBluetoothDeviceList;
+                return Array.isArray(rawList) ? rawList : [rawList];
             }
-            Component.onCompleted: {
-                var rawList = AgIOService.setBluetooth_deviceList;
-                knownDevicesList.model = Array.isArray(rawList) ? rawList : [rawList];
-            }
-
-            model: deviceList
 
             delegate: RadioButton{
                 width: knownDevicesList.width
@@ -130,7 +130,7 @@ Drawer {
                     }
                     MouseArea{
                         anchors.fill: parent
-                        onClicked:  AgIOService.bt_remove_device(modelData)
+                        onClicked:  SettingsManager.bt_remove_device = modelData
                     }
                 }
             }

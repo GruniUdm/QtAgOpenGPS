@@ -19,7 +19,7 @@ Item {
     signal vehicle_delete(string vehicle_name)
     signal vehicle_update_list()
 
-    property var vehicle_list: [
+    property var vehicleList: [
         { index: 0, name: "tractor" }
     ]
 

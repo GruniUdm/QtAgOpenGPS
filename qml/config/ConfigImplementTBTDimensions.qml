@@ -5,7 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 //import Settings
-//import AOG
+import AOG
 
 
 import ".."
@@ -14,7 +14,7 @@ import "../components"
 Rectangle{
     id: configImpDimWin
     anchors.fill: parent
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     visible: false
     Image{
         id: image1
@@ -34,8 +34,9 @@ Rectangle{
             anchors.rightMargin: 80 * theme.scaleWidth
             from: 10
             to:3000
-            boundValue: -Settings.tool_toolTrailingHitchLength
-            onValueModified: Settings.tool_toolTrailingHitchLength = -value
+            // Threading Phase 1: Tool trailing hitch length
+            boundValue: -SettingsManager.tool_toolTrailingHitchLength
+            onValueModified: SettingsManager.tool_toolTrailingHitchLength = -value
         }
         SpinBoxCM{
             id: toolTBTHitchLength
@@ -44,8 +45,9 @@ Rectangle{
             anchors.rightMargin: 130 * theme.scaleWidth
             from: 10
             to:3000
-            boundValue: -Settings.vehicle_tankTrailingHitchLength
-            onValueModified: Settings.vehicle_tankTrailingHitchLength = -value
+            // Threading Phase 1: Vehicle tank trailing hitch length
+            boundValue: -SettingsManager.vehicle_tankTrailingHitchLength
+            onValueModified: SettingsManager.vehicle_tankTrailingHitchLength = -value
         }
     }
     TextLine{

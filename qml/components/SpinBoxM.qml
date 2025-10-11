@@ -3,7 +3,7 @@
 import QtQuick
 import QtQuick.Controls
 //import Settings
-//import AOG
+import AOG
 
 //This is a spinbox for displaying dimensions that are either
 //cm or inches
@@ -45,16 +45,12 @@ Item {
         value = boundValue
     }
 
-    Connections {
-        target: Settings
-        function onMenu_isMetricChanged() {
-            spinner.value = Utils.m_to_unit(value)
-        }
-    }
+    // Qt 6.8 QProperty + BINDABLE: Update on initialization
+    Component.onCompleted: spinner.value = Utils.m_to_unit(value)
 
     SpinBoxCustomized{
         id: spinner
-		decimals: spinBoxM.decimals
+        decimals: spinBoxM.decimals
         from: Utils.m_to_unit(spinBoxM.from)
         to: Utils.m_to_unit(spinBoxM.to)
         editable: spinBoxM.editable

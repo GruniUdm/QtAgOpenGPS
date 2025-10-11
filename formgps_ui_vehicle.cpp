@@ -5,6 +5,7 @@
 #include "formgps.h"
 #include "qmlutil.h"
 #include "classes/settingsmanager.h"
+#include <QTimer>
 
 QString caseInsensitiveFilename(QString directory, QString filename);
 
@@ -36,12 +37,17 @@ void FormGPS::vehicle_saveas(QString vehicle_name) {
     this->tool.saveSettings();
     qDebug() << "tool.saveSettings() completed";
 
+    // RESTORED: JSON Vehicle Profile System (format compatible avec Documents/QtAgOpenGPS/Vehicles/)
     // ASYNC SOLUTION: Defer saveJson to avoid mutex deadlock (same as field_close fix)
     qDebug() << "Scheduling async saveJson:" << filename;
     QTimer::singleShot(50, this, [this, filename]() {
         qDebug() << "Executing async saveJson:" << filename;
         SettingsManager::instance()->saveJson(filename);
-        qDebug() << "Async saveJson completed:" << filename;
+
+        // Set as active profile for future auto-saving
+        SettingsManager::instance()->setActiveVehicleProfile(filename);
+        qDebug() << "Async saveJson completed and set as active profile:" << filename;
+
         // Update vehicle list after save is complete for real-time UI refresh
         this->vehicle_update_list();
         qDebug() << "Vehicle list updated after save";
@@ -71,7 +77,15 @@ void FormGPS::vehicle_load(QString vehicle_name) {
 
     QString filename = directoryName + "/" + caseInsensitiveFilename(directoryName, vehicle_name);
 
+    // CRITICAL: Set as active profile BEFORE loading to prevent vehicleName corruption
+    // This ensures that loadJson() sets the correct active profile path before loading
+    SettingsManager::instance()->setActiveVehicleProfile(filename);
+    qDebug() << "Vehicle profile set as active before loading:" << filename;
+
+    // RESTORED: JSON Vehicle Profile Loading System (format compatible avec Documents/QtAgOpenGPS/Vehicles/)
+    qDebug() << "Vehicle load starting:" << filename;
     SettingsManager::instance()->loadJson(filename);
+    qDebug() << "Vehicle JSON loaded successfully:" << filename;
 }
 
 void FormGPS::vehicle_delete(QString vehicle_name) {
@@ -118,7 +132,7 @@ void FormGPS::vehicle_update_list() {
         index++;
     }
 
-    CVehicle::instance()->setProperty("vehicle_list", vehicleList);
-    emit CVehicle::instance()->vehicle_listChanged();
+    CVehicle::instance()->setVehicleList(vehicleList);
+    // Qt 6.8 QProperty + BINDABLE: vehicle_listChanged signal removed, automatic notification
 }
 

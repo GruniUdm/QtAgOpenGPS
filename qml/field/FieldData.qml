@@ -5,7 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 //import Settings
-//import AOG
+import AOG
 
 
 import ".."
@@ -22,7 +22,8 @@ Rectangle {
 
     property double timeUntilFinished: (aog.speedKph > 1 ?
                                             (aog.areaBoundaryOuterLessInner - aog.workedAreaTotal) /
-                                            Settings.vehicle_toolWidth / aog.speedKph / 1000
+                                            // Threading Phase 1: Tool width for time calculation
+                                            SettingsManager.vehicle_toolWidth / aog.speedKph / 1000
                                           : Number.POSITIVE_INFINITY)
 
     property int hoursUntilFinished: (timeUntilFinished != Number.POSITIVE_INFINITY ?

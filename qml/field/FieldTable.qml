@@ -3,7 +3,7 @@
 //
 // Loaded by FieldOpen.qml. Contains the list of fields
 import QtQuick
-//import AOG
+import AOG
 
 
 pragma ComponentBehavior: Bound
@@ -134,7 +134,7 @@ ListView {
                 //anchors.verticalCenter: parent.verticalCenter
 
                 text: qsTr("Field name")
-                font.pointSize: 20
+                font.pixelSize: 20
             }
             MouseArea {
                 anchors.fill: parent
@@ -169,7 +169,7 @@ ListView {
                 id: distanceHeader
 
                 text: qsTr("Distance")
-                font.pointSize: 20
+                font.pixelSize: 20
             }
             MouseArea {
                 anchors.fill: parent
@@ -204,7 +204,7 @@ ListView {
                 id: areaHeader
 
                 text: qsTr("Area")
-                font.pointSize: 20
+                font.pixelSize: 20
             }
             MouseArea {
                 anchors.fill: parent
@@ -245,7 +245,7 @@ ListView {
 
             text: fieldDelegate.name
             elide: Text.ElideRight
-            font.pointSize: 18
+            font.pixelSize: 18
         }
         Text {
             anchors.top: parent.top
@@ -256,7 +256,7 @@ ListView {
 
             id: distanceArea
             text: Utils.km_to_unit_string(fieldDelegate.distance,1)+ " " + Utils.km_unit()
-            font.pointSize: 16
+            font.pixelSize: 16
         }
         Text {
             anchors.top: parent.top
@@ -266,7 +266,7 @@ ListView {
             text: (fieldDelegate.boundaryArea < 1 ?
                        qsTr("No boundary") :
                        Utils.area_to_unit_string(fieldDelegate.boundaryArea,1) + " " + Utils.area_unit())
-            font.pointSize: 16
+            font.pixelSize: 16
         }
 
         MouseArea {

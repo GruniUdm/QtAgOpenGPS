@@ -9,19 +9,19 @@ CAHRS::CAHRS(QObject *parent) : QObject(parent)
 
 void CAHRS::loadSettings()
 {
-    rollZero = SettingsManager::instance()->value(SETTINGS_imu_rollZero).value<double>();
-    rollFilter = SettingsManager::instance()->value(SETTINGS_imu_rollFilter).value<double>();
+    rollZero = SettingsManager::instance()->imu_rollZero();
+    rollFilter = SettingsManager::instance()->imu_rollFilter();
 
     //is the auto steer in auto turn on mode or not
-    isAutoSteerAuto = true; //SettingsManager::instance()->value(SETTINGS_as_isAutoSteerAutoOn).value<bool>();
-    isRollInvert = SettingsManager::instance()->value(SETTINGS_imu_invertRoll).value<bool>();
-    isDualAsIMU = SettingsManager::instance()->value(SETTINGS_imu_isDualAsIMU).value<bool>();
-    isReverseOn = SettingsManager::instance()->value(SETTINGS_imu_isReverseOn).value<bool>();
+    isAutoSteerAuto = true; //SettingsManager::instance()->as_isAutoSteerAutoOn();
+    isRollInvert = SettingsManager::instance()->imu_invertRoll();
+    isDualAsIMU = SettingsManager::instance()->imu_isDualAsIMU();
+    isReverseOn = SettingsManager::instance()->imu_isReverseOn();
 
     //the factor for fusion of GPS and IMU
-    forwardComp = SettingsManager::instance()->value(SETTINGS_gps_forwardComp).value<double>();
-    reverseComp = SettingsManager::instance()->value(SETTINGS_gps_reverseComp).value<double>();
-    fusionWeight = SettingsManager::instance()->value(SETTINGS_imu_fusionWeight2).value<double>();
+    forwardComp = SettingsManager::instance()->gps_forwardComp();
+    reverseComp = SettingsManager::instance()->gps_reverseComp();
+    fusionWeight = SettingsManager::instance()->imu_fusionWeight2();
 
 }
 

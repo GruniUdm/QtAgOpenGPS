@@ -83,7 +83,7 @@ Dialog {
                 //height: 75
                 enabled: fieldTable.currentIndex > -1
                 onClicked: {
-                    fieldInterface.field_delete(fieldTable.currentFieldName)
+                    aog.fieldDelete(fieldTable.currentFieldName) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     //backend should update the list
                 }
             }
@@ -131,7 +131,7 @@ Dialog {
                 //height: 75
                 enabled: fieldTable.currentIndex > -1
                 onClicked: {
-                    fieldInterface.field_open(fieldTable.currentFieldName)
+                    aog.fieldOpen(fieldTable.currentFieldName) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     fieldTable.clear_selection()
                     fieldOpen.close()
                 }

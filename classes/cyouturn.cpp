@@ -1,8 +1,11 @@
 #include <limits>
 #include <math.h>
 #include <QFile>
+#include <QApplication>
+#include <QWidget>
 #include "cyouturn.h"
 #include "classes/settingsmanager.h"
+#include "qmlutil.h"
 #include "cabline.h"
 #include "cvehicle.h"
 #include "cnmea.h"
@@ -11,6 +14,7 @@
 #include "glm.h"
 #include "cdubins.h"
 #include "glutils.h"
+#include "formgps.h"  // Include full header for FormGPS methods
 //#include "common.h"
 
 //constructor
@@ -22,20 +26,27 @@ CYouTurn::CYouTurn(QObject *parent) : QObject(parent)
 
 void CYouTurn::loadSettings()
 {
-    uturnDistanceFromBoundary = SettingsManager::instance()->value(SETTINGS_youturn_distanceFromBoundary).value<double>();
+    uturnDistanceFromBoundary = SettingsManager::instance()->youturn_distanceFromBoundary();
 
     //how far before or after boundary line should turn happen
-    youTurnStartOffset = SettingsManager::instance()->value(SETTINGS_youturn_extensionLength).value<double>();
+    youTurnStartOffset = SettingsManager::instance()->youturn_extensionLength();
 
-    rowSkipsWidth = SettingsManager::instance()->value(SETTINGS_youturn_skipWidth).value<int>();
+    rowSkipsWidth = SettingsManager::instance()->youturn_skipWidth();
     Set_Alternate_skips();
 
-    youTurnRadius = SettingsManager::instance()->value(SETTINGS_youturn_radius).value<double>();
+    youTurnRadius = SettingsManager::instance()->youturn_radius();
 
-    uTurnStyle = SettingsManager::instance()->value(SETTINGS_youturn_style).value<int>();
+    uTurnStyle = SettingsManager::instance()->youturn_style();
 
-    uTurnSmoothing = SettingsManager::instance()->value(SETTINGS_as_uTurnSmoothing).value<int>();
+    uTurnSmoothing = SettingsManager::instance()->as_uTurnSmoothing();
 
+}
+
+// Sync local isOutOfBounds with FormGPS - Fix for PropertyWrapper migration regression
+void CYouTurn::syncOutOfBounds(bool value)
+{
+    isOutOfBounds = value;
+    if (formGPS) formGPS->setIsOutOfBounds(value);
 }
 
 //Finds the point where an AB Curve crosses the turn line
@@ -46,9 +57,9 @@ bool CYouTurn::BuildCurveDubinsYouTurn(bool isTurnLeft, Vec3 pivotPos,
                                        int secondsSinceStart
                                        )
 {
-    double tool_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double tool_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
+    double tool_toolOverlap = SettingsManager::instance()->vehicle_toolOverlap();
 
     //TODO: is calculated many taimes after the priveous turn is complete
     //grab the vehicle widths and offsets
@@ -78,18 +89,21 @@ bool CYouTurn::BuildCurveDubinsYouTurn(bool isTurnLeft, Vec3 pivotPos,
     return false;
 }
 
-bool CYouTurn::BuildABLineDubinsYouTurn(bool isTurnLeft,
+bool CYouTurn::BuildABLineDubinsYouTurn(FormGPS* formGPS, bool isTurnLeft,
                                         CVehicle &vehicle,
                                         const CBoundary &bnd,
                                         CTrack &trk,
                                         int secondsSinceStart)
 {
-    double tool_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double tool_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
+    double tool_toolOverlap = SettingsManager::instance()->vehicle_toolOverlap();
 
-    if (!(bool)isBtnAutoSteerOn) CTrack::instance()->ABLine.isHeadingSameWay
-            = M_PI - fabs(fabs(CVehicle::instance()->fixHeading - CTrack::instance()->ABLine.abHeading) - M_PI) < glm::PIBy2;
+    // Phase 6.0.20: Direct FormGPS* access - type-safe, compile-time checked
+    bool autoSteerOn = formGPS ? formGPS->isBtnAutoSteerOn() : false;
+
+    if (!autoSteerOn) track->ABLine.isHeadingSameWay
+            = M_PI - fabs(fabs(CVehicle::instance()->fixHeading - track->ABLine.abHeading) - M_PI) < glm::PIBy2;
 
     double turnOffset = (tool_toolWidth - tool_toolOverlap) * rowSkipsWidth
                         + (isYouTurnRight ? -tool_toolOffset * 2.0 : tool_toolOffset * 2.0);
@@ -102,7 +116,7 @@ bool CYouTurn::BuildABLineDubinsYouTurn(bool isTurnLeft,
         //Wide turn
         if (turnOffset > (youTurnRadius * 2.0))
         {
-            return (CreateABWideTurn(isTurnLeft, *CVehicle::instance(), bnd, trk, secondsSinceStart));
+            return (CreateABWideTurn(formGPS, isTurnLeft, *CVehicle::instance(), bnd, trk, secondsSinceStart));
         }
         //Small turn
         else
@@ -112,7 +126,7 @@ bool CYouTurn::BuildABLineDubinsYouTurn(bool isTurnLeft,
     }
     else if (uTurnStyle == 1)
     {
-        return (KStyleTurnAB(isTurnLeft, *CVehicle::instance(),CTrack::instance()->ABLine,bnd));
+        return (KStyleTurnAB(isTurnLeft, *CVehicle::instance(),track->ABLine,bnd));
     }
 
     //prgramming error if you got here
@@ -126,9 +140,9 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
                                     int secondsSinceStart
                                     )
 {
-    double tool_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double tool_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
+    double tool_toolOverlap = SettingsManager::instance()->vehicle_toolOverlap();
 
     //keep from making turns constantly - wait 1.5 seconds
     if (makeUTurnCounter < 4)
@@ -144,7 +158,7 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
     {
     case 0: //find the crossing points
     {
-        if (!FindCurveTurnPoint(CTrack::instance()->curve,bnd))
+        if (!FindCurveTurnPoint(track->curve,bnd))
         {
             FailCreate();
             return false;
@@ -155,10 +169,10 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
 
         ytList.clear();
 
-        int count = CTrack::instance()->curve.isHeadingSameWay ? -1 : 1;
+        int count = track->curve.isHeadingSameWay ? -1 : 1;
         int curveIndex = inClosestTurnPt.curveIndex;
 
-        isOutOfBounds = true;
+        syncOutOfBounds(true);
         int stopIfWayOut = 0;
 
         double head = 0; //gives error since isnt updated
@@ -166,16 +180,16 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
         while (isOutOfBounds)
         {
             stopIfWayOut++;
-            isOutOfBounds = false;
+            syncOutOfBounds(false);
 
             //creates half a circle starting at the crossing point
             ytList.clear();
 
             curveIndex += count;
 
-            Vec3 currentPos = CTrack::instance()->curve.curList[curveIndex];
+            Vec3 currentPos = track->curve.curList[curveIndex];
 
-            if (!CTrack::instance()->curve.isHeadingSameWay) currentPos.heading += M_PI;
+            if (!track->curve.isHeadingSameWay) currentPos.heading += M_PI;
             if (currentPos.heading >= glm::twoPI) currentPos.heading -= glm::twoPI;
             head = currentPos.heading;
 
@@ -192,13 +206,13 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
             //neat trick to not have to add pi/2
             if (isTurnLeft)
             {
-                goal.easting = CTrack::instance()->curve.curList[curveIndex - count].easting + (cos(-invertHead) * turnOffset);
-                goal.northing = CTrack::instance()->curve.curList[curveIndex - count].northing + (sin(-invertHead) * turnOffset);
+                goal.easting = track->curve.curList[curveIndex - count].easting + (cos(-invertHead) * turnOffset);
+                goal.northing = track->curve.curList[curveIndex - count].northing + (sin(-invertHead) * turnOffset);
             }
             else
             {
-                goal.easting = CTrack::instance()->curve.curList[curveIndex - count].easting - (cos(-invertHead) * turnOffset);
-                goal.northing = CTrack::instance()->curve.curList[curveIndex - count].northing - (sin(-invertHead) * turnOffset);
+                goal.easting = track->curve.curList[curveIndex - count].easting - (cos(-invertHead) * turnOffset);
+                goal.northing = track->curve.curList[curveIndex - count].northing - (sin(-invertHead) * turnOffset);
             }
 
             goal.heading = invertHead;
@@ -211,7 +225,7 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
                 return false;
             }
 
-            if (stopIfWayOut == 300 || curveIndex < 1 || curveIndex > (CTrack::instance()->curve.curList.count() - 2))
+            if (stopIfWayOut == 300 || curveIndex < 1 || curveIndex > (track->curve.curList.count() - 2))
             {
                 //for some reason it doesn't go inside boundary
                 FailCreate();
@@ -222,7 +236,7 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
             {
                 if (bnd.IsPointInsideTurnArea(ytList[i]) != 0)
                 {
-                    isOutOfBounds = true;
+                    syncOutOfBounds(true);
                     break;
                 }
             }
@@ -258,8 +272,8 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
     case 1:
     {
         //build the next line to add sequencelines
-        double headCurve = CTrack::instance()->curve.curList[CTrack::instance()->curve.currentLocationIndex].heading;
-        if (!CTrack::instance()->curve.isHeadingSameWay) headCurve += M_PI;
+        double headCurve = track->curve.curList[track->curve.currentLocationIndex].heading;
+        if (!track->curve.isHeadingSameWay) headCurve += M_PI;
         if (headCurve > glm::twoPI) headCurve -= glm::twoPI;
 
         Vec2 tempguidanceLookPos = Vec2(CVehicle::instance()->guidanceLookPos.easting, CVehicle::instance()->guidanceLookPos.northing);
@@ -279,7 +293,7 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
         //create the next line with this imaginary point
         //nextCurve = QSharedPointer<ABCurve>(new CABCurve());
         CABCurve nextCurve; // = QSharedPointer<CABCurve>(new CABCurve());
-        nextCurve.BuildCurveCurrentList(CVehicle::instance()->pivotAxlePos,secondsSinceStart,*CVehicle::instance(),CTrack::instance()->gArr[CTrack::instance()->idx],bnd,*this);
+        nextCurve.BuildCurveCurrentList(CVehicle::instance()->pivotAxlePos,secondsSinceStart,*CVehicle::instance(),track->gArr[track->idx()],bnd,*this);
         CVehicle::instance()->guidanceLookPos = tempguidanceLookPos;
 
         //get the index of the last yt point
@@ -289,16 +303,16 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
             double newdis = glm::Distance(nextCurve.curList[i], ytList[ytList.count() - 1]);
             if (newdis > dis)
             {
-                if (CTrack::instance()->curve.isHeadingSameWay) outClosestTurnPt.curveIndex = i - 2;
+                if (track->curve.isHeadingSameWay) outClosestTurnPt.curveIndex = i - 2;
                 else outClosestTurnPt.curveIndex = i;
                 break;
             }
             else dis = newdis;
         }
         outClosestTurnPt.closePt = nextCurve.curList[outClosestTurnPt.curveIndex];
-        inClosestTurnPt.closePt = CTrack::instance()->curve.curList[inClosestTurnPt.curveIndex];
+        inClosestTurnPt.closePt = track->curve.curList[inClosestTurnPt.curveIndex];
 
-        if (!AddCurveSequenceLines(CTrack::instance()->curve, nextCurve)) return false;
+        if (!AddCurveSequenceLines(track->curve, nextCurve)) return false;
 
         //fill in the gaps
         double distanc;
@@ -342,7 +356,7 @@ bool CYouTurn::CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
             return false;
         }
 
-        isOutOfBounds = false;
+        syncOutOfBounds(false);
         youTurnPhase = 10;
         turnTooCloseTrigger = false;
         isTurnCreationTooClose = false;
@@ -359,9 +373,9 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
                                    int secondsSinceStart
                                    )
 {
-    double tool_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double tool_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
+    double tool_toolOverlap = SettingsManager::instance()->vehicle_toolOverlap();
 
     CABCurve nextCurve;
 
@@ -374,13 +388,13 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
 
     //we are doing a wide turn
     double head = 0;
-    int count = CTrack::instance()->curve.isHeadingSameWay ? -1 : 1;
+    int count = track->curve.isHeadingSameWay ? -1 : 1;
     switch (youTurnPhase)
     {
     case 0:
     {
         //Create first semicircle
-        if (!FindCurveTurnPoint(CTrack::instance()->curve,bnd))
+        if (!FindCurveTurnPoint(track->curve,bnd))
         {
             //error
             FailCreate();
@@ -390,17 +404,17 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
         startOfTurnPt = CClose(inClosestTurnPt);
 
         int stopIfWayOut = 0;
-        isOutOfBounds = true;
+        syncOutOfBounds(true);
 
         while (isOutOfBounds)
         {
-            isOutOfBounds = false;
+            syncOutOfBounds(false);
             stopIfWayOut++;
 
-            Vec3 currentPos = CTrack::instance()->curve.curList[inClosestTurnPt.curveIndex];
+            Vec3 currentPos = track->curve.curList[inClosestTurnPt.curveIndex];
 
             head = currentPos.heading;
-            if (!CTrack::instance()->curve.isHeadingSameWay) head += M_PI;
+            if (!track->curve.isHeadingSameWay) head += M_PI;
             if (head > glm::twoPI) head -= glm::twoPI;
             currentPos.heading = head;
 
@@ -437,7 +451,7 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
             {
                 if (bnd.IsPointInsideTurnArea(ytList[j]) != 0)
                 {
-                    isOutOfBounds = true;
+                    syncOutOfBounds(true);
                     break;
                 }
             }
@@ -455,7 +469,7 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
                 return true;
             }
 
-            if (stopIfWayOut == 300 || inClosestTurnPt.curveIndex < 1 || inClosestTurnPt.curveIndex > (CTrack::instance()->curve.curList.count() - 2))
+            if (stopIfWayOut == 300 || inClosestTurnPt.curveIndex < 1 || inClosestTurnPt.curveIndex > (track->curve.curList.count() - 2))
             {
                 //for some reason it doesn't go inside boundary
                 FailCreate();
@@ -464,7 +478,7 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
 
             //keep moving infield till pattern is all inside
             inClosestTurnPt.curveIndex = inClosestTurnPt.curveIndex + count;
-            inClosestTurnPt.closePt = CTrack::instance()->curve.curList[inClosestTurnPt.curveIndex];
+            inClosestTurnPt.closePt = track->curve.curList[inClosestTurnPt.curveIndex];
 
 
             //set the flag to Critical stop machine
@@ -480,8 +494,8 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
     case 1:
     {
         //Takes the heading of the curve to create an imaginary point on the next line
-        double headCurve = CTrack::instance()->curve.curList[CTrack::instance()->curve.currentLocationIndex].heading;
-        if (!CTrack::instance()->curve.isHeadingSameWay) headCurve += M_PI;
+        double headCurve = track->curve.curList[track->curve.currentLocationIndex].heading;
+        if (!track->curve.isHeadingSameWay) headCurve += M_PI;
         if (headCurve > glm::twoPI) headCurve -= glm::twoPI;
 
         double turnOffset = (tool_toolWidth - tool_toolOverlap) * rowSkipsWidth + (isYouTurnRight ? -tool_toolOffset * 2.0 : tool_toolOffset * 2.0); //change isYouTurnRight?
@@ -501,7 +515,7 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
 
         //create the next line with this imaginary point
         //nextCurve = QSharedPointer<ABCurve>(new CABCurve());
-        nextCurve.BuildCurveCurrentList(CVehicle::instance()->pivotAxlePos,secondsSinceStart,*CVehicle::instance(),CTrack::instance()->gArr[CTrack::instance()->idx],bnd,*this);
+        nextCurve.BuildCurveCurrentList(CVehicle::instance()->pivotAxlePos,secondsSinceStart,*CVehicle::instance(),track->gArr[track->idx()],bnd,*this);
         CVehicle::instance()->guidanceLookPos = tempguidanceLookPos;
 
 
@@ -510,7 +524,7 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
         double headingDifference = fabs(inClosestTurnPt.turnLineHeading - ytList[ytList.count() - 1].heading);
         if (headingDifference > glm::PIBy2 && headingDifference < 3 * glm::PIBy2) isTurnLineSameWay = false;
 
-        if (!FindCurveOutTurnPoint(CTrack::instance()->curve, nextCurve, startOfTurnPt, isTurnLineSameWay,bnd))
+        if (!FindCurveOutTurnPoint(track->curve, nextCurve, startOfTurnPt, isTurnLineSameWay,bnd))
         {
             //error
             FailCreate();
@@ -519,14 +533,14 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
         outClosestTurnPt = CClose(closestTurnPt);
 
         //move the turn inside of turnline with help from the crossingCurvePoints
-        isOutOfBounds = true;
+        syncOutOfBounds(true);
         while (isOutOfBounds)
         {
-            isOutOfBounds = false;
+            syncOutOfBounds(false);
             Vec3 currentPos = nextCurve.curList[outClosestTurnPt.curveIndex];
 
             head = currentPos.heading;
-            if ((!CTrack::instance()->curve.isHeadingSameWay && !isOutSameCurve) || (CTrack::instance()->curve.isHeadingSameWay && isOutSameCurve)) head += M_PI;
+            if ((!track->curve.isHeadingSameWay && !isOutSameCurve) || (track->curve.isHeadingSameWay && isOutSameCurve)) head += M_PI;
             if (head > glm::twoPI) head -= glm::twoPI;
             currentPos.heading = head;
 
@@ -563,7 +577,7 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
             {
                 if (bnd.IsPointInsideTurnArea(ytList2[j]) != 0)
                 {
-                    isOutOfBounds = true;
+                    syncOutOfBounds(true);
                     break;
                 }
             }
@@ -686,7 +700,7 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
             }
         }
 
-        if (!AddCurveSequenceLines(CTrack::instance()->curve, nextCurve)) return false;
+        if (!AddCurveSequenceLines(track->curve, nextCurve)) return false;
 
         //fill in the gaps
         double distance;
@@ -733,7 +747,7 @@ bool CYouTurn::CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
         //are we continuing the same way?
         isGoingStraightThrough = M_PI - fabs(fabs(ytList[ytList.count() - 2].heading - ytList[1].heading) - M_PI) < glm::PIBy2;
         ytList2.clear();
-        isOutOfBounds = false;
+        syncOutOfBounds(false);
         youTurnPhase = 10;
         turnTooCloseTrigger = false;
         isTurnCreationTooClose = false;
@@ -750,9 +764,9 @@ bool CYouTurn::CreateABOmegaTurn(bool isTurnLeft,
                                  const CBoundary &bnd,
                                  const CTrack &trk)
 {
-    double tool_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double tool_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
+    double tool_toolOverlap = SettingsManager::instance()->vehicle_toolOverlap();
 
     //keep from making turns constantly - wait 1.5 seconds
     if (makeUTurnCounter < 4)
@@ -761,8 +775,8 @@ bool CYouTurn::CreateABOmegaTurn(bool isTurnLeft,
         return true;
     }
 
-    double head = CTrack::instance()->ABLine.abHeading;
-    if (!CTrack::instance()->ABLine.isHeadingSameWay) head += M_PI;
+    double head = track->ABLine.abHeading;
+    if (!track->ABLine.isHeadingSameWay) head += M_PI;
     if (head >= glm::twoPI) head -= glm::twoPI;
 
     //we are doing an omega turn
@@ -771,7 +785,7 @@ bool CYouTurn::CreateABOmegaTurn(bool isTurnLeft,
     case 0:
     {
         //how far are we from any turn boundary
-        FindABTurnPoint(Vec3(CTrack::instance()->ABLine.rEastAB, CTrack::instance()->ABLine.rNorthAB, head), CTrack::instance()->ABLine, bnd);
+        FindABTurnPoint(Vec3(track->ABLine.rEastAB, track->ABLine.rNorthAB, head), track->ABLine, bnd);
 
         //or did we lose the turnLine - we are on the highway cuz we left the outer/inner turn boundary
         if (closestTurnPt.turnLineIndex != -1)
@@ -818,7 +832,7 @@ bool CYouTurn::CreateABOmegaTurn(bool isTurnLeft,
 
         //generate the turn points
         ytList = dubYouTurnPath.GenerateDubins(start, goal);
-        isOutOfBounds = true;
+        syncOutOfBounds(true);
 
         if (ytList.count() == 0)
         {
@@ -856,12 +870,12 @@ bool CYouTurn::CreateABOmegaTurn(bool isTurnLeft,
             return false;
         }
 
-        isOutOfBounds = false;
+        syncOutOfBounds(false);
         youTurnPhase = 10;
         turnTooCloseTrigger = false;
         isTurnCreationTooClose = false;
 
-        if (!AddABSequenceLines(CTrack::instance()->ABLine, *CVehicle::instance())) return false;
+        if (!AddABSequenceLines(track->ABLine, *CVehicle::instance())) return false;
 
         return true;
     }
@@ -870,15 +884,15 @@ bool CYouTurn::CreateABOmegaTurn(bool isTurnLeft,
     return true;
 }
 
-bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
+bool CYouTurn::CreateABWideTurn(FormGPS* formGPS, bool isTurnLeft,
                                 CVehicle &vehicle,
                                 const CBoundary &bnd,
                                 CTrack &trk,
                                 int secondsSinceStart)
 {
-    double tool_width = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_offset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double tool_overlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_width = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_offset = SettingsManager::instance()->vehicle_toolOffset();
+    double tool_overlap = SettingsManager::instance()->vehicle_toolOverlap();
 
     //keep from making turns constantly - wait 1.5 seconds
     if (makeUTurnCounter < 4)
@@ -887,11 +901,14 @@ bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
         return true;
     }
 
-    if (!isBtnAutoSteerOn) CTrack::instance()->ABLine.isHeadingSameWay
-            = M_PI - fabs(fabs(CVehicle::instance()->fixHeading - CTrack::instance()->ABLine.abHeading) - M_PI) < glm::PIBy2;
+    // Phase 6.0.20: Direct FormGPS* access - type-safe, compile-time checked
+    bool autoSteerOn2 = formGPS ? formGPS->isBtnAutoSteerOn() : false;
 
-    double head = CTrack::instance()->ABLine.abHeading;
-    if (!CTrack::instance()->ABLine.isHeadingSameWay) head += M_PI;
+    if (!autoSteerOn2) track->ABLine.isHeadingSameWay
+            = M_PI - fabs(fabs(CVehicle::instance()->fixHeading - track->ABLine.abHeading) - M_PI) < glm::PIBy2;
+
+    double head = track->ABLine.abHeading;
+    if (!track->ABLine.isHeadingSameWay) head += M_PI;
     if (head >= glm::twoPI) head -= glm::twoPI;
 
 
@@ -901,10 +918,10 @@ bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
     case 0:
     {
         //grab the pure pursuit point right on ABLine
-        Vec3 onPurePoint = Vec3(CTrack::instance()->ABLine.rEastAB, CTrack::instance()->ABLine.rNorthAB, 0);
+        Vec3 onPurePoint = Vec3(track->ABLine.rEastAB, track->ABLine.rNorthAB, 0);
 
         //how far are we from any turn boundary
-        FindABTurnPoint(onPurePoint, CTrack::instance()->ABLine, bnd);
+        FindABTurnPoint(onPurePoint, track->ABLine, bnd);
 
         //save a copy for first point
         inClosestTurnPt = CClose(closestTurnPt);
@@ -940,7 +957,7 @@ bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
         }
 
         //move the half circle to tangent the turnline
-        isOutOfBounds = true;
+        syncOutOfBounds(true);
         ytList = MoveTurnInsideTurnLine(ytList, head, true, false,*CVehicle::instance(), bnd);
 
         //if it couldn't be done this will trigger
@@ -975,7 +992,7 @@ bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
         }
 
         CABLine nextLine;
-        nextLine.BuildCurrentABLineList(CVehicle::instance()->pivotAxlePos,secondsSinceStart,CTrack::instance()->gArr[CTrack::instance()->idx],*this,*CVehicle::instance());
+        nextLine.BuildCurrentABLineList(CVehicle::instance()->pivotAxlePos,secondsSinceStart,track->gArr[track->idx()],*this,*CVehicle::instance());
         CVehicle::instance()->guidanceLookPos = tempguidanceLookPos;
 
         //going with or against boundary?
@@ -983,7 +1000,7 @@ bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
         double headingDifference = fabs(startOfTurnPt.closePt.heading - ytList[ytList.count() - 1].heading);
         if (headingDifference > glm::PIBy2 && headingDifference < 3 * glm::PIBy2) isTurnLineSameWay = false;
 
-        if (!FindABOutTurnPoint(CTrack::instance()->ABLine, nextLine, inClosestTurnPt, isTurnLineSameWay, CTrack::instance()->ABLine, bnd))
+        if (!FindABOutTurnPoint(track->ABLine, nextLine, inClosestTurnPt, isTurnLineSameWay, track->ABLine, bnd))
         {
             //error
             FailCreate();
@@ -1026,7 +1043,7 @@ bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
         }
 
         //move the half circle to tangent the turnline
-        isOutOfBounds = true;
+        syncOutOfBounds(true);
         ytList2 = MoveTurnInsideTurnLine(ytList2, headie, true, true, *CVehicle::instance(), bnd);
 
         if (ytList2.count() == 0)
@@ -1176,13 +1193,13 @@ bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
         //are we continuing the same way?
         isGoingStraightThrough = M_PI - fabs(fabs(ytList[ytList.count() - 2].heading - ytList[1].heading) - M_PI) < glm::PIBy2;
 
-        isOutOfBounds = false;
+        syncOutOfBounds(false);
         youTurnPhase = 10;
         turnTooCloseTrigger = false;
         isTurnCreationTooClose = false;
         ytList2.clear();
 
-        if (!AddABSequenceLines(CTrack::instance()->ABLine, *CVehicle::instance())) return false;
+        if (!AddABSequenceLines(track->ABLine, *CVehicle::instance())) return false;
 
         return true;
     }
@@ -1197,9 +1214,9 @@ bool CYouTurn::KStyleTurnCurve(bool isTurnLeft,
                                const CTrack &track,
                                const CBoundary &bnd)
 {
-    double tool_width = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_offset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double tool_overlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_width = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_offset = SettingsManager::instance()->vehicle_toolOffset();
+    double tool_overlap = SettingsManager::instance()->vehicle_toolOverlap();
 
     //grab the vehicle widths and offsets
     double turnOffset = (tool_width - tool_overlap) * rowSkipsWidth + (isYouTurnRight ? -tool_offset * 2.0 : tool_offset * 2.0);
@@ -1403,7 +1420,7 @@ bool CYouTurn::KStyleTurnCurve(bool isTurnLeft,
 
     CVehicle::instance()->distancePivotToTurnLine = glm::Distance(ytList[0], CVehicle::instance()->pivotAxlePos);
 
-    isOutOfBounds = false;
+    syncOutOfBounds(false);
     youTurnPhase = 10;
     turnTooCloseTrigger = false;
     isTurnCreationTooClose = false;
@@ -1416,9 +1433,9 @@ bool CYouTurn::KStyleTurnAB(bool isTurnLeft,
                             const CABLine &ABLine,
                             const CBoundary &bnd)
 {
-    double tool_width = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_offset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double tool_overlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_width = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_offset = SettingsManager::instance()->vehicle_toolOffset();
+    double tool_overlap = SettingsManager::instance()->vehicle_toolOverlap();
 
     double pointSpacing = youTurnRadius * 0.1;
 
@@ -1434,7 +1451,7 @@ bool CYouTurn::KStyleTurnAB(bool isTurnLeft,
     //step 1 turn in to the turnline
     if (youTurnPhase == 0)
     {
-        isOutOfBounds = true;
+        syncOutOfBounds(true);
 
 
         //timer.Start();
@@ -1572,7 +1589,7 @@ bool CYouTurn::KStyleTurnAB(bool isTurnLeft,
 
         CVehicle::instance()->distancePivotToTurnLine = glm::Distance(ytList[0], CVehicle::instance()->pivotAxlePos);
 
-        isOutOfBounds = false;
+        syncOutOfBounds(false);
         youTurnPhase = 10;
         turnTooCloseTrigger = false;
         isTurnCreationTooClose = false;
@@ -2409,7 +2426,7 @@ QVector<Vec3> CYouTurn::MoveTurnInsideTurnLine(QVector<Vec3> uTurnList,
     }
 
     //we have succesfully moved the turn inside
-    isOutOfBounds = false;
+    syncOutOfBounds(false);
 
     //if empty - no creation.
     return uTurnList;
@@ -2547,20 +2564,20 @@ void CYouTurn::YouTurnTrigger(CTrack &trk, CVehicle &vehicle)
             pt3Phase = 0;
     }
 
-    if (CTrack::instance()->idx > -1 && CTrack::instance()->gArr.count() > 0)
+    if (track->idx() > -1 && track->gArr.count() > 0)
     {
-        if (CTrack::instance()->gArr[CTrack::instance()->idx].mode == (int)TrackMode::AB)
+        if (track->gArr[track->idx()].mode == (int)TrackMode::AB)
         {
             if (!isGoingStraightThrough)
-                CTrack::instance()->ABLine.isLateralTriggered = true;
-            CTrack::instance()->ABLine.isABValid = false;
+                track->ABLine.isLateralTriggered = true;
+            track->ABLine.isABValid = false;
         }
         else
         {
             if (!isGoingStraightThrough)
-                CTrack::instance()->curve.isLateralTriggered = true;
-            CTrack::instance()->curve.isCurveValid = false;
-            //CTrack::instance()->curve.lastHowManyPathsAway = 98888;
+                track->curve.isLateralTriggered = true;
+            track->curve.isCurveValid = false;
+            //track->curve.lastHowManyPathsAway = 98888;
         }
     }
 }
@@ -2612,41 +2629,41 @@ void CYouTurn::ResetCreatedYouTurn()
 
 void CYouTurn::FailCreate()
 {
-    isOutOfBounds = true;
+    syncOutOfBounds(true);
     isTurnCreationTooClose = true;
     emit outOfBounds();
     youTurnPhase = 11;
 }
 
 //build the points and path of youturn to be scaled and transformed
-void CYouTurn::BuildManualYouLateral(bool isTurnRight,
+void CYouTurn::BuildManualYouLateral(FormGPS* formGPS, bool isTurnRight,
                                      CVehicle &vehicle,
                                      CTrack &trk
                                      )
 {
-    double tool_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double tool_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
+    double tool_toolOverlap = SettingsManager::instance()->vehicle_toolOverlap();
 
     double head;
     //point on AB line closest to pivot axle point from ABLine PurePursuit
-    if (CTrack::instance()->idx > -1 && CTrack::instance()->gArr.count() >0)
+    if (track->idx() > -1 && track->gArr.count() >0)
     {
-        if (CTrack::instance()->gArr[CTrack::instance()->idx].mode == (int)TrackMode::AB)
+        if (track->gArr[track->idx()].mode == (int)TrackMode::AB)
         {
-            rEastYT = CTrack::instance()->ABLine.rEastAB;
-            rNorthYT = CTrack::instance()->ABLine.rNorthAB;
-            isHeadingSameWay = CTrack::instance()->ABLine.isHeadingSameWay;
-            head = CTrack::instance()->ABLine.abHeading;
-            CTrack::instance()->ABLine.isLateralTriggered = true;
+            rEastYT = track->ABLine.rEastAB;
+            rNorthYT = track->ABLine.rNorthAB;
+            isHeadingSameWay = track->ABLine.isHeadingSameWay;
+            head = track->ABLine.abHeading;
+            track->ABLine.isLateralTriggered = true;
         }
         else
         {
-            rEastYT = CTrack::instance()->curve.rEastCu;
-            rNorthYT = CTrack::instance()->curve.rNorthCu;
-            isHeadingSameWay = CTrack::instance()->curve.isHeadingSameWay;
-            head = CTrack::instance()->curve.manualUturnHeading;
-            CTrack::instance()->curve.isLateralTriggered = true;
+            rEastYT = track->curve.rEastCu;
+            rNorthYT = track->curve.rNorthCu;
+            isHeadingSameWay = track->curve.isHeadingSameWay;
+            head = track->curve.manualUturnHeading;
+            track->curve.isLateralTriggered = true;
         }
     }
     else return;
@@ -2671,41 +2688,41 @@ void CYouTurn::BuildManualYouLateral(bool isTurnRight,
         CVehicle::instance()->guidanceLookPos.northing = rNorthYT - (sin(-head) * turnOffset);
     }
 
-    CTrack::instance()->ABLine.isABValid = false;
-    CTrack::instance()->curve.isCurveValid = false;
+    track->ABLine.isABValid = false;
+    track->curve.isCurveValid = false;
 }
 
-void CYouTurn::BuildManualYouTurn(bool isTurnRight,
+void CYouTurn::BuildManualYouTurn(FormGPS* formGPS, bool isTurnRight,
                                   bool isTurnButtonTriggered,
                                   CVehicle &vehicle,
                                   CTrack &trk)
 {
-    double minTurningRadius = SettingsManager::instance()->value(SETTINGS_vehicle_minTurningRadius).value<double>();
-    double tool_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double tool_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double minTurningRadius = SettingsManager::instance()->vehicle_minTurningRadius();
+    double tool_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
+    double tool_toolOverlap = SettingsManager::instance()->vehicle_toolOverlap();
 
     isYouTurnTriggered = true;
 
     double head;
     //point on AB line closest to pivot axle point from ABLine PurePursuit
-    if (CTrack::instance()->idx > -1 && CTrack::instance()->gArr.count() > 0)
+    if (track->idx() > -1 && track->gArr.count() > 0)
     {
-        if (CTrack::instance()->gArr[CTrack::instance()->idx].mode == (int)TrackMode::AB)
+        if (track->gArr[track->idx()].mode == (int)TrackMode::AB)
         {
-            rEastYT = CTrack::instance()->ABLine.rEastAB;
-            rNorthYT = CTrack::instance()->ABLine.rNorthAB;
-            isHeadingSameWay = CTrack::instance()->ABLine.isHeadingSameWay;
-            head = CTrack::instance()->ABLine.abHeading;
-            CTrack::instance()->ABLine.isLateralTriggered = true;
+            rEastYT = track->ABLine.rEastAB;
+            rNorthYT = track->ABLine.rNorthAB;
+            isHeadingSameWay = track->ABLine.isHeadingSameWay;
+            head = track->ABLine.abHeading;
+            track->ABLine.isLateralTriggered = true;
         }
         else
         {
-            rEastYT = CTrack::instance()->curve.rEastCu;
-            rNorthYT = CTrack::instance()->curve.rNorthCu;
-            isHeadingSameWay = CTrack::instance()->curve.isHeadingSameWay;
-            head = CTrack::instance()->curve.manualUturnHeading;
-            CTrack::instance()->curve.isLateralTriggered = true;
+            rEastYT = track->curve.rEastCu;
+            rNorthYT = track->curve.rNorthCu;
+            isHeadingSameWay = track->curve.isHeadingSameWay;
+            head = track->curve.manualUturnHeading;
+            track->curve.isLateralTriggered = true;
         }
     }
     else return;
@@ -2754,21 +2771,21 @@ void CYouTurn::BuildManualYouTurn(bool isTurnRight,
     CVehicle::instance()->guidanceLookPos.easting = ytList[ytList.count() - 1].easting;
     CVehicle::instance()->guidanceLookPos.northing = ytList[ytList.count() - 1].northing;
 
-    CTrack::instance()->ABLine.isABValid = false;
-    CTrack::instance()->curve.isCurveValid = false;
-    CTrack::instance()->curve.lastHowManyPathsAway = 98888;
+    track->ABLine.isABValid = false;
+    track->curve.isCurveValid = false;
+    track->curve.lastHowManyPathsAway = 98888;
 }
 
 //determine distance from youTurn guidance line
 bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
                                        CNMEA &pn)
 {
-    double maxSteerAngle = SettingsManager::instance()->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
-    double wheelbase = SettingsManager::instance()->value(SETTINGS_vehicle_wheelbase).value<double>();
-    bool vehicle_isStanleyUsed = SettingsManager::instance()->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    double maxSteerAngle = SettingsManager::instance()->vehicle_maxSteerAngle();
+    double wheelbase = SettingsManager::instance()->vehicle_wheelbase();
+    bool vehicle_isStanleyUsed = SettingsManager::instance()->vehicle_isStanleyUsed();
 
-    double vehicle_stanleyDistanceErrorGain = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyDistanceErrorGain).value<double>();
-    double vehicle_stanleyHeadingErrorGain = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyHeadingErrorGain).value<double>();
+    double vehicle_stanleyDistanceErrorGain = SettingsManager::instance()->vehicle_stanleyDistanceErrorGain();
+    double vehicle_stanleyHeadingErrorGain = SettingsManager::instance()->vehicle_stanleyHeadingErrorGain();
 
 
     //grab a copy from main - the steer position
@@ -2827,7 +2844,7 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
                 return false;
             }
 
-            if (uTurnStyle == 1 && pt3Phase == 0 && CVehicle::instance()->isReverse)
+            if (uTurnStyle == 1 && pt3Phase == 0 && CVehicle::instance()->isReverse())
             {
                 CompleteYouTurn();
                 return false;
@@ -2863,7 +2880,7 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
             if (abFixHeadingDelta > glm::PIBy2) abFixHeadingDelta -= M_PI;
             else if (abFixHeadingDelta < -glm::PIBy2) abFixHeadingDelta += M_PI;
 
-            if(CVehicle::instance()->isReverse) abFixHeadingDelta *= -1;
+            if(CVehicle::instance()->isReverse()) abFixHeadingDelta *= -1;
             //normally set to 1, less then unity gives less heading error.
             abFixHeadingDelta *= vehicle_stanleyDistanceErrorGain;
             if (abFixHeadingDelta > 0.74) abFixHeadingDelta = 0.74;
@@ -2945,7 +2962,7 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
             double goalPointDistance = 0.5*CVehicle::instance()->UpdateGoalPointDistance();
 
             isHeadingSameWay = true;
-            bool reverseHeading = !CVehicle::instance()->isReverse;
+            bool reverseHeading = !CVehicle::instance()->isReverse();
 
             int count = reverseHeading ? 1 : -1;
             Vec3 start(rEastYT, rNorthYT, 0);
@@ -2975,7 +2992,7 @@ bool CYouTurn::DistanceFromYouTurnLine(CVehicle &vehicle,
                     return false;
                 }
 
-                if (uTurnStyle == 1 && pt3Phase == 0 && CVehicle::instance()->isReverse)
+                if (uTurnStyle == 1 && pt3Phase == 0 && CVehicle::instance()->isReverse())
                 {
                     CompleteYouTurn();
                     return false;
@@ -3028,7 +3045,7 @@ void CYouTurn::DrawYouTurn(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
 {
     GLHelperOneColor gldraw;
     QColor color;
-    float display_lineWidth = SettingsManager::instance()->value(SETTINGS_display_lineWidth).value<float>();
+    float display_lineWidth = SettingsManager::instance()->display_lineWidth();
 
     int ptCount = ytList.size();
     if (ptCount < 3) return;
@@ -3047,4 +3064,13 @@ void CYouTurn::DrawYouTurn(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
 
     gldraw.draw(gl, mvp, color,
                 GL_POINTS, display_lineWidth);
+}
+
+// Qt 6.8 FIX: External implementation for Qt 6.8 QObject + QML_ELEMENT compatibility
+void CYouTurn::setMainWindow(QObject *mw) {
+    mainWindow = mw;
+}
+
+void CYouTurn::setFormGPS(FormGPS* gps) {
+    formGPS = gps;
 }

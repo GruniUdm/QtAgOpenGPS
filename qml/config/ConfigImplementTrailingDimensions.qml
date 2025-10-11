@@ -5,7 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 //import Settings
-//import AOG
+import AOG
 
 
 import ".."
@@ -14,7 +14,7 @@ import "../components"
 Rectangle{
     id: configImpDimWin
     anchors.fill: parent
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     visible: false
     Image{
         id: image1
@@ -35,8 +35,9 @@ Rectangle{
         anchors.rightMargin: 400 * theme.scaleWidth
         from: 10
         to:3000
-        boundValue: -Settings.tool_toolTrailingHitchLength
-        onValueModified: Settings.tool_toolTrailingHitchLength = -value
+        // Threading Phase 1: Tool trailing hitch length
+        boundValue: -SettingsManager.tool_toolTrailingHitchLength
+        onValueModified: SettingsManager.tool_toolTrailingHitchLength = -value
         TextLine{
             text: qsTr("Units: ")+ Utils.cm_unit_abbrev()
             font.bold: true

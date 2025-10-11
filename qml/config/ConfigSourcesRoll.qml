@@ -15,7 +15,7 @@ import "../components"
 Rectangle{
     id: configSourcesRoll
     anchors.fill: parent
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     visible: false
     IconButtonColor{
         objectName: "btnRemoveOffset"
@@ -26,7 +26,8 @@ Rectangle{
         text: qsTr("Remove Offset")
         icon.source: prefix + "/images/Config/ConDa_RemoveOffset.png"
         onClicked: {
-            Settings.imu_rollZero = 0
+            // Threading Phase 1: Remove IMU roll offset
+            SettingsManager.imu_rollZero = 0
         }
     }
     IconButtonColor{
@@ -39,9 +40,10 @@ Rectangle{
         isChecked: false
         onClicked: {
             if (aog.imuRollDegrees != 88888) {
-                var roll = aog.imuRollDegrees + Settings.imu_rollZero
-                Settings.imu_rollZero = roll;
-                aog.changeImuRoll(roll)
+                // Threading Phase 1: Calculate roll with current zero offset
+                var roll = aog.imuRollDegrees + SettingsManager.imu_rollZero
+                SettingsManager.imu_rollZero = roll;
+                aogInterface.changeImuRoll(roll)
             }
         }
     }
@@ -51,7 +53,8 @@ Rectangle{
         anchors.left: zeroRollBtn.right
         anchors.verticalCenter: zeroRollBtn.verticalCenter
         anchors.leftMargin: 20 * theme.scaleWidth
-        text: Number(Settings.imu_rollZero).toLocaleString(Qt.locale(), 'f', 2);
+        // Threading Phase 1: Display current roll zero value
+        text: Number(SettingsManager.imu_rollZero).toLocaleString(Qt.locale(), 'f', 2);
     }
 
     IconButtonTransparent {
@@ -61,7 +64,8 @@ Rectangle{
         anchors.leftMargin: 20 * theme.scaleWidth
 
         icon.source: prefix + "/images/UpArrow64.png"
-        onClicked: Settings.imu_rollZero += 0.1
+        // Threading Phase 1: Increment roll zero offset
+        onClicked: SettingsManager.imu_rollZero = SettingsManager.imu_rollZero + 0.1
     }
 
     IconButtonTransparent {
@@ -71,7 +75,8 @@ Rectangle{
         anchors.leftMargin: 5 * theme.scaleWidth
 
         icon.source: prefix + "/images/DnArrow64.png"
-        onClicked: Settings.imu_rollZero -= 0.1
+        // Threading Phase 1: Decrement roll zero offset
+        onClicked: SettingsManager.imu_rollZero = SettingsManager.imu_rollZero - 0.1
     }
 
     IconButtonColor{
@@ -95,8 +100,9 @@ Rectangle{
         text: qsTr("Invert Roll")
         icon.source: prefix + "/images/Config/ConDa_InvertRoll.png"
         checkable: true
-        checked: Settings.imu_invertRoll
-        onCheckedChanged: Settings.imu_invertRoll = checked
+        // Threading Phase 1: Invert roll setting
+        checked: SettingsManager.imu_invertRoll
+        onCheckedChanged: SettingsManager.imu_invertRoll = checked
     }
     Rectangle{
         id: rollFilterSlider
@@ -112,9 +118,10 @@ Rectangle{
             anchors.fill: parent
             from: 0
             to: 98
-            property double boundValue: Settings.imu_rollFilter
-            value: Settings.imu_rollFilter * 100
-            onValueChanged: Settings.imu_rollFilter = value / 100.0
+            // Threading Phase 1: Roll filter value binding
+            property double boundValue: 0.0
+            value: SettingsManager.imu_rollFilter * 100
+            onValueChanged: SettingsManager.imu_rollFilter = value / 100.0
             leftTopText: qsTr("Less")
             centerTopText: qsTr("Roll Filter")
             rightTopText: qsTr("More")

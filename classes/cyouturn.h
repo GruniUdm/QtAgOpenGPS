@@ -9,7 +9,6 @@
 #include "vec4.h"
 #include "vec3.h"
 #include "vec2.h"
-#include "interfaceproperty.h"
 #include "cabline.h"
 
 class CBoundary;
@@ -20,6 +19,7 @@ class QOpenGLFunctions;
 class CVehicle;
 class CNMEA;
 class CTrack;
+class FormGPS; // Forward declaration
 
 //class QMatrix4x4;
 
@@ -54,6 +54,10 @@ public:
 class CYouTurn: public QObject
 {
     Q_OBJECT
+protected:
+    FormGPS* formGPS = nullptr; // Reference to parent FormGPS
+    CTrack* track = nullptr; // Injected CTrack reference
+
 private:
     int A, B;
     bool isHeadingSameWay = true;
@@ -71,8 +75,7 @@ public:
     bool isYouTurnRight;
 
     // Is the youturn button enabled?
-    InterfaceProperty<AOGInterface,bool> isYouTurnBtnOn = InterfaceProperty<AOGInterface,bool>("isYouTurnBtnOn");
-    InterfaceProperty<AOGInterface,bool> isBtnAutoSteerOn = InterfaceProperty<AOGInterface,bool>("isBtnAutoSteerOn");
+    // ⚡ PHASE 6.3.0: isBtnAutoSteerOn migrated to FormGPS Q_PROPERTY - access via FormGPS instance
 
     double boundaryAngleOffPerpendicular, youTurnRadius;
 
@@ -151,10 +154,19 @@ public:
 
     int makeUTurnCounter  = 0; //moved from FormGPS to here
 
+    //reference to mainWindow for qmlItem access
+    QObject *mainWindow = nullptr;
+
     //constructor
     explicit CYouTurn(QObject *parent = 0);
 
     void loadSettings();
+    void setMainWindow(QObject *mw); // Qt 6.8 FIX: Moved to .cpp
+    void setFormGPS(FormGPS* gps); // Qt 6.8 FIX: Moved to .cpp
+    void setTrack(CTrack* trk) { track = trk; } // Inject CTrack reference
+
+    // Sync local isOutOfBounds with FormGPS - Fix for PropertyWrapper migration regression
+    void syncOutOfBounds(bool value);
 
     //Finds the point where an AB Curve crosses the turn line
     bool BuildCurveDubinsYouTurn(bool isTurnLeft,
@@ -165,7 +177,7 @@ public:
                                  int secondsSinceStart
                                  );
 
-    bool BuildABLineDubinsYouTurn(bool isTurnLeft,
+    bool BuildABLineDubinsYouTurn(FormGPS* formGPS, bool isTurnLeft,
                                   CVehicle &vehicle,
                                   const CBoundary &bnd,
                                   CTrack &trk,
@@ -192,7 +204,7 @@ private:
                            const CBoundary &bnd,
                            const CTrack &track);
 
-    bool CreateABWideTurn(bool isTurnLeft,
+    bool CreateABWideTurn(FormGPS* formGPS, bool isTurnLeft,
                           CVehicle &vehicle,
                           const CBoundary &bnd,
                           CTrack &trk,
@@ -278,12 +290,12 @@ public:
     void FailCreate();
 
     //build the points and path of youturn to be scaled and transformed
-    void BuildManualYouLateral(bool isTurnLeft,
+    void BuildManualYouLateral(FormGPS* formGPS, bool isTurnLeft,
                                CVehicle &vehicle,
                                CTrack &trk);
 
     //build the points and path of youturn to be scaled and transformed
-    void BuildManualYouTurn(bool isTurnLeft, bool isTurnButtonTriggered,
+    void BuildManualYouTurn(FormGPS* formGPS, bool isTurnLeft, bool isTurnButtonTriggered,
                             CVehicle &vehicle,
                             CTrack &trk);
 

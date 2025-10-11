@@ -12,7 +12,9 @@
 #include "cahrs.h"
 #include "classes/settingsmanager.h"
 #include "cnmea.h"
+#include "qmlutil.h"
 //#include "common.h"
+#include "formgps.h"
 
 CContour::CContour(QObject *parent)
     : QObject(parent)
@@ -20,16 +22,19 @@ CContour::CContour(QObject *parent)
     ptList = QSharedPointer<QVector<Vec3>>(new QVector<Vec3>());
 }
 
-void CContour::SetLockToLine()
+void CContour::SetLockToLine(FormGPS *formGPS)
 {
-    if (ctList.count() > 5) isLocked = !isLocked;
+    if (ctList.count() > 5) {
+        bool currentLocked = formGPS->btnIsContourLocked();
+        formGPS->setBtnIsContourLocked(!currentLocked);
+    }
 }
 
-void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehicle, Vec3 pivot)
+void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehicle, Vec3 pivot, QObject *mainWindow)
 {
-    double tool_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
-    double tool_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double tool_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_toolOverlap = SettingsManager::instance()->vehicle_toolOverlap();
+    double tool_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
     double tool_toolHalfWidth = (tool_toolWidth - tool_toolOverlap) / 2;
 
     if (ctList.count() == 0)
@@ -67,7 +72,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
     boxB.easting = pivot.easting + sin2HL + sinH;
     boxB.northing = pivot.northing + cos2HL + cosH;
 
-    if (!isLocked)
+    if (!mainWindow->property("btnIsContourLocked").toBool())
     {
         stripNum = -1;
         for (int s = 0; s < stripCount; s++)
@@ -104,7 +109,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
         {
             //no points in the box, exit
             ctList.clear();
-            isLocked = false;
+            mainWindow->setProperty("btnIsContourLocked", false);
             return;
         }
     }
@@ -118,7 +123,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
         if (ptCount < 2)
         {
             ctList.clear();
-            isLocked = false;
+            mainWindow->setProperty("btnIsContourLocked", false);
             return;
         }
 
@@ -148,7 +153,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
         if (minDistance > toolContourDistance)
         {
             ctList.clear();
-            isLocked = false;
+            mainWindow->setProperty("btnIsContourLocked", false);
             return;
         }
     }
@@ -273,14 +278,14 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
         if (ptc < 5)
         {
             ctList.clear();
-            isLocked = false;
+            mainWindow->setProperty("btnIsContourLocked", false);
             return;
         }
     }
     else
     {
         ctList.clear();
-        isLocked = false;
+        mainWindow->setProperty("btnIsContourLocked", false);
         return;
     }
 
@@ -292,16 +297,16 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
                                        CYouTurn &yt,
                                        CAHRS &ahrs,
                                        CNMEA &pn,
-                                       Vec3 pivot, Vec3 steer)
+                                       Vec3 pivot, Vec3 steer, QObject *mainWindow)
 {
-    double wheelbase = SettingsManager::instance()->value(SETTINGS_vehicle_wheelbase).value<double>();
-    double maxSteerAngle = SettingsManager::instance()->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
+    double wheelbase = SettingsManager::instance()->vehicle_wheelbase();
+    double maxSteerAngle = SettingsManager::instance()->vehicle_maxSteerAngle();
     //double maxAngularVelocity = property_setVehicle_maxAngularVelocity;
-    double stanleyHeadingErrorGain = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyHeadingErrorGain).value<double>();
-    double stanleyDistanceErrorGain = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyDistanceErrorGain).value<double>();
-    double purePursuitIntegralGain = SettingsManager::instance()->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
-    double as_sideHillCompensation = SettingsManager::instance()->value(SETTINGS_as_sideHillCompensation).value<double>();
-    bool isStanleyUsed = SettingsManager::instance()->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    double stanleyHeadingErrorGain = SettingsManager::instance()->vehicle_stanleyHeadingErrorGain();
+    double stanleyDistanceErrorGain = SettingsManager::instance()->vehicle_stanleyDistanceErrorGain();
+    double purePursuitIntegralGain = SettingsManager::instance()->vehicle_purePursuitIntegralGainAB();
+    double as_sideHillCompensation = SettingsManager::instance()->as_sideHillCompensation();
+    bool isStanleyUsed = SettingsManager::instance()->vehicle_isStanleyUsed();
 
     double minDistA = 1000000, minDistB = 1000000;
     int ptCount = ctList.count();
@@ -376,7 +381,7 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             if (abFixHeadingDelta > glm::PIBy2) abFixHeadingDelta -= M_PI;
             else if (abFixHeadingDelta < -glm::PIBy2) abFixHeadingDelta += M_PI;
 
-            if (CVehicle::instance()->isReverse) abFixHeadingDelta *= -1;
+            if (CVehicle::instance()->isReverse()) abFixHeadingDelta *= -1;
 
             abFixHeadingDelta *= stanleyHeadingErrorGain;
             if (abFixHeadingDelta > 0.74) abFixHeadingDelta = 0.74;
@@ -417,10 +422,10 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             //just need to make sure the points continue ascending in list order or heading switches all over the place
             if (A > B) { C = A; A = B; B = C; }
 
-            if (isLocked && (A < 2 || B > ptCount - 3))
+            if (mainWindow->property("btnIsContourLocked").toBool() && (A < 2 || B > ptCount - 3))
             {
                 //ctList.clear();
-                isLocked = false;
+                mainWindow->setProperty("btnIsContourLocked", false);
                 lastLockPt = INT_MAX;
                 return;
             }
@@ -483,7 +488,7 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             }
             else inty = 0;
 
-            if (CVehicle::instance()->isReverse) inty = 0;
+            if (CVehicle::instance()->isReverse()) inty = 0;
 
             isHeadingSameWay = M_PI - fabs(fabs(pivot.heading - ctList[A].heading) - M_PI) < glm::PIBy2;
 
@@ -500,7 +505,7 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             //update base on autosteer settings and distance from line
             double goalPointDistance = CVehicle::instance()->UpdateGoalPointDistance();
 
-            bool ReverseHeading = CVehicle::instance()->isReverse ? !isHeadingSameWay : isHeadingSameWay;
+            bool ReverseHeading = CVehicle::instance()->isReverse() ? !isHeadingSameWay : isHeadingSameWay;
 
             int count = ReverseHeading ? 1 : -1;
             Vec3 start(rEastCT, rNorthCT, 0);
@@ -585,7 +590,7 @@ void CContour::StartContourLine() {
 
 //Add current position to stripList
 void CContour::AddPoint(Vec3 pivot) {
-    double tool_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double tool_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
 
     ptList->append(Vec3(pivot.easting + cos(pivot.heading) * tool_toolOffset,
                         pivot.northing - sin(pivot.heading) * tool_toolOffset,
@@ -617,8 +622,8 @@ void CContour::StopContourLine(QVector<QSharedPointer <QVector<Vec3>>> &contourS
 //build contours for boundaries
 void CContour::BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCounter)
 {
-    double tool_toolWidth = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_toolOverlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_toolOverlap = SettingsManager::instance()->vehicle_toolOverlap();
 
     spacingInt *= 0.01;
     if (bnd.bndList.count() == 0)
@@ -667,11 +672,11 @@ void CContour::BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCo
 }
 
 //draw the red follow me line
-void CContour::DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
+void CContour::DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, QObject *mainWindow)
 {
-    bool isStanleyUsed = SettingsManager::instance()->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
-    double lineWidth = SettingsManager::instance()->value(SETTINGS_display_lineWidth).value<double>();
-    bool isPureDisplayOn = SettingsManager::instance()->value(SETTINGS_menu_isPureOn).value<bool>();
+    bool isStanleyUsed = SettingsManager::instance()->vehicle_isStanleyUsed();
+    double lineWidth = SettingsManager::instance()->display_lineWidth();
+    bool isPureDisplayOn = SettingsManager::instance()->menu_isPureOn();
 
     GLHelperOneColor gldraw;
     QColor color;
@@ -698,7 +703,7 @@ void CContour::DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
     //Draw the captured ref strip, red if locked
     double useWidth;
 
-    if (isLocked)
+    if (mainWindow->property("btnIsContourLocked").toBool())
     {
         color.setRgbF(0.983f, 0.92f, 0.420f);
         useWidth = 4;

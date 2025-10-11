@@ -13,7 +13,7 @@ Rectangle{
     id: configTractor
     anchors.fill: parent
     visible: true
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     Text {
         id: text
         text: qsTr("<h1>Choose Vehicle Type</h1>")
@@ -37,8 +37,9 @@ Rectangle{
             height:100 * theme.scaleHeight
             checkable: true
             icon.source: prefix + "/images/vehiclePageHarvester.png"
-            isChecked: Settings.vehicle_vehicleType === 1
-            onClicked: Settings.vehicle_vehicleType = 1
+            // Threading Phase 1: Harvester vehicle type
+            isChecked: SettingsManager.vehicle_vehicleType === 1
+            onClicked: SettingsManager.vehicle_vehicleType = 1
         }
         IconButtonColor{
             width:150 * theme.scaleWidth
@@ -46,8 +47,9 @@ Rectangle{
             id: tractor
             icon.source: prefix + "/images/vehiclePageTractor.png"
             checkable: true
-            isChecked: Settings.vehicle_vehicleType === 0
-            onClicked: Settings.vehicle_vehicleType = 0
+            // Threading Phase 1: Tractor vehicle type
+            isChecked: SettingsManager.vehicle_vehicleType === 0
+            onClicked: SettingsManager.vehicle_vehicleType = 0
         }
         IconButtonColor{
             width:150 * theme.scaleWidth
@@ -55,8 +57,9 @@ Rectangle{
             id: tr4wd
             icon.source: prefix + "/images/vehiclePage4WD.png"
             checkable: true
-            isChecked: Settings.vehicle_vehicleType === 2
-            onClicked: Settings.vehicle_vehicleType = 2
+            // Threading Phase 1: 4WD vehicle type
+            isChecked: SettingsManager.vehicle_vehicleType === 2
+            onClicked: SettingsManager.vehicle_vehicleType = 2
         }
     }
 	IconButtonColor{//triangle, no vehicle image
@@ -67,10 +70,11 @@ Rectangle{
 		height:100 * theme.scaleHeight
 		icon.source: prefix + "/images/Config/Brand/TriangleVehicle.png"
 		checkable: true
-		isChecked: !Settings.display_isVehicleImage
+		// Threading Phase 1: Vehicle image display toggle
+		isChecked: !SettingsManager.display_isVehicleImage
 		onCheckedChanged: {
-			Settings.display_isVehicleImage = !checked
-			console.log(Settings.display_isVehicleImage)
+			SettingsManager.display_isVehicleImage = !checked
+			console.log(SettingsManager.display_isVehicleImage)
 		}
 	}
 }

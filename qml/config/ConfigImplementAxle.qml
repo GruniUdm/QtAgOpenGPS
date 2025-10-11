@@ -5,7 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 //import Settings
-//import AOG
+import AOG
 
 import ".."
 import "../components"
@@ -13,7 +13,7 @@ import "../components"
 Rectangle{
     anchors.fill: parent
     visible: true
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
 
     IconButtonTransparent{
         icon.source: prefix + "/images/SteerZeroSmall.png"
@@ -28,12 +28,14 @@ Rectangle{
         to: 2000
         anchors.verticalCenter: parent.verticalCenter
         anchors.horizontalCenter: parent.horizontalCenter
-        boundValue: Math.abs(Settings.tool_trailingToolToPivotLength)
+        // Threading Phase 1: Tool trailing pivot length measurement
+        boundValue: Math.abs(SettingsManager.tool_trailingToolToPivotLength)
         onValueChanged: {
+            // Threading Phase 1: Update tool pivot length with forward/back direction
             if(backBtn.checked){
-                Settings.tool_trailingToolToPivotLength = -value
+                SettingsManager.tool_trailingToolToPivotLength = -value
             } else {
-                Settings.tool_trailingToolToPivotLength = value
+                SettingsManager.tool_trailingToolToPivotLength = value
             }
         }
     }
@@ -53,9 +55,10 @@ Rectangle{
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: 50 * theme.scaleWidth
         checkable: true
-        isChecked: (Settings.tool_trailingToolToPivotLength > 0)
+        // Threading Phase 1: Forward direction check
+        isChecked: (SettingsManager.tool_trailingToolToPivotLength > 0)
         icon.source: prefix + "/images/Config/ToolHitchPivotOffsetNeg.png"
-        onClicked: Settings.tool_trailingToolToPivotLength = Math.abs(Settings.tool_trailingToolToPivotLength)
+        onClicked: SettingsManager.tool_trailingToolToPivotLength = Math.abs(SettingsManager.tool_trailingToolToPivotLength)
     }
 
     IconButtonColor{
@@ -65,9 +68,10 @@ Rectangle{
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         anchors.rightMargin: 50 * theme.scaleWidth
-        isChecked: (Settings.tool_trailingToolToPivotLength <= 0)
+        // Threading Phase 1: Back direction check
+        isChecked: (SettingsManager.tool_trailingToolToPivotLength <= 0)
         checkable: true
-        onClicked: Settings.tool_trailingToolToPivotLength = -Math.abs(Settings.tool_trailingToolToPivotLength)
+        onClicked: SettingsManager.tool_trailingToolToPivotLength = -Math.abs(SettingsManager.tool_trailingToolToPivotLength)
         icon.source: prefix + "/images/Config/ToolHitchPivotOffsetPos.png"
     }
 }

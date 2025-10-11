@@ -12,7 +12,7 @@ Drawer{
         id: settingsWindowContent
         anchors.fill: parent
         height: settingsWindow.height
-        color: theme.blackDayWhiteNight
+        color: aogInterface.blackDayWhiteNight
 
 
     ScrollViewExpandableColumn{

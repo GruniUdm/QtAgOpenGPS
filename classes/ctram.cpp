@@ -14,8 +14,9 @@
 
 CTram::CTram(QObject *parent): QObject(parent)
 {
-    isLeftManualOn = false;
-    isRightManualOn = false;
+    // Initialize Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY members
+    m_isLeftManualOn = false;
+    m_isRightManualOn = false;
     loadSettings();
     IsTramOuterOrInner();
     displayMode=0;
@@ -23,15 +24,15 @@ CTram::CTram(QObject *parent): QObject(parent)
 
 void CTram::loadSettings()
 {
-    tramWidth = SettingsManager::instance()->value(SETTINGS_tram_width).value<double>();
-    halfWheelTrack = SettingsManager::instance()->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
-    passes = SettingsManager::instance()->value(SETTINGS_tram_passes).value<int>();
+    tramWidth = SettingsManager::instance()->tram_width();
+    halfWheelTrack = SettingsManager::instance()->vehicle_trackWidth() * 0.5;
+    passes = SettingsManager::instance()->tram_passes();
 }
 
 void CTram::IsTramOuterOrInner()
 {
-    isOuter = ((int)(tramWidth / SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>() + 0.5)) % 2 == 0;
-    if ((bool)SettingsManager::instance()->value(SETTINGS_tool_isTramOuterInverted).value<bool>()) isOuter = !isOuter;
+    isOuter = ((int)(tramWidth / SettingsManager::instance()->vehicle_toolWidth() + 0.5)) % 2 == 0;
+    if ((bool)SettingsManager::instance()->tool_isTramOuterInverted()) isOuter = !isOuter;
 }
 
 void CTram::DrawTram(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, CCamera &camera)
@@ -93,8 +94,8 @@ void CTram::BuildTramBnd(const CBoundary &bnd)
 
 void CTram::CreateBndInnerTramTrack(const CBoundary &bnd)
 {
-    double tramWidth = SettingsManager::instance()->value(SETTINGS_tram_width).value<double>();
-    double halfWheelTrack = SettingsManager::instance()->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
+    double tramWidth = SettingsManager::instance()->tram_width();
+    double halfWheelTrack = SettingsManager::instance()->vehicle_trackWidth() * 0.5;
 
     int ptCount = bnd.bndList[0].fenceLine.count();
     tramBndInnerArr.clear();
@@ -143,8 +144,8 @@ void CTram::CreateBndInnerTramTrack(const CBoundary &bnd)
 
 void CTram::CreateBndOuterTramTrack(const CBoundary &bnd)
 {
-    double tramWidth = SettingsManager::instance()->value(SETTINGS_tram_width).value<double>();
-    double halfWheelTrack = SettingsManager::instance()->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
+    double tramWidth = SettingsManager::instance()->tram_width();
+    double halfWheelTrack = SettingsManager::instance()->vehicle_trackWidth() * 0.5;
 
     //count the points from the boundary
     int ptCount = bnd.bndList[0].fenceLine.count();
@@ -190,5 +191,30 @@ void CTram::CreateBndOuterTramTrack(const CBoundary &bnd)
             else tramBndOuterArr.append(pt3);
         }
     }
+}
+
+// ===== Qt 6.8 Rectangle Pattern Implementation =====
+bool CTram::isLeftManualOn() const {
+    return m_isLeftManualOn;
+}
+
+void CTram::setIsLeftManualOn(bool value) {
+    m_isLeftManualOn = value;
+}
+
+QBindable<bool> CTram::bindableIsLeftManualOn() {
+    return QBindable<bool>(&m_isLeftManualOn);
+}
+
+bool CTram::isRightManualOn() const {
+    return m_isRightManualOn;
+}
+
+void CTram::setIsRightManualOn(bool value) {
+    m_isRightManualOn = value;
+}
+
+QBindable<bool> CTram::bindableIsRightManualOn() {
+    return QBindable<bool>(&m_isRightManualOn);
 }
 

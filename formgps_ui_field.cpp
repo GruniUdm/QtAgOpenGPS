@@ -6,6 +6,7 @@
 #include "qmlutil.h"
 #include "classes/settingsmanager.h"
 #include <QUrl>
+#include <QTimer>
 
 #include <iostream>
 #include <fstream>
@@ -49,21 +50,52 @@ void FormGPS::field_update_list() {
 
 void FormGPS::field_close() {
     qDebug() << "field_close";
-    FileSaveEverythingBeforeClosingField();
+
+    // Get current field name and set active field profile for saving
+    QString currentField = SettingsManager::instance()->f_currentDir();
+    if (!currentField.isEmpty() && currentField != "Default") {
+        QString jsonFilename;
+#ifdef __ANDROID__
+        jsonFilename = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentField + "_settings.json";
+#else
+        jsonFilename = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                      + "/" + QCoreApplication::applicationName() + "/Fields/" + currentField + "_settings.json";
+#endif
+
+        // Set active field profile so FileSaveEverythingBeforeClosingField() saves to field JSON
+        SettingsManager::instance()->setActiveFieldProfile(jsonFilename);
+        qDebug() << "field_close: Set active field profile for saving:" << jsonFilename;
+    }
+
+    FileSaveEverythingBeforeClosingField(false);  // Don't save vehicle when closing field
+
+    // Clear field profile after saving
+    SettingsManager::instance()->clearActiveFieldProfile();
+    qDebug() << "field_close: Cleared field profile after saving";
 }
 
 void FormGPS::field_open(QString field_name) {
     qDebug() << "field_open";
-    FileSaveEverythingBeforeClosingField();
+
+    // Phase 6.0.4: PropertyWrapper completely removed - using Qt 6.8 Q_PROPERTY native architecture
+
+    qDebug() << "✅ field_open: AOGInterface ready, proceeding with field operations";
+
+    FileSaveEverythingBeforeClosingField(false);  // Don't save vehicle when opening field
     if (! FileOpenField(field_name)) {
         TimedMessageBox(8000, tr("Saved field does not exist."), QString(tr("Cannot find the requested saved field.")) + " " +
                                                                 field_name);
 
-        SettingsManager::instance()->setValue(SETTINGS_f_currentDir, "Default");
+        SettingsManager::instance()->setF_currentDir("Default");
+    } else {
+        // Field opened successfully, try to load JSON profile if it exists
+        field_load_json(field_name);
     }
 }
 
 void FormGPS::field_new(QString field_name) {
+    // Phase 6.0.4: PropertyWrapper completely removed - using Qt 6.8 Q_PROPERTY native architecture
+
     //assume the GUI will vet the name a little bit
     lock.lockForWrite();
 
@@ -76,12 +108,15 @@ void FormGPS::field_new(QString field_name) {
     lock.lockForWrite();
 
     currentFieldDirectory = field_name.trimmed();
-    SettingsManager::instance()->setValue(SETTINGS_f_currentDir, currentFieldDirectory);
+    SettingsManager::instance()->setF_currentDir(currentFieldDirectory);
     JobNew();
 
-    pn.latStart = pn.latitude;
-    pn.lonStart = pn.longitude;
-    pn.SetLocalMetersPerDegree();
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLatStart(pn.latitude);
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLonStart(pn.longitude);
+    // Phase 6.3.1: Use PropertyWrapper for safe QObject access
+    pn.SetLocalMetersPerDegree(this);
 
     FileCreateField();
     FileCreateSections();
@@ -117,7 +152,7 @@ void FormGPS::field_new_from(QString existing, QString field_name, int flags) {
     //change to new name
     currentFieldDirectory = field_name;
     qDebug() << "Before SettingsManager setValue";
-    SettingsManager::instance()->setValue(SETTINGS_f_currentDir, currentFieldDirectory);
+    SettingsManager::instance()->setF_currentDir(currentFieldDirectory);
     qDebug() << "After SettingsManager setValue";
 
     FileCreateField();
@@ -302,7 +337,8 @@ void FormGPS::LoadKMLBoundary(const std::string& filename) {
 
                     for (const auto& coord : numberSets) {
                         if (coord.length() < 3) continue;
-                        qDebug() << coord;
+                        // Qt 6.8 fix: Remove debug print causing freeze with large KML files
+                        // qDebug() << coord;
                         size_t comma1 = coord.find(',');
                         size_t comma2 = coord.find(',', comma1 + 1);
                         if (comma1 == std::string::npos || comma2 == std::string::npos) continue;
@@ -314,7 +350,8 @@ void FormGPS::LoadKMLBoundary(const std::string& filename) {
                             double easting, northing, tmp1, tmp2 = 0.0;
                             parseDouble(lonStr,lonK);
                             parseDouble(latStr,latK);
-                            pn.ConvertWGS84ToLocal(latK, lonK, northing, easting);
+                            // Phase 6.3.1: Use PropertyWrapper for safe QObject access
+                            pn.ConvertWGS84ToLocal(latK, lonK, northing, easting, this);
                             Vec3 temp(easting, northing, 0);
                             New.fenceLine.append(temp);
                         } catch (...) {
@@ -351,11 +388,13 @@ void FormGPS::LoadKMLBoundary(const std::string& filename) {
 void FormGPS::field_new_from_KML(QString field_name, QString file_name) {
     qDebug() << field_name << " " << file_name;
 
+    // Phase 6.0.4: PropertyWrapper completely removed - using Qt 6.8 Q_PROPERTY native architecture
+
         //assume the GUI will vet the name a little bit
     lock.lockForWrite();
-    FileSaveEverythingBeforeClosingField();
+    FileSaveEverythingBeforeClosingField(false);  // Don't save vehicle when creating field from KML
     currentFieldDirectory = field_name.trimmed();
-    SettingsManager::instance()->setValue(SETTINGS_f_currentDir, currentFieldDirectory);
+    SettingsManager::instance()->setF_currentDir(currentFieldDirectory);
     JobNew();
     // Convert QML file URL to local path using QUrl for robustness
     QUrl fileUrl(file_name);
@@ -371,19 +410,22 @@ void FormGPS::field_new_from_KML(QString field_name, QString file_name) {
     file_name = localPath;
     FindLatLon(file_name.toStdString());
 
-    pn.latStart = latK;
-    pn.lonStart = lonK;
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLatStart(latK);
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLonStart(lonK);
     if (timerSim.isActive())
         {
-            pn.latitude = pn.latStart;
-            pn.longitude = pn.lonStart;
+            pn.latitude = this->latStart();
+            pn.longitude = this->lonStart();
 
-            sim.latitude = pn.latStart;
-            SettingsManager::instance()->setValue(SETTINGS_gps_simLatitude, (double)pn.latStart);
-            sim.longitude = pn.lonStart;
-            SettingsManager::instance()->setValue(SETTINGS_gps_simLongitude, (double)pn.lonStart);
+            sim.latitude = this->latStart();
+            SettingsManager::instance()->setGps_simLatitude(this->latStart());
+            sim.longitude = this->lonStart();
+            SettingsManager::instance()->setGps_simLongitude(this->lonStart());
         }
-    pn.SetLocalMetersPerDegree();
+    // Phase 6.3.1: Use PropertyWrapper for safe QObject access
+    pn.SetLocalMetersPerDegree(this);
 
 
     FileCreateField();
@@ -420,4 +462,63 @@ void FormGPS::field_delete(QString field_name) {
         fieldDir.removeRecursively();
     }
     field_update_list();
+}
+
+void FormGPS::field_saveas(QString field_name) {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields";
+#else
+    QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                            + "/" + QCoreApplication::applicationName() + "/Fields";
+#endif
+
+    QDir saveDir(directoryName);
+    if (!saveDir.exists()) {
+        bool ok = saveDir.mkpath(directoryName);
+        if (!ok) {
+            qWarning() << "Couldn't create path " << directoryName;
+            return;
+        }
+    }
+
+    QString jsonFilename = directoryName + "/" + field_name + "_settings.json";
+
+    // Save current field settings to JSON for auto-sync
+    qDebug() << "Field saveas: Scheduling async saveJson:" << jsonFilename;
+    QTimer::singleShot(50, this, [this, jsonFilename, field_name]() {
+        qDebug() << "Field saveas: Executing async saveJson:" << jsonFilename;
+        SettingsManager::instance()->saveJson(jsonFilename);
+
+        // Set as active field profile for future auto-saving
+        SettingsManager::instance()->setActiveFieldProfile(jsonFilename);
+        qDebug() << "Field saveas: JSON saved and set as active profile:" << jsonFilename;
+
+        // Also save traditional .txt files (existing system)
+        // This keeps compatibility with existing Field.txt, Boundary.txt etc.
+        this->field_update_list();
+        qDebug() << "Field saveas: Field list updated";
+    });
+}
+
+void FormGPS::field_load_json(QString field_name) {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields";
+#else
+    QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                            + "/" + QCoreApplication::applicationName() + "/Fields";
+#endif
+
+    QString jsonFilename = directoryName + "/" + field_name + "_settings.json";
+
+    // Check if JSON profile exists
+    if (QFile::exists(jsonFilename)) {
+        qDebug() << "Field load JSON starting:" << jsonFilename;
+        SettingsManager::instance()->loadJson(jsonFilename);
+
+        // Set as active field profile for auto-saving
+        SettingsManager::instance()->setActiveFieldProfile(jsonFilename);
+        qDebug() << "Field JSON loaded and set as active profile:" << jsonFilename;
+    } else {
+        qDebug() << "Field JSON profile not found, using traditional .txt system:" << jsonFilename;
+    }
 }

@@ -7,7 +7,7 @@ import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Dialogs
 //import Settings
-//import AOG
+import AOG
 
 
 import ".."
@@ -95,7 +95,7 @@ Window{
 
 		function load_settings(){ 
 			if (visible) {
-                var sett = Settings.ardSteer_setting0
+                var sett = SettingsManager.ardSteer_setting0
 
 				if ((sett & 1) == 0) chkInvertWAS.checked = false;
 				else chkInvertWAS.checked = true;
@@ -129,10 +129,10 @@ Window{
 					cboxEncoder.checked = true;
 				}
 
-                nudMaxCounts.value = Settings.ardSteer_ardSteerMaxPulseCounts;
-                hsbarSensor.value = Settings.ardSteer_ardSteerMaxPulseCounts;
+                nudMaxCounts.value = SettingsManager.ardSteer_ardSteerMaxPulseCounts;
+                hsbarSensor.value = SettingsManager.ardSteer_ardSteerMaxPulseCounts;
 
-                sett = Settings.ardSteer_setting1;
+                sett = SettingsManager.ardSteer_setting1;
 
                 if ((sett & 1) == 0) cboxDanfoss.checked = false;
                 else cboxDanfoss.checked = true;
@@ -216,16 +216,16 @@ Window{
             //if ( ) sett |= set;
             //else sett &= reset;
 
-            Settings.ardSteer_setting0 = sett;
-            Settings.ardMac_isDanFoss = cboxDanfoss.checked;
+            SettingsManager.ardSteer_setting0 = sett;
+            SettingsManager.ardMac_isDanFoss = cboxDanfoss.checked;
 
             if (cboxCurrentSensor.checked || cboxPressureSensor.checked)
             {
-                Settings.ardSteer_ardSteerMaxPulseCounts = hsbarSensor.value;
+                SettingsManager.ardSteer_ardSteerMaxPulseCounts = hsbarSensor.value;
             }
             else
             {
-                Settings.ardSteer_ardSteerMaxPulseCounts = nudMaxCounts.value;
+                SettingsManager.ardSteer_ardSteerMaxPulseCounts = nudMaxCounts.value;
             }
 
             // Settings1
@@ -256,7 +256,7 @@ Window{
             if (cboxXY.currentIndex === 1) sett |= set;
             else sett &= reset;
 
-            Settings.ardSteer_setting1 = sett;
+            SettingsManager.ardSteer_setting1 = sett;
 
             //Properties.Settings.Default.Save(); not sure what happens here?? David
 
@@ -268,65 +268,65 @@ Window{
                    mf.p_251.pgn[mf.p_251.maxPulse] = Properties.Settings.Default.setArdSteer_maxPulseCounts;
                    mf.p_251.pgn[mf.p_251.minSpeed] = 5; //0.5 kmh THIS IS CHANGED IN AOG FIXES
 
-                   if (Settings.as_isConstantContourOn)
+                   if (SettingsManager.as_isConstantContourOn)
                    mf.p_251.pgn[mf.p_251.angVel] = 1;
                    else mf.p_251.pgn[mf.p_251.angVel] = 0;
                    */
-            aog.modules_send_251()
+            aog.modulesSend251() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
 
             unsaved.visible = false;
         }
         function reset_all() {
             timedMessage.addMessage(2000, "Reset To Default", "Values Set to Inital Default");
             //Settings.vehicle_maxSteerAngle = mf.vehicle_maxSteerAngle = 45; TODO
-            Settings.vehicle_maxSteerAngle = 45;
-            Settings.as_countsPerDegree = 110;
+            SettingsManager.vehicle_maxSteerAngle = 45;
+            SettingsManager.as_countsPerDegree = 110;
 
-            Settings.as_ackerman = 100;
+            SettingsManager.as_ackerman = 100;
 
-            Settings.as_wasOffset = 3;
+            SettingsManager.as_wasOffset = 3;
 
-            Settings.as_highSteerPWM = 180;
-            Settings.as_Kp = 50;
-            Settings.as_minSteerPWM = 25;
+            SettingsManager.as_highSteerPWM = 180;
+            SettingsManager.as_Kp = 50;
+            SettingsManager.as_minSteerPWM = 25;
 
-            Settings.ardSteer_setting0 = 56;
-            Settings.ardSteer_setting1 = 0;
-            Settings.ardMac_isDanFoss = false;
+            SettingsManager.ardSteer_setting0 = 56;
+            SettingsManager.ardSteer_setting1 = 0;
+            SettingsManager.ardMac_isDanFoss = false;
 
-            Settings.ardSteer_ardSteerMaxPulseCounts = 3;
+            SettingsManager.ardSteer_maxPulseCounts = 3;
 
-            Settings.vehicle_goalPointAcquireFactor = 0.85;
-            Settings.vehicle_goalPointLookAheadHold = 3;
-            Settings.vehicle_goalPointLookAheadMult = 1.5;
+            SettingsManager.vehicle_goalPointAcquireFactor = 0.85;
+            SettingsManager.vehicle_goalPointLookAheadHold = 3;
+            SettingsManager.vehicle_goalPointLookAheadMult = 1.5;
 
-            Settings.vehicle_stanleyHeadingErrorGain = 1;
-            Settings.vehicle_stanleyDistanceErrorGain = 1;
-            Settings.vehicle_stanleyIntegralGainAB = 0;
+            SettingsManager.vehicle_stanleyHeadingErrorGain = 1;
+            SettingsManager.vehicle_stanleyDistanceErrorGain = 1;
+            SettingsManager.vehicle_stanleyIntegralGainAB = 0;
 
-            Settings.vehicle_purePursuitIntegralGainAB = 0;
+            SettingsManager.vehicle_purePursuitIntegralGainAB = 0;
 
-            Settings.as_sideHillCompensation = 0;
+            SettingsManager.as_sideHillCompensation = 0;
 
-            Settings.as_uTurnCompensation = 1;
+            SettingsManager.as_uTurnCompensation = 1;
 
-            Settings.imu_invertRoll = false;
+            SettingsManager.imu_invertRoll = false;
 
-            Settings.imu_rollZero = 0;
+            SettingsManager.imu_rollZero = 0;
 
-            Settings.as_minSteerSpeed = 0;
-            Settings.as_maxSteerSpeed = 15;
-            Settings.as_functionSpeedLimit = 12;
-            Settings.display_lightbarCmPerPixel = 5;
-            Settings.display_lineWidth = 2;
-            Settings.as_snapDistance = 20;
-            Settings.as_guidanceLookAheadTime = 1.5;
-            Settings.as_uTurnCompensation = 1;
+            SettingsManager.as_minSteerSpeed = 0;
+            SettingsManager.as_maxSteerSpeed = 15;
+            SettingsManager.as_functionSpeedLimit = 12;
+            SettingsManager.display_lightbarCmPerPixel = 5;
+            SettingsManager.display_lineWidth = 2;
+            SettingsManager.as_snapDistance = 20;
+            SettingsManager.as_guidanceLookAheadTime = 1.5;
+            SettingsManager.as_uTurnCompensation = 1;
 
-            Settings.vehicle_isStanleyUsed = false;
+            SettingsManager.vehicle_isStanleyUsed = false;
             //mf.isStanleyUsed = false; TODO
 
-            Settings.as_isSteerInReverse = false;
+            SettingsManager.as_isSteerInReverse = false;
             //mf.isSteerInReverse = false; TODO
 
             //save current vehicle
@@ -581,7 +581,7 @@ Window{
             anchors.fill: parent
             function show(){
                 settingsWindow.visible = true
-                stanleyPure.isChecked = !Settings.vehicle_isStanleyUsed
+                stanleyPure.isChecked = !SettingsManager.vehicle_isStanleyUsed
             }
 
             Column {
@@ -597,8 +597,8 @@ Window{
                     centerTopText: qsTr("UTurn Compensation")
                     from: 2
                     to: 20
-                    value: Settings.as_uTurnCompensation * 10
-                    onValueChanged: Settings.as_uTurnCompensation = (value / 10)
+                    value: SettingsManager.as_uTurnCompensation * 10
+                    onValueChanged: SettingsManager.as_uTurnCompensation = (value / 10)
                     leftText: value - 10
                 }
                 SliderCustomized {
@@ -608,8 +608,8 @@ Window{
                     from: 0.00
                     to:1.00
                     stepSize: .01
-                    value: Settings.as_sideHillCompensation
-                    onValueChanged: Settings.as_sideHillCompensation = value
+                    value: SettingsManager.as_sideHillCompensation
+                    onValueChanged: SettingsManager.as_sideHillCompensation = value
                 }
                 Row{
                     spacing: 30 * theme.scaleWidth
@@ -618,16 +618,16 @@ Window{
                         text: qsTr("Stanley/Pure")
                         //stanleyPure.isChecked: !Settings.vehicle_isStanleyUsed
                         checkable: true
-                        onCheckedChanged: Settings.vehicle_isStanleyUsed = !checked
+                        onCheckedChanged: SettingsManager.vehicle_isStanleyUsed = !checked
                         colorChecked: "white"
                         icon.source: prefix + "/images/ModeStanley.png"
                         iconChecked: prefix + "/images/ModePurePursuit.png"
                     }
                     IconButtonColor {
                         text: qsTr("Steer In Reverse?")
-                        isChecked: Settings.as_isSteerInReverse
+                        isChecked: SettingsManager.as_isSteerInReverse
                         checkable: true
-                        onCheckedChanged: Settings.as_isSteerInReverse = checked
+                        onCheckedChanged: SettingsManager.as_isSteerInReverse = checked
                         icon.source: prefix + "/images/Config/ConV_RevSteer.png"
                     }
                 }
@@ -665,8 +665,8 @@ Window{
                     from: 0
                     to: 20
                     editable: true
-                    boundValue: Settings.as_functionSpeedLimit
-                    onValueModified: Settings.as_functionSpeedLimit = value
+                    boundValue: SettingsManager.as_functionSpeedLimit
+                    onValueModified: SettingsManager.as_functionSpeedLimit = value
                     Layout.alignment: Qt.AlignCenter
                 }
                 Text{ text: qsTr(Utils.speed_unit()); Layout.alignment: Qt.AlignCenter}
@@ -683,8 +683,8 @@ Window{
                     from: 0
                     to: 50
                     editable: true
-                    boundValue: Settings.as_minSteerSpeed
-                    onValueModified: Settings.as_minSteerSpeed = value
+                    boundValue: SettingsManager.as_minSteerSpeed
+                    onValueModified: SettingsManager.as_minSteerSpeed = value
                     Layout.alignment: Qt.AlignCenter
                 }
                 Text{ text: qsTr(Utils.speed_unit()); Layout.alignment: Qt.AlignCenter}
@@ -701,8 +701,8 @@ Window{
                     from: 0
                     to: 50
                     editable: true
-                    boundValue: Settings.as_maxSteerSpeed
-                    onValueModified: Settings.as_maxSteerSpeed = value
+                    boundValue: SettingsManager.as_maxSteerSpeed
+                    onValueModified: SettingsManager.as_maxSteerSpeed = value
                     Layout.alignment: Qt.AlignCenter
                 }
                 Text{ text: qsTr(Utils.speed_unit()); Layout.alignment: Qt.AlignCenter}
@@ -722,8 +722,8 @@ Window{
                     from: 5
                     to: 100
                     editable: true
-                    value: Utils.radians_to_deg(Settings.vehicle_maxAngularVelocity) // should be in radians!
-                    onValueChanged: Settings.vehicle_maxAngularVelocity = Utils.deg_to_radians(value)
+                    value: Utils.radians_to_deg(SettingsManager.vehicle_maxAngularVelocity) // should be in radians!
+                    onValueChanged: SettingsManager.vehicle_maxAngularVelocity = Utils.deg_to_radians(value)
                 }
                 Text{ text: qsTr("Degrees/sec"); Layout.alignment: Qt.AlignCenter}
             }
@@ -766,8 +766,8 @@ Window{
                                 anchors.leftMargin: 10
                                 from: 0
                                 to: 15
-                                boundValue: Settings.display_lightbarCmPerPixel
-                                onValueModified: Settings.display_lightbarCmPerPixel = value
+                                boundValue: SettingsManager.display_lightbarCmPerPixel
+                                onValueModified: SettingsManager.display_lightbarCmPerPixel = value
                                 editable: true
                                 text: Utils.cm_unit() + " " + qsTr("per pixel","As in units per pixel")
                             }
@@ -828,8 +828,8 @@ Window{
                         anchors.leftMargin: 10 * theme.scaleWidth
                         from: 1
                         to: 8
-                        boundValue: Settings.display_lineWidth
-                        onValueModified: Settings.display_lineWidth = value
+                        boundValue: SettingsManager.display_lineWidth
+                        onValueModified: SettingsManager.display_lineWidth = value
                         text: qsTr("pixels")
                         editable: true
                     }
@@ -871,8 +871,8 @@ Window{
                         anchors.leftMargin: 10 * theme.scaleWidth
                         from: 0
                         to: 1000
-                        boundValue: Settings.as_snapDistance
-                        onValueModified: Settings.as_snapDistance = value
+                        boundValue: SettingsManager.as_snapDistance
+                        onValueModified: SettingsManager.as_snapDistance = value
                         editable: true
                         text: Utils.cm_unit()
                     }
@@ -890,8 +890,8 @@ Window{
                 checkable: true
                 visible: false
                 color: "red"
-                isChecked: Settings.as_isAutoSteerAutoOn
-                onCheckableChanged: Settings.as_isAutoSteerAutoOn = checked
+                isChecked: SettingsManager.as_isAutoSteerAutoOn
+                onCheckableChanged: SettingsManager.as_isAutoSteerAutoOn = checked
                 //text: qsTr("Steer Switch Control")
                 font.pixelSize:15
                 implicitWidth: 120 * theme.scaleWidth
@@ -940,8 +940,8 @@ Window{
                         anchors.leftMargin: 10 * theme.scaleWidth
                         from: 0.1
                         to: 10
-                        boundValue: Settings.as_guidanceLookAheadTime
-                        onValueModified: Settings.as_guidanceLookAheadTime = value
+                        boundValue: SettingsManager.as_guidanceLookAheadTime
+                        onValueModified: SettingsManager.as_guidanceLookAheadTime = value
                         editable: true
                         text: qsTr("Seconds")
                         decimals: 1
@@ -997,7 +997,7 @@ Window{
             icon.source: prefix + "/images/ToolAcceptChange.png"
             implicitWidth: 130
             onClicked: { settingsArea.save_settings() ; unsaved.visible = false ;
-            aog.settings_reload();}
+            aog.settingsReload();} // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         }
         IconButtonTransparent{
             icon.source: prefix + "/images/SwitchOff.png"

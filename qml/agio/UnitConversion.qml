@@ -3,11 +3,14 @@
 //
 //
 import QtQuick
-// 
+//
 //a collection of functions to do unit and coordinate conversions
 
 Item {
     id: unit_conversions
+
+    // Qt 6.8 QProperty + BINDABLE: Use SettingsManager interface instead of direct AgIOService access
+    property bool isMetricMode: true  // Default to metric, will be updated via setProperty() from C++
 
     function isTrue(value) {
         return (value === true ||
@@ -104,7 +107,7 @@ Item {
     }
 
     function isMetric() {
-        return (AgIOService.setMenu_isMetric === true || AgIOService.setMenu_isMetric === "true")
+        return isMetricMode
     }
 
     function speed_unit() {
@@ -376,7 +379,7 @@ Item {
     //     repeat: true
     //     running: true
     //     onTriggered: {
-    //         if(! AgIOService.aogConnected){
+    //         if(! SettingsManager.aogConnected){
     //             closeAgIO.open()
     //             repeat = false
     //         }

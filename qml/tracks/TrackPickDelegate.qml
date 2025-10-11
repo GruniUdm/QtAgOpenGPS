@@ -2,7 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 // Interface import removed - now QML_SINGLETON
-//import AOG
+import AOG
+import "../"
 
 RadioDelegate {
     id: trackDelegate
@@ -16,7 +17,7 @@ RadioDelegate {
 
 
     property double controlWidth: width
-    width: parent.width - scrollbar_width
+    width: parent ? parent.width - scrollbar_width : 100
 
     contentItem: RowLayout {
         anchors.left: parent.left
@@ -40,7 +41,7 @@ RadioDelegate {
                 text: trackDelegate.name
                 font: trackDelegate.font
                 opacity: enabled ? 1.0 : 0.3
-                color: aog.textColor
+                color: aogInterface.textColor
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
             }
@@ -63,7 +64,7 @@ RadioDelegate {
 
     background: Rectangle {
         visible: trackDelegate.down || trackDelegate.highlighted || trackDelegate.checked
-        color: trackDelegate.checked ? aog.borderColor : aog.backgroundColor
+        color: trackDelegate.checked ? aogInterface.borderColor : aogInterface.backgroundColor
     }
 }
 

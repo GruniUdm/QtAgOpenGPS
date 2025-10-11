@@ -20,7 +20,7 @@ Drawer {
     modal: true
 
     onVisibleChanged: {
-        fieldInterface.field_update_list()
+        aog.fieldUpdateList() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
     }
 
     contentItem: Rectangle{
@@ -84,12 +84,13 @@ Drawer {
                 isChecked: false
                 text: qsTr("Resume")
                 icon.source: prefix + "/images/FilePrevious.png"
-                enabled: Settings.f_currentDir !== "Default" && !aog.isJobStarted
+                // Threading Phase 1: Resume field enable check
+                enabled: SettingsManager.f_currentDir !== "Default" && !aog.isJobStarted
                 onEnabledChanged: fieldToResumeText.visible = enabled
 
                 onClicked: {
                     fieldMenu.visible = false
-                    fieldInterface.field_open(Settings.f_currentDir)
+                    aog.fieldOpen(SettingsManager.f_currentDir) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 }
                 Text{ //show which field will be enabled
                     id: fieldToResumeText
@@ -99,7 +100,8 @@ Drawer {
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 5
                     font.pixelSize: 20
-                    text: Settings.f_currentDir
+                    // Threading Phase 1: Current field directory display
+                    text: SettingsManager.f_currentDir
                 }
             }
             IconButtonTextBeside{
@@ -109,7 +111,7 @@ Drawer {
                 icon.source: prefix + "/images/FileClose.png"
                 enabled: aog.isJobStarted
                 onClicked: {
-                    fieldInterface.field_close()
+                    aog.fieldClose() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     fieldMenu.visible = false
                 }
 

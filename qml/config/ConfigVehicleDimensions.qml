@@ -14,15 +14,19 @@ import "../components"
 
 Rectangle{
     id: configTractorDimensions
+    objectName: "configVehicleDimensions"
     anchors.fill: parent
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
 
     visible: false
+
+    // Qt 6.8 QProperty + BINDABLE: Direct binding to SettingsManager (no local properties needed)
     Image {
         id: dimImage
-        source: Number(Settings.vehicle_vehicleType) === 0 ? prefix + "/images/RadiusWheelBase.png":
-                Number(Settings.vehicle_vehicleType) === 1 ? prefix + "/images/RadiusWheelBaseHarvester.png" :
-                Number(Settings.vehicle_vehicleType) === 2 ? prefix + "/images/RadiusWheelBase4WD.png":
+        // Threading Phase 1: Vehicle type dependent image selection (direct SettingsManager binding)
+        source: SettingsManager.vehicle_vehicleType === 0 ? prefix + "/images/RadiusWheelBase.png":
+                SettingsManager.vehicle_vehicleType === 1 ? prefix + "/images/RadiusWheelBaseHarvester.png" :
+                SettingsManager.vehicle_vehicleType === 2 ? prefix + "/images/RadiusWheelBase4WD.png":
                 prefix + "/images/Config/ConSt_Mandatory.png"
         anchors.fill: parent
         anchors.margins: 15
@@ -35,8 +39,9 @@ Rectangle{
         anchors.bottomMargin: dimImage.height *.15
         from: 20
         to: 787
-        boundValue: Settings.vehicle_wheelbase
-        onValueModified: Settings.vehicle_wheelbase = value
+        // Threading Phase 1: Vehicle wheelbase dimension (direct SettingsManager binding)
+        boundValue: SettingsManager.vehicle_wheelbase
+        onValueModified: SettingsManager.vehicle_wheelbase = value
         text: qsTr("Wheelbase")
     }
     SpinBoxCM{
@@ -46,8 +51,9 @@ Rectangle{
         anchors.right: dimImage.right
         from: 50
         to: 9999
-        boundValue: Settings.vehicle_trackWidth
-        onValueModified: Settings.vehicle_trackWidth = value
+        // Threading Phase 1: Vehicle track width dimension (direct SettingsManager binding)
+        boundValue: SettingsManager.vehicle_trackWidth
+        onValueModified: SettingsManager.vehicle_trackWidth = value
         text: qsTr("Track")
     }
     SpinBoxCM{
@@ -57,8 +63,9 @@ Rectangle{
         anchors.right: dimImage.right
         from: 50
         to: 9999
-        boundValue: Settings.vehicle_minTurningRadius
-        onValueModified: Settings.vehicle_minTurningRadius = value
+        // Threading Phase 1: Vehicle minimum turning radius (direct SettingsManager binding)
+        boundValue: SettingsManager.vehicle_minTurningRadius
+        onValueModified: SettingsManager.vehicle_minTurningRadius = value
         text: qsTr("Turn Radius")
     }
     SpinBoxCM{
@@ -67,8 +74,10 @@ Rectangle{
         anchors.left: dimImage.left
         from: 10
         to:3000
-        boundValue: Settings.vehicle_hitchLength < 0 ? -Settings.vehicle_hitchLength : Settings.vehicle_hitchLength
-        onValueModified: Settings.vehicle_hitchLength = -value
-        visible: Settings.tool_isToolTrailing
+        // Threading Phase 1: Vehicle hitch length (absolute value, direct SettingsManager binding)
+        boundValue: SettingsManager.vehicle_hitchLength < 0 ? -SettingsManager.vehicle_hitchLength : SettingsManager.vehicle_hitchLength
+        onValueModified: SettingsManager.vehicle_hitchLength = -value
+        // Threading Phase 1: Hitch visibility for trailing tools (direct SettingsManager binding)
+        visible: SettingsManager.tool_isToolTrailing
     }
 }

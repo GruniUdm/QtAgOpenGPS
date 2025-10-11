@@ -10,7 +10,6 @@
 #include "cboundarylist.h"
 #include "btnenum.h"
 #include <QObject>
-#include "interfaceproperty.h"
 
 
 class QOpenGLFunctions;
@@ -40,11 +39,9 @@ public:
 
     QVector<Vec3> bndBeingMadePts;
 
-    InterfaceProperty<BoundaryInterface,double> createBndOffset = InterfaceProperty<BoundaryInterface,double>("createBndOffset");
     //InterfaceProperty<BoundaryInterface,bool> isBndBeingMade = InterfaceProperty<BoundaryInterface,bool>("isBndBeingMade");
     bool isBndBeingMade = false;
 
-    InterfaceProperty<BoundaryInterface,bool> isDrawRightSide = InterfaceProperty<BoundaryInterface,bool>("isDrawRightSide");
     bool isOkToAddPoints = false;
 
     int closestFenceNum;
@@ -61,7 +58,6 @@ public:
     Vec3 closestTurnPt = Vec3(-10000, -10000, 9);
     Vec3 closePt;
 
-    InterfaceProperty<BoundaryInterface,bool> isHeadlandOn = InterfaceProperty<BoundaryInterface,bool>("isHeadlandOn");
     bool isToolInHeadland, isToolOuterPointsInHeadland, isSectionControlledByHeadland;
 
 
@@ -71,12 +67,12 @@ public:
     //CFence.cs
     bool IsPointInsideFenceArea(Vec3 testPoint) const ;
     bool IsPointInsideFenceArea(Vec2 testPoint) const;
-    void DrawFenceLines(const CVehicle &v, const CModuleComm &mc, QOpenGLFunctions *g, const QMatrix4x4 &mvp);
+    void DrawFenceLines(const CVehicle &v, const CModuleComm &mc, QOpenGLFunctions *g, const QMatrix4x4 &mvp, QObject *mainWindow);
 
     //CTurn.sh
     int IsPointInsideTurnArea(Vec3 pt) const;
     void FindClosestTurnPoint(const CABLine &abline, Vec3 fromPt);
-    void BuildTurnLines(CFieldData &fd);
+    void BuildTurnLines(CFieldData &fd, QObject *mainWindow, class FormGPS *formGPS);
 
     //CHead.cs
     void SetHydPosition(btnStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle); //TODO sounds, p_239

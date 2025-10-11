@@ -9,7 +9,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 //import Settings
 import Qt.labs.folderlistmodel
-//import AOG
+import AOG
 
 
 import ".."
@@ -38,8 +38,8 @@ Dialog {
 
     Rectangle{
         id: configMain
-        color: aog.borderColor
-        border.color: aog.blackDayWhiteNight
+        color: aogInterface.borderColor
+        border.color: aogInterface.blackDayWhiteNight
         border.width: 8 * theme.scaleWidth
         visible: true
         anchors.fill: parent
@@ -230,7 +230,7 @@ Dialog {
 
         Rectangle{
             id:bottomLine
-            color: aog.borderColor
+            color: aogInterface.borderColor
             visible: true
             width: parent.width - 16
             height:80 * theme.scaleHeight
@@ -247,7 +247,7 @@ Dialog {
             }
             TextLine {
                 id: sections
-                text: Utils.m_to_ft_string(Settings.vehicle_toolWidth)
+                text: Utils.m_to_ft_string(SettingsManager.vehicle_toolWidth)
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: saveAndClose.left
                 anchors.rightMargin: 80
@@ -267,11 +267,12 @@ Dialog {
 
                     //TODO, have to do this if rejected() also.
 
-                    if ((Utils.isTrue(Settings.tool_isToolFront) && Number(Settings.vehicle_hitchLength < 0)) ||
-                            (!Utils.isTrue(Settings.tool_isToolFront) && Number(Settings.vehicle_hitchLength) > 0)) {
+                    // Threading Phase 1: Tool position and hitch length validation
+                    if ((SettingsManager.tool_isToolFront && Number(SettingsManager.vehicle_hitchLength < 0)) ||
+                            (!SettingsManager.tool_isToolFront && Number(SettingsManager.vehicle_hitchLength) > 0)) {
                         //if front-mounted tool, make sure the hitchLength is positive and if rear-mounted, make sure
                         //hitchLength is negative
-                        Settings.vehicle_hitchLength = -Number(Settings.vehicle_hitchLength)
+                        SettingsManager.vehicle_hitchLength = -Number(SettingsManager.vehicle_hitchLength)
                         //console.debug("corrected sign on hitchLength")
                     }
 
@@ -286,7 +287,8 @@ Dialog {
             anchors.left: leftColumnView.right
             anchors.bottom: bottomLine.top
             anchors.rightMargin: 8
-            color: aog.backgroundColor
+            color: aogInterface.backgroundColor
+            border.width: 1
             border.color: "lime"
         }
         ConfigVehiclePicker{
@@ -333,25 +335,25 @@ Dialog {
             id:configImplementFrontDimensions
             anchors.fill: mainConfig
             anchors.margins:1
-            visible: implementMenu.visible && configImpDim.checked && Settings.tool_isToolFront
+            visible: implementMenu.visible && configImpDim.checked && SettingsManager.tool_isToolFront
         }
         ConfigImplementRearDimensions{
             id:configImplementRearDimensions
             anchors.fill: mainConfig
             anchors.margins:1
-            visible: implementMenu.visible && configImpDim.checked && Settings.tool_isToolRearFixed
+            visible: implementMenu.visible && configImpDim.checked && SettingsManager.tool_isToolRearFixed
         }
         ConfigImplementTBTDimensions{
             id:configImplementTBTDimensions
             anchors.fill: mainConfig
             anchors.margins:1
-            visible: implementMenu.visible && configImpDim.checked && Settings.tool_isTBT
+            visible: implementMenu.visible && configImpDim.checked && SettingsManager.tool_isTBT
         }
         ConfigImplementTrailingDimensions{
             id:configImplementTrailingDimensions
             anchors.fill: mainConfig
             anchors.margins:1
-            visible: implementMenu.visible && configImpDim.checked && Settings.tool_isToolTrailing && !Settings.tool_isTBT
+            visible: implementMenu.visible && configImpDim.checked && SettingsManager.tool_isToolTrailing && !SettingsManager.tool_isTBT
         }
         ConfigImplementAxle{
             id:configImplementAxle

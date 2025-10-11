@@ -1,13 +1,19 @@
 // Test QML file to validate AgIOService singleton access
 import QtQuick 2.15
+import "agio"
 
 Rectangle {
     id: agioTestWindow
     width: 400
     height: 300
     color: "#2E3440"
-    
+
     visible: false // Hidden by default
+
+    // Qt 6.8 QProperty + BINDABLE: Use AgIOInterface instead of direct AgIOService access
+    AgIOInterface {
+        id: agioInterface
+    }
     
     Text {
         id: titleText
@@ -31,44 +37,43 @@ Rectangle {
         }
         
         Text {
-            text: "GPS Connected: " + (typeof AgIOService !== 'undefined' ? AgIOService.gpsConnected : "N/A")
+            text: "GPS Connected: " + (typeof AgIOService !== 'undefined' ? agioInterface.gpsConnected : "N/A")
             color: "white"
             font.pixelSize: 14
         }
         
         Text {
-            text: "Latitude: " + (typeof AgIOService !== 'undefined' ? AgIOService.latitude.toFixed(6) : "N/A")
+            text: "Latitude: " + (typeof AgIOService !== 'undefined' ? agioInterface.latitude.toFixed(6) : "N/A")
             color: "white"
             font.pixelSize: 14
         }
         
         Text {
-            text: "Longitude: " + (typeof AgIOService !== 'undefined' ? AgIOService.longitude.toFixed(6) : "N/A")
+            text: "Longitude: " + (typeof AgIOService !== 'undefined' ? agioInterface.longitude.toFixed(6) : "N/A")
             color: "white"
             font.pixelSize: 14
         }
         
         Text {
-            text: "Heading: " + (typeof AgIOService !== 'undefined' ? AgIOService.heading.toFixed(1) + "°" : "N/A")
+            text: "Heading: " + (typeof AgIOService !== 'undefined' ? agioInterface.heading.toFixed(1) + "°" : "N/A")  // Rectangle Pattern: direct property access
             color: "white"
             font.pixelSize: 14
         }
         
         Text {
-            text: "IMU Roll: " + (typeof AgIOService !== 'undefined' ? AgIOService.imuRoll.toFixed(1) + "°" : "N/A")
+            text: "IMU Roll: " + (typeof AgIOService !== 'undefined' ? agioInterface.imuRoll.toFixed(1) + "°" : "N/A")
             color: "white"
             font.pixelSize: 14
         }
         
         Text {
-            text: "Vehicle XY: " + (typeof AgIOService !== 'undefined' ? 
-                "(" + AgIOService.vehicle_xy.x.toFixed(0) + ", " + AgIOService.vehicle_xy.y.toFixed(0) + ")" : "N/A")
+            text: "Vehicle XY: " + (typeof AgIOService !== 'undefined' ? "N/A - Use AOGInterface" : "N/A")
             color: "white"
             font.pixelSize: 14
         }
         
         Text {
-            text: "NTRIP Status: " + (typeof AgIOService !== 'undefined' ? AgIOService.ntripStatusText : "N/A")
+            text: "NTRIP Status: " + (typeof AgIOService !== 'undefined' ? agioInterface.ntripStatusText : "N/A")
             color: "white"
             font.pixelSize: 14
         }
@@ -126,13 +131,13 @@ Rectangle {
     Connections {
         target: typeof AgIOService !== 'undefined' ? AgIOService : null
         function onGpsDataChanged() {
-            console.log("GPS data updated:", AgIOService.latitude, AgIOService.longitude)
+            console.log("GPS data updated:", agioInterface.latitude, agioInterface.longitude)
         }
         function onGpsStatusChanged() {
-            console.log("GPS status changed:", AgIOService.gpsConnected)
+            console.log("GPS status changed:", agioInterface.gpsConnected)
         }
         function onImuDataChanged() {
-            console.log("IMU data updated:", AgIOService.imuRoll)
+            console.log("IMU data updated:", agioInterface.imuRoll)
         }
     }
     
@@ -142,7 +147,7 @@ Rectangle {
         
         if (typeof AgIOService !== 'undefined') {
             console.log("AgIOService properties:")
-            console.log("  GPS Connected:", AgIOService.gpsConnected)
+            console.log("  GPS Connected:", agioInterface.gpsConnected)
             console.log("  Current Thread Test:")
             AgIOService.testThreadCommunication()
         } else {

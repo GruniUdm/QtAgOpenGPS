@@ -5,9 +5,13 @@
 #include <QRgb>
 #include <QQmlEngine>
 #include <QJSEngine>
+#include <QStandardPaths>
+#include <QDir>
+#include <QCoreApplication>
 #include "classes/settingsmanager.h"
 #include "ccamera.h"
 #include "cboundary.h"
+#include "qmlutil.h"
 #include "ctool.h"
 #include "glm.h"
 #include "glutils.h"
@@ -51,105 +55,112 @@ QRect find_bounding_box(int viewport_height, QVector3D p1, QVector3D p2, QVector
 
 void CVehicle::loadSettings()
 {
-    vehicleType = SettingsManager::instance()->value(SETTINGS_vehicle_vehicleType).value<int>();
+    vehicleType = SettingsManager::instance()->vehicle_vehicleType();
 
-    isPivotBehindAntenna = SettingsManager::instance()->value(SETTINGS_vehicle_isPivotBehindAntenna).value<bool>();
-    isSteerAxleAhead = SettingsManager::instance()->value(SETTINGS_vehicle_isSteerAxleAhead).value<bool>();
+    isPivotBehindAntenna = SettingsManager::instance()->vehicle_isPivotBehindAntenna();
+    isSteerAxleAhead = SettingsManager::instance()->vehicle_isSteerAxleAhead();
 
-    antennaHeight = SettingsManager::instance()->value(SETTINGS_vehicle_antennaHeight).value<double>();
-    antennaPivot = SettingsManager::instance()->value(SETTINGS_vehicle_antennaPivot).value<double>();
-    antennaOffset = SettingsManager::instance()->value(SETTINGS_vehicle_antennaOffset).value<double>();
+    antennaHeight = SettingsManager::instance()->vehicle_antennaHeight();
+    antennaPivot = SettingsManager::instance()->vehicle_antennaPivot();
+    antennaOffset = SettingsManager::instance()->vehicle_antennaOffset();
 
-    trackWidth = SettingsManager::instance()->value(SETTINGS_vehicle_trackWidth).value<double>();
-    wheelbase = SettingsManager::instance()->value(SETTINGS_vehicle_wheelbase).value<double>();
+    trackWidth = SettingsManager::instance()->vehicle_trackWidth();
+    wheelbase = SettingsManager::instance()->vehicle_wheelbase();
 
-    maxAngularVelocity = SettingsManager::instance()->value(SETTINGS_vehicle_maxAngularVelocity).value<double>();
-    maxSteerAngle = SettingsManager::instance()->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
-    slowSpeedCutoff = SettingsManager::instance()->value(SETTINGS_vehicle_slowSpeedCutoff).value<double>();
-    panicStopSpeed = SettingsManager::instance()->value(SETTINGS_vehicle_panicStopSpeed).value<double>();
+    maxAngularVelocity = SettingsManager::instance()->vehicle_maxAngularVelocity();
+    maxSteerAngle = SettingsManager::instance()->vehicle_maxSteerAngle();
+    slowSpeedCutoff = SettingsManager::instance()->vehicle_slowSpeedCutoff();
+    panicStopSpeed = SettingsManager::instance()->vehicle_panicStopSpeed();
 
-    hydLiftLookAheadTime = SettingsManager::instance()->value(SETTINGS_vehicle_hydraulicLiftLookAhead).value<double>();
+    hydLiftLookAheadTime = SettingsManager::instance()->vehicle_hydraulicLiftLookAhead();
 
-    goalPointLookAhead = SettingsManager::instance()->value(SETTINGS_vehicle_goalPointLookAhead).value<double>();
-    goalPointLookAheadHold = SettingsManager::instance()->value(SETTINGS_vehicle_goalPointLookAheadHold).value<double>();
-    goalPointLookAheadMult = SettingsManager::instance()->value(SETTINGS_vehicle_goalPointLookAheadMult).value<double>();
+    goalPointLookAhead = SettingsManager::instance()->vehicle_goalPointLookAhead();
+    goalPointLookAheadHold = SettingsManager::instance()->vehicle_goalPointLookAheadHold();
+    goalPointLookAheadMult = SettingsManager::instance()->vehicle_goalPointLookAheadMult();
 
-    stanleyDistanceErrorGain = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyDistanceErrorGain).value<double>();
-    stanleyHeadingErrorGain = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyHeadingErrorGain).value<double>();
-    stanleyIntegralGainAB = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyIntegralGainAB).value<double>();
-    stanleyIntegralDistanceAwayTriggerAB = SettingsManager::instance()->value(SETTINGS_vehicle_stanleyIntegralDistanceAwayTriggerAB).value<double>();
-    purePursuitIntegralGain = SettingsManager::instance()->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
+    stanleyDistanceErrorGain = SettingsManager::instance()->vehicle_stanleyDistanceErrorGain();
+    stanleyHeadingErrorGain = SettingsManager::instance()->vehicle_stanleyHeadingErrorGain();
+    stanleyIntegralGainAB = SettingsManager::instance()->vehicle_stanleyIntegralGainAB();
+    stanleyIntegralDistanceAwayTriggerAB = SettingsManager::instance()->vehicle_stanleyIntegralDistanceAwayTriggerAB();
+    purePursuitIntegralGain = SettingsManager::instance()->vehicle_purePursuitIntegralGainAB();
 
     //how far from line before it becomes Hold
-    modeXTE = SettingsManager::instance()->value(SETTINGS_as_modeXTE).value<double>();
+    modeXTE = SettingsManager::instance()->as_modeXTE();
 
     //how long before hold is activated
-    modeTime = SettingsManager::instance()->value(SETTINGS_as_modeTime).value<int>();
+    modeTime = SettingsManager::instance()->as_modeTime();
 
-    functionSpeedLimit = SettingsManager::instance()->value(SETTINGS_as_functionSpeedLimit).value<double>();
-    maxSteerSpeed = SettingsManager::instance()->value(SETTINGS_as_maxSteerSpeed).value<double>();
-    minSteerSpeed = SettingsManager::instance()->value(SETTINGS_as_minSteerSpeed).value<double>();
+    functionSpeedLimit = SettingsManager::instance()->as_functionSpeedLimit();
+    maxSteerSpeed = SettingsManager::instance()->as_maxSteerSpeed();
+    minSteerSpeed = SettingsManager::instance()->as_minSteerSpeed();
 
-    uturnCompensation = SettingsManager::instance()->value(SETTINGS_as_uTurnCompensation).value<double>();
+    uturnCompensation = SettingsManager::instance()->as_uTurnCompensation();
 }
 
 void CVehicle::saveSettings()
 {
     // Save all vehicle settings to SettingsManager (mirror of loadSettings)
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_vehicleType, vehicleType);
+    SettingsManager::instance()->setVehicle_vehicleType(vehicleType);
 
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_isPivotBehindAntenna, isPivotBehindAntenna);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_isSteerAxleAhead, isSteerAxleAhead);
+    SettingsManager::instance()->setVehicle_isPivotBehindAntenna(isPivotBehindAntenna);
+    SettingsManager::instance()->setVehicle_isSteerAxleAhead(isSteerAxleAhead);
 
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_antennaHeight, antennaHeight);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_antennaPivot, antennaPivot);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_antennaOffset, antennaOffset);
+    SettingsManager::instance()->setVehicle_antennaHeight(antennaHeight);
+    SettingsManager::instance()->setVehicle_antennaPivot(antennaPivot);
+    SettingsManager::instance()->setVehicle_antennaOffset(antennaOffset);
 
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_trackWidth, trackWidth);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_wheelbase, wheelbase);
+    SettingsManager::instance()->setVehicle_trackWidth(trackWidth);
+    SettingsManager::instance()->setVehicle_wheelbase(wheelbase);
 
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_maxAngularVelocity, maxAngularVelocity);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_maxSteerAngle, maxSteerAngle);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_slowSpeedCutoff, slowSpeedCutoff);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_panicStopSpeed, panicStopSpeed);
+    SettingsManager::instance()->setVehicle_maxAngularVelocity(maxAngularVelocity);
+    SettingsManager::instance()->setVehicle_maxSteerAngle(maxSteerAngle);
+    SettingsManager::instance()->setVehicle_slowSpeedCutoff(slowSpeedCutoff);
+    SettingsManager::instance()->setVehicle_panicStopSpeed(panicStopSpeed);
 
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_hydraulicLiftLookAhead, hydLiftLookAheadTime);
+    SettingsManager::instance()->setVehicle_hydraulicLiftLookAhead(hydLiftLookAheadTime);
 
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_goalPointLookAhead, goalPointLookAhead);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_goalPointLookAheadHold, goalPointLookAheadHold);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_goalPointLookAheadMult, goalPointLookAheadMult);
+    // ⚡ PHASE 6.0.20 FIX 3: Do NOT overwrite Pure Pursuit settings
+    // These are already updated by QML → SettingsManager directly
+    // Writing member variables (loaded at startup) would overwrite QML changes
+    // REMOVED: setVehicle_goalPointLookAhead(goalPointLookAhead);
+    // REMOVED: setVehicle_goalPointLookAheadHold(goalPointLookAheadHold);
+    // REMOVED: setVehicle_goalPointLookAheadMult(goalPointLookAheadMult);
 
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_stanleyDistanceErrorGain, stanleyDistanceErrorGain);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_stanleyHeadingErrorGain, stanleyHeadingErrorGain);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_stanleyIntegralGainAB, stanleyIntegralGainAB);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_stanleyIntegralDistanceAwayTriggerAB, stanleyIntegralDistanceAwayTriggerAB);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_purePursuitIntegralGainAB, purePursuitIntegralGain);
+    SettingsManager::instance()->setVehicle_stanleyDistanceErrorGain(stanleyDistanceErrorGain);
+    SettingsManager::instance()->setVehicle_stanleyHeadingErrorGain(stanleyHeadingErrorGain);
+    SettingsManager::instance()->setVehicle_stanleyIntegralGainAB(stanleyIntegralGainAB);
+    SettingsManager::instance()->setVehicle_stanleyIntegralDistanceAwayTriggerAB(stanleyIntegralDistanceAwayTriggerAB);
+    // ⚡ PHASE 6.0.20 FIX 3: Do NOT overwrite purePursuitIntegralGainAB
+    // REMOVED: setVehicle_purePursuitIntegralGainAB(purePursuitIntegralGain);
 
-    SettingsManager::instance()->setValue(SETTINGS_as_maxSteerSpeed, maxSteerSpeed);
-    SettingsManager::instance()->setValue(SETTINGS_as_minSteerSpeed, minSteerSpeed);
-    SettingsManager::instance()->setValue(SETTINGS_as_uTurnCompensation, uturnCompensation);
+    SettingsManager::instance()->setAs_maxSteerSpeed(maxSteerSpeed);
+    SettingsManager::instance()->setAs_minSteerSpeed(minSteerSpeed);
+    SettingsManager::instance()->setAs_uTurnCompensation(uturnCompensation);
 
-    // Sync to disk immediately
-    SettingsManager::instance()->sync();
+    // Qt6 Pure Architecture: All setters auto-sync to INI immediately via macros
 }
 
-CVehicle::CVehicle(QObject *parent) : QObject(parent)
-{
-    isInFreeDriveMode = false;
-    loadSettings();
-
-}
 
 //called from various Classes, always needs current speed
 double CVehicle::UpdateGoalPointDistance()
 {
+    ensureSettingsLoaded();  // Qt 6.8 MIGRATION: Lazy load settings
+
+    // ⚡ PHASE 6.0.20 FIX 1: Load directly from SettingsManager for real-time updates
+    // Member variables are not updated when QML changes settings → read fresh values
+    double goalPointLookAhead = SettingsManager::instance()->vehicle_goalPointLookAhead();
+    double goalPointLookAheadHold = SettingsManager::instance()->vehicle_goalPointLookAheadHold();
+    double goalPointLookAheadMult = SettingsManager::instance()->vehicle_goalPointLookAheadMult();
+    double modeXTE = SettingsManager::instance()->as_modeXTE();
+    double modeTime = SettingsManager::instance()->as_modeTime();
+
     double xTE = fabs(modeActualXTE);
 
     //how far should goal point be away  - speed * seconds * kmph -> m/s then limit min value
     double goalPointDistance = avgSpeed * goalPointLookAhead * 0.05 * goalPointLookAheadMult;
     goalPointDistance += goalPointLookAhead;
 
-    if (xTE < (modeXTE))
+    if (xTE < modeXTE)
     {
         if (modeTimeCounter > modeTime * 10)
         {
@@ -181,12 +192,41 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
                            QRect viewport,
                            const CCamera &camera,
                            const CTool &tool,
-                           CBoundary &bnd
+                           CBoundary &bnd,
+                           QObject *mainWindow
                            )
 {
-    bool display_isVehicleImage = SettingsManager::instance()->value(SETTINGS_display_isVehicleImage).value<bool>();
-    bool display_isSvennArrowOn = SettingsManager::instance()->value(SETTINGS_display_isSvennArrowOn).value<bool>();
-    float display_lineWidth = SettingsManager::instance()->value(SETTINGS_display_lineWidth).value<float>();
+    ensureSettingsLoaded();  // Qt 6.8 MIGRATION: Lazy load settings
+    // ⚡ PHASE 6.3.0 SAFETY: Check if InterfaceProperty are initialized before accessing settings
+    bool display_isVehicleImage = false;
+    if (SettingsManager::instance()) {
+        try {
+            display_isVehicleImage = SettingsManager::instance()->display_isVehicleImage();
+        } catch (...) {
+            qDebug() << "⚠️ Settings not yet available for display_isVehicleImage - using default false";
+            display_isVehicleImage = false;
+        }
+    }
+    // ⚡ PHASE 6.3.0 SAFETY: Protected settings access
+    bool display_isSvennArrowOn = false;
+    float display_lineWidth = 2.0f;
+    if (SettingsManager::instance()) {
+        try {
+            display_isSvennArrowOn = SettingsManager::instance()->display_isSvennArrowOn();
+            display_lineWidth = SettingsManager::instance()->display_lineWidth();
+        } catch (...) {
+            qDebug() << "⚠️ Settings not yet available for vehicle display - using defaults";
+        }
+    }
+
+    // Phase 6.0.24 Problem 18: Validate fixHeading before rotation to prevent nan in modelview matrix
+    // If FormGPS::_imuCorrected uninitialized at startup, garbage gets copied to fixHeading
+    // Garbage rotation angle → trig overflow → nan → project() division by zero → CRASH
+    if (!std::isfinite(fixHeading) || fabs(fixHeading) > 1000.0) {
+        qWarning() << "DrawVehicle skipped: invalid fixHeading =" << fixHeading
+                   << "(garbage not yet replaced by valid GPS/IMU data)";
+        return;
+    }
 
     //draw vehicle
     modelview.rotate(glm::toDegrees(-fixHeading), 0.0, 0.0, 1.0);
@@ -209,7 +249,8 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     QVector3D p3;
     QVector3D p4;
     QVector3D s;
-    int x,w;
+    // Phase 6.0.24 Problem 18: Remove unused variables x,w (were uninitialized 0xCCCCCCCC in debugger)
+    // int x,w;  // REMOVED - never used in function
 
     s = QVector3D(0,0,0);
     p1 = s.project(modelview, projection, viewport);
@@ -519,16 +560,16 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
         gl->glLineWidth(2);
         cv.color = QVector4D(0.0, 1.270, 0.0, 1.0);
 
-        if (bnd.isDrawRightSide)
+        if (mainWindow->property("isDrawRightSide").toBool())
         {
             cv.vertex = QVector3D(0.0, 0, 0);
             glcolors.append(cv);
 
             cv.color = QVector4D(1.270, 1.220, 0.20, 1.0);
-            cv.vertex = QVector3D((double)bnd.createBndOffset, 0, 0);
+            cv.vertex = QVector3D(static_cast<float>(mainWindow->property("createBndOffset").toDouble()), 0.0f, 0.0f);
             glcolors.append(cv);
 
-            cv.vertex = QVector3D((double)bnd.createBndOffset*0.75, 0.25, 0);
+            cv.vertex = QVector3D(static_cast<float>(mainWindow->property("createBndOffset").toDouble()*0.75), 0.25f, 0.0f);
             glcolors.append(cv);
 
             glcolors.draw(gl,mvp,GL_LINE_STRIP, 2);
@@ -541,10 +582,10 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
             glcolors.append(cv);
 
             cv.color = QVector4D(1.270, 1.220, 0.20, 1.0);
-            cv.vertex = QVector3D(-(double)bnd.createBndOffset, 0, 0);
+            cv.vertex = QVector3D(static_cast<float>(-mainWindow->property("createBndOffset").toDouble()), 0.0f, 0.0f);
             glcolors.append(cv);
 
-            cv.vertex = QVector3D(-(double)bnd.createBndOffset*0.75, 0.25, 0);
+            cv.vertex = QVector3D(static_cast<float>(-mainWindow->property("createBndOffset").toDouble()*0.75), 0.25f, 0.0f);
             glcolors.append(cv);
 
             glcolors.draw(gl,mvp,GL_LINE_STRIP, 2);
@@ -572,10 +613,10 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     // TODO: Track number and nudge offset need to be done in QML.
     // Probably will need CTrack to put this information in its model
 
-    if(!(bool)property_setDisplay_topTrackNum && CTrack::instance()->idx > -1 && !ct.isContourBtnOn) {
+    if(!(bool)property_setDisplay_topTrackNum && track.idx() > -1 && !mainWindow->property("isContourBtnOn").toBool()) {
         color.setRgbF(1.269, 1.25, 1.2510, 0.87); //?? why over 1.0?
 
-        if (curve.isBtnCurveOn && (bool)ct.isContourBtnOn == false)
+        if (curve.isBtnCurveOn && mainWindow->property("isContourBtnOn").toBool() == false)
         {
             if (curve.howManyPathsAway == 0) {
                 drawTextVehicle(camera, gl, mvp, 2, wheelbase+1, "0", 1,
@@ -590,9 +631,9 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
                                 true, color);
             }
         }
-        else if (ABLine.isBtnABLineOn && (bool)ct.isContourBtnOn == false)
+        else if (ABLine.isBtnABLineOn && mainWindow->property("isContourBtnOn").toBool() == false)
         {
-            if(ct.isContourBtnOn)
+            if(mainWindow->property("isContourBtnOn").toBool())
             if (ABLine.howManyPathsAway == 0) {
                 drawTextVehicle(camera, gl, mvp, 2, wheelbase+1, "0", 1,
                                 true, color);
@@ -653,57 +694,107 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
 }
 
 void CVehicle::AverageTheSpeed(double newSpeed) {
-    avgSpeed = newSpeed * 0.75 + avgSpeed * 0.25;
+    // Phase 6.0.34: Fixed formula to match C# original (CNMEA.cs:50)
+    // C#: mf.avgSpeed = (mf.avgSpeed * 0.75) + (speed * 0.25);
+    // BEFORE (WRONG): avgSpeed = newSpeed * 0.75 + avgSpeed * 0.25;  // Inverted weights!
+    avgSpeed = avgSpeed * 0.75 + newSpeed * 0.25;  // ✅ CORRECTED: 75% old + 25% new
 }
 
-void CVehicle::setIsHydLiftOn(bool value)
-{
-    if (isHydLiftOn != value) {
-        isHydLiftOn = value;
-        emit isHydLiftOnChanged();
-    }
+// ===== Qt 6.8 QProperty Migration =====
+// Qt 6.8 FIX: External implementations for Qt 6.8 QObject + QML_ELEMENT compatibility
+void CVehicle::setIsHydLiftOn(bool value) {
+    m_isHydLiftOn = value;
 }
 
-void CVehicle::setHydLiftDown(bool value)
-{
-    if (hydLiftDown != value) {
-        hydLiftDown = value;
-        emit hydLiftDownChanged();
-    }
+void CVehicle::setHydLiftDown(bool value) {
+    m_hydLiftDown = value;
 }
 
-void CVehicle::setIsChangingDirection(bool value)
-{
-    if (isChangingDirection != value)
-    {
-        isChangingDirection = value;
-        emit isChangingDirectionChanged();
-    }
+void CVehicle::setIsChangingDirection(bool value) {
+    m_isChangingDirection = value;
 }
 
-void CVehicle::setIsReverse(bool value)
-{
-    if (isReverse != value)
-    {
-        isReverse = value;
-        emit isReverseChanged();
-    }
+void CVehicle::setIsReverse(bool value) {
+    m_isReverse = value;
 }
 
-void CVehicle::setRightTramIndicator(int value){
-    if (rightTramState != value)
-    {
-        rightTramState = value;
-            emit rightTramStateChanged();
-    }
+void CVehicle::setLeftTramState(int value) {
+    m_leftTramState = value;
+}
 
+void CVehicle::setRightTramState(int value) {
+    m_rightTramState = value;
 }
-void CVehicle::setLeftTramIndicator(int value){
-    if (leftTramState != value)
-    {
-        leftTramState = value;
-            emit leftTramStateChanged();
-    }
+
+void CVehicle::setVehicleList(const QList<QVariant>& value) {
+    m_vehicleList = value;
 }
+
+void CVehicle::setMainWindow(QObject *mw) {
+    mainWindow = mw;
+}
+
+// ===== Qt 6.8 Rectangle Pattern Getters =====
+bool CVehicle::isHydLiftOn() const {
+    return m_isHydLiftOn;
+}
+
+bool CVehicle::hydLiftDown() const {
+    return m_hydLiftDown;
+}
+
+bool CVehicle::isChangingDirection() const {
+    return m_isChangingDirection;
+}
+
+bool CVehicle::isReverse() const {
+    return m_isReverse;
+}
+
+int CVehicle::leftTramState() const {
+    return m_leftTramState;
+}
+
+int CVehicle::rightTramState() const {
+    return m_rightTramState;
+}
+
+QList<QVariant> CVehicle::vehicleList() const {
+    return m_vehicleList;
+}
+
+// ===== Qt 6.8 Rectangle Pattern Bindables =====
+QBindable<bool> CVehicle::bindableIsHydLiftOn() {
+    return QBindable<bool>(&m_isHydLiftOn);
+}
+
+QBindable<bool> CVehicle::bindableHydLiftDown() {
+    return QBindable<bool>(&m_hydLiftDown);
+}
+
+QBindable<bool> CVehicle::bindableIsChangingDirection() {
+    return QBindable<bool>(&m_isChangingDirection);
+}
+
+QBindable<bool> CVehicle::bindableIsReverse() {
+    return QBindable<bool>(&m_isReverse);
+}
+
+QBindable<int> CVehicle::bindableLeftTramState() {
+    return QBindable<int>(&m_leftTramState);
+}
+
+QBindable<int> CVehicle::bindableRightTramState() {
+    return QBindable<int>(&m_rightTramState);
+}
+
+QBindable<QList<QVariant>> CVehicle::bindableVehicleList() {
+    return QBindable<QList<QVariant>>(&m_vehicleList);
+}
+
+
+// ===== Thread-Safe Vehicle Management (Phase 1 Architecture) =====
+// CVehicle emits signals that are connected to FormGPS slots thread-safely
+// Q_INVOKABLE wrappers in .h emit signals for QML access
 
 // Removed QML_SINGLETON factory function - using qmlRegisterSingletonInstance instead

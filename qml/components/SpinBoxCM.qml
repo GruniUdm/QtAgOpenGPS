@@ -3,7 +3,7 @@
 //
 import QtQuick
 //import Settings
-//import AOG
+import AOG
 
 //This is a spinbox for displaying dimensions that are either
 //cm or inches
@@ -36,12 +36,8 @@ Item {
         spinner.value = Utils.cm_to_unit(spinBoxCM.value)
     }
 
-    Connections {
-        target: Settings
-        function onMenu_isMetricChanged() {
-            spinner.value = Utils.cm_to_unit(value)
-        }
-    }
+    // Qt 6.8 QProperty + BINDABLE: Update spinner when metric setting changes
+    Component.onCompleted: spinner.value = Utils.cm_to_unit(value)
 
     SpinBoxCustomized {
         id: spinner

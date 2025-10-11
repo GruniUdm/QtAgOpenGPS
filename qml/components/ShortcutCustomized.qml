@@ -8,6 +8,7 @@ import QtQuick
 Shortcut{
 	id: shortcut
 	property int hotkeys: 0
-	property var hotkeysVar: Settings.key_hotKeys
+	// Threading Phase 1: Hotkey configuration array
+	property var hotkeysVar: []
 	sequences: [hotkeysVar[hotkeys], ("Shift+"+ hotkeysVar[hotkeys])]
 }

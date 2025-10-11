@@ -3,7 +3,7 @@
 //
 //
 import QtQuick
-//import AOG
+import AOG
 //import Settings
 import "components" as Comp
 
@@ -15,10 +15,14 @@ Comp.OutlineText {
     property bool useDirNames: false
     property double trackHeading: 0
 
+    // Phase 6.0.43: Parallel line number property
+    property int parallelLineNum: TracksInterface.howManyPathsAway
+
     function generate_text(track_no) {
         var track_num = track_no
 
-        if (Utils.isTrue(Settings.display_useTrackZero)) {
+        // Threading Phase 1: Track numbering configuration
+        if (SettingsManager.display_useTrackZero) {
             if (track_num >  0)
                 track_num -=1
         }
@@ -41,10 +45,24 @@ Comp.OutlineText {
                 dir
     }
 
+    // Phase 6.0.43: Generate parallel line number text (matching C# AgOpenGPS format)
+    function generate_parallel_line_text(lineNum) {
+        if (lineNum === 0) {
+            return "0"
+        } else if (lineNum > 0) {
+            // Phase 6.0.43 BUG FIX: Add +1 for display (matching C# UI layer logic)
+            // This adjustment belongs in UI layer, NOT backend (OpenGL.Designer.cs:2470)
+            return (lineNum + 1).toString() + "R"
+        } else {
+            return (-lineNum).toString() + "L"
+        }
+    }
+
     //TODO: check settings to see if we should have a track 0
 
-    text: generate_text(currentTrack)
+    // Phase 6.0.43: Display parallel line number instead of track index
+    text: generate_parallel_line_text(parallelLineNum)
 
     color: "white"
-    visible: (aog.currentABLine > -1)
+    //visible: (aogInterface.currentABLine > -1)
 }

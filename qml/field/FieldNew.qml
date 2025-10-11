@@ -36,7 +36,7 @@ Dialog {
         anchors.top:parent.top
         anchors.topMargin: 50
         anchors.horizontalCenter: parent.horizontalCenter
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
         border.color: "darkgray"
         border.width: 1
         Text {
@@ -138,7 +138,7 @@ Dialog {
 
             onClicked: {
                 fieldNew.visible = false
-                fieldInterface.field_new(newField.text.trim())
+                aog.fieldNew(newField.text.trim()) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
         }
     }

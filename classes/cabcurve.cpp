@@ -3,6 +3,7 @@
 #include "glm.h"
 #include <QOpenGLFunctions>
 #include <QMatrix4x4>
+#include <memory> // C++17 smart pointers
 #include <QVector>
 #include <QFuture>
 #include <QtConcurrent/QtConcurrent>
@@ -34,9 +35,9 @@ void CABCurve::BuildCurveCurrentList(Vec3 pivot,
 {
     double minDistA = 1000000, minDistB;
 
-    double tool_width = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_overlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
-    double tool_offset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double tool_width = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_overlap = SettingsManager::instance()->vehicle_toolOverlap();
+    double tool_offset = SettingsManager::instance()->vehicle_toolOffset();
 
     //move the ABLine over based on the overlap amount set in vehicle
     double widthMinusOverlap = tool_width - tool_overlap;
@@ -108,6 +109,11 @@ void CABCurve::BuildCurveCurrentList(Vec3 pivot,
 
         if (yt.isYouTurnTriggered && yt.isGoingStraightThrough) isHeadingSameWay = !isHeadingSameWay;
 
+        // ═════════════════════════════════════════════════════════════════════════════════
+        // PHASE 6.0.43 BUG FIX: Calculate howManyPathsAway EVERY FRAME (not just on timeout)
+        // Original bug: Calculation was trapped inside CONDITION 1, preventing real-time updates
+        // ═════════════════════════════════════════════════════════════════════════════════
+
         //which side of the closest point are we on is next
         //calculate endpoints of reference line based on closest point
         refPoint1.easting = track.curvePts[rA].easting - (sin(track.curvePts[rA].heading) * 300.0);
@@ -116,15 +122,23 @@ void CABCurve::BuildCurveCurrentList(Vec3 pivot,
         refPoint2.easting = track.curvePts[rA].easting + (sin(track.curvePts[rA].heading) * 300.0);
         refPoint2.northing = track.curvePts[rA].northing + (cos(track.curvePts[rA].heading) * 300.0);
 
+        // PHASE 6.0.43 CRITICAL FIX: Store nudged points separately for display/UI
+        // BUT use UN-NUDGED points for distance calculation to prevent double-nudge bug!
+        Vec2 nudgedRefPoint1 = refPoint1;
+        Vec2 nudgedRefPoint2 = refPoint2;
+
         if (track.nudgeDistance != 0)
         {
-            refPoint1.easting += (sin(track.curvePts[rA].heading + glm::PIBy2) * track.nudgeDistance);
-            refPoint1.northing += (cos(track.curvePts[rA].heading + glm::PIBy2) * track.nudgeDistance);
+            nudgedRefPoint1.easting += (sin(track.curvePts[rA].heading + glm::PIBy2) * track.nudgeDistance);
+            nudgedRefPoint1.northing += (cos(track.curvePts[rA].heading + glm::PIBy2) * track.nudgeDistance);
 
-            refPoint2.easting += (sin(track.curvePts[rA].heading + glm::PIBy2) * track.nudgeDistance);
-            refPoint2.northing += (cos(track.curvePts[rA].heading + glm::PIBy2) * track.nudgeDistance);
+            nudgedRefPoint2.easting += (sin(track.curvePts[rA].heading + glm::PIBy2) * track.nudgeDistance);
+            nudgedRefPoint2.northing += (cos(track.curvePts[rA].heading + glm::PIBy2) * track.nudgeDistance);
         }
 
+        // PHASE 6.0.43 CRITICAL: Use UN-NUDGED refPoint1/refPoint2 for distance calculation
+        // The nudge is applied ONLY in RefDist calculation below (line 152)
+        // Using nudged points here causes double-nudge bug!
         //x2-x1
         double dx = refPoint2.easting - refPoint1.easting;
         //z2-z1
@@ -139,38 +153,53 @@ void CABCurve::BuildCurveCurrentList(Vec3 pivot,
 
         distanceFromRefLine -= (0.5 * widthMinusOverlap);
 
+        // Calculate which parallel line the vehicle is on (Phase 6.0.43: includes nudgeDistance)
+        // THIS MUST BE CALCULATED EVERY FRAME FOR AUTO-SNAP TO WORK!
         double RefDist = (distanceFromRefLine +
-                          (isHeadingSameWay ? tool_offset : -tool_offset)) / widthMinusOverlap;
+                          (isHeadingSameWay ? tool_offset : -tool_offset)
+                          - track.nudgeDistance) / widthMinusOverlap;
 
         if (RefDist < 0) howManyPathsAway = (int)(RefDist - 0.5);
         else howManyPathsAway = (int)(RefDist + 0.5);
 
+        // ✅ PHASE 6.0.43: C# CONDITION 1 - Update timeout (used for other purposes)
+        // C# CABCurve.cs conditional reconstruction logic
+        if (!isCurveValid || ((secondsSinceStart - lastSecond) > 0.66))
+        {
+            lastSecond = secondsSinceStart;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // CONDITION 2: Reconstruct curve only when howManyPathsAway or direction changes
+        // Phase 6.0.43: Critical fix for auto-snap after manual nudge
+        // ═══════════════════════════════════════════════════════════════════════
         if (track.mode != (int)TrackMode::bndCurve)
         {
-
-            //build current list
-            isCurveValid = true;
-
-            if (howManyPathsAway == lastHowManyPathsAway)
+            if (!isCurveValid ||
+                howManyPathsAway != lastHowManyPathsAway ||
+                (isHeadingSameWay != lastIsHeadingSameWay && tool_offset != 0))
             {
-                return;
-            }
+                //build current list
+                isCurveValid = true;
+                lastHowManyPathsAway = howManyPathsAway;
+                lastIsHeadingSameWay = isHeadingSameWay;
 
-            lastHowManyPathsAway = howManyPathsAway;
+                //build the current line
+                curList.clear();
 
-            //build the current line
-            curList.clear();
+                double distAway = widthMinusOverlap * howManyPathsAway +
+                                  (isHeadingSameWay ? -tool_offset : tool_offset)
+                                  + track.nudgeDistance;
 
-            double distAway = widthMinusOverlap * howManyPathsAway +
-                              (isHeadingSameWay ? -tool_offset : tool_offset);
+                distAway += (0.5 * widthMinusOverlap);
 
-            distAway += (0.5 * widthMinusOverlap);
+                // Phase 6.0.43 BUG FIX: DO NOT modify howManyPathsAway here!
+                // The +1 adjustment for display is now handled in TrackNum.qml (UI layer)
+                // Modifying it here breaks CONDITION 2 comparison in subsequent frames
 
-            if (howManyPathsAway > -1) howManyPathsAway += 1;
-
-            double step = widthMinusOverlap * 0.48;
-            if (step > 4) step = 4;
-            if (step < 1) step = 1;
+                double step = widthMinusOverlap * 0.48;
+                if (step > 4) step = 4;
+                if (step < 1) step = 1;
 
             double distSqAway = (distAway * distAway) - 0.01;
 
@@ -353,26 +382,30 @@ void CABCurve::BuildCurveCurrentList(Vec3 pivot,
                 isReady = false;
             }
 
-            //build current list
-            isCurveValid = true;
-
-            if (howManyPathsAway == lastHowManyPathsAway)
+            // ═══════════════════════════════════════════════════════════════════════
+            // CONDITION 2 for boundary curves: Same conditional reconstruction logic
+            // Phase 6.0.43: Critical fix for auto-snap after manual nudge
+            // ═══════════════════════════════════════════════════════════════════════
+            if (!isCurveValid ||
+                howManyPathsAway != lastHowManyPathsAway ||
+                (isHeadingSameWay != lastIsHeadingSameWay && tool_offset != 0))
             {
-                return;
+                //build current list
+                isCurveValid = true;
+                lastHowManyPathsAway = howManyPathsAway;
+                lastIsHeadingSameWay = isHeadingSameWay;
+
+                //build the current line (async for boundary curves)
+                double distAway = (tool_width - tool_overlap) * howManyPathsAway + (isHeadingSameWay ? -tool_offset : tool_offset) + track.nudgeDistance;
+
+                // Phase 6.0.43 BUG FIX: DO NOT modify howManyPathsAway here!
+                // The +1 adjustment for display is now handled in TrackNum.qml (UI layer)
+                // Modifying it here breaks CONDITION 2 comparison in subsequent frames
+
+                distAway += (0.5 * (tool_width - tool_overlap));
+
+                if (!isBusyWorking) auto result = QtConcurrent::run([this, distAway, refCount, &track, &bnd] () { BuildNewCurveAsync( distAway, refCount, track, bnd); }  ) ;
             }
-
-            lastHowManyPathsAway = howManyPathsAway;
-
-            //build the current line
-            //curList?.Clear();
-
-            double distAway = (tool_width - tool_overlap) * howManyPathsAway + (isHeadingSameWay ? -tool_offset : tool_offset) + track.nudgeDistance;
-
-            if (howManyPathsAway > -1) howManyPathsAway += 1;
-
-            distAway += (0.5 * (tool_width - tool_overlap));
-
-            if (!isBusyWorking) auto result = QtConcurrent::run([this, distAway, refCount, &track, &bnd] () { BuildNewCurveAsync( distAway, refCount, track, bnd); }  ) ;
         }
     }
     else //pivot guide list
@@ -407,11 +440,13 @@ void CABCurve::BuildCurveCurrentList(Vec3 pivot,
 
         distAway += (0.5 * widthMinusOverlap);
 
-        if (howManyPathsAway > -1) howManyPathsAway += 1;
+        // Phase 6.0.43 BUG FIX: DO NOT modify howManyPathsAway here!
+        // The +1 adjustment for display is now handled in TrackNum.qml (UI layer)
+        // Modifying it here breaks CONDITION 2 comparison in subsequent frames
 
         double pointSpacing = distAway * 0.05;
 
-        //distAway += mf.CTrack::instance()->gArr[CTrack::instance()->idx].nudgeDistance;
+        //distAway += mf.track.gArr[track.idx].nudgeDistance;
 
         Vec3 currentPos(refPoint1.easting-distAway, refPoint1.northing, 0);
 
@@ -446,6 +481,7 @@ void CABCurve::BuildCurveCurrentList(Vec3 pivot,
     lastSecond = secondsSinceStart;
 
 }
+}
 
 void CABCurve::BuildNewCurveAsync(double distAway,
                                   int refCount,
@@ -458,8 +494,8 @@ void CABCurve::BuildNewCurveAsync(double distAway,
 
     newCurList.clear();
 
-    double tool_width = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    double tool_overlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    double tool_width = SettingsManager::instance()->vehicle_toolWidth();
+    double tool_overlap = SettingsManager::instance()->vehicle_toolOverlap();
     double step = (tool_width - tool_overlap) * 0.48;
     if (step > 4) step = 4;
     if (step < 1) step = 1;
@@ -653,11 +689,11 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                                    CGuidance &gyd,
                                    CNMEA &pn)
 {
-    double purePursuitGain = SettingsManager::instance()->value(SETTINGS_vehicle_purePursuitIntegralGainAB).value<double>();
-    double wheelBase = SettingsManager::instance()->value(SETTINGS_vehicle_wheelbase).value<double>();
-    double maxSteerAngle = SettingsManager::instance()->value(SETTINGS_vehicle_maxSteerAngle).value<double>();
-    bool vehicle_isStanleyUsed = SettingsManager::instance()->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
-    double as_sideHillCompensation = SettingsManager::instance()->value(SETTINGS_as_sideHillCompensation).value<double>();
+    double purePursuitGain = SettingsManager::instance()->vehicle_purePursuitIntegralGainAB();
+    double wheelBase = SettingsManager::instance()->vehicle_wheelbase();
+    double maxSteerAngle = SettingsManager::instance()->vehicle_maxSteerAngle();
+    bool vehicle_isStanleyUsed = SettingsManager::instance()->vehicle_isStanleyUsed();
+    double as_sideHillCompensation = SettingsManager::instance()->as_sideHillCompensation();
 
     if (track.curvePts.count() == 0 || track.curvePts.count() < 5)
     {
@@ -814,7 +850,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                                            / sqrt((dz * dz) + (dx * dx));
 
             //integral slider is set to 0
-            if (purePursuitGain != 0 && !CVehicle::instance()->isReverse)
+            if (purePursuitGain != 0 && !CVehicle::instance()->isReverse())
             {
                 pivotDistanceError = distanceFromCurrentLinePivot * 0.2 + pivotDistanceError * 0.8;
 
@@ -866,7 +902,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
             //update base on autosteer settings and distance from line
             double goalPointDistance = CVehicle::instance()->UpdateGoalPointDistance();
 
-            bool ReverseHeading = CVehicle::instance()->isReverse ? !isHeadingSameWay : isHeadingSameWay;
+            bool ReverseHeading = CVehicle::instance()->isReverse() ? !isHeadingSameWay : isHeadingSameWay;
 
             int count = ReverseHeading ? 1 : -1;
             Vec3 start(rEastCu, rNorthCu, 0);
@@ -895,7 +931,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
 
             if (track.mode <= (int)TrackMode::Curve)
             {
-                if (isBtnAutoSteerOn && !CVehicle::instance()->isReverse)
+                if (isBtnAutoSteerOn && !CVehicle::instance()->isReverse())
                 {
                     if (isHeadingSameWay)
                     {
@@ -985,8 +1021,8 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                          const CTrk &track,
                          CYouTurn &yt, const CCamera &camera)
 {
-    //double tool_toolWidth = SettingsManager::instance()->value("Vehicle_toolWidth;
-    //double tool_toolOverlap = SettingsManager::instance()->value("Vehicle_toolOverlap;
+    //double tool_toolWidth = SettingsManager::instance()->getValue("Vehicle_toolWidth;
+    //double tool_toolOverlap = SettingsManager::instance()->getValue("Vehicle_toolOverlap;
 
 
     GLHelperColors gldraw_colors;
@@ -994,8 +1030,8 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     ColorVertex cv;
     QColor color;
 
-    double lineWidth = SettingsManager::instance()->value(SETTINGS_display_lineWidth).value<double>();
-    bool vehicle_isStanleyUsed = SettingsManager::instance()->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
+    double lineWidth = SettingsManager::instance()->display_lineWidth();
+    bool vehicle_isStanleyUsed = SettingsManager::instance()->vehicle_isStanleyUsed();
 
     if (desList.count() > 0)
     {
@@ -1108,9 +1144,9 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
 
 void CABCurve::BuildTram(CBoundary &bnd, CTram &tram, const CTrk &track)
 {
-    double halfWheelTrack = SettingsManager::instance()->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
-    double tram_width = SettingsManager::instance()->value(SETTINGS_tram_width).value<double>();
-    int tram_passes = SettingsManager::instance()->value(SETTINGS_tram_passes).value<int>();
+    double halfWheelTrack = SettingsManager::instance()->vehicle_trackWidth() * 0.5;
+    double tram_width = SettingsManager::instance()->tram_width();
+    int tram_passes = SettingsManager::instance()->tram_passes();
 
     //if all or bnd only then make outer loop pass
     if (tram.generateMode != 1)
@@ -1247,8 +1283,8 @@ void CABCurve::SmoothAB(int smPts, const CTrk &track)
     //just go back if not very long
     if (cnt < 200) return;
 
-    //the temp array
-    Vec3 *arr = new Vec3[cnt];
+    //the temp array - C++17 RAII automatic cleanup
+    auto arr = std::make_unique<Vec3[]>(cnt);
 
     //read the points before and after the setpoint
     for (int s = 0; s < smPts / 2; s++)
@@ -1285,7 +1321,7 @@ void CABCurve::SmoothAB(int smPts, const CTrk &track)
         smooList.append(arr[i]);
     }
 
-    delete[] arr;
+    // ✅ C++17 RAII: automatic cleanup, no manual delete needed
 }
 
 void CABCurve::SmoothABDesList(int smPts)
@@ -1293,9 +1329,8 @@ void CABCurve::SmoothABDesList(int smPts)
     //count the reference list of original curve
     int cnt = desList.count();
 
-    //the temp array
-    //the temp array
-    Vec3 *arr = new Vec3[cnt];
+    //the temp array - C++17 RAII automatic cleanup
+    auto arr = std::make_unique<Vec3[]>(cnt);
 
     //read the points before and after the setpoint
     for (int s = 0; s < smPts / 2; s++)
@@ -1332,7 +1367,7 @@ void CABCurve::SmoothABDesList(int smPts)
         desList.append(arr[i]);
     }
 
-    delete[] arr;
+    // ✅ C++17 RAII: automatic cleanup, no manual delete needed
 }
 
 void CABCurve::CalculateHeadings(QVector<Vec3> &xList)

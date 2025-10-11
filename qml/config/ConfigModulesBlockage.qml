@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 //import Settings
-//import AOG
+import AOG
 
 
 import ".."
@@ -15,7 +15,7 @@ import "../components"
 Rectangle{
     id: configModulesBlockage
     anchors.fill: parent
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     visible: false
 
     onVisibleChanged: {
@@ -25,13 +25,14 @@ Rectangle{
 
     function load_settings() {
 
-        graincountMin.boundValue = Settings.seed_blockCountMin
-        graincountMax.boundValue = Settings.seed_blockCountMax
-        modulerows1.boundValue = Settings.seed_blockRow1
-        modulerows2.boundValue = Settings.seed_blockRow2
-        modulerows3.boundValue = Settings.seed_blockRow3
-        modulerows4.boundValue = Settings.seed_blockRow4
-        cboxIsBlockageOn.checked = Settings.seed_blockageIsOn
+        // Threading Phase 1: Seed blockage configuration
+        graincountMin.boundValue = SettingsManager.seed_blockCountMin
+        graincountMax.boundValue = SettingsManager.seed_blockCountMax
+        modulerows1.boundValue = SettingsManager.seed_blockRow1
+        modulerows2.boundValue = SettingsManager.seed_blockRow2
+        modulerows3.boundValue = SettingsManager.seed_blockRow3
+        modulerows4.boundValue = SettingsManager.seed_blockRow4
+        cboxIsBlockageOn.checked = SettingsManager.seed_blockageIsOn
 
 
         mandatory.visible = false
@@ -41,18 +42,19 @@ Rectangle{
     function save_settings() {
 
 
-        Settings.seed_blockCountMin = graincountMin.value
-        Settings.seed_blockCountMax = graincountMax.value
-        Settings.seed_blockRow1 = modulerows1.value
-        Settings.seed_blockRow2 = modulerows2.value
-        Settings.seed_blockRow3 = modulerows3.value
-        Settings.seed_blockRow4 = modulerows4.value
-        Settings.seed_blockageIsOn = cboxIsBlockageOn.checked
-        Settings.seed_numRows = Number(Settings.seed_blockRow1 + Settings.seed_blockRow2 + Settings.seed_blockRow3 + Settings.seed_blockRow4)
+        // Threading Phase 1: Save seed blockage configuration
+        SettingsManager.seed_blockCountMin = graincountMin.value
+        SettingsManager.seed_blockCountMax = graincountMax.value
+        SettingsManager.seed_blockRow1 = modulerows1.value
+        SettingsManager.seed_blockRow2 = modulerows2.value
+        SettingsManager.seed_blockRow3 = modulerows3.value
+        SettingsManager.seed_blockRow4 = modulerows4.value
+        SettingsManager.seed_blockageIsOn = cboxIsBlockageOn.checked
+        SettingsManager.seed_numRows = Number(SettingsManager.seed_blockRow1 + SettingsManager.seed_blockRow2 + SettingsManager.seed_blockRow3 + SettingsManager.seed_blockRow4)
         blockageRows.setSizes()
         mandatory.visible = false
 
-        aog.doBlockageMonitoring()
+        aog.blockageMonitoring() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
     }
     Label{
         id: top
@@ -82,9 +84,10 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: Settings.seed_blockRow1
+            // Threading Phase 1: Module row 1 configuration
+            boundValue: SettingsManager.seed_blockRow1
             onValueModified: {
-                Settings.seed_blockRow1 = value
+                SettingsManager.seed_blockRow1 = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -100,9 +103,10 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: Settings.seed_blockRow2
+            // Threading Phase 1: Module row 2 configuration
+            boundValue: SettingsManager.seed_blockRow2
             onValueModified: {
-                Settings.seed_blockRow2 = value
+                SettingsManager.seed_blockRow2 = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -118,9 +122,10 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: Settings.seed_blockRow3
+            // Threading Phase 1: Module row 3 configuration
+            boundValue: SettingsManager.seed_blockRow3
             onValueModified: {
-                Settings.seed_blockRow3 = value
+                SettingsManager.seed_blockRow3 = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -136,9 +141,10 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: Settings.seed_blockRow4
+            // Threading Phase 1: Module row 4 configuration
+            boundValue: SettingsManager.seed_blockRow4
             onValueModified:{
-                Settings.seed_blockRow4 = value
+                SettingsManager.seed_blockRow4 = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -155,9 +161,10 @@ Rectangle{
             to:10000
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: Settings.seed_blockCountMin
+            // Threading Phase 1: Seed block count minimum
+            boundValue: SettingsManager.seed_blockCountMin
             onValueModified: {
-                Settings.seed_blockCountMin = value
+                SettingsManager.seed_blockCountMin = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -179,9 +186,10 @@ Rectangle{
             to:10000
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: Settings.seed_blockCountMax
+            // Threading Phase 1: Seed block count maximum
+            boundValue: SettingsManager.seed_blockCountMax
             onValueModified:{
-                Settings.seed_blockCountMax = value
+                SettingsManager.seed_blockCountMax = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight

@@ -5,7 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-//import AOG
+import AOG
 
 import ".."
 import "../components" as Comp
@@ -48,7 +48,7 @@ Comp.MoveablePopup {
                 implicitWidth: parent.width /4 - 5 * theme.scaleWidth
                 implicitHeight: theme.buttonSize
                 color: "#ffffff"
-                onClicked:{ aog.btnNextFlag()
+                onClicked:{ aog.nextFlag() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 update_model()}
             }
             Comp.IconButtonColor{
@@ -57,7 +57,7 @@ Comp.MoveablePopup {
                 implicitWidth: parent.width /4 - 5 * theme.scaleWidth
                 implicitHeight: theme.buttonSize
                 color: "#ffffff"
-                onClicked: {aog.btnPrevFlag()
+                onClicked: {aog.prevFlag() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 update_model()}
             }
             Comp.IconButtonColor{
@@ -66,7 +66,7 @@ Comp.MoveablePopup {
                 implicitWidth: parent.width /4 - 5 * theme.scaleWidth
                 implicitHeight: theme.buttonSize
                 color: "#ffffff"
-                onClicked: aog.btnDeleteFlag()
+                onClicked: aog.deleteFlag() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
             Comp.IconButtonColor{
                 id: cancel
@@ -75,7 +75,7 @@ Comp.MoveablePopup {
                 implicitHeight: theme.buttonSize
                 color: "#ffffff"
                 onClicked: {flags.visible = false;
-                    aog.btnCancelFlag()}
+                    aog.cancelFlag()} // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
         }
             Rectangle{
@@ -85,7 +85,7 @@ Comp.MoveablePopup {
                 anchors.top:parent.top
                 anchors.topMargin: 20 * theme.scaleHeight
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: aog.backgroundColor
+                color: aogInterface.backgroundColor
                 border.color: "darkgray"
                 border.width: 1
                 TextField{
@@ -93,7 +93,7 @@ Comp.MoveablePopup {
                     anchors.fill: parent
                     selectByMouse: true
                     placeholderText: focus || text ? "" : contextFlag.ptText
-                    font.pointSize: 15
+                    font.pixelSize: 15
                 }
                 Text {
                     id: idText
@@ -102,7 +102,7 @@ Comp.MoveablePopup {
                     //color: "red"
                     visible: true
                     text: qsTr("ID: ") + contextFlag.ptId
-                    font.pointSize: 15
+                    font.pixelSize: 15
                 }
                 Text {
                     id: latText
@@ -112,7 +112,7 @@ Comp.MoveablePopup {
                     visible: true
                     text: qsTr("Lat: ") + (Number(contextFlag.ptlat).toLocaleString(Qt.locale(), 'f', 9))
                     onTextChanged: update_model()
-                    font.pointSize: 15
+                    font.pixelSize: 15
                 }
                 Text {
                     id: lonText
@@ -122,7 +122,7 @@ Comp.MoveablePopup {
                     visible: true
                     text: qsTr("Lon: ") + (Number(contextFlag.ptlon).toLocaleString(Qt.locale(), 'f', 9))
                     onTextChanged: update_model()
-                    font.pointSize: 15
+                    font.pixelSize: 15
                 }
                 Text {
                     anchors.top: textEntry.bottom

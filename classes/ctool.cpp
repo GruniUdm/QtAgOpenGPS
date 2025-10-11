@@ -9,116 +9,125 @@
 void CTool::loadSettings()
 {
     //from settings grab the vehicle specifics
-    trailingToolToPivotLength = SettingsManager::instance()->value(SETTINGS_tool_trailingToolToPivotLength).value<double>();
+    trailingToolToPivotLength = SettingsManager::instance()->tool_trailingToolToPivotLength();
 
-    width = SettingsManager::instance()->value(SETTINGS_vehicle_toolWidth).value<double>();
-    overlap = SettingsManager::instance()->value(SETTINGS_vehicle_toolOverlap).value<double>();
+    width = SettingsManager::instance()->vehicle_toolWidth();
+    overlap = SettingsManager::instance()->vehicle_toolOverlap();
 
-    offset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
+    offset = SettingsManager::instance()->vehicle_toolOffset();
 
-    trailingHitchLength = SettingsManager::instance()->value(SETTINGS_tool_toolTrailingHitchLength).value<double>();
-    tankTrailingHitchLength = SettingsManager::instance()->value(SETTINGS_vehicle_tankTrailingHitchLength).value<double>();
-    hitchLength = SettingsManager::instance()->value(SETTINGS_vehicle_hitchLength).value<double>();
+    trailingHitchLength = SettingsManager::instance()->tool_toolTrailingHitchLength();
+    tankTrailingHitchLength = SettingsManager::instance()->vehicle_tankTrailingHitchLength();
+    hitchLength = SettingsManager::instance()->vehicle_hitchLength();
 
-    isToolRearFixed = SettingsManager::instance()->value(SETTINGS_tool_isToolRearFixed).value<bool>();
-    isToolTrailing = SettingsManager::instance()->value(SETTINGS_tool_isToolTrailing).value<bool>();
-    isToolTBT = SettingsManager::instance()->value(SETTINGS_tool_isTBT).value<bool>();
-    isToolFrontFixed = SettingsManager::instance()->value(SETTINGS_tool_isToolFront).value<bool>();
+    isToolRearFixed = SettingsManager::instance()->tool_isToolRearFixed();
+    isToolTrailing = SettingsManager::instance()->tool_isToolTrailing();
+    isToolTBT = SettingsManager::instance()->tool_isTBT();
+    isToolFrontFixed = SettingsManager::instance()->tool_isToolFront();
 
-    lookAheadOnSetting = SettingsManager::instance()->value(SETTINGS_vehicle_toolLookAheadOn).value<double>();
-    lookAheadOffSetting = SettingsManager::instance()->value(SETTINGS_vehicle_toolLookAheadOff).value<double>();
-    turnOffDelay = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffDelay).value<double>();
+    lookAheadOnSetting = SettingsManager::instance()->vehicle_toolLookAheadOn();
+    lookAheadOffSetting = SettingsManager::instance()->vehicle_toolLookAheadOff();
+    turnOffDelay = SettingsManager::instance()->vehicle_toolOffDelay();
 
-    isSectionOffWhenOut = SettingsManager::instance()->value(SETTINGS_tool_isSectionOffWhenOut).value<bool>();
+    isSectionOffWhenOut = SettingsManager::instance()->tool_isSectionOffWhenOut();
 
-    isSectionsNotZones = SettingsManager::instance()->value(SETTINGS_tool_isSectionsNotZones).value<bool>();
+    isSectionsNotZones = SettingsManager::instance()->tool_isSectionsNotZones();
 
     if (isSectionsNotZones)
-        numOfSections = SettingsManager::instance()->value(SETTINGS_vehicle_numSections).value<int>();
+        numOfSections = SettingsManager::instance()->vehicle_numSections();
     else
-        numOfSections = SettingsManager::instance()->value(SETTINGS_tool_numSectionsMulti).value<int>();
+        numOfSections = SettingsManager::instance()->tool_numSectionsMulti();
 
-    minCoverage = SettingsManager::instance()->value(SETTINGS_vehicle_minCoverage).value<double>();
-    isMultiColoredSections = SettingsManager::instance()->value(SETTINGS_color_isMultiColorSections).value<bool>();
+    minCoverage = SettingsManager::instance()->vehicle_minCoverage();
+    isMultiColoredSections = SettingsManager::instance()->color_isMultiColorSections();
 
-    secColors[0] = SettingsManager::instance()->value(SETTINGS_color_sec01).value<QColor>();
-    secColors[1] = SettingsManager::instance()->value(SETTINGS_color_sec02).value<QColor>();
-    secColors[2] = SettingsManager::instance()->value(SETTINGS_color_sec03).value<QColor>();
-    secColors[3] = SettingsManager::instance()->value(SETTINGS_color_sec04).value<QColor>();
-    secColors[4] = SettingsManager::instance()->value(SETTINGS_color_sec05).value<QColor>();
-    secColors[5] = SettingsManager::instance()->value(SETTINGS_color_sec06).value<QColor>();
-    secColors[6] = SettingsManager::instance()->value(SETTINGS_color_sec07).value<QColor>();
-    secColors[7] = SettingsManager::instance()->value(SETTINGS_color_sec08).value<QColor>();
-    secColors[8] = SettingsManager::instance()->value(SETTINGS_color_sec09).value<QColor>();
-    secColors[9] = SettingsManager::instance()->value(SETTINGS_color_sec10).value<QColor>();
-    secColors[10] = SettingsManager::instance()->value(SETTINGS_color_sec11).value<QColor>();
-    secColors[11] = SettingsManager::instance()->value(SETTINGS_color_sec12).value<QColor>();
-    secColors[12] = SettingsManager::instance()->value(SETTINGS_color_sec13).value<QColor>();
-    secColors[13] = SettingsManager::instance()->value(SETTINGS_color_sec14).value<QColor>();
-    secColors[14] = SettingsManager::instance()->value(SETTINGS_color_sec15).value<QColor>();
-    secColors[15] = SettingsManager::instance()->value(SETTINGS_color_sec16).value<QColor>();
+    secColors[0] = SettingsManager::instance()->color_sec01();
+    secColors[1] = SettingsManager::instance()->color_sec02();
+    secColors[2] = SettingsManager::instance()->color_sec03();
+    secColors[3] = SettingsManager::instance()->color_sec04();
+    secColors[4] = SettingsManager::instance()->color_sec05();
+    secColors[5] = SettingsManager::instance()->color_sec06();
+    secColors[6] = SettingsManager::instance()->color_sec07();
+    secColors[7] = SettingsManager::instance()->color_sec08();
+    secColors[8] = SettingsManager::instance()->color_sec09();
+    secColors[9] = SettingsManager::instance()->color_sec10();
+    secColors[10] = SettingsManager::instance()->color_sec11();
+    secColors[11] = SettingsManager::instance()->color_sec12();
+    secColors[12] = SettingsManager::instance()->color_sec13();
+    secColors[13] = SettingsManager::instance()->color_sec14();
+    secColors[14] = SettingsManager::instance()->color_sec15();
+    secColors[15] = SettingsManager::instance()->color_sec16();
 
     for (int c=0 ; c < 16; c++) {
         //check setColor[C] to make sure there's nothing over 254
     }
 
-    zoneRanges = toVector<int>(SettingsManager::instance()->value(SETTINGS_tool_zones));
-    zones = zoneRanges[0];
+    zoneRanges = SettingsManager::instance()->tool_zones();
+    if (zoneRanges.size() > 0) {
+        zones = zoneRanges[0];
+    } else {
+        qDebug() << "ERROR: tool_zones is empty! Size:" << zoneRanges.size();
+        zones = 2; // valeur par défaut
+    }
     //zoneRanges.removeAt(0); //remove first element since it was a count
 
-    isDisplayTramControl = SettingsManager::instance()->value(SETTINGS_tool_isDisplayTramControl).value<bool>();
+    isDisplayTramControl = SettingsManager::instance()->tool_isDisplayTramControl();
 
 }
 
 
 CTool::CTool()
 {
+    // Initialize all section button states to Off
+    for (int i = 0; i < 65; i++) {
+        sectionButtonState[i] = btnStates::Off;
+    }
     loadSettings();
 }
 
 void CTool::saveSettings()
 {
     // Save all tool settings to SettingsManager (mirror of loadSettings)
-    SettingsManager::instance()->setValue(SETTINGS_tool_trailingToolToPivotLength, trailingToolToPivotLength);
+    SettingsManager::instance()->setTool_trailingToolToPivotLength(trailingToolToPivotLength);
 
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_toolWidth, width);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_toolOverlap, overlap);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_toolOffset, offset);
+    SettingsManager::instance()->setVehicle_toolWidth(width);
+    SettingsManager::instance()->setVehicle_toolOverlap(overlap);
+    SettingsManager::instance()->setVehicle_toolOffset(offset);
 
-    SettingsManager::instance()->setValue(SETTINGS_tool_toolTrailingHitchLength, trailingHitchLength);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_tankTrailingHitchLength, tankTrailingHitchLength);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_hitchLength, hitchLength);
+    SettingsManager::instance()->setTool_toolTrailingHitchLength(trailingHitchLength);
+    SettingsManager::instance()->setVehicle_tankTrailingHitchLength(tankTrailingHitchLength);
+    SettingsManager::instance()->setVehicle_hitchLength(hitchLength);
 
-    SettingsManager::instance()->setValue(SETTINGS_tool_isToolRearFixed, isToolRearFixed);
-    SettingsManager::instance()->setValue(SETTINGS_tool_isToolTrailing, isToolTrailing);
-    SettingsManager::instance()->setValue(SETTINGS_tool_isTBT, isToolTBT);
-    SettingsManager::instance()->setValue(SETTINGS_tool_isToolFront, isToolFrontFixed);
+    SettingsManager::instance()->setTool_isToolRearFixed(isToolRearFixed);
+    SettingsManager::instance()->setTool_isToolTrailing(isToolTrailing);
+    SettingsManager::instance()->setTool_isTBT(isToolTBT);
+    SettingsManager::instance()->setTool_isToolFront(isToolFrontFixed);
 
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_toolLookAheadOn, lookAheadOnSetting);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_toolLookAheadOff, lookAheadOffSetting);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_toolOffDelay, turnOffDelay);
+    SettingsManager::instance()->setVehicle_toolLookAheadOn(lookAheadOnSetting);
+    SettingsManager::instance()->setVehicle_toolLookAheadOff(lookAheadOffSetting);
+    SettingsManager::instance()->setVehicle_toolOffDelay(turnOffDelay);
 
-    SettingsManager::instance()->setValue(SETTINGS_tool_isSectionOffWhenOut, isSectionOffWhenOut);
-    SettingsManager::instance()->setValue(SETTINGS_tool_isSectionsNotZones, isSectionsNotZones);
+    SettingsManager::instance()->setTool_isSectionOffWhenOut(isSectionOffWhenOut);
+    SettingsManager::instance()->setTool_isSectionsNotZones(isSectionsNotZones);
 
     if (isSectionsNotZones) {
-        SettingsManager::instance()->setValue(SETTINGS_vehicle_numSections, numOfSections);
+        SettingsManager::instance()->setVehicle_numSections(numOfSections);
         // Note: sectionWidthMulti is not a member variable, it's accessed directly from settings when needed
     } else {
-        SettingsManager::instance()->setValue(SETTINGS_tool_numSectionsMulti, numOfSections);
+        SettingsManager::instance()->setTool_numSectionsMulti(numOfSections);
         // Save zone ranges
-        SettingsManager::instance()->setValue(SETTINGS_tool_zones, toVariant(zoneRanges));
+        SettingsManager::instance()->setTool_zones(zoneRanges);
     }
 
-    SettingsManager::instance()->setValue(SETTINGS_tool_isDisplayTramControl, isDisplayTramControl);
+    SettingsManager::instance()->setTool_isDisplayTramControl(isDisplayTramControl);
 }
 
 void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 projection,
                      bool isJobStarted,
                      CVehicle &v, CCamera &camera, CTram &tram)
 {
-    double tram_halfWheelTrack = SettingsManager::instance()->value(SETTINGS_vehicle_trackWidth).value<double>() * 0.5;
-    bool tool_isDisplayTramControl = SettingsManager::instance()->value(SETTINGS_tool_isDisplayTramControl).value<bool>();
+    double tram_halfWheelTrack = SettingsManager::instance()->vehicle_trackWidth() * 0.5;
+    bool tool_isDisplayTramControl = SettingsManager::instance()->tool_isDisplayTramControl();
     //translate and rotate at pivot axle, caller's mvp will be changed
     //all subsequent draws will be based on this point
     modelview.translate(v.pivotAxlePos.easting, v.pivotAxlePos.northing, 0);
@@ -214,7 +223,7 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 pro
         gldrawcolors.append(cv);
 
 
-        if (v.isHydLiftOn)
+        if (v.isHydLiftOn())
         {
             cv.color = QVector4D(0.70f, 0.2f, 0.72f, 1);
             cv.vertex = QVector3D(section[0].positionLeft, (v.hydLiftLookAheadDistanceLeft * 0.1) + trailingTool, 0);
@@ -235,14 +244,28 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 pro
     for (int j = 0; j < numOfSections; j++)
     {
         //if section is on, green, if off, red color
-        if (section[j].isSectionOn)
+        if (sectionButtonState[j] == btnStates::Auto)
         {
-            if (sectionButtonState.get(j) == btnStates::Auto)
+            // Mode Auto: couleur dépend de si section vraiment active (dans le champ)
+            if (section[j].isSectionOn)
             {
-                if (section[j].isMappingOn) color.setRgbF(0.0f, 0.95f, 0.0f, 1.0f);
-                else color.setRgbF(0.970f, 0.30f, 0.970f);
+                if (section[j].isMappingOn) color.setRgbF(0.0f, 0.95f, 0.0f, 1.0f);  // Vert si dans champ
+                else color.setRgbF(0.970f, 0.30f, 0.970f);  // Magenta si pas de mapping
             }
-            else color.setRgbF(0.97, 0.97, 0, 1.0f);
+            else
+            {
+                color.setRgbF(0.950f, 0.2f, 0.2f, 1.0f);  // Rouge si hors champ
+            }
+        }
+        else if (sectionButtonState[j] == btnStates::On)
+        {
+            color.setRgbF(0.97, 0.97, 0, 1.0f);  // Jaune pour On (forçé)
+        }
+        else if (section[j].isSectionOn)
+        {
+            // Logic originale pour sections actives automatiquement
+            if (section[j].isMappingOn) color.setRgbF(0.0f, 0.95f, 0.0f, 1.0f);
+            else color.setRgbF(0.970f, 0.30f, 0.970f);
         }
         else
         {
@@ -348,7 +371,7 @@ void CTool::sectionCalcWidths()
 
         //calculate tool width based on extreme right and left values
         double width = fabs(section[0].positionLeft) + fabs(section[numOfSections - 1].positionRight);
-        SettingsManager::instance()->setValue(SETTINGS_vehicle_toolWidth, width);
+        SettingsManager::instance()->setVehicle_toolWidth(width);
 
         //left and right tool position
         farLeftPosition = section[0].positionLeft;
@@ -364,8 +387,8 @@ void CTool::sectionCalcWidths()
 void CTool::sectionCalcMulti()
 {
     double leftside = width / -2.0;
-    double defaultSectionWidth = SettingsManager::instance()->value(SETTINGS_tool_sectionWidthMulti).value<double>();
-    double offset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
+    double defaultSectionWidth = SettingsManager::instance()->tool_sectionWidthMulti();
+    double offset = SettingsManager::instance()->vehicle_toolOffset();
     section[0].positionLeft = leftside+offset;
 
     for (int i = 0; i < numOfSections - 1; i++)
@@ -387,7 +410,7 @@ void CTool::sectionCalcMulti()
 
     //calculate tool width based on extreme right and left values
     width = (section[numOfSections - 1].positionRight) - (section[0].positionLeft);
-    SettingsManager::instance()->setValue(SETTINGS_vehicle_toolWidth, width);
+    SettingsManager::instance()->setVehicle_toolWidth(width);
 
     //left and right tool position
     farLeftPosition = section[0].positionLeft;
@@ -402,24 +425,24 @@ void CTool::sectionCalcMulti()
 
 void CTool::sectionSetPositions()
 {
-    double vehicle_toolOffset = SettingsManager::instance()->value(SETTINGS_vehicle_toolOffset).value<double>();
-    double section_position1 = SettingsManager::instance()->value(SETTINGS_section_position1).value<double>();
-    double section_position2 = SettingsManager::instance()->value(SETTINGS_section_position2).value<double>();
-    double section_position3 = SettingsManager::instance()->value(SETTINGS_section_position3).value<double>();
-    double section_position4 = SettingsManager::instance()->value(SETTINGS_section_position4).value<double>();
-    double section_position5 = SettingsManager::instance()->value(SETTINGS_section_position5).value<double>();
-    double section_position6 = SettingsManager::instance()->value(SETTINGS_section_position6).value<double>();
-    double section_position7 = SettingsManager::instance()->value(SETTINGS_section_position7).value<double>();
-    double section_position8 = SettingsManager::instance()->value(SETTINGS_section_position8).value<double>();
-    double section_position9 = SettingsManager::instance()->value(SETTINGS_section_position9).value<double>();
-    double section_position10 = SettingsManager::instance()->value(SETTINGS_section_position10).value<double>();
-    double section_position11 = SettingsManager::instance()->value(SETTINGS_section_position11).value<double>();
-    double section_position12 = SettingsManager::instance()->value(SETTINGS_section_position12).value<double>();
-    double section_position13 = SettingsManager::instance()->value(SETTINGS_section_position13).value<double>();
-    double section_position14 = SettingsManager::instance()->value(SETTINGS_section_position14).value<double>();
-    double section_position15 = SettingsManager::instance()->value(SETTINGS_section_position15).value<double>();
-    double section_position16 = SettingsManager::instance()->value(SETTINGS_section_position16).value<double>();
-    double section_position17 = SettingsManager::instance()->value(SETTINGS_section_position17).value<double>();
+    double vehicle_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
+    double section_position1 = SettingsManager::instance()->section_position1();
+    double section_position2 = SettingsManager::instance()->section_position2();
+    double section_position3 = SettingsManager::instance()->section_position3();
+    double section_position4 = SettingsManager::instance()->section_position4();
+    double section_position5 = SettingsManager::instance()->section_position5();
+    double section_position6 = SettingsManager::instance()->section_position6();
+    double section_position7 = SettingsManager::instance()->section_position7();
+    double section_position8 = SettingsManager::instance()->section_position8();
+    double section_position9 = SettingsManager::instance()->section_position9();
+    double section_position10 = SettingsManager::instance()->section_position10();
+    double section_position11 = SettingsManager::instance()->section_position11();
+    double section_position12 = SettingsManager::instance()->section_position12();
+    double section_position13 = SettingsManager::instance()->section_position13();
+    double section_position14 = SettingsManager::instance()->section_position14();
+    double section_position15 = SettingsManager::instance()->section_position15();
+    double section_position16 = SettingsManager::instance()->section_position16();
+    double section_position17 = SettingsManager::instance()->section_position17();
 
     section[0].positionLeft = section_position1 + vehicle_toolOffset;
     section[0].positionRight = section_position2 + vehicle_toolOffset;

@@ -4,6 +4,7 @@
 #include "classes/settingsmanager.h"
 #include "cvehicle.h"
 #include "cmodulecomm.h"
+#include "qmlutil.h"
 
 /*************/
 /* CFence.cs */
@@ -52,16 +53,16 @@ bool CBoundary::IsPointInsideFenceArea(Vec2 testPoint) const
 
 void CBoundary::DrawFenceLines(const CVehicle &v, const CModuleComm &mc,
                                QOpenGLFunctions *gl,
-                                 const QMatrix4x4 &mvp)
+                                 const QMatrix4x4 &mvp, QObject *mainWindow)
 {
     QColor color;
     Vec3 pivot = v.pivotAxlePos;
-    float line_width = SettingsManager::instance()->value(SETTINGS_display_lineWidth).value<float>();
+    float line_width = SettingsManager::instance()->display_lineWidth();
     float line_width2;
 
     GLHelperOneColor gldraw;
 
-    if (!mc.isOutOfBounds)
+    if (!mainWindow->property("isOutOfBounds").toBool())
     {
         color.setRgbF(0.95f, 0.75f, 0.50f);
         line_width2 = line_width;
@@ -106,11 +107,11 @@ void CBoundary::DrawFenceLines(const CVehicle &v, const CModuleComm &mc,
 
         //line from last point to pivot marker
         gldraw.clear();
-        if (isDrawRightSide)
+        if (mainWindow->property("isDrawRightSide").toBool())
         {
             gldraw.append(QVector3D(bndBeingMadePts[0].easting, bndBeingMadePts[0].northing, 0));
-            gldraw.append(QVector3D(pivot.easting + (sin(pivot.heading - glm::PIBy2) * -(double)createBndOffset),
-                                     pivot.northing + (cos(pivot.heading - glm::PIBy2) * -(double)createBndOffset), 0));
+            gldraw.append(QVector3D(static_cast<float>(pivot.easting + (sin(pivot.heading - glm::PIBy2) * -mainWindow->property("createBndOffset").toDouble())),
+                                     static_cast<float>(pivot.northing + (cos(pivot.heading - glm::PIBy2) * -mainWindow->property("createBndOffset").toDouble())), 0.0f));
 
             gldraw.append(QVector3D(bndBeingMadePts[bndBeingMadePts.size() - 1].easting,
                                      bndBeingMadePts[bndBeingMadePts.size() - 1].northing, 0));
@@ -118,8 +119,8 @@ void CBoundary::DrawFenceLines(const CVehicle &v, const CModuleComm &mc,
         else
         {
             gldraw.append(QVector3D(bndBeingMadePts[0].easting, bndBeingMadePts[0].northing, 0));
-            gldraw.append(QVector3D(pivot.easting + (sin(pivot.heading - glm::PIBy2) * (double)createBndOffset),
-                                     pivot.northing + (cos(pivot.heading - glm::PIBy2) * (double)createBndOffset), 0));
+            gldraw.append(QVector3D(static_cast<float>(pivot.easting + (sin(pivot.heading - glm::PIBy2) * mainWindow->property("createBndOffset").toDouble())),
+                                     static_cast<float>(pivot.northing + (cos(pivot.heading - glm::PIBy2) * mainWindow->property("createBndOffset").toDouble())), 0.0f));
             gldraw.append(QVector3D(bndBeingMadePts[bndBeingMadePts.size() - 1].easting, bndBeingMadePts[bndBeingMadePts.size() - 1].northing, 0));
         }
         gldraw.draw(gl,mvp,QColor::fromRgbF(0.825f, 0.842f, 0.0f),

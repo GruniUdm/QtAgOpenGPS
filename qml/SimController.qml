@@ -6,9 +6,10 @@ import QtQuick
 import QtQuick.Controls.Fusion
 //import Settings
 import "components" as Comp
+import "../"
 
 Rectangle{
-    color: boundaryInterface.isOutOfBounds ? "darksalmon" : "gray"
+    color: aog.isOutOfBounds ? "darksalmon" : "gray"
     height: 60 * theme.scaleHeight
     width: 650 * theme.scaleWidth
     z: 100
@@ -19,12 +20,6 @@ Rectangle{
 			steerSlider.value = steerSlider.value - 10
 		}
 	}
-    Connections{
-        target: Settings
-        function onMenu_isSimulatorOnChanged(){
-            simBarRect.visible = Settings.menu_isSimulatorOn
-        }
-    }
 
     Row{
         spacing: 4 * theme.scaleWidth
@@ -34,14 +29,14 @@ Rectangle{
         Button{
 			id: resetButton
             text: qsTr("Reset")
-            font.pixelSize: 15
+            font.pointSize: 11
             height: parent.height
             width: 65 * theme.scaleWidth
             onClicked: aog.sim_reset()
         }
         Button{
             text: aog.steerAngleActual
-            font.pixelSize: 15
+            font.pointSize: 11
             height: parent.height
             width: 65 * theme.scaleWidth
             onClicked: steerSlider.value = 300
@@ -79,8 +74,8 @@ Rectangle{
             width: 65 * theme.scaleWidth
             icon.source: prefix + "/images/YouTurn80.png"
             onClicked: {
-                aog.sim_rotate()
-                aog.isBtnAutoSteerOn = false;
+                aog.rotateSim() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                aog.isBtnAutoSteerOn = false; // Qt 6.8 FIX: Use property setter, not method call
             }
         }
     }

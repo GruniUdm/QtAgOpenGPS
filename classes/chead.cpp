@@ -10,7 +10,7 @@
 
 void CBoundary::SetHydPosition(btnStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle)
 {
-    if (CVehicle::instance()->isHydLiftOn && CVehicle::instance()->avgSpeed > 0.2 && autoBtnState == btnStates::Auto)
+    if (CVehicle::instance()->isHydLiftOn() && CVehicle::instance()->avgSpeed > 0.2 && autoBtnState == btnStates::Auto)
     {
         if (isToolInHeadland)
         {

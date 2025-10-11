@@ -2,6 +2,8 @@
 #include "cfielddata.h"
 #include "ctool.h"
 #include "classes/settingsmanager.h"
+#include "qmlutil.h"
+#include "formgps.h"
 
 CPatches::CPatches() {
    triangleList = QSharedPointer<PatchTriangleList>( new PatchTriangleList);
@@ -12,7 +14,7 @@ CPatches::CPatches() {
  */
 void CPatches::TurnMappingOn(CTool &tool, int j)
 {
-    QColor display_colorSectionsDay = SettingsManager::instance()->value(SETTINGS_display_colorSectionsDay).value<QColor>();
+    QColor display_colorSectionsDay = SettingsManager::instance()->display_colorSectionsDay();
 
     QColor color_prop;
     numTriangles = 0;
@@ -54,9 +56,11 @@ void CPatches::TurnMappingOn(CTool &tool, int j)
 }
 
 void CPatches::TurnMappingOff(CTool &tool,
-                              CFieldData &fd)
+                              CFieldData &fd,
+                              QObject *mainWindow,
+                              FormGPS *formGPS)
 {
-   AddMappingPoint(tool, fd, 0);
+   AddMappingPoint(tool, fd, 0, mainWindow, formGPS);
 
    isDrawing = false;
    numTriangles = 0;
@@ -76,7 +80,9 @@ void CPatches::TurnMappingOff(CTool &tool,
 
 void CPatches::AddMappingPoint(CTool &tool,
                                CFieldData &fd,
-                               int j)
+                               int j,
+                               QObject *mainWindow,
+                               FormGPS *formGPS)
 {
     Vec2 vleftPoint = tool.section[currentStartSectionNum].leftPoint;
     Vec2 vrightPoint = tool.section[currentEndSectionNum].rightPoint;
@@ -84,7 +90,7 @@ void CPatches::AddMappingPoint(CTool &tool,
     QVector3D rightPoint(vrightPoint.easting,vrightPoint.northing,0);
     QVector3D color;
     QColor color_prop;
-    QColor display_colorSectionsDay = SettingsManager::instance()->value(SETTINGS_display_colorSectionsDay).value<QColor>();
+    QColor display_colorSectionsDay = SettingsManager::instance()->display_colorSectionsDay();
 
 
     //add two triangles for next step.
@@ -116,9 +122,12 @@ void CPatches::AddMappingPoint(CTool &tool,
 
     temp *= 0.5;
 
-    //TODO,
-    fd.workedAreaTotal += temp;
-    fd.workedAreaTotalUser += temp;
+    // Update worked area using Q_PROPERTY
+    double currentTotal = formGPS->workedAreaTotal();
+    formGPS->setWorkedAreaTotal(currentTotal + temp);
+
+    double currentUser = formGPS->workedAreaTotalUser();
+    formGPS->setWorkedAreaTotalUser(currentUser + temp);
 
     if (numTriangles > 61)
     {

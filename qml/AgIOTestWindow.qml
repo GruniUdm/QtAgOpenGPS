@@ -2,7 +2,8 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-//import AOG
+import AOG
+import "agio"
 
 ApplicationWindow {
     id: testWindow
@@ -10,7 +11,12 @@ ApplicationWindow {
     height: 800
     title: "AgIOService Test & Validation"
     visible: true
-    
+
+    // Qt 6.8 QProperty + BINDABLE: Use AgIOInterface instead of direct AgIOService access
+    AgIOInterface {
+        id: agioInterface
+    }
+
     property bool serviceAvailable: typeof AgIOService !== 'undefined'
     
     ScrollView {
@@ -53,7 +59,7 @@ ApplicationWindow {
                             if (serviceAvailable) {
                                 console.log("Testing AgIOService methods...")
                                 AgIOService.testThreadCommunication()
-                                AgIOService.updateGPSStatus()
+                                // AgIOService.updateGPSStatus() // TODO: Method doesn't exist in AgIOService
                             }
                         }
                     }
@@ -70,21 +76,21 @@ ApplicationWindow {
                     width: parent.width
                     
                     Text { text: "Latitude:" }
-                    Text { text: serviceAvailable ? AgIOService.latitude.toFixed(6) : "N/A" }
+                    Text { text: serviceAvailable ? agioInterface.latitude.toFixed(6) : "N/A" }
                     
                     Text { text: "Longitude:" }
-                    Text { text: serviceAvailable ? AgIOService.longitude.toFixed(6) : "N/A" }
+                    Text { text: serviceAvailable ? agioInterface.longitude.toFixed(6) : "N/A" }
                     
                     Text { text: "Heading:" }
-                    Text { text: serviceAvailable ? AgIOService.heading.toFixed(2) + "°" : "N/A" }
+                    Text { text: serviceAvailable ? agioInterface.heading.toFixed(2) + "°" : "N/A" }  // Rectangle Pattern: direct property access
                     
                     Text { text: "Speed:" }
-                    Text { text: serviceAvailable ? AgIOService.speed.toFixed(1) + " km/h" : "N/A" }
+                    Text { text: serviceAvailable ? agioInterface.speed.toFixed(1) + " km/h" : "N/A" }
                     
                     Text { text: "GPS Connected:" }
                     Text { 
-                        text: serviceAvailable ? (AgIOService.gpsConnected ? "✅ Connected" : "❌ Disconnected") : "N/A"
-                        color: serviceAvailable ? (AgIOService.gpsConnected ? "green" : "red") : "gray"
+                        text: serviceAvailable ? (agioInterface.gpsConnected ? "✅ Connected" : "❌ Disconnected") : "N/A"
+                        color: serviceAvailable ? (agioInterface.gpsConnected ? "green" : "red") : "gray"
                     }
                 }
             }
@@ -100,23 +106,23 @@ ApplicationWindow {
                     
                     Text { text: "NTRIP Connected:" }
                     Text { 
-                        text: serviceAvailable ? (AgIOService.ntripConnected ? "✅ Connected" : "❌ Disconnected") : "N/A"
-                        color: serviceAvailable ? (AgIOService.ntripConnected ? "green" : "red") : "gray"
+                        text: serviceAvailable ? (agioInterface.ntripConnected ? "✅ Connected" : "❌ Disconnected") : "N/A"
+                        color: serviceAvailable ? (agioInterface.ntripConnected ? "green" : "red") : "gray"
                     }
                     
                     Text { text: "NTRIP Status:" }
-                    Text { text: serviceAvailable ? AgIOService.ntripStatus : "N/A" }
+                    Text { text: serviceAvailable ? agioInterface.ntripStatus : "N/A" }
                     
                     Text { text: "Ethernet Connected:" }
                     Text { 
-                        text: serviceAvailable ? (AgIOService.ethernetConnected ? "✅ Connected" : "❌ Disconnected") : "N/A"
-                        color: serviceAvailable ? (AgIOService.ethernetConnected ? "green" : "red") : "gray"
+                        text: serviceAvailable ? (agioInterface.ethernetConnected ? "✅ Connected" : "❌ Disconnected") : "N/A"
+                        color: serviceAvailable ? (agioInterface.ethernetConnected ? "green" : "red") : "gray"
                     }
                     
                     Text { text: "Bluetooth Connected:" }
                     Text { 
-                        text: serviceAvailable ? (AgIOService.bluetoothConnected ? "✅ Connected" : "❌ Disconnected") : "N/A"
-                        color: serviceAvailable ? (AgIOService.bluetoothConnected ? "green" : "red") : "gray"
+                        text: serviceAvailable ? (agioInterface.bluetoothConnected ? "✅ Connected" : "❌ Disconnected") : "N/A"
+                        color: serviceAvailable ? (agioInterface.bluetoothConnected ? "green" : "red") : "gray"
                     }
                 }
             }
@@ -129,11 +135,11 @@ ApplicationWindow {
                 ColumnLayout {
                     width: parent.width
                     
-                    Text { text: "NTRIP URL: " + (serviceAvailable ? AgIOService.setNTRIP_url : "N/A") }
-                    Text { text: "NTRIP Mount: " + (serviceAvailable ? AgIOService.setNTRIP_mount : "N/A") }
-                    Text { text: "GPS Serial Port: " + (serviceAvailable ? AgIOService.setGnss_SerialPort : "N/A") }
-                    Text { text: "GPS Baud Rate: " + (serviceAvailable ? AgIOService.setGnss_BaudRate : "N/A") }
-                    Text { text: "UDP IP: " + (serviceAvailable ? AgIOService.setUDP_IP1 + "." + AgIOService.setUDP_IP2 + "." + AgIOService.setUDP_IP3 + ".xxx" : "N/A") }
+                    Text { text: "NTRIP URL: " + (serviceAvailable ? SettingsManager.setNTRIP_url : "N/A") }
+                    Text { text: "NTRIP Mount: " + (serviceAvailable ? SettingsManager.setNTRIP_mount : "N/A") }
+                    Text { text: "GPS Serial Port: " + (serviceAvailable ? SettingsManager.setGnss_SerialPort : "N/A") }
+                    Text { text: "GPS Baud Rate: " + (serviceAvailable ? SettingsManager.setGnss_BaudRate : "N/A") }
+                    Text { text: "UDP IP: " + (serviceAvailable ? SettingsManager.ethernet_ipOne + "." + SettingsManager.ethernet_ipTwo + "." + SettingsManager.ethernet_ipThree + ".xxx" : "N/A") }
                 }
             }
             
@@ -145,19 +151,19 @@ ApplicationWindow {
                 ColumnLayout {
                     width: parent.width
                     
-                    Text { text: "GPS Status Text: " + (serviceAvailable ? AgIOService.gpsStatusText : "N/A") }
-                    Text { text: "Module Status Text: " + (serviceAvailable ? AgIOService.moduleStatusText : "N/A") }
-                    Text { text: "Serial Status Text: " + (serviceAvailable ? AgIOService.serialStatusText : "N/A") }
-                    Text { text: "NTRIP Status Text: " + (serviceAvailable ? AgIOService.ntripStatusText : "N/A") }
+                    Text { text: "GPS Status Text: " + (serviceAvailable ? SettingsManager.gpsStatusText : "N/A") }
+                    Text { text: "Module Status Text: " + (serviceAvailable ? SettingsManager.moduleStatusText : "N/A") }
+                    Text { text: "Serial Status Text: " + (serviceAvailable ? SettingsManager.serialStatusText : "N/A") }
+                    Text { text: "NTRIP Status Text: " + (serviceAvailable ? agioInterface.ntripStatusText : "N/A") }
                     
                     Text { 
-                        text: "Error Dialog: " + (serviceAvailable ? (AgIOService.showErrorDialog ? "⚠️ Yes" : "✅ No") : "N/A")
-                        color: serviceAvailable ? (AgIOService.showErrorDialog ? "orange" : "green") : "gray"
+                        text: "Error Dialog: " + (serviceAvailable ? "N/A - Use AgIOInterface" : "N/A")
+                        color: "gray"
                     }
                     
-                    Text { text: "Last Error: " + (serviceAvailable ? AgIOService.lastErrorMessage : "N/A") }
+                    Text { text: "Last Error: " + (serviceAvailable ? "N/A - Use AgIOInterface" : "N/A") }
                     
-                    Text { text: "Discovered Modules: " + (serviceAvailable ? AgIOService.discoveredModules.length : "N/A") }
+                    Text { text: "Discovered Modules: " + (serviceAvailable ? "N/A - Use AgIOInterface" : "N/A") }
                 }
             }
             
@@ -196,7 +202,7 @@ ApplicationWindow {
                         enabled: serviceAvailable
                         onClicked: {
                             if (serviceAvailable) {
-                                AgIOService.startModuleDiscovery()
+                                SettingsManager.startModuleDiscovery()
                                 console.log("Started module discovery")
                             }
                         }
@@ -226,7 +232,7 @@ ApplicationWindow {
                                 if (serviceAvailable && moduleIPField.text) {
                                     // Si la méthode existe dans UDPWorker
                                     console.log("Pinging module:", moduleIPField.text)
-                                    // AgIOService.pingModule(moduleIPField.text) // Pourrait être ajouté
+                                    // SettingsManager.pingModule(moduleIPField.text) // Pourrait être ajouté
                                 }
                             }
                         }

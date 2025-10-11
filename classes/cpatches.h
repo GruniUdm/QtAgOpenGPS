@@ -4,6 +4,7 @@
 #include <QSharedPointer>
 #include <QVector>
 #include <QVector3D>
+#include <QObject>
 
 typedef QVector<QVector3D> PatchTriangleList;
 
@@ -37,10 +38,14 @@ public:
     void TurnMappingOn(CTool &tool,
                        int j);
     void TurnMappingOff(CTool &tool,
-                        CFieldData &fd);
+                        CFieldData &fd,
+                        QObject *mainWindow,
+                        class FormGPS *formGPS);
     void AddMappingPoint(CTool &tool,
                          CFieldData &fd,
-                         int j);
+                         int j,
+                         QObject *mainWindow,
+                         class FormGPS *formGPS);
 
 
 

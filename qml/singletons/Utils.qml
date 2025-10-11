@@ -3,6 +3,8 @@
 //
 //
 import QtQuick
+import AOG
+import "../"
 
 pragma Singleton
 
@@ -106,7 +108,8 @@ Item {
     }
 
     function isMetric() {
-        return (Settings.menu_isMetric === true || Settings.menu_isMetric === "true")
+        // Threading Phase 1: Menu metric system preference
+        return SettingsManager.menu_isMetric
     }
 
     function speed_unit() {
@@ -380,9 +383,9 @@ Item {
 
     function workRateString(speed) {
         if (isMetric())
-            return Number(Settings.vehicle_toolWidth * speed * 0.1).toLocaleString(Qt.locale(), 'f', 2) + " ha/hr"; //TODO: translate
+            return Number(SettingsManager.vehicle_toolWidth * speed * 0.1).toLocaleString(Qt.locale(), 'f', 2) + " ha/hr"; // Threading Phase 1: Vehicle tool width for work rate calculation
         else
-            return Number(Settings.vehicle_toolWidth * speed * 0.2471).toLocaleString(Qt.locale(), 'f', 2) + " ac/hr";
+            return Number(SettingsManager.vehicle_toolWidth * speed * 0.2471).toLocaleString(Qt.locale(), 'f', 2) + " ac/hr"; // Threading Phase 1: Imperial work rate calculation
     }
 
 

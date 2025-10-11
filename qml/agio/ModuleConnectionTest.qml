@@ -2,12 +2,13 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-//import AOG
+import AOG
 
 import "../components" as Comp
 
 ApplicationWindow {
     id: moduleTestWindow
+    objectName: "moduleConnectionTest"
     width: 800
     height: 900
     title: "AgIOService Module Connection Test"
@@ -15,7 +16,10 @@ ApplicationWindow {
     property bool serviceAvailable: typeof AgIOService !== 'undefined'
     property int testCounter: 0
     property string lastModuleResponse: ""
-    property var discoveredModules: serviceAvailable ? AgIOService.discoveredModules : []
+
+    // Qt 6.8 QProperty + BINDABLE: Interface property for setProperty() compatibility
+    property var agioDiscoveredModules: serviceAvailable ? AgIOService.discoveredModules : []
+    property var discoveredModules: agioDiscoveredModules
     
     ScrollView {
         anchors.fill: parent
@@ -75,10 +79,10 @@ ApplicationWindow {
                                     console.log("Testing connection to:", testModuleIP.text)
                                     
                                     testResultText.text = `Test ${testCounter}: Waking up modules and scanning for ${testModuleIP.text}...`
-                                    
+
                                     // 1. Wake up dormant modules first (IMPORTANT!)
                                     AgIOService.wakeUpModules("192.168.1.255")
-                                    
+
                                     // 2. Wait a bit then start discovery
                                     wakeupTimer.start()
                                 }
@@ -125,7 +129,7 @@ ApplicationWindow {
                                 }
                             }
                         }
-                        
+
                         Button {
                             text: "Stop Discovery"
                             enabled: serviceAvailable
@@ -136,15 +140,15 @@ ApplicationWindow {
                                 }
                             }
                         }
-                        
+
                         Button {
                             text: "Refresh Status"
                             enabled: serviceAvailable
                             onClicked: {
                                 if (serviceAvailable) {
                                     AgIOService.updateModuleStatus()
-                                    // Forcer mise à jour de la liste
-                                    discoveredModules = AgIOService.discoveredModules
+                                    // Forcer mise à jour de la liste via interface property
+                                    agioDiscoveredModules = AgIOService.discoveredModules
                                 }
                             }
                         }
@@ -210,7 +214,7 @@ ApplicationWindow {
                         height: 40
                         color: "lightyellow"
                         border.color: "orange"
-                        
+
                         Text {
                             anchors.centerIn: parent
                             text: serviceAvailable ? AgIOService.moduleStatusText : "Service unavailable"
@@ -313,7 +317,7 @@ ApplicationWindow {
                     Text { text: "UDP IP Range:" }
                     Text { 
                         text: serviceAvailable ? 
-                              `${AgIOService.setUDP_IP1}.${AgIOService.setUDP_IP2}.${AgIOService.setUDP_IP3}.xxx` : 
+                              `${SettingsManager.ethernet_ipOne}.${SettingsManager.ethernet_ipTwo}.${SettingsManager.ethernet_ipThree}.xxx` : 
                               "N/A"
                     }
                     
@@ -324,12 +328,12 @@ ApplicationWindow {
                     Text { text: "8888 (Modules)" }
                     
                     Text { text: "Ethernet Status:" }
-                    Text { 
-                        text: serviceAvailable ? 
-                              (AgIOService.ethernetConnected ? "✅ Connected" : "❌ Disconnected") : 
+                    Text {
+                        text: serviceAvailable ?
+                              (AgIOService.ethernetConnected ? "✅ Connected" : "❌ Disconnected") :
                               "N/A"
-                        color: serviceAvailable ? 
-                               (AgIOService.ethernetConnected ? "green" : "red") : 
+                        color: serviceAvailable ?
+                               (AgIOService.ethernetConnected ? "green" : "red") :
                                "gray"
                     }
                 }
@@ -353,28 +357,28 @@ ApplicationWindow {
                         Layout.fillWidth: true
                         
                         Text { text: "GPS Status:" }
-                        Text { 
+                        Text {
                             text: serviceAvailable ? AgIOService.gpsStatusText : "N/A"
                         }
                         
                         Text { text: "Serial Status:" }
-                        Text { 
+                        Text {
                             text: serviceAvailable ? AgIOService.serialStatusText : "N/A"
                         }
                         
                         Text { text: "Last Error:" }
-                        Text { 
+                        Text {
                             text: serviceAvailable ? AgIOService.lastErrorMessage : "N/A"
                             color: serviceAvailable && AgIOService.lastErrorMessage !== "" ? "red" : "green"
                         }
-                        
+
                         Text { text: "Error Dialog:" }
-                        Text { 
-                            text: serviceAvailable ? 
-                                  (AgIOService.showErrorDialog ? "⚠️ Active" : "✅ None") : 
+                        Text {
+                            text: serviceAvailable ?
+                                  (AgIOService.showErrorDialog ? "⚠️ Active" : "✅ None") :
                                   "N/A"
-                            color: serviceAvailable ? 
-                                   (AgIOService.showErrorDialog ? "red" : "green") : 
+                            color: serviceAvailable ?
+                                   (AgIOService.showErrorDialog ? "red" : "green") :
                                    "gray"
                         }
                     }
@@ -416,9 +420,10 @@ ApplicationWindow {
                         enabled: serviceAvailable
                         onClicked: {
                             if (serviceAvailable) {
-                                AgIOService.updateGPSStatus()
-                                AgIOService.updateModuleStatus()
-                                AgIOService.updateSerialStatus()
+                                // TODO: These methods don't exist in AgIOService
+                                // AgIOService.updateGPSStatus()
+                                // AgIOService.updateModuleStatus()
+                                // AgIOService.updateSerialStatus()
                             }
                         }
                     }
@@ -447,9 +452,9 @@ ApplicationWindow {
         onTriggered: {
             monitorCounter++
             
-            // Update discovered modules list
+            // Update discovered modules list via interface property
             if (serviceAvailable) {
-                discoveredModules = AgIOService.discoveredModules
+                agioDiscoveredModules = AgIOService.discoveredModules
             }
         }
     }

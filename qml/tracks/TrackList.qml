@@ -9,7 +9,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtQml.Models
 // Interface import removed - now QML_SINGLETON
-//import AOG
+import AOG
 import "../components"
 import ".."
 
@@ -49,8 +49,8 @@ MoveablePopup {
     Rectangle{
         anchors.fill: parent
         border.width: 1
-        border.color: aog.blackDayWhiteNight
-        color: aog.backgroundColor
+        border.color: aogInterface.blackDayWhiteNight
+        color: aogInterface.backgroundColor
         TopLine{
             id: topLine
             titleText: qsTr("Tracks")
@@ -79,7 +79,7 @@ MoveablePopup {
                 icon.source: prefix + "/images/FileEditName.png"
                 onClicked: {
                     if (trackView.currentIndex > -1) {
-                        editLineName.set_name(linesInterface.abLinesList[trackView.currentIndex].name)
+                        editLineName.set_name(aogInterface.abLinesList[trackView.currentIndex].name)
                         editLineName.visible = true
                     }
                 }

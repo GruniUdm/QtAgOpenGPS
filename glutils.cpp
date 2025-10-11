@@ -30,7 +30,7 @@ int textureHeight;
 #ifdef LOCAL_QML
 #define PREFIX "local:"
 #else
-#define PREFIX ":"
+#define PREFIX ":/AOG"
 #endif
 
 
@@ -493,7 +493,7 @@ void drawText3D(const CCamera &camera, QOpenGLFunctions *gl,
 
     mvp.translate(x1, y1, 0);
 
-    if (SettingsManager::instance()->value(SETTINGS_display_camPitch).value<double>() < -45)
+    if (SettingsManager::instance()->display_camPitch() < -45)
     {
         mvp.rotate(90, 1, 0, 0);
         if (camera.camFollowing) mvp.rotate(-camera.camHeading, 0, 1, 0);
@@ -568,7 +568,7 @@ void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp
     size = pow(size, 0.8)/800;
 
     //2d
-    if (SettingsManager::instance()->value(SETTINGS_display_camPitch).value<double>() < -58)
+    if (SettingsManager::instance()->display_camPitch() < -58)
     {
         if (!camera.camFollowing)
         {
@@ -593,7 +593,7 @@ void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp
         }
         else
         {
-            mvp.rotate(- SettingsManager::instance()->value(SETTINGS_display_camPitch).value<double>(), 1, 0, 0);
+            mvp.rotate(- SettingsManager::instance()->display_camPitch(), 1, 0, 0);
             y *= 0.3;
         }
     }

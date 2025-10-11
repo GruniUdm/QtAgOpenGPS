@@ -5,7 +5,7 @@ import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Shapes
 //import Settings
-//import AOG
+import AOG
 import "components" as Comp
 
 
@@ -49,7 +49,7 @@ Popup{
     signal mouseClicked(int x, int y)
     //signal mouseDragged(int fromX, int fromY, int toX, int toY)
     //signal zoom(bool checked)
-    signal close()
+    signal closeHeadland()  // Renamed to avoid conflict with Popup.close()
     signal slice()
     signal deletePoints()
     signal create_headland()
@@ -116,7 +116,7 @@ Popup{
         if(visible) {
             load()
         } else {
-            close()
+            closeHeadland()
         }
     }
 
@@ -386,7 +386,7 @@ Popup{
             objectName: "nudSetDistance"
             from: 0
             to: 2000
-            boundValue: numTracks.value * Settings.vehicle_toolWidth
+            boundValue: numTracks.value * SettingsManager.vehicle_toolWidth
             Layout.alignment: Qt.AlignCenter
             Comp.TextLine {
                 anchors.top: parent.bottom;
@@ -404,7 +404,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             Comp.TextLine {
                 anchors.top: parent.bottom;
-                text: qsTr("Tool: ")+ Utils.m_to_ft_string(Settings.vehicle_toolWidth)
+                text: qsTr("Tool: ")+ Utils.m_to_ft_string(SettingsManager.vehicle_toolWidth)
             }
         }
         Comp.IconButtonColor{
@@ -446,7 +446,8 @@ Popup{
             icon.source: prefix + "/images/HeadlandSectionOn.png"
             iconChecked: prefix + "/images/HeadlandSectionOff.png"
             checkable: true
-            isChecked: Settings.headland_isSectionControlled
+            // Threading Phase 1: Headland section control
+            isChecked: SettingsManager.headland_isSectionControlled
             Layout.alignment: Qt.AlignCenter
             onCheckedChanged: headlandDesigner.isSectionControlled(checked)
         }
@@ -463,7 +464,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             onClicked: {
                 save_exit()
-                boundaryInterface.isHeadlandOn = true
+                aog.isHeadlandOn = true
                 headlandDesigner.visible = false
             }
         }

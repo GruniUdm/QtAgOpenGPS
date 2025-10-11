@@ -6,7 +6,6 @@
 #include <climits>
 #include "vec2.h"
 #include "vec3.h"
-#include "interfaceproperty.h"
 
 class QOpenGLFunctions;
 class QMatrix4x4;
@@ -29,7 +28,6 @@ private:
 
 public:
     bool isContourOn=false;
-    InterfaceProperty<AOGInterface,bool> isContourBtnOn = InterfaceProperty<AOGInterface,bool>("isContourBtnOn");
     bool isRightPriority = true;
     // for closest line point to current fix
     double minDistance = 99999.0, refX, refZ;
@@ -63,17 +61,16 @@ public:
     //list of points for the new contour line
     QVector<Vec3> ctList;
 
-    InterfaceProperty<AOGInterface,bool> isLocked = InterfaceProperty<AOGInterface,bool>("btnIsContourLocked");
 
     explicit CContour(QObject *parent = 0);
-    void SetLockToLine();
-    void BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehicle, Vec3 pivot);
-    void DistanceFromContourLine(bool isBtnAutoSteerOn, CVehicle &vehicle, CYouTurn &yt, CAHRS &ahrs,  CNMEA &pn, Vec3 pivot, Vec3 steer);
+    void SetLockToLine(class FormGPS *formGPS);
+    void BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehicle, Vec3 pivot, QObject *mainWindow);
+    void DistanceFromContourLine(bool isBtnAutoSteerOn, CVehicle &vehicle, CYouTurn &yt, CAHRS &ahrs,  CNMEA &pn, Vec3 pivot, Vec3 steer, QObject *mainWindow);
     void StartContourLine();
     void AddPoint(Vec3 pivot);
     void StopContourLine(QVector<QSharedPointer<QVector<Vec3>>> &contourSaveList);
     void BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCounter);
-    void DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
+    void DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, QObject *mainWindow);
     void ResetContour();
 signals:
     //void guidanceLineDistanceOff(int);

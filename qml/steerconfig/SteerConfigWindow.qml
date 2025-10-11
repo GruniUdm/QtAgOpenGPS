@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 //import Settings
-//import AOG
+import AOG
 
 
 import ".."
@@ -19,6 +19,10 @@ Drawer {
     visible: false
     modal: true
 
+    // Local computed properties for steering angle display
+    readonly property double steerAngleActualRounded: Math.round(aog.steerAngleActual*100)/100
+    readonly property double steerAngleSetRounded: Math.round(aog.steerAngleSet*100)/100
+
     function show (){
         steerConfigWindow.visible = true
         steerBtn.isChecked = true
@@ -27,9 +31,9 @@ Drawer {
 	Rectangle{
 		id: steerConfigFirst
         anchors.fill: parent
-        border.color: aog.blackDayWhiteNight
+        border.color: aogInterface.blackDayWhiteNight
         border.width: 1
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
         visible: true
         // TopLine{
         //     id:topLine
@@ -79,7 +83,7 @@ Drawer {
                     icon.source: prefix + "/images/Steer/ST_StanleyTab.png"
                     implicitHeight: 50 * theme.scaleHeight
                     implicitWidth: parent.width /3 - 5 * theme.scaleWidth
-                    visible: Settings.vehicle_isStanleyUsed
+                    visible: SettingsManager.vehicle_isStanleyUsed
                 }
 				IconButtonColor{
 					id: ppBtn
@@ -88,7 +92,7 @@ Drawer {
                     icon.source: prefix + "/images/Steer/Sf_PPTab.png"
                     implicitHeight: 50 * theme.scaleHeight
                     implicitWidth: parent.width /3 - 5 * theme.scaleWidth
-                    visible: !Settings.vehicle_isStanleyUsed
+                    visible: !SettingsManager.vehicle_isStanleyUsed
                 }
             }
 
@@ -136,22 +140,22 @@ Drawer {
                         icon.source: prefix + "/images/SteerCenter.png"
                         //visible: false
                         visible: steerBtn.checked
-                        onClicked:  {Settings.as_wasOffset -= cpDegSlider.value *aog.steerAngleActual;
-                        if (Math.abs(Settings.as_wasOffset)< 3900){ sendUdptimer.running = true}
+                        onClicked:  {SettingsManager.as_wasOffset = SettingsManager.as_wasOffset - cpDegSlider.value * aog.steerAngleActual;
+                        if (Math.abs(SettingsManager.as_wasOffset) < 3900){ sendUdptimer.running = true}
                         else {timedMessage.addMessage(2000, "Exceeded Range", "Excessive Steer Angle - Cannot Zero");}
                                     }
                     }
 
                     SteerConfigSliderCustomized {
-                        property int wasOffset: Settings.as_wasOffset
+                        property int wasOffset: 0
                         id: wasZeroSlider
                         centerTopText: qsTr("WAS Zero")
                         from: -4000
                         leftText: Utils.decimalRound(value / cpDegSlider.value, 2)
                         //onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
-                        onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, sendUdptimer.running = true
+                        onValueChanged: SettingsManager.as_wasOffset = value * cpDegSlider.value, sendUdptimer.running = true
                         to: 4000
-                        value: Settings.as_wasOffset / cpDegSlider.value
+                        value: SettingsManager.as_wasOffset / cpDegSlider.value
                         visible: steerBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -161,10 +165,10 @@ Drawer {
                         centerTopText: qsTr("Counts per Degree")
                         from: 1
                         leftText: value
-                        onValueChanged: Settings.as_countsPerDegree = value, sendUdptimer.running = true
+                        onValueChanged: SettingsManager.as_countsPerDegree = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 255
-                        value: Math.round(Settings.as_countsPerDegree, 0)
+                        value: Math.round(SettingsManager.as_countsPerDegree, 0)
                         visible: steerBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -174,10 +178,10 @@ Drawer {
                         centerTopText: qsTr("AckerMann")
                         from: 1
                         leftText: value
-                        onValueChanged: Settings.as_ackerman = value, sendUdptimer.running = true
+                        onValueChanged: SettingsManager.as_ackerman = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 200
-                        value: Math.round(Settings.as_ackerman, 0)
+                        value: Math.round(SettingsManager.as_ackerman, 0)
                         visible: steerBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -187,10 +191,10 @@ Drawer {
                         centerTopText:qsTr("Max Steer Angle")
                         from: 10
                         leftText: value
-                        onValueChanged: Settings.vehicle_maxSteerAngle= value
+                        onValueChanged: SettingsManager.vehicle_maxSteerAngle = value
                         stepSize: 1
                         to: 80
-                        value: Math.round(Settings.vehicle_maxSteerAngle)
+                        value: Math.round(SettingsManager.vehicle_maxSteerAngle)
                         visible: steerBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -204,10 +208,10 @@ Drawer {
                         centerTopText: qsTr("Proportional Gain")
                         from: 0
                         leftText: value
-                        onValueChanged: Settings.as_Kp = value, sendUdptimer.running = true
+                        onValueChanged: SettingsManager.as_Kp = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 200
-                        value: Math.round(Settings.as_Kp, 0)
+                        value: Math.round(SettingsManager.as_Kp, 0)
                         visible: gainBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -217,10 +221,10 @@ Drawer {
                         centerTopText: qsTr("Maximum Limit")
                         from: 0
                         leftText: value
-                        onValueChanged: Settings.as_highSteerPWM = value, sendUdptimer.running = true
+                        onValueChanged: SettingsManager.as_highSteerPWM = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 254
-                        value: Math.round(Settings.as_highSteerPWM, 0)
+                        value: Math.round(SettingsManager.as_highSteerPWM, 0)
                         visible: gainBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -230,10 +234,10 @@ Drawer {
                         centerTopText: qsTr("Minimum to Move")
                         from: 0
                         leftText: value
-                        onValueChanged: Settings.as_minSteerPWM = value, sendUdptimer.running = true
+                        onValueChanged: SettingsManager.as_minSteerPWM = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 100
-                        value: Math.round(Settings.as_minSteerPWM, 0)
+                        value: Math.round(SettingsManager.as_minSteerPWM, 0)
                         visible: gainBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -246,11 +250,11 @@ Drawer {
                         id: stanleyAggressivenessSlider
                         centerTopText: qsTr("Agressiveness")
                         from: .1
-                        onValueChanged: Settings.vehicle_stanleyDistanceErrorGain = value
+                        onValueChanged: SettingsManager.vehicle_stanleyDistanceErrorGain = value
                         stepSize: .1
                         to: 4
                         leftText: Math.round(value * 10)/10
-                        value: Settings.vehicle_stanleyDistanceErrorGain
+                        value: SettingsManager.vehicle_stanleyDistanceErrorGain
                         visible: stanleyBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -259,11 +263,11 @@ Drawer {
                         id: overShootReductionSlider
                         centerTopText: qsTr("OverShoot Reduction")
                         from: .1
-                        onValueChanged: Settings.vehicle_stanleyHeadingErrorGain = value
+                        onValueChanged: SettingsManager.vehicle_stanleyHeadingErrorGain = value
                         stepSize: .1
                         to: 1.5
                         leftText: Math.round(value * 10) / 10
-                        value: Settings.vehicle_stanleyHeadingErrorGain
+                        value: SettingsManager.vehicle_stanleyHeadingErrorGain
                         visible: stanleyBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -273,10 +277,10 @@ Drawer {
                         centerTopText: qsTr("Integral")
                         from: 0
                         leftText: value
-                        onValueChanged: Settings.vehicle_stanleyIntegralGainAB = value /100
+                        onValueChanged: SettingsManager.vehicle_stanleyIntegralGainAB = value / 100
                         stepSize: 1
                         to: 100
-                        value: Math.round(Settings.vehicle_stanleyIntegralGainAB * 100, 0)
+                        value: Math.round(SettingsManager.vehicle_stanleyIntegralGainAB * 100, 0)
                         visible: stanleyBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -289,11 +293,11 @@ Drawer {
                         id: acqLookAheadSlider
                         centerTopText: qsTr("Acquire Look Ahead")
                         from: 1
-                        onValueChanged: Settings.vehicle_goalPointLookAhead = value
+                        onValueChanged: SettingsManager.vehicle_goalPointLookAhead = value
                         stepSize: .1
                         leftText: Math.round(value * 10) / 10
                         to: 7
-                        value: Settings.vehicle_goalPointLookAhead
+                        value: SettingsManager.vehicle_goalPointLookAhead
                         visible: ppBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -304,9 +308,9 @@ Drawer {
                         from: 1
                         stepSize: .1
                         leftText: Math.round(value * 10) / 10
-                        onValueChanged: Settings.vehicle_goalPointLookAheadHold = Utils.decimalRound(value, 1)
+                        onValueChanged: SettingsManager.vehicle_goalPointLookAheadHold = Utils.decimalRound(value, 1)
                         to: 7
-                        value: Settings.vehicle_goalPointLookAheadHold
+                        value: SettingsManager.vehicle_goalPointLookAheadHold
                         visible: ppBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -315,11 +319,11 @@ Drawer {
                         id: lookAheadSpeedGainSlider
                         centerTopText: qsTr("Look Ahead Speed Gain")
                         from: .5
-                        onValueChanged: Settings.vehicle_goalPointLookAheadMult = value
+                        onValueChanged: SettingsManager.vehicle_goalPointLookAheadMult = value
                         stepSize: .1
                         to: 3
                         leftText: Math.round(value * 10) / 10
-                        value: Settings.vehicle_goalPointLookAheadMult
+                        value: SettingsManager.vehicle_goalPointLookAheadMult
                         visible: ppBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -328,11 +332,11 @@ Drawer {
                         id: ppIntegralSlider
                         centerTopText: qsTr("Integral")
                         from: 0
-                        onValueChanged: Settings.vehicle_purePursuitIntegralGainAB = value /100
+                        onValueChanged: SettingsManager.vehicle_purePursuitIntegralGainAB = value / 100
                         stepSize: 1
                         to: 100
                         leftText: Math.round(value *10) / 10
-                        value: Settings.vehicle_purePursuitIntegralGainAB *100
+                        value: SettingsManager.vehicle_purePursuitIntegralGainAB * 100
                         visible: ppBtn.checked
                         Layout.maximumWidth: 180 * theme.scaleWidth
                         Layout.alignment: Qt.AlignLeft
@@ -372,16 +376,16 @@ Drawer {
                     spacing: 10 * theme.scaleWidth
 
                     Text {
-                        text: qsTr("Set: " + aog.steerAngleSetRounded)
+                        text: qsTr("Set: " + steerConfigWindow.steerAngleSetRounded)
                         //text: qsTr("Set: " + aog.steerAngleSet)
                         Layout.alignment: Qt.AlignCenter
                     }
                     Text {
-                        text: qsTr("Act: " + aog.steerAngleActualRounded)
+                        text: qsTr("Act: " + steerConfigWindow.steerAngleActualRounded)
                         Layout.alignment: Qt.AlignCenter
                     }
                     Text {
-                        property double err: aog.steerAngleActualRounded - aog.steerAngleSetRounded
+                        property double err: steerConfigWindow.steerAngleActualRounded - steerConfigWindow.steerAngleSetRounded
                         id: errorlbl
                         Layout.alignment: Qt.AlignCenter
                         onErrChanged: err > 0 ? errorlbl.color = "red" : errorlbl.color = "darkgreen"
@@ -430,7 +434,7 @@ Drawer {
                     implicitWidth:  parent.width /4 - 4
                     isChecked: false
                     checkable: true
-                    onClicked: aog.btnFreeDrive()
+                    onClicked: aog.freeDrive() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 }
                 IconButton{
                     //id: btnSteerAngleDown
@@ -439,7 +443,7 @@ Drawer {
                     icon.source: prefix + "/images/SnapLeft.png"
                     implicitHeight: parent.height
                     implicitWidth:  parent.width /4 - 5 * theme.scaleWidth
-                    onClicked: aog.btnSteerAngleDown()
+                    onClicked: aog.steerAngleDown() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     enabled: btnFreeDrive.checked
                 }
                 IconButton{
@@ -449,7 +453,7 @@ Drawer {
                     icon.source: prefix + "/images/SnapRight.png"
                     implicitHeight: parent.height
                     implicitWidth:  parent.width /4 - 5 * theme.scaleWidth
-                    onClicked: aog.btnSteerAngleUp()
+                    onClicked: aog.steerAngleUp() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     enabled: btnFreeDrive.checked
                 }
                 IconButton{
@@ -459,7 +463,7 @@ Drawer {
                     icon.source: prefix + "/images/SteerZeroSmall.png"
                     implicitHeight: parent.height
                     implicitWidth:  parent.width /4 - 5 * theme.scaleWidth
-                    onClicked: aog.btnFreeDriveZero()
+                    onClicked: aog.freeDriveZero() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 }
             }
             Text{
@@ -486,7 +490,7 @@ Drawer {
                 isChecked: aog.startSA
                 checkable: true
                 width: 75 * theme.scaleWidth
-                onClicked: aog.btnStartSA()
+                onClicked: aog.startSAAction() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
             Text{
                 anchors.top: btnStartSA.top
@@ -507,6 +511,6 @@ Drawer {
     Timer {
         id: sendUdptimer
         interval: 1000;
-        onTriggered:  aog.modules_send_252()
+        onTriggered: aog.modulesSend252() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
     }
 }

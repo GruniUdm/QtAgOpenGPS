@@ -4,6 +4,7 @@
 // Link between the backend and QML. 
 import QtQuick
 import QtQuick.Controls.Fusion
+import AOG
 
 /* This type contains properties, signals, and functions to interface
    the C++ backend with the QML gui, while abstracting and limiting
@@ -22,7 +23,10 @@ import QtQuick.Controls.Fusion
 
 
 Item {
-    id: aog
+    //id: aogInterfaceRoot  // Renamed to avoid conflict with global context property "aog"
+
+    // ⚡ PHASE 6.3.0: Q_PROPERTY BINDINGS - Connect to FormGPS C++ Q_PROPERTY
+    // This ensures InterfaceProperty and QML use the same source of truth
 
     // AOGTheme is already created in MainWindow.qml as 'theme'
     // We can access it directly since it's in the parent scope
@@ -37,7 +41,7 @@ Item {
     Connections {
         target: Settings
         function onMenu_isMetricChanged() {
-            console.debug("isMetric is now",Settings.menu_isMetric)
+            console.debug("isMetric is now", SettingsManager.menu_isMetric)
         }
     }
     */
@@ -45,67 +49,122 @@ Item {
     //signals and data structures for specific UI functions are now
     //in the interfaces qml directory
 
-    property double frameTime: 0
+    //property double frameTime: 0
 
-    property bool isJobStarted: true
-    property bool blockageConnected: false
-    property int manualBtnState: 0
-    property int autoBtnState: 0
-    property bool autoYouturnBtnState: true
-    property bool isYouTurnRight: true
-	property bool autoTrackBtnState: false
-    property double distancePivotToTurnLine: -2222
+    // ⚡ PHASE 6.3.0: Bind to FormGPS C++ Q_PROPERTY for unified source of truth
+    // Use context property "aog" (FormGPS C++) instead of local id
+    //property bool isJobStarted: aog.isJobStarted  // Context property, not local id
+    //property bool blockageConnected: false
+    // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
+    //property int manualBtnState: aog.manualBtnState
+    //property int autoBtnState: 0
+    //property bool autoYouturnBtnState: true
+    //property bool isYouTurnRight: true
+    //property bool autoTrackBtnState: false
+    //property double distancePivotToTurnLine: -2222
 
-    property bool isPatchesChangingColor: false
+    //property bool isPatchesChangingColor: false
 
 
     //sections 0-15 are used for on-screen buttons if
     //not using zones.  If using zones the rest are used
     //for mapping zones to sections
 
-    property variant sectionButtonState: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
-    property variant blockageRowCount: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
-    property bool isContourBtnOn: false
-    property bool btnIsContourLocked: false
-    property bool isBtnAutoSteerOn: false
-    property bool isYouTurnBtnOn: false
-    property bool isYouTurnTriggered: false
+    //property variant sectionButtonState: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
+    //property variant blockageRowCount: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
+    // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
+    //property bool isContourBtnOn: false
+    //property bool btnIsContourLocked: false
+    // Qt 6.8 QProperty + BINDABLE: Simple property to allow setProperty() updates from C++
+    //property bool isBtnAutoSteerOn: false
+
+    // ⚡ PHASE 6.0.20: BI-DIRECTIONAL SETTERS - Use context property "aog"
+    // Now that id is renamed to aogInterfaceRoot, we can use "aog" context property
+    // function setIsBtnAutoSteerOn(value) {
+    //     aog.isBtnAutoSteerOn = value  // Context property (FormGPS C++)
+    // }
+
+    // 🚨 CRITICAL - Navigation & Guidance
+    // function setCurrentABLine(value) {
+    //     currentABLine = value
+    //     aog.currentABLine = value  // Context property (FormGPS C++)
+    // }
+    // function setCurrentABCurve(value) {
+    //     currentABCurve = value
+    //     aog.currentABCurve = value  // Context property (FormGPS C++)
+    // }
+    // setSectionButtonState() REMOVED - Direct property binding used instead
+
+    // ⚠️ MAJOR - Control Buttons
+    // function setManualBtnState(value) {
+    //     aog.manualBtnState = value  // Context property (FormGPS C++)
+    // }
+    // function setAutoBtnState(value) {
+    //     aog.autoBtnState = value  // Context property (FormGPS C++)
+    // }
+    // function setAutoTrackBtnState(value) {
+    //     aog.autoTrackBtnState = (value ? true : false)  // Context property (FormGPS C++)
+    // }
+
+    // 📊 INTERFACE
+    function setPanMode(value) {
+        panMode = value
+        // panMode is local property, no aog equivalent needed
+    }
+
+    // 📈 USER STATISTICS with type conversion
+    // function setDistanceUser(value) {
+    //     aog.distanceUser = parseFloat(value)  // Context property (FormGPS C++)
+    // }
+    // function setWorkedAreaTotalUser(value) {
+    //     aog.workedAreaTotalUser = parseFloat(value)  // Context property (FormGPS C++)
+    // }
+
+    // 🧪 SIMULATION/TEST
+    // function setAvgPivDistance(value) {
+    //     avgPivDistance = value
+    //     // avgPivDistance is local property, no aog equivalent needed
+    // }
+    // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
+    //property bool isYouTurnBtnOn: false
+    //property bool isYouTurnTriggered: false
 
 
-    property bool loopbackConnected: true
+    //property bool loopbackConnected: true
 
     //loopbackConnected is true, unless the backend changes it to false
-    onLoopbackConnectedChanged: closeAOG.open()
+    //onLoopbackConnectedChanged: closeAOG.open()
 //    onIsBtnAutoSteerOnChanged: {
 //        console.debug("isBtnAutoSteerOn is now in aog inface " + isBtnAutoSteerOn)
 //    }
 
     //General FormGPS information updated at GPS rate.
-    property double latStart: 53
-    property double lonStart: -111
+    //property double latStart: aog.latStart
+    //property double lonStart: aog.lonStart
+    //property double easting: aog.easting
+    //property double northing: aog.northing
+    //property double latitude: aog.latitude
+    //property double longitude: aog.longitude
+    //property double heading: aog.heading//this is fix2fix heading
+    //property double toolEasting: aog.toolEasting
+    //property double toolNorthing: aog.toolNorthing
+    //property double toolLatitude: aog.toolLatitude
+    //property double toolLongitude: aog.toolLongitude
+    //property double toolHeading: aog.toolHeading
+    //property double imuRollDegrees: aog.imuRollDegrees
+    //signal changeImuRoll(double new_roll) //usually just set to 88888;
 
-    property double easting: 0
-    property double northing: 0
-    property double latitude: 53.2
-    property double longitude: -111.2
-    property double heading: 0//this is fix2fix heading
-    property double toolEasting: 0
-    property double toolNorthing: 0
-    property double toolLatitude: 0
-    property double toolLongitude: 0
-    property double toolHeading: 0
-    property double imuRollDegrees: 0
-    signal changeImuRoll(double new_roll) //usually just set to 88888;
+    //property bool isReverse: false
+    //property bool isReverseWithIMU: aog.isReverseWithIMU
 
-    property bool isReverse: false
-    property bool isReverseWithIMU: false
+    // Qt 6.8 QProperty + BINDABLE: Simple property to allow setProperty() updates from C++
+    //property double speedKph: aog.speedKph
+    //property double offlineDistance: 32000
+    //property double avgPivDistance: 32000
 
-    property double speedKph: 0
-    property double offlineDistance: 32000
-    property double avgPivDistance: 32000
-
-    property int steerModuleConnectedCounter: 0
-    property bool steerSwitchHigh: false
+    // Phase 6.0.20 Task 24 Step 3.2: Migrated to FormGPS Q_PROPERTY BINDABLE
+    //property int steerModuleConnectedCounter: 0 → aog.steerModuleConnectedCounter
+    //property bool steerSwitchHigh: false → aog.steerSwitchHigh (already migrated)
 
     property bool panMode: false
     onPanModeChanged: if(panMode == false)
@@ -113,218 +172,143 @@ Item {
 
     //david added these
     //formgps_position.cpp line 1144
-    property double workedAreaTotal: 0
-    property double workedAreaTotalUser: 0 //total acres covered
-    property double actualAreaCovered: 0 //actual acres covered. Doesn't count overlap.
-    property double distanceUser: 0
+    //property double workedAreaTotal: 0
+    // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
+    //property double workedAreaTotalUser: 0.0
+    //property double actualAreaCovered: 0 //actual acres covered. Doesn't count overlap.
+    //property double distanceUser: 0.0
     property double areaOuterBoundary: 0
-    property double areaBoundaryOuterLessInner: 0//outer minus the inner
-    property double altitude: 0
-    property double hdop: 0
-    property double	age: 0
-    property int fixQuality: 0
-    property int satellitesTracked: 0
+    //property double areaBoundaryOuterLessInner: 0//outer minus the inner
+    //property double altitude: 0
+    //property double hdop: 0
+    //property double age: 0
+    //property int fixQuality: 0
+    //property int satellitesTracked: 0
 
-    property double imuHeading: 0
-    signal changeImuHeading(double newImuHeading)
+    //property double imuHeading: aog.imuHeading
+    //signal changeImuHeading(double newImuHeading)
 
-    property int angVel: 0//angular velocity I assume
+    //property int angVel: aog.imuAngVel//angular velocity I assume
     property string timeTilFinished: ""
     property string workRate: "value"
     property string percentOverlap: "value"
     property string percentLeft: "value"
-    property double steerAngleActual: 0
-    property double steerAngleSet: 0
-    property double steerAngleSetRounded: 0
-    property double steerAngleActualRounded: 0
-    property string lblCalcSteerAngleInner: "value"
-    property string lblCalcSteerAngleOuter: "value"
-    property string lblDiameter: "value"
-    property bool startSA: false
-    property double rawHz:0
-    property double hz:0
-    property double droppedSentences: 0
-    property double gpsHeading: 0
-    property double fusedHeading: 0
-    property int sentenceCounter: 0 //for No GPS screen
-    property bool hydLiftDown: false
+    //property double steerAngleActual: aog.steerAngleActual
+    //property double steerAngleSet: aog.steerAngleSet
+    // Removed - now calculated with direct binding below
+    //property double lblCalcSteerAngleInner: 0
+    // DEAD CODE from C# original - lblCalcSteerAngleOuter never displayed in UI (FormSteerWiz.Designer.cs has no widget)
+    // C# FormSteer.cs lines 335, 848, 854: all assignments commented out
+    // TODO Phase 7: Remove all dead code comments
+    //property double lblCalcSteerAngleOuter: 0
+    //property double lblDiameter: 0
+    //property bool startSA: false
+    //property double rawHz: 0
+    //property double hz: 0
+    //property double droppedSentences: 0
+    property double gpsHeading: 0 // to be implemented ???
+    //property double fusedHeading: 0
+    //property int sentenceCounter: 0 //for No GPS screen
+    //property bool hydLiftDown: false
     property bool hydLiftIsOn: false
-    property bool isHeadlandOn: false
-    property int blockage_avg: 0
-    property int blockage_min1: 0
-    property int blockage_min2: 0
-    property int blockage_max: 0
-    property int blockage_min1_i: 0
-    property int blockage_min2_i: 0
-    property int blockage_max_i: 0
-    property int blockage_blocked: 0;
-    property double imuCorrected:0
+    //property bool isHeadlandOn: false
+    //property int blockage_avg: 0
+    //property int blockage_min1: 0
+    //property int blockage_min2: 0
+    //property int blockage_max: 0
+    //property int blockage_min1_i: 0
+    //property int blockage_min2_i: 0
+    //property int blockage_max_i: 0
+    //property bool blockage_blocked: false;
+    //property bool imuCorrected: aog.imuCorrected
+    // REMOVED lblimuCorrected - bug: converted bool to double instead of showing real IMU heading
 
 
 
-    onSteerAngleActualChanged: steerAngleActualRounded = Math.round(steerAngleActual*100)/100
-    onSteerAngleSetChanged: steerAngleSetRounded = Math.round(steerAngleSet*100)/100
-    property int lblPWMDisplay: 0
-    property point vehicle_xy: Qt.point(0,0)
-    property rect vehicle_bounding_box: Qt.rect(0,0,0,0)
+    // MIGRATED to local properties - steerAngle*Rounded moved to SteerConfigWindow.qml
+    //property double steerAngleActualRounded: Math.round(aog.steerAngleActual*100)/100
+    //property double steerAngleSetRounded: Math.round(aog.steerAngleSet*100)/100
+    //property int lblPWMDisplay: 0
+    //property var vehicle_xy: Qt.point(0,0)
+    //property var vehicle_bounding_box: Qt.rect(0,0,0,0)
 
-    property int lblmodeActualXTE: 0
-    property double lblmodeActualHeadingError: 0
+    //property int lblmodeActualXTE: 0
+    property double lblmodeActualHeadingError: 0 // dead code or to be implemed ???
 
     //onVehicle_xyChanged: console.log("vehicle xy is", vehicle_xy);
     //onVehicle_bounding_boxChanged: console.log("vehicle box is", vehicle_bounding_box);
 
-    property bool isTrackOn: false //checks if a guidance line is set.
+    // Removed - now calculated with direct binding below
 
-    property string dispImuHeading: "#N/A"
-    onImuHeadingChanged: imuHeading > 360 ? dispImuHeading = "#INV" :
-         dispImuHeading = Number(aog.imuHeading.toLocaleString(Qt.locale(), 'f', 1));
-    onCurrentABLineChanged: {
-        if(currentABLine > -1 && isJobStarted === true){
-            isTrackOn = true
-        }
-        else{
-            isTrackOn = false
-        }
-    }
+    // MIGRATED to local property - dispImuHeading moved to GPSData.qml
+    //property string dispImuHeading: aog.imuHeading > 360 ? "#INV" : Number(aog.imuHeading.toLocaleString(Qt.locale(), 'f', 1))
+    // Qt 6.8 QProperty + BINDABLE: Use direct binding instead of signal handler
+    //property bool isTrackOn: (currentABLine > -1 && aog.isJobStarted === true)  // Use local currentABLine property movd to MainRightColumn.qml
 
     //can we use these line properties for the Display?
     //AB Lines properties, signals, and methods
-    property int currentABLine: -1
-    property int currentABCurve: -1
+
+    // Qt 6.8 COMPUTED PROPERTIES: Reactive bindings based on TracksInterface.idx and .mode
+    // TrackMode enum: None=0, AB=2, Curve=4, bndTrackOuter=8, bndTrackInner=16, bndCurve=32, waterPivot=64
+    readonly property int currentABLine: {
+        let i = TracksInterface.idx
+        if (i >= 0 && TracksInterface.mode === 2)  // TrackMode::AB = 2
+            return i
+        return -1
+    }
+
+    readonly property int currentABCurve: {
+        let i = TracksInterface.idx
+        if (i >= 0 && TracksInterface.mode === 4)  // TrackMode::Curve = 4
+            return i
+        return -1
+    }
 
     property double currentABLine_heading: 0 //TODO delete or move to interfaces/LinesInterface.qml.  seems to be unused
 
-    property int current_trackNum: 0
+    // AB Lines and Curves lists - restored for QML compatibility
+    property var abLinesList: []
+    property var abCurvesList: []
 
-    property int sensorData: -1
+    property int current_trackNum: 0
+    property int current_trackIdx: -1  // 🎯 ACTIVE TRACK - Access to CTrack.idx via FormGPS for YouTurn line switching
+
+    //property int sensorData: -1
+
+    // ⚡ PHASE 6.3.0: Q_PROPERTY CONVERSIONS - Missing AOGInterface properties
+    // Added for conversion from InterfaceProperty to Q_PROPERTY
+    // These properties replace the InterfaceProperty declarations in headers
+    property double userSquareMetersAlarm: 0  // From classes/cfielddata.h:39
 
     //on-screen buttons
 
-    //snap track buttons
-    signal snapSideways(double distance)//positive, right, negative, left
-    signal snapToPivot()
+    //snap track buttons - REMOVED: Modernized to Q_INVOKABLE direct calls
+    // REMOVED: signal snapSideways(double distance)//positive, right, negative, left
+    // REMOVED: signal snapToPivot()
 
-    //DisplayButtons.qml
-    signal zoomIn()
-    signal zoomOut()
-    signal tiltDown()
-    signal tiltUp()
-    signal btn2D()
-    signal btn3D()
-    signal n2D()
-    signal n3D()
-    signal btnResetTool()
-    signal btnHeadland()
+    // ✅ PHASE 6.0.20: ALL USER ACTION SIGNALS REMOVED - MODERNIZED TO Q_INVOKABLE CALLS
+    // All display buttons, work modes, navigation, and utility signals have been
+    // modernized to direct Q_INVOKABLE calls (aog.*, AOGRenderer.*, etc.)
+    // following Qt 6.8 Rectangle Pattern architecture.
+    //
+    // REMOVED 34 LEGACY SIGNALS (Batches 1-14 completed):
+    // - Graphics: zoomIn, zoomOut, tiltDown, tiltUp, btn2D, btn3D, n2D, n3D
+    // - Tools: btnResetTool, btnHeadland, btnContour, btnContourLock, btnContourPriority
+    // - Navigation: btnAutoTrack, uturn, lateral, autoYouTurn, swapAutoYouTurnDirection, btnResetCreatedYouTurn
+    // - Vehicle: isHydLiftOn, isYouSkipOn
+    // - Simulation: btnResetSim, sim_bump_speed, sim_zero_speed, sim_reset, sim_rotate, reset_direction
+    // - Settings: settings_reload, settings_tempsave, settings_revert, settings_save
+    // - Utility: centerOgl, deleteAppliedArea, btnFlag
 
-    signal btnContour()
-    signal btnContourLock()
-    signal btnContourPriority(bool right)
-
-    signal btnAutoTrack()
-
-    signal isHydLiftOn()
-    signal btnResetSim()
-    signal isYouSkipOn()
-
-    signal uturn(bool turn_right)
-    signal lateral(bool go_right)
-    signal autoYouTurn()
-    signal swapAutoYouTurnDirection()
-    signal btnResetCreatedYouTurn()
-
-    //general settings
-    signal settings_reload() //tell backend classes to reload settings from store
-    signal settings_tempsave() //save a temporary copy of all the settings
-    signal settings_revert() //revert to temporary copy of all settings
-    signal settings_save() //sync to disk, and also copy to current vehicle file, if active
-
-    signal modules_send_238()
-	signal modules_send_251()
-    signal modules_send_252()
-
-    signal doBlockageMonitoring()
-
-    signal sim_bump_speed(bool up)
-    signal sim_zero_speed()
-    signal sim_reset()
-    signal sim_rotate()
-    signal reset_direction()
-
-    signal btnSteerAngleUp()
-    signal btnSteerAngleDown()
-    signal btnFreeDrive()
-    signal btnFreeDriveZero()
-    signal btnStartSA()
-
-    signal centerOgl()
-
-    signal deleteAppliedArea();
-
-    signal btnFlag();
-    signal btnRedFlag();
-    signal btnGreenFlag();
-    signal btnYellowFlag();
-    signal btnDeleteFlag();
-    signal btnDeleteAllFlags();
-    signal btnNextFlag();
-    signal btnPrevFlag();
-    signal btnCancelFlag();
-    signal btnRed(double lat, double lon, int color);
-
-    // was wizard
-    signal startDataCollection();
-    signal stopDataCollection();
-    signal resetData();
-    signal applyOffsetToCollectedData(double appliedOffsetDegrees);
-    signal smartCalLabelClick();
-    signal on_btnSmartZeroWAS_clicked();
+    // was wizard - BATCH 12 signals removed - modernized to Q_INVOKABLE calls
 
     property bool isCollectingData: false
-    property int sampleCount: 0
-    property double confidenceLevel: 0
-    property bool hasValidRecommendation: false
+    //property int sampleCount: 0
+    //property double confidenceLevel: 0
+    //property bool hasValidRecommendation: false
 
-
-    property double mPerDegreeLat
-    property double mPerDegreeLon
-
-    function setLocalMetersPerDegree() {
-        mPerDegreeLat = 111132.92 - 559.82 * Math.cos(2.0 * latStart * 0.01745329251994329576923690766743) + 1.175
-                              * Math.cos(4.0 * latStart * 0.01745329251994329576923690766743) - 0.0023
-                              * Math.cos(6.0 * latStart * 0.01745329251994329576923690766743)
-
-        mPerDegreeLon = 111412.84 * Math.cos(latStart * 0.01745329251994329576923690766743) - 93.5
-                              * Math.cos(3.0 * latStart * 0.01745329251994329576923690766743) + 0.118
-                              * Math.cos(5.0 * latStart * 0.01745329251994329576923690766743)
-    }
-
-    function convertLocalToWGS84(northing, easting) { //note northing first here
-        var mPerDegreeLat = 111132.92 - 559.82 * Math.cos(2.0 * latStart * 0.01745329251994329576923690766743) + 1.175
-                              * Math.cos(4.0 * latStart * 0.01745329251994329576923690766743) - 0.0023
-                              * Math.cos(6.0 * latStart * 0.01745329251994329576923690766743)
-        var mPerDegreeLon = 111412.84 * Math.cos(latStart * 0.01745329251994329576923690766743) - 93.5
-                              * Math.cos(3.0 * latStart * 0.01745329251994329576923690766743) + 0.118
-                              * Math.cos(5.0 * latStart * 0.01745329251994329576923690766743)
-
-        var outLat = (northing / mPerDegreeLat) + latStart;
-        var outLon = (easting  / mPerDegreeLon) + lonStart;
-
-        return [ outLat, outLon ]
-    }
-
-    function convertWGS84ToLocal(latitude, longitude) {
-        var mPerDegreeLat = 111132.92 - 559.82 * Math.cos(2.0 * latStart * 0.01745329251994329576923690766743) + 1.175
-                              * Math.cos(4.0 * latStart * 0.01745329251994329576923690766743) - 0.0023
-                              * Math.cos(6.0 * latStart * 0.01745329251994329576923690766743)
-        var mPerDegreeLon = 111412.84 * Math.cos(latStart * 0.01745329251994329576923690766743) - 93.5
-                              * Math.cos(3.0 * latStart * 0.01745329251994329576923690766743) + 0.118
-                              * Math.cos(5.0 * latStart * 0.01745329251994329576923690766743)
-
-        var outNorthing = (latitude - latStart) * mPerDegreeLat;
-        var outEasting = (longitude - lonStart) * mPerDegreeLon;
-
-        return [outNorthing, outEasting]
-    }
+    // Phase 6.0.20 Task 24 Step 3.5: Geodetic conversion functions removed
+    // Now use aog.convertLocalToWGS84() and aog.convertWGS84ToLocal() Q_INVOKABLE methods
+    // These delegate to CNMEA for single source of truth
 
 }

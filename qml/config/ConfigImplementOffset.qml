@@ -9,7 +9,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import Qt.labs.folderlistmodel
 //import Settings
-//import AOG
+import AOG
 
 
 import ".."
@@ -18,7 +18,7 @@ import "../components"
 Rectangle{
     anchors.fill: parent
     visible: true
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     TitleFrame{
         id: offset
         title: qsTr("Tool Offset Direction")
@@ -46,12 +46,14 @@ Rectangle{
                 from: 0
                 to: 2500
                 anchors.verticalCenter: parent.verticalCenter
-                boundValue: Math.abs(Settings.vehicle_toolOffset)
+                // Threading Phase 1: Tool offset measurement
+                boundValue: Math.abs(SettingsManager.vehicle_toolOffset)
                 onValueChanged: {
+                    // Threading Phase 1: Update tool offset with left/right direction
                     if(leftBtn.checked){
-                        Settings.vehicle_toolOffset = -value
+                        SettingsManager.vehicle_toolOffset = -value
                     } else {
-                        Settings.vehicle_toolOffset = value
+                        SettingsManager.vehicle_toolOffset = value
                     }
                 }
             }
@@ -78,10 +80,11 @@ Rectangle{
 			anchors.rightMargin: 7 * theme.scaleWidth
 			anchors.bottomMargin: 7 * theme.scaleHeight
             checkable: true
-            isChecked: (Settings.vehicle_toolOffset < 0)
-            property string offsetNum: Settings.vehicle_toolOffset
+            // Threading Phase 1: Left direction check
+            isChecked: (SettingsManager.vehicle_toolOffset < 0)
+            property string offsetNum: "0"
             icon.source: prefix + "/images/Config/ToolOffsetNegativeLeft.png"
-            onClicked: Settings.vehicle_toolOffset = -Math.abs(Settings.vehicle_toolOffset)
+            onClicked: SettingsManager.vehicle_toolOffset = -Math.abs(SettingsManager.vehicle_toolOffset)
         }
 
         IconButtonColor{
@@ -95,9 +98,10 @@ Rectangle{
 			anchors.leftMargin: 7 * theme.scaleWidth
 			anchors.rightMargin: 7 * theme.scaleWidth
 			anchors.bottomMargin: 7 * theme.scaleHeight
-            isChecked: (Settings.vehicle_toolOffset >= 0)
+            // Threading Phase 1: Right direction check
+            isChecked: (SettingsManager.vehicle_toolOffset >= 0)
             checkable: true
-            onClicked: Settings.vehicle_toolOffset = Math.abs(Settings.vehicle_toolOffset)
+            onClicked: SettingsManager.vehicle_toolOffset = Math.abs(SettingsManager.vehicle_toolOffset)
             icon.source: prefix + "/images/Config/ToolOffsetPositiveRight.png"
             TextLine{ text: qsTr("Tool Right"); anchors.top: right.bottom}
         }
@@ -129,12 +133,14 @@ Rectangle{
                 id: overlapGapSpin
                 from: 0
                 to: 2500
-                boundValue: Math.abs(Settings.vehicle_toolOverlap)
+                // Threading Phase 1: Tool overlap measurement
+                boundValue: Math.abs(SettingsManager.vehicle_toolOverlap)
                 onValueChanged: {
+                    // Threading Phase 1: Update tool overlap with overlap/gap direction
                     if(overlap.checked){
-                        Settings.vehicle_toolOverlap = -value
+                        SettingsManager.vehicle_toolOverlap = -value
                     } else {
-                        Settings.vehicle_toolOverlap = value
+                        SettingsManager.vehicle_toolOverlap = value
                     }
                 }
             }
@@ -161,8 +167,9 @@ Rectangle{
 			anchors.rightMargin: 7 * theme.scaleWidth
 			anchors.bottomMargin: 7 * theme.scaleHeight
             checkable: true
-            isChecked: (Settings.vehicle_toolOverlap >= 0)
-            onClicked: Settings.vehicle_toolOverlap = Math.abs(Settings.vehicle_toolOverlap)
+            // Threading Phase 1: Overlap mode check
+            isChecked: (SettingsManager.vehicle_toolOverlap >= 0)
+            onClicked: SettingsManager.vehicle_toolOverlap = Math.abs(SettingsManager.vehicle_toolOverlap)
             icon.source: prefix + "/images/Config/ToolOverlap.png"
             TextLine{ text: qsTr("Overlap"); anchors.top: left.bottom}
         }
@@ -178,8 +185,9 @@ Rectangle{
 			anchors.leftMargin: 7 * theme.scaleWidth
 			anchors.rightMargin: 7 * theme.scaleWidth
 			anchors.bottomMargin: 7 * theme.scaleHeight
-            isChecked: (Settings.vehicle_toolOverlap < 0)
-            onClicked: Settings.vehicle_toolOverlap = -Math.abs(Settings.vehicle_toolOverlap)
+            // Threading Phase 1: Gap mode check
+            isChecked: (SettingsManager.vehicle_toolOverlap < 0)
+            onClicked: SettingsManager.vehicle_toolOverlap = -Math.abs(SettingsManager.vehicle_toolOverlap)
             checkable: true
             icon.source: prefix + "/images/Config/ToolGap.png"
             TextLine{

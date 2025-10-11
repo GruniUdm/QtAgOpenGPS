@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Dialogs
 //import Settings
-//import AOG
+import AOG
 
 
 import ".."
@@ -15,7 +15,7 @@ import "../components"
 Rectangle{
     id: setColors
     anchors.fill: mainWindow
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     visible: false
     function show(){
         setColors.visible = true
@@ -41,8 +41,9 @@ Rectangle{
             //colorFieldNight=@Variant(\0\0\0\x43\x1\xff\xff<<<<<<\0\0)
             //just use the Day setting. AOG has them locked to the same color anyways
             //Settings.display_colorFieldDay = cpFieldColor.selectedColor;
-            if (btnDayNight.checked){Settings.display_colorFieldNight = cpFieldColor.selectedColor;}
-            else {Settings.display_colorFieldDay = cpFieldColor.selectedColor;}
+            // Threading Phase 1: Field color configuration
+            if (btnDayNight.checked){SettingsManager.display_colorFieldNight = cpFieldColor.selectedColor;}
+            else {SettingsManager.display_colorFieldDay = cpFieldColor.selectedColor;}
 
             //change the color on the fly. In AOG, we had to cycle the sections off
             //and back on. This does for us.
@@ -59,7 +60,8 @@ Rectangle{
             id: btnColorField
             icon.source: prefix + "/images/ColorField.png"
             onClicked: cpFieldColor.open()
-            color: btnDayNight.checked?Settings.display_colorFieldNight:Settings.display_colorFieldDay
+            // Threading Phase 1: Display field color based on day/night mode
+            color: btnDayNight.checked?SettingsManager.display_colorFieldNight:SettingsManager.display_colorFieldDay
         }
         IconButtonColor {
             id: btnDayNight
@@ -89,8 +91,8 @@ Rectangle{
             //anchors.bottom: parent.bottom
             //anchors.right: parent.right
             onClicked: {
-                aog.settings_save()
-                aog.settings_reload()
+                aog.settingsSave() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                aog.settingsReload() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 setColors.visible = false
             }
         }

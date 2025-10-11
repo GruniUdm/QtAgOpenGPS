@@ -6,9 +6,9 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Window
-//import AOG
+import AOG
 
-import "components" as Comp
+import "../components" as Comp
 
 
 Drawer {
@@ -28,42 +28,74 @@ Drawer {
     EthernetConfig {
         id: ethernetConfig
         visible: false
-        // onVisibleChanged: {
-        //     if(visible)
-        //         ethernetConfig.load_settings()
-        // }
+        onVisibleChanged: {
+            if(visible)
+                ethernetConfig.load_settings()
+        }
     }
     Comp.SerialTerminalAgio {
         id: gnssConfig
         visible: false
-        portBaud: AgIOService.setGnss_BaudRate
-        portName: AgIOService.setGnss_SerialPort
+        portBaud: SettingsManager.gnss_BaudRate
+        portName: SettingsManager.gnss_SerialPort
         saveConfig: false
+        enableMonitoring: true
+        moduleType: "GPS"
         onSaveConfigChanged: {
-            AgIOService.setGnss_SerialPort = gnssConfig.portName
-            AgIOService.setGnss_BaudRate = gnssConfig.portBaud
+            SettingsManager.gnss_SerialPort = gnssConfig.portName
+            SettingsManager.gnss_BaudRate = gnssConfig.portBaud
             }
     }
     Comp.SerialTerminalAgio {
         id: imuConfig
         visible: false
-        portBaud: AgIOService.setImu_BaudRate
-        portName: AgIOService.setImu_SerialPort
+        portBaud: SettingsManager.imu_BaudRate
+        portName: SettingsManager.imu_SerialPort
         saveConfig: false
+        enableMonitoring: true
+        moduleType: "IMU"
         onSaveConfigChanged: {
-            AgIOService.setImu_SerialPort = imuConfig.portName
-            AgIOService.setImu_BaudRate = imuConfig.portBaud
+            SettingsManager.imu_SerialPort = imuConfig.portName
+            SettingsManager.imu_BaudRate = imuConfig.portBaud
             }
     }
     Comp.SerialTerminalAgio {
         id: autosteerConfig
         visible: false
-        portBaud: AgIOService.setSteer_BaudRate
-        portName: AgIOService.setSteer_SerialPort
+        portBaud: SettingsManager.steer_BaudRate
+        portName: SettingsManager.steer_SerialPort
         saveConfig: false
+        enableMonitoring: true
+        moduleType: "Steer"
         onSaveConfigChanged: {
-            AgIOService.setSteer_SerialPort = steerConfig.portName
-            AgIOService.setSteer_BaudRate = steerConfig.portBaud
+            SettingsManager.steer_SerialPort = autosteerConfig.portName
+            SettingsManager.steer_BaudRate = autosteerConfig.portBaud
+            }
+    }
+    Comp.SerialTerminalAgio {
+        id: machineConfig
+        visible: false
+        portBaud: SettingsManager.machine_BaudRate
+        portName: SettingsManager.machine_SerialPort
+        saveConfig: false
+        enableMonitoring: true
+        moduleType: "Machine"
+        onSaveConfigChanged: {
+            SettingsManager.machine_SerialPort = machineConfig.portName
+            SettingsManager.machine_BaudRate = machineConfig.portBaud
+            }
+    }
+    Comp.SerialTerminalAgio {
+        id: blockageConfig
+        visible: false
+        portBaud: SettingsManager.blockage_BaudRate
+        portName: SettingsManager.blockage_SerialPort
+        saveConfig: false
+        enableMonitoring: true
+        moduleType: "Blockage"
+        onSaveConfigChanged: {
+            SettingsManager.blockage_SerialPort = blockageConfig.portName
+            SettingsManager.blockage_BaudRate = blockageConfig.portBaud
             }
     }
     AgIOInterface {
@@ -115,12 +147,12 @@ Drawer {
                 //objectName: bluetooth
                 text: qsTr("Bluetooth")
                 icon.source: "../images/BlueTooth.png"
-                color:  AgIOService.bluetoothConnected ? "green" : "red"
+              //  color:  AgIOService.bluetoothConnected ? "green" : "red"
                 onClicked: {
                     settingsWindow.close()
-                    if(!utils.isTrue(AgIOService.setBluetooth_isOn)){ //start bt if off
-                        AgIOService.setBluetooth_isOn = true
-                         AgIOService.startBluetoothDiscovery()
+                    if(!utils.isTrue(SettingsManager.setBluetooth_isOn)){ //start bt if off
+                        SettingsManager.setBluetooth_isOn = true
+                         SettingsManager.startBluetoothDiscovery()
                         console.log("ssb")
                     }
                     bluetoothMenu.visible = true
@@ -131,7 +163,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("IMU")
                 icon.source: "../images/B_IMU.png"
-                color:  AgIOService.imuConnected ? "green" : "red"
+               // color:  AgIOService.imuConnected ? "green" : "red"
                 onClicked: imuConfig.visible = !imuConfig.visible
             }
             Comp.IconButtonTextBeside {
@@ -139,7 +171,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("Steer")
                 icon.source: "../images/Com_AutosteerModule.png"
-                color:  AgIOService.steerConnected ? "green" : "red"
+              //  color:  AgIOService.steerConnected ? "green" : "red"
                 onClicked: autosteerConfig.visible = !autosteerConfig.visible
             }
             Comp.IconButtonTextBeside {
@@ -147,7 +179,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("GPS")
                 icon.source: "../images/B_GPS.png"
-                color:  AgIOService.gpsConnected ? "green" : "red"
+             //   color:  AgIOService.gpsConnected ? "green" : "red"
                 onClicked: gnssConfig.visible = !gnssConfig.visible
             }
             Comp.IconButtonTextBeside {
@@ -155,29 +187,39 @@ Drawer {
                 isChecked: false
                 text: qsTr("Machine")
                 icon.source: "../images/B_Machine.png"
-                color:  AgIOService.machineConnected ? "green" : "red"
+               // color:  AgIOService.machineConnected ? "green" : "red"
             }
             Comp.IconButtonTextBeside {
                 //objectName: btnModuleBlockage
                 isChecked: false
                 text: qsTr("Blockage")
                 icon.source: "../images/B_Blockage.png"
-                color:  AgIOService.blockageConnected ? "green" : "red"
-                visible: Settings.seed_blockageIsOn
+               // color:  AgIOService.blockageConnected ? "green" : "red"
+                // Threading Phase 1: Blockage visibility configuration
+                visible: SettingsManager.seed_blockageIsOn
+                onClicked: blockageConfig.visible = !blockageConfig.visible
             }
+           
             Comp.IconButtonTextBeside {
+                isChecked: false
+                text: qsTr("Module & GPS Info")
+                icon.source: "../images/Nmea.png"
+                onClicked: gpsInfo.visible = !gpsInfo.visible
+            }
+
+             Comp.IconButtonTextBeside {
                 //objectName: btnEthernetStatus
                 isChecked: false
                 text: qsTr("Ethernet")
                 icon.source: "../images/B_UDP.png"
-                color:  AgIOService.ethernetConnected ? "green" : "red"
-                onClicked: ethernetConfig.visible = !ethernetConfig.visible
-            }
-            Comp.IconButtonTextBeside {
-                isChecked: false
-                text: qsTr("Nmea")
-                icon.source: "../images/Nmea.png"
-                onClicked: gpsInfo.visible = !gpsInfo.visible
+                color:  SettingsManager.ethernet_isOn ? "green" : "red"
+                onClicked: {
+                    if (ethernetConfig.visible) {
+                        ethernetConfig.close()
+                    } else {
+                        ethernetConfig.show()
+                    }
+                }
             }
             // Comp.IconButtonTextBeside {
             //     //objectName: btnSettings
@@ -189,7 +231,7 @@ Drawer {
             Comp.IconButtonTextBeside {
                 //objectName: btnNTRIP
                 isChecked: false
-                text: (AgIOService.setNTRIP_isOn === false ? "Off":
+                text: (SettingsManager.ntrip_isTCP === false ? "Off":
                      AgIOService.ntripStatus === 0 ? "Invalid" :
                      AgIOService.ntripStatus === 1 ? "Authorizing" :
                      AgIOService.ntripStatus === 2 ? "Waiting" :
@@ -199,7 +241,7 @@ Drawer {
                     "Unknown")
 
                 icon.source: "../images/NtripSettings.png"
-                color:  (AgIOService.setNTRIP_isOn === false ? "red":
+                color:  (SettingsManager.setNTRIP_isOn === false ? "red":
                      AgIOService.ntripStatus === 0 ? "red" :
                      AgIOService.ntripStatus === 1 ? "yellow" :
                      AgIOService.ntripStatus === 2 ? "yellow" :
@@ -212,13 +254,13 @@ Drawer {
             
             // Test button for module wake-up
             Comp.IconButtonTextBeside {
-                isChecked: false
-                text: qsTr("Wake Modules")
-                icon.source: "../images/B_UDP.png"
-                color: "orange"
+                isChecked: SettingsManager.feature_isAgIOOn
+                text: SettingsManager.feature_isAgIOOn ? qsTr("AgIO Service ON") : qsTr("AgIO Service OFF")
+                icon.source: "../images/AgIO.png"
+                color: SettingsManager.feature_isAgIOOn ? "green" : "red"
                 onClicked: {
-                    console.log("🔧 Waking up modules via AgIOService...")
-                    AgIOService.wakeUpModules("192.168.1.255")
+                    SettingsManager.feature_isAgIOOn = !SettingsManager.feature_isAgIOOn
+                    console.log("🔧 AgIO Service toggled:", SettingsManager.feature_isAgIOOn)
                 }
             }
             }

@@ -15,9 +15,11 @@ Dialog {
     standardButtons: "NoButton"
     title: qsTr("AB Curve")
 
-    signal updateABCurves()
-    signal switchToCurve(int lineno) //redundant? use aogproperty
-    signal deleteCurve(int lineno)
+    // ✅ PHASE 6.0.20: CURVE SIGNALS MODERNIZED TO mainForm DIRECT CALLS
+    // REMOVED 3 LEGACY SIGNALS:
+    // - updateABCurves() → aog.updateCurves() direct call
+    // - switchToCurve(int) → aog.switchToCurve(int) direct call
+    // - deleteCurve(int) → aog.deleteCurve(int) direct call
 
     Connections {
         target: linesInterface
@@ -28,33 +30,32 @@ Dialog {
 
     function reloadModel() {
         abcurveModel.clear()
-        for( var i = 0; i < linesInterface.abCurvesList.length ; i++ ) {
-            abcurveModel.append(linesInterface.abCurvesList[i])
+        for( var i = 0; i < aogInterface.abCurvesList.length ; i++ ) {
+            abcurveModel.append(aogInterface.abCurvesList[i])
         }
-        if (aog.currentABCurve >-1){
-            abcurveView.currentIndex = aog.currentABCurve
+        if (aogInterface.currentABCurve >-1){
+            abcurveView.currentIndex = aogInterface.currentABCurve
         }
 
     }
 
     onVisibleChanged:  {
         //when we show or hide the dialog, ask the main
-        //program to update our lines list in the
-        //AOGInterface object
-        updateABCurves()
-        abcurveView.currentIndex = aog.currentABCurve
+        //program to update our lines list directly
+        aog.updateCurves()  // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        abcurveView.currentIndex = aogInterface.currentABCurve
         //preselect first AB line if none was in use before
         //to make it faster for user
         if (abcurveView.currentIndex < 0)
-            if (linesInterface.abCurvesList.length > 0)
+            if (aogInterface.abCurvesList.length > 0)
                 abcurveView.currentIndex = 0
     }
 
     Rectangle{
         anchors.fill: parent
         border.width: 1
-        border.color: aog.blackDayWhiteNight
-        color: aog.borderColor
+        border.color: aogInterface.blackDayWhiteNight
+        color: aogInterface.borderColor
         TopLine{
             id: topLine
             titleText: qsTr("AB Curve")
@@ -83,7 +84,7 @@ Dialog {
                 icon.source: prefix + "/images/OK64.png"
                 onClicked: {
                     if (abcurveView.currentIndex > -1) {
-                        aog.currentABCurve = abcurveView.currentIndex
+                        TracksInterface.select(abcurveView.currentIndex)  // Qt 6.8: Use TracksInterface.select()
                         abCurvePickerDialog.accept()
                     } else
                         abCurvePickerDialog.reject()
@@ -113,7 +114,7 @@ Dialog {
                 IconButtonTransparent{
                     icon.source: prefix + "/images/SwitchOff.png"
                     onClicked: {
-                        aog.currentABCurve = -1
+                        TracksInterface.select(-1)  // Qt 6.8: Deselect track
                         abcurveView.currentIndex = -1
                         abCurvePickerDialog.reject()
                     }
@@ -141,9 +142,9 @@ Dialog {
             anchors.top: parent.top
             width: 300
             height: 400
-            color: aog.backgroundColor
+            color: aogInterface.backgroundColor
             border.width: 1
-            border.color: aog.blackDayWhiteNight
+            border.color: aogInterface.blackDayWhiteNight
             z: 1
             visible: false
             TopLine{
@@ -215,7 +216,7 @@ Dialog {
             anchors.bottom: bottomRow.top
             anchors.bottomMargin: 0
             anchors.margins: 10
-            color:aog.borderColor
+            color:aogInterface.borderColor
 
             ListModel {
                 id: abcurveModel
@@ -237,7 +238,7 @@ Dialog {
                     indicator: Rectangle{
                         anchors.fill: parent
                         anchors.margins: 2
-                        color: control.down ? aog.backgroundColor : "blue"
+                        color: control.down ? aogInterface.backgroundColor : "blue"
                         visible: control.checked
                     }
                     onDownChanged: {
@@ -256,7 +257,7 @@ Dialog {
                         text: model.name
                         font.pixelSize: 25
                         font.bold: true
-                        color: control.checked ? aog.backgroundColor : aog.blackDayWhiteNight
+                        color: control.checked ? aogInterface.backgroundColor : aogInterface.blackDayWhiteNight
                         z: 2
                     }
                 }

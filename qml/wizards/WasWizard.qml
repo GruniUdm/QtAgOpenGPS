@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtCharts 2.0
 import QtQuick.Layouts
-//import AOG
+import AOG
 
 import ".."
 import "../components"
@@ -17,8 +17,8 @@ MoveablePopup {
     width: 270  * theme.scaleWidth
     visible: false
     modal: false
-    onVisibleChanged: {if (visible){ aog.startDataCollection()}
-                      else {aog.stopDataCollection()}}
+    onVisibleChanged: {if (visible){ aog.startDataCollection()} // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                      else {aog.stopDataCollection()}} // Qt 6.8 MODERN: Direct Q_INVOKABLE call
 
     TopLine{
         id: topLine
@@ -73,14 +73,14 @@ MoveablePopup {
 
             IconButtonTransparent{
                 icon.source: prefix + "/images/Trash.png"
-                onClicked: aog.smartCalLabelClick()
+                onClicked: aog.smartCalLabelClick() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 Layout.fillWidth: true
             }
             IconButtonTransparent{
                 id: btnSmartZeroWAS
                 icon.source: prefix + "/images/SteerZeroSmall.png"
                 enabled: aog.hasValidRecommendation
-                onClicked: aog.on_btnSmartZeroWAS_clicked()
+                onClicked: aog.smartZeroWAS() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 Layout.fillWidth: true
             }
         }

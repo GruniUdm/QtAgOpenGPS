@@ -27,6 +27,8 @@ public:
     int sc1to8 = 11;
     int sc9to16 = 12;
 
+//    CPGN_FE() : pgn(QByteArray( "\x80\x81\x7f\xFE\x08\x00\x00\x00\x00\x00\x00\x00\x00\xCC",14 )) { }
+// PHASE 6.0.29: Initialize status byte to 0x00 (OFF) - firmware interprets NORMALLY: 0=OFF, 1=ON (like C# original)
     CPGN_FE() : pgn(QByteArray( "\x80\x81\x7f\xFE\x08\x00\x00\x00\x00\x00\x00\x00\x00\xCC",14 )) { }
     void Reset() { }
 };

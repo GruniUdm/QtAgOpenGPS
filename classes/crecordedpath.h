@@ -6,7 +6,6 @@
 #include "vec3.h"
 #include "vec2.h"
 #include "btnenum.h"
-#include "interfaceproperty.h"
 
 class QOpenGLFunctions;
 class QMatrix4x4;
@@ -76,8 +75,8 @@ public:
     Vec2 radiusPointRP = Vec2(0,0);
 
     bool isBtnFollowOn, isEndOfTheRecLine, isRecordOn;
-    InterfaceProperty<RecordedPathInterface, bool> isDrivingRecordedPath = InterfaceProperty<RecordedPathInterface,bool>("isDrivingRecordedPath");
     bool isFollowingDubinsToPath, isFollowingRecPath, isFollowingDubinsHome;
+    QObject *mainWindow;
 
     double pivotDistanceError, pivotDistanceErrorLast, pivotDerivative, pivotDerivativeSmoothed;
 
@@ -97,6 +96,7 @@ public:
 
 
     explicit CRecordedPath(QObject *parent = 0);
+    void setMainWindow(QObject *mainWindow);
     bool StartDrivingRecordedPath(CVehicle &vehicle, const CYouTurn &yt);
     void UpdatePosition(CVehicle &vehicle, const CYouTurn &yt, bool isBtnAutoSteerOn);
     void StopDrivingRecordedPath();

@@ -5,7 +5,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Fusion
-//import AOG
+import AOG
 // Interface import removed - now QML_SINGLETON
 import "../components" as Comp
 
@@ -14,6 +14,7 @@ import ".."
 Comp.TimedRectangle {
     id: trackButtons
     color: "white"
+    z: 1
     width: (TracksInterface.idx > -1)?marker.width*7+40:marker.width*2+15
     height: marker.height+10
     RowLayout{

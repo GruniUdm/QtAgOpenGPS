@@ -17,6 +17,11 @@ Drawer {
     height: mainWindow.height
     modal: true
 
+    // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
+    property bool featureIsBoundaryOn: true
+    property bool featureIsHeadlandOn: true
+    property bool featureIsTramOn: true
+
     contentItem: Rectangle {
         id: fieldToolsMenuRect
         anchors.bottom: parent.bottom
@@ -35,7 +40,8 @@ Drawer {
                 text: qsTr("Boundary")
                 icon.source: prefix + "/images/MakeBoundary.png"
                 //width: 300
-                visible: Settings.feature_isBoundaryOn
+                // Threading Phase 1: Boundary feature visibility
+                visible: featureIsBoundaryOn
                 onClicked: {
                     fieldToolsMenu.visible = false
                     boundaryMenu.show()
@@ -45,7 +51,8 @@ Drawer {
                 text: qsTr("Headland")
                 icon.source: prefix + "/images/HeadlandMenu.png"
                 //width: 300
-                visible: Settings.feature_isHeadlandOn
+                // Threading Phase 1: Headland feature visibility
+                visible: featureIsHeadlandOn
                 onClicked: {
                     fieldToolsMenu.visible = false
                     if (boundaryInterface.count > 0) {
@@ -58,7 +65,8 @@ Drawer {
             IconButtonTextBeside{
                 text: qsTr("Headland (Build)")
                 icon.source: prefix + "/images/Headache.png"
-                visible: Settings.feature_isHeadlandOn
+                // Threading Phase 1: Headland feature visibility
+                visible: featureIsHeadlandOn
                 //width: 300
                 onClicked: {
                     fieldToolsMenu.visible = false
@@ -73,14 +81,16 @@ Drawer {
                 text: qsTr("Tram Lines")
                 icon.source: prefix + "/images/TramLines.png"
                 //width: 300
-                visible: Settings.feature_isTramOn
+                // Threading Phase 1: Tram lines feature visibility
+                visible: featureIsTramOn
                 onClicked: tramLinesEditor.visible = true
             }
             IconButtonTextBeside{
                 text: qsTr("Recorded Path")
                 icon.source: prefix + "/images/RecPath.png"
                 //width: 300
-                visible: Settings.feature_isHeadlandOn
+                // Threading Phase 1: Headland feature visibility
+                visible: featureIsHeadlandOn
                 onClicked:{
                     fieldToolsMenu.visible = false
                     recPath.show()
@@ -90,7 +100,7 @@ Drawer {
                 id: delAppliedArea
                 icon.source: prefix + "/images/TrashApplied.png"
                 text: qsTr("Delete Applied Area")
-                onClicked: {aog.deleteAppliedArea()
+                onClicked: {aog.deleteAppliedArea() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 fieldToolsMenu.visible = false}
             }
             IconButtonTextBeside {

@@ -4,7 +4,7 @@ import QtQuick.Controls.Fusion
 import QtMultimedia
 
 /* This type contains the sounds, colors, and perhaps screen sizes,
- *Sounds will track AgIOInterface.qml, and react when needed as set
+ *Sounds will track AgIOService.qml, and react when needed as set
  by the features page.
  *Colors will follow the AgIOService files, and change based on day/night
  mode, so we don't need an if statement in every object.

@@ -12,14 +12,15 @@ import "../components"
 Rectangle{
     id: configTractorAntenna
     anchors.fill: parent
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     visible: false
     Image {
         id: antImage
         //3 vehicle types  tractor=0 harvestor=1 4wd=2
-        source: Settings.vehicle_vehicleType === 0 ? prefix + "/images/qtSpecific/AntennaTractor.png" :
-                Settings.vehicle_vehicleType === 1 ? prefix + "/images/qtSpecific/AntennaHarvester.png" :
-                Settings.vehicle_vehicleType === 2 ? prefix + "/images/qtSpecific/Antenna4WD.png" :
+        // Threading Phase 1: Vehicle type dependent antenna image
+        source: SettingsManager.vehicle_vehicleType === 0 ? prefix + "/images/qtSpecific/AntennaTractor.png" :
+                SettingsManager.vehicle_vehicleType === 1 ? prefix + "/images/qtSpecific/AntennaHarvester.png" :
+                SettingsManager.vehicle_vehicleType === 2 ? prefix + "/images/qtSpecific/Antenna4WD.png" :
                 prefix + "/images/Config/ConSt_Mandatory.png"
         width: 350 * theme.scaleWidth
         height: 175 * theme.scaleHeight
@@ -35,8 +36,9 @@ Rectangle{
         from: -999
         to: 999
         editable: true
-        boundValue: Settings.vehicle_antennaPivot
-        onValueModified: Settings.vehicle_antennaPivot = value
+        // Threading Phase 1: Antenna pivot dimension
+        boundValue: SettingsManager.vehicle_antennaPivot
+        onValueModified: SettingsManager.vehicle_antennaPivot = value
     }
     SpinBoxCM{
         id: antennaHeight
@@ -47,8 +49,9 @@ Rectangle{
         from: 0
         to: 1000
         editable: true
-        boundValue: Settings.vehicle_antennaHeight
-        onValueModified: Settings.vehicle_antennaHeight = value
+        // Threading Phase 1: Antenna height dimension
+        boundValue: SettingsManager.vehicle_antennaHeight
+        onValueModified: SettingsManager.vehicle_antennaHeight = value
     }
 	TitleFrame{
 		anchors.top: antImage.bottom
@@ -73,17 +76,18 @@ Rectangle{
             anchors.verticalCenter: parent.verticalCenter
 			anchors.leftMargin: 7 * theme.scaleWidth
 			iconHeightScaleText: 1
-            checkable: Settings.gps_headingFromWhichSource === "Single"
-            isChecked: (Settings.vehicle_antennaOffset < 0)
-			icon.source: Settings.vehicle_vehicleType === 0 ? prefix + "/images/qtSpecific/LeftAntenna.png"
-			: Settings.vehicle_vehicleType === 1 ? prefix + "/images/qtSpecific/LeftAntennaHarvester.png"
-			: Settings.vehicle_vehicleType === 2 ? prefix + "/images/qtSpecific/LeftAntenna4WD.png"
+            // Threading Phase 1: Left antenna offset configuration
+            checkable: SettingsManager.gps_headingFromWhichSource === "Single"
+            isChecked: (SettingsManager.vehicle_antennaOffset < 0)
+			icon.source: SettingsManager.vehicle_vehicleType === 0 ? prefix + "/images/qtSpecific/LeftAntenna.png"
+			: SettingsManager.vehicle_vehicleType === 1 ? prefix + "/images/qtSpecific/LeftAntennaHarvester.png"
+			: SettingsManager.vehicle_vehicleType === 2 ? prefix + "/images/qtSpecific/LeftAntenna4WD.png"
 			: prefix + "/images/Config/ConSt_Mandatory.png"
 			onClicked: {
-				if (Settings.gps_headingFromWhichSource === "Dual") 
+				if (SettingsManager.gps_headingFromWhichSource === "Dual") 
 				    timedMessage.addMessage(5000, qsTr("Not Allowed"), qsTr("Dual heading MUST be right only"))
 				else
-					Settings.vehicle_antennaOffset = -Math.abs(Settings.vehicle_antennaOffset)
+					SettingsManager.vehicle_antennaOffset = -Math.abs(SettingsManager.vehicle_antennaOffset)
 			}
 
         }
@@ -95,12 +99,13 @@ Rectangle{
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
 			anchors.rightMargin: 7 * theme.scaleWidth
-            isChecked: (Settings.vehicle_antennaOffset >= 0)
+            // Threading Phase 1: Right antenna offset configuration
+            isChecked: (SettingsManager.vehicle_antennaOffset >= 0)
             checkable: true
-            onClicked: Settings.vehicle_antennaOffset = Math.abs(Settings.vehicle_antennaOffset)
-            icon.source: Settings.vehicle_vehicleType === 0 ? prefix + "/images/qtSpecific/RightAntenna.png"
-					: Settings.vehicle_vehicleType === 1 ? prefix + "/images/qtSpecific/RightAntennaHarvester.png"
-					: Settings.vehicle_vehicleType === 2 ? prefix + "/images/qtSpecific/RightAntenna4WD.png"
+            onClicked: SettingsManager.vehicle_antennaOffset = Math.abs(SettingsManager.vehicle_antennaOffset)
+            icon.source: SettingsManager.vehicle_vehicleType === 0 ? prefix + "/images/qtSpecific/RightAntenna.png"
+					: SettingsManager.vehicle_vehicleType === 1 ? prefix + "/images/qtSpecific/RightAntennaHarvester.png"
+					: SettingsManager.vehicle_vehicleType === 2 ? prefix + "/images/qtSpecific/RightAntenna4WD.png"
 					: prefix + "/images/Config/ConSt_Mandatory.png"
         }
 		SpinBoxCM{
@@ -111,14 +116,15 @@ Rectangle{
 			from: 0
 			to: 500
 			editable: true
-			boundValue: Math.abs(Settings.vehicle_antennaOffset)
+			// Threading Phase 1: Antenna offset absolute value
+			boundValue: Math.abs(SettingsManager.vehicle_antennaOffset)
 			onValueChanged:{
 				if (offsetLeft.checked){
-					Settings.vehicle_antennaOffset = -value
+					SettingsManager.vehicle_antennaOffset = -value
 				} else {
-				Settings.vehicle_antennaOffset = value
+				SettingsManager.vehicle_antennaOffset = value
 				}
-				console.log(Settings.vehicle_antennaOffset)
+				console.log(SettingsManager.vehicle_antennaOffset)
 			}
 		}
 	}

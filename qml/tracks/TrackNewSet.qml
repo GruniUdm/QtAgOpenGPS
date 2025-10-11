@@ -4,7 +4,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtQml.Models
-//import AOG
+import AOG
 // Interface import removed - now QML_SINGLETON
 
 import "../components"
@@ -269,7 +269,7 @@ Item{
                 Layout.alignment: Qt.AlignCenter
                 Layout.columnSpan: 2
                 text: qsTr("Status: Driving")
-                color: theme.textColor
+                color: aogInterface.textColor
             }
             IconButtonTransparent {
                 id: btnRecord
@@ -728,8 +728,8 @@ Item{
     background: Rectangle{
         id: backgroundABSetter
         border.width: 1
-        border.color: aog.blackDayWhiteNight
-        color: aog.backgroundColor
+        border.color: aogInterface.blackDayWhiteNight
+        color: aogInterface.backgroundColor
         anchors.fill: parent
     }
 
@@ -1095,7 +1095,7 @@ Item{
         anchors.bottom: bottomRow.top
         anchors.bottomMargin: 0
         anchors.margins: 10
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
 
         ListModel {
             id: ablineModel
@@ -1119,8 +1119,8 @@ Item{
                 indicator: Rectangle{
                     anchors.fill: parent
                     anchors.margins: 2
-                    //color: (control.down) ? aog.backgroundColor : aog.blackDayWhiteNight
-                    //color: (control.down) ? aog.blackDayWhiteNight : aog.backgroundColor
+                    //color: (control.down) ? aogInterface.backgroundColor : aogInterface.blackDayWhiteNight
+                    //color: (control.down) ? aogInterface.blackDayWhiteNight : aogInterface.backgroundColor
                     color: control.checked ? "blue" : "white"
                     visible: control.checked
                 }
@@ -1140,8 +1140,8 @@ Item{
                     text: model.name
                     font.pixelSize: 25
                     font.bold: true
-                    //color: control.checked ? aog.backgroundColor : aog.blackDayWhiteNight
-                    color: control.checked ? aog.blackDayWhiteNight : aog.backgroundColor
+                    //color: control.checked ? aogInterface.backgroundColor : aogInterface.blackDayWhiteNight
+                    color: control.checked ? aogInterface.blackDayWhiteNight : aogInterface.backgroundColor
                     z: 2
                 }
             }

@@ -18,12 +18,17 @@ Slider{
     property alias rightTopText: rightTopText.text
     property alias colorLeftTopText: leftTopText.color
     property alias colorRightTopText: rightTopText.color
+
+    // Phase 6.0.21.2: Fixed insets to break binding loops
+    readonly property int fixedLeftInset: 30
+    readonly property int fixedRightInset: 30
+
     stepSize: 1
     topInset: topText.textHeight
     topPadding: topInset
-    leftInset: leftText.textWidth
+    leftInset: leftText.text.length > 0 ? fixedLeftInset : 0
     leftPadding: leftInset
-    rightInset: rightText.textWidth
+    rightInset: rightText.text.length > 0 ? fixedRightInset : 0
     rightPadding: rightInset
     implicitHeight: 50 * theme.scaleHeight
     implicitWidth: 250 * theme.scaleWidth
@@ -121,7 +126,6 @@ Slider{
     TextLine{
         id: leftText
         text: ""
-        property int textWidth: (text.length > 0) ? 30 : 0
         color: sliderCustomized.enabled ? "black" : "grey"
         anchors.left: parent.left
         anchors.verticalCenter: backgroundRect.verticalCenter
@@ -129,7 +133,6 @@ Slider{
     TextLine{
         id: rightText
         text: ""
-        property int textWidth: (text.length > 0) ? 30 : 0
         color: sliderCustomized.enabled ? "black" : "grey"
         anchors.right: parent.right
         anchors.verticalCenter: backgroundRect.verticalCenter

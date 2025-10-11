@@ -5,7 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-//import AOG
+import AOG
 
 import ".."
 import "../components" as Comp
@@ -44,7 +44,7 @@ Comp.MoveablePopup {
             //color: "red"
             visible: true
             text: qsTr("Latitude")
-            font.pointSize: 15
+            font.pixelSize: 15
         }
         Text {
             id: latTextBottom
@@ -54,7 +54,7 @@ Comp.MoveablePopup {
             visible: true
             text: qsTr("( +90 to -90 )")
             // onTextChanged: update_model() // Removed - update_model not defined
-            font.pointSize: 15
+            font.pixelSize: 15
         }
 
         NumberTextField {
@@ -77,7 +77,7 @@ Comp.MoveablePopup {
             //color: "red"
             visible: true
             text: qsTr("Longitude")
-            font.pointSize: 15
+            font.pixelSize: 15
         }
         Text {
             id: lonTextBottom
@@ -86,7 +86,7 @@ Comp.MoveablePopup {
             //color: "red"
             visible: true
             text: qsTr("( +180 to -180 )")
-            font.pointSize: 15
+            font.pixelSize: 15
         }
 
         NumberTextField {
@@ -118,7 +118,7 @@ Comp.MoveablePopup {
                 onClicked: {
                     latt = Number.fromLocaleString(locale, newLatPoint.text);
                     longi = Number.fromLocaleString(locale, newLonPoint.text);
-                    aog.btnRed(latt, longi, 0)
+                    aog.redFlagAt(latt, longi, 0) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
             }
             Comp.IconButtonColor{
@@ -130,7 +130,7 @@ Comp.MoveablePopup {
                 onClicked: {
                     latt = Number.fromLocaleString(locale, newLatPoint.text);
                     longi = Number.fromLocaleString(locale, newLonPoint.text);
-                    aog.btnRed(latt, longi, 1)
+                    aog.redFlagAt(latt, longi, 1) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
             }
             Comp.IconButtonColor{
@@ -142,7 +142,7 @@ Comp.MoveablePopup {
                 onClicked: {
                     latt = Number.fromLocaleString(locale, newLatPoint.text);
                     longi = Number.fromLocaleString(locale, newLonPoint.text);
-                    aog.btnRed(latt, longi, 2)
+                    aog.redFlagAt(latt, longi, 2) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
             }
             Comp.IconButtonColor{

@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QVector>
 #include "vec3.h"
-#include "interfaceproperty.h"
+#include "classes/headachedesigner.h"
 
 class CBoundary;
 class CHeadLine;
@@ -12,13 +12,14 @@ class CTool;
 class CVehicle;
 class QOpenGLFunctions;
 
-class HeadacheDesigner;
 
+class FormGPS; // Forward declaration
 
 class FormHeadache : public QObject
 {
     Q_OBJECT
 protected:
+    FormGPS* formGPS = nullptr; // Reference to parent FormGPS
     //InterfaceProperty<HeadacheDesigner,double> maxFieldDistance = InterfaceProperty<HeadacheDesigner,double>("maxFieldDistance");
     //InterfaceProperty<HeadacheDesigner,double> fieldCenterX = InterfaceProperty<HeadacheDesigner,double>("fieldCenterX");
     //InterfaceProperty<HeadacheDesigner,double> fieldCenterY = InterfaceProperty<HeadacheDesigner,double>("fieldCenterY");
@@ -27,13 +28,9 @@ protected:
     double fieldCenterX = 0;
     double fieldCenterY = 0;
 
-    InterfaceProperty<HeadacheDesigner,bool> showa = InterfaceProperty<HeadacheDesigner,bool>("showa");
-    InterfaceProperty<HeadacheDesigner,bool> showb = InterfaceProperty<HeadacheDesigner,bool>("showb");
-    InterfaceProperty<HeadacheDesigner,QPoint> apoint = InterfaceProperty<HeadacheDesigner,QPoint>("apoint");
-    InterfaceProperty<HeadacheDesigner,QPoint> bpoint = InterfaceProperty<HeadacheDesigner,QPoint>("bpoint");
 
-    InterfaceProperty<AOGInterface,bool> isBtnAutoSteerOn = InterfaceProperty<AOGInterface,bool>("isBtnAutoSteerOn");
-    InterfaceProperty<AOGInterface,bool> isYouTurnBtnOn = InterfaceProperty<AOGInterface,bool>("isYouTurnBtnOn");
+    // ⚡ PHASE 6.3.0: DUPLICATION REMOVED - isYouTurnBtnOn only exists in cyouturn.h (main version)
+    // Access via: formGPS->isYouTurnBtnOn
 
     int fixX, fixY;
     //InterfaceProperty<HeadacheDesigner,bool> isA = InterfaceProperty<HeadacheDesigner,bool>("isA");
@@ -44,14 +41,8 @@ protected:
     QVector<Vec3> sliceArr;
     QVector<Vec3> backupList;
 
-    InterfaceProperty<HeadacheDesigner,int> headacheCount = InterfaceProperty<HeadacheDesigner,int>("headacheCount");
-    InterfaceProperty<HeadacheDesigner,bool> curveLine = InterfaceProperty<HeadacheDesigner,bool>("curveLine");
-    InterfaceProperty<HeadacheDesigner,double> lineDistance = InterfaceProperty<HeadacheDesigner,double>("lineDistance");
 
     bool zoomToggle;
-    InterfaceProperty<HeadacheDesigner,double> zoom = InterfaceProperty<HeadacheDesigner,double>("zoom");
-    InterfaceProperty<HeadacheDesigner,double> sX = InterfaceProperty<HeadacheDesigner,double>("sX");
-    InterfaceProperty<HeadacheDesigner,double> sY = InterfaceProperty<HeadacheDesigner,double>("sY");
 
     Vec3 pint = Vec3(0,1,0);
     bool isLinesVisible = true;
@@ -68,8 +59,13 @@ public:
     CHeadLine *hdl;
     CTool *tool;
     QObject *headache_designer_instance;
+    QObject *mainWindow;
+
+    // Phase 6.0.4.3 - Native Q_PROPERTY designer
+    HeadacheDesigner *designer;
 
     explicit FormHeadache(QObject *parent = nullptr);
+    void setFormGPS(FormGPS* gps) { formGPS = gps; }
 
     //this class is pretty closely coupled to the QML file
     //of necessity

@@ -1,8 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-//import Settings
-//import AOG
+import AOG
 // Interface import removed - TracksInterface now QML_SINGLETON
 import "components" as Comp
 
@@ -20,7 +19,8 @@ RowLayout{
             height = 0
         else
             height = children.height
-        cbYouSkipNumber.currentIndex = Settings.youturn_skipWidth-1
+        // Threading Phase 1: You-turn skip width configuration
+        cbYouSkipNumber.currentIndex = SettingsManager.youturn_skipWidth-1
 
     }
     ComboBox {
@@ -48,7 +48,7 @@ RowLayout{
                 model.append({text: editText})
                 currentIndex = cbYouSkipNumber.find(editText)
             }
-            Settings.youturn_skipWidth = cbYouSkipNumber.currentIndex+1
+            SettingsManager.youturn_skipWidth = cbYouSkipNumber.currentIndex+1
         }
 
     }
@@ -66,15 +66,15 @@ RowLayout{
         onClicked:
          {
             //isOn = !isOn
-            aog.isYouSkipOn()
+            aog.youSkip() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         }
     }
     Comp.MainWindowBtns { //reset trailing tool to straight back
         id: btnResetTool
         icon.source: prefix + "/images/ResetTool.png"
         buttonText: qsTr("Reset Tool")
-        onClicked: aog.btnResetTool()
-        visible: Settings.tool_isToolTrailing === true //hide if front or rear 3 pt
+        onClicked: aog.resetTool() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        visible: SettingsManager.tool_isToolTrailing //hide if front or rear 3 pt
     }
     Comp.MainWindowBtns {
         id: btnSectionMapping
@@ -88,7 +88,7 @@ RowLayout{
         Layout.alignment: Qt.AlignCenter
         implicitWidth: theme.buttonSize
         implicitHeight: theme.buttonSize
-        visible: Settings.feature_isTramOn
+        visible: SettingsManager.feature_isTramOn
     }
     Comp.MainWindowBtns {
         property bool isOn: false
@@ -96,13 +96,13 @@ RowLayout{
         isChecked: isOn
         checkable: true
         disabled: btnHeadland.checked
-        visible: Utils.isTrue(Settings.ardMac_isHydEnabled) && btnHeadland.visible
+        visible: SettingsManager.ardMac_isHydEnabled && btnHeadland.visible
         icon.source: prefix + "/images/HydraulicLiftOff.png"
         iconChecked: prefix + "/images/HydraulicLiftOn.png"
         buttonText: qsTr("HydLift")
         onClicked: {
             isOn = !isOn
-            aog.isHydLiftOn(isOn)
+            VehicleInterface.isHydLiftOn = isOn // Qt 6.8 MODERN: Q_PROPERTY assignment
         }
     }
     Comp.MainWindowBtns {
@@ -112,7 +112,7 @@ RowLayout{
         icon.source: prefix + "/images/HeadlandOff.png"
         iconChecked: prefix + "/images/HeadlandOn.png"
         buttonText: qsTr("Headland")
-        onClicked: aog.btnHeadland()
+        onClicked: aog.headland() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
     }
     Comp.MainWindowBtns {
         id: btnFlag
@@ -121,7 +121,7 @@ RowLayout{
         icon.source: prefix + contextFlag.icon
         onClicked: {
             flags.show();
-            aog.btnFlag();
+            aog.flag(); // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         }
         onPressAndHold: {
             if (contextFlag.visible) {
@@ -135,18 +135,18 @@ RowLayout{
 
     Comp.MainWindowBtns{
         icon.source: prefix + "/images/SnapLeft.png"
-        onClicked: TracksInterface.nudge(Settings.as_snapDistance/-100) //spinbox returns cm, convert to metres
-        visible: Settings.feature_isNudgeOn && TracksInterface.idx > -1
+        onClicked: TracksInterface.nudge(SettingsManager.as_snapDistance/-100) //spinbox returns cm, convert to metres
+        visible: SettingsManager.feature_isNudgeOn && TracksInterface.idx > -1
     }
     Comp.MainWindowBtns{
         icon.source: prefix + "/images/SnapToPivot.png"
         onClicked: TracksInterface.nudge_center()
-        visible: Settings.feature_isNudgeOn && TracksInterface.idx > -1
+        visible: SettingsManager.feature_isNudgeOn && TracksInterface.idx > -1
     }
     Comp.MainWindowBtns{
         icon.source: prefix + "/images/SnapRight.png"
-        onClicked: TracksInterface.nudge(Settings.as_snapDistance/100) //spinbox returns cm, convert to metres
-        visible: Settings.feature_isNudgeOn && TracksInterface.idx > -1
+        onClicked: TracksInterface.nudge(SettingsManager.as_snapDistance/100) //spinbox returns cm, convert to metres
+        visible: SettingsManager.feature_isNudgeOn && TracksInterface.idx > -1
     }
 
     Comp.MainWindowBtns {
@@ -156,15 +156,29 @@ RowLayout{
         iconChecked: prefix + "/images/TrackOn.png"
         buttonText: qsTr("Track")
         //onClicked: trackButtons.visible = !trackButtons.visible
-        onClicked: {if (isOn == false && TracksInterface.count > 0) {
-                        TracksInterface.select(0);
-                        btnTrack.isChecked = false;
-                        isOn = true;
-                    }
-                    else {
-                        trackButtons.visible = !trackButtons.visible;
-                        }
-                    }
+        onClicked: {
+            // TRACK RESTORATION: Smart track selection behavior
+            console.log("TRACK BUTTON: Clicked - isOn:", isOn, "count:", TracksInterface.count, "idx:", TracksInterface.idx);
+
+            if (isOn == false && TracksInterface.count > 0) {
+                // Check if we have a previously active track (restored from field)
+                if (TracksInterface.idx >= 0) {
+                    // Use the restored/previously active track
+                    console.log("TRACK: Reactivating restored track index:", TracksInterface.idx);
+                    TracksInterface.select(TracksInterface.idx);
+                } else {
+                    // No previous track, default to first track (index 0)
+                    console.log("TRACK: No previous track, selecting first track (index 0)");
+                    TracksInterface.select(0);
+                }
+                btnTrack.isChecked = false;
+                isOn = true;
+            } else {
+                // Open track selection menu
+                console.log("TRACK: Opening track menu - isOn:", isOn, "count:", TracksInterface.count);
+                trackButtons.visible = !trackButtons.visible;
+            }
+        }
     }
 
 }

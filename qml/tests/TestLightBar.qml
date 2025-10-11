@@ -18,9 +18,9 @@ Rectangle {
         id: utils
     }
 
-    Component.onCompleted: {
-        aog.avgPivDistance = 14 //mm
-    }
+    // Component.onCompleted: {
+    //     avgPivDistance = 14 //mm
+    // }
 
     LightBar {
         id: test

@@ -7,18 +7,18 @@
 
 void FormGPS::loadSettings()
 {
-    isMetric = SettingsManager::instance()->value(SETTINGS_menu_isMetric).value<bool>();
+    isMetric = SettingsManager::instance()->menu_isMetric();
 
-    isUTurnOn = SettingsManager::instance()->value(SETTINGS_feature_isUTurnOn).value<bool>();
-    isLateralOn = SettingsManager::instance()->value(SETTINGS_feature_isLateralOn).value<bool>();
+    isUTurnOn = SettingsManager::instance()->feature_isUTurnOn();
+    isLateralOn = SettingsManager::instance()->feature_isLateralOn();
 
-    pn.headingTrueDualOffset = SettingsManager::instance()->value(SETTINGS_gps_dualHeadingOffset).value<double>();
+    pn.headingTrueDualOffset = SettingsManager::instance()->gps_dualHeadingOffset();
 
-    frameDayColor = SettingsManager::instance()->value(SETTINGS_display_colorDayFrame).value<QColor>();
-    frameNightColor = SettingsManager::instance()->value(SETTINGS_display_colorNightFrame).value<QColor>();
-    sectionColorDay = SettingsManager::instance()->value(SETTINGS_display_colorSectionsDay).value<QColor>();
-    fieldColorDay = SettingsManager::instance()->value(SETTINGS_display_colorFieldDay).value<QColor>();
-    fieldColorNight = SettingsManager::instance()->value(SETTINGS_display_colorFieldNight).value<QColor>();
+    frameDayColor = SettingsManager::instance()->display_colorDayFrame();
+    frameNightColor = SettingsManager::instance()->display_colorNightFrame();
+    sectionColorDay = SettingsManager::instance()->display_colorSectionsDay();
+    fieldColorDay = SettingsManager::instance()->display_colorFieldDay();
+    fieldColorNight = SettingsManager::instance()->display_colorFieldNight();
 
     //check color for 255, reset it to properties
     //Properties.Settings.Default.setDisplay_colorDayFrame = frameDayColor;
@@ -27,62 +27,62 @@ void FormGPS::loadSettings()
     //Properties.Settings.Default.setDisplay_colorFieldDay = fieldColorDay;
     //Properties.Settings.Default.setDisplay_colorFieldNight = fieldColorNight;
 
-    isSkyOn = SettingsManager::instance()->value(SETTINGS_menu_isSkyOn).value<bool>();
-    isTextureOn = SettingsManager::instance()->value(SETTINGS_display_isTextureOn).value<bool>();
+    isSkyOn = SettingsManager::instance()->menu_isSkyOn();
+    isTextureOn = SettingsManager::instance()->display_isTextureOn();
 
-    isGridOn = SettingsManager::instance()->value(SETTINGS_menu_isGridOn).value<bool>();
-    isBrightnessOn = SettingsManager::instance()->value(SETTINGS_display_isBrightnessOn).value<bool>();
+    isGridOn = SettingsManager::instance()->menu_isGridOn();
+    isBrightnessOn = SettingsManager::instance()->display_isBrightnessOn();
 
-    isCompassOn = SettingsManager::instance()->value(SETTINGS_menu_isCompassOn).value<bool>();
-    isSpeedoOn = SettingsManager::instance()->value(SETTINGS_menu_isSpeedoOn).value<bool>();
-    isSideGuideLines = SettingsManager::instance()->value(SETTINGS_menu_isSideGuideLines).value<bool>();
-    isSvennArrowOn = SettingsManager::instance()->value(SETTINGS_display_isSvennArrowOn).value<bool>();
+    isCompassOn = SettingsManager::instance()->menu_isCompassOn();
+    isSpeedoOn = SettingsManager::instance()->menu_isSpeedoOn();
+    isSideGuideLines = SettingsManager::instance()->menu_isSideGuideLines();
+    isSvennArrowOn = SettingsManager::instance()->display_isSvennArrowOn();
 
-    lightbarCmPerPixel = SettingsManager::instance()->value(SETTINGS_display_lightbarCmPerPixel).value<int>();
+    lightbarCmPerPixel = SettingsManager::instance()->display_lightbarCmPerPixel();
 
-    //isLogNMEA = SettingsManager::instance()->value("menu/isLogNMEA;
-    isPureDisplayOn = SettingsManager::instance()->value(SETTINGS_menu_isPureOn).value<bool>();
+    //isLogNMEA = SettingsManager::instance()->getValue("menu/isLogNMEA;
+    isPureDisplayOn = SettingsManager::instance()->menu_isPureOn();
 
-    isAutoStartAgIO = SettingsManager::instance()->value(SETTINGS_display_isAutoStartAgIO).value<bool>();
+    isAutoStartAgIO = SettingsManager::instance()->display_isAutoStartAgIO();
 
-    vehicleOpacity = SettingsManager::instance()->value(SETTINGS_display_vehicleOpacity).value<double>() * 0.01;
-    vehicleOpacityByte = (char)(255 * (SettingsManager::instance()->value(SETTINGS_display_vehicleOpacity).value<double>() * 0.01));
-    isVehicleImage = SettingsManager::instance()->value(SETTINGS_display_isVehicleImage).value<bool>();
+    vehicleOpacity = SettingsManager::instance()->display_vehicleOpacity() * 0.01;
+    vehicleOpacityByte = (char)(255 * (SettingsManager::instance()->display_vehicleOpacity() * 0.01));
+    isVehicleImage = SettingsManager::instance()->display_isVehicleImage();
 
     //TODO: custom colors for display
 
     //TODO: check for 255
-    textColorDay = SettingsManager::instance()->value(SETTINGS_display_colorTextDay).value<QColor>();
-    textColorNight = SettingsManager::instance()->value(SETTINGS_display_colorTextNight).value<QColor>();
+    textColorDay = SettingsManager::instance()->display_colorTextDay();
+    textColorNight = SettingsManager::instance()->display_colorTextNight();
 
-    vehicleColor = SettingsManager::instance()->value(SETTINGS_display_colorVehicle).value<QColor>();
+    vehicleColor = SettingsManager::instance()->display_colorVehicle();
 
-    isLightbarOn = SettingsManager::instance()->value(SETTINGS_menu_isLightBarOn).value<bool>();
+    isLightbarOn = SettingsManager::instance()->menu_isLightBarOn();
 
 
     //hotkeys = Properties.Settings.Default.setKey_hotkeys.ToCharArray();
-    // udpWatchLimit = SettingsManager::instance()->value(SETTINGS_gps_udpWatchMSec).value<int>(); // ❌ REMOVED - Phase 4.6: No UDP FormGPS
+    // udpWatchLimit = SettingsManager::instance()->gps_udpWatchMSec(); // ❌ REMOVED - Phase 4.6: No UDP FormGPS
     //check for 255
     //TODO
     //string[] words = Properties.Settings.Default.setDisplay_customColors.Split(',');
 
-    isRTK = SettingsManager::instance()->value(SETTINGS_gps_isRTK).value<bool>();
-    isRTK_KillAutosteer = SettingsManager::instance()->value(SETTINGS_gps_isRTKKillAutoSteer).value<bool>();
+    isRTK = SettingsManager::instance()->gps_isRTK();
+    isRTK_KillAutosteer = SettingsManager::instance()->gps_isRTKKillAutoSteer();
 
-    pn.ageAlarm = SettingsManager::instance()->value(SETTINGS_gps_ageAlarm).value<int>();
+    pn.ageAlarm = SettingsManager::instance()->gps_ageAlarm();
 
-    isConstantContourOn = SettingsManager::instance()->value(SETTINGS_as_isConstantContourOn).value<bool>();
-    isSteerInReverse = SettingsManager::instance()->value(SETTINGS_as_isSteerInReverse).value<bool>();
+    isConstantContourOn = SettingsManager::instance()->as_isConstantContourOn();
+    isSteerInReverse = SettingsManager::instance()->as_isSteerInReverse();
 
-    guidanceLookAheadTime = SettingsManager::instance()->value(SETTINGS_as_guidanceLookAheadTime).value<double>();
+    guidanceLookAheadTime = SettingsManager::instance()->as_guidanceLookAheadTime();
 
     //gyd pulls directly from settings
     //gyd.sideHillCompFactor = property_setAS_sideHillComp;
 
-    fd.UpdateFieldBoundaryGUIAreas(bnd.bndList);
+    fd.UpdateFieldBoundaryGUIAreas(bnd.bndList, mainWindow, this);
 
-    isStanleyUsed = SettingsManager::instance()->value(SETTINGS_vehicle_isStanleyUsed).value<bool>();
-    isDay = SettingsManager::instance()->value(SETTINGS_display_isDayMode).value<bool>();
+    isStanleyUsed = SettingsManager::instance()->vehicle_isStanleyUsed();
+    isDay = SettingsManager::instance()->display_isDayMode();
 
     tool.loadSettings();
     if (tool.isSectionsNotZones){
@@ -93,13 +93,18 @@ void FormGPS::loadSettings()
     }
 
     //disable youturn buttons
-    headingFromSource = SettingsManager::instance()->value(SETTINGS_gps_headingFromWhichSource).value<QString>();
+    headingFromSource = SettingsManager::instance()->gps_headingFromWhichSource();
+
+    // PHASE 6.0.35 FIX: Load GPS heading thresholds from settings (not hardcoded)
+    // C# original: loaded from Settings.Default.setF_minHeadingStepDistance (default 0.5m)
+    minHeadingStepDist = SettingsManager::instance()->f_minHeadingStepDistance();
+    gpsMinimumStepDistance = SettingsManager::instance()->gps_minimumStepLimit();
 
     //load various saved settings or properties into the support classes
     ahrs.loadSettings();
     camera.loadSettings();
     pn.loadSettings();
-    if(!isJobStarted)
+    if(!isJobStarted())
         sim.loadSettings();
     CVehicle::instance()->loadSettings();
     yt.loadSettings();

@@ -15,6 +15,7 @@ project(QtAgOpenGPS
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOMOC ON)  # Required for automatic QML_ELEMENT/QML_SINGLETON registration
 
 # Find required libraries
 #find_package(Qt6 REQUIRED COMPONENTS Core)
@@ -65,12 +66,15 @@ qt_standard_project_setup(REQUIRES 6.8
 # Create the executable
 qt_add_executable(QtAgOpenGPS
     main.cpp
-    $<$<NOT:$<BOOL:${LOCAL_QML}>>:agopengps.qrc>
+    # agopengps.qrc removed - resources now handled by qt_add_qml_module
+    # $<$<NOT:$<BOOL:${LOCAL_QML}>>:agopengps.qrc>
     aogrenderer.h aogrenderer.cpp
-    # MASSIVE MIGRATION: settings.h settings.cpp newsettings_addkeys.cpp REMOVED
+    # Phase 6.0.19: SettingsManager Qt6 Pure Architecture with generated files
     classes/settingsmanager.h classes/settingsmanager.cpp
-    settingsmanager_addkeys.cpp
-    settings_defines.h
+    classes/settingsmanager_macros.h
+    classes/settingsmanager_properties.h
+    classes/settingsmanager_members.h
+    # NOTE: settingsmanager_implementations.cpp is INCLUDED in settingsmanager.cpp, not compiled separately
     btnenum.h
     common.h
     formgps.h formgps.cpp
@@ -89,8 +93,7 @@ qt_add_executable(QtAgOpenGPS
     formheadache.h formheadache.cpp
     formheadland.h formheadland.cpp
     glutils.h glutils.cpp
-    interfaceproperty.h
-    qmlsectionbuttons.h qmlsectionbuttons.cpp
+    #qmlsectionbuttons.h qmlsectionbuttons.cpp
     qmlutil.h
     setter.h
     classes/cabcurve.h classes/cabcurve.cpp
@@ -111,6 +114,8 @@ qt_add_executable(QtAgOpenGPS
     classes/cnmea.h classes/cnmea.cpp
     classes/cpatches.h classes/cpatches.cpp
     classes/cpgn.h classes/cpgn.cpp
+    classes/headachedesigner.h classes/headachedesigner.cpp
+    classes/headlanddesigner.h classes/headlanddesigner.cpp
     classes/crecordedpath.h classes/crecordedpath.cpp
     classes/csection.h classes/csection.cpp
     classes/csim.h classes/csim.cpp
@@ -211,11 +216,11 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         set(${ARGV1} ${REL_PATHS} PARENT_SCOPE)
     endfunction()
 
-    # Process QML files for each directory 
+    # Process QML files for each directory
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml" QML_REL_PATHS)
-    #process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/AOG" AOG_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/AOG" AOG_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/agio" AGIO_REL_PATHS)
-    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/agio/components" AGIO_COMPONENTS_REL_PATHS)
+    # process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/agio/components" AGIO_COMPONENTS_REL_PATHS) # DISABLED: Use unified /qml/components instead
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/agio/interfaces" AGIO_INTERFACES_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/boundary" BOUNDARY_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/components" COMPONENTS_REL_PATHS)
@@ -231,9 +236,9 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
     # Combine all relative paths
     set(ALL_REL_PATHS
         ${QML_REL_PATHS}
-    #   ${AOG_REL_PATHS}
+        ${AOG_REL_PATHS}
         ${AGIO_REL_PATHS}
-        ${AGIO_COMPONENTS_REL_PATHS}
+        # ${AGIO_COMPONENTS_REL_PATHS} # DISABLED: Use unified /qml/components instead
         ${AGIO_INTERFACES_REL_PATHS}
         ${BOUNDARY_REL_PATHS}
         ${COMPONENTS_REL_PATHS}
@@ -258,7 +263,7 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
     qt_add_qml_module(QtAgOpenGPS
         URI AOG
         VERSION 1.0
-        #RESOURCE_PREFIX "/"
+        RESOURCE_PREFIX "/"
         QML_FILES
         ${ALL_REL_PATHS} #all qml files
         SOURCES
@@ -266,18 +271,26 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         aogrenderer.h
         classes/settingsmanager.cpp
         classes/settingsmanager.h
+        classes/settingsmanager_macros.h
+        classes/settingsmanager_properties.h
+        classes/settingsmanager_members.h
+        # NOTE: settingsmanager_implementations.cpp is INCLUDED, not compiled separately
         classes/ctrack.cpp
         classes/ctrack.h
         classes/cvehicle.cpp
         classes/cvehicle.h
         classes/agioservice.cpp
         classes/agioservice.h
-        classes/gpsworker.cpp
-        classes/gpsworker.h
+        # Phase 6.0.21: GPSWorker removed (useless thread - no I/O)
+        classes/pgnparser.cpp
+        classes/pgnparser.h
+        classes/ctraffic.cpp
+        classes/ctraffic.h
         classes/ntripworker.cpp
         classes/ntripworker.h
-        classes/udpworker.cpp
-        classes/udpworker.h
+        # Phase 6.0.24: udpworker removed (event-driven QUdpSocket in main thread)
+        # classes/udpworker.cpp
+        # classes/udpworker.h
         classes/serialworker.cpp
         classes/serialworker.h
 

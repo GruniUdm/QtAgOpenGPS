@@ -16,10 +16,19 @@ Rectangle {
 
     color: "transparent"
 
+    // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
+    property bool isDayMode: true
+    property int seedBlockRow1: 0
+    property int seedBlockRow2: 0
+    property int seedBlockRow3: 0
+    property int seedBlockRow4: 0
+    property int seedBlockCountMin: 0
+    property int seedBlockCountMax: 10000
 
-    property int numRows:  Number(Settings.seed_blockRow1 + Settings.seed_blockRow2 + Settings.seed_blockRow3 + Settings.seed_blockRow4)
-    property int countMin: Number(Settings.seed_blockCountMin*10000)
-    property int countMax: Number(Settings.seed_blockCountMax*10000)
+    // Threading Phase 1: Seed blockage configuration
+    property int numRows:  Number(seedBlockRow1 + seedBlockRow2 + seedBlockRow3 + seedBlockRow4)
+    property int countMin: Number(seedBlockCountMin*10000)
+    property int countMax: Number(seedBlockCountMax*10000)
     property color offColor: "Crimson"
     property color offTextColor: "White"
     property color onColor: "DarkGoldenrod"
@@ -32,27 +41,27 @@ Rectangle {
     //methods
     function setColors() {
         //same colors for sections and zones
-        if (Settings.display_isDayMode) {
+        if (isDayMode) {
             blockageRows.offColor = "Red"
             blockageRows.offTextColor = "Black"
             blockageRows.onColor = "Yellow"
             blockageRows.onTextColor = "Black"
-            blockageRows.onColor = "Yellow"
-            blockageRows.onTextColor = "Black"
+            blockageRows.autoColor = "Lime"
+            blockageRows.autoTextColor = "Black"
         } else {
             blockageRows.offColor = "Crimson"
             blockageRows.offTextColor = "White"
             blockageRows.onColor = "DarkGoldenRod"
             blockageRows.onTextColor = "White"
-            blockageRows.onColor = "DarkGoldenRod"
-            blockageRows.onTextColor = "White"
+            blockageRows.autoColor = "ForestGreen"
+            blockageRows.autoTextColor = "White"
         }
     }
     function setSizes() {
         //same colors for sections and zones
-        numRows = Number(Settings.seed_blockRow1 + Settings.seed_blockRow2 + Settings.seed_blockRow3 + Settings.seed_blockRow4)
-        countMin =  Number(Settings.seed_blockCountMin)
-        countMax =  Number(Settings.seed_blockCountMax)
+        numRows = Number(seedBlockRow1 + seedBlockRow2 + seedBlockRow3 + seedBlockRow4)
+        countMin =  Number(seedBlockCountMin)
+        countMax =  Number(seedBlockCountMax)
         }
 
 
@@ -79,15 +88,7 @@ Rectangle {
         }
     }
 
-Connections {
-    target: Settings
-    function onDisplay_isDayModeChanged() {
-        setColors()
-    }
-    function onSeed_blockrow1Changed() {
-        setSizes()
-    }
-}
+// Qt 6.8 QProperty + BINDABLE: Functions called in existing Component.onCompleted above
 
     ListModel {
         id: rowModel
@@ -102,7 +103,14 @@ Connections {
             //anchors.bottom: parent.bottom
             //buttonText: (model.rowNo + 1).toFixed(0)
             // visible: (model.rowNo < numRows) ? true : false
-            color: (blockageRows.blockageRowCount[model.rowNo] < countMin ? offColor : (blockageRows.blockageRowCount[model.rowNo] < countMax ? autoColor : onColor))
+            color: {
+                var count = blockageRows.blockageRowCount[model.rowNo];
+                var dayMode = isDayMode;
+                var off = dayMode ? "Red" : "Crimson";
+                var auto = dayMode ? "Lime" : "ForestGreen";
+                var on = dayMode ? "Yellow" : "DarkGoldenRod";
+                return count < countMin ? off : (count < countMax ? auto : on);
+            }
             //textColor: (blockageRows.blockageRowCount[model.rowNo]===0 ? offTextColor : (blockageRows.blockageRowCount[model.rowNo] === 1 ? autoTextColor : onTextColor))
         }
     }

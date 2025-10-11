@@ -1,26 +1,26 @@
 #include "cfielddata.h"
 #include "cvehicle.h"
+#include "qmlutil.h"
+#include "formgps.h"
 
 CFieldData::CFieldData() {}
 
-void CFieldData::UpdateFieldBoundaryGUIAreas(QVector<CBoundaryList> &bndList)
+void CFieldData::UpdateFieldBoundaryGUIAreas(QVector<CBoundaryList> &bndList, QObject *mainWindow, FormGPS *formGPS)
 {
     if (bndList.count() > 0)
     {
-        areaOuterBoundary = bndList[0].area;
-        areaBoundaryOuterLessInner = (double)areaOuterBoundary;
+        formGPS->setAreaOuterBoundary(bndList[0].area);
+        formGPS->setAreaBoundaryOuterLessInner((double)bndList[0].area);
 
         for (int i = 1; i < bndList.count(); i++)
         {
-            areaBoundaryOuterLessInner -= bndList[i].area;
+            double currentValue = formGPS->areaBoundaryOuterLessInner();
+            formGPS->setAreaBoundaryOuterLessInner(currentValue - bndList[i].area);
         }
     }
     else
     {
-        areaOuterBoundary = 0;
-        areaBoundaryOuterLessInner = 0;
+        formGPS->setAreaOuterBoundary(0.0);
+        formGPS->setAreaBoundaryOuterLessInner(0.0);
     }
-    //if (mf.isMetric) mf.btnManualOffOn.Text = AreaBoundaryLessInnersHectares;
-    //else mf.btnManualOffOn.Text = AreaBoundaryLessInnersAcres;
-
 }

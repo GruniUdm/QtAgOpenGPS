@@ -6,7 +6,7 @@
 //Provides backward compatibility for "import Settings"
 
 import QtQuick
-//import AOG
+import AOG
 
 pragma singleton
 

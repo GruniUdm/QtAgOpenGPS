@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 //import Settings
-//import AOG
+import AOG
 // Interface import removed - now QML_SINGLETON
 import "components" as Comp
 import "wizards" as Wiz
@@ -28,7 +28,7 @@ import "wizards" as Wiz
             id: toolsMenuContent
             anchors.fill: parent
             height: toolsMenu.height
-            color: aog.blackDayWhiteNight
+            color: aogInterface.blackDayWhiteNight
         }
 
         Comp.ScrollViewExpandableColumn {
@@ -55,14 +55,16 @@ import "wizards" as Wiz
                 id: smABCurve
                 icon.source: prefix + "/images/ABSmooth.png"
                 text: qsTr("Smooth AB Curve")
-                visible: Settings.feature_isABSmoothOn
+                // Threading Phase 1: AB smooth feature visibility
+                visible: SettingsManager.feature_isABSmoothOn
             }
 
             Comp.IconButtonTextBeside {
                 id: delContourPaths
                 icon.source: prefix + "/images/TrashContourRef.png"
                 text: qsTr("Delete Contour Paths")
-                visible:Settings.feature_isHideContourOn
+                // Threading Phase 1: Contour hide feature visibility
+                visible: SettingsManager.feature_isHideContourOn
             }
 
             // Comp.IconButtonTextBeside {
@@ -77,7 +79,8 @@ import "wizards" as Wiz
                 id: offsetFix
                 icon.source: prefix + "/images/YouTurnReverse.png" // this is horrible. This has nothing to do with YouTurnReverse.
                 text: qsTr("Offset Fix")
-                visible: Settings.feature_isOffsetFixOn
+                // Threading Phase 1: Offset fix feature visibility
+                visible: SettingsManager.feature_isOffsetFixOn
             }
         }
 
@@ -92,7 +95,7 @@ import "wizards" as Wiz
                 id: wizardMenuContent
                 anchors.fill: parent
                 height: wizardMenu.height
-                color: aog.blackDayWhiteNight
+                color: aogInterface.blackDayWhiteNight
             }
 
             Grid {
@@ -132,7 +135,7 @@ import "wizards" as Wiz
             id: chartsMenuContent
             anchors.fill: parent
             height: chartsMenu.height
-            color: aog.blackDayWhiteNight
+            color: aogInterface.blackDayWhiteNight
         }
 
         Comp.ScrollViewExpandableColumn {

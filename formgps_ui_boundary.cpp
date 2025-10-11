@@ -24,6 +24,11 @@ void FormGPS::boundary_calculate_area() {
         boundaryInterface->setProperty("area", area);
         boundaryInterface->setProperty("pts", ptCount);
     }
+
+    // Update properties - automatic Qt 6.8 notification
+    if (ptCount >= 3) {
+        setBoundaryArea(area);
+    }
 }
 
 void FormGPS::boundary_update_list() {
@@ -44,10 +49,14 @@ void FormGPS::boundary_update_list() {
 }
 
 void FormGPS::boundary_start() {
-    bnd.createBndOffset = tool.width * 0.5;
+    this->setCreateBndOffset(tool.width * 0.5);
     bnd.isBndBeingMade = true;
     bnd.bndBeingMadePts.clear();
     boundary_calculate_area();
+
+    // Update properties - automatic Qt 6.8 notification
+    setBoundaryIsRecording(true);
+    setBoundaryPointCount(0);
 }
 
 void FormGPS::boundary_stop() {
@@ -64,12 +73,12 @@ void FormGPS::boundary_stop() {
         New.FixFenceLine(bnd.bndList.count());
 
         bnd.bndList.append(New);
-        fd.UpdateFieldBoundaryGUIAreas(bnd.bndList);
+        fd.UpdateFieldBoundaryGUIAreas(bnd.bndList, mainWindow, this);
 
         //turn lines made from boundaries
         calculateMinMax();
         FileSaveBoundary();
-        bnd.BuildTurnLines(fd);
+        bnd.BuildTurnLines(fd, mainWindow, this);
     }
 
     //stop it all for adding
@@ -80,12 +89,21 @@ void FormGPS::boundary_stop() {
     if (boundaryInterface) {
         boundaryInterface->setProperty("count", bnd.bndList.count());
     }
+
+    // Update properties - automatic Qt 6.8 notification
+    setBoundaryIsRecording(false);
+    if (bnd.bndList.count() > 0) {
+        setBoundaryArea(bnd.bndList[0].area);
+    }
 }
 
 void FormGPS::boundary_add_point() {
     bnd.isOkToAddPoints = true;
     AddBoundaryPoint();
     bnd.isOkToAddPoints = false;
+
+    // Update properties - automatic Qt 6.8 notification
+    setBoundaryPointCount(bnd.bndBeingMadePts.count());
 }
 
 void FormGPS::boundary_delete_last_point() {
@@ -93,6 +111,9 @@ void FormGPS::boundary_delete_last_point() {
     if (ptCount > 0)
         bnd.bndBeingMadePts.pop_back();
     boundary_calculate_area();
+
+    // Update properties - automatic Qt 6.8 notification
+    setBoundaryPointCount(bnd.bndBeingMadePts.count());
 }
 
 void FormGPS::boundary_pause(){
@@ -106,6 +127,11 @@ void FormGPS::boundary_record() {
 void FormGPS::boundary_restart() {
     bnd.bndBeingMadePts.clear();
     boundary_calculate_area();
+
+    // Reset properties - automatic Qt 6.8 notification
+    setBoundaryIsRecording(false);
+    setBoundaryPointCount(0);
+    setBoundaryArea(0.0);
 }
 
 void FormGPS::boundary_delete(int which_boundary) {
@@ -128,7 +154,7 @@ void FormGPS::boundary_set_drivethru(int which_boundary, bool drive_through) {
 void FormGPS::boundary_delete_all() {
     bnd.bndList.clear();
     FileSaveBoundary();
-    bnd.BuildTurnLines(fd);
+    bnd.BuildTurnLines(fd, mainWindow, this);
     if (boundaryInterface) {
         boundaryInterface->setProperty("count", bnd.bndList.count());
     }

@@ -5,10 +5,24 @@
 #include "cyouturn.h"
 #include "btnenum.h"
 #include "glm.h"
+#include "qmlutil.h"
 
-CRecordedPath::CRecordedPath(QObject *parent) : QObject(parent)
+CRecordedPath::CRecordedPath(QObject *parent) : QObject(parent), mainWindow(nullptr)
 {
+    // PHASE 6.0.29: Initialize bool flags to prevent garbage values
+    // Without explicit initialization, bool members contain random memory values
+    // causing steer to activate when opening field (line 800 formgps_position.cpp)
+    isFollowingDubinsToPath = false;
+    isFollowingRecPath = false;
+    isFollowingDubinsHome = false;
+    isBtnFollowOn = false;
+    isEndOfTheRecLine = false;
+    isRecordOn = false;
+    trig = false;
+}
 
+void CRecordedPath::setMainWindow(QObject *mainWindow) {
+    this->mainWindow = mainWindow;
 }
 
 bool CRecordedPath::StartDrivingRecordedPath(CVehicle &vehicle,
@@ -87,7 +101,7 @@ bool CRecordedPath::StartDrivingRecordedPath(CVehicle &vehicle,
     isFollowingDubinsToPath = true;
     isEndOfTheRecLine = false;
     //currentPositonIndex = 0;
-    isDrivingRecordedPath = true;
+    if (mainWindow) qmlItem(mainWindow, "recordedPathInterface")->setProperty("isDrivingRecordedPath", true);
     return true;
 }
 
@@ -180,7 +194,7 @@ void CRecordedPath::StopDrivingRecordedPath()
     shortestDubinsList.clear();
     emit setSimStepDistance(0);
     //mf.sim.stepDistance = 0;
-    isDrivingRecordedPath = false;
+    if (mainWindow) qmlItem(mainWindow, "recordedPathInterface")->setProperty("isDrivingRecordedPath", false);
 
     /* slot in main form can make sure gui is right*/
     //mf.btnPathGoStop.Image = Properties.Resources.boundaryPlay;
@@ -318,7 +332,7 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
     }
     else inty = 0;
 
-    if (CVehicle::instance()->isReverse) inty = 0;
+    if (CVehicle::instance()->isReverse()) inty = 0;
 
     // ** Pure pursuit ** - calc point on ABLine closest to current position
     double U = (((pivotAxlePosRP.easting - recList[A].easting) * dx)
@@ -331,7 +345,7 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
     //update base on autosteer settings and distance from line
     double goalPointDistance = CVehicle::instance()->UpdateGoalPointDistance();
 
-    bool ReverseHeading = !CVehicle::instance()->isReverse;
+    bool ReverseHeading = !CVehicle::instance()->isReverse();
 
     int count = ReverseHeading ? 1 : -1;
     CRecPathPt start(rEastRP, rNorthRP, 0, 0, false);
@@ -465,7 +479,7 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
     }
     else inty = 0;
 
-    if (CVehicle::instance()->isReverse) inty = 0;
+    if (CVehicle::instance()->isReverse()) inty = 0;
 
     // ** Pure pursuit ** - calc point on ABLine closest to current position
     double U = (((pivotAxlePosRP.easting - shuttleDubinsList[A].easting) * dx)
@@ -478,7 +492,7 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
     //update base on autosteer settings and distance from line
     double goalPointDistance = CVehicle::instance()->UpdateGoalPointDistance();
 
-    bool ReverseHeading = !CVehicle::instance()->isReverse;
+    bool ReverseHeading = !CVehicle::instance()->isReverse();
 
     int count = ReverseHeading ? 1 : -1;
     CRecPathPt start(rEastRP, rNorthRP, 0, 0, false);

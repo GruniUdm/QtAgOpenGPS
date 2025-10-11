@@ -11,6 +11,7 @@
 #include "classes/agioservice.h"      // For auto-registration + C++ usage
 #include "classes/ctrack.h"           // For auto-registration + C++ usage
 #include "classes/cvehicle.h"         // For auto-registration + C++ usage
+#include "classes/pgnparser.h"        // Phase 6.0.21: For ParsedData metatype registration
 #include <QProcess>
 #include <QSysInfo>
 #ifdef  Q_OS_ANDROID
@@ -20,6 +21,7 @@
 #include <QtQml/QQmlEngine>
 #include <QtQml/QJSEngine>
 #include <QtQml/qqmlregistration.h>
+#include <QLoggingCategory>
 
 QLabel *grnPixelsWindow;
 QLabel *overlapPixelsWindow;
@@ -43,7 +45,17 @@ int main(int argc, char *argv[])
 
     qputenv("QSG_RENDER_LOOP", "threaded");
 
-    QLoggingCategory::setFilterRules(QStringLiteral("qt.scenegraph.general=true"));
+    // PHASE 6.0.23.1: Disable debug logs to prevent performance issues (40Hz PGN spam)
+    // Phase 6.0.24: Allow selective debug logging for AgIOService (change agioservice.debug=false to true)
+    QLoggingCategory::setFilterRules(QStringLiteral(
+        "*.debug=false\n"
+        "agioservice.debug=false\n"  // Change to true to enable AgIOService debug logs
+        "*.warning=true\n"
+        "*.critical=true\n"
+        "*.fatal=true"
+    ));
+
+    qSetMessagePattern("%{time hh:mm:ss.zzz} [%{type}] %{function}:%{line} - %{message}");
     QApplication a(argc, argv);
 
     QFont f = a.font();
@@ -64,72 +76,54 @@ int main(int argc, char *argv[])
     qRegisterMetaTypeStreamOperators<QList<int> >("QList<int>");
     qRegisterMetaTypeStreamOperators<QVector<int> >("QVector<int>");
 #endif
+
+    // Phase 6.0.21: Register PGNParser::ParsedData for Qt::QueuedConnection signals
+    qRegisterMetaType<PGNParser::ParsedData>("PGNParser::ParsedData");
+
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
     
-    // SettingsManager: Unified Meyer's singleton registration
+    // PHASE 6.0.11.4: Manual QML singleton registration (workaround for qmldir limitation)
     qmlRegisterSingletonType<SettingsManager>("AOG", 1, 0, "SettingsManager",
-        [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject * {
+        [](QQmlEngine *engine, QJSEngine *jsEngine) -> QObject* {
             Q_UNUSED(engine)
-            Q_UNUSED(scriptEngine)
-            qDebug() << "🔥🔥🔥 SettingsManager singleton registration CALLED! 🔥🔥🔥";
+            Q_UNUSED(jsEngine)
             return SettingsManager::instance();
         });
 
-    // PHASE 1 COMPLETION: Temporary alias - QML files still reference "Settings"
-    // TODO: Phase 1.x - Full QML migration Settings → SettingsManager (805 refs)
-    qmlRegisterSingletonType<SettingsManager>("AOG", 1, 0, "Settings",
-        [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject * {
-            Q_UNUSED(engine)
-            Q_UNUSED(scriptEngine)
-            qDebug() << "🔥🔥🔥 Settings (alias) singleton registration CALLED! 🔥🔥🔥";
-            return SettingsManager::instance();
-        });
-    
-    // AOGRenderer: Component registration (OpenGL renderers must be instantiated in QML)
-    qmlRegisterType<AOGRendererInSG>("AOG", 1, 0, "AOGRenderer");
-    
-    // AgIOService: Unified Meyer's singleton registration (QtAgIO.ini)
     qmlRegisterSingletonType<AgIOService>("AOG", 1, 0, "AgIOService",
-        [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject * {
+        [](QQmlEngine *engine, QJSEngine *jsEngine) -> QObject* {
             Q_UNUSED(engine)
-            Q_UNUSED(scriptEngine)
-            qDebug() << "🔥🔥🔥 AgIOService singleton registration CALLED! 🔥🔥🔥";
+            Q_UNUSED(jsEngine)
             return AgIOService::instance();
         });
-    
-    // CTrack/TracksInterface: Manual registration (most reliable for complex singletons)
-    qmlRegisterSingletonType<CTrack>("AOG", 1, 0, "TracksInterface",
-        [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject * {
-            Q_UNUSED(engine)
-            Q_UNUSED(scriptEngine)
-            qDebug() << "🔥🔥🔥 TracksInterface manual registration CALLED! 🔥🔥🔥";
-            return CTrack::instance();
-        });
-    
+
     qmlRegisterSingletonType<CVehicle>("AOG", 1, 0, "VehicleInterface",
-        [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject * {
+        [](QQmlEngine *engine, QJSEngine *jsEngine) -> QObject* {
             Q_UNUSED(engine)
-            Q_UNUSED(scriptEngine)
-            qDebug() << "🔥🔥🔥 VehicleInterface manual registration CALLED! 🔥🔥🔥";
+            Q_UNUSED(jsEngine)
             return CVehicle::instance();
         });
-    
+
+    // AOGRenderer: Component registration (OpenGL renderers must be instantiated in QML)
+    qmlRegisterType<AOGRendererInSG>("AOG", 1, 0, "AOGRenderer");
+
     // MASSIVE MIGRATION: settings = new Settings(); REMOVED
     //AOGProperty::init_defaults();
-    SettingsManager::instance()->sync();
-    
-    qDebug() << "=== MASSIVE MIGRATION PHASE 1.2.5 COMPLETED ===\n"
-             << "SettingsManager registered as QML singleton\n"
-             << "Settings (old) REMOVED - migration complete\n"
-             << "Status: Ready for compilation test";
+    // Qt6 Pure Architecture: Properties auto-initialize with defaults, no manual sync needed
+
+    // qDebug() << "=== PHASE 6.0.11.4 QML_SINGLETON AUTOMATIC REGISTRATION ===\n"
+    //          << "Qt 6.8 QML_SINGLETON pure architecture active\n"
+    //          << "CMAKE_AUTOMOC enabled for automatic registration\n"
+    //          << "All singletons: QML_ELEMENT + QML_SINGLETON + qt_add_qml_module\n"
+    //          << "Status: Phase 6.0.11.4 automatic registration active";
     FormGPS w;
     //w.show();
     
     // MASSIVE MIGRATION: Validate SettingsManager accessible
     qDebug() << "SettingsManager instance:" << SettingsManager::instance();
-    qDebug() << "Settings count:" << SettingsManager::instance()->keys().size();
+    qDebug() << "SettingsManager initialization: completed";
 
-    if (SettingsManager::instance()->value(SETTINGS_display_showBack).value<bool>()) {
+    if (SettingsManager::instance()->display_showBack()) {
         grnPixelsWindow = new QLabel("Back Buffer");
         grnPixelsWindow->setFixedWidth(500);
         grnPixelsWindow->setFixedHeight(500);
@@ -143,7 +137,7 @@ int main(int argc, char *argv[])
 // //auto start AgIO
 // #ifndef __ANDROID__
 //     QProcess process;
-//     if(SettingsManager::instance()->value(SETTINGS_feature_isAgIOOn).value<bool>()){
+//     if(SettingsManager::instance()->feature_isAgIOOn()) {
 //         QObject::connect(&process, &QProcess::errorOccurred, [&](QProcess::ProcessError error) {
 //             if (error == QProcess::Crashed) {
 //                 qDebug() << "AgIO Crashed! Continuing QtAgOpenGPS like normal";
@@ -193,7 +187,6 @@ int main(int argc, char *argv[])
     //w.fileOpenField("49111 1 1 2020.Mar.21 09_58");
     //w.ABLine.isBtnABLineOn = true;
     //w.hd.isOn = true;
-    //w.yt.isYouTurnBtnOn = true;
 
     //w.ABLine.isBtnABLineOn = true;
     //w.fileOpenTool("/tmp/TestTool1.txt");

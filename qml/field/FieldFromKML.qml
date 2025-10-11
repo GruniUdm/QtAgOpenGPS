@@ -31,7 +31,7 @@ Dialog{
         anchors.top:parent.top
         anchors.topMargin: 75
         anchors.horizontalCenter: parent.horizontalCenter
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
         border.color: "darkgray"
         border.width: 1
         Text {
@@ -124,7 +124,7 @@ Dialog{
         id: fileDialog
         onAccepted: {
             console.log("Selected file:", fileDialog.selectedFile);
-            fieldInterface.field_new_from_KML(newField.text.trim(), fileDialog.selectedFile);
+            aog.fieldNewFromKML(newField.text.trim(), fileDialog.selectedFile); // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         }
     }
 

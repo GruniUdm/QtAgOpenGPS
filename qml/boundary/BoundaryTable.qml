@@ -4,7 +4,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Fusion
 import QtQuick.Controls.Material
-//import AOG
+import AOG
 
 ListView {
     id: tableView

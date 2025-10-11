@@ -16,7 +16,7 @@ Item {
     anchors.fill: parent
     Rectangle{
         anchors.fill: parent
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
         Image {
             source: prefix + "/images/Config/ConT_TramSpacing.png"
             id: imageTram
@@ -40,15 +40,10 @@ Item {
             editable: true
             text: qsTr("Tram Width")
             from: 1
-            value: Settings.tram_width
-            Connections {
-                target: Settings
-                function onTram_widthChanged(){
-                    tramWidth.value = Settings.tram_width
-                }
-            }
+            // Threading Phase 1: Tram width configuration
+            value: SettingsManager.tram_width
             to: 5000
-            onValueChanged: Settings.tram_width = value
+            onValueChanged: SettingsManager.tram_width = value
         }
         IconButtonColor{
             anchors.horizontalCenter: parent.horizontalCenter

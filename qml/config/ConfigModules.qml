@@ -17,7 +17,7 @@ import "../components"
 Rectangle{
     id: configModules
     anchors.fill: parent
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
 
     onVisibleChanged: {
         load_settings()
@@ -26,7 +26,7 @@ Rectangle{
     function load_settings()
     {
         if (visible) {
-            var sett = Settings.ardMac_setting0
+            var sett = SettingsManager.ardMac_setting0
 
             if ((sett & 1) === 0 ) cboxMachInvertRelays.checked = false
             else cboxMachInvertRelays.checked = true
@@ -34,13 +34,13 @@ Rectangle{
             if ((sett & 2) === 0 ) cboxIsHydOn.checked = false
             else cboxIsHydOn.checked = true
 
-            nudRaiseTime.value = Settings.ardMac_hydRaiseTime
-            nudLowerTime.value = Settings.ardMac_hydLowerTime
+            nudRaiseTime.value = SettingsManager.ardMac_hydRaiseTime
+            nudLowerTime.value = SettingsManager.ardMac_hydLowerTime
 
-            nudUser1.value = Settings.ardMac_user1
-            nudUser2.value = Settings.ardMac_user2
-            nudUser3.value = Settings.ardMac_user3
-            nudUser4.value = Settings.ardMac_user4
+            nudUser1.value = SettingsManager.ardMac_user1
+            nudUser2.value = SettingsManager.ardMac_user2
+            nudUser3.value = SettingsManager.ardMac_user3
+            nudUser4.value = SettingsManager.ardMac_user4
 
             unsaved.visible = false
         }
@@ -61,17 +61,17 @@ Rectangle{
         if(cboxIsHydOn.checked) sett |= set
         else sett &= reset
 
-        Settings.ardMac_setting0 = sett
-        Settings.ardMac_hydRaiseTime = nudRaiseTime.value
-        Settings.ardMac_hydLowerTime = nudLowerTime.value
+        SettingsManager.ardMac_setting0 = sett
+        SettingsManager.ardMac_hydRaiseTime = nudRaiseTime.value
+        SettingsManager.ardMac_hydLowerTime = nudLowerTime.value
 
-        Settings.ardMac_user1 = nudUser1.value
-        Settings.ardMac_user2 = nudUser2.value
-        Settings.ardMac_user3 = nudUser3.value
-        Settings.ardMac_user4 = nudUser4.value
+        SettingsManager.ardMac_user1 = nudUser1.value
+        SettingsManager.ardMac_user2 = nudUser2.value
+        SettingsManager.ardMac_user3 = nudUser3.value
+        SettingsManager.ardMac_user4 = nudUser4.value
 
-        Settings.vehicle_hydraulicLiftLookAhead = nudHydLiftLookAhead.value
-        Settings.ardMac_isHydEnabled = cboxIsHydOn.checked
+        SettingsManager.vehicle_hydraulicLiftLookAhead = nudHydLiftLookAhead.value
+        SettingsManager.ardMac_isHydEnabled = cboxIsHydOn.checked
 
         //set pgns
         //signal handler will do the folling:
@@ -86,7 +86,7 @@ Rectangle{
             mf.p_238.pgn[mf.p_238.user4] = property_setArd_user3
             */
 
-        aog.modules_send_238()
+        aog.modulesSend238() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         //pboxSendMachine.Visible = false
     }
 
@@ -104,8 +104,8 @@ Rectangle{
     Rectangle{
         id: hydConfig
         anchors.left: parent.left
-        color: aog.backgroundColor
-        border.color: aog.blackDayWhiteNight
+        color: aogInterface.backgroundColor
+        border.color: aogInterface.blackDayWhiteNight
         anchors.top: titleText.bottom
         anchors.topMargin: 20 * theme.scaleHeight
         anchors.bottom: cboxMachInvertRelays.top

@@ -1,5 +1,5 @@
 import QtQuick
-//import AOG
+import AOG
 //import Settings
 import "components" as Comp
 
@@ -14,15 +14,17 @@ Grid{
         implicitHeight: 65 * theme.scaleHeight
         implicitWidth: 85 * theme.scaleWidth
         imageFillMode: Image.Stretch
-        visible: Settings.feature_isYouTurnOn
+        // Threading Phase 1: U-turn feature visibility
+        visible: SettingsManager.feature_isYouTurnOn
         icon.source: prefix + "/images/qtSpecific/z_TurnManualL.png"
         onClicked: {
-            if (Settings.as_functionSpeedLimit > aog.speedKph) {
-                console.debug("limit ", Settings.as_functionSpeedLimit, " speed ", aog.speedKph)
-                aog.uturn(false)
+            // Threading Phase 1: Check speed limit for manual operations
+            if (SettingsManager.as_functionSpeedLimit > aog.speedKph) {
+                console.debug("limit ", SettingsManager.as_functionSpeedLimit, " speed ", aog.speedKph)
+                aog.manualUTurn(false) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             } else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
-                                        Utils.speed_to_unit_string(Settings.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
+                                        Utils.speed_to_unit_string(SettingsManager.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
         }
 
     }
@@ -31,14 +33,15 @@ Grid{
         implicitHeight: 65 * theme.scaleHeight
         implicitWidth: 85 * theme.scaleWidth
         imageFillMode: Image.Stretch
-        visible: Settings.feature_isYouTurnOn
+        // Threading Phase 1: U-turn feature visibility
+        visible: SettingsManager.feature_isYouTurnOn
         icon.source: prefix + "/images/qtSpecific/z_TurnManualR.png"
         onClicked: {
-            if (Settings.as_functionSpeedLimit > aog.speedKph)
-                aog.uturn(true)
+            if (SettingsManager.as_functionSpeedLimit > aog.speedKph) // Threading Phase 1: Function speed limit check
+                aog.manualUTurn(true) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
-                                        Utils.speed_to_unit_string(Settings.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
+                                        Utils.speed_to_unit_string(SettingsManager.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
         }
     }
     Comp.IconButtonTransparent{
@@ -46,27 +49,29 @@ Grid{
         implicitWidth: 85 * theme.scaleWidth
         imageFillMode: Image.Stretch
         icon.source: prefix + "/images/qtSpecific/z_LateralManualL.png"
-        visible: Settings.feature_isLateralOn
+        // Threading Phase 1: Lateral turn feature visibility
+        visible: SettingsManager.feature_isLateralOn
         onClicked: {
-            if (Settings.as_functionSpeedLimit > aog.speedKph)
-                aog.lateral(false)
+            if (SettingsManager.as_functionSpeedLimit > aog.speedKph) // Threading Phase 1: Function speed limit check
+                aog.lateral(false) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
-                                        Utils.speed_to_unit_string(Settings.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
+                                        Utils.speed_to_unit_string(SettingsManager.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
         }
     }
     Comp.IconButtonTransparent{
         implicitHeight: 65 * theme.scaleHeight
         implicitWidth: 85 * theme.scaleWidth
         imageFillMode: Image.Stretch
-        visible: Settings.feature_isLateralOn
+        // Threading Phase 1: Lateral turn feature visibility
+        visible: SettingsManager.feature_isLateralOn
         icon.source: prefix + "/images/qtSpecific/z_LateralManualR.png"
         onClicked: {
-            if (Settings.as_functionSpeedLimit > aog.speedKph)
-                aog.lateral(true)
+            if (SettingsManager.as_functionSpeedLimit > aog.speedKph) // Threading Phase 1: Function speed limit check
+                aog.lateral(true) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
-                                        Utils.speed_to_unit_string(Settings.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
+                                        Utils.speed_to_unit_string(SettingsManager.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
         }
     }
 }
