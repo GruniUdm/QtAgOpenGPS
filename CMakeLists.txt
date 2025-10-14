@@ -17,6 +17,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOMOC ON)  # Required for automatic QML_ELEMENT/QML_SINGLETON registration
 
+# MSVC-specific compiler flags
+# /bigobj: Required for SettingsManager with 389 Q_OBJECT_BINDABLE_PROPERTY
+# Phase 6.0: Qt6 property system generates >65,536 sections (MSVC default limit)
+# /bigobj extends limit to 4,294,967,296 sections (COFF extended format)
+if(MSVC)
+    add_compile_options(/bigobj)
+    message("MSVC: /bigobj flag enabled for large object files (SettingsManager)")
+
+    # Optional: Enable debug symbols for profiling even in Release builds
+    # Uncomment these lines when creating profiler builds:
+    # set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+    # set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+    # message("MSVC: Debug symbols enabled in Release for profiling")
+endif()
+
 # Find required libraries
 #find_package(Qt6 REQUIRED COMPONENTS Core)
  find_package(Qt6 REQUIRED COMPONENTS Widgets) #used only for opengl ?
@@ -62,6 +77,8 @@ qt_standard_project_setup(REQUIRES 6.8
         FORCE
     )
 # //
+
+
 
 # Create the executable
 qt_add_executable(QtAgOpenGPS
@@ -147,6 +164,7 @@ qt_add_executable(QtAgOpenGPS
     # android/res/xml/qtprovider_paths.xml
 )
 
+target_compile_definitions(QtAgOpenGPS PRIVATE QT_QML_DEBUG)
 
 
 
