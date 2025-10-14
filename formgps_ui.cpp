@@ -2056,13 +2056,13 @@ void FormGPS::initializeQMLInterfaces()
             // Verify that InterfaceProperty actually work before starting timer
             try {
                 bool testProperty = isJobStarted();  // Test basic Q_PROPERTY access
-                timerSim.start(20); // 50Hz as per Task 6.3.0.2
-                qDebug() << "✅ Simulator timer started (50Hz) - InterfaceProperty safe access verified";
+                timerSim.start(100); // 10Hz sync with GPS update
+                qDebug() << "✅ Simulator timer started (10Hz) - InterfaceProperty safe access verified";
             } catch (...) {
                 qWarning() << "⚠️ InterfaceProperty test failed - deferring simulator start by 100ms";
                 QTimer::singleShot(100, this, [this]() {
-                    qDebug() << "🚀 Starting simulator timer (50Hz) after additional delay";
-                    timerSim.start(20);  // 50Hz
+                    qDebug() << "🚀 Starting simulator timer (10Hz) after additional delay";
+                    timerSim.start(100);  // 10Hz
                 });
             }
         }

@@ -18,7 +18,7 @@ void FormGPS::connect_classes()
     // 50 Hz = 20ms interval for smooth rendering and PGN 254 AutoSteer commands
     connect(&timerGPS, &QTimer::timeout, this, &FormGPS::onGPSTimerTimeout, Qt::UniqueConnection);
     // Timer will be started when GPS data starts arriving (not in simulation mode)
-    timerGPS.start(21);  // 20ms = 50 Hz (synchronized with PGN 254 frequency)
+    timerGPS.start(100);  // 100ms = 10 Hz (synchronized with NMEA data rate)
 
     connect(&track.curve, &CABCurve::stopAutoSteer, this, &FormGPS::onStopAutoSteer, Qt::QueuedConnection);
     connect(&track.curve, &CABCurve::TimedMessage, this, &FormGPS::TimedMessageBox, Qt::QueuedConnection);

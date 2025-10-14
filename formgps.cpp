@@ -1529,8 +1529,8 @@ void FormGPS::tmrWatchdog_timeout()
     } else if (isSimulatorOn && ! timerSim.isActive() ) {
         qDebug() << "Starting up simulator.";
         // Old initialization removed - now done in ResetGPSState()
-        timerSim.start(20); //fire simulator every 20 ms = 50Hz
-        gpsHz = 50;
+        timerSim.start(100); //fire simulator every 100 ms = 10Hz
+        gpsHz = 10; // sync gpsHz to sim rate
     }
 
 

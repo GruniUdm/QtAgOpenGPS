@@ -30,7 +30,7 @@ void FormGPS::simConnectSlots()
 
         // PHASE 6.3.0 FIX: Timer will be started AFTER InterfaceProperty initialization
         // timerSim.start(20); // MOVED to initializeQMLInterfaces()
-        gpsHz = 50;
+        gpsHz = 10;  //synced with 100ms timer in initializeQMLInterfaces()
         qDebug() << "Simulator ready - timer will start after QML interface initialization";
         qDebug() << "Simulation origin: latStart=" << sim.latitude << "lonStart=" << sim.longitude;
     }
