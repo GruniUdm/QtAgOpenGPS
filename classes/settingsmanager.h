@@ -12,6 +12,7 @@
 #include <QColor>
 #include <QPoint>
 #include <QRect>
+#include <QTimer>
 #include <QtQml/qqmlregistration.h>
 
 // Include Qt6 macros before class definition
