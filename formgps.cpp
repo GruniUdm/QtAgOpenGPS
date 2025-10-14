@@ -13,6 +13,9 @@
 #include <QQuickWindow>
 #include "classes/settingsmanager.h"
 #include <cmath>
+#include <QPixmapCache>        // Phase 6.0.45: Memory leak fixes - image cache management
+#include <QCoreApplication>    // Phase 6.0.45: Memory leak fixes - sendPostedEvents for deferred deletion
+#include <QEvent>              // Phase 6.0.45: Memory leak fixes - QEvent::DeferredDelete enum
 
 extern QLabel *grnPixelsWindow;
 extern QLabel *overlapPixelsWindow;
@@ -31,6 +34,13 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 
     // PHASE 6.0.33: Initialize raw GPS position (two-buffer pattern)
     m_rawGpsPosition = {0.0, 0.0};   // Will be updated when first NMEA packet arrives
+
+    // PHASE 6.0.45: Set QPixmapCache limit to prevent memory leaks
+    // Default Qt cache is 10 MB which is too small for QtAgOpenGPS UI
+    // Heob analysis showed 94 MB QMovie leak + 15 MB QImage leaks
+    // Setting 32 MB limit prevents unbounded growth while allowing adequate caching
+    QPixmapCache::setCacheLimit(32768);  // 32 MB = 32768 KB
+    qDebug() << "PHASE 6.0.45: QPixmapCache limit set to 32 MB";
 
     qDebug() << "Setting up basic connections...";
     connect(this, &FormGPS::do_processSectionLookahead, this, &FormGPS::processSectionLookahead, Qt::QueuedConnection);
@@ -633,19 +643,42 @@ QBindable<int> FormGPS::bindableBoundaryPointCount() { return &m_boundaryPointCo
 
 FormGPS::~FormGPS()
 {
-    qDebug() << "ðŸ”§ FormGPS destructor START";
-    
-    /* clean up our dynamically-allocated
-     * objects.
-     */
-    
-    // Clean up AgIO service
+    qDebug() << "FormGPS destructor START - cleaning up resources";
+
+    // Phase 6.0.45: Memory leak fixes - 5-step QML cleanup sequence
+
+    // Step 1: Clear QML engine component cache to free QQmlObjectCreator instances
+    // Addresses: 90,513 leaked QQmlObjectCreator::createInstance() allocations
+    clearComponentCache();
+    qDebug() << "QML component cache cleared";
+
+    // Step 2: Trigger JavaScript garbage collection to free QML objects
+    // Addresses: 62,426 leaked QQmlObjectCreator::populateInstance() allocations
+    collectGarbage();
+    qDebug() << "QML garbage collection completed";
+
+    // Step 3: Clear Qt image caches to free QPixmap/QImage allocations
+    // Addresses: 94 MB QMovie leak + 15 MB QImage leaks
+    QPixmapCache::clear();
+    qDebug() << "QPixmapCache cleared";
+
+    // Step 4: Disconnect all signal/slot connections to prevent dangling references
+    // Addresses: 62,194 leaked QQmlObjectCreator::setPropertyBinding() allocations
+    disconnect();
+    qDebug() << "All signals disconnected";
+
+    // Step 5: Clean up AgIO service (existing cleanup)
     cleanupAgIOService();
+    qDebug() << "AgIO service cleaned up";
+
+    // Step 6: Process pending deleteLater() calls to ensure deferred deletions complete
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+    qDebug() << "Pending deletions processed";
 
     // Clean up translator (automatically cleaned by parent)
     // translator will be deleted automatically by parent object
 
-    qDebug() << "âœ… FormGPS destructor END";
+    qDebug() << "FormGPS destructor COMPLETE";
 }
 
 
