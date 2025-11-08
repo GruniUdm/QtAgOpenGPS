@@ -1866,7 +1866,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolEasting, &FormGPS::toolEastingChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolNorthing, &FormGPS::toolNorthingChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolHeading, &FormGPS::toolHeadingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_offlineDistance, &FormGPS::offlineDistanceChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, short int, m_offlineDistance, &FormGPS::offlineDistanceChanged)
     // avgPivDistance: use existing variable at line 690
     // isReverseWithIMU: use existing variable at line 527
 
@@ -1883,7 +1883,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuPitch, &FormGPS::imuPitchChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuHeading, &FormGPS::imuHeadingChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuRollDegrees, &FormGPS::imuRollDegreesChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuAngVel, &FormGPS::imuAngVelChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_imuAngVel, &FormGPS::imuAngVelChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_yawRate, &FormGPS::yawRateChanged)
 
     // GPS Status (6) - Qt 6.8 Rectangle Pattern
@@ -1897,10 +1897,10 @@ private:
     // steerModuleConnectedCounter: use existing variable at line 689
 
     // Blockage Sensors (8) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_blockage_avg, &FormGPS::blockage_avgChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_blockage_min1, &FormGPS::blockage_min1Changed)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_blockage_min2, &FormGPS::blockage_min2Changed)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_blockage_max, &FormGPS::blockage_maxChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_avg, &FormGPS::blockage_avgChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min1, &FormGPS::blockage_min1Changed)
+    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min2, &FormGPS::blockage_min2Changed)
+    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_max, &FormGPS::blockage_maxChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min1_i, &FormGPS::blockage_min1_iChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min2_i, &FormGPS::blockage_min2_iChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_max_i, &FormGPS::blockage_max_iChanged)
@@ -1933,7 +1933,7 @@ private:
 
     // Misc Status (2) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_steerSwitchHigh, &FormGPS::steerSwitchHighChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_imuCorrected, &FormGPS::imuCorrectedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuCorrected, &FormGPS::imuCorrectedChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblCalcSteerAngleInner, &FormGPS::lblCalcSteerAngleInnerChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblDiameter, &FormGPS::lblDiameterChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_droppedSentences, &FormGPS::droppedSentencesChanged)
