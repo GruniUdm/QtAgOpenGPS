@@ -14,9 +14,6 @@
 #include "classes/pgnparser.h"        // Phase 6.0.21: For ParsedData metatype registration
 #include <QProcess>
 #include <QSysInfo>
-#ifdef  Q_OS_ANDROID
-#include <QtCore/private/qandroidextras_p.h>
-#endif
 #include <QTranslator> //for translations
 #include <QtQml/QQmlEngine>
 #include <QtQml/QJSEngine>
@@ -32,7 +29,7 @@ int main(int argc, char *argv[])
 {
 #ifdef  Q_OS_ANDROID
     QNativeInterface::QAndroidApplication::runOnAndroidMainThread([]() {
-        QJniObject activity = QtAndroidPrivate::activity();
+        QJniObject activity = QNativeInterface::QAndroidApplication::context();
         if (activity.isValid()) {
             QJniObject window = activity.callObjectMethod("getWindow", "()Landroid/view/Window;");
             if (window.isValid()) {
