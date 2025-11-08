@@ -4,6 +4,7 @@
 // GPS heading source (dual/single)
 import QtQuick
 import QtQuick.Controls.Fusion
+//import Settings
 
 import ".."
 import "../components"
@@ -12,7 +13,7 @@ Rectangle{
     id: configSources
     anchors.fill: parent
     visible: true
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     TitleFrame {
         id:antennaType
         width: 360 * theme.scaleWidth
@@ -23,8 +24,8 @@ Rectangle{
 		anchors.leftMargin: 5 * theme.scaleWidth
 		anchors.rightMargin: 5 * theme.scaleWidth
 		anchors.bottomMargin: 5 * theme.scaleHeight
-        color: aog.backgroundColor
-        border.color: aog.blackDayWhiteNight
+        color: aogInterface.backgroundColor
+        border.color: aogInterface.blackDayWhiteNight
         visible: true
         title: qsTr("Antenna Type", "GPS Antenna type, fixed or dual")
         font.pointSize: 16 
@@ -48,18 +49,19 @@ Rectangle{
                 id: dualBtn
                 width:150 * theme.scaleWidth
                 height:100 * theme.scaleHeight
-                text: "Dual"
+                text: qsTr("Dual")
                 checkable: true
                 icon.source: prefix + "/images/Config/Con_SourcesGPSDual.png"
 
-                property string headingSource: settings.setGPS_headingFromWhichSource
+                // Threading Phase 1: GPS heading source configuration for dual
+                property string headingSource: "GPS"
 
-                checked: (settings.setGPS_headingFromWhichSource === "Dual" ? true: false)
+                isChecked: (SettingsManager.gps_headingFromWhichSource === "Dual" ? true: false)
 
                 onCheckedChanged: {
 					if (checked){
-						settings.setGPS_headingFromWhichSource = "Dual"
-						if(settings.setVehicle_antennaOffset < 0)
+						SettingsManager.gps_headingFromWhichSource = "Dual"
+						if(SettingsManager.vehicle_antennaOffset < 0)
 						    timedMessage.addMessage(7000, qsTr("Antenna Offset error!"), qsTr('You have antenna offset set to "left". Dual requires it set to "right". Change it or you will have offset errors')) 
 					}
 				}
@@ -77,17 +79,18 @@ Rectangle{
                 id: fixBtn
                 width:150 * theme.scaleWidth
                 height:100 * theme.scaleHeight
-                text: "Fix"
+                text: qsTr("Fix")
                 checkable: true
                 icon.source: prefix + "/images/Config/Con_SourcesGPSSingle.png"
 
-                property string headingSource: settings.setGPS_headingFromWhichSource
+                // Threading Phase 1: GPS heading source configuration for fix
+                property string headingSource: "GPS"
 
-                checked: (settings.setGPS_headingFromWhichSource === "Fix" ? true : false)
+                isChecked: (SettingsManager.gps_headingFromWhichSource === "Fix" ? true : false)
 
                 onCheckedChanged: {
                     if(checked)
-                        settings.setGPS_headingFromWhichSource = "Fix"
+                        SettingsManager.gps_headingFromWhichSource = "Fix"
                 }
 
                 onHeadingSourceChanged: {
@@ -111,7 +114,7 @@ Rectangle{
 		anchors.leftMargin: 5 * theme.scaleWidth
 		anchors.rightMargin: 5 * theme.scaleWidth
 		anchors.bottomMargin: 5 * theme.scaleHeight
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
         visible: true
         title: qsTr("RTK Alarm")
         font.pointSize: 16
@@ -131,8 +134,9 @@ Rectangle{
                 height:100 * theme.scaleHeight
                 id: alarm
                 icon.source: prefix + "/images/Config/Con_SourcesRTKAlarm.png"
-                isChecked: settings.setGPS_isRTK
-                onClicked: settings.setGPS_isRTK = true
+                // Threading Phase 1: RTK GPS status
+                isChecked: SettingsManager.gps_isRTK
+                onClicked: SettingsManager.gps_isRTK = true
             }
             Rectangle {
                 height: 100 * theme.scaleHeight
@@ -149,8 +153,9 @@ Rectangle{
                 checkable: true
                 id: killAutoSteer
                 icon.source: prefix + "/images/AutoSteerOff.png"
-                isChecked: settings.setGPS_isRTK_KillAutoSteer
-                onClicked: settings.setGPS_isRTK_KillAutoSteer = true
+                // Threading Phase 1: RTK kill autosteer setting
+                isChecked: SettingsManager.gps_isRTKKillAutoSteer
+                onClicked: SettingsManager.gps_isRTKKillAutoSteer = true
             }
         }
     }
@@ -168,9 +173,9 @@ Rectangle{
 		onEnabledChanged: visible = enabled
         visible: fixBtn.checked
 
-        border.color: enabled ? aog.blackDayWhiteNight : "grey"
+        border.color: enabled ? aogInterface.blackDayWhiteNight : "grey"
 
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
 
         title: qsTr("Single Antenna Settings")
         font.pointSize: 16
@@ -183,7 +188,7 @@ Rectangle{
 
             id: minGPSStep
             Label {
-                color: fixBtn.checked ? aog.blackDayWhiteNight : "grey"
+                color: fixBtn.checked ? aogInterface.blackDayWhiteNight : "grey"
                 text: qsTr("Minimum GPS Step")
                 width: singleAntennaSettings.width * 0.5
             }
@@ -197,14 +202,15 @@ Rectangle{
 
                 onCheckedChanged: {
                     if(checked){
-                        settings.setGPS_minimumStepLimit = 0.1
-                        settings.setF_minHeadingStepDistance = 1
+                        // Threading Phase 1: GPS minimum step settings
+                        SettingsManager.gps_minimumStepLimit = 0.1
+                        SettingsManager.f_minHeadingStepDistance = 1
                     }else{
-                        settings.setGPS_minimumStepLimit = 0.05
-                        settings.setF_minHeadingStepDistance = 0.5
+                        SettingsManager.gps_minimumStepLimit = 0.05
+                        SettingsManager.f_minHeadingStepDistance = 0.5
                     }
                 }
-                text: settings.setGPS_minimumStepLimit * 100 + " " + qsTr("cm", "centimeter abbreviation")
+                text: SettingsManager.gps_minimumStepLimit * 100 + " " + qsTr("cm", "centimeter abbreviation")
             }
         }
         Row {
@@ -215,15 +221,15 @@ Rectangle{
             anchors.leftMargin: 10 * theme.scaleWidth
 
             Label {
-                color: fixBtn.checked ? aog.blackDayWhiteNight : "grey"
+                color: fixBtn.checked ? aogInterface.blackDayWhiteNight : "grey"
                 text: qsTr("Heading Distance")
                 width: singleAntennaSettings.width * 0.5
             }
             Label {
                 id: headingDistanceText
                 width: minGPSStepBtn.width
-                color: fixBtn.checked ? aog.blackDayWhiteNight : "grey"
-                text: settings.setF_minHeadingStepDistance * 100 + " " + qsTr("cm", "centimeter abbreviation")
+                color: fixBtn.checked ? aogInterface.blackDayWhiteNight : "grey"
+                text: SettingsManager.f_minHeadingStepDistance * 100 + " " + qsTr("cm", "centimeter abbreviation")
             }
         }
 
@@ -233,29 +239,30 @@ Rectangle{
             anchors.verticalCenter: parent.verticalCenter
             width: 360 * theme.scaleWidth
             height: 100 * theme.scaleHeight
-            border.color: fixBtn.checked ? aog.blackDayWhiteNight : "grey"
-            color: aog.backgroundColor
+            border.color: fixBtn.checked ? aogInterface.blackDayWhiteNight : "grey"
+            color: aogInterface.backgroundColor
             SliderCustomized{
                 leftText: 100 - value
                 rightText: value
-                leftTopText: "IMU <"
+                leftTopText: qsTr("IMU <")
                 colorLeftTopText: "green"
                 anchors.centerIn: parent
-                rightTopText: "> GPS"
+                rightTopText: qsTr("> GPS")
                 colorRightTopText: "red"
-                centerTopText: "Fusion"
+                centerTopText: qsTr("Fusion")
                 from: 20
                 to: 40
 
-                property int fusionWeight: settings.setIMU_fusionWeight2
+                // Threading Phase 1: IMU fusion weight configuration
+                property int fusionWeight: 0
 
                 onFusionWeightChanged: {
                     value = fusionWeight * 100
                 }
 
-                value: settings.setIMU_fusionWeight2 * 100
+                value: SettingsManager.imu_fusionWeight2 * 100
                 onValueChanged: {
-                    settings.setIMU_fusionWeight2 = value / 100
+                    SettingsManager.imu_fusionWeight2 = value / 100
                 }
                 stepSize: 1
             }
@@ -265,20 +272,86 @@ Rectangle{
             anchors.left: fusionRow.left
             anchors.top: fusionRow.bottom
             anchors.topMargin: 15 * theme.scaleHeight
-            color: fixBtn.checked ? aog.blackDayWhiteNight : "grey"
+            color: fixBtn.checked ? aogInterface.blackDayWhiteNight : "grey"
             text: qsTr("Default: 70%")
         }
 
+        Rectangle{
+            // PHASE 6.0.35: Forward compensation slider (wheel angle → heading correction)
+            // Used to compensate GPS heading based on actual wheel angle during movement
+            id: forwardCompRow
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: fusionRow.bottom
+            anchors.topMargin: 50 * theme.scaleHeight
+            width: 360 * theme.scaleWidth
+            height: 100 * theme.scaleHeight
+            border.color: fixBtn.checked ? aogInterface.blackDayWhiteNight : "grey"
+            color: aogInterface.backgroundColor
+            SliderCustomized{
+                leftText: (value * 100).toFixed(0) + "%"
+                centerTopText: qsTr("Forward Comp")
+                anchors.centerIn: parent
+                from: 0.05
+                to: 0.25
+                value: SettingsManager.gps_forwardComp
+                onValueChanged: {
+                    SettingsManager.gps_forwardComp = value
+                }
+                stepSize: 0.01
+            }
+        }
+
+        Text{
+            anchors.left: forwardCompRow.left
+            anchors.top: forwardCompRow.bottom
+            anchors.topMargin: 5 * theme.scaleHeight
+            color: fixBtn.checked ? aogInterface.blackDayWhiteNight : "grey"
+            text: qsTr("Default: 15%")
+        }
+
+        Rectangle{
+            // PHASE 6.0.35: Reverse compensation slider (wheel angle → heading correction in reverse)
+            // Higher value than forward due to different geometry when reversing
+            id: reverseCompRow
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: forwardCompRow.bottom
+            anchors.topMargin: 30 * theme.scaleHeight
+            width: 360 * theme.scaleWidth
+            height: 100 * theme.scaleHeight
+            border.color: fixBtn.checked ? aogInterface.blackDayWhiteNight : "grey"
+            color: aogInterface.backgroundColor
+            SliderCustomized{
+                leftText: (value * 100).toFixed(0) + "%"
+                centerTopText: qsTr("Reverse Comp")
+                anchors.centerIn: parent
+                from: 0.15
+                to: 0.45
+                value: SettingsManager.gps_reverseComp
+                onValueChanged: {
+                    SettingsManager.gps_reverseComp = value
+                }
+                stepSize: 0.01
+            }
+        }
+
+        Text{
+            anchors.left: reverseCompRow.left
+            anchors.top: reverseCompRow.bottom
+            anchors.topMargin: 5 * theme.scaleHeight
+            color: fixBtn.checked ? aogInterface.blackDayWhiteNight : "grey"
+            text: qsTr("Default: 30%")
+        }
 
         ButtonColor{
             text: qsTr("Reverse Detection")
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 30 * theme.scaleHeight
+            anchors.top: reverseCompRow.bottom
+            anchors.topMargin: 30 * theme.scaleHeight
             anchors.horizontalCenter: parent.horizontalCenter
-            color: aog.backgroundColor
+            color: aogInterface.backgroundColor
             colorChecked: "green"
-            isChecked: settings.setIMU_isReverseOn
-            onClicked: settings.setIMU_isReverseOn = checked
+            // Threading Phase 1: IMU reverse detection
+            isChecked: SettingsManager.imu_isReverseOn
+            onClicked: SettingsManager.imu_isReverseOn = checked
             width: 250*theme.scaleWidth
         }
     }
@@ -292,10 +365,10 @@ Rectangle{
 		anchors.leftMargin: 5 * theme.scaleWidth
 		anchors.rightMargin: 5 * theme.scaleWidth
 		anchors.bottomMargin: 5 * theme.scaleHeight
-        border.color: aog.blackDayWhiteNight
+        border.color: aogInterface.blackDayWhiteNight
 		visible: dualBtn.checked
 		onEnabledChanged: visible = enabled
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
         title: qsTr("Dual Antenna Settings")
         font.pointSize: 16
         enabled: dualBtn.checked
@@ -317,8 +390,9 @@ Rectangle{
             anchors.leftMargin: 10 * theme.scaleWidth
             decimals: 1
             from: -100
-            boundValue: settings.setGPS_dualHeadingOffset
-            onValueChanged: settings.setGPS_dualHeadingOffset = value
+            // Threading Phase 1: Dual antenna heading offset
+            boundValue: SettingsManager.gps_dualHeadingOffset
+            onValueChanged: SettingsManager.gps_dualHeadingOffset = value
             to: 100
             editable: true
             text: qsTr("Heading Offset (Degrees)")
@@ -331,10 +405,11 @@ Rectangle{
             anchors.bottomMargin: 30 * theme.scaleHeight
             anchors.horizontalCenter: parent.horizontalCenter
             checkable: true
-            color: aog.backgroundColor
+            color: aogInterface.backgroundColor
             colorChecked: "green"
-            isChecked: settings.setIMU_isDualAsIMU
-            onClicked: settings.setIMU_isDualAsIMU = checked
+            // Threading Phase 1: Dual antenna as IMU setting
+            isChecked: SettingsManager.imu_isDualAsIMU
+            onClicked: SettingsManager.imu_isDualAsIMU = checked
             width: 250*theme.scaleWidth
         }
     }

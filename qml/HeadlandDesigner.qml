@@ -4,7 +4,10 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Shapes
+//import Settings
+import AOG
 import "components" as Comp
+
 
 Popup{
     id: headlandDesigner
@@ -15,6 +18,7 @@ Popup{
     //color: "ghostwhite"
     function show(){
         headlandDesigner.visible = true
+        headlandCurve.isChecked = true
     }
 
     property int sliceCount: 0
@@ -45,7 +49,7 @@ Popup{
     signal mouseClicked(int x, int y)
     //signal mouseDragged(int fromX, int fromY, int toX, int toY)
     //signal zoom(bool checked)
-    signal close()
+    signal closeHeadland()  // Renamed to avoid conflict with Popup.close()
     signal slice()
     signal deletePoints()
     signal create_headland()
@@ -112,7 +116,7 @@ Popup{
         if(visible) {
             load()
         } else {
-            close()
+            closeHeadland()
         }
     }
 
@@ -362,16 +366,16 @@ Popup{
         }
         Comp.IconButtonColor{
             id: headlandCurve
-            objectName: "rbtnLine"
+            objectName: "rbtnCurve"
             checkable: true
-            isChecked: true
+            //isChecked: true
             icon.source: prefix + "/images/ABTrackCurve.png"
             Layout.alignment: Qt.AlignCenter
             onClicked: curveLine = true
         }
         Comp.IconButtonColor{
             id: headlandAB
-            objectName: "rbtnCurve"
+            objectName: "rbtnLine"
             checkable: true
             icon.source: prefix + "/images/ABTrackAB.png"
             Layout.alignment: Qt.AlignCenter
@@ -382,11 +386,11 @@ Popup{
             objectName: "nudSetDistance"
             from: 0
             to: 2000
-            boundValue: numTracks.value * settings.setVehicle_toolWidth
+            boundValue: numTracks.value * SettingsManager.vehicle_toolWidth
             Layout.alignment: Qt.AlignCenter
             Comp.TextLine {
                 anchors.top: parent.bottom;
-                text: "( "+ utils.m_unit_abbrev()+" )"
+                text: "( "+ Utils.m_unit_abbrev()+" )"
             }
             onValueChanged: {
                 lineDistance = value
@@ -400,7 +404,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             Comp.TextLine {
                 anchors.top: parent.bottom;
-                text: qsTr("Tool: ")+ utils.m_to_ft_string(settings.setVehicle_toolWidth)
+                text: qsTr("Tool: ")+ Utils.m_to_ft_string(SettingsManager.vehicle_toolWidth)
             }
         }
         Comp.IconButtonColor{
@@ -439,12 +443,13 @@ Popup{
         }
         Comp.IconButtonTransparent{
             objectName: "cBoxIsSectionControlled"
-            icon.source: prefix + "/images/HeadlandSectionOff.png"
-            iconChecked: prefix + "/images/HeadlandSectionOn.png"
+            icon.source: prefix + "/images/HeadlandSectionOn.png"
+            iconChecked: prefix + "/images/HeadlandSectionOff.png"
             checkable: true
-            isChecked: settings.setHeadland_isSectionControlled
+            // Threading Phase 1: Headland section control
+            isChecked: SettingsManager.headland_isSectionControlled
             Layout.alignment: Qt.AlignCenter
-            onCheckedChanged: isSectionControlled(checked)
+            onCheckedChanged: headlandDesigner.isSectionControlled(checked)
         }
         Comp.IconButtonTransparent{
             icon.source: prefix + "/images/SwitchOff.png"
@@ -459,7 +464,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             onClicked: {
                 save_exit()
-                boundaryInterface.isHeadlandOn = true
+                aog.isHeadlandOn = true
                 headlandDesigner.visible = false
             }
         }

@@ -4,10 +4,8 @@
 // Main event loop save/load files from file manager to QtAOG
 #include "formgps.h"
 #include <QDir>
-//#include "aogsettings.h"
-//#include "cmodulecomm.h"
 #include "cboundarylist.h"
-#include "aogproperty.h"
+#include "classes/settingsmanager.h"
 #include "qmlutil.h"
 #include <QString>
 
@@ -50,8 +48,12 @@ void FormGPS::ExportFieldAs_ISOXMLv4()
 
 void FormGPS::FileSaveHeadLines()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -121,9 +123,12 @@ void FormGPS::FileSaveHeadLines()
 
 void FormGPS::FileLoadHeadLines()
 {
-    //current field directory should already exist
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir loadDir(directoryName);
     if (!loadDir.exists()) {
@@ -182,20 +187,23 @@ void FormGPS::FileLoadHeadLines()
         {
             hdl.tracksArr[hdl.idx].trackPts.clear();
 
+            hdl.tracksArr[hdl.idx].trackPts.reserve(numPoints);  // Phase 1.1: Pre-allocate
             for (int i = 0; i < numPoints; i++)
             {
                 line = reader.readLine();
-                QStringList words = line.split(',');
-                if (words.count() < 3) {
+                // Phase 1.2: Parse without QStringList allocation
+                int comma1 = line.indexOf(',');
+                int comma2 = line.indexOf(',', comma1 + 1);
+                if (comma1 == -1 || comma2 == -1) {
                     qDebug() << "Corrupt file!  Ignoring " << filename << ".";
                     hdl.tracksArr.clear();
                     hdl.idx = -1;
                     TimedMessageBox(1000,tr("Corrupt File!"), tr("Corrupt headline for this field. Deleting lines."));
                     FileSaveHeadLines();
                 }
-                Vec3 vecPt(words[0].toDouble(),
-                           words[1].toDouble(),
-                           words[2].toDouble());
+                Vec3 vecPt(QStringView(line).left(comma1).toDouble(),
+                           QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
+                           QStringView(line).mid(comma2 + 1).toDouble());
                 hdl.tracksArr[hdl.idx].trackPts.append(vecPt);
             }
         }
@@ -214,8 +222,12 @@ void FormGPS::FileLoadHeadLines()
 
 void FormGPS::FileSaveTracks()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -228,7 +240,7 @@ void FormGPS::FileSaveTracks()
 
     QString filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "TrackLines.txt");
 
-    int cnt = trk.gArr.count();
+    int cnt = track.gArr.count();
 
     QFile curveFile(filename);
     if (!curveFile.open(QIODevice::WriteOnly))
@@ -247,42 +259,42 @@ void FormGPS::FileSaveTracks()
         for (int i = 0; i < cnt; i++)
         {
             //write out the name
-            writer << trk.gArr[i].name << Qt::endl;
+            writer << track.gArr[i].name << Qt::endl;
 
             //write out the heading
-            writer << trk.gArr[i].heading << Qt::endl;
+            writer << track.gArr[i].heading << Qt::endl;
 
             //A and B
-            writer << qSetRealNumberPrecision(3) << trk.gArr[i].ptA.easting << ","
-                   << qSetRealNumberPrecision(3) << trk.gArr[i].ptA.northing << ","
+            writer << qSetRealNumberPrecision(3) << track.gArr[i].ptA.easting << ","
+                   << qSetRealNumberPrecision(3) << track.gArr[i].ptA.northing << ","
                    << Qt::endl;
 
-            writer << qSetRealNumberPrecision(3) << trk.gArr[i].ptB.easting << ","
-                   << qSetRealNumberPrecision(3) << trk.gArr[i].ptB.northing << ","
+            writer << qSetRealNumberPrecision(3) << track.gArr[i].ptB.easting << ","
+                   << qSetRealNumberPrecision(3) << track.gArr[i].ptB.northing << ","
                    << Qt::endl;
 
             //write out the nudgedistance
-            writer << trk.gArr[i].nudgeDistance << Qt::endl;
+            writer << track.gArr[i].nudgeDistance << Qt::endl;
 
             //write out the mode
-            writer << trk.gArr[i].mode << Qt::endl;
+            writer << track.gArr[i].mode << Qt::endl;
 
             //visible?
-            if (trk.gArr[i].isVisible)
+            if (track.gArr[i].isVisible)
                 writer << "True" << Qt::endl;
             else
                 writer << "False" << Qt::endl;
 
             //write out the points of ref line
-            int cnt2 = trk.gArr[i].curvePts.count();
+            int cnt2 = track.gArr[i].curvePts.count();
 
             writer << cnt2 << Qt::endl;
-            if (trk.gArr[i].curvePts.count() > 0)
+            if (track.gArr[i].curvePts.count() > 0)
             {
                 for (int j = 0; j < cnt2; j++)
-                    writer << qSetRealNumberPrecision(3) << trk.gArr[i].curvePts[j].easting << ","
-                           << qSetRealNumberPrecision(3) << trk.gArr[i].curvePts[j].northing << ","
-                           << qSetRealNumberPrecision(3) << trk.gArr[i].curvePts[j].heading
+                    writer << qSetRealNumberPrecision(3) << track.gArr[i].curvePts[j].easting << ","
+                           << qSetRealNumberPrecision(3) << track.gArr[i].curvePts[j].northing << ","
+                           << qSetRealNumberPrecision(3) << track.gArr[i].curvePts[j].heading
                            << Qt::endl;
             }
         }
@@ -295,11 +307,15 @@ void FormGPS::FileSaveTracks()
 
 void FormGPS::FileLoadTracks()
 {
-    trk.gArr.clear();
+    track.gArr.clear();
 
     //current field directory should already exist
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir loadDir(directoryName);
     if (!loadDir.exists()) {
@@ -319,7 +335,7 @@ void FormGPS::FileLoadTracks()
         FileLoadABLines();
         FileLoadCurveLines();
         FileSaveTracks();
-        trk.reloadModel();
+        track.reloadModel();
         return;
     }
 
@@ -339,83 +355,93 @@ void FormGPS::FileLoadTracks()
         line = reader.readLine();
         if(line.isNull()) break; //no more to read
 
-        trk.gArr.append(CTrk());
-        trk.idx = trk.gArr.count() - 1;
+        track.gArr.append(CTrk());
+        track.setIdx(track.gArr.count() - 1);
 
         //read header $CurveLine
-        trk.gArr[trk.idx].name = line;
+        track.gArr[track.idx()].name = line;
 
-        trk.gArr[trk.idx].heading = reader.readLine().toDouble();
+        track.gArr[track.idx()].heading = reader.readLine().toDouble();
 
         line = reader.readLine();
-        QStringList words = line.split(",");
-        if (words.count() < 2) {
+        // Phase 1.2: Parse without QStringList allocation
+        int comma = line.indexOf(',');
+        if (comma == -1) {
             TimedMessageBox(1000,tr("Corrupt File!"), tr("Corrupt TracksList.txt. Not all tracks were loaded."));
-            trk.gArr.pop_back();
-            trk.idx = trk.gArr.count() - 1;
+            track.gArr.pop_back();
+            track.setIdx(track.gArr.count() - 1);
             return;
         }
 
-        trk.gArr[trk.idx].ptA = Vec2(words[0].toDouble(),words[1].toDouble());
+        track.gArr[track.idx()].ptA = Vec2(QStringView(line).left(comma).toDouble(),
+                                            QStringView(line).mid(comma + 1).toDouble());
 
         line = reader.readLine();
-        words = line.split(",");
-        if (words.count() < 2) {
+        comma = line.indexOf(',');
+        if (comma == -1) {
             TimedMessageBox(1000,tr("Corrupt File!"), tr("Corrupt TracksList.txt. Not all tracks were loaded."));
-            trk.gArr.pop_back();
-            trk.idx = trk.gArr.count() - 1;
+            track.gArr.pop_back();
+            track.setIdx(track.gArr.count() - 1);
             return;
         }
 
-        trk.gArr[trk.idx].ptB = Vec2(words[0].toDouble(),words[1].toDouble());
+        track.gArr[track.idx()].ptB = Vec2(QStringView(line).left(comma).toDouble(),
+                                            QStringView(line).mid(comma + 1).toDouble());
 
         line = reader.readLine();
-        trk.gArr[trk.idx].nudgeDistance = line.toDouble();
+        track.gArr[track.idx()].nudgeDistance = line.toDouble();
 
         line = reader.readLine();
-        trk.gArr[trk.idx].mode = line.toInt();
+        track.gArr[track.idx()].mode = line.toInt();
 
         line = reader.readLine();
         if (line == "True")
-            trk.gArr[trk.idx].isVisible = true;
+            track.gArr[track.idx()].isVisible = true;
         else
-            trk.gArr[trk.idx].isVisible = false;
+            track.gArr[track.idx()].isVisible = false;
 
         line = reader.readLine();
         int numPoints = line.toInt();
 
         if (numPoints > 3)
         {
-            trk.gArr[trk.idx].curvePts.clear();
+            track.gArr[track.idx()].curvePts.clear();
+            track.gArr[track.idx()].curvePts.reserve(numPoints);  // Phase 1.1: Pre-allocate
 
             for (int i = 0; i < numPoints; i++)
             {
                 line = reader.readLine();
-                words = line.split(',');
-                if (words.count() < 3) {
+                // Phase 1.2: Parse without QStringList allocation
+                int comma1 = line.indexOf(',');
+                int comma2 = line.indexOf(',', comma1 + 1);
+                if (comma1 == -1 || comma2 == -1) {
                     TimedMessageBox(1000,tr("Corrupt File!"), tr("Corrupt TracksList.txt. Not all tracks were loaded."));
-                    trk.gArr.pop_back();
-                    trk.idx = trk.gArr.count() - 1;
+                    track.gArr.pop_back();
+                    track.setIdx(track.gArr.count() - 1);
                     return;
                 }
 
-                trk.gArr[trk.idx].curvePts.append(Vec3(words[0].toDouble(),
-                                                       words[1].toDouble(),
-                                                       words[2].toDouble()));
+                track.gArr[track.idx()].curvePts.append(Vec3(QStringView(line).left(comma1).toDouble(),
+                                                       QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
+                                                       QStringView(line).mid(comma2 + 1).toDouble()));
             }
         }
     }
-    trk.idx = -1;
+    track.setIdx(-1);
     lock.unlock();
 
-    trk.reloadModel();
+    track.reloadModel();
 
 }
 
 void FormGPS::FileSaveCurveLines()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -428,7 +454,7 @@ void FormGPS::FileSaveCurveLines()
 
     QString filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "CurveLines.txt");
 
-    int cnt = trk.gArr.count();
+    int cnt = track.gArr.count();
 
     QFile curveFile(filename);
     if (!curveFile.open(QIODevice::WriteOnly))
@@ -445,24 +471,24 @@ void FormGPS::FileSaveCurveLines()
 
     for (int i = 0; i < cnt; i++)
     {
-        if (trk.gArr[i].mode != TrackMode::Curve) continue;
+        if (track.gArr[i].mode != TrackMode::Curve) continue;
 
         //write out the Name
-        writer << trk.gArr[i].name << Qt::endl;
+        writer << track.gArr[i].name << Qt::endl;
 
         //write out the heading
-        writer << trk.gArr[i].heading << Qt::endl;
+        writer << track.gArr[i].heading << Qt::endl;
 
         //write out the points of ref line
-        int cnt2 = trk.gArr[i].curvePts.count();
+        int cnt2 = track.gArr[i].curvePts.count();
 
         writer << cnt2 << Qt::endl;
-        if (trk.gArr[i].curvePts.count() > 0)
+        if (track.gArr[i].curvePts.count() > 0)
         {
             for (int j = 0; j < cnt2; j++)
-                writer << qSetRealNumberPrecision(3) << trk.gArr[i].curvePts[j].easting << ","
-                       << qSetRealNumberPrecision(3) << trk.gArr[i].curvePts[j].northing << ","
-                       << qSetRealNumberPrecision(5) << trk.gArr[i].curvePts[j].heading << Qt::endl;
+                writer << qSetRealNumberPrecision(3) << track.gArr[i].curvePts[j].easting << ","
+                       << qSetRealNumberPrecision(3) << track.gArr[i].curvePts[j].northing << ","
+                       << qSetRealNumberPrecision(5) << track.gArr[i].curvePts[j].heading << Qt::endl;
         }
     }
 
@@ -475,8 +501,12 @@ void FormGPS::FileLoadCurveLines()
     //CurveLines.txtfile
 
     //current field directory should already exist
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir loadDir(directoryName);
     if (!loadDir.exists()) {
@@ -510,64 +540,67 @@ void FormGPS::FileLoadCurveLines()
         line = reader.readLine();
         if(line.isNull()) break; //no more to read
 
-        trk.gArr.append(CTrk());
+        track.gArr.append(CTrk());
 
         //read header $CurveLine
         QString nam = reader.readLine();
 
         if (nam.length() > 4 && nam.mid(0,5) == "Bound")
         {
-            trk.gArr[trk.gArr.count() - 1].name = nam;
-            trk.gArr[trk.gArr.count() - 1].mode = TrackMode::bndCurve;
+            track.gArr[track.gArr.count() - 1].name = nam;
+            track.gArr[track.gArr.count() - 1].mode = TrackMode::bndCurve;
         }
         else
         {
             if (nam.length() > 2 && nam.mid(0,2) != "Cu")
-                trk.gArr[trk.gArr.count() - 1].name = "Cu " + nam;
+                track.gArr[track.gArr.count() - 1].name = "Cu " + nam;
             else
-                trk.gArr[trk.gArr.count() - 1].name = nam;
+                track.gArr[track.gArr.count() - 1].name = nam;
 
-            trk.gArr[trk.gArr.count() - 1].mode = TrackMode::Curve;
+            track.gArr[track.gArr.count() - 1].mode = TrackMode::Curve;
         }
 
         // get the average heading
         line = reader.readLine();
-        trk.gArr[trk.gArr.count() - 1].heading = line.toDouble();
+        track.gArr[track.gArr.count() - 1].heading = line.toDouble();
 
         line = reader.readLine();
         int numPoints = line.toInt();
 
         if (numPoints > 1)
         {
-            trk.gArr[trk.gArr.count() - 1].curvePts.clear();
+            track.gArr[track.gArr.count() - 1].curvePts.clear();
+            track.gArr[track.gArr.count() - 1].curvePts.reserve(numPoints);  // Phase 1.1: Pre-allocate
 
             for (int i = 0; i < numPoints; i++)
             {
                 line = reader.readLine();
-                QStringList words = line.split(',');
-                if (words.length() < 3) {
+                // Phase 1.2: Parse without QStringList allocation
+                int comma1 = line.indexOf(',');
+                int comma2 = line.indexOf(',', comma1 + 1);
+                if (comma1 == -1 || comma2 == -1) {
                     qDebug() << "Corrupt CurvesList.txt.";
-                    trk.gArr.pop_back();
-                    trk.idx = -1;
+                    track.gArr.pop_back();
+                    track.setIdx(-1);
                     return;
                 }
-                Vec3 vecPt(words[0].toDouble(),
-                           words[1].toDouble(),
-                           words[2].toDouble());
-                trk.gArr[trk.gArr.count() - 1].curvePts.append(vecPt);
+                Vec3 vecPt(QStringView(line).left(comma1).toDouble(),
+                           QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
+                           QStringView(line).mid(comma2 + 1).toDouble());
+                track.gArr[track.gArr.count() - 1].curvePts.append(vecPt);
             }
-            trk.gArr[trk.gArr.count() - 1].ptB.easting = trk.gArr[trk.gArr.count() - 1].curvePts[0].easting;
-            trk.gArr[trk.gArr.count() - 1].ptB.northing = trk.gArr[trk.gArr.count() - 1].curvePts[0].northing;
+            track.gArr[track.gArr.count() - 1].ptB.easting = track.gArr[track.gArr.count() - 1].curvePts[0].easting;
+            track.gArr[track.gArr.count() - 1].ptB.northing = track.gArr[track.gArr.count() - 1].curvePts[0].northing;
 
-            trk.gArr[trk.gArr.count() - 1].ptB.easting = trk.gArr[trk.gArr.count() - 1].curvePts[trk.gArr[trk.gArr.count() - 1].curvePts.count() - 1].easting;
-            trk.gArr[trk.gArr.count() - 1].ptB.northing = trk.gArr[trk.gArr.count() - 1].curvePts[trk.gArr[trk.gArr.count() - 1].curvePts.count() - 1].northing;
-            trk.gArr[trk.gArr.count() - 1].isVisible = true;
+            track.gArr[track.gArr.count() - 1].ptB.easting = track.gArr[track.gArr.count() - 1].curvePts[track.gArr[track.gArr.count() - 1].curvePts.count() - 1].easting;
+            track.gArr[track.gArr.count() - 1].ptB.northing = track.gArr[track.gArr.count() - 1].curvePts[track.gArr[track.gArr.count() - 1].curvePts.count() - 1].northing;
+            track.gArr[track.gArr.count() - 1].isVisible = true;
         }
         else
         {
-            if (trk.gArr.count() > 0)
+            if (track.gArr.count() > 0)
             {
-                trk.gArr.pop_back();
+                track.gArr.pop_back();
             }
         }
     }
@@ -577,8 +610,12 @@ void FormGPS::FileLoadCurveLines()
 
 void FormGPS::FileSaveABLines()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -602,11 +639,11 @@ void FormGPS::FileSaveABLines()
     writer.setLocale(QLocale::C);
     writer.setRealNumberNotation(QTextStream::FixedNotation);
 
-    int cnt = trk.gArr.count();
+    int cnt = track.gArr.count();
 
     if (cnt > 0)
     {
-        for (CTrk &item : trk.gArr)
+        for (CTrk &item : track.gArr)
         {
             if (item.mode == TrackMode::AB)
             {
@@ -629,8 +666,12 @@ void FormGPS::FileLoadABLines()
     //run before FileLoadCurveLines().
 
     //current field directory should already exist
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir loadDir(directoryName);
     if (!loadDir.exists()) {
@@ -661,28 +702,32 @@ void FormGPS::FileLoadABLines()
     {
 
         line = reader.readLine();
-        QStringList words = line.split(',');
+        // Phase 1.2: Parse without QStringList allocation
+        int comma1 = line.indexOf(',');
+        int comma2 = line.indexOf(',', comma1 + 1);
+        int comma3 = line.indexOf(',', comma2 + 1);
 
-        if (words.length() < 4) {
+        if (comma1 == -1 || comma2 == -1 || comma3 == -1) {
             qDebug() << "Corrupt ABLines.txt.";
             return;
         }
 
-        trk.gArr.append(CTrk());
+        track.gArr.append(CTrk());
 
-        if (words[0].length() > 2 && words[0].mid(0,2) != "AB")
-            trk.gArr[i].name = "AB " + words[0];
+        QString name = line.left(comma1);
+        if (name.length() > 2 && name.mid(0,2) != "AB")
+            track.gArr[i].name = "AB " + name;
         else
-            trk.gArr[i].name = words[0];
+            track.gArr[i].name = name;
 
-        trk.gArr[i].mode = TrackMode::AB;
+        track.gArr[i].mode = TrackMode::AB;
 
-        trk.gArr[i].heading = glm::toRadians(words[1].toDouble());
-        trk.gArr[i].ptA.easting = words[2].toDouble();
-        trk.gArr[i].ptB.northing = words[3].toDouble();
-        trk.gArr[i].ptB.easting = trk.gArr[i].ptA.easting + (sin(trk.gArr[i].heading) * 100);
-        trk.gArr[i].ptB.northing = trk.gArr[i].ptA.northing + (cos(trk.gArr[i].heading) * 100);
-        trk.gArr[i].isVisible = true;
+        track.gArr[i].heading = glm::toRadians(QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble());
+        track.gArr[i].ptA.easting = QStringView(line).mid(comma2 + 1, comma3 - comma2 - 1).toDouble();
+        track.gArr[i].ptB.northing = QStringView(line).mid(comma3 + 1).toDouble();
+        track.gArr[i].ptB.easting = track.gArr[i].ptA.easting + (sin(track.gArr[i].heading) * 100);
+        track.gArr[i].ptB.northing = track.gArr[i].ptA.northing + (cos(track.gArr[i].heading) * 100);
+        track.gArr[i].isVisible = true;
     }
 
     lock.unlock();
@@ -728,7 +773,8 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
 
     //read the Offsets
     line = reader.readLine();
-    QStringList offs = line.split(',');
+    // Phase 1.2: Parse without QStringList allocation (offsets not used currently)
+    // QStringList offs = line.split(',');
 
     //convergence angle update
     if (!reader.atEnd())
@@ -742,9 +788,12 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
     {
         line = reader.readLine(); //eat StartFix
         line = reader.readLine();
-        offs = line.split(',');
-        field_info["latitude"] = offs[0].toDouble();
-        field_info["longitude"] = offs[1].toDouble();
+        // Phase 1.2: Parse without QStringList allocation
+        int comma = line.indexOf(',');
+        if (comma != -1) {
+            field_info["latitude"] = QStringView(line).left(comma).toDouble();
+            field_info["longitude"] = QStringView(line).mid(comma + 1).toDouble();
+        }
     }
 
     fieldFile.close();
@@ -779,7 +828,7 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
             //Check for latest boundary files, then above line string is num of points
             if (line == "True" || line == "False")
             {
-               line = reader.readLine(); //number of points
+                line = reader.readLine(); //number of points
             }
 
             int numPoints = line.toInt();
@@ -787,14 +836,17 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
             if (numPoints > 0)
             {
                 QVector<Vec3> pointList;
+                pointList.reserve(numPoints);  // Phase 1.1: Pre-allocate
                 //load the line
                 for (int i = 0; i < numPoints; i++)
                 {
                     line = reader.readLine();
-                    QStringList words = line.split(',');
-                    Vec3 vecPt( words[0].toDouble(),
-                                words[1].toDouble(),
-                                words[2].toDouble() );
+                    // Phase 1.2: Parse without QStringList allocation
+                    int comma1 = line.indexOf(',');
+                    int comma2 = line.indexOf(',', comma1 + 1);
+                    Vec3 vecPt( QStringView(line).left(comma1).toDouble(),
+                               QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
+                               QStringView(line).mid(comma2 + 1).toDouble() );
                     pointList.append(vecPt);
                 }
 
@@ -824,8 +876,12 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
 
 bool FormGPS::FileOpenField(QString fieldDir, int flags)
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + fieldDir;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + fieldDir;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + fieldDir;
+#endif
 
     QString filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Field.txt");
 
@@ -844,7 +900,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
     //and open a new job
     JobNew();
-
+    bnd.loadSettings();
     //Saturday, February 11, 2017  -->  7:26:52 AM
     //$FieldDir
     //Bob_Feb11
@@ -864,14 +920,15 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
     line = reader.readLine();
 
     currentFieldDirectory = fieldDir;
-    property_setF_CurrentDir = currentFieldDirectory;
+    SettingsManager::instance()->setF_currentDir(currentFieldDirectory);
 
     //Offset header
     line = reader.readLine();
 
     //read the Offsets
     line = reader.readLine();
-    QStringList offs = line.split(',');
+    // Phase 1.2: Parse without QStringList allocation (currently commented out)
+    // QStringList offs = line.split(',');
     //pn.utmEast = offs[0].toInt();
     //pn.utmNorth = offs[1].toInt();
     //pn.actualEasting = offs[0].toDouble();
@@ -893,29 +950,80 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
     {
         line = reader.readLine(); //eat StartFix
         line = reader.readLine();
-        offs = line.split(',');
+        // Phase 1.2: Parse without QStringList allocation
+        int comma = line.indexOf(',');
+        if (comma != -1) {
+            // Phase 6.3.1: Use PropertyWrapper for safe property access
+            this->setLatStart(QStringView(line).left(comma).toDouble());
+            this->setLonStart(QStringView(line).mid(comma + 1).toDouble());
+        }
 
-        pn.latStart = offs[0].toDouble();
-        pn.lonStart = offs[1].toDouble();
+        // Qt 6.8 TRACK RESTORATION: Load active track index if present
+        if (!reader.atEnd())
+        {
+            line = reader.readLine(); //check for $ActiveTrackIndex
+            if (line == "$ActiveTrackIndex")
+            {
+                line = reader.readLine();
+                int activeTrackIndex = line.toInt();
+                qDebug() << "🎯 TRACK RESTORE: Found saved active track index:" << activeTrackIndex;
+                track.setIdx(activeTrackIndex);
+            }
+            else
+            {
+                // No $ActiveTrackIndex found, reset to no active track
+                qDebug() << "📍 TRACK RESTORE: No saved track index found, defaulting to -1";
+                track.setIdx(-1);
+            }
+        }
+        else
+        {
+            // File ended, no track index
+            qDebug() << "📍 TRACK RESTORE: Field file ended before track index, defaulting to -1";
+            track.setIdx(-1);
+        }
 
         if (timerSim.isActive())
         {
-            pn.latitude = pn.latStart;
-            pn.longitude = pn.lonStart;
+            // Phase 6.3.1: Use PropertyWrapper for safe property access
+            pn.latitude = this->latStart();
+            pn.longitude = this->lonStart();
 
-            sim.latitude = property_setGPS_SimLatitude = pn.latStart;
-            sim.longitude = property_setGPS_SimLongitude = pn.lonStart;
+            sim.latitude = this->latStart();
+            SettingsManager::instance()->setGps_simLatitude(this->latStart());
+            sim.longitude = this->lonStart();
+            SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+
+            pn.SetLocalMetersPerDegree(this);
+        } else {
+            // Phase 6.0.4: Use Q_PROPERTY direct access instead of qmlItem
+            pn.SetLocalMetersPerDegree(this);
         }
-        pn.SetLocalMetersPerDegree();
     }
 
     fieldFile.close();
 
 
     if (flags & LOAD_LINES) {
+        // Qt 6.8 TRACK RESTORATION: Save restored track index before FileLoadTracks() overwrites it
+        int savedActiveTrackIndex = track.idx();
+        qDebug() << "💾 TRACK RESTORE: Saving restored index before track loading:" << savedActiveTrackIndex;
 
         // ABLine -------------------------------------------------------------------------------------------------
         FileLoadTracks();
+
+        // Qt 6.8 TRACK RESTORATION: Restore the saved track index after loading
+        if (savedActiveTrackIndex >= 0 && savedActiveTrackIndex < track.gArr.count()) {
+            track.setIdx(savedActiveTrackIndex);
+            qDebug() << "✅ TRACK RESTORE: Restored active track index after loading:" << savedActiveTrackIndex;
+        } else if (track.gArr.count() > 0) {
+            // If saved index is invalid but we have tracks, select first track
+            track.setIdx(0);
+            qDebug() << "📍 TRACK RESTORE: Invalid saved index, defaulting to first track (0)";
+        } else {
+            // No tracks available, keep -1
+            qDebug() << "❌ TRACK RESTORE: No tracks available, keeping idx = -1";
+        }
     }
 
     if (flags & LOAD_MAPPING) {
@@ -928,11 +1036,15 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             TimedMessageBox(1500, tr("Field Error"), (tr("Couldn't open sections ") + filename + tr(" for reading!")));
         } else
         {
-            lock.lockForWrite();
+            // Phase 1.3: Parse without lock, lock only for final assignment
             reader.setDevice(&sectionsFile);
             bool isv3 = false;
-            fd.distanceUser = 0;
             QVector3D vecFix;
+
+            // Local temporary storage - no lock needed
+            QVector<QSharedPointer<PatchTriangleList>> localPatchList;
+            QVector<QSharedPointer<PatchTriangleList>> localTriangleList;
+            double localWorkedArea = 0.0;
 
             //read header
             while (!reader.atEnd())
@@ -946,18 +1058,21 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
                 int verts = line.toInt();
 
-                triStrip[0].triangleList = QSharedPointer<PatchTriangleList>( new PatchTriangleList);
-                triStrip[0].patchList.append(triStrip[0].triangleList);
-
+                QSharedPointer<PatchTriangleList> triangleList = QSharedPointer<PatchTriangleList>(new PatchTriangleList);
+                triangleList->reserve(verts);  // Phase 1.1: Pre-allocate memory
+                localPatchList.append(triangleList);
+                localTriangleList.append(triangleList);
 
                 for (int v = 0; v < verts; v++)
                 {
                     line = reader.readLine();
-                    QStringList words = line.split(',');
-                    vecFix.setX(words[0].toDouble());
-                    vecFix.setY(words[1].toDouble());
-                    vecFix.setZ(words[2].toDouble());
-                    triStrip[0].triangleList->append(vecFix);
+                    // Phase 1.2: Parse without QStringList allocation (10,000+ iterations)
+                    int comma1 = line.indexOf(',');
+                    int comma2 = line.indexOf(',', comma1 + 1);
+                    vecFix.setX(QStringView(line).left(comma1).toDouble());
+                    vecFix.setY(QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble());
+                    vecFix.setZ(QStringView(line).mid(comma2 + 1).toDouble());
+                    triangleList->append(vecFix);
                 }
 
                 //calculate area of this patch - AbsoluteValue of (Ax(By-Cy) + Bx(Cy-Ay) + Cx(Ay-By)/2)
@@ -967,22 +1082,30 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                     for (int j = 1; j < verts; j++)
                     {
                         double temp = 0;
-                        temp = (*triStrip[0].triangleList)[j].x() * ((*triStrip[0].triangleList)[j + 1].y() - (*triStrip[0].triangleList)[j + 2].y()) +
-                                 (*triStrip[0].triangleList)[j + 1].x() * ((*triStrip[0].triangleList)[j + 2].y() - (*triStrip[0].triangleList)[j].y()) +
-                                     (*triStrip[0].triangleList)[j + 2].x() * ((*triStrip[0].triangleList)[j].y() - (*triStrip[0].triangleList)[j + 1].y());
+                        temp = (*triangleList)[j].x() * ((*triangleList)[j + 1].y() - (*triangleList)[j + 2].y()) +
+                               (*triangleList)[j + 1].x() * ((*triangleList)[j + 2].y() - (*triangleList)[j].y()) +
+                               (*triangleList)[j + 2].x() * ((*triangleList)[j].y() - (*triangleList)[j + 1].y());
 
-                        fd.workedAreaTotal += fabs((temp * 0.5));
+                        localWorkedArea += fabs((temp * 0.5));
                     }
                 }
 
                 //was old version prior to v4
                 if (isv3)
                 {
-                        //Append the current list to the field file
+                    //Append the current list to the field file
                 }
             }
-            lock.unlock();
+
             sectionsFile.close();
+
+            // Phase 1.3: Lock only for final assignment (< 50ms)
+            lock.lockForWrite();
+            this->setDistanceUser(0.0);
+            triStrip[0].triangleList = localTriangleList.isEmpty() ? QSharedPointer<PatchTriangleList>(new PatchTriangleList) : localTriangleList.last();
+            triStrip[0].patchList = localPatchList;
+            m_workedAreaTotal = m_workedAreaTotal + localWorkedArea;
+            lock.unlock();
         }
     }
 
@@ -996,13 +1119,15 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         TimedMessageBox(1500, tr("Field Error"), (tr("Couldn't open contour ") + filename + tr(" for reading!")));
     } else
     {
-
+        // Phase 1.3: Parse without lock
         reader.setDevice(&contourFile);
 
         //read header
         line = reader.readLine();
 
-        lock.lockForWrite();
+        // Local temporary storage - no lock needed
+        QVector<QSharedPointer<QVector<Vec3>>> localStripList;
+
         while (!reader.atEnd())
         {
             //read how many vertices in the following patch
@@ -1011,22 +1136,30 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
             Vec3 vecFix(0, 0, 0);
 
-            ct.ptList = QSharedPointer<QVector<Vec3>>(new QVector<Vec3>());
-            ct.stripList.append(ct.ptList);
+            QSharedPointer<QVector<Vec3>> ptList = QSharedPointer<QVector<Vec3>>(new QVector<Vec3>());
+            ptList->reserve(verts);  // Phase 1.1: Pre-allocate memory
+            localStripList.append(ptList);
 
             for (int v = 0; v < verts; v++)
             {
                 line = reader.readLine();
-                QStringList words = line.split(',');
-                vecFix.easting = words[0].toDouble();
-                vecFix.northing = words[1].toDouble();
-                vecFix.heading = words[2].toDouble();
-                ct.ptList->append(vecFix);
+                // Phase 1.2: Parse without QStringList allocation
+                int comma1 = line.indexOf(',');
+                int comma2 = line.indexOf(',', comma1 + 1);
+                vecFix.easting = QStringView(line).left(comma1).toDouble();
+                vecFix.northing = QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble();
+                vecFix.heading = QStringView(line).mid(comma2 + 1).toDouble();
+                ptList->append(vecFix);
             }
         }
-        lock.unlock();
 
         contourFile.close();
+
+        // Phase 1.3: Lock only for final assignment (< 50ms)
+        lock.lockForWrite();
+        ct.ptList = localStripList.isEmpty() ? QSharedPointer<QVector<Vec3>>(new QVector<Vec3>()) : localStripList.last();
+        ct.stripList = localStripList;
+        lock.unlock();
     }
 
     // Flags -------------------------------------------------------------------------------------------------
@@ -1055,6 +1188,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
             if (points > 0)
             {
+                flagPts.reserve(points);  // Phase 1.1: Pre-allocate memory
+
                 double lat;
                 double longi;
                 double east;
@@ -1068,28 +1203,36 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                 for (int v = 0; v < points; v++)
                 {
                     line = reader.readLine();
-                    QStringList words = line.split(',');
+                    // Phase 1.2: Parse without QStringList allocation
+                    int comma1 = line.indexOf(',');
+                    int comma2 = line.indexOf(',', comma1 + 1);
+                    int comma3 = line.indexOf(',', comma2 + 1);
+                    int comma4 = line.indexOf(',', comma3 + 1);
+                    int comma5 = line.indexOf(',', comma4 + 1);
+                    int comma6 = line.indexOf(',', comma5 + 1);
+                    int comma7 = line.indexOf(',', comma6 + 1);
 
-                    if (words.count() == 8)
+                    // Check format: 8 fields (with heading) or 6 fields (without heading)
+                    if (comma7 != -1)  // 8 fields
                     {
-                        lat = words[0].toDouble();
-                        longi = words[1].toDouble();
-                        east = words[2].toDouble();
-                        nort = words[3].toDouble();
-                        head = words[4].toDouble();
-                        color = words[5].toInt();
-                        ID = words[6].toInt();
-                        notes = words[7].trimmed();
+                        lat = QStringView(line).left(comma1).toDouble();
+                        longi = QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble();
+                        east = QStringView(line).mid(comma2 + 1, comma3 - comma2 - 1).toDouble();
+                        nort = QStringView(line).mid(comma3 + 1, comma4 - comma3 - 1).toDouble();
+                        head = QStringView(line).mid(comma4 + 1, comma5 - comma4 - 1).toDouble();
+                        color = QStringView(line).mid(comma5 + 1, comma6 - comma5 - 1).toInt();
+                        ID = QStringView(line).mid(comma6 + 1, comma7 - comma6 - 1).toInt();
+                        notes = QStringView(line).mid(comma7 + 1).trimmed().toString();
                     }
-                    else
+                    else  // 6 fields (old format)
                     {
-                        lat = words[0].toDouble();
-                        longi = words[1].toDouble();
-                        east = words[2].toDouble();
-                        nort = words[3].toDouble();
+                        lat = QStringView(line).left(comma1).toDouble();
+                        longi = QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble();
+                        east = QStringView(line).mid(comma2 + 1, comma3 - comma2 - 1).toDouble();
+                        nort = QStringView(line).mid(comma3 + 1, comma4 - comma3 - 1).toDouble();
                         head = 0;
-                        color = words[4].toInt();
-                        ID = words[5].toInt();
+                        color = QStringView(line).mid(comma4 + 1, comma5 - comma4 - 1).toInt();
+                        ID = QStringView(line).mid(comma5 + 1).toInt();
                         notes = "";
                     }
 
@@ -1113,12 +1256,14 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         TimedMessageBox(1500, tr("Field Error"), (tr("Couldn't open boundaries ") + filename + tr(" for reading!")));
     } else
     {
-
+        // Phase 1.3: Parse without lock
         reader.setDevice(&boundariesFile);
         //read header
         line = reader.readLine();//Boundary
 
-        lock.lockForWrite();
+        // Local temporary storage - no lock needed
+        QVector<CBoundaryList> localBndList;
+
         for (int k = 0; true; k++)
         {
             if (reader.atEnd()) break;
@@ -1141,21 +1286,25 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             //Check for latest boundary files, then above line string is num of points
             if (line == "True" || line == "False")
             {
-               line = reader.readLine(); //number of points
+                line = reader.readLine(); //number of points
             }
 
             int numPoints = line.toInt();
 
             if (numPoints > 0)
             {
+                New.fenceLine.reserve(numPoints);  // Phase 1.1: Pre-allocate memory
+
                 //load the line
                 for (int i = 0; i < numPoints; i++)
                 {
                     line = reader.readLine();
-                    QStringList words = line.split(',');
-                    Vec3 vecPt( words[0].toDouble(),
-                                words[1].toDouble(),
-                                words[2].toDouble() );
+                    // Phase 1.2: Parse without QStringList allocation (60,000+ iterations!)
+                    int comma1 = line.indexOf(',');
+                    int comma2 = line.indexOf(',', comma1 + 1);
+                    Vec3 vecPt( QStringView(line).left(comma1).toDouble(),
+                               QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
+                               QStringView(line).mid(comma2 + 1).toDouble() );
 
                     //if (turnheading)
                     //{
@@ -1168,6 +1317,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
                 double delta = 0;
                 New.fenceLineEar.clear();
+                New.fenceLineEar.reserve(New.fenceLine.count());  // Phase 1.1: Pre-allocate worst-case size
 
                 for (int i = 0; i < New.fenceLine.count(); i++)
                 {
@@ -1183,19 +1333,23 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                         delta = 0;
                     }
                 }
-                bnd.bndList.append(New);
+                localBndList.append(New);
             }
         }
 
+        boundariesFile.close();
+
+        // Phase 1.3: Lock only for final assignment (< 50ms)
+        lock.lockForWrite();
+        bnd.bndList = localBndList;
         calculateMinMax();
-        bnd.BuildTurnLines(fd);
+        bnd.BuildTurnLines(fd, mainWindow, this);
 
         if(bnd.bndList.count() > 0)
         {
             //TODO: inform GUI btnABDraw can be seen
         }
         lock.unlock();
-        boundariesFile.close();
     }
     // Headland  -------------------------------------------------------------------------------------------------
     if (flags & LOAD_HEADLAND) {
@@ -1206,50 +1360,64 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         {
             TimedMessageBox(1500, tr("Field Error"), (tr("Couldn't open headland ") + filename + tr(" for reading!")));
         } else {
+            // Phase 1.3: Parse without lock
             reader.setDevice(&headlandFile);
 
             //read header
             line = reader.readLine();
 
-            lock.lockForWrite();
+            // Local temporary storage - no lock needed
+            QVector<QVector<Vec3>> localHdLines;
 
             for (int k = 0; true; k++)
             {
                 if (reader.atEnd()) break;
 
+                //read the number of points
+                line = reader.readLine();
+                int numPoints = line.toInt();
+
+                QVector<Vec3> hdLine;
+                if (numPoints > 0)
+                {
+                    hdLine.reserve(numPoints);  // Phase 1.1: Pre-allocate memory
+
+                    //load the line
+                    for (int i = 0; i < numPoints; i++)
+                    {
+                        line = reader.readLine();
+                        // Phase 1.2: Parse without QStringList allocation
+                        int comma1 = line.indexOf(',');
+                        int comma2 = line.indexOf(',', comma1 + 1);
+                        Vec3 vecPt(QStringView(line).left(comma1).toDouble(),
+                                   QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
+                                   QStringView(line).mid(comma2 + 1).toDouble());
+                        hdLine.append(vecPt);
+                    }
+                }
+                localHdLines.append(hdLine);
+            }
+
+            headlandFile.close();
+
+            // Phase 1.3: Lock only for final assignment (< 50ms)
+            lock.lockForWrite();
+            for (int k = 0; k < localHdLines.count(); k++)
+            {
                 if (bnd.bndList.count() > k)
                 {
-                    bnd.bndList[k].hdLine.clear();
-
-                    //read the number of points
-                    line = reader.readLine();
-                    int numPoints = line.toInt();
-
-                    if (numPoints > 0)
-                    {
-                        //load the line
-                        for (int i = 0; i < numPoints; i++)
-                        {
-                            line = reader.readLine();
-                            QStringList words = line.split(',');
-                            Vec3 vecPt(words[0].toDouble(),
-                                       words[1].toDouble(),
-                                       words[2].toDouble());
-                            bnd.bndList[k].hdLine.append(vecPt);
-                        }
-                    }
+                    bnd.bndList[k].hdLine = localHdLines[k];
                 } else {
                     TimedMessageBox(4000, tr("Corrupt Headland File"), tr("Headland file is corrupt. Field still loaded."));
                     break;
                 }
             }
-
             lock.unlock();
         }
 
         if (bnd.bndList.count() > 0 && bnd.bndList[0].hdLine.count() > 0)
         {
-            bnd.isHeadlandOn = true;
+            this->setIsHeadlandOn(true);
             //TODO: tell GUI to enable headlands
             //btnHeadlandOnOff.Image = Properties.Resources.HeadlandOn;
             //btnHeadlandOnOff.Visible = true;
@@ -1259,7 +1427,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         }
         else
         {
-            bnd.isHeadlandOn = false;
+            this->setIsHeadlandOn(false);
             //TODO: tell GUI
             //btnHeadlandOnOff.Image = Properties.Resources.HeadlandOff;
             //btnHeadlandOnOff.Visible = false;
@@ -1294,14 +1462,16 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
             if (numPoints > 0)
             {
+                tram.tramBndOuterArr.reserve(numPoints);  // Phase 1.1: Pre-allocate memory
                 //load the line
                 for (int i = 0; i < numPoints; i++)
                 {
                     line = reader.readLine();
-                    QStringList words = line.split(',');
+                    // Phase 1.2: Parse without QStringList allocation
+                    int comma = line.indexOf(',');
                     Vec2 vecPt(
-                        words[0].toDouble(),
-                        words[1].toDouble());
+                        QStringView(line).left(comma).toDouble(),
+                        QStringView(line).mid(comma + 1).toDouble());
 
                     tram.tramBndOuterArr.append(vecPt);
                 }
@@ -1314,14 +1484,16 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
             if (numPoints > 0)
             {
+                tram.tramBndInnerArr.reserve(numPoints);  // Phase 1.1: Pre-allocate memory
                 //load the line
                 for (int i = 0; i < numPoints; i++)
                 {
                     line = reader.readLine();
-                    QStringList words = line.split(',');
+                    // Phase 1.2: Parse without QStringList allocation
+                    int comma = line.indexOf(',');
                     Vec2 vecPt(
-                        words[0].toDouble(),
-                        words[1].toDouble());
+                        QStringView(line).left(comma).toDouble(),
+                        QStringView(line).mid(comma + 1).toDouble());
 
                     tram.tramBndInnerArr.append(vecPt);
                 }
@@ -1338,15 +1510,17 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                     numPoints = line.toInt();
 
                     tram.tramArr = QSharedPointer<QVector<Vec2>>(new QVector<Vec2>);
+                    tram.tramArr->reserve(numPoints);  // Phase 1.1: Pre-allocate memory
                     tram.tramList.append(tram.tramArr);
 
                     for (int i = 0; i < numPoints; i++)
                     {
                         line = reader.readLine();
-                        QStringList words = line.split(',');
+                        // Phase 1.2: Parse without QStringList allocation
+                        int comma = line.indexOf(',');
                         Vec2 vecPt(
-                            words[0].toDouble(),
-                            words[1].toDouble());
+                            QStringView(line).left(comma).toDouble(),
+                            QStringView(line).mid(comma + 1).toDouble());
 
                         tram.tramArr->append(vecPt);
                     }
@@ -1357,7 +1531,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         FixTramModeButton();
     }
 
-    SetZoom();
+    camera.SetZoom();
     lock.unlock();
 
     //Recorded Path
@@ -1376,6 +1550,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         line = reader.readLine();
         int numPoints = line.toInt();
         recPath.recList.clear();
+        recPath.recList.reserve(numPoints);  // Phase 1.1: Pre-allocate memory
 
         lock.lockForWrite();
 
@@ -1384,13 +1559,17 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             for (int v = 0; v < numPoints; v++)
             {
                 line = reader.readLine();
-                QStringList words = line.split(',');
+                // Phase 1.2: Parse without QStringList allocation
+                int comma1 = line.indexOf(',');
+                int comma2 = line.indexOf(',', comma1 + 1);
+                int comma3 = line.indexOf(',', comma2 + 1);
+                int comma4 = line.indexOf(',', comma3 + 1);
                 CRecPathPt point(
-                    words[0].toDouble(),
-                    words[1].toDouble(),
-                    words[2].toDouble(),
-                    words[3].toDouble(),
-                    (words[4] == "True" ? true : false) );
+                    QStringView(line).left(comma1).toDouble(),
+                    QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
+                    QStringView(line).mid(comma2 + 1, comma3 - comma2 - 1).toDouble(),
+                    QStringView(line).mid(comma3 + 1, comma4 - comma3 - 1).toDouble(),
+                    (QStringView(line).mid(comma4 + 1) == u"True") );
 
                 //add the point
                 recPath.recList.append(point);
@@ -1442,7 +1621,9 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
     }
 
     //update boundary list count in qml
-    qmlItem(mainWindow,"boundaryInterface")->setProperty("count", bnd.bndList.count());
+    if (boundaryInterface) {
+        boundaryInterface->setProperty("count", bnd.bndList.count());
+    }
 
     return true;
 }
@@ -1455,7 +1636,7 @@ void FormGPS::FileCreateField()
     //$Offsets
     //533172,5927719,12 - offset easting, northing, zone
 
-    if( ! isJobStarted)
+    if( ! isJobStarted())
     {
         qDebug() << "field not open";
         TimedMessageBox(3000, tr("Field Not Open"), tr("Create a new field."));
@@ -1466,8 +1647,12 @@ void FormGPS::FileCreateField()
 
     //get the directory and make sure it exists, create if not
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1507,7 +1692,12 @@ void FormGPS::FileCreateField()
 
     writer << "StartFix" << Qt::endl;
     writer << pn.latitude << "," << pn.longitude << Qt::endl;
-    pn.SetLocalMetersPerDegree();
+    // Phase 6.3.1: Use PropertyWrapper for safe QObject access
+    pn.SetLocalMetersPerDegree(this);
+
+    // Qt 6.8 TRACK RESTORATION: Save active track index for restoration when reopening field
+    writer << "$ActiveTrackIndex" << Qt::endl;
+    writer << track.idx() << Qt::endl;
 
     fieldFile.close();
 }
@@ -1524,8 +1714,12 @@ void FormGPS::FileCreateElevation()
 
     //get the directory and make sure it exists, create if not
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1579,10 +1773,35 @@ void FormGPS::FileSaveSections()
 
     //get the directory and make sure it exists, create if not
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     myFilename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Sections.txt");
+
+    // Phase 2.1: Build buffer in RAM, single disk write
+    QString buffer;
+    buffer.reserve(tool.patchSaveList.count() * 500);  // Pre-allocate ~500 bytes per patch
+
+    //for each patch, write out the list of triangles to the buffer
+    for(QSharedPointer<QVector<QVector3D>> triList: tool.patchSaveList)
+    {
+        int count2 = triList->count();
+        buffer += QString::number(count2) + '\n';
+
+        for (int i=0; i < count2; i++)
+        {
+            // Format: x,y,z with 3 decimal places
+            buffer += QString::number((*triList)[i].x(), 'f', 3) + ','
+                   + QString::number((*triList)[i].y(), 'f', 3) + ','
+                   + QString::number((*triList)[i].z(), 'f', 3) + '\n';
+        }
+    }
+
+    // Single disk write (no intermediate flushes)
     QFile sectionFile(myFilename);
     if (!sectionFile.open(QIODevice::Append))
     {
@@ -1590,27 +1809,11 @@ void FormGPS::FileSaveSections()
         return;
     }
 
-    QTextStream writer(&sectionFile);
-    writer.setLocale(QLocale::C);
-    writer.setRealNumberNotation(QTextStream::FixedNotation);
-
-    //for each patch, write out the list of triangles to the file
-    for(QSharedPointer<QVector<QVector3D>> triList: tool.patchSaveList)
-    {
-        int count2 = triList->count();
-        writer << count2 << Qt::endl;
-
-        for (int i=0; i < count2; i++)
-        {
-            writer << qSetRealNumberPrecision(3)
-                   << (*triList)[i].x() << "," << (*triList)[i].y()
-                   << "," << (*triList)[i].z() << Qt::endl;
-        }
-    }
+    sectionFile.write(buffer.toUtf8());
+    sectionFile.close();
 
     //clear out that patchList and begin adding new ones for next save
     tool.patchSaveList.clear();
-    sectionFile.close();
 }
 
 void FormGPS::FileCreateSections()
@@ -1620,8 +1823,12 @@ void FormGPS::FileCreateSections()
 
     //get the directory and make sure it exists, create if not
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     myFilename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Sections.txt");
     QFile sectionFile(myFilename);
@@ -1638,8 +1845,12 @@ void FormGPS::FileCreateSections()
 void FormGPS::FileCreateBoundary()
 {
     //Create Boundary.txt, overwriting it if it exists.
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1668,8 +1879,12 @@ void FormGPS::FileCreateBoundary()
 void FormGPS::FileCreateFlags()
 {
     //create a new flags file, overwriting if it alraedy existis.
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1696,8 +1911,12 @@ void FormGPS::FileCreateContour()
 
     //get the directory and make sure it exists, create if not
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     myFilename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Contour.txt");
     QFile contourFile(myFilename);
@@ -1722,10 +1941,34 @@ void FormGPS::FileSaveContour()
 
     //get the directory and make sure it exists, create if not
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     myFilename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Contour.txt");
+
+    // Phase 2.3: Build buffer in RAM, single disk write
+    QString buffer;
+    buffer.reserve(contourSaveList.count() * 300);  // Pre-allocate ~300 bytes per contour strip
+
+    for (QSharedPointer<QVector<Vec3>> &triList: contourSaveList)
+    {
+        int count2 = triList->count();
+        buffer += QString::number(count2) + '\n';
+
+        for (int i = 0; i < count2; i++)
+        {
+            // Format: easting,northing,heading with 3 decimal places
+            buffer += QString::number((*triList)[i].easting, 'f', 3) + ','
+                   + QString::number((*triList)[i].northing, 'f', 3) + ','
+                   + QString::number((*triList)[i].heading, 'f', 3) + '\n';
+        }
+    }
+
+    // Single disk write (no intermediate flushes)
     QFile contourFile(myFilename);
     if (!contourFile.open(QIODevice::Append))
     {
@@ -1733,33 +1976,20 @@ void FormGPS::FileSaveContour()
         return;
     }
 
-    QTextStream writer(&contourFile);
-    writer.setLocale(QLocale::C);
-    writer.setRealNumberNotation(QTextStream::FixedNotation);
-
-    for (QSharedPointer<QVector<Vec3>> &triList: contourSaveList)
-    {
-        int count2 = triList->count();
-
-        writer << count2 << Qt::endl;
-
-        for (int i = 0; i < count2; i++)
-        {
-            writer << qSetRealNumberPrecision(3)
-                   << (*triList)[i].easting << ","
-                   << (*triList)[i].northing << ","
-                   << (*triList)[i].heading << Qt::endl;
-        }
-    }
+    contourFile.write(buffer.toUtf8());
+    contourFile.close();
 
     contourSaveList.clear();
-    contourFile.close();
 }
 
 void FormGPS::FileSaveBoundary()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1772,6 +2002,33 @@ void FormGPS::FileSaveBoundary()
 
     QString filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Boundary.txt");
 
+    // Phase 2.2: Build buffer in RAM, single disk write
+    QString buffer;
+    // Estimate buffer size: each boundary ~20KB for 1000 points
+    int totalPoints = 0;
+    for(int i = 0; i < bnd.bndList.count(); i++)
+        totalPoints += bnd.bndList[i].fenceLine.count();
+    buffer.reserve(totalPoints * 50 + 100);  // ~50 bytes per point + header
+
+    buffer += "$Boundary\n";
+    for(int i = 0; i < bnd.bndList.count(); i++)
+    {
+        buffer += (bnd.bndList[i].isDriveThru ? "True\n" : "False\n");
+        buffer += QString::number(bnd.bndList[i].fenceLine.count()) + '\n';
+
+        if (bnd.bndList[i].fenceLine.count() > 0)
+        {
+            for (int j = 0; j < bnd.bndList[i].fenceLine.count(); j++)
+            {
+                // Format: easting,northing,heading with 3 and 5 decimal places
+                buffer += QString::number(bnd.bndList[i].fenceLine[j].easting, 'f', 3) + ','
+                       + QString::number(bnd.bndList[i].fenceLine[j].northing, 'f', 3) + ','
+                       + QString::number(bnd.bndList[i].fenceLine[j].heading, 'f', 5) + '\n';
+            }
+        }
+    }
+
+    // Single disk write (no intermediate flushes)
     QFile boundfile(filename);
     if (!boundfile.open(QIODevice::WriteOnly))
     {
@@ -1779,34 +2036,19 @@ void FormGPS::FileSaveBoundary()
         return;
     }
 
-    QTextStream writer(&boundfile);
-    writer.setLocale(QLocale::C);
-    writer.setRealNumberNotation(QTextStream::FixedNotation);
-    writer << "$Boundary" << Qt::endl;
-    for(int i = 0; i < bnd.bndList.count(); i++)
-    {
-        writer << (bnd.bndList[i].isDriveThru ? "True" : "False") << Qt::endl;
-
-        writer << bnd.bndList[i].fenceLine.count() << Qt::endl;
-        if (bnd.bndList[i].fenceLine.count() > 0)
-        {
-            for (int j = 0; j < bnd.bndList[i].fenceLine.count(); j++)
-                writer << qSetRealNumberPrecision(3)
-                       << bnd.bndList[i].fenceLine[j].easting << ","
-                       << bnd.bndList[i].fenceLine[j].northing << ","
-                       << qSetRealNumberPrecision(5)
-                       << bnd.bndList[i].fenceLine[j].heading << Qt::endl;
-        }
-    }
-
+    boundfile.write(buffer.toUtf8());
     boundfile.close();
 
 }
 
 void FormGPS::FileSaveTram()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1840,8 +2082,8 @@ void FormGPS::FileSaveTram()
         for (int i = 0; i < tram.tramBndOuterArr.count(); i++)
         {
             writer << qSetRealNumberPrecision(3)
-                   << tram.tramBndOuterArr[i].easting << ","
-                   << tram.tramBndOuterArr[i].northing << Qt::endl;
+            << tram.tramBndOuterArr[i].easting << ","
+            << tram.tramBndOuterArr[i].northing << Qt::endl;
         }
 
         //inner track of outer boundary tram
@@ -1850,8 +2092,8 @@ void FormGPS::FileSaveTram()
         for (int i = 0; i < tram.tramBndInnerArr.count(); i++)
         {
             writer << qSetRealNumberPrecision(3)
-                   << tram.tramBndInnerArr[i].easting << ","
-                   << tram.tramBndInnerArr[i].northing << Qt::endl;
+            << tram.tramBndInnerArr[i].easting << ","
+            << tram.tramBndInnerArr[i].northing << Qt::endl;
         }
     }
 
@@ -1871,9 +2113,9 @@ void FormGPS::FileSaveTram()
 
             for (int h = 0; h < tram.tramList[i]->count(); h++)
             {
-            writer << qSetRealNumberPrecision(3)
-                       << (*tram.tramList[i])[h].easting << ","
-                       << (*tram.tramList[i])[h].northing << Qt::endl;
+                writer << qSetRealNumberPrecision(3)
+                << (*tram.tramList[i])[h].easting << ","
+                << (*tram.tramList[i])[h].northing << Qt::endl;
             }
         }
     }
@@ -1881,8 +2123,12 @@ void FormGPS::FileSaveTram()
 
 void FormGPS::FileSaveBackPic()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1928,8 +2174,12 @@ void FormGPS::FileSaveBackPic()
 
 void FormGPS::FileSaveHeadland()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -1975,8 +2225,12 @@ void FormGPS::FileSaveHeadland()
 
 void FormGPS::FileCreateRecPath()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2009,8 +2263,12 @@ void FormGPS::FileCreateRecPath()
 
 void FormGPS::FileSaveRecPath()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2057,8 +2315,12 @@ void FormGPS::FileSaveRecPath()
 void FormGPS::FileLoadRecPath()
 {
     //current field directory should already exist
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir loadDir(directoryName);
     if (!loadDir.exists()) {
@@ -2086,25 +2348,30 @@ void FormGPS::FileLoadRecPath()
     line = reader.readLine();
     int numPoints = line.toInt();
     recPath.recList.clear();
+    recPath.recList.reserve(numPoints);  // Phase 1.1: Pre-allocate
 
     while (!reader.atEnd())
     {
         for (int v = 0; v < numPoints; v++)
         {
             line = reader.readLine();
-            QStringList words = line.split(',');
-            if (words.count() < 5) {
+            // Phase 1.2: Parse without QStringList allocation
+            int comma1 = line.indexOf(',');
+            int comma2 = line.indexOf(',', comma1 + 1);
+            int comma3 = line.indexOf(',', comma2 + 1);
+            int comma4 = line.indexOf(',', comma3 + 1);
+            if (comma1 == -1 || comma2 == -1 || comma3 == -1 || comma4 == -1) {
                 recPath.recList.clear();
                 qWarning() << "Ignoring " << filename << " because it is corrupt and cannot be read.";
                 return;
             }
 
             CRecPathPt point(
-                words[0].toDouble(),
-                words[1].toDouble(),
-                words[2].toDouble(),
-                words[3].toDouble(),
-                (words[4] == "True" ? true : false));
+                QStringView(line).left(comma1).toDouble(),
+                QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
+                QStringView(line).mid(comma2 + 1, comma3 - comma2 - 1).toDouble(),
+                QStringView(line).mid(comma3 + 1, comma4 - comma3 - 1).toDouble(),
+                (QStringView(line).mid(comma4 + 1) == u"True"));
 
             //add the point
             recPath.recList.append(point);
@@ -2120,8 +2387,12 @@ void FormGPS::FileSaveFlags()
     //$Offsets
     //533172,5927719,12 - offset easting, northing, zone
 
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2168,8 +2439,12 @@ void FormGPS::FileSaveFlags()
 
 void FormGPS::FileSaveNMEA()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2201,8 +2476,12 @@ void FormGPS::FileSaveNMEA()
 
 void FormGPS::FileSaveElevation()
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2234,8 +2513,12 @@ void FormGPS::FileSaveElevation()
 
 void FormGPS::FileSaveSingleFlagKML2(int flagNumber)
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2266,7 +2549,8 @@ void FormGPS::FileSaveSingleFlagKML2(int flagNumber)
     //int count2 = flagPts.count();
     double lat, lon;
 
-    pn.ConvertLocalToWGS84(flagPts[flagNumber - 1].northing, flagPts[flagNumber - 1].easting, lat, lon);
+    // Phase 6.3.1: Use PropertyWrapper for safe QObject access
+    pn.ConvertLocalToWGS84(flagPts[flagNumber - 1].northing, flagPts[flagNumber - 1].easting, lat, lon, this);
 
     writer << "<Document>" << Qt::endl;
 
@@ -2289,8 +2573,12 @@ void FormGPS::FileSaveSingleFlagKML2(int flagNumber)
 
 void FormGPS::FileSaveSingleFlagKML(int flagNumber)
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2343,8 +2631,12 @@ void FormGPS::FileSaveSingleFlagKML(int flagNumber)
 
 void FormGPS::FileMakeKMLFromCurrentPosition(double lat, double lon)
 {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
 
     QDir saveDir(directoryName);
     if (!saveDir.exists()) {
@@ -2402,7 +2694,8 @@ QString FormGPS::GetBoundaryPointsLatLon(int bndNum)
 
     for (int i = 0; i < bnd.bndList[bndNum].fenceLine.count(); i++)
     {
-        pn.ConvertLocalToWGS84(bnd.bndList[bndNum].fenceLine[i].northing, bnd.bndList[bndNum].fenceLine[i].easting, lat, lon);
+        // Phase 6.3.1: Use PropertyWrapper for safe QObject access
+    pn.ConvertLocalToWGS84(bnd.bndList[bndNum].fenceLine[i].northing, bnd.bndList[bndNum].fenceLine[i].easting, lat, lon, this);
         sb_writer << qSetRealNumberPrecision(7)
                   << lon << ','
                   << lat << ",0 "

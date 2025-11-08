@@ -6,21 +6,56 @@
 #include <QApplication>
 #include <QCoreApplication>
 #include <QLabel>
+#include "classes/settingsmanager.h"  // MASSIVE MIGRATION: New SettingsManager
 #include "aogrenderer.h"
-#include "aogproperty.h"
+#include "classes/agioservice.h"      // For auto-registration + C++ usage
+#include "classes/ctrack.h"           // For auto-registration + C++ usage
+#include "classes/cvehicle.h"         // For auto-registration + C++ usage
+#include "classes/pgnparser.h"        // Phase 6.0.21: For ParsedData metatype registration
 #include <QProcess>
 #include <QSysInfo>
+#ifdef  Q_OS_ANDROID
+#include <QtCore/private/qandroidextras_p.h>
+#endif
+#include <QTranslator> //for translations
+#include <QtQml/QQmlEngine>
+#include <QtQml/QJSEngine>
+#include <QtQml/qqmlregistration.h>
+#include <QLoggingCategory>
 
 QLabel *grnPixelsWindow;
 QLabel *overlapPixelsWindow;
-AOGSettings *settings;
+// MASSIVE MIGRATION: Settings *settings; REMOVED - replaced by SettingsManager singleton
 
 #ifndef TESTING
 int main(int argc, char *argv[])
 {
+#ifdef  Q_OS_ANDROID
+    QNativeInterface::QAndroidApplication::runOnAndroidMainThread([]() {
+        QJniObject activity = QtAndroidPrivate::activity();
+        if (activity.isValid()) {
+            QJniObject window = activity.callObjectMethod("getWindow", "()Landroid/view/Window;");
+            if (window.isValid()) {
+                const int FLAG_KEEP_SCREEN_ON = 128;
+                window.callMethod<void>("addFlags", "(I)V", FLAG_KEEP_SCREEN_ON);
+            }
+        }
+    });
+#endif
+
     qputenv("QSG_RENDER_LOOP", "threaded");
 
-    QLoggingCategory::setFilterRules(QStringLiteral("qt.scenegraph.general=true"));
+    // PHASE 6.0.23.1: Disable debug logs to prevent performance issues (40Hz PGN spam)
+    // Phase 6.0.24: Allow selective debug logging for AgIOService (change agioservice.debug=false to true)
+    QLoggingCategory::setFilterRules(QStringLiteral(
+        "*.debug=false\n"
+        "agioservice.debug=false\n"  // Change to true to enable AgIOService debug logs
+        "*.warning=true\n"
+        "*.critical=true\n"
+        "*.fatal=true"
+    ));
+
+    qSetMessagePattern("%{time hh:mm:ss.zzz} [%{type}] %{function}:%{line} - %{message}");
     QApplication a(argc, argv);
 
     QFont f = a.font();
@@ -41,14 +76,54 @@ int main(int argc, char *argv[])
     qRegisterMetaTypeStreamOperators<QList<int> >("QList<int>");
     qRegisterMetaTypeStreamOperators<QVector<int> >("QVector<int>");
 #endif
+
+    // Phase 6.0.21: Register PGNParser::ParsedData for Qt::QueuedConnection signals
+    qRegisterMetaType<PGNParser::ParsedData>("PGNParser::ParsedData");
+
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
-    settings = new AOGSettings();
-    AOGProperty::init_defaults();
-    settings->sync();
+    
+    // PHASE 6.0.11.4: Manual QML singleton registration (workaround for qmldir limitation)
+    qmlRegisterSingletonType<SettingsManager>("AOG", 1, 0, "SettingsManager",
+        [](QQmlEngine *engine, QJSEngine *jsEngine) -> QObject* {
+            Q_UNUSED(engine)
+            Q_UNUSED(jsEngine)
+            return SettingsManager::instance();
+        });
+
+    qmlRegisterSingletonType<AgIOService>("AOG", 1, 0, "AgIOService",
+        [](QQmlEngine *engine, QJSEngine *jsEngine) -> QObject* {
+            Q_UNUSED(engine)
+            Q_UNUSED(jsEngine)
+            return AgIOService::instance();
+        });
+
+    qmlRegisterSingletonType<CVehicle>("AOG", 1, 0, "VehicleInterface",
+        [](QQmlEngine *engine, QJSEngine *jsEngine) -> QObject* {
+            Q_UNUSED(engine)
+            Q_UNUSED(jsEngine)
+            return CVehicle::instance();
+        });
+
+    // AOGRenderer: Component registration (OpenGL renderers must be instantiated in QML)
+    qmlRegisterType<AOGRendererInSG>("AOG", 1, 0, "AOGRenderer");
+
+    // MASSIVE MIGRATION: settings = new Settings(); REMOVED
+    //AOGProperty::init_defaults();
+    // Qt6 Pure Architecture: Properties auto-initialize with defaults, no manual sync needed
+
+    // qDebug() << "=== PHASE 6.0.11.4 QML_SINGLETON AUTOMATIC REGISTRATION ===\n"
+    //          << "Qt 6.8 QML_SINGLETON pure architecture active\n"
+    //          << "CMAKE_AUTOMOC enabled for automatic registration\n"
+    //          << "All singletons: QML_ELEMENT + QML_SINGLETON + qt_add_qml_module\n"
+    //          << "Status: Phase 6.0.11.4 automatic registration active";
     FormGPS w;
     //w.show();
+    
+    // MASSIVE MIGRATION: Validate SettingsManager accessible
+    qDebug() << "SettingsManager instance:" << SettingsManager::instance();
+    qDebug() << "SettingsManager initialization: completed";
 
-    if (property_displayShowBack) {
+    if (SettingsManager::instance()->display_showBack()) {
         grnPixelsWindow = new QLabel("Back Buffer");
         grnPixelsWindow->setFixedWidth(500);
         grnPixelsWindow->setFixedHeight(500);
@@ -59,31 +134,31 @@ int main(int argc, char *argv[])
         overlapPixelsWindow->show();
     }
 
-//auto start AgIO
-#ifndef __ANDROID__
-    QProcess process;
-    if(property_setFeature_isAgIOOn){
-        QObject::connect(&process, &QProcess::errorOccurred, [&](QProcess::ProcessError error) {
-            if (error == QProcess::Crashed) {
-                qDebug() << "AgIO Crashed! Continuing QtAgOpenGPS like normal";
-            }
-        });
+// //auto start AgIO
+// #ifndef __ANDROID__
+//     QProcess process;
+//     if(SettingsManager::instance()->feature_isAgIOOn()) {
+//         QObject::connect(&process, &QProcess::errorOccurred, [&](QProcess::ProcessError error) {
+//             if (error == QProcess::Crashed) {
+//                 qDebug() << "AgIO Crashed! Continuing QtAgOpenGPS like normal";
+//             }
+//         });
 
-//start the application
-#ifdef __WIN32
-        process.start("./QtAgIO.exe");
+// //start the application
+// #ifdef __WIN32
+//         process.start("./QtAgIO.exe");
 
-#else //assume linux
-        process.start("./QtAgIO/QtAgIO");
+// #else //assume linux
+//         process.start("./QtAgIO/QtAgIO");
 
-#endif
+// #endif
 
-        // Ensure process starts successfully
-        if (!process.waitForStarted()) {
-            qWarning() << "AgIO failed to start. Continuing QtAgOpenGPS like normal";
-        }
-    }
-#endif
+//         // Ensure process starts successfully
+//         if (!process.waitForStarted()) {
+//             qWarning() << "AgIO failed to start. Continuing QtAgOpenGPS like normal";
+//         }
+//     }
+// #endif
 
 
 
@@ -112,7 +187,6 @@ int main(int argc, char *argv[])
     //w.fileOpenField("49111 1 1 2020.Mar.21 09_58");
     //w.ABLine.isBtnABLineOn = true;
     //w.hd.isOn = true;
-    //w.yt.isYouTurnBtnOn = true;
 
     //w.ABLine.isBtnABLineOn = true;
     //w.fileOpenTool("/tmp/TestTool1.txt");

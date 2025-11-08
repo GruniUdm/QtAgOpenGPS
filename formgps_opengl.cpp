@@ -13,19 +13,67 @@
 #include "cboundary.h"
 #include "aogrenderer.h"
 #include "cnmea.h"
+#include "qmlutil.h"
+
+// Helper function to safely get OpenGL control properties with defaults
+struct OpenGLViewport {
+    int width = 800;
+    int height = 600;
+    double shiftX = 0.0;
+    double shiftY = 0.0;
+};
+
+OpenGLViewport getOpenGLViewport(QObject* mainWindow) {
+    OpenGLViewport viewport;
+    QObject *openglControl = qmlItem(mainWindow, "openglcontrol");
+
+    if (openglControl) {
+        viewport.width = openglControl->property("width").toReal();
+        viewport.height = openglControl->property("height").toReal();
+        // ✅ PHASE 6.3.0 FIX: shiftX/shiftY are now Q_PROPERTY in AOGRendererInSG
+        viewport.shiftX = openglControl->property("shiftX").toDouble();
+        viewport.shiftY = openglControl->property("shiftY").toDouble();
+    } else {
+        qWarning() << "⚠️ OpenGL control not found - using default viewport settings";
+        // Defaults already set in struct definition
+    }
+
+    return viewport;
+}
 #include "glm.h"
 #include "glutils.h"
 #include "qmlutil.h"
+#include "classes/agioservice.h"  // For zero-latency GPS access
 
 //#include <QGLWidget>
 #include <QQuickView>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
-#include "aogproperty.h"
+#include "classes/settingsmanager.h"
 #include "cpgn.h"
 
 #include <assert.h>
+#include <QElapsedTimer>  // For latency profiling
+
+// Latency profiler for real-time validation
+class LatencyProfiler {
+public:
+    static void measure(const QString& operation) {
+        static QElapsedTimer timer;
+        static bool initialized = false;
+        if (!initialized) {
+            timer.start();
+            initialized = true;
+            return;
+        }
+        qint64 elapsed = timer.nsecsElapsed();
+        if (elapsed > 1000) { // >1μs warning for AutoSteer safety
+            qWarning() << "⚠️ LATENCY:" << operation << elapsed << "ns";
+        }
+        timer.restart();
+    }
+};
 
 QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
 {
@@ -36,10 +84,12 @@ QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
     QMatrix4x4 modelview;
     QMatrix4x4 projection;
 
-    int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
-    int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
-    double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
-    double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
+    // Safe access to OpenGL viewport properties
+    OpenGLViewport viewport = getOpenGLViewport(mainWindow);
+    int width = viewport.width;
+    int height = viewport.height;
+    double shiftX = viewport.shiftX;
+    double shiftY = viewport.shiftY;
 
     projection.setToIdentity();
 
@@ -51,12 +101,12 @@ QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
     modelview.setToIdentity();
 
     //camera does translations and rotations
-    camera.SetWorldCam(modelview, vehicle.pivotAxlePos.easting, vehicle.pivotAxlePos.northing, camera.camHeading);
-    modelview.translate(vehicle.hitchPos.easting, vehicle.hitchPos.northing, 0);
-    //modelview.translate(sin(vehicle.fixHeading) * tool.hitchLength,
-    //                        cos(vehicle.fixHeading) * tool.hitchLength, 0);
+    camera.SetWorldCam(modelview, CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, camera.camHeading);
+    modelview.translate(CVehicle::instance()->hitchPos.easting, CVehicle::instance()->hitchPos.northing, 0);
+    //modelview.translate(sin(CVehicle::instance()->fixHeading) * tool.hitchLength,
+    //                        cos(CVehicle::instance()->fixHeading) * tool.hitchLength, 0);
     if (camera.camFollowing)
-        modelview.rotate(glm::toDegrees(-vehicle.fixHeading), 0.0, 0.0, 1.0);
+        modelview.rotate(glm::toDegrees(-CVehicle::instance()->fixHeading), 0.0, 0.0, 1.0);
 
     float x,y;
     x = mouseX;
@@ -75,7 +125,7 @@ QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
     mouseNorthing = worldpoint_near.y() + lambda * direction.y();
 
     QMatrix4x4 m;
-    m.rotate(-vehicle.fixHeading, 0,0,1);
+    m.rotate(-CVehicle::instance()->fixHeading, 0,0,1);
 
     QVector3D relative = QVector3D( { (float)mouseEasting, (float)mouseNorthing, 0 } );
     return relative;
@@ -90,10 +140,12 @@ QVector3D FormGPS::mouseClickToField(int mouseX, int mouseY)
     QMatrix4x4 modelview;
     QMatrix4x4 projection;
 
-    int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
-    int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
-    double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
-    double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
+    // Safe access to OpenGL viewport properties
+    OpenGLViewport viewport = getOpenGLViewport(mainWindow);
+    int width = viewport.width;
+    int height = viewport.height;
+    double shiftX = viewport.shiftX;
+    double shiftY = viewport.shiftY;
 
     projection.setToIdentity();
 
@@ -105,12 +157,12 @@ QVector3D FormGPS::mouseClickToField(int mouseX, int mouseY)
     modelview.setToIdentity();
 
     //camera does translations and rotations
-    camera.SetWorldCam(modelview, vehicle.pivotAxlePos.easting, vehicle.pivotAxlePos.northing, camera.camHeading);
-    //modelview.translate(vehicle.pivotAxlePos.easting, vehicle.pivotAxlePos.northing, 0);
-    //modelview.translate(sin(vehicle.fixHeading) * tool.hitchLength,
-    //                        cos(vehicle.fixHeading) * tool.hitchLength, 0);
+    camera.SetWorldCam(modelview, CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, camera.camHeading);
+    //modelview.translate(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, 0);
+    //modelview.translate(sin(CVehicle::instance()->fixHeading) * tool.hitchLength,
+    //                        cos(CVehicle::instance()->fixHeading) * tool.hitchLength, 0);
     //if (camera.camFollowing)
-    //    modelview.rotate(glm::toDegrees(-vehicle.fixHeading), 0.0, 0.0, 1.0);
+    //    modelview.rotate(glm::toDegrees(-CVehicle::instance()->fixHeading), 0.0, 0.0, 1.0);
 
     float x,y;
     x = mouseX;
@@ -129,7 +181,7 @@ QVector3D FormGPS::mouseClickToField(int mouseX, int mouseY)
     mouseNorthing = worldpoint_near.y() + lambda * direction.y();
 
     QMatrix4x4 m;
-    m.rotate(-vehicle.fixHeading, 0,0,1);
+    m.rotate(-CVehicle::instance()->fixHeading, 0,0,1);
 
     QVector3D fieldCoord = QVector3D( { (float)mouseEasting, (float)mouseNorthing, 0 } );
     return fieldCoord;
@@ -160,11 +212,15 @@ void FormGPS::oglMain_Paint()
         //will not update, which isn't what we want either.  Some kind of timeout?
      return;
 
-    int width = qmlItem(mainWindow, "openglcontrol")->property("width").toReal();
-    int height = qmlItem(mainWindow, "openglcontrol")->property("height").toReal();
-    double shiftX = qmlItem(mainWindow,"openglcontrol")->property("shiftX").toDouble();
-    double shiftY = qmlItem(mainWindow,"openglcontrol")->property("shiftY").toDouble();
-
+    float lineWidth = SettingsManager::instance()->display_lineWidth();
+    
+    // Safe access to OpenGL viewport properties
+    OpenGLViewport viewport = getOpenGLViewport(mainWindow);
+    int width = viewport.width;
+    int height = viewport.height;
+    double shiftX = viewport.shiftX;
+    double shiftY = viewport.shiftY;
+    //gl->glViewport(oglX,oglY,width,height);
     /*
 #ifdef GL_POINT_SPRITE
     //not compatible with OpenGL ES
@@ -186,7 +242,7 @@ void FormGPS::oglMain_Paint()
     //gl->glDisable(GL_CULL_FACE);
 
     //set the camera to right distance
-    SetZoom();
+    camera.SetZoom();
 
     //now move the "camera" to the calculated zoom settings
     //I had to move these functions here because if setZoom is called
@@ -216,7 +272,7 @@ void FormGPS::oglMain_Paint()
     //gl->glDisable(GL_TEXTURE_2D);
 
 
-    if((uint)sentenceCounter < 299)
+    if(this->sentenceCounter() < 299)
     {
         if (isGPSPositionInitialized)
         {
@@ -230,7 +286,7 @@ void FormGPS::oglMain_Paint()
             modelview.setToIdentity();
 
             //camera does translations and rotations
-            camera.SetWorldCam(modelview, vehicle.pivotAxlePos.easting, vehicle.pivotAxlePos.northing, camera.camHeading);
+            camera.SetWorldCam(modelview, CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, camera.camHeading);
 
             //calculate the frustum planes for culling
             CalcFrustum(projection*modelview);
@@ -246,7 +302,7 @@ void FormGPS::oglMain_Paint()
 
             ////if grid is on draw it
             if (isGridOn)
-                worldGrid.DrawWorldGrid(gl,projection, modelview, gridZoom, QColor::fromRgbF(0,0,0));
+                worldGrid.DrawWorldGrid(gl, modelview, projection, camera.gridZoom, QColor::fromRgbF(0,0,0,1));
 
             //OpenGL ES does not support wireframe in this way. If we want wireframe,
             //we'll have to do it with LINES
@@ -348,13 +404,13 @@ void FormGPS::oglMain_Paint()
                         gldraw1.clear();
 
                         //left side of triangle
-                        QVector3D pt((vehicle.cosSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + vehicle.toolPos.easting,
-                                (vehicle.sinSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + vehicle.toolPos.northing, 0);
+                        QVector3D pt((CVehicle::instance()->cosSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + CVehicle::instance()->toolPos.easting,
+                                (CVehicle::instance()->sinSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + CVehicle::instance()->toolPos.northing, 0);
                         gldraw1.append(pt);
 
                         //Right side of triangle
-                        pt = QVector3D((vehicle.cosSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + vehicle.toolPos.easting,
-                           (vehicle.sinSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + vehicle.toolPos.northing, 0);
+                        pt = QVector3D((CVehicle::instance()->cosSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + CVehicle::instance()->toolPos.easting,
+                           (CVehicle::instance()->sinSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + CVehicle::instance()->toolPos.northing, 0);
                         gldraw1.append(pt);
 
                         int last = triStrip[j].patchList[patchCount -1]->count();
@@ -370,15 +426,17 @@ void FormGPS::oglMain_Paint()
             if (tram.displayMode != 0) tram.DrawTram(gl,projection*modelview,camera);
 
             //draw contour line if button on
-            if (ct.isContourBtnOn)
+            if (this->isContourBtnOn())
             {
-                ct.DrawContourLine(gl, projection*modelview);
+                ct.DrawContourLine(gl, projection*modelview, mainWindow);
             }
             else// draw the current and reference AB Lines or CurveAB Ref and line
             {
                 //when switching lines, draw the ghost
-                trk.DrawTrack(gl, projection*modelview, isFontOn, worldGrid.isRateMap, yt, camera, gyd);
+                track.DrawTrack(gl, projection*modelview, isFontOn, worldGrid.isRateMap, yt, camera, gyd);
             }
+
+            track.DrawTrackNew(gl, projection*modelview, camera, *CVehicle::instance());
 
             //if (recPath.isRecordOn)
             recPath.DrawRecordedLine(gl, projection*modelview);
@@ -387,54 +445,61 @@ void FormGPS::oglMain_Paint()
             if (bnd.bndList.count() > 0 || bnd.isBndBeingMade == true)
             {
                 //draw Boundaries
-                bnd.DrawFenceLines(vehicle, mc, gl, projection*modelview);
+                bnd.DrawFenceLines(*CVehicle::instance(), mc, gl, projection*modelview, mainWindow);
 
                 //draw the turnLines
-                if (yt.isYouTurnBtnOn && ! ct.isContourBtnOn)
+                if (this->isYouTurnBtnOn() && ! this->isContourBtnOn())
                 {
-                    bnd.DrawFenceLines(vehicle,mc,gl,projection*modelview);
+                    bnd.DrawFenceLines(*CVehicle::instance(),mc,gl,projection*modelview, mainWindow);
 
                     color.setRgbF(0.3555f, 0.6232f, 0.20f); //TODO: not sure what color turnLines should actually be
 
                     for (int i = 0; i < bnd.bndList.count(); i++)
                     {
-                        DrawPolygon(gl,projection*modelview,bnd.bndList[i].turnLine,(float)property_setDisplay_lineWidth,color);
+                        DrawPolygon(gl,projection*modelview,bnd.bndList[i].turnLine,lineWidth,color);
                     }
                 }
 
                 //Draw headland
-                if (bnd.isHeadlandOn)
+                if (this->isHeadlandOn())
                 {
                     color.setRgbF(0.960f, 0.96232f, 0.30f);
-                    DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,(float)property_setDisplay_lineWidth,color);
+                    DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,lineWidth,color);
                 }
             }
-
+            if (flagPts.count()>0) DrawFlags(gl, projection*modelview);
             //Direct line to flag if flag selected
             if (flagNumberPicked > 0)
             {
-                gldraw1.clear();
-                //TODO: implement with shader: GL.LineStipple(1, 0x0707);
-                gldraw1.append(QVector3D(vehicle.pivotAxlePos.easting, vehicle.pivotAxlePos.northing, 0));
-                gldraw1.append(QVector3D(flagPts[flagNumberPicked-1].easting, flagPts[flagNumberPicked-1].northing, 0));
-                gldraw1.draw(gl, projection*modelview,
-                             QColor::fromRgbF(0.930f, 0.72f, 0.32f),
-                             GL_LINES, property_setDisplay_lineWidth);
+                if (flagPts.count() > flagNumberPicked) {
+                    gldraw1.clear();
+                    gl->glLineWidth(2);
+                    //TODO: implement with shader: GL.LineStipple(1, 0x0707);
+                    gldraw1.append(QVector3D(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, 0));
+                    gldraw1.append(QVector3D(flagPts[flagNumberPicked-1].easting, flagPts[flagNumberPicked-1].northing, 0));
+                    gldraw1.draw(gl, projection*modelview,
+                                QColor::fromRgbF(0.930f, 0.72f, 0.32f),
+                                GL_LINES, lineWidth);
+                    gl->glLineWidth(1);
+                } else {
+                    flagNumberPicked = 0;//reset
+                }
             }
 
             //draw the vehicle/implement
             QMatrix4x4 mv = modelview; //push matrix
-            tool.DrawTool(gl,modelview, projection,isJobStarted,vehicle, camera,tram);
+            // ✅ PHASE 6.3.0: InterfaceProperty guaranteed to be initialized before rendering
+            tool.DrawTool(gl,modelview, projection,isJobStarted(),*CVehicle::instance(), camera,tram);
             double steerangle;
             if(timerSim.isActive()) steerangle = sim.steerangleAve;
             else steerangle = mc.actualSteerAngleDegrees;
-            vehicle.DrawVehicle(gl, modelview, projection, steerangle, isFirstHeadingSet,
-                                QRect(0,0,width,height),camera,tool,bnd);
+            CVehicle::instance()->DrawVehicle(gl, modelview, projection, steerangle, isFirstHeadingSet,
+                                QRect(0,0,width,height),camera,tool,bnd,mainWindow);
             modelview = mv; //pop matrix
 
             if (camera.camSetDistance > -150)
             {
-                trk.DrawTrackGoalPoint(gl, projection * modelview);
+                track.DrawTrackGoalPoint(gl, projection * modelview);
             }
 
             // 2D Ortho --------------------------
@@ -453,14 +518,14 @@ void FormGPS::oglMain_Paint()
 
             if (tool.isDisplayTramControl && tram.displayMode != 0) { DrawTramMarkers(); }
 
-            //if this is on, vehicleInterface.isHydLiftOn is true
+            //if this is on, VehicleInterface.isHydLiftOn is true
             if (p_239.pgn[p_239.hydLift] == 2)
             {
-                vehicle.setHydLiftDown(false); //vehicleInterface.hydLiftDown in QML
+                CVehicle::instance()->setHydLiftDown(false); //VehicleInterface.hydLiftDown in QML
             }
             else
             {
-                vehicle.setHydLiftDown(true);
+                CVehicle::instance()->setHydLiftDown(true);
             }
 
             //Reverse indicator in QML
@@ -471,7 +536,16 @@ void FormGPS::oglMain_Paint()
             gl->glFlush();
 
             //draw the zoom window
-            if (isJobStarted)
+            // ⚡ PHASE 6.3.0 SAFETY: Verify InterfaceProperty before OpenGL access
+            bool jobStartedSafe = false;
+            try {
+                jobStartedSafe = this->isJobStarted();
+            } catch (...) {
+                // InterfaceProperty not ready, skip this rendering cycle
+                jobStartedSafe = false;
+            }
+
+            if (jobStartedSafe)
             {
                 /*TODO implement floating zoom windo
                 if (threeSeconds != zoomUpdateCounter)
@@ -553,7 +627,7 @@ void FormGPS::openGLControl_Initialized()
 
     //Load all the textures
     //qDebug() << "initializing Open GL.";
-    loadGLTextures();
+    initializeTextures();
     //qDebug() << "textures loaded.";
     initializeShaders();
     //qDebug() << "shaders loaded.";
@@ -614,12 +688,11 @@ void FormGPS::oglBack_Paint()
     /* use the QML context with an offscreen surface to draw
      * the lookahead triangles
      */
-    if (!backFBO ) {
+    if (!backFBO) {
         QOpenGLFramebufferObjectFormat format;
         format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-        //TODO: backFBO is leaking... delete it in the destructor?
-        //I think context has to be active to delete it...
-        backFBO = new QOpenGLFramebufferObject(QSize(500,300),format);
+        // ✅ C++17 RAII: automatic memory management, no manual delete needed
+        backFBO = std::make_unique<QOpenGLFramebufferObject>(QSize(500,300), format);
     }
 
     backFBO->bind();
@@ -644,11 +717,11 @@ void FormGPS::oglBack_Paint()
     modelview.translate(0, 0, -500);
 
     //rotate camera so heading matched fix heading in the world
-    //gl->glRotated(toDegrees(vehicle.fixHeadingSection), 0, 0, 1);
-    modelview.rotate(glm::toDegrees(vehicle.toolPos.heading), 0, 0, 1);
+    //gl->glRotated(toDegrees(CVehicle::instance()->fixHeadingSection), 0, 0, 1);
+    modelview.rotate(glm::toDegrees(CVehicle::instance()->toolPos.heading), 0, 0, 1);
 
-    modelview.translate(-vehicle.toolPos.easting - sin(vehicle.toolPos.heading) * 15,
-                        -vehicle.toolPos.northing - cos(vehicle.toolPos.heading) * 15,
+    modelview.translate(-CVehicle::instance()->toolPos.easting - sin(CVehicle::instance()->toolPos.heading) * 15,
+                        -CVehicle::instance()->toolPos.northing - cos(CVehicle::instance()->toolPos.heading) * 15,
                         0);
 
     //patch color
@@ -657,10 +730,10 @@ void FormGPS::oglBack_Paint()
     //to draw or not the triangle patch
     bool isDraw;
 
-    double pivEplus = vehicle.pivotAxlePos.easting + 50;
-    double pivEminus = vehicle.pivotAxlePos.easting - 50;
-    double pivNplus = vehicle.pivotAxlePos.northing + 50;
-    double pivNminus = vehicle.pivotAxlePos.northing - 50;
+    double pivEplus = CVehicle::instance()->pivotAxlePos.easting + 50;
+    double pivEminus = CVehicle::instance()->pivotAxlePos.easting - 50;
+    double pivNplus = CVehicle::instance()->pivotAxlePos.northing + 50;
+    double pivNminus = CVehicle::instance()->pivotAxlePos.northing - 50;
 
     //draw patches j= # of sections
     for (int j = 0; j < triStrip.count(); j++)
@@ -726,7 +799,7 @@ void FormGPS::oglBack_Paint()
 
     //draw 245 green for the tram tracks
 
-    if (tram.displayMode !=0 && tram.displayMode !=0 && (trk.idx > -1))
+    if (tram.displayMode !=0 && tram.displayMode !=0 && (track.idx() > -1))
     {
         if ((tram.displayMode == 1 || tram.displayMode == 2))
         {
@@ -761,7 +834,7 @@ void FormGPS::oglBack_Paint()
 
 
         //draw 250 green for the headland
-        if (bnd.isHeadlandOn && bnd.isSectionControlledByHeadland)
+        if (this->isHeadlandOn() && bnd.isSectionControlledByHeadland)
         {
             DrawPolygonBack(gl,projection*modelview,bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
         }
@@ -845,12 +918,11 @@ void FormGPS::oglZoom_Paint()
     /* use the QML context with an offscreen surface to draw
      * the lookahead triangles
      */
-    if (!zoomFBO ) {
+    if (!zoomFBO) {
         QOpenGLFramebufferObjectFormat format;
         format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-        //TODO: zoomFBO is leaking... delete it in the destructor?
-        //I think context has to be active to delete it...
-        zoomFBO = new QOpenGLFramebufferObject(QSize(400,400),format);
+        // ✅ C++17 RAII: automatic memory management, no manual delete needed
+        zoomFBO = std::make_unique<QOpenGLFramebufferObject>(QSize(400,400), format);
     }
 
     zoomFBO->bind();
@@ -864,7 +936,7 @@ void FormGPS::oglZoom_Paint()
     gl->glCullFace(GL_BACK);
     gl->glClearColor(0, 0, 0, 1.0f);
 
-    if (isJobStarted)
+    if (isJobStarted())
     {
         gl->glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         projection.setToIdentity(); //Reset the view
@@ -955,8 +1027,15 @@ void FormGPS::MakeFlagMark(QOpenGLFunctions *gl)
     {
         if ((data1[ctr] == 255) || (data1[ctr + 1] == 255))
         {
-            flagNumberPicked = data1[ctr + 2];
-            qDebug() << flagNumberPicked;
+            int candidateFlag = data1[ctr + 2];
+            // Validate flag number is within bounds
+            if (candidateFlag > 0 && candidateFlag <= flagPts.size()) {
+                flagNumberPicked = candidateFlag;
+                qDebug() << "Valid flag picked:" << flagNumberPicked;
+            } else {
+                flagNumberPicked = 0; // Invalid flag, reset to no selection
+                qDebug() << "Invalid flag number" << candidateFlag << "- flagPts.size():" << flagPts.size();
+            }
             break;
         }
     }
@@ -982,21 +1061,21 @@ void FormGPS::DrawTramMarkers()
     if (((tram.controlByte) & 2) == 2) dot_color = 1;// set to green #49FD49
     else dot_color = 0;//
 
-    if ((bool)tram.isLeftManualOn)
+    if ((bool)tram.isLeftManualOn())
     {
         dot_color = 2;
     }
-    vehicle.setLeftTramIndicator(dot_color);
+    CVehicle::instance()->setLeftTramIndicator(dot_color);
     //done with left
 
     if (((tram.controlByte) & 1) == 1) dot_color = 1;
     else dot_color = 0;
 
-    if ((bool)tram.isRightManualOn)
+    if ((bool)tram.isRightManualOn())
     {
         dot_color = 2;
     }
-    vehicle.setRightTramIndicator(dot_color);
+    CVehicle::instance()->setRightTramIndicator(dot_color);
 }
 
 void FormGPS::DrawFlags(QOpenGLFunctions *gl, QMatrix4x4 mvp)
@@ -1034,7 +1113,7 @@ void FormGPS::DrawFlags(QOpenGLFunctions *gl, QMatrix4x4 mvp)
         gldraw.clear();
 
         double offSet = (camera.zoomValue * camera.zoomValue * 0.01);
-        gl->glLineWidth(4.0f);
+        gl->glLineWidth(4);
         gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting, flagPts[flagNumberPicked - 1].northing + offSet, 0));
         gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting - offSet, flagPts[flagNumberPicked - 1].northing, 0));
         gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting, flagPts[flagNumberPicked - 1].northing - offSet, 0));
@@ -1042,6 +1121,7 @@ void FormGPS::DrawFlags(QOpenGLFunctions *gl, QMatrix4x4 mvp)
         gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting, flagPts[flagNumberPicked - 1].northing + offSet, 0));
         gldraw.draw(gl, mvp, QColor::fromRgbF(0.980f, 0.0f, 0.980f),
                     GL_LINE_STRIP, 4.0);
+        gl->glLineWidth(1);
     }
 }
 
@@ -1108,32 +1188,6 @@ void FormGPS::CalcFrustum(const QMatrix4x4 &mvp)
     //frustum[21] = clip[7] - clip[5];
     //frustum[22] = clip[11] - clip[9];
     //frustum[23] = clip[15] - clip[13];
-}
-
-//take the distance from object and convert to camera data
-//TODO, move Projection matrix stuff into here when OpenGL ES migration is complete
-void FormGPS::SetZoom()
-{
-    //match grid to cam distance and redo perspective
-    if (camera.camSetDistance <= -20000) gridZoom = 2000;
-    if (camera.camSetDistance >= -20000 && camera.camSetDistance < -10000) gridZoom =   2012;
-    if (camera.camSetDistance >= -10000 && camera.camSetDistance < -5000) gridZoom =    1006;
-    if (camera.camSetDistance >= -5000 && camera.camSetDistance < -2000) gridZoom =     503;
-    if (camera.camSetDistance >= -2000 && camera.camSetDistance < -1000) gridZoom =     201.2;
-    if (camera.camSetDistance >= -1000 && camera.camSetDistance < -500) gridZoom =      100.6;
-    if (camera.camSetDistance >= -500 && camera.camSetDistance < -250) gridZoom =       50.3;
-    if (camera.camSetDistance >= -250 && camera.camSetDistance < -150) gridZoom =       25.15;
-    if (camera.camSetDistance >= -150 && camera.camSetDistance < -50) gridZoom =         10.06;
-    if (camera.camSetDistance >= -50 && camera.camSetDistance < -1) gridZoom = 5.03;
-    //1.216 2.532
-
-
-}
-
-void FormGPS::loadGLTextures()
-{
-
-    initializeTextures();
 }
 
 //determine mins maxs of patches and whole field.

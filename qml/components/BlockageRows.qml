@@ -2,55 +2,66 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 import QtQuick
 import QtQuick.Controls.Fusion
-import QtQuick.Layouts 1.1
+import QtQuick.Layouts
+//import Settings
 //This is a the row of on-screen section-control buttonw
 
 Rectangle {
     id: blockageRows
+    objectName: "blockageRows"
     anchors.horizontalCenter: parent.horizontalCenter
-    //width: 15 * theme.scaleWidth * numRows
-    width: (800 * theme.scaleWidth / numRows) < 50 ? (15 * theme.scaleWidth * numRows) : (20 * theme.scaleWidth * numRows)
+    width: 15 * theme.scaleWidth * numRows
+    //width: (800 * theme.scaleWidth / numRows) < 50 ? (15 * theme.scaleWidth * numRows) : (20 * theme.scaleWidth * numRows)
     //height: childrenRect.height * theme.scaleHeight
 
     color: "transparent"
 
+    // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
+    property bool isDayMode: true
+    property int seedBlockRow1: 0
+    property int seedBlockRow2: 0
+    property int seedBlockRow3: 0
+    property int seedBlockRow4: 0
+    property int seedBlockCountMin: 0
+    property int seedBlockCountMax: 10000
 
-    property int numRows:  Number(settings.setSeed_blockRow1 + settings.setSeed_blockRow2 + settings.setSeed_blockRow3 + settings.setSeed_blockRow4)
-    property int countMin: Number(settings.setSeed_blockCountMin)
-    property int countMax: Number(settings.setSeed_blockCountMax)
-    property var rowCount: aog.rowCount
+    // Threading Phase 1: Seed blockage configuration
+    property int numRows:  Number(seedBlockRow1 + seedBlockRow2 + seedBlockRow3 + seedBlockRow4)
+    property int countMin: Number(seedBlockCountMin*10000)
+    property int countMax: Number(seedBlockCountMax*10000)
     property color offColor: "Crimson"
     property color offTextColor: "White"
     property color onColor: "DarkGoldenrod"
     property color onTextColor: "White"
     property color autoColor: "ForestGreen"
     property color autoTextColor: "White"
+    property variant blockageRowCount: aog.blockageRowCount
 
 
     //methods
     function setColors() {
         //same colors for sections and zones
-        if (settings.setDisplay_isDayMode) {
+        if (isDayMode) {
             blockageRows.offColor = "Red"
             blockageRows.offTextColor = "Black"
             blockageRows.onColor = "Yellow"
             blockageRows.onTextColor = "Black"
-            blockageRows.onColor = "Yellow"
-            blockageRows.onTextColor = "Black"
+            blockageRows.autoColor = "Lime"
+            blockageRows.autoTextColor = "Black"
         } else {
             blockageRows.offColor = "Crimson"
             blockageRows.offTextColor = "White"
             blockageRows.onColor = "DarkGoldenRod"
             blockageRows.onTextColor = "White"
-            blockageRows.onColor = "DarkGoldenRod"
-            blockageRows.onTextColor = "White"
+            blockageRows.autoColor = "ForestGreen"
+            blockageRows.autoTextColor = "White"
         }
     }
     function setSizes() {
         //same colors for sections and zones
-        numRows = Number(settings.setSeed_blockRow1 + settings.setSeed_blockRow2 + settings.setSeed_blockRow3 + settings.setSeed_blockRow4)
-        countMin =  Number(settings.setSeed_blockCountMin)
-        countMax =  Number(settings.setSeed_blockCountMax)
+        numRows = Number(seedBlockRow1 + seedBlockRow2 + seedBlockRow3 + seedBlockRow4)
+        countMin =  Number(seedBlockCountMin)
+        countMax =  Number(seedBlockCountMax)
         }
 
 
@@ -58,8 +69,11 @@ Rectangle {
     onNumRowsChanged: {
         rowModel.clear()
         for (var i = 0; i < numRows; i++) {
-            rowModel.append( { rowNo: i } )
-        y}
+            if(i < blockageRows.blockageRowCount.length){
+                rowModel.append( { rowNo: i } )
+            }
+
+        }
     }
 
     //callbacks, connections, and signals
@@ -68,19 +82,13 @@ Rectangle {
         setSizes()
         rowModel.clear()
         for (var i = 0; i < numRows; i++) {
-            rowModel.append( { rowNo: i } )
+            if(i < blockageRows.blockageRowCount.length){
+                rowModel.append( { rowNo: i } )
+            }
         }
     }
 
-Connections {
-    target: settings
-    function onSetDisplay_isDayModeChanged() {
-        setColors()
-    }
-    function onSetBlockrow1Changed() {
-        setSizes()
-    }
-}
+// Qt 6.8 QProperty + BINDABLE: Functions called in existing Component.onCompleted above
 
     ListModel {
         id: rowModel
@@ -90,26 +98,36 @@ Connections {
         id: rowViewDelegate
         BlockageRow {
             width: (800 * theme.scaleWidth / numRows) < 50 ? (15 * theme.scaleWidth) : (20 * theme.scaleWidth)
-            height: (blockageRows.rowCount[model.rowNo] * 40/aog.blockage_max+20)*theme.scaleHeight
-            buttonText: (model.rowNo + 1).toFixed(0)
-            visible: (model.rowNo < numRows) ? true : false
-            color: (blockageRows.rowCount[model.rowNo] < countMin ? offColor : (blockageRows.rowCount[model.rowNo] < countMax ? autoColor : onColor))
-            textColor: (blockageRows.rowCount[model.rowNo]===0 ? offTextColor : (blockageRows.rowCount[model.rowNo] === 1 ? autoTextColor : onTextColor))
+            //height: (10 * theme.scaleWidth)
+            height: (blockageRows.blockageRowCount[model.rowNo] * 40/(aog.blockage_max+1)+20)*theme.scaleHeight<45*theme.scaleHeight?(blockageRows.blockageRowCount[model.rowNo] * 40/(aog.blockage_max+1)+20)*theme.scaleHeight:40*theme.scaleHeight
+            //anchors.bottom: parent.bottom
+            //buttonText: (model.rowNo + 1).toFixed(0)
+            // visible: (model.rowNo < numRows) ? true : false
+            color: {
+                var count = blockageRows.blockageRowCount[model.rowNo];
+                var dayMode = isDayMode;
+                var off = dayMode ? "Red" : "Crimson";
+                var auto = dayMode ? "Lime" : "ForestGreen";
+                var on = dayMode ? "Yellow" : "DarkGoldenRod";
+                return count < countMin ? off : (count < countMax ? auto : on);
+            }
+            //textColor: (blockageRows.blockageRowCount[model.rowNo]===0 ? offTextColor : (blockageRows.blockageRowCount[model.rowNo] === 1 ? autoTextColor : onTextColor))
         }
     }
 
     ListView {
         id: blockageRowList
         orientation: Qt.Horizontal
+        reuseItems: true
         //width: rowViewDelegate.width
-        width: rowViewDelegate.width
+        width: 400
         height: 100 * theme.scaleHeight
         anchors.left: parent.left
         anchors.right: parent.right
         //anchors.top: parent.top
         model: rowModel
         //spacing: 1
-        boundsMovement: Flickable.StopAtBounds
+        //boundsMovement: Flickable.StopAtBounds
         delegate: rowViewDelegate
     }
 }

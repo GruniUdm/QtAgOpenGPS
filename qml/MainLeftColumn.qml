@@ -1,6 +1,8 @@
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import AOG
+//import Settings
 import "components" as Comp
 
 ColumnLayout {
@@ -19,13 +21,13 @@ ColumnLayout {
         implicitHeight: theme.buttonSize
         Layout.alignment: Qt.AlignCenter
         onClicked: {
-            aog.distanceUser = "0"
-            aog.workedAreaTotalUser = "0"
+            aog.distanceUser = parseFloat("0")
+            aog.workedAreaTotalUser = parseFloat("0")
         }
 
         background: Rectangle{
             anchors.fill: parent
-            color: aog.backgroundColor
+            color: aogInterface.backgroundColor
             radius: 10
             Text{
                 anchors.top: parent.top
@@ -33,7 +35,7 @@ ColumnLayout {
                 anchors.margins: 5
                 width: parent.width
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: utils.m_to_unit_string(aog.distanceUser, 2)
+                text: Utils.m_to_unit_string(aog.distanceUser, 2)
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -45,7 +47,7 @@ ColumnLayout {
                 anchors.margins: 5
                 width: parent.width
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: utils.area_to_unit_string(aog.workedAreaTotalUser, 2)
+                text: Utils.area_to_unit_string(aog.workedAreaTotalUser, 2)
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -89,6 +91,10 @@ ColumnLayout {
         id: btnAgIO
         buttonText: qsTr("AgIO")
         icon.source: prefix + "/images/AgIO.png"
+        onClicked: {
+            //mainWindowAgIO.opacity = !mainWindowAgIO.opacity
+            mainWindowAgIO.visible = !mainWindowAgIO.visible
+        }
     }
     Comp.MainWindowBtns {
         id: btnautoSteerConf

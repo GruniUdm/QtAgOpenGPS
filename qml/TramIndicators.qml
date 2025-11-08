@@ -34,10 +34,10 @@ Rectangle{
         onTriggered: toggle()
     }
     function toggle(){
-        root.toggleState = !root.toggleState
-        if(root.toggleState)
-            root.color = "black"
-        else
-            root.color = "yellow"
+        // root.toggleState = !root.toggleState
+        // if(root.toggleState)
+        //     root.color = "black"
+        // else
+        //     root.color = "yellow"
     }
 }

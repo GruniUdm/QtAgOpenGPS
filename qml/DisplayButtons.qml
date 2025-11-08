@@ -4,11 +4,13 @@
 // The panel with display controls (+, -, 2d/3d etc.
 import QtQuick
 import QtQuick.Controls.Fusion
+//import Settings
+import AOG
 import "components" as Comp
 
 Comp.TimedRectangle{
     id: displayButtons
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     Grid {
         id: tiltButtons
         anchors.leftMargin: 5
@@ -26,7 +28,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/TiltDown.png"
             onClicked: {
-                aog.tiltDown()
+                aog.tiltDown() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -37,7 +39,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/Camera2D64.png"
             onClicked: {
-                aog.btn2D()
+                aog.view2D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -48,7 +50,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/CameraNorth2D.png"
             onClicked: {
-                aog.n2D()
+                aog.normal2D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -59,7 +61,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/ZoomOut48.png"
             onClicked: {
-                aog.zoomOut()
+                aog.zoomOut() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -68,12 +70,14 @@ Comp.TimedRectangle{
             width: 70
             height: 70
             radius: 10
-            icon.source: prefix + "/images/WindowNightMode.png"
-            iconChecked: prefix + "/images/WindowDayMode.png"
+            icon.source: prefix + "/images/WindowDayMode.png"
+            iconChecked: prefix + "/images/WindowNightMode.png"
             checkable: true
-            isChecked: settings.setDisplay_isDayMode
-            onCheckedChanged: settings.setDisplay_isDayMode = checked
-            onClicked: displayButtons.resetTimer()
+            // Threading Phase 1: Display day/night mode
+            isChecked: SettingsManager.display_isDayMode
+            onCheckedChanged: SettingsManager.display_isDayMode = checked
+            onClicked: {displayButtons.resetTimer()
+                aog.settingsReload()} // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         }
         Comp.IconButtonTransparent {
             id: btnBrightnessDown
@@ -82,7 +86,8 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/BrightnessDn.png"
             onClicked: displayButtons.resetTimer()
-			visible: false //todo
+            // Threading Phase 1: Brightness control visibility
+            visible: SettingsManager.display_isBrightnessOn
         }
         Comp.IconButtonTransparent {
             id: btnTiltUp
@@ -91,7 +96,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/TiltUp.png"
             onClicked: {
-                aog.tiltUp()
+                aog.tiltUp() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -102,7 +107,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/Camera3D64.png"
             onClicked: {
-                aog.btn3D()
+                aog.view3D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -113,7 +118,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/CameraNorth64.png"
             onClicked: {
-                aog.n3D()
+                aog.normal3D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -124,7 +129,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/ZoomIn48.png"
             onClicked: {
-                aog.zoomIn()
+                aog.zoomIn() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -136,12 +141,14 @@ Comp.TimedRectangle{
         }
         Comp.IconButtonTransparent {
             id: btnBrightnessUp
-			visible: false //todo
+            //visible: false //todo
             width: 70
             height: 70
             radius: 10
             icon.source: prefix + "/images/BrightnessUp.png"
             onClicked: displayButtons.resetTimer()
+            // Threading Phase 1: Brightness control visibility
+            visible: SettingsManager.display_isBrightnessOn
         }
     }
 }

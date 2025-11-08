@@ -24,11 +24,12 @@ MoveablePopup {
     property string chartName
     property string lineName1
     property string lineName2
-    x: 400 * theme.scaleWidth
 
     Timer {
         id:txt
+
         interval:50; running: chartSteer.visible; repeat: true
+
         onTriggered: {
                 yval++;
             chart.series(0).append(yval, xval1);
@@ -57,45 +58,45 @@ MoveablePopup {
 
 
 
-            IconButtonTextBeside{
-            id: btnChartplus
-            anchors.right: parent.right
-            anchors.top: parent.top
-            width: 40 * theme.scaleWidth
-            height: 50 * theme.scaleHeight
-            text: "   +"
-            z: 2
-            onClicked: {axismin > - 1 ? -1 : axismin = axismin+2
-                        axismax < 1 ? 1 : axismax = axismax-2}
-            }
+        IconButtonTextBeside{
+        id: btnChartplus
+        anchors.right: parent.right
+        anchors.top: parent.top
+        width: 40 * theme.scaleWidth
+        height: 50 * theme.scaleHeight
+        text: "   +"
+        z: 2
+        onClicked: {axismin > - 1 ? -1 : axismin = axismin+2
+                    axismax < 1 ? 1 : axismax = axismax-2}
+        }
 
 
-            IconButtonTextBeside{
-            id: btnChartauto
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            width: 40 * theme.scaleWidth
-            height: 50 * theme.scaleHeight
-            text: "   A"
-            z: 2
-            onClicked: {xval1 > axismax ? axismax = (xval1 + 2) : 0
-                        xval2 > axismax ? axismax = (xval2 + 2) : 0
-                        xval1 < axismin ? axismin = (xval1 - 2) : 0
-                        xval2 < axismin ? axismin = (xval2 - 2) : 0
-            }
-            }
+        IconButtonTextBeside{
+        id: btnChartauto
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        width: 40 * theme.scaleWidth
+        height: 50 * theme.scaleHeight
+        text: "   A"
+        z: 2
+        onClicked: {xval1 > axismax ? axismax = (xval1 + 2) : 0
+                    xval2 > axismax ? axismax = (xval2 + 2) : 0
+                    xval1 < axismin ? axismin = (xval1 - 2) : 0
+                    xval2 < axismin ? axismin = (xval2 - 2) : 0
+        }
+        }
 
-            IconButtonTextBeside{
-            id: btnChartminus
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            width: 40 * theme.scaleWidth
-            height: 50 * theme.scaleHeight
-            text: "   -"
-            z: 2
-            onClicked: {axismin = axismin-2
-                        axismax = axismax+2}
-            }
+        IconButtonTextBeside{
+        id: btnChartminus
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        width: 40 * theme.scaleWidth
+        height: 50 * theme.scaleHeight
+        text: "   -"
+        z: 2
+        onClicked: {axismin = axismin-2
+                    axismax = axismax+2}
+        }
 
     ChartView {
             id: chart

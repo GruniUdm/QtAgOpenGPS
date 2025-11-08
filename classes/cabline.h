@@ -57,9 +57,11 @@ public:
     //pure pursuit values
     Vec2 goalPointAB = Vec2(0, 0);
 
-    double howManyPathsAway = 0.0;
+    int howManyPathsAway = 0;              // Phase 6.0.43 BUG FIX: Changed from double to int for type consistency
+    int lastHowManyPathsAway = 98888;      // Phase 6.0.43: Track previous parallel line for conditional reconstruction
     bool isMakingABLine;
     bool isHeadingSameWay = true;
+    bool lastIsHeadingSameWay = true;      // Phase 6.0.43: Track previous direction for conditional reconstruction
 
     double ppRadiusAB;
 
@@ -73,6 +75,7 @@ public:
     //design
     Vec2 desPtA = Vec2(0.2, 0.15);
     Vec2 desPtB = Vec2(0.2, 0.15);
+    bool isDesPtBSet = false;
 
     Vec2 desLineEndA = Vec2(0.3, 0.3);
     Vec2 desLineEndB = Vec2(0.3, 0.3);
@@ -142,8 +145,10 @@ public:
         goalPointAB = src.goalPointAB;
 
         howManyPathsAway = src.howManyPathsAway;
+        lastHowManyPathsAway = src.lastHowManyPathsAway;  // Phase 6.0.43
         isMakingABLine = src.isMakingABLine;
         isHeadingSameWay = src.isHeadingSameWay;
+        lastIsHeadingSameWay = src.lastIsHeadingSameWay;  // Phase 6.0.43
 
         ppRadiusAB = src.ppRadiusAB;
 

@@ -46,8 +46,10 @@ public:
     double distanceFromRefLine;
 
     bool isHeadingSameWay = true;
+    bool lastIsHeadingSameWay = true;      // Phase 6.0.43: Track previous direction for conditional reconstruction
 
-    double howManyPathsAway, lastHowManyPathsAway;
+    int howManyPathsAway = 0;              // Phase 6.0.43 BUG FIX: Changed from double to int for type consistency
+    int lastHowManyPathsAway = 98888;      // Phase 6.0.43: Track previous parallel line for conditional reconstruction
 
     Vec2 refPoint1 = Vec2(1, 1), refPoint2 = Vec2(2, 2);
 
@@ -144,10 +146,11 @@ public:
         distanceFromCurrentLinePivot = src.distanceFromCurrentLinePivot;
         distanceFromRefLine = src.distanceFromRefLine;
 
-        isHeadingSameWay = true;
+        isHeadingSameWay = src.isHeadingSameWay;
+        lastIsHeadingSameWay = src.lastIsHeadingSameWay;  // Phase 6.0.43
 
         howManyPathsAway = src.howManyPathsAway;
-        lastHowManyPathsAway = src.lastHowManyPathsAway;
+        lastHowManyPathsAway = src.lastHowManyPathsAway;  // Phase 6.0.43
 
         refPoint1 = src.refPoint1;
         refPoint2 = src.refPoint2;

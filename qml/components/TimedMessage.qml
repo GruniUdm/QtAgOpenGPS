@@ -13,10 +13,10 @@ import QtQuick.Layouts
  *
  * The following methods are defined as javascript functions:
  * cancelAllMessages() - cancel all displayed messages and close popup
- * addMessage(timeout, title, message) - Popup (if not open already) 
- *        and display a title and message, and timeout after 
+ * addMessage(timeout, title, message) - Popup (if not open already)
+ *        and display a title and message, and timeout after
  *        timeout milliseconds.
- */ 
+ */
 Popup {
     padding: 5
     x: parent.width / 2
@@ -123,7 +123,7 @@ Popup {
 
         Timer {
             interval: 200
-            running: true
+            running: timedMessage.visible
             repeat: true
 
             onTriggered: function() {
@@ -135,7 +135,7 @@ Popup {
                         i-- //our iteration is now broken
                     }
                 }
-                
+
                 if (timedMessageModel.rowCount() === 0) {
                     close()
                     //timedMessage.visible = false
@@ -151,17 +151,17 @@ Popup {
     }
 
     onClosed: cancelAllMessages()
-        
+
     function cancelAllMessages() {
-    	timedMessageModel.clear();
+        timedMessageModel.clear();
         //console.debug("canceling all messages.")
     }
 
     function addMessage(timeout: int, title: string, message: string) {
         //console.debug(timeout + " " + title + " " + message)
         timedMessage.open()
-            
-    	timedMessageModel.append( { timeout: timeout, title: title, message: message });
+
+        timedMessageModel.append( { timeout: timeout, title: title, message: message });
 
         if (timedMessageModel.rowCount() > 3) {
             timedMessageR.height = (150 * theme.scaleHeight);
@@ -171,4 +171,3 @@ Popup {
 
     }
 }
-

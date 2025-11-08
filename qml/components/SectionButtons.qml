@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 import QtQuick
 import QtQuick.Controls.Fusion
+//import Settings
 
 //This is a the row of on-screen section-control buttonw
 
 Rectangle {
     id: sectionButtons
+    objectName: "sectionButtons"
 
     /*
     MockSettings { //for testing with qmlscene only
@@ -23,7 +25,14 @@ Rectangle {
     color: "transparent"
 
     property bool triState: true
-    property int numSections: (settings.setTool_isSectionsNotZones ? settings.setVehicle_numSections : settings.setTool_zones[0])
+
+    // Qt 6.8 QProperty + BINDABLE: Interface properties for setProperty() compatibility
+    property bool toolIsSectionsNotZones: SettingsManager.tool_isSectionsNotZones
+    property int vehicleNumSections: SettingsManager.vehicle_numSections
+    property string toolZones: SettingsManager.tool_zones
+
+    // Threading Phase 1: Section vs zones configuration
+    property int numSections: (toolIsSectionsNotZones ? vehicleNumSections : parseInt(toolZones.split(',')[0]))
     property var buttonState: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
     property color offColor: "Crimson"
     property color offTextColor: "White"
@@ -37,7 +46,7 @@ Rectangle {
     //methods
     function setColors() {
         //same colors for sections and zones
-        if (settings.setDisplay_isDayMode) {
+        if (theme.displayIsDayMode) {
             sectionButtons.offColor = "Red"
             sectionButtons.offTextColor = "Black"
 
@@ -59,90 +68,121 @@ Rectangle {
     }
 
     function setSectionState (sectionNo: int, new_state: int) {
-        //states: 0 = off, 1 = auto, 2 = on
-        var temp1 = aog.sectionButtonState //actual sections or row units
-        var temp2 = sectionButtons.buttonState //onscreen section button
-        var j
+        // Qt 6.8 BINDABLE: Direct property binding - no function calls
+        // states: 0 = off, 1 = auto, 2 = on
+        console.log("DEBUG setSectionState CALLED: section", sectionNo, "new_state", new_state);
 
+        // Protection against invalid indices
+        if (sectionNo < 0 || sectionNo >= vehicleNumSections) {
+            console.error("setSectionState: Invalid sectionNo", sectionNo, "max:", vehicleNumSections);
+            return;
+        }
 
-        if (settings.setTool_isSectionsNotZones) {
-            //1:1 correlation between buttons and sections
-            temp1[sectionNo] = new_state //this is the tie-in back to the C++ land
-            temp2[sectionNo] = new_state //this is the onscreen button
+        // Create copies of current arrays for direct property assignment
+        var newBackendState = aog.sectionButtonState.slice() // Copy local AOGInterface array
+        var newButtonState = sectionButtons.buttonState.slice()       // Copy UI array
+
+        if (toolIsSectionsNotZones) {
+            // 1:1 correlation between buttons and sections
+            if (sectionNo < newBackendState.length && sectionNo < newButtonState.length) {
+                newBackendState[sectionNo] = new_state // Backend tool array
+                newButtonState[sectionNo] = new_state   // UI button array
+            }
         } else {
-            //zones, not buttons. numSections is the number of zones
-            temp2[sectionNo] = new_state; //this is the onscreen button
+            // Zones mode - one button controls multiple sections
+            if (sectionNo < newButtonState.length) {
+                newButtonState[sectionNo] = new_state // UI button
+            }
 
-            var zone_left
-            var zone_right
+            // Parse zone configuration
+            var zones = toolZones.split(',');
+            if (zones.length === 0) {
+                console.error("setSectionState: Empty toolZones");
+                return;
+            }
 
-            //get the left-most section in the zone
-            if (sectionNo===0) zone_left = 0
-            else zone_left = settings.setTool_zones[sectionNo]
+            // Calculate zone boundaries
+            var zone_left = (sectionNo === 0) ? 0 : parseInt(zones[sectionNo]) || 0;
+            var zone_right = (sectionNo + 1 < zones.length) ?
+                            parseInt(zones[sectionNo + 1]) || 0 :
+                            newBackendState.length;
 
-            //get the right-most section in the zone
-            zone_right = settings.setTool_zones[sectionNo+1]
-
-            //set all sections between left and right
-            for (j = zone_left ; j < zone_right ; j++) {
-                temp1[j] = new_state //set individual sections button state (grouped together)
+            // Update all sections in the zone
+            if (zone_left >= 0 && zone_right > zone_left && zone_right <= newBackendState.length) {
+                for (var j = zone_left; j < zone_right; j++) {
+                    newBackendState[j] = new_state
+                }
+            } else {
+                console.error("setSectionState: Invalid zone bounds", zone_left, zone_right);
+                return;
             }
         }
-        aog.sectionButtonState = temp1
-        sectionButtons.buttonState = temp2
+
+        // Pure property binding - direct assignment instead of function call
+        console.log("DEBUG: Before assignment - newBackendState[" + sectionNo + "] =", newBackendState[sectionNo]);
+        aog.sectionButtonState = newBackendState
+        sectionButtons.buttonState = newButtonState
+        console.log("DEBUG: Property assignment completed");
     }
 
     function setAllSectionsToState(new_state: int) {
-        //states: 0 = off, 1 = auto, 2 = on
-        var temp1 = aog.sectionButtonState
-        var temp2 = sectionButtons.buttonState
-        var i,j
+        // Qt 6.8 BINDABLE: Direct property binding for bulk updates
+        // states: 0 = off, 1 = auto, 2 = on
 
-        if (settings.setTool_isSectionsNotZones) {
-            //1:1 correlation between buttons and sections
-            for (i=0; i < 65 ; i++) {
-                if (i < numSections)
-                    temp1[i] = new_state //this is the tie-in back to the C++ land
-                else
-                    temp1[i] = 0; //off
+        // Create copies of current arrays for direct property assignment
+        var newBackendState = aog.sectionButtonState.slice() // Copy local AOGInterface array
+        var newButtonState = sectionButtons.buttonState.slice()       // Copy UI array
 
-                if (i < 16)
-                    temp2[i] = new_state //this is the onscreen button
+        if (toolIsSectionsNotZones) {
+            // 1:1 correlation between buttons and sections
+            for (var i = 0; i < 65; i++) {
+                if (i < numSections) {
+                    newBackendState[i] = new_state // Active sections
+                } else {
+                    newBackendState[i] = 0 // Inactive sections set to Off
+                }
+
+                if (i < 16) {
+                    newButtonState[i] = (i < numSections) ? new_state : 0 // UI buttons
+                }
             }
-         } else {
-            //zones, not buttons. numSections is the number of zones
-            for (i=0; i < numSections; i++) {
-                temp2[i] = new_state; //this is the onscreen button
+        } else {
+            // Zones mode - buttons control multiple sections
+            var zones = toolZones.split(',')
 
-                var zone_left
-                var zone_right
+            for (var i = 0; i < numSections; i++) {
+                newButtonState[i] = new_state // UI button
 
-                //get the left-most section in the zone
-                if (i===0) zone_left = 0
-                else zone_left = settings.setTool_zones[i]
+                // Calculate zone boundaries
+                var zone_left = (i === 0) ? 0 : parseInt(zones[i]) || 0;
+                var zone_right = (i + 1 < zones.length) ?
+                                parseInt(zones[i + 1]) || 0 :
+                                newBackendState.length;
 
-                //get the right-most section in the zone
-                zone_right = settings.setTool_zones[i+1]
-
-                //set all sections between left and right
-                for (j = zone_left ; j < zone_right ; j++) {
-                    temp1[j] = new_state
+                // Update all sections in the zone
+                for (var j = zone_left; j < zone_right; j++) {
+                    if (j < newBackendState.length) {
+                        newBackendState[j] = new_state
+                    }
                 }
             }
         }
-        aog.sectionButtonState = temp1
-        sectionButtons.buttonState = temp2
-   }
+
+        // Pure property binding - direct assignment instead of function call
+        aog.sectionButtonState = newBackendState
+        sectionButtons.buttonState = newButtonState
+    }
 
     onNumSectionsChanged: {
         buttonModel.clear()
         for (var i = 0; i < numSections; i++) {
             buttonModel.append( { sectionNo: i } )
-        y}
+        }
     }
 
     //callbacks, connections, and signals
     Component.onCompleted:  {
+        console.log("COMPONENT COMPLETED: toolIsSectionsNotZones =", toolIsSectionsNotZones, "vehicleNumSections =", vehicleNumSections, "toolZones =", toolZones, "numSections =", numSections);
         setColors()
         buttonModel.clear()
         for (var i = 0; i < numSections; i++) {
@@ -150,12 +190,7 @@ Rectangle {
         }
     }
 
-    Connections {
-        target: settings
-        function onSetDisplay_isDayModeChanged() {
-            setColors()
-        }
-    }
+    // Qt 6.8 QProperty + BINDABLE: Direct property binding replaces signal handler
 
     ListModel {
         id: buttonModel
@@ -172,7 +207,7 @@ Rectangle {
             color: (sectionButtons.buttonState[model.sectionNo]===0 ? offColor : (sectionButtons.buttonState[model.sectionNo] === 1 ? autoColor : onColor))
             textColor: (sectionButtons.buttonState[model.sectionNo]===0 ? offTextColor : (sectionButtons.buttonState[model.sectionNo] === 1 ? autoTextColor : onTextColor))
 
-            onClicked: {
+            onButtonClicked: {
                 //emit signal
                 sectionClicked(model.sectionNo)
                 //set the state here

@@ -6,8 +6,8 @@
 #include "cpatches.h"
 #include "common.h"
 #include <QColor>
-#include "qmlsectionbuttons.h"
 #include "qmlblockage.h"
+#include "btnenum.h"
 
 class QOpenGLFunctions;
 class QMatrix4x4;
@@ -79,7 +79,7 @@ public:
 
     //moved the following from the main form to here
     CSection section[MAXSECTIONS+1];
-    QMLSectionButtons sectionButtonState;
+    btnStates sectionButtonState[65];
     qmlblockage blockageRowState;
     int blockage_avg;
     int blockage_min1;
@@ -97,6 +97,7 @@ public:
     void sectionCalcMulti();
     void sectionSetPositions();
     void loadSettings();
+    void saveSettings();
 
     CTool();
     //this class needs modelview and projection as separate matrices because some

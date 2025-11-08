@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QVector>
 #include "vec3.h"
-#include "interfaceproperty.h"
+#include "classes/headlanddesigner.h"
 #include <QTimer>
 
 class CBoundary;
@@ -13,13 +13,14 @@ class CTool;
 class CVehicle;
 class QOpenGLFunctions;
 
-class HeadlandDesigner;
 
+class FormGPS; // Forward declaration
 
 class FormHeadland : public QObject
 {
     Q_OBJECT
 protected:
+    FormGPS* formGPS = nullptr; // Reference to parent FormGPS
     //InterfaceProperty<HeadlandDesigner,double> maxFieldDistance = InterfaceProperty<HeadlandDesigner,double>("maxFieldDistance");
     //InterfaceProperty<HeadlandDesigner,double> fieldCenterX = InterfaceProperty<HeadlandDesigner,double>("fieldCenterX");
     //InterfaceProperty<HeadlandDesigner,double> fieldCenterY = InterfaceProperty<HeadlandDesigner,double>("fieldCenterY");
@@ -28,14 +29,9 @@ protected:
     double fieldCenterX = 0;
     double fieldCenterY = 0;
 
-    InterfaceProperty<HeadlandDesigner,bool> showa = InterfaceProperty<HeadlandDesigner,bool>("showa");
-    InterfaceProperty<HeadlandDesigner,bool> showb = InterfaceProperty<HeadlandDesigner,bool>("showb");
-    InterfaceProperty<HeadlandDesigner,QPoint> apoint = InterfaceProperty<HeadlandDesigner,QPoint>("apoint");
-    InterfaceProperty<HeadlandDesigner,QPoint> bpoint = InterfaceProperty<HeadlandDesigner,QPoint>("bpoint");
-    InterfaceProperty<HeadlandDesigner,QPoint> vehiclePoint = InterfaceProperty<HeadlandDesigner,QPoint>("vehiclePoint");
 
-    InterfaceProperty<AOGInterface,bool> isBtnAutoSteerOn = InterfaceProperty<AOGInterface,bool>("isBtnAutoSteerOn");
-    InterfaceProperty<AOGInterface,bool> isYouTurnBtnOn = InterfaceProperty<AOGInterface,bool>("isYouTurnBtnOn");
+    // ⚡ PHASE 6.3.0: DUPLICATION REMOVED - isYouTurnBtnOn only exists in cyouturn.h (main version)
+    // Access via: formGPS->isYouTurnBtnOn
 
     int fixX, fixY;
     //InterfaceProperty<HeadlandDesigner,bool> isA = InterfaceProperty<HeadlandDesigner,bool>("isA");
@@ -46,15 +42,8 @@ protected:
     QVector<Vec3> sliceArr;
     QVector<Vec3> backupList;
 
-    InterfaceProperty<HeadlandDesigner,int> sliceCount = InterfaceProperty<HeadlandDesigner,int>("sliceCount");
-    InterfaceProperty<HeadlandDesigner,int> backupCount = InterfaceProperty<HeadlandDesigner,int>("backupCount");
-    InterfaceProperty<HeadlandDesigner,bool> curveLine = InterfaceProperty<HeadlandDesigner,bool>("curveLine");
-    InterfaceProperty<HeadlandDesigner,double> lineDistance = InterfaceProperty<HeadlandDesigner,double>("lineDistance");
 
     bool zoomToggle;
-    InterfaceProperty<HeadlandDesigner,double> zoom = InterfaceProperty<HeadlandDesigner,double>("zoom");
-    InterfaceProperty<HeadlandDesigner,double> sX = InterfaceProperty<HeadlandDesigner,double>("sX");
-    InterfaceProperty<HeadlandDesigner,double> sY = InterfaceProperty<HeadlandDesigner,double>("sY");
 
     Vec3 pint = Vec3(0,1,0);
 
@@ -72,10 +61,14 @@ public:
     CBoundary *bnd;
     CHeadLine *hdl;
     CTool *tool;
-    CVehicle *vehicle = NULL;
     QObject *headland_designer_instance;
+    QObject *mainWindow;
+
+    // Phase 6.0.4.3 - Native Q_PROPERTY designer
+    HeadlandDesigner *designer;
 
     explicit FormHeadland(QObject *parent = nullptr);
+    void setFormGPS(FormGPS* gps) { formGPS = gps; }
 
     //this class is pretty closely coupled to the QML file
     //of necessity

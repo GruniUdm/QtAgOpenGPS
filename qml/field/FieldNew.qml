@@ -36,7 +36,7 @@ Dialog {
         anchors.top:parent.top
         anchors.topMargin: 50
         anchors.horizontalCenter: parent.horizontalCenter
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
         border.color: "darkgray"
         border.width: 1
         Text {
@@ -52,8 +52,9 @@ Dialog {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: newFieldLabel.bottom
+            height: 49  * theme.scaleHeight
             selectByMouse: true
-            placeholderText: "New Field Name"
+            placeholderText: focus || text ? "" : qsTr("New Field Name")
             onTextChanged: {
                 for (var i=0; i < fieldInterface.field_list.length ; i++) {
                     if (text === fieldInterface.field_list[i].name) {
@@ -83,6 +84,7 @@ Dialog {
             id: marker
             icon.source: prefix + "/images/JobNameCalendar.png"
             Text{
+                rightPadding: 10
                 anchors.right: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: "+"
@@ -100,6 +102,7 @@ Dialog {
             objectName: "btnAddTime"
             icon.source: prefix + "/images/JobNameTime.png"
             Text{
+                rightPadding: 10
                 anchors.right: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: "+"
@@ -135,7 +138,7 @@ Dialog {
 
             onClicked: {
                 fieldNew.visible = false
-                fieldInterface.field_new(newField.text.trim())
+                aog.fieldNew(newField.text.trim()) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
         }
     }

@@ -4,7 +4,10 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Shapes
+//import Settings
+import AOG
 import "components" as Comp
+
 
 Popup{
     id: headacheDesigner
@@ -15,6 +18,7 @@ Popup{
 
     function show(){
         headacheDesigner.visible = true
+        headacheCurve.isChecked = true
     }
 
     property int headacheCount: 0
@@ -31,7 +35,7 @@ Popup{
     property bool showb: true
 
     signal load()
-    signal close()
+    signal closeHeadache()  // Renamed to avoid conflict with Popup.close()
     signal update_lines()
     signal save_exit()
 
@@ -57,7 +61,7 @@ Popup{
         if(visible) {
             load()
         } else {
-            close()
+            closeHeadache()
         }
     }
 
@@ -364,11 +368,12 @@ Popup{
             }
             Comp.IconButtonTransparent{
                 //objectName: "cBoxIsSectionControlled"
-                icon.source: prefix + "/images/HeadlandSectionOff.png"
-                iconChecked: prefix + "/images/HeadlandSectionOn.png"
+                icon.source: prefix + "/images/HeadlandSectionOn.png"
+                iconChecked: prefix + "/images/HeadlandSectionOff.png"
                 checkable: true
                 Layout.alignment: Qt.AlignCenter
-                isChecked: settings.setHeadland_isSectionControlled
+                // Threading Phase 1: Headland section control
+                isChecked: SettingsManager.headland_isSectionControlled
                 onCheckedChanged: isSectionControlled(checked)
             }
             Comp.IconButtonTransparent{
@@ -398,16 +403,16 @@ Popup{
             rowSpacing: buttons.spacing
             Comp.IconButtonColor{
                 id: headacheCurve
-                //objectName: "rbtnLine"
+                objectName: "rbtnCurve"
                 checkable: true
-                isChecked: true
+                //isChecked: true
                 Layout.alignment: Qt.AlignCenter
                 icon.source: prefix + "/images/ABTrackCurve.png"
                 onClicked: curveLine = true
             }
             Comp.IconButtonColor{
                 id: headacheAB
-                //objectName: "rbtnCurve"
+                objectName: "rbtnLine"
                 checkable: true
                 Layout.alignment: Qt.AlignCenter
                 icon.source: prefix + "/images/ABTrackAB.png"
@@ -417,9 +422,9 @@ Popup{
                 //objectName: "nudSetDistance"
                 from: 0
                 to: 2000
-                boundValue: numTracks.value * settings.setVehicle_toolWidth
+                boundValue: numTracks.value * SettingsManager.vehicle_toolWidth
                 Layout.alignment: Qt.AlignCenter
-                Comp.TextLine{anchors.top: parent.bottom; text: "( "+ utils.m_unit_abbrev()+" )"}
+                Comp.TextLine{anchors.top: parent.bottom; text: "( "+ Utils.m_unit_abbrev()+" )"}
 
                 onValueChanged: lineDistance = value
             }
@@ -429,7 +434,7 @@ Popup{
                 to: 10
                 value: 0
                 Layout.alignment: Qt.AlignCenter
-                Comp.TextLine{anchors.top: parent.bottom; text: qsTr("Tool: ")+ utils.m_to_ft_string(settings.setVehicle_toolWidth)}
+                Comp.TextLine{anchors.top: parent.bottom; text: qsTr("Tool: ")+ Utils.m_to_ft_string(SettingsManager.vehicle_toolWidth)}
             }
             Comp.IconButtonColor{
                 id: cboxIsZoom
@@ -487,7 +492,7 @@ Popup{
                 Layout.alignment: Qt.AlignCenter
                 onClicked: {
                     save_exit()
-                    boundaryInterface.isHeadlandOn = true
+                    aog.isHeadlandOn = true
                     headacheDesigner.visible = false
                 }
             }

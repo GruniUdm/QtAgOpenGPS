@@ -5,41 +5,50 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+//import Settings
+import AOG
+
 
 import ".."
 import "../components"
 
-MoveablePopup {
+Drawer {
     id: steerConfigWindow
-    closePolicy: Popup.NoAutoClose
-    height: pwmWindow.visible ? 700 * theme.scaleHeight : 500 * theme.scaleHeight
-    modal: false
+    width: 270 * theme.scaleWidth
+    height: mainWindow.height
     visible: false
-    width:350 * theme.scaleWidth
-    x: settings.setWindow_steerSettingsLocation.x
-    y: settings.setWindow_steerSettingsLocation.y
+    modal: true
+
+    // Local computed properties for steering angle display
+    readonly property double steerAngleActualRounded: Math.round(aog.steerAngleActual*100)/100
+    readonly property double steerAngleSetRounded: Math.round(aog.steerAngleSet*100)/100
+
     function show (){
         steerConfigWindow.visible = true
+        steerBtn.isChecked = true
 	}
 
 	Rectangle{
 		id: steerConfigFirst
         anchors.fill: parent
-        border.color: aog.blackDayWhiteNight
+        border.color: aogInterface.blackDayWhiteNight
         border.width: 1
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
         visible: true
-        TopLine{
-			id:topLine
-            onBtnCloseClicked:  steerConfigWindow.close()
-            titleText: qsTr("Auto Steer Config")
-        }
-		Item{
+        // TopLine{
+        //     id:topLine
+        //     onBtnCloseClicked:  steerConfigWindow.close()
+        //     titleText: qsTr("Auto Steer Config")
+        // }
+        Item{
 			id: steerSlidersConfig
             anchors.left: parent.left
-            anchors.top: topLine.bottom
-            height: 475 * theme.scaleHeight
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: 575 * theme.scaleHeight
             width: steerConfigWindow.width
+            anchors.rightMargin: 2 * theme.scaleHeight
+            anchors.leftMargin: 2 * theme.scaleHeight
             ButtonGroup {
 				buttons: buttonsTop.children
 			}
@@ -53,7 +62,7 @@ MoveablePopup {
 				IconButtonColor{
 					id: steerBtn
                     checkable: true
-                    checked: true
+                    //checked: true
                     colorChecked: "lightgray"
                     icon.source: prefix + "/images/Steer/ST_SteerTab.png"
                     implicitHeight: 50 * theme.scaleHeight
@@ -74,7 +83,7 @@ MoveablePopup {
                     icon.source: prefix + "/images/Steer/ST_StanleyTab.png"
                     implicitHeight: 50 * theme.scaleHeight
                     implicitWidth: parent.width /3 - 5 * theme.scaleWidth
-                    visible: !settings.setMenu_isPureOn
+                    visible: SettingsManager.vehicle_isStanleyUsed
                 }
 				IconButtonColor{
 					id: ppBtn
@@ -83,7 +92,7 @@ MoveablePopup {
                     icon.source: prefix + "/images/Steer/Sf_PPTab.png"
                     implicitHeight: 50 * theme.scaleHeight
                     implicitWidth: parent.width /3 - 5 * theme.scaleWidth
-                    visible: settings.setMenu_isPureOn
+                    visible: !SettingsManager.vehicle_isStanleyUsed
                 }
             }
 
@@ -98,7 +107,7 @@ MoveablePopup {
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 
-            Item{
+            Rectangle{
                 id: slidersArea
                 anchors.top: wasbar.bottom
                 anchors.right: parent.right
@@ -114,6 +123,7 @@ MoveablePopup {
                     anchors.top: parent.top
                     anchors.topMargin: 5 * theme.scaleHeight
                     width: parent.width * 0.4
+                    Layout.alignment: Qt.AlignLeft
 
                     /* Here, we just set which Sliders we want to see, and the
                       ColumnLayout takes care of the rest. No need for
@@ -124,64 +134,70 @@ MoveablePopup {
 
 
                     IconButtonTransparent { //was zero button
-                        width: height*2
+                        implicitWidth: 80 * theme.scaleWidth
+                        implicitHeight: 50 * theme.scaleHeight
                         Layout.alignment: Qt.AlignCenter
                         icon.source: prefix + "/images/SteerCenter.png"
-                        implicitHeight: parent.height /5 -20* theme.scaleHeight
                         //visible: false
                         visible: steerBtn.checked
-                        onClicked:  {settings.setAS_wasOffset -= cpDegSlider.value *aog.steerAngleActual;
-                        if (Math.abs(settings.setAS_wasOffset)< 3900){ sendUdptimer.running = true}
+                        onClicked:  {SettingsManager.as_wasOffset = SettingsManager.as_wasOffset - cpDegSlider.value * aog.steerAngleActual;
+                        if (Math.abs(SettingsManager.as_wasOffset) < 3900){ sendUdptimer.running = true}
                         else {timedMessage.addMessage(2000, "Exceeded Range", "Excessive Steer Angle - Cannot Zero");}
                                     }
                     }
 
                     SteerConfigSliderCustomized {
-                        property int wasOffset: settings.setAS_wasOffset
+                        property int wasOffset: 0
                         id: wasZeroSlider
-                        centerTopText: "WAS Zero"
-                        width: 200 * theme.scaleWidth
+                        centerTopText: qsTr("WAS Zero")
                         from: -4000
-                        leftText: utils.decimalRound(value / cpDegSlider.value, 2)
-                        //onValueChanged: settings.setAS_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
-                        onValueChanged: settings.setAS_wasOffset = value, sendUdptimer.running = true
+                        leftText: Utils.decimalRound(value / cpDegSlider.value, 2)
+                        //onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
+                        onValueChanged: SettingsManager.as_wasOffset = value * cpDegSlider.value, sendUdptimer.running = true
                         to: 4000
-                        value: settings.setAS_wasOffset / cpDegSlider.value
+                        value: SettingsManager.as_wasOffset / cpDegSlider.value
                         visible: steerBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: cpDegSlider
-                        centerTopText: "Counts per Degree"
+                        centerTopText: qsTr("Counts per Degree")
                         from: 1
                         leftText: value
-                        onValueChanged: settings.setAS_countsPerDegree = value, sendUdptimer.running = true
+                        onValueChanged: SettingsManager.as_countsPerDegree = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 255
-                        value: Math.round(settings.setAS_countsPerDegree, 0)
-                        width: 200 * theme.scaleWidth
+                        value: Math.round(SettingsManager.as_countsPerDegree, 0)
                         visible: steerBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: ackermannSlider
-                        centerTopText: "AckerMann"
+                        centerTopText: qsTr("AckerMann")
                         from: 1
                         leftText: value
-                        onValueChanged: settings.setAS_ackerman = value, sendUdptimer.running = true
+                        onValueChanged: SettingsManager.as_ackerman = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 200
-                        value: Math.round(settings.setAS_ackerman, 0)
+                        value: Math.round(SettingsManager.as_ackerman, 0)
                         visible: steerBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: maxSteerSlider
-                        centerTopText:"Max Steer Angle"
+                        centerTopText:qsTr("Max Steer Angle")
                         from: 10
                         leftText: value
-                        onValueChanged: settings.setVehicle_maxSteerAngle= value
+                        onValueChanged: SettingsManager.vehicle_maxSteerAngle = value
                         stepSize: 1
                         to: 80
-                        value: Math.round(settings.setVehicle_maxSteerAngle)
+                        value: Math.round(SettingsManager.vehicle_maxSteerAngle)
                         visible: steerBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
 
                     //endregion WAStab
@@ -189,36 +205,42 @@ MoveablePopup {
                     //region PWMtab
                     SteerConfigSliderCustomized {
                         id: propGainlider
-                        centerTopText: "Proportional Gain"
+                        centerTopText: qsTr("Proportional Gain")
                         from: 0
                         leftText: value
-                        onValueChanged: settings.setAS_Kp = value, sendUdptimer.running = true
+                        onValueChanged: SettingsManager.as_Kp = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 200
-                        value: Math.round(settings.setAS_Kp, 0)
+                        value: Math.round(SettingsManager.as_Kp, 0)
                         visible: gainBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: maxLimitSlider
-                        centerTopText: "Maximum Limit"
+                        centerTopText: qsTr("Maximum Limit")
                         from: 0
                         leftText: value
-                        onValueChanged: settings.setAS_highSteerPWM = value, sendUdptimer.running = true
+                        onValueChanged: SettingsManager.as_highSteerPWM = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 254
-                        value: Math.round(settings.setAS_highSteerPWM, 0)
+                        value: Math.round(SettingsManager.as_highSteerPWM, 0)
                         visible: gainBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: min2moveSlider
-                        centerTopText: "Minimum to Move"
+                        centerTopText: qsTr("Minimum to Move")
                         from: 0
                         leftText: value
-                        onValueChanged: settings.setAS_minSteerPWM = value, sendUdptimer.running = true
+                        onValueChanged: SettingsManager.as_minSteerPWM = value, sendUdptimer.running = true
                         stepSize: 1
                         to: 100
-                        value: Math.round(settings.setAS_minSteerPWM, 0)
+                        value: Math.round(SettingsManager.as_minSteerPWM, 0)
                         visible: gainBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
 
                     //endregion PWMtab
@@ -226,36 +248,42 @@ MoveablePopup {
                     //region StanleyTab
                     SteerConfigSliderCustomized {
                         id: stanleyAggressivenessSlider
-                        centerTopText: "Agressiveness"
+                        centerTopText: qsTr("Agressiveness")
                         from: .1
-                        onValueChanged: settings.stanleyDistanceErrorGain = value
+                        onValueChanged: SettingsManager.vehicle_stanleyDistanceErrorGain = value
                         stepSize: .1
                         to: 4
                         leftText: Math.round(value * 10)/10
-                        value: settings.stanleyDistanceErrorGain
+                        value: SettingsManager.vehicle_stanleyDistanceErrorGain
                         visible: stanleyBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: overShootReductionSlider
-                        centerTopText: "OverShoot Reduction"
+                        centerTopText: qsTr("OverShoot Reduction")
                         from: .1
-                        onValueChanged: settings.stanleyHeadingErrorGain = value
+                        onValueChanged: SettingsManager.vehicle_stanleyHeadingErrorGain = value
                         stepSize: .1
                         to: 1.5
                         leftText: Math.round(value * 10) / 10
-                        value: settings.stanleyHeadingErrorGain
+                        value: SettingsManager.vehicle_stanleyHeadingErrorGain
                         visible: stanleyBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: integralStanleySlider
-                        centerTopText: "Integral"
+                        centerTopText: qsTr("Integral")
                         from: 0
                         leftText: value
-                        onValueChanged: settings.stanleyIntegralGainAB = value /100
+                        onValueChanged: SettingsManager.vehicle_stanleyIntegralGainAB = value / 100
                         stepSize: 1
                         to: 100
-                        value: Math.round(settings.stanleyIntegralGainAB * 100, 0)
+                        value: Math.round(SettingsManager.vehicle_stanleyIntegralGainAB * 100, 0)
                         visible: stanleyBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
 
                     //endregion StanleyTab
@@ -263,47 +291,55 @@ MoveablePopup {
                     //region PurePursuitTab
                     SteerConfigSliderCustomized {
                         id: acqLookAheadSlider
-                        centerTopText: "Acquire Look Ahead"
+                        centerTopText: qsTr("Acquire Look Ahead")
                         from: 1
-                        onValueChanged: settings.setVehicle_goalPointLookAhead = value
+                        onValueChanged: SettingsManager.vehicle_goalPointLookAhead = value
                         stepSize: .1
                         leftText: Math.round(value * 10) / 10
                         to: 7
-                        value: settings.setVehicle_goalPointLookAhead
+                        value: SettingsManager.vehicle_goalPointLookAhead
                         visible: ppBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: holdLookAheadSlider
-                        centerTopText: "Hold Look Ahead"
+                        centerTopText: qsTr("Hold Look Ahead")
                         from: 1
                         stepSize: .1
                         leftText: Math.round(value * 10) / 10
-                        onValueChanged: settings.setVehicle_goalPointLookAheadHold = utils.decimalRound(value, 1)
+                        onValueChanged: SettingsManager.vehicle_goalPointLookAheadHold = Utils.decimalRound(value, 1)
                         to: 7
-                        value: settings.setVehicle_goalPointLookAheadHold
+                        value: SettingsManager.vehicle_goalPointLookAheadHold
                         visible: ppBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: lookAheadSpeedGainSlider
-                        centerTopText: "Look Ahead Speed Gain"
+                        centerTopText: qsTr("Look Ahead Speed Gain")
                         from: .5
-                        onValueChanged: settings.setVehicle_goalPointLookAheadMult = value
+                        onValueChanged: SettingsManager.vehicle_goalPointLookAheadMult = value
                         stepSize: .1
                         to: 3
                         leftText: Math.round(value * 10) / 10
-                        value: settings.setVehicle_goalPointLookAheadMult
+                        value: SettingsManager.vehicle_goalPointLookAheadMult
                         visible: ppBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     SteerConfigSliderCustomized {
                         id: ppIntegralSlider
-                        centerTopText: "Integral"
+                        centerTopText: qsTr("Integral")
                         from: 0
-                        onValueChanged: settings.purePursuitIntegralGainAB = value /100
+                        onValueChanged: SettingsManager.vehicle_purePursuitIntegralGainAB = value / 100
                         stepSize: 1
                         to: 100
                         leftText: Math.round(value *10) / 10
-                        value: settings.purePursuitIntegralGainAB *100
+                        value: SettingsManager.vehicle_purePursuitIntegralGainAB * 100
                         visible: ppBtn.checked
+                        Layout.maximumWidth: 180 * theme.scaleWidth
+                        Layout.alignment: Qt.AlignLeft
                     }
                     //endregion PurePursuitTab
                 }
@@ -340,16 +376,16 @@ MoveablePopup {
                     spacing: 10 * theme.scaleWidth
 
                     Text {
-                        text: qsTr("Set: " + aog.steerAngleSetRounded)
+                        text: qsTr("Set: " + steerConfigWindow.steerAngleSetRounded)
                         //text: qsTr("Set: " + aog.steerAngleSet)
                         Layout.alignment: Qt.AlignCenter
                     }
                     Text {
-                        text: qsTr("Act: " + aog.steerAngleActualRounded)
+                        text: qsTr("Act: " + steerConfigWindow.steerAngleActualRounded)
                         Layout.alignment: Qt.AlignCenter
                     }
                     Text {
-                        property double err: aog.steerAngleActualRounded - aog.steerAngleSetRounded
+                        property double err: steerConfigWindow.steerAngleActualRounded - steerConfigWindow.steerAngleSetRounded
                         id: errorlbl
                         Layout.alignment: Qt.AlignCenter
                         onErrChanged: err > 0 ? errorlbl.color = "red" : errorlbl.color = "darkgreen"
@@ -398,7 +434,7 @@ MoveablePopup {
                     implicitWidth:  parent.width /4 - 4
                     isChecked: false
                     checkable: true
-                    onClicked: aog.btnFreeDrive()
+                    onClicked: aog.freeDrive() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 }
                 IconButton{
                     //id: btnSteerAngleDown
@@ -407,7 +443,7 @@ MoveablePopup {
                     icon.source: prefix + "/images/SnapLeft.png"
                     implicitHeight: parent.height
                     implicitWidth:  parent.width /4 - 5 * theme.scaleWidth
-                    onClicked: aog.btnSteerAngleDown()
+                    onClicked: aog.steerAngleDown() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     enabled: btnFreeDrive.checked
                 }
                 IconButton{
@@ -417,7 +453,7 @@ MoveablePopup {
                     icon.source: prefix + "/images/SnapRight.png"
                     implicitHeight: parent.height
                     implicitWidth:  parent.width /4 - 5 * theme.scaleWidth
-                    onClicked: aog.btnSteerAngleUp()
+                    onClicked: aog.steerAngleUp() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     enabled: btnFreeDrive.checked
                 }
                 IconButton{
@@ -427,7 +463,7 @@ MoveablePopup {
                     icon.source: prefix + "/images/SteerZeroSmall.png"
                     implicitHeight: parent.height
                     implicitWidth:  parent.width /4 - 5 * theme.scaleWidth
-                    onClicked: aog.btnFreeDriveZero()
+                    onClicked: aog.freeDriveZero() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 }
             }
             Text{
@@ -454,7 +490,7 @@ MoveablePopup {
                 isChecked: aog.startSA
                 checkable: true
                 width: 75 * theme.scaleWidth
-                onClicked: aog.btnStartSA()
+                onClicked: aog.startSAAction() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
             Text{
                 anchors.top: btnStartSA.top
@@ -475,6 +511,6 @@ MoveablePopup {
     Timer {
         id: sendUdptimer
         interval: 1000;
-        onTriggered:  aog.modules_send_252()
+        onTriggered: aog.modulesSend252() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
     }
 }

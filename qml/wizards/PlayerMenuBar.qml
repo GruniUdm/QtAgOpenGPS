@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
+//import Settings
 import QtMultimedia
 
 Item {
@@ -25,7 +26,7 @@ Item {
     }
 
     function loadCam1() {
-        cam1 = settings.setCam_CamLink
+        cam1 = SettingsManager.cam_camLink // Threading Phase 1: Camera link URL
         mediaPlayer.stop()
         mediaPlayer.source = cam1
         mediaPlayer.play()
@@ -57,7 +58,7 @@ Item {
 
             Button {
                 text: "Load"
-                onClicked: { settings.setCam_CamLink = urlText.text; loadUrl(urlText.text); urlText.text = ""; urlPopup.close() }
+                onClicked: { SettingsManager.cam_camLink = urlText.text; loadUrl(urlText.text); urlText.text = ""; urlPopup.close() } // Threading Phase 1: Save camera URL
             }
         }
         onOpened: { urlPopup.forceActiveFocus() }

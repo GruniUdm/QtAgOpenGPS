@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Controls.Material
+//import Settings
 
 import ".."
 import "../components"
@@ -18,6 +19,9 @@ Dialog {
     visible: false
     function show(){
         parent.visible = true
+        fieldFromExisting.visible = true
+        btnKeepHeadland.isChecked = true
+        btnKeepLines.isChecked = true
     }
     TopLine{
         id: topLine
@@ -54,10 +58,10 @@ Dialog {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
         Rectangle{
             id: editFieldName
-            height: parent.height*0.15
+            height: 50  * theme.scaleHeight
             width: parent.width*0.5
             anchors.left: parent.left
             anchors.bottom: bottomButtons.top
@@ -78,9 +82,10 @@ Dialog {
             TextField{
                 id: newField
                 objectName: "fieldFromExisting"
-                placeholderText: qsTr("New field name")
+                placeholderText: focus || text ? "" : qsTr("New field name")
                 anchors.fill: parent
                 selectByMouse: true
+                height: 50  * theme.scaleHeight
 
                 onTextChanged: {
                     for (var i=0; i < fieldInterface.field_list.length ; i++) {
@@ -119,7 +124,6 @@ Dialog {
             onClicked: newField.text = ""
             height: 50  * theme.scaleHeight
             width: 100  * theme.scaleWidth
-
         }
 
         RowLayout{
@@ -136,18 +140,21 @@ Dialog {
                 id: btnAddVehicleName
                 icon.source: prefix + "/images/Config/Con_VehicleMenu.png"
                 Text{
+                    rightPadding: 3
                     anchors.right: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: "+"
                 }
                 onClicked: {
-                    newField.text += " " + settings.setVehicle_vehicleName
+                    // Threading Phase 1: Add vehicle name to field
+                    newField.text += " " + SettingsManager.vehicle_vehicleName
                 }
             }
             IconButtonTransparent{
                 id: marker
                 icon.source: prefix + "/images/JobNameCalendar.png"
                 Text{
+                    rightPadding: 3
                     anchors.right: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: "+"
@@ -164,6 +171,7 @@ Dialog {
                 id: btnAddTime
                 icon.source: prefix + "/images/JobNameTime.png"
                 Text{
+                    rightPadding: 3
                     anchors.right: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: "+"
@@ -182,7 +190,7 @@ Dialog {
                 width: marker.width
                 height: marker.height
                 icon.source: prefix + "/images/FlagRed.png"
-                text: "Flags"
+                text: qsTr("Flags")
             }
             IconButtonColor{
                 id: btnKeepMapping
@@ -191,25 +199,25 @@ Dialog {
                 width: marker.width
                 height: marker.height
                 icon.source: prefix + "/images/ManualOff.png"
-                text: "Mapping"
+                text: qsTr("Mapping")
             }
             IconButtonColor{
                 id: btnKeepHeadland
                 checkable: true
-                checked: true
+                //checked: true
                 width: marker.width
                 height: marker.height
                 icon.source: prefix + "/images/HeadlandMenu.png"
-                text: "Headland"
+                text: qsTr("Headland")
             }
             IconButtonColor{
                 id: btnKeepLines
                 checkable: true
-                checked: true
+                //checked: true
                 width: marker.width
                 height: marker.height
                 icon.source: prefix + "/images/ABLineEdit.png"
-                text: "Lines"
+                text: qsTr("Lines")
             }
         }
         Row{
@@ -249,7 +257,7 @@ Dialog {
                             flag |= fieldInterface.loadMapping
 
                         fieldFromExisting.visible = false
-                        fieldInterface.field_new_from(fieldView.currentFieldName, newField.text.trim(), flag)
+                        aog.fieldNewFrom(fieldView.currentFieldName, newField.text.trim(), flag) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                         newField.text = ""
                         existingField.text = ""
                         fieldView.clear_selection()

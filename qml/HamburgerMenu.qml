@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 // Top left button menu
-import QtQuick 2.0
+import QtQuick
 import QtQuick.Controls.Fusion
+//import Settings
 
 import "components" as Comp
 
@@ -17,6 +18,55 @@ Drawer{
     contentItem: Rectangle{
         id: hamburgerMenuContent
         anchors.fill: parent
+
+        // PHASE6-0-20: Gestion des états de langue avec states QML
+        states: [
+            State {
+                name: "english"
+                when: SettingsManager.menu_language === "en"
+                PropertyChanges { target: btnEnglish; checked: true }
+                PropertyChanges { target: btnFrench; checked: false }
+                PropertyChanges { target: btnRussian; checked: false }
+                PropertyChanges { target: btnSerbian; checked: false }
+                PropertyChanges { target: btnGerman; checked: false }
+            },
+            State {
+                name: "french"
+                when: SettingsManager.menu_language === "fr"
+                PropertyChanges { target: btnEnglish; checked: false }
+                PropertyChanges { target: btnFrench; checked: true }
+                PropertyChanges { target: btnRussian; checked: false }
+                PropertyChanges { target: btnSerbian; checked: false }
+                PropertyChanges { target: btnGerman; checked: false }
+            },
+            State {
+                name: "russian"
+                when: SettingsManager.menu_language === "ru"
+                PropertyChanges { target: btnEnglish; checked: false }
+                PropertyChanges { target: btnFrench; checked: false }
+                PropertyChanges { target: btnRussian; checked: true }
+                PropertyChanges { target: btnSerbian; checked: false }
+                PropertyChanges { target: btnGerman; checked: false }
+            },
+            State {
+                name: "serbian"
+                when: SettingsManager.menu_language === "sr"
+                PropertyChanges { target: btnEnglish; checked: false }
+                PropertyChanges { target: btnFrench; checked: false }
+                PropertyChanges { target: btnRussian; checked: false }
+                PropertyChanges { target: btnSerbian; checked: true }
+                PropertyChanges { target: btnGerman; checked: false }
+            },
+            State {
+                name: "german"
+                when: SettingsManager.menu_language === "de"
+                PropertyChanges { target: btnEnglish; checked: false }
+                PropertyChanges { target: btnFrench; checked: false }
+                PropertyChanges { target: btnRussian; checked: false }
+                PropertyChanges { target: btnSerbian; checked: false }
+                PropertyChanges { target: btnGerman; checked: true }
+            }
+        ]
         height: fieldMenu.height
         color: "black"
 
@@ -25,25 +75,29 @@ Drawer{
             anchors.fill: parent
 
             Comp.IconButtonTextBeside{
-                text: "Languages"
+                text: qsTr("Languages")
+                onClicked: languagesMenu.visible = !languagesMenu.visible
+                visible: true
+            }
+            Comp.IconButtonTextBeside{
+                text: qsTr("Directories")
                 onClicked: console.log("")
                 visible: false//todo
             }
             Comp.IconButtonTextBeside{
-                text: "Directories"
-                onClicked: console.log("")
-                visible: false//todo
+                text: qsTr("Set Colors")
+                onClicked: {
+                    console.log("showing")
+                    hamburgerMenuRoot.visible = false
+                    setColors.show()
+                }
             }
             Comp.IconButtonTextBeside{
-                text: "Colors"
+                text: qsTr("Section Colors")
                 onClicked: console.log("")
             }
             Comp.IconButtonTextBeside{
-                text: "Section Colors"
-                onClicked: console.log("")
-            }
-            Comp.IconButtonTextBeside{
-                text: "Enter Sim Coords"
+                text: qsTr("Enter Sim Coords")
                 onClicked: {
                     console.log("showing")
                     hamburgerMenuRoot.visible = false
@@ -51,37 +105,105 @@ Drawer{
                 }
             }
             Comp.IconButtonTextBeside{
-                text: "Simulator On"
-                property bool isChecked: settings.setMenu_isSimulatorOn
-                onIsCheckedChanged: {
-                    checked = isChecked
-                }
-
+                text: qsTr("Simulator On")
+                // Threading Phase 1: Simulator mode toggle - Qt 6.8 QProperty binding
                 checkable: true
-                checked: isChecked
+                checked: SettingsManager.menu_isSimulatorOn
                 onCheckedChanged: {
-                    settings.setMenu_isSimulatorOn = checked
+                    SettingsManager.menu_isSimulatorOn = checked
                 }
             }
             Comp.IconButtonTextBeside{
-                text: "Reset All"
+                text: qsTr("Reset All")
                 onClicked: console.log("")
                 visible: false//todo
             }
             Comp.IconButtonTextBeside{
-                text: "HotKeys"
+                text: qsTr("HotKeys")
                 onClicked: console.log("")
                 visible: false//todo
             }
             Comp.IconButtonTextBeside{
-                text: "About..."
+                text: qsTr("About...")
                 onClicked: console.log("")
                 visible: false//todo
             }
             Comp.IconButtonTextBeside{
-                text: "Help"
+                text: qsTr("Help")
                 onClicked: console.log("")
                 visible: false//todo
+            }
+        }
+    }
+    Drawer {
+        id: languagesMenu
+        width: 270 * theme.scaleWidth
+        height: mainWindow.height
+        modal: true
+
+        contentItem: Rectangle{
+            id: languagesMenuContent
+            anchors.fill: parent
+            height: languagesMenu.height
+            color: aogInterface.blackDayWhiteNight
+        }
+
+        Grid {
+            id: grid2
+            height: childrenRect.height
+            width: childrenRect.width
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.topMargin: 5
+            spacing: 10
+            flow: Grid.TopToBottom
+            rows: 5
+            columns: 1
+
+            Comp.IconButtonTextBeside{
+                id: btnEnglish
+                text: qsTr("English")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    // Threading Phase 1: Language selection - English
+                    SettingsManager.menu_language = "en"
+                    aog.settings_save()}
+            }
+            Comp.IconButtonTextBeside{
+                id: btnFrench
+                text: qsTr("French")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    // Threading Phase 1: Language selection - French
+                    SettingsManager.menu_language = "fr"
+                    aog.settings_save()}
+            }
+            Comp.IconButtonTextBeside{
+                id: btnRussian
+                text: qsTr("Russian")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    // Threading Phase 1: Language selection - Russian
+                    SettingsManager.menu_language = "ru"
+                    aog.settings_save()}
+            }
+            Comp.IconButtonTextBeside{
+                id: btnSerbian
+                text: qsTr("Srpski")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    // Threading Phase 1: Language selection - Serbian
+                    SettingsManager.menu_language = "sr"
+                    aog.settings_save()}
+            }
+            Comp.IconButtonTextBeside{
+                id: btnGerman
+                text: qsTr("Deutch")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    // Threading Phase 1: Language selection - German
+                    SettingsManager.menu_language = "de"
+                    aog.settings_save()}
             }
         }
     }

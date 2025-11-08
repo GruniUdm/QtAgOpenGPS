@@ -1,10 +1,12 @@
 import QtQuick
 import QtQuick.Layouts
+
+// Interface import removed - now QML_SINGLETON
 import "components" as Comp
 
     Rectangle{
         id: topLine
-        color: aog.backgroundColor
+        color: aogInterface.backgroundColor
         height: 50 *theme.scaleHeight
         visible: true
 
@@ -39,20 +41,88 @@ import "components" as Comp
         //            anchors.top: parent.top
         //            anchors.left: parent.left
         //            anchors.leftMargin: 120
-        //            text: qsTr("Field: "+ (aog.isJobStarted ? settings.setF_CurrentDir: "None"))
+        //            text: qsTr("Field: "+ (aog.isJobStarted ? Settings.f_currentDir: "None"))
         //            anchors.bottom: parent.verticalCenter
         //            font.bold: true
         //            font.pixelSize: 15
         //        }
         Text {
+            id: playText
+            property string mainString: ""
             anchors.bottom: parent.bottom
             anchors.left: parent.left
-            anchors.leftMargin: 150
-            text: qsTr("ac")
+            anchors.leftMargin: 100
+            text: (playTimer.running ? "■ " : "▶ ") + mainString
             anchors.top: parent.verticalCenter
             font.bold: true
             font.pixelSize: 15
         }
+        MouseArea{
+            anchors.top:playText.top
+            anchors.left: playText.left
+            height: playText.height
+            width: height
+            onClicked: playTimer.running = !playTimer.running
+        }
+
+        Timer{
+            id: playTimer
+            property int increment: -1
+            /* increment:
+              0: Time + Date
+              1: Lat + Lon
+              2: Vehicle
+              3: Field
+              4: App
+              Else: Line*/
+            running: false
+            interval: 2000
+            repeat: true
+            onTriggered: {
+                playTimer.restart
+                increment++
+                if(increment == 0){
+                    playText.mainString = Qt.formatDateTime(new Date(), "MM-dd-yyyy HH:mm:ss")
+                }else if(increment == 1){
+                    playText.mainString = qsTr("Lat: %1 Lon: %2")
+                            .arg(Qt.locale().toString(aog.latitude,'f',7))
+                            .arg(Qt.locale().toString(aog.longitude,'f',7))
+                }else if(increment == 2){
+                    // Threading Phase 1: Vehicle display information
+                    playText.mainString = Utils.m_to_ft_string(SettingsManager.vehicle_toolWidth) + " - " + SettingsManager.vehicle_vehicleName
+                    if(!aog.isJobStarted) //reset
+                        increment = -1
+                }else if(increment == 3){
+                    // Threading Phase 1: Current field directory
+                    playText.mainString = qsTr("Field: %1").arg(SettingsManager.f_currentDir)
+                }else if(increment == 4) {
+                    var percentLeft = ""
+                    if (aog.areaBoundaryOuterLessInner > 0) {
+                        percentLeft = qsTr("%1%").arg(Qt.locale().toString((aog.areaBoundaryOuterLessInner - aog.workedAreaTotal) / aog.areaBoundaryOuterLessInner * 100, 'f', 0))
+                    } else {
+                        percentLeft = "--"
+                    }
+                    playText.mainString = qsTr("App: %1 Actual: %2 %3 %4")
+                            .arg(Utils.area_to_unit_string(aog.workedAreaTotal, 2))
+                            .arg(Utils.area_to_unit_string(aog.actualAreaCovered, 2))
+                            .arg(percentLeft)
+                            .arg(Utils.workRateString(aog.speedKph))
+                }
+                else {
+                    if (TracksInterface.idx > -1) {
+                        playText.mainString = qsTr("Track: %1").arg(TracksInterface.currentName)
+                    } else {
+                        playText.mainString = qsTr("Track: none active")
+                    }
+
+                    increment = -1 //reset
+                }
+
+
+
+            }
+        }
+
         Text {
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
@@ -108,7 +178,8 @@ import "components" as Comp
                 Layout.alignment: Qt.AlignCenter
                 implicitWidth: theme.buttonSize
                 height:parent.height
-                visible: (aog.blockageConnected & settings.setSeed_blockageIsOn) ? true : false
+                // Threading Phase 1: Blockage monitoring visibility
+                visible: AgIOService.blockageConnected && SettingsManager.seed_blockageIsOn
                 onClicked: {
                     blockageData.visible = !blockageData.visible
                     gpsData.visible = false
@@ -122,7 +193,7 @@ import "components" as Comp
                 anchors.verticalCenter: parent.verticalCenter
                 width: 75 * theme.scaleWidth
                 height:parent.height
-                text: utils.speed_to_unit_string(aog.speedKph, 1)
+                text: Utils.speed_to_unit_string(aog.speedKph, 1)
                 font.bold: true
                 font.pixelSize: 35
                 horizontalAlignment: Text.AlignHCenter
@@ -144,7 +215,8 @@ import "components" as Comp
                     if (mainWindow.visibility == Window.FullScreen){
                         mainWindow.showNormal()
                     }else{
-                        settings.setWindow_Size = ((mainWindow.width).toString() + ", "+  (mainWindow.height).toString())
+                        // Threading Phase 1: Save window size before fullscreen
+                        SettingsManager.window_size = ((mainWindow.width.toString() + ", "+  (mainWindow.height).toString()))
                         mainWindow.showFullScreen()
                     }
                 }
@@ -154,7 +226,7 @@ import "components" as Comp
                 width: 75 * theme.scaleWidth
                 icon.source: prefix + "/images/WindowClose.png"
                 onClicked: {
-                    mainWindow.save_everything()
+                    formGPS.applicationClosing = true  // Save vehicle when closing window (Qt 6.8 binding)
                     mainWindow.close()
                 }
             }

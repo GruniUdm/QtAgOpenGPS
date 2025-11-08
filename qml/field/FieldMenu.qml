@@ -5,6 +5,8 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+//import Settings
+// Interface import removed - now QML_SINGLETON
 
 import ".."
 import "../components"
@@ -18,7 +20,7 @@ Drawer {
     modal: true
 
     onVisibleChanged: {
-        fieldInterface.field_update_list()
+        aog.fieldUpdateList() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
     }
 
     contentItem: Rectangle{
@@ -40,37 +42,37 @@ Drawer {
                 objectName: "btnFieldDriveIn"
                 Layout.fillWidth: true
                 isChecked: false
-                text: "Drive In"
+                text: qsTr("Drive In")
                 icon.source: prefix + "/images/AutoManualIsAuto.png"
-                onClicked: { fieldMenu.visible = false ; fieldOpen.sortBy = 2 ; fieldOpen.visible = true; }
+                onClicked: { fieldMenu.visible = false ; fieldOpen.sortBy = 2 ; fieldOpen.visible = true; TracksInterface.select(-1);}
             }
             IconButtonTextBeside{
                 objectName: "btnFieldISOXML"
                 isChecked: false
-                text: "ISO-XML"
+                text: qsTr("ISO-XML")
                 icon.source: prefix + "/images/ISOXML.png"
             }
             IconButtonTextBeside{
                 objectName: "btnFieldFromKML"
                 isChecked: false
-                text: "From KML"
+                text: qsTr("From KML")
                 icon.source: prefix + "/images/BoundaryLoadFromGE.png"
                 onClicked: fieldFromKML.visible = true
             }
             IconButtonTextBeside{
                 objectName: "btnFieldFromExisting"
                 isChecked: false
-                text: "From Existing"
+                text: qsTr("From Existing")
                 icon.source: prefix + "/images/FileExisting.png"
                 onClicked: {
                     fieldMenu.visible = false
-                    fieldFromExisting.visible = true
+                    fieldFromExisting.show()
                 }
             }
             IconButtonTextBeside{
                 objectName: "New"
                 isChecked: false
-                text: "New"
+                text: qsTr("New")
                 icon.source: prefix + "/images/FileNew.png"
                 onClicked: {
                     fieldMenu.visible = false
@@ -80,14 +82,15 @@ Drawer {
             IconButtonTextBeside{
                 objectName: "btnFieldResume"
                 isChecked: false
-                text: "Resume"
+                text: qsTr("Resume")
                 icon.source: prefix + "/images/FilePrevious.png"
-                enabled: settings.setF_CurrentDir !== "Default" && !aog.isJobStarted
+                // Threading Phase 1: Resume field enable check
+                enabled: SettingsManager.f_currentDir !== "Default" && !aog.isJobStarted
                 onEnabledChanged: fieldToResumeText.visible = enabled
 
                 onClicked: {
                     fieldMenu.visible = false
-                    fieldInterface.field_open(settings.setF_CurrentDir)
+                    aog.fieldOpen(SettingsManager.f_currentDir) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 }
                 Text{ //show which field will be enabled
                     id: fieldToResumeText
@@ -97,17 +100,18 @@ Drawer {
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 5
                     font.pixelSize: 20
-                    text: settings.setF_CurrentDir
+                    // Threading Phase 1: Current field directory display
+                    text: SettingsManager.f_currentDir
                 }
             }
             IconButtonTextBeside{
                 objectName: "btnFieldClose"
                 isChecked: false
-                text: "Close"
+                text: qsTr("Close")
                 icon.source: prefix + "/images/FileClose.png"
                 enabled: aog.isJobStarted
                 onClicked: {
-                    fieldInterface.field_close()
+                    aog.fieldClose() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     fieldMenu.visible = false
                 }
 
@@ -115,7 +119,7 @@ Drawer {
             IconButtonTextBeside{
                 objectName: "btnFieldOpen"
                 isChecked: false
-                text: "Open"
+                text: qsTr("Open")
                 icon.source: prefix + "/images/FileOpen.png"
                 onClicked: {
                     fieldMenu.visible = false

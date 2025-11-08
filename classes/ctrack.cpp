@@ -3,13 +3,14 @@
 #include <QVector>
 #include <QFuture>
 #include <QtConcurrent/QtConcurrent>
+#include <vector>
 #include "glutils.h"
 #include "ctrack.h"
 #include "cvehicle.h"
 #include "glm.h"
 #include "cabcurve.h"
 #include "cabline.h"
-#include "aogproperty.h"
+#include "classes/settingsmanager.h"
 #include "cyouturn.h"
 #include "cboundary.h"
 #include "ctram.h"
@@ -17,6 +18,8 @@
 #include "cahrs.h"
 #include "cguidance.h"
 #include "cworldgrid.h"
+
+// Approche SomcoSoftware : Qt gère le singleton automatiquement
 
 CTrk::CTrk()
 {
@@ -39,6 +42,7 @@ CTrk::CTrk(const CTrk &orig)
 
 CTrack::CTrack(QObject* parent) : QAbstractListModel(parent)
 {
+    qDebug() << "🏗️ CTrack constructor called, parent:" << parent;
     // Initialize role names
     m_roleNames[index] = "index";
     m_roleNames[NameRole] = "name";
@@ -50,22 +54,42 @@ CTrack::CTrack(QObject* parent) : QAbstractListModel(parent)
     m_roleNames[endPtB] = "endPtB";
     m_roleNames[nudgeDistance] = "nudgeDistance";
 
+    // Initialize Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY members
+    m_idx = -1;  // Will be set again by setIdx call
+    m_newMode = 0;
+    m_newRefSide = 0;
+    m_howManyPathsAway = 0;
+    m_mode = 0;
+    m_count = 0;
+    m_isAutoTrack = false;
+    m_isAutoSnapToPivot = true;
+    m_isAutoSnapped = false;
+    m_newHeading = 0.0;
+    m_newName = "";
+    m_currentName = "";
+
+    // PHASE 6.0.42.9 BUG #0 FIX: Initialize auto-track timer
+    // C# auto-initializes int to 0, but C++ leaves uninitialized (garbage value)
+    // Garbage value could be negative → timer never reaches >= 1 threshold
+    // This was the ROOT CAUSE preventing auto-track from working
+    autoTrack3SecTimer = 0;
+
     setIdx(-1);
 }
 
 CTrack::~CTrack()
 {
-    idx = -1;
+    setIdx(-1);
     gArr.clear();
     reloadModel();
 }
 
 int CTrack::FindClosestRefTrack(Vec3 pivot, const CVehicle &vehicle)
 {
-    if (idx < 0 || gArr.count() == 0) return -1;
+    if (idx() < 0 || gArr.count() == 0) return -1;
 
     //only 1 track
-    if (gArr.count() == 1) return idx;
+    if (gArr.count() == 1) return idx();
 
     int trak = -1;
     int cntr = 0;
@@ -87,7 +111,7 @@ int CTrack::FindClosestRefTrack(Vec3 pivot, const CVehicle &vehicle)
     if (cntr == 0) return -1;
 
     //determine if any aligned reasonably close
-    QVector<bool> isAlignedArr;
+    std::vector<bool> isAlignedArr(gArr.count());
     for (int i = 0; i < gArr.count(); i++)
     {
         if (gArr[i].mode == (int)TrackMode::Curve) isAlignedArr[i] = true;
@@ -126,7 +150,7 @@ int CTrack::FindClosestRefTrack(Vec3 pivot, const CVehicle &vehicle)
             //z2-z1
             double dy = endPtB.northing - endPtA.northing;
 
-            dist = ((dy * vehicle.steerAxlePos.easting) - (dx * vehicle.steerAxlePos.northing) +
+            dist = ((dy * CVehicle::instance()->steerAxlePos.easting) - (dx * CVehicle::instance()->steerAxlePos.northing) +
                     (endPtB.easting * endPtA.northing) - (endPtB.northing * endPtA.easting))
                    / sqrt((dy * dy) + (dx * dx));
 
@@ -161,8 +185,8 @@ void CTrack::SwitchToClosestRefTrack(Vec3 pivot, const CVehicle &vehicle)
 {
     int new_idx;
 
-    new_idx = FindClosestRefTrack(pivot, vehicle);
-    if (new_idx >= 0 && new_idx != idx) {
+    new_idx = FindClosestRefTrack(pivot, *CVehicle::instance());
+    if (new_idx >= 0 && new_idx != idx()) {
         setIdx(new_idx);
         curve.isCurveValid = false;
         ABLine.isABValid = false;
@@ -171,34 +195,36 @@ void CTrack::SwitchToClosestRefTrack(Vec3 pivot, const CVehicle &vehicle)
 
 void CTrack::NudgeTrack(double dist)
 {
-    if (idx > -1)
+    if (idx() > -1)
     {
-        if (gArr[idx].mode == (int)TrackMode::AB)
+        if (gArr[idx()].mode == (int)TrackMode::AB)
         {
             ABLine.isABValid = false;
+            ABLine.lastHowManyPathsAway = 98888;  // Phase 6.0.43: Reset sentinel for conditional reconstruction
             ABLine.lastSecond = 0;
-            gArr[idx].nudgeDistance += ABLine.isHeadingSameWay ? dist : -dist;
+            gArr[idx()].nudgeDistance += ABLine.isHeadingSameWay ? dist : -dist;
         }
         else
         {
             curve.isCurveValid = false;
             curve.lastHowManyPathsAway = 98888;
             curve.lastSecond = 0;
-            gArr[idx].nudgeDistance += curve.isHeadingSameWay ? dist : -dist;
+            gArr[idx()].nudgeDistance += curve.isHeadingSameWay ? dist : -dist;
         }
 
-        //if (gArr[idx].nudgeDistance > 0.5 * mf.tool.width) gArr[idx].nudgeDistance -= mf.tool.width;
-        //else if (gArr[idx].nudgeDistance < -0.5 * mf.tool.width) gArr[idx].nudgeDistance += mf.tool.width;
+        //if (gArr[idx()].nudgeDistance > 0.5 * mf.tool.width) gArr[idx()].nudgeDistance -= mf.tool.width;
+        //else if (gArr[idx()].nudgeDistance < -0.5 * mf.tool.width) gArr[idx()].nudgeDistance += mf.tool.width;
     }
 }
 
 void CTrack::NudgeDistanceReset()
 {
-    if (idx > -1 && gArr.count() > 0)
+    if (idx() > -1 && gArr.count() > 0)
     {
-        if (gArr[idx].mode == (int)TrackMode::AB)
+        if (gArr[idx()].mode == (int)TrackMode::AB)
         {
             ABLine.isABValid = false;
+            ABLine.lastHowManyPathsAway = 98888;  // Phase 6.0.43: Reset sentinel for conditional reconstruction
             ABLine.lastSecond = 0;
         }
         else
@@ -208,7 +234,7 @@ void CTrack::NudgeDistanceReset()
             curve.lastSecond = 0;
         }
 
-        gArr[idx].nudgeDistance = 0;
+        gArr[idx()].nudgeDistance = 0;
     }
 }
 
@@ -216,9 +242,9 @@ void CTrack::SnapToPivot()
 {
     //if (isBtnGuidanceOn)
 
-    if (idx > -1)
+    if (idx() > -1)
     {
-        if (gArr[idx].mode == (int)(TrackMode::AB))
+        if (gArr[idx()].mode == (int)(TrackMode::AB))
         {
             NudgeTrack(ABLine.distanceFromCurrentLinePivot);
 
@@ -233,20 +259,21 @@ void CTrack::SnapToPivot()
 
 void CTrack::NudgeRefTrack(double dist)
 {
-    if (idx > -1)
+    if (idx() > -1)
     {
-        if (gArr[idx].mode == (int)TrackMode::AB)
+        if (gArr[idx()].mode == (int)TrackMode::AB)
         {
             ABLine.isABValid = false;
+            ABLine.lastHowManyPathsAway = 98888;  // Phase 6.0.43: Reset sentinel for conditional reconstruction
             ABLine.lastSecond = 0;
-            NudgeRefABLine( gArr[idx], ABLine.isHeadingSameWay ? dist : -dist);
+            NudgeRefABLine( gArr[idx()], ABLine.isHeadingSameWay ? dist : -dist);
         }
         else
         {
             curve.isCurveValid = false;
             curve.lastHowManyPathsAway = 98888;
             curve.lastSecond = 0;
-            NudgeRefCurve( gArr[idx], curve.isHeadingSameWay ? dist : -dist);
+            NudgeRefCurve( gArr[idx()], curve.isHeadingSameWay ? dist : -dist);
         }
     }
 }
@@ -284,7 +311,7 @@ void CTrack::NudgeRefCurve(CTrk &track, double distAway)
         for (int t = 0; t < track.curvePts.count(); t++)
         {
             double dist = ((point.easting - track.curvePts[t].easting) * (point.easting - track.curvePts[t].easting))
-                          + ((point.northing - track.curvePts[t].northing) * (point.northing - track.curvePts[t].northing));
+            + ((point.northing - track.curvePts[t].northing) * (point.northing - track.curvePts[t].northing));
             if (dist < distSqAway)
             {
                 Add = false;
@@ -297,7 +324,7 @@ void CTrack::NudgeRefCurve(CTrk &track, double distAway)
             if (curList.count() > 0)
             {
                 double dist = ((point.easting - curList[curList.count() - 1].easting) * (point.easting - curList[curList.count() - 1].easting))
-                              + ((point.northing - curList[curList.count() - 1].northing) * (point.northing - curList[curList.count() - 1].northing));
+                + ((point.northing - curList[curList.count() - 1].northing) * (point.northing - curList[curList.count() - 1].northing));
                 if (dist > 1.0)
                     curList.append(point);
             }
@@ -368,13 +395,22 @@ void CTrack::NudgeRefCurve(CTrk &track, double distAway)
     }
 }
 
-void CTrack::DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera)
+void CTrack::DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera, const CVehicle &vehicle)
 {
-    if (idx >= 0) {
-        if (gArr[idx].mode == TrackMode::AB)
-            ABLine.DrawABLineNew(gl, mvp, camera);
-        else if (gArr[idx].mode == TrackMode::Curve)
-            curve.DrawCurveNew(gl, mvp);
+    GLHelperOneColor gldraw;
+    QColor color;
+    double lineWidth = SettingsManager::instance()->display_lineWidth();
+
+    if (ABLine.isMakingABLine && newMode() == TrackMode::AB) {
+        ABLine.DrawABLineNew(gl, mvp, camera);
+
+        gldraw.append(QVector3D(designRefLine[0].easting, designRefLine[0].northing, 0.0));
+        gldraw.append(QVector3D(designRefLine[1].easting, designRefLine[1].northing, 0.0));
+        color.setRgbF(0.930f, 0.4f, 0.4f);
+        gldraw.draw(gl, mvp, color, GL_LINES, lineWidth);
+
+    } else if (curve.isMakingCurve && newMode() == TrackMode::Curve) {
+        curve.DrawCurveNew(gl, mvp);
     }
 }
 
@@ -385,11 +421,11 @@ void CTrack::DrawTrack(QOpenGLFunctions *gl,
                        const CCamera &camera,
                        const CGuidance &gyd)
 {
-    if (idx >= 0) {
-        if (gArr[idx].mode == TrackMode::AB)
-            ABLine.DrawABLines(gl, mvp, isFontOn, isRateMapOn, gArr[idx], yt, camera, gyd);
-        else if (gArr[idx].mode == TrackMode::Curve)
-            curve.DrawCurve(gl, mvp, isFontOn, gArr[idx], yt, camera);
+    if (idx() >= 0) {
+        if (gArr[idx()].mode == TrackMode::AB)
+            ABLine.DrawABLines(gl, mvp, isFontOn, isRateMapOn, gArr[idx()], yt, camera, gyd);
+        else if (gArr[idx()].mode == TrackMode::Curve)
+            curve.DrawCurve(gl, mvp, isFontOn, gArr[idx()], yt, camera);
     }
 }
 
@@ -399,13 +435,13 @@ void CTrack::DrawTrackGoalPoint(QOpenGLFunctions *gl,
     GLHelperOneColor gldraw1;
     QColor color;
 
-    if (idx >= 0) {
+    if (idx() >= 0) {
         color.setRgbF(0.98, 0.98, 0.098);
-        if (gArr[idx].mode == TrackMode::AB) {
+        if (gArr[idx()].mode == TrackMode::AB) {
             gldraw1.append(QVector3D(ABLine.goalPointAB.easting, ABLine.goalPointAB.northing, 0));
             gldraw1.draw(gl,mvp,QColor::fromRgbF(0,0,0),GL_POINTS,16);
             gldraw1.draw(gl,mvp,color,GL_POINTS,10);
-        } else if (gArr[idx].mode == TrackMode::Curve) {
+        } else if (gArr[idx()].mode == TrackMode::Curve) {
             gldraw1.append(QVector3D(curve.goalPointCu.easting, curve.goalPointCu.northing, 0));
             gldraw1.draw(gl,mvp,QColor::fromRgbF(0,0,0),GL_POINTS,16);
             gldraw1.draw(gl,mvp,color,GL_POINTS,10);
@@ -422,28 +458,34 @@ void CTrack::BuildCurrentLine(Vec3 pivot, double secondsSinceStart,
                               CGuidance &gyd,
                               CNMEA &pn)
 {
-    if (gArr.count() > 0 && idx > -1)
+    if (gArr.count() > 0 && idx() > -1)
     {
-        if (gArr[idx].mode == TrackMode::AB)
+        if (gArr[idx()].mode == TrackMode::AB)
         {
-            ABLine.BuildCurrentABLineList(pivot,secondsSinceStart,gArr[idx],yt,vehicle);
+            ABLine.BuildCurrentABLineList(pivot,secondsSinceStart,gArr[idx()],yt,*CVehicle::instance());
 
-            ABLine.GetCurrentABLine(pivot, vehicle.steerAxlePos,isBtnAutoSteerOn,vehicle,yt,ahrs,gyd,pn);
+            ABLine.GetCurrentABLine(pivot, CVehicle::instance()->steerAxlePos,isBtnAutoSteerOn,*CVehicle::instance(),yt,ahrs,gyd,pn);
+
+            // Update QML property for parallel line number display
+            setHowManyPathsAway(ABLine.howManyPathsAway);
         }
         else
         {
             //build new current ref line if required
-            curve.BuildCurveCurrentList(pivot, secondsSinceStart,vehicle,gArr[idx],bnd,yt);
+            curve.BuildCurveCurrentList(pivot, secondsSinceStart,*CVehicle::instance(),gArr[idx()],bnd,yt);
 
-            curve.GetCurrentCurveLine(pivot, vehicle.steerAxlePos,isBtnAutoSteerOn,vehicle,gArr[idx],yt,ahrs,gyd,pn);
+            curve.GetCurrentCurveLine(pivot, CVehicle::instance()->steerAxlePos,isBtnAutoSteerOn,*CVehicle::instance(),gArr[idx()],yt,ahrs,gyd,pn);
+
+            // Update QML property for parallel line number display
+            setHowManyPathsAway(curve.howManyPathsAway);
         }
     }
-    emit howManyPathsAwayChanged(); //notify QML property is changed
+    // Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY: howManyPathsAway automatically emits when changed
 }
 
 void CTrack::ResetCurveLine()
 {
-    if (idx >=0 && gArr[idx].mode == TrackMode::Curve) {
+    if (idx() >=0 && gArr[idx()].mode == TrackMode::Curve) {
         curve.curList.clear();
         setIdx(-1);
     }
@@ -453,22 +495,19 @@ void CTrack::AddPathPoint(Vec3 point)
 {
     if (curve.isMakingCurve) {
         curve.desList.append(point);
-    } else if (ABLine.isMakingABLine) {
-        ABLine.desHeading = atan2(point.easting - ABLine.desPtA.easting,
-                                  point.northing - ABLine.desPtA.northing);
+    } else if (ABLine.isMakingABLine && !ABLine.isDesPtBSet) {
+        //set the B point to current so we can draw a preview line
+        ABLine.desPtB.easting = point.easting;
+        ABLine.desPtB.northing = point.northing;
 
-        ABLine.desLineEndA.easting = ABLine.desPtA.easting - (sin(ABLine.desHeading) * 1000);
-        ABLine.desLineEndA.northing = ABLine.desPtA.northing - (cos(ABLine.desHeading) * 1000);
-
-        ABLine.desLineEndB.easting = ABLine.desPtA.easting + (sin(ABLine.desHeading) * 1000);
-        ABLine.desLineEndB.northing = ABLine.desPtA.northing + (cos(ABLine.desHeading) * 1000);
+        update_ab_refline();
     }
 }
 
 int CTrack::getHowManyPathsAway()
 {
-    if (idx >= 0) {
-        if (gArr[idx].mode == TrackMode::AB)
+    if (idx() >= 0) {
+        if (gArr[idx()].mode == TrackMode::AB)
             return ABLine.howManyPathsAway;
         else
             return curve.howManyPathsAway;
@@ -479,41 +518,111 @@ int CTrack::getHowManyPathsAway()
 
 void CTrack::setIdx(int new_idx)
 {
-    if (new_idx < gArr.count()) {
-        idx = new_idx;
-        emit idxChanged();
+    // Allow -1 for deselection or valid indices within bounds
+    if (new_idx == -1 || (new_idx >= 0 && new_idx < gArr.count())) {
+        m_idx = new_idx;
+        // Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY automatically emits idxChanged()
+        // Manually emit related signals that depend on idx
         emit modeChanged();
+        emit currentNameChanged();
     }
 }
 
-int CTrack::getNewMode(void)
+int CTrack::newMode(void)
 {
-    return newTrack.mode;
+    return m_newMode;
 }
 
-void CTrack::setNewMode(TrackMode new_mode)
+void CTrack::setNewMode(int new_mode)
 {
+    m_newMode = new_mode;
     newTrack.mode = new_mode;
-    emit newModeChanged();
 }
 
-QString CTrack::getNewName(void)
+QString CTrack::newName(void)
 {
-    if (getNewMode() == TrackMode::AB)
-        return ABLine.desName;
-    else
-        return curve.desName;
+    return m_newName;
 }
 
 void CTrack::setNewName(QString new_name)
 {
-    if (getNewMode() == TrackMode::AB)
+    m_newName = new_name;
+    if (m_newMode == TrackMode::AB)
         ABLine.desName = new_name;
     else
-        curve.desName= new_name;
-
-    emit newNameChanged();
+        curve.desName = new_name;
 }
+
+
+
+
+QString CTrack::getCurrentName(void)
+{
+    if (idx() > -1) {
+        return gArr[idx()].name;
+    } else {
+        return "";
+    }
+}
+
+// ===== Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY Implementations =====
+
+// idx property
+int CTrack::idx() const { return m_idx; }
+QBindable<int> CTrack::bindableIdx() { return QBindable<int>(&m_idx); }
+
+// isAutoTrack property
+bool CTrack::isAutoTrack() const { return m_isAutoTrack; }
+void CTrack::setIsAutoTrack(bool value) { m_isAutoTrack = value; }
+QBindable<bool> CTrack::bindableIsAutoTrack() { return QBindable<bool>(&m_isAutoTrack); }
+
+// isAutoSnapToPivot property
+bool CTrack::isAutoSnapToPivot() const { return m_isAutoSnapToPivot; }
+void CTrack::setIsAutoSnapToPivot(bool value) { m_isAutoSnapToPivot = value; }
+QBindable<bool> CTrack::bindableIsAutoSnapToPivot() { return QBindable<bool>(&m_isAutoSnapToPivot); }
+
+// isAutoSnapped property
+bool CTrack::isAutoSnapped() const { return m_isAutoSnapped; }
+void CTrack::setIsAutoSnapped(bool value) { m_isAutoSnapped = value; }
+QBindable<bool> CTrack::bindableIsAutoSnapped() { return QBindable<bool>(&m_isAutoSnapped); }
+
+// Bindables for properties with existing getters/setters
+QBindable<QString> CTrack::bindableNewName() { return QBindable<QString>(&m_newName); }
+QBindable<int> CTrack::bindableNewMode() { return QBindable<int>(&m_newMode); }
+QBindable<double> CTrack::bindableNewHeading() { return QBindable<double>(&m_newHeading); }
+
+// newRefSide property (getter and bindable only, setter exists with business logic)
+int CTrack::newRefSide(void) { return m_newRefSide; }
+QBindable<int> CTrack::bindableNewRefSide() { return QBindable<int>(&m_newRefSide); }
+
+// howManyPathsAway property
+int CTrack::howManyPathsAway() const { return m_howManyPathsAway; }
+void CTrack::setHowManyPathsAway(int value) { m_howManyPathsAway = value; }
+QBindable<int> CTrack::bindableHowManyPathsAway() { return QBindable<int>(&m_howManyPathsAway); }
+
+// mode property (depends on current track idx)
+int CTrack::mode() const {
+    if (idx() >= 0) return gArr[idx()].mode;
+    else return 0;
+}
+void CTrack::setMode(int value) { m_mode = value; }
+QBindable<int> CTrack::bindableMode() { return QBindable<int>(&m_mode); }
+
+// count property
+int CTrack::count() const { return m_count; }
+void CTrack::setCount(int value) { m_count = value; }
+QBindable<int> CTrack::bindableCount() { return QBindable<int>(&m_count); }
+
+// currentName property (depends on current track idx)
+QString CTrack::currentName() const {
+    if (idx() > -1) {
+        return gArr[idx()].name;
+    } else {
+        return "";
+    }
+}
+void CTrack::setCurrentName(const QString& value) { m_currentName = value; }
+QBindable<QString> CTrack::bindableCurrentName() { return QBindable<QString>(&m_currentName); }
 
 int CTrack::rowCount(const QModelIndex &parent) const
 {
@@ -578,12 +687,50 @@ double CTrack::getTrackNudge(int index)
     return gArr[index].nudgeDistance;
 }
 
+void CTrack::update_ab_refline()
+{
+    double dist;
+    double heading90;
+    double vehicle_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
+    double vehicle_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
+    double vehicle_toolOverlap = SettingsManager::instance()->vehicle_toolOverlap();
+
+    ABLine.desHeading = atan2(ABLine.desPtB.easting - ABLine.desPtA.easting,
+                              ABLine.desPtB.northing - ABLine.desPtA.northing);
+    if (ABLine.desHeading < 0) ABLine.desHeading += glm::twoPI;
+
+    heading90 = ABLine.desHeading + glm::PIBy2;
+
+    // update the ABLine desLineA and B and the design reference lines
+
+    if (newRefSide() > 0) {
+        // right side
+        dist = (vehicle_toolWidth - vehicle_toolOverlap) * 0.5 + vehicle_toolOffset;
+    } else if (newRefSide() < 0) {
+        // left side
+        dist = (vehicle_toolWidth - vehicle_toolOverlap) * -0.5 + vehicle_toolOffset;
+    }
+
+    ABLine.desLineEndA.easting = ABLine.desPtA.easting - (sin(ABLine.desHeading) * 1000);
+    ABLine.desLineEndA.northing = ABLine.desPtA.northing - (cos(ABLine.desHeading) * 1000);
+
+    designRefLine[0].easting = ABLine.desLineEndA.easting + sin(heading90) * dist;
+    designRefLine[0].northing = ABLine.desLineEndA.northing + cos(heading90) * dist;
+
+    ABLine.desLineEndB.easting = ABLine.desPtA.easting + (sin(ABLine.desHeading) * 1000);
+    ABLine.desLineEndB.northing = ABLine.desPtA.northing + (cos(ABLine.desHeading) * 1000);
+
+    designRefLine[1].easting = ABLine.desLineEndB.easting + sin(heading90) * dist;
+    designRefLine[1].northing = ABLine.desLineEndB.northing + cos(heading90) * dist;
+}
+
 void CTrack::select(int index)
 {
     //reset to generate new reference
     curve.isCurveValid = false;
     curve.lastHowManyPathsAway = 98888;
     ABLine.isABValid = false;
+    ABLine.lastHowManyPathsAway = 98888;  // Phase 6.0.43: Reset sentinel for conditional reconstruction
     curve.desList.clear();
 
     emit saveTracks(); //Do we really need to do this here?
@@ -597,7 +744,7 @@ void CTrack::select(int index)
 
 void CTrack::next()
 {
-    if (idx < 0) return;
+    if (idx() < 0) return;
 
     int visible_count = 0;
     for(CTrk &track : gArr) {
@@ -606,14 +753,15 @@ void CTrack::next()
 
     if (visible_count == 0) return; //no visible tracks to choose
 
-    idx = (idx + 1) % gArr.count();
-    while (!gArr[idx].isVisible)
-        idx = (idx + 1) % gArr.count();
+    // Qt 6.8 FIX: Use direct member access to avoid binding loop
+    m_idx = (m_idx + 1) % gArr.count();
+    while (!gArr[m_idx].isVisible)
+        m_idx = (m_idx + 1) % gArr.count();
 }
 
 void CTrack::prev()
 {
-    if (idx < 0) return;
+    if (idx() < 0) return;
 
     int visible_count = 0;
     for(CTrk &track : gArr) {
@@ -622,33 +770,45 @@ void CTrack::prev()
 
     if (visible_count == 0) return; //no visible tracks to choose
 
-    idx = (idx - 1) % gArr.count();
-    while (!gArr[idx].isVisible)
-        idx = (idx - 1) % gArr.count();
+    int newIdx = idx() - 1;
+    if (newIdx < 0) newIdx = gArr.count() - 1;
+    setIdx(newIdx);
+    while (!gArr[idx()].isVisible) {
+        newIdx = idx() - 1;
+        if (newIdx < 0) newIdx = gArr.count() - 1;
+        setIdx(newIdx);
+    }
 }
 
 void CTrack::start_new(int mode)
 {
     newTrack = CTrk();
+    newTrack.nudgeDistance = 0;
     setNewMode((TrackMode)mode);
     setNewName("");
+    designRefLine.clear();
+    designRefLine.append(Vec2());
+    designRefLine.append(Vec2());
 }
 
 void CTrack::mark_start(double easting, double northing, double heading)
 {
     //mark "A" location for AB Line or AB curve, or center for waterPivot
-    switch(getNewMode()) {
+    switch(newMode()) {
     case TrackMode::AB:
         curve.desList.clear();
+        newTrack.ptA.easting = easting;
+        newTrack.ptA.northing = northing;
         ABLine.isMakingABLine = true;
         ABLine.desPtA.easting = easting;
         ABLine.desPtA.northing = northing;
+        //temporarily set the B point based on current heading
+        ABLine.desPtB.easting = easting + sin(heading) * 1000;
+        ABLine.desPtB.northing = easting + cos(heading) * 1000;
 
-        ABLine.desLineEndA.easting = ABLine.desPtA.easting - (sin(heading) * 1000);
-        ABLine.desLineEndA.northing = ABLine.desPtA.northing - (cos(heading) * 1000);
+        ABLine.isDesPtBSet = false;
 
-        ABLine.desLineEndB.easting = ABLine.desPtA.easting + (sin(heading) * 1000);
-        ABLine.desLineEndB.northing = ABLine.desPtA.northing + (cos(heading) * 1000);
+        update_ab_refline();
 
         break;
 
@@ -671,24 +831,32 @@ void CTrack::mark_start(double easting, double northing, double heading)
 void CTrack::mark_end(int refSide, double easting, double northing)
 {
     QLocale locale;
+    double vehicle_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
+    double vehicle_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
+    double vehicle_toolOverlap = SettingsManager::instance()->vehicle_toolOverlap();
+
 
     //mark "B" location for AB Line or AB curve, or NOP for waterPivot
     int cnt;
     double aveLineHeading = 0;
-    newRefSide = refSide;
 
-    switch(getNewMode()) {
+    setNewRefSide(refSide);
+
+    switch(newMode()) {
     case TrackMode::AB:
         newTrack.ptB.easting = easting;
         newTrack.ptB.northing = northing;
 
-        ABLine.desHeading = atan2(easting - ABLine.desPtA.easting,
-                                  northing - ABLine.desPtA.northing);
-        if (ABLine.desHeading < 0) ABLine.desHeading += glm::twoPI;
+        //set desPtB in ABLine just so display updates.
+        ABLine.desPtB.easting = easting;
+        ABLine.desPtB.northing = northing;
+        ABLine.isDesPtBSet = true;
+
+        update_ab_refline();
 
         newTrack.heading = ABLine.desHeading;
 
-        setNewName("AB " + locale.toString(glm::toDegrees(ABLine.desHeading), 'g', 1) + QChar(0x00B0));
+        setNewName("AB " + locale.toString(glm::toDegrees(ABLine.desHeading), 'f', 1) + QChar(0x00B0));
 
         //after we're sure we want this, we'll shift it over
         break;
@@ -704,9 +872,9 @@ void CTrack::mark_end(int refSide, double easting, double northing)
             curve.CalculateHeadings(curve.desList);
 
             newTrack.ptA = Vec2(curve.desList[0].easting,
-                                     curve.desList[0].northing);
+                                curve.desList[0].northing);
             newTrack.ptB = Vec2(curve.desList[curve.desList.count() - 1].easting,
-                                     curve.desList[curve.desList.count() - 1].northing);
+                                curve.desList[curve.desList.count() - 1].northing);
 
             //calculate average heading of line
             double x = 0, y = 0;
@@ -737,19 +905,19 @@ void CTrack::mark_end(int refSide, double easting, double northing)
 
             double dist;
 
-            if (newRefSide > 0)
+            if (newRefSide() > 0)
             {
-                dist = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) * 0.5 + (double)property_setVehicle_toolOffset;
+                dist = (vehicle_toolWidth - vehicle_toolOverlap) * 0.5 + vehicle_toolOffset;
                 NudgeRefCurve(newTrack, dist);
             }
-            else if (newRefSide < 0)
+            else if (newRefSide() < 0)
             {
-                dist = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) * -0.5 + (double)property_setVehicle_toolOffset;
+                dist = (vehicle_toolWidth - vehicle_toolOverlap) * -0.5 + vehicle_toolOffset;
                 NudgeRefCurve(newTrack, dist);
             }
             //else no nudge, center ref line
 
-       }
+        }
         else
         {
             curve.isMakingCurve = false;
@@ -769,22 +937,26 @@ void CTrack::mark_end(int refSide, double easting, double northing)
 
 void CTrack::finish_new(QString name)
 {
+    double vehicle_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
+    double vehicle_toolOffset = SettingsManager::instance()->vehicle_toolOffset();
+    double vehicle_toolOverlap = SettingsManager::instance()->vehicle_toolOverlap();
+
     double dist;
     newTrack.name = name;
 
-    switch(getNewMode()) {
+    switch(newMode()) {
     case TrackMode::AB:
         if (!ABLine.isMakingABLine) return; //do not add line if it stopped
 
-        if (newRefSide > 0)
+        if (newRefSide() > 0)
         {
-            dist = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) * 0.5 + (double)property_setVehicle_toolOffset;
+            dist = (vehicle_toolWidth - vehicle_toolOverlap) * 0.5 + vehicle_toolOffset;
             NudgeRefABLine(newTrack, dist);
 
         }
-        else if (newRefSide < 0)
+        else if (newRefSide() < 0)
         {
-            dist = ((double)property_setVehicle_toolWidth - (double)property_setVehicle_toolOverlap) * -0.5 + (double)property_setVehicle_toolOffset;
+            dist = (vehicle_toolWidth - vehicle_toolOverlap) * -0.5 + vehicle_toolOffset;
             NudgeRefABLine(newTrack, dist);
         }
 
@@ -804,8 +976,13 @@ void CTrack::finish_new(QString name)
 
     }
 
+    newTrack.isVisible = true;
     gArr.append(newTrack);
-    setIdx(gArr.count() - 1);
+
+    //emit saveTracks();
+
+    //save tracks and activate the latest one
+    select(gArr.count() - 1);
     reloadModel();
 
 }
@@ -820,7 +997,7 @@ void CTrack::cancel_new()
     newTrack.mode = 0;
 
     //don't need to do anything else
-}
+    }
 
 void CTrack::pause(bool pause)
 {
@@ -858,7 +1035,17 @@ void CTrack::nudge(double dist_m)
 
 void CTrack::delete_track(int index)
 {
+    //if we are using the track we are deleting, cancel
+    //autosteer
+    if (idx() == index) setIdx(-1);
+
+    //otherwise we'll have to adjust the current index after
+    //deleting this track.
+    // Qt 6.8 FIX: Use direct member access to avoid binding loop
+    if (m_idx > index) m_idx = m_idx - 1;
+
     gArr.removeAt(index);
+    reloadModel();
 }
 
 void CTrack::swapAB(int idx)
@@ -919,7 +1106,9 @@ void CTrack::changeName(int index, QString new_name)
 
 void CTrack::setVisible(int index, bool isVisible)
 {
-    gArr[index].isVisible = isVisible;
+    if (index >=0 && index <= gArr.count() ) {
+        gArr[index].isVisible = isVisible;
+    }
     reloadModel();
 }
 
@@ -931,4 +1120,44 @@ void CTrack::copy(int index, QString new_name)
     gArr.append(new_track);
     reloadModel();
 }
+
+// Qt 6.8 QProperty getter/setter implementations
+double CTrack::newHeading(void)
+{
+    return m_newHeading;
+}
+
+void CTrack::setNewHeading(double new_heading)
+{
+    m_newHeading = new_heading;
+    newTrack.heading = new_heading;
+
+    // Preserve original business logic
+    QLocale locale;
+    if (m_newMode == TrackMode::AB) {
+        if (new_heading != ABLine.desHeading) {
+            //calculate the B point 10 meters from the A point
+
+            mark_end(m_newRefSide, ABLine.desPtA.easting + sin(new_heading) * 10,
+                     ABLine.desPtA.northing + cos(new_heading) * 10);
+
+            //update the new line heading as well as recalculate the ref line
+            setNewName("A+ " + locale.toString(glm::toDegrees(ABLine.desHeading), 'f', 1) + QChar(0x00B0));
+        }
+    }
+}
+
+void CTrack::setNewRefSide(int which_side)
+{
+    if (m_newRefSide != which_side) {
+        m_newRefSide = which_side;
+        if (m_newMode == TrackMode::AB)
+            update_ab_refline();
+    }
+}
+
+
+
+
+// Removed QML_SINGLETON factory function - using qmlRegisterSingletonInstance instead
 

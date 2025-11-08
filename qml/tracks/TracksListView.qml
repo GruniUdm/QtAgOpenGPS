@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+// Interface import removed - now QML_SINGLETON
 
 pragma ComponentBehavior: Bound
 
@@ -8,11 +9,24 @@ ListView {
     property int selected: -1
     property bool trackVisible: false
 
+    Component.onCompleted: {
+        console.log("=== TracksListView DEBUG ===")
+        console.log("TracksInterface available:", typeof TracksInterface !== 'undefined')
+        if (typeof TracksInterface !== 'undefined') {
+            console.log("TracksInterface.idx:", TracksInterface.idx)
+            console.log("TracksInterface.count:", TracksInterface.count)
+            console.log("TracksInterface.model available:", TracksInterface.model !== undefined)
+        } else {
+            console.log("ERROR: TracksInterface is undefined in TracksListView!")
+        }
+        console.log("=== END TracksListView DEBUG ===")
+    }
+
     onVisibleChanged: {
-        if (visible && trk.idx > -1) {
-            console.debug("turning on track ",trk.idx)
-            //tracksView.selected = trk.idx
-            tracksView.currentIndex = trk.idx
+        if (visible && TracksInterface.idx > -1) {
+            console.debug("turning on track ",TracksInterface.idx)
+            //tracksView.selected = TracksInterface.idx
+            tracksView.currentIndex = TracksInterface.idx
         }
     }
 

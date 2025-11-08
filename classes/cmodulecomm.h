@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QtCore>
 #include <QString>
-#include "interfaceproperty.h"
 
 class CAHRS;
 
@@ -21,29 +20,28 @@ public:
 
     uchar ssP[9];
 
-    uchar blockagemoduleid[16];
-    uchar blockagesecnum[16];
-    int blockageseccount[64];
+    qint64 blockage_lastUpdate;
+    double blockageseccount[64];
     int blockageseccount1[16];
     int blockageseccount2[16];
     int blockageseccount3[16];
     int blockageseccount4[16];
     int
-            swHeader = 0,
-            swMain = 1,
-            swReserve = 2,
-            swReserve2 = 3,
-            swNumSections = 4,
-            swOnGr0 = 5,
-            swOffGr0 = 6,
-            swOnGr1 = 7,
-            swOffGr1 = 8;
+        swHeader = 0,
+        swMain = 1,
+        swReserve = 2,
+        swReserve2 = 3,
+        swNumSections = 4,
+        swOnGr0 = 5,
+        swOffGr0 = 6,
+        swOnGr1 = 7,
+        swOffGr1 = 8;
 
     int pwmDisplay = 0;
     double actualSteerAngleDegrees = 0;
     int actualSteerAngleChart = 0;
+    int sensorData = -1;  // PHASE 6.0.23: Sensor value from PGN 250
 
-    InterfaceProperty<AOGInterface, int> sensorData = InterfaceProperty<AOGInterface, int>("sensorData");
 
     //for the workswitch
     bool isWorkSwitchActiveLow, isRemoteWorkSystemOn, isWorkSwitchEnabled,

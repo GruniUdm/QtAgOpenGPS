@@ -8,22 +8,22 @@ import QtQuick
 Rectangle {
     id: block
     width: 15 * theme.scaleWidth
-    //height: 100 * theme.scaleHeight
-    anchors.bottom: parent.bottom
+    height: 100 * theme.scaleHeight
+    //anchors.bottom: parent.bottom
     border.width: 1
     border.color: "black"
-    property string buttonText: ""
-    property color textColor: "white"
+    // property string buttonText: ""
+    // property color textColor: "white"
     radius: 5 * theme.scaleWidth
 
     color: "red"
 
-    Text {
-        id: label
-        color: textColor
-        text: block.buttonText
-        anchors.bottom: parent.bottom
-        font.pixelSize: 13 * theme.scaleWidth
-        anchors.horizontalCenter: parent.horizontalCenter
-    }
+    // Text {
+    //     id: label
+    //     color: textColor
+    //     text: block.buttonText
+    //     anchors.bottom: parent.bottom
+    //     font.pointSize: 10
+    //     anchors.horizontalCenter: parent.horizontalCenter
+    // }
 }

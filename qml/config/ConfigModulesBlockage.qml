@@ -5,6 +5,9 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+//import Settings
+import AOG
+
 
 import ".."
 import "../components"
@@ -12,7 +15,7 @@ import "../components"
 Rectangle{
     id: configModulesBlockage
     anchors.fill: parent
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     visible: false
 
     onVisibleChanged: {
@@ -22,13 +25,14 @@ Rectangle{
 
     function load_settings() {
 
-        graincountMin.boundValue = settings.setSeed_blockCountMin
-        graincountMax.boundValue = settings.setSeed_blockCountMax
-        modulerows1.boundValue = settings.setSeed_blockRow1
-        modulerows2.boundValue = settings.setSeed_blockRow2
-        modulerows3.boundValue = settings.setSeed_blockRow3
-        modulerows4.boundValue = settings.setSeed_blockRow4
-        cboxIsBlockageOn.checked = settings.setSeed_blockageIsOn
+        // Threading Phase 1: Seed blockage configuration
+        graincountMin.boundValue = SettingsManager.seed_blockCountMin
+        graincountMax.boundValue = SettingsManager.seed_blockCountMax
+        modulerows1.boundValue = SettingsManager.seed_blockRow1
+        modulerows2.boundValue = SettingsManager.seed_blockRow2
+        modulerows3.boundValue = SettingsManager.seed_blockRow3
+        modulerows4.boundValue = SettingsManager.seed_blockRow4
+        cboxIsBlockageOn.checked = SettingsManager.seed_blockageIsOn
 
 
         mandatory.visible = false
@@ -38,18 +42,19 @@ Rectangle{
     function save_settings() {
 
 
-        settings.setSeed_blockCountMin = graincountMin.value
-        settings.setSeed_blockCountMax = graincountMax.value
-        settings.setSeed_blockRow1 = modulerows1.value
-        settings.setSeed_blockRow2 = modulerows2.value
-        settings.setSeed_blockRow3 = modulerows3.value
-        settings.setSeed_blockRow4 = modulerows4.value
-        settings.setSeed_blockageIsOn = cboxIsBlockageOn.checked
-        settings.setSeed_numRows = Number(settings.setSeed_blockRow1 + settings.setSeed_blockRow2 + settings.setSeed_blockRow3 + settings.setSeed_blockRow4)
+        // Threading Phase 1: Save seed blockage configuration
+        SettingsManager.seed_blockCountMin = graincountMin.value
+        SettingsManager.seed_blockCountMax = graincountMax.value
+        SettingsManager.seed_blockRow1 = modulerows1.value
+        SettingsManager.seed_blockRow2 = modulerows2.value
+        SettingsManager.seed_blockRow3 = modulerows3.value
+        SettingsManager.seed_blockRow4 = modulerows4.value
+        SettingsManager.seed_blockageIsOn = cboxIsBlockageOn.checked
+        SettingsManager.seed_numRows = Number(SettingsManager.seed_blockRow1 + SettingsManager.seed_blockRow2 + SettingsManager.seed_blockRow3 + SettingsManager.seed_blockRow4)
         blockageRows.setSizes()
         mandatory.visible = false
 
-        aog.doBlockageMonitoring()
+        aog.blockageMonitoring() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
     }
     Label{
         id: top
@@ -79,9 +84,10 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: settings.setSeed_blockRow1
+            // Threading Phase 1: Module row 1 configuration
+            boundValue: SettingsManager.seed_blockRow1
             onValueModified: {
-                settings.setSeed_blockRow1 = value
+                SettingsManager.seed_blockRow1 = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -97,9 +103,10 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: settings.setSeed_blockRow2
+            // Threading Phase 1: Module row 2 configuration
+            boundValue: SettingsManager.seed_blockRow2
             onValueModified: {
-                settings.setSeed_blockRow2 = value
+                SettingsManager.seed_blockRow2 = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -115,9 +122,10 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: settings.setSeed_blockRow3
+            // Threading Phase 1: Module row 3 configuration
+            boundValue: SettingsManager.seed_blockRow3
             onValueModified: {
-                settings.setSeed_blockRow3 = value
+                SettingsManager.seed_blockRow3 = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -133,9 +141,10 @@ Rectangle{
             to:255
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: settings.setSeed_blockRow4
+            // Threading Phase 1: Module row 4 configuration
+            boundValue: SettingsManager.seed_blockRow4
             onValueModified:{
-                settings.setSeed_blockRow4 = value
+                SettingsManager.seed_blockRow4 = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -152,9 +161,10 @@ Rectangle{
             to:10000
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: settings.setSeed_blockCountMin
+            // Threading Phase 1: Seed block count minimum
+            boundValue: SettingsManager.seed_blockCountMin
             onValueModified: {
-                settings.setSeed_blockCountMin = value
+                SettingsManager.seed_blockCountMin = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -166,7 +176,7 @@ Rectangle{
             Label{
                 anchors.left: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                text: utils.per_unit()
+                text: Utils.per_unit()
             }
         }
         SpinBoxCustomized{
@@ -176,9 +186,10 @@ Rectangle{
             to:10000
             editable: true
             enabled: cboxIsBlockageOn.checked
-            boundValue: settings.setSeed_blockCountMax
+            // Threading Phase 1: Seed block count maximum
+            boundValue: SettingsManager.seed_blockCountMax
             onValueModified:{
-                settings.setSeed_blockCountMax = value
+                SettingsManager.seed_blockCountMax = value
                 mandatory.visible = true
             }
             anchors.bottomMargin: 10 * theme.scaleHeight
@@ -190,7 +201,7 @@ Rectangle{
             Label{
                 anchors.left: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                text: utils.per_unit()
+                text: Utils.per_unit()
             }
         }
 

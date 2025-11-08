@@ -68,9 +68,13 @@ void AOGRenderer::synchronize(QQuickFramebufferObject *fbo)
     }
 }
 
-AOGRendererInSG::AOGRendererInSG()
+AOGRendererInSG::AOGRendererInSG(QQuickItem* parent) : QQuickFramebufferObject(parent)
 {
     theRenderer = NULL;
+    // Initialize Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY members
+    m_shiftX = 0.0;
+    m_shiftY = 0.0;
+    qDebug() << "🏗️ AOGRendererInSG constructor called, parent:" << parent;
 }
 
 QOpenGLFramebufferObject *AOGRenderer::createFramebufferObject(const QSize &size)
@@ -86,5 +90,34 @@ QOpenGLFramebufferObject *AOGRenderer::createFramebufferObject(const QSize &size
 AOGRenderer *AOGRendererInSG::createRenderer() const
 {
     return new AOGRenderer();
+}
+
+// ===== Qt 6.8 Rectangle Pattern Implementation =====
+double AOGRendererInSG::shiftX() const {
+    return m_shiftX;
+}
+
+void AOGRendererInSG::setShiftX(double value) {
+    // Preserve qFuzzyCompare validation for floating point precision
+    if (qFuzzyCompare(m_shiftX, value)) return;
+    m_shiftX = value;
+}
+
+QBindable<double> AOGRendererInSG::bindableShiftX() {
+    return QBindable<double>(&m_shiftX);
+}
+
+double AOGRendererInSG::shiftY() const {
+    return m_shiftY;
+}
+
+void AOGRendererInSG::setShiftY(double value) {
+    // Preserve qFuzzyCompare validation for floating point precision
+    if (qFuzzyCompare(m_shiftY, value)) return;
+    m_shiftY = value;
+}
+
+QBindable<double> AOGRendererInSG::bindableShiftY() {
+    return QBindable<double>(&m_shiftY);
 }
 

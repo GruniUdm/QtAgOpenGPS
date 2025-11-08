@@ -3,10 +3,6 @@
 //
 //
 #include "formgps.h"
-#include "aogsettings.h"
-
-
-extern AOGSettings *settings;
 
 /***************************************
  * callbacks for classes to connect to *
@@ -18,31 +14,37 @@ void FormGPS::connect_classes()
 {
     simConnectSlots();
 
-    connect(&trk.curve,SIGNAL(stopAutoSteer()),this,SLOT(onStopAutoSteer()));
-    connect(&trk.curve,SIGNAL(TimedMessage(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
+    // Phase 6.0.33: GPS timer for real GPS mode (50 Hz fixed rate)
+    // 50 Hz = 20ms interval for smooth rendering and PGN 254 AutoSteer commands
+    connect(&timerGPS, &QTimer::timeout, this, &FormGPS::onGPSTimerTimeout, Qt::UniqueConnection);
+    // Timer will be started when GPS data starts arriving (not in simulation mode)
+    timerGPS.start(100);  // 100ms = 10 Hz (synchronized with NMEA data rate)
 
-    connect(&ct,SIGNAL(TimedMessage(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
+    connect(&track.curve, &CABCurve::stopAutoSteer, this, &FormGPS::onStopAutoSteer, Qt::QueuedConnection);
+    connect(&track.curve, &CABCurve::TimedMessage, this, &FormGPS::TimedMessageBox, Qt::QueuedConnection);
 
-    connect(&mc, SIGNAL(stopAutoSteer()),this,SLOT(onStopAutoSteer()));
-    connect(&mc, SIGNAL(turnOffAutoSections()),this,SLOT(onSectionMasterAutoOff()));
-    connect(&mc, SIGNAL(turnOffManulSections()),this,SLOT(onSectionMasterManualOff()));
+    connect(&ct, &CContour::TimedMessage, this, &FormGPS::TimedMessageBox, Qt::QueuedConnection);
 
-    connect(&pn, SIGNAL(checkZoomWorldGrid(double,double)),&worldGrid,SLOT(checkZoomWorldGrid(double,double)));
+    connect(&mc, &CModuleComm::stopAutoSteer, this, &FormGPS::onStopAutoSteer, Qt::QueuedConnection);
+    connect(&mc, &CModuleComm::turnOffAutoSections, this, &FormGPS::onSectionMasterAutoOff, Qt::QueuedConnection);
+    connect(&mc, &CModuleComm::turnOffManulSections, this, &FormGPS::onSectionMasterManualOff, Qt::QueuedConnection);
 
-    connect(&recPath, SIGNAL(setSimStepDistance(double)),&sim,SLOT(setSimStepDistance(double)));
-    connect(&recPath,SIGNAL(turnOffSectionMasterAuto()),this,SLOT(onSectionMasterAutoOff()));
-    connect(&recPath, SIGNAL(stoppedDriving()),this,SLOT(onStoppedDriving()));
+    connect(&pn, &CNMEA::checkZoomWorldGrid, &worldGrid, &CWorldGrid::checkZoomWorldGrid, Qt::QueuedConnection);
 
-    connect(&bnd,SIGNAL(TimedMessage(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
+    connect(&recPath, &CRecordedPath::setSimStepDistance, &sim, &CSim::setSimStepDistance, Qt::QueuedConnection);
+    connect(&recPath, &CRecordedPath::turnOffSectionMasterAuto, this, &FormGPS::onSectionMasterAutoOff, Qt::QueuedConnection);
+    connect(&recPath, &CRecordedPath::stoppedDriving, this, &FormGPS::onStoppedDriving, Qt::QueuedConnection);
+
+    connect(&bnd, &CBoundary::TimedMessage, this, &FormGPS::TimedMessageBox, Qt::QueuedConnection);
     //connect(&bnd, SIGNAL(soundHydLiftChange(bool)),sounds,SLOT(onHydLiftChange(bool)));
 
-    connect(&yt, SIGNAL(outOfBounds()),&mc,SLOT(setOutOfBounds()));
+    connect(&yt, &CYouTurn::outOfBounds, &mc, &CModuleComm::setOutOfBounds, Qt::QueuedConnection);
     //TODO: connect(&yt,SIGNAL(turnOffBoundAlarm()),&sounds,SLOT(onTurnOffBoundAlarm()));
 
     //connect(settings, &AOGSettings::updateFromSettings, this, &FormGPS::loadSettings);
 
-    connect(&trk, SIGNAL(resetCreatedYouTurn()),&yt,SLOT(ResetCreatedYouTurn()));
-    connect(&trk, SIGNAL(saveTracks()),this,SLOT(FileSaveTracks()));
+    connect(&track, &CTrack::resetCreatedYouTurn, &yt, &CYouTurn::ResetCreatedYouTurn, Qt::QueuedConnection);
+    connect(&track, &CTrack::saveTracks, this, &FormGPS::FileSaveTracks, Qt::QueuedConnection);
 }
 
 void FormGPS::onStopAutoSteer()

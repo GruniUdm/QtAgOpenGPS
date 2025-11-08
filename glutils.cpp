@@ -8,7 +8,7 @@
 #include "ccamera.h"
 #include <assert.h>
 #include <math.h>
-#include "aogproperty.h"
+#include "classes/settingsmanager.h"
 
 //module-level symbols
 QOpenGLShaderProgram *simpleColorShader = 0;
@@ -30,7 +30,7 @@ int textureHeight;
 #ifdef LOCAL_QML
 #define PREFIX "local:"
 #else
-#define PREFIX ":"
+#define PREFIX ":/AOG"
 #endif
 
 
@@ -41,12 +41,16 @@ bool texturesLoaded = false;
 void initializeBackShader() {
     //needs a valid GL context bound before calling.
     if (!simpleColorShaderBack) {
-        simpleColorShaderBack = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
-        auto result = simpleColorShaderBack->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/color_vshader.vsh");
-        assert(result);
-
-        assert(simpleColorShaderBack->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/color_fshader.fsh"));
-        assert(simpleColorShaderBack->link());
+        simpleColorShaderBack = new QOpenGLShaderProgram(); //memory managed by Qt
+        if (!simpleColorShaderBack->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/color_vshader.vsh")) {
+            qDebug() << "Vertex shader compile error:" << simpleColorShaderBack->log();
+        }
+        if (!simpleColorShaderBack->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/color_fshader.fsh")) {
+            qDebug() << "Fragment shader compile error:" << simpleColorShaderBack->log();
+        }
+        if (!simpleColorShaderBack->link()){
+            qDebug() << "Shader link error::" << simpleColorShaderBack->log();
+        }
     }
 }
 
@@ -61,27 +65,45 @@ void initializeShaders() {
 
     //All shader memory will be managed by the current QThread
     if (!simpleColorShader) {
-        simpleColorShader = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
-        assert(simpleColorShader->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/color_vshader.vsh"));
-        assert(simpleColorShader->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/color_fshader.fsh"));
+        simpleColorShader = new QOpenGLShaderProgram(); //memory managed by Qt
+        if (!simpleColorShader->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/color_vshader.vsh")) {
+            qDebug() << "Vertex shader compile error:" << simpleColorShader->log();
+        }
+        if (!simpleColorShader->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/color_fshader.fsh")) {
+            qDebug() << "Fragment shader compile error:" << simpleColorShader->log();
+        }
         simpleColorShader->bindAttributeLocation("vertex",0);
-        assert(simpleColorShader->link());
+        if (!simpleColorShader->link()){
+            qDebug() << "Shader link error::" << simpleColorShader->log();
+        }
     }
     if (!texShader) {
-        texShader = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
-        assert(texShader->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/colortex_vshader.vsh"));
-        assert(texShader->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/colortex_fshader.fsh"));
+        texShader = new QOpenGLShaderProgram(); //memory managed by Qt
+        if (!texShader->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/colortex_vshader.vsh")) {
+            qDebug() << "Vertex shader compile error:" << texShader->log();
+        }
+        if (!texShader->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/colortex_fshader.fsh")) {
+            qDebug() << "Fragment shader compile error:" << texShader->log();
+        }
         texShader->bindAttributeLocation("vertex", 0);
         texShader->bindAttributeLocation("texcoord_src", 1);
-        assert(texShader->link());
+        if (!texShader->link()) {
+            qDebug() << "Shader link error::" << texShader->log();
+        }
     }
     if (!interpColorShader) {
-        interpColorShader = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
-        assert(interpColorShader->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/colors_vshader.vsh"));
-        assert(interpColorShader->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/colors_fshader.fsh"));
+        interpColorShader = new QOpenGLShaderProgram(); //memory managed by Qt
+        if (!interpColorShader->addShaderFromSourceFile(QOpenGLShader::Vertex, PREFIX "/shaders/colors_vshader.vsh")){
+            qDebug() << "Vertex shader compile error:" << interpColorShader->log();
+        }
+        if (!interpColorShader->addShaderFromSourceFile(QOpenGLShader::Fragment, PREFIX "/shaders/colors_fshader.fsh")) {
+            qDebug() << "Fragment shader compile error:" << interpColorShader->log();
+        }
         interpColorShader->bindAttributeLocation("vertex", 0);
         interpColorShader->bindAttributeLocation("color", 1);
-        assert(interpColorShader->link());
+        if (!interpColorShader->link()) {
+            qDebug() << "Shader link error::" << interpColorShader->log();
+        }
     }
 }
 
@@ -166,7 +188,10 @@ void glDrawArraysColorBack(QOpenGLFunctions *gl,
                            float pointSize)
 {
     //bind shader
-    assert(simpleColorShaderBack->bind());
+    //assert(simpleColorShaderBack->bind());
+     if (!simpleColorShaderBack->bind()) {
+        qDebug() << "bind failed" << simpleColorShaderBack->log();
+    }
     //set color
     simpleColorShaderBack->setUniformValue("color", color);
     //set mvp matrix
@@ -207,7 +232,9 @@ void glDrawArraysColor(QOpenGLFunctions *gl,
                        float pointSize)
 {
     //bind shader
-    assert(simpleColorShader->bind());
+    if (!simpleColorShader->bind()) {
+        qDebug() << "bind failed" << simpleColorShader->log();
+    }
     //set color
     simpleColorShader->setUniformValue("color", color);
     //set mvp matrix
@@ -249,7 +276,10 @@ void glDrawArraysColors(QOpenGLFunctions *gl,
                         float pointSize)
 {
     //bind shader
-    assert(interpColorShader->bind());
+    //assert(interpColorShader->bind());
+    if (!interpColorShader->bind()) {
+        qDebug() << "bind failed" << interpColorShader->log();
+    }
     //set mvp matrix
     interpColorShader->setUniformValue("mvpMatrix", mvp);
 
@@ -300,7 +330,10 @@ void glDrawArraysTexture(QOpenGLFunctions *gl,
 {
     //gl->glEnable(GL_TEXTURE_2D);
     //bind shader
-    assert(texShader->bind());
+    //assert(texShader->bind());
+    if (!texShader->bind()) {
+        qDebug() << "bind failed" << texShader->log();
+    }
     //set mvp matrix
     texShader->setUniformValue("color", color);
     texShader->setUniformValue("texture", 0);
@@ -460,13 +493,13 @@ void drawText3D(const CCamera &camera, QOpenGLFunctions *gl,
 
     mvp.translate(x1, y1, 0);
 
-    if ((double)property_setDisplay_camPitch < -45)
+    if (SettingsManager::instance()->display_camPitch() < -45)
     {
         mvp.rotate(90, 1, 0, 0);
         if (camera.camFollowing) mvp.rotate(-camera.camHeading, 0, 1, 0);
         size = -camera.camSetDistance;
         size = pow(size, 0.8);
-        size /= 800;
+        size /= 300;
     }
 
     else
@@ -474,7 +507,7 @@ void drawText3D(const CCamera &camera, QOpenGLFunctions *gl,
         if (camera.camFollowing) mvp.rotate(-camera.camHeading, 0, 0, 1);
         size = -camera.camSetDistance;
         size = pow(size, 0.85);
-        size /= 1000;
+        size /= 500;
     }
 
     double u_step = (double)GlyphWidth / (double)textureWidth;
@@ -486,7 +519,7 @@ void drawText3D(const CCamera &camera, QOpenGLFunctions *gl,
         char idx = text.at(n).toLatin1();
         double u = (double)(idx % GlyphsPerLine) * u_step;
         double v = (double)(idx / GlyphsPerLine) * v_step;
-        gldraw.clear();
+        //gldraw.clear();
 
         //1
         vt.texcoord = QVector2D(u, v + v_step);
@@ -535,7 +568,7 @@ void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp
     size = pow(size, 0.8)/800;
 
     //2d
-    if ((double)property_setDisplay_camPitch > -58)
+    if (SettingsManager::instance()->display_camPitch() < -58)
     {
         if (!camera.camFollowing)
         {
@@ -560,7 +593,7 @@ void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp
         }
         else
         {
-            mvp.rotate(-(double)property_setDisplay_camPitch, 1, 0, 0);
+            mvp.rotate(- SettingsManager::instance()->display_camPitch(), 1, 0, 0);
             y *= 0.3;
         }
     }

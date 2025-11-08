@@ -4,14 +4,31 @@
 // GUI to backend field interface
 #include "formgps.h"
 #include "qmlutil.h"
-#include "aogproperty.h"
+#include "classes/settingsmanager.h"
+#include <QUrl>
+#include <QTimer>
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <iomanip>
+
+#include "cboundarylist.h"
+
+double latK, lonK = 0.0;
 
 void FormGPS::field_update_list() {
+
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields";
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
                             + "/" + QCoreApplication::applicationName() + "/Fields";
+#endif
 
-    QObject *fieldInterface = qmlItem(mainWindow, "fieldInterface");
+    // fieldInterface is now a class member, initialized in formgps_ui.cpp
     QList<QVariant> fieldList;
     QMap<QString, QVariant> field;
     int index = 0;
@@ -26,34 +43,80 @@ void FormGPS::field_update_list() {
         }
     }
 
-    fieldInterface->setProperty("field_list", fieldList);
+    if (fieldInterface) {
+        fieldInterface->setProperty("field_list", fieldList);
+    }
 }
 
 void FormGPS::field_close() {
-    FileSaveEverythingBeforeClosingField();
+    qDebug() << "field_close";
+
+    // Get current field name and set active field profile for saving
+    QString currentField = SettingsManager::instance()->f_currentDir();
+    if (!currentField.isEmpty() && currentField != "Default") {
+        QString jsonFilename;
+#ifdef __ANDROID__
+        jsonFilename = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentField + "_settings.json";
+#else
+        jsonFilename = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                      + "/" + QCoreApplication::applicationName() + "/Fields/" + currentField + "_settings.json";
+#endif
+
+        // Set active field profile so FileSaveEverythingBeforeClosingField() saves to field JSON
+        SettingsManager::instance()->setActiveFieldProfile(jsonFilename);
+        qDebug() << "field_close: Set active field profile for saving:" << jsonFilename;
+    }
+
+    FileSaveEverythingBeforeClosingField(false);  // Don't save vehicle when closing field
+
+    // Clear field profile after saving
+    SettingsManager::instance()->clearActiveFieldProfile();
+    qDebug() << "field_close: Cleared field profile after saving";
 }
 
 void FormGPS::field_open(QString field_name) {
-    FileSaveEverythingBeforeClosingField();
+    qDebug() << "field_open";
+
+    // Phase 6.0.4: PropertyWrapper completely removed - using Qt 6.8 Q_PROPERTY native architecture
+
+    qDebug() << "✅ field_open: AOGInterface ready, proceeding with field operations";
+
+    FileSaveEverythingBeforeClosingField(false);  // Don't save vehicle when opening field
     if (! FileOpenField(field_name)) {
         TimedMessageBox(8000, tr("Saved field does not exist."), QString(tr("Cannot find the requested saved field.")) + " " +
                                                                 field_name);
 
-        property_setF_CurrentDir = "Default";
+        SettingsManager::instance()->setF_currentDir("Default");
+    } else {
+        // Field opened successfully, try to load JSON profile if it exists
+        field_load_json(field_name);
     }
 }
 
 void FormGPS::field_new(QString field_name) {
+    // Phase 6.0.4: PropertyWrapper completely removed - using Qt 6.8 Q_PROPERTY native architecture
+
     //assume the GUI will vet the name a little bit
     lock.lockForWrite();
-    FileSaveEverythingBeforeClosingField();
+
+    // CRITICAL DEADLOCK FIX: Save current field AFTER releasing lock (same as field_close fix)
+    // FileSaveEverythingBeforeClosingField() needs to acquire mutex but lock is already held
+    lock.unlock();
+    qDebug() << "Lock released, calling FileSaveEverythingBeforeClosingField(false)";
+    FileSaveEverythingBeforeClosingField(false);  // Don't save vehicle to avoid async deadlock
+    qDebug() << "FileSaveEverythingBeforeClosingField() completed, no async ops - re-acquiring lock";
+    lock.lockForWrite();
+
     currentFieldDirectory = field_name.trimmed();
-    property_setF_CurrentDir = currentFieldDirectory;
+    SettingsManager::instance()->setF_currentDir(currentFieldDirectory);
     JobNew();
 
-    pn.latStart = pn.latitude;
-    pn.lonStart = pn.longitude;
-    pn.SetLocalMetersPerDegree();
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLatStart(pn.latitude);
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLonStart(pn.longitude);
+    // Phase 6.3.1: Use PropertyWrapper for safe QObject access
+    pn.SetLocalMetersPerDegree(this);
 
     FileCreateField();
     FileCreateSections();
@@ -67,15 +130,30 @@ void FormGPS::field_new(QString field_name) {
 }
 
 void FormGPS::field_new_from(QString existing, QString field_name, int flags) {
-    lock.lockForWrite();
-    FileSaveEverythingBeforeClosingField();
+    qDebug() << "field_new_from - REFACTORED: save first, then create with single lock";
+
+    // STEP 1: Save current field WITHOUT any lock (cleaner approach)
+    qDebug() << "Saving current field before creating new one";
+    FileSaveEverythingBeforeClosingField(false);  // Don't save vehicle to avoid async operations
+    qDebug() << "Current field saved, proceeding to create new field";
+
+    // STEP 2: Load existing field BEFORE acquiring lock (FileOpenField has its own locks)
+    qDebug() << "Before FileOpenField(" << existing << ")";
     if (! FileOpenField(existing,flags)) { //load whatever is requested from existing field
         TimedMessageBox(8000, tr("Existing field cannot be found"), QString(tr("Cannot find the existing saved field.")) + " " +
                                                                 existing);
     }
+    qDebug() << "After FileOpenField, acquiring lock for field creation operations";
+
+    // STEP 3: Create new field with lock
+    lock.lockForWrite();
+    qDebug() << "Lock acquired, changing to new name:" << field_name;
+
     //change to new name
     currentFieldDirectory = field_name;
-    property_setF_CurrentDir = currentFieldDirectory;
+    qDebug() << "Before SettingsManager setValue";
+    SettingsManager::instance()->setF_currentDir(currentFieldDirectory);
+    qDebug() << "After SettingsManager setValue";
 
     FileCreateField();
     FileCreateSections();
@@ -99,11 +177,280 @@ void FormGPS::field_new_from(QString existing, QString field_name, int flags) {
     }
     FileSaveSections();
     lock.unlock();
+    qDebug() << "field_new_from completed successfully";
+}
+
+bool parseDouble(const std::string& input, double& output) {
+    std::string cleaned = input;
+
+    // Replace comma with dot for decimal point compatibility
+    std::replace(cleaned.begin(), cleaned.end(), ',', '.');
+
+    std::istringstream iss(cleaned);
+    iss.imbue(std::locale::classic()); // Ensures '.' is the decimal point
+
+    iss >> output;
+
+    // Check for parsing success and no extra characters
+    return !iss.fail() && iss.eof();
+}
+
+void FindLatLon(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file.\n";
+        return;
+    }
+
+    std::string line;
+    std::string coordinates;
+    try {
+        while (std::getline(file, line)) {
+            size_t startIndex = line.find("<coordinates>");
+            if (startIndex != std::string::npos) {
+                // Found opening tag
+                while (true) {
+                    size_t endIndex = line.find("</coordinates>");
+
+                    if (endIndex == std::string::npos) {
+                        if (startIndex == std::string::npos)
+                            coordinates += line;
+                        else
+                            coordinates += line.substr(startIndex + 13);  // Skip "<coordinates>"
+                    } else {
+                        if (startIndex == std::string::npos)
+                            coordinates += line.substr(0, endIndex);
+                        else
+                            coordinates += line.substr(startIndex + 13, endIndex - (startIndex + 13));
+                        break;
+                    }
+
+                    if (!std::getline(file, line)) break;
+                    line.erase(0, line.find_first_not_of(" \t\n\r\f\v")); // trim
+                    startIndex = std::string::npos;
+                }
+
+                // Split the coordinates by whitespace
+                std::istringstream ss(coordinates);
+                std::string item;
+                std::vector<std::string> numberSets;
+                while (ss >> item) {
+                    numberSets.push_back(item);
+                }
+
+                if (numberSets.size() > 2) {
+                    double counter = 0, lat = 0, lon = 0;
+                    latK = lonK = 0;
+
+                    for (const auto& coord : numberSets) {
+                        if (coord.length() < 3) continue;
+                        size_t comma1 = coord.find(',');
+                        size_t comma2 = coord.find(',', comma1 + 1);
+                        if (comma1 == std::string::npos || comma2 == std::string::npos) continue;
+
+                        std::string lonStr = coord.substr(0, comma1);
+                        std::string latStr = coord.substr(comma1 + 1, comma2 - comma1 - 1);
+
+                        try {
+                            double tempLon, tempLat = 0.0;
+                            parseDouble(lonStr,tempLon);
+                            parseDouble(latStr,tempLat);
+                            lon += tempLon;
+                            lat += tempLat;
+                            counter += 1;
+                        } catch (...) {
+                            continue;
+                        }
+                    }
+
+                    if (counter > 0) {
+                        lonK = lon / counter;
+                        latK = lat / counter;
+                    }
+
+                    coordinates.clear();
+                } else {
+                    std::cerr << "Error reading KML: Too few coordinate points.\n";
+                    return;
+                }
+
+                break; // Exit after finding and processing first <coordinates> block
+            }
+        }
+    } catch (...) {
+        std::cerr << "Exception: Error Finding Lat Lon.\n";
+        return;
+    }
+
+    // In original C#: mf.bnd.isOkToAddPoints = false;
+    // Here: simulate behavior or ignore
+}
+
+void FormGPS::LoadKMLBoundary(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file.\n";
+        return;
+    }
+
+    std::string line;
+    std::string coordinates;
+    try {
+        while (std::getline(file, line)) {
+            size_t startIndex = line.find("<coordinates>");
+            if (startIndex != std::string::npos) {
+                // Found opening tag
+                while (true) {
+                    size_t endIndex = line.find("</coordinates>");
+
+                    if (endIndex == std::string::npos) {
+                        if (startIndex == std::string::npos)
+                            coordinates += line;
+                        else
+                            coordinates += line.substr(startIndex + 13);  // Skip "<coordinates>"
+                    } else {
+                        if (startIndex == std::string::npos)
+                            coordinates += line.substr(0, endIndex);
+                        else
+                            coordinates += line.substr(startIndex + 13, endIndex - (startIndex + 13));
+                        break;
+                    }
+
+                    if (!std::getline(file, line)) break;
+                    line.erase(0, line.find_first_not_of(" \t\n\r\f\v")); // trim
+                    startIndex = std::string::npos;
+                }
+
+                // Split the coordinates by whitespace
+                std::istringstream ss(coordinates);
+                std::string item;
+                std::vector<std::string> numberSets;
+                while (ss >> item) {
+                    numberSets.push_back(item);
+                }
+
+                if (numberSets.size() > 2) {
+                    double counter = 0, lat = 0, lon = 0;
+                    latK = lonK = 0;
+
+                    CBoundaryList New;
+
+                    for (const auto& coord : numberSets) {
+                        if (coord.length() < 3) continue;
+                        // Qt 6.8 fix: Remove debug print causing freeze with large KML files
+                        // qDebug() << coord;
+                        size_t comma1 = coord.find(',');
+                        size_t comma2 = coord.find(',', comma1 + 1);
+                        if (comma1 == std::string::npos || comma2 == std::string::npos) continue;
+
+                        std::string lonStr = coord.substr(0, comma1);
+                        std::string latStr = coord.substr(comma1 + 1, comma2 - comma1 - 1);
+
+                        try {
+                            double easting, northing, tmp1, tmp2 = 0.0;
+                            parseDouble(lonStr,lonK);
+                            parseDouble(latStr,latK);
+                            // Phase 6.3.1: Use PropertyWrapper for safe QObject access
+                            pn.ConvertWGS84ToLocal(latK, lonK, northing, easting, this);
+                            Vec3 temp(easting, northing, 0);
+                            New.fenceLine.append(temp);
+                        } catch (...) {
+                            continue;
+                        }
+                    }
+
+                    //build the boundary, make sure is clockwise for outer counter clockwise for inner
+                    New.CalculateFenceArea(bnd.bndList.count());
+                    New.FixFenceLine(bnd.bndList.count());
+
+                    bnd.bndList.append(New);
+
+                    //btnABDraw.Visible = true;
+
+                    coordinates.clear();
+                } else {
+                    std::cerr << "Error reading KML: Too few coordinate points.\n";
+                    return;
+                }
+
+                break; // Exit after finding and processing first <coordinates> block
+            }
+        }
+    } catch (...) {
+        std::cerr << "Exception: Error Finding Lat Lon.\n";
+        return;
+    }
+
+    // In original C#: mf.bnd.isOkToAddPoints = false;
+    // Here: simulate behavior or ignore
+}
+
+void FormGPS::field_new_from_KML(QString field_name, QString file_name) {
+    qDebug() << field_name << " " << file_name;
+
+    // Phase 6.0.4: PropertyWrapper completely removed - using Qt 6.8 Q_PROPERTY native architecture
+
+        //assume the GUI will vet the name a little bit
+    lock.lockForWrite();
+    FileSaveEverythingBeforeClosingField(false);  // Don't save vehicle when creating field from KML
+    currentFieldDirectory = field_name.trimmed();
+    SettingsManager::instance()->setF_currentDir(currentFieldDirectory);
+    JobNew();
+    // Convert QML file URL to local path using QUrl for robustness
+    QUrl fileUrl(file_name);
+    QString localPath = fileUrl.toLocalFile();
+    if (localPath.isEmpty()) {
+        // Fallback for manual parsing if QUrl fails
+        file_name.remove("file:///");
+        if (file_name.startsWith("/") && file_name.length() > 3 && file_name[2] == ':') {
+            file_name.remove(0, 1);
+        }
+        localPath = file_name;
+    }
+    file_name = localPath;
+    FindLatLon(file_name.toStdString());
+
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLatStart(latK);
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLonStart(lonK);
+    if (timerSim.isActive())
+        {
+            pn.latitude = this->latStart();
+            pn.longitude = this->lonStart();
+
+            sim.latitude = this->latStart();
+            SettingsManager::instance()->setGps_simLatitude(this->latStart());
+            sim.longitude = this->lonStart();
+            SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+        }
+    // Phase 6.3.1: Use PropertyWrapper for safe QObject access
+    pn.SetLocalMetersPerDegree(this);
+
+
+    FileCreateField();
+    FileCreateSections();
+    FileCreateRecPath();
+    FileCreateContour();
+    FileCreateElevation();
+    FileSaveFlags();
+    FileSaveABLines();     // Create empty AB lines files
+    FileSaveCurveLines();  // Create empty curve lines files
+    FileCreateBoundary();
+    FileSaveTram();
+    FileSaveHeadland();    // Create empty Headland.txt to prevent load errors
+
+    LoadKMLBoundary(file_name.toStdString());
+    lock.unlock();
 }
 
 void FormGPS::field_delete(QString field_name) {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + field_name;
+#else
     QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
                             + "/" + QCoreApplication::applicationName() + "/Fields/" + field_name;
+#endif
 
     QDir fieldDir(directoryName);
 
@@ -111,7 +458,67 @@ void FormGPS::field_delete(QString field_name) {
         TimedMessageBox(8000,tr("Cannot find saved field"),QString(tr("Cannot find saved field to delete.")) + " " + field_name);
         return;
     }
-
-    QFile::moveToTrash(directoryName);
+    if(!QFile::moveToTrash(directoryName)){
+        fieldDir.removeRecursively();
+    }
     field_update_list();
+}
+
+void FormGPS::field_saveas(QString field_name) {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields";
+#else
+    QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                            + "/" + QCoreApplication::applicationName() + "/Fields";
+#endif
+
+    QDir saveDir(directoryName);
+    if (!saveDir.exists()) {
+        bool ok = saveDir.mkpath(directoryName);
+        if (!ok) {
+            qWarning() << "Couldn't create path " << directoryName;
+            return;
+        }
+    }
+
+    QString jsonFilename = directoryName + "/" + field_name + "_settings.json";
+
+    // Save current field settings to JSON for auto-sync
+    qDebug() << "Field saveas: Scheduling async saveJson:" << jsonFilename;
+    QTimer::singleShot(50, this, [this, jsonFilename, field_name]() {
+        qDebug() << "Field saveas: Executing async saveJson:" << jsonFilename;
+        SettingsManager::instance()->saveJson(jsonFilename);
+
+        // Set as active field profile for future auto-saving
+        SettingsManager::instance()->setActiveFieldProfile(jsonFilename);
+        qDebug() << "Field saveas: JSON saved and set as active profile:" << jsonFilename;
+
+        // Also save traditional .txt files (existing system)
+        // This keeps compatibility with existing Field.txt, Boundary.txt etc.
+        this->field_update_list();
+        qDebug() << "Field saveas: Field list updated";
+    });
+}
+
+void FormGPS::field_load_json(QString field_name) {
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields";
+#else
+    QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                            + "/" + QCoreApplication::applicationName() + "/Fields";
+#endif
+
+    QString jsonFilename = directoryName + "/" + field_name + "_settings.json";
+
+    // Check if JSON profile exists
+    if (QFile::exists(jsonFilename)) {
+        qDebug() << "Field load JSON starting:" << jsonFilename;
+        SettingsManager::instance()->loadJson(jsonFilename);
+
+        // Set as active field profile for auto-saving
+        SettingsManager::instance()->setActiveFieldProfile(jsonFilename);
+        qDebug() << "Field JSON loaded and set as active profile:" << jsonFilename;
+    } else {
+        qDebug() << "Field JSON profile not found, using traditional .txt system:" << jsonFilename;
+    }
 }

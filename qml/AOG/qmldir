@@ -1,3 +1,2 @@
 module AOG
-singleton TracksInterface 1.0 ../interfaces/TracksInterface.qml
-
+AOGRenderer 1.0 MockAOGRenderer.qml

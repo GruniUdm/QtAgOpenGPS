@@ -11,10 +11,12 @@ Rectangle{
     width: 200* theme.scaleWidth
     height: childrenRect.height + 30 * theme.scaleHeight
     color: "#4d4d4d"
+
     Column{
         id: column
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.margins: 15 * theme.scaleHeight
+        Comp.TextLine{ color: "white"; text: qsTr("Serial ")+ aog.satellitesTracked}
         Comp.TextLine{ color: "white"; text: qsTr("Lat ", "abbreviation for latitude")+(Number(aog.latitude).toLocaleString(Qt.locale(), 'f', 9))}
         Comp.TextLine{ color: "white"; text: qsTr("Lon ", "abbreviation for longitude")+(Number(aog.longitude).toLocaleString(Qt.locale(), 'f', 9))}
         Comp.TextLine{ color: "white"; text: qsTr("N ", "abbreviation for northing") + (Number(aog.northing).toLocaleString(Qt.locale(), 'f', 3))}
@@ -26,8 +28,8 @@ Rectangle{
         Comp.TextLine{ color: "white"; text: qsTr("Raw Hz ", "abbreviation for Raw Hertz")+ (Number(aog.rawHz).toLocaleString(Qt.locale(), 'f', 1))}
         Comp.TextLine{ color: "white"; text: qsTr("Hz ", "abbreviation for Hertz")+ (Number(aog.hz).toLocaleString(Qt.locale(), 'f', 1))}
         Comp.TextLine{ color: "white"; text: qsTr("Dropped ")+ aog.droppedSentences}
-        Comp.TextLine{ color: "white"; text: qsTr("Fix2Fix ")+ (Number(aog.heading * 180 / Math.PI).toLocaleString(Qt.locale(), 'f', 1))}//convert from radians
-        Comp.TextLine{ color: "white"; text: qsTr("IMU ")+ aog.dispImuHeading;} //rounding taken care of in AOGInterface.qml
+        Comp.TextLine{ color: "white"; text: qsTr("Fix2Fix ")+ (Number(aog.gpsHeading * 180 / Math.PI).toLocaleString(Qt.locale(), 'f', 1))}//convert from radians
+        Comp.TextLine{ color: "white"; text: qsTr("IMU ")+ (aog.imuHeading > 360 ? "#INV" : Number(aog.imuHeading).toLocaleString(Qt.locale(), 'f', 1))}
         Comp.TextLine{ color: "white"; text: qsTr("Heading ")+ (Number(aog.fusedHeading * 180 / Math.PI).toLocaleString(Qt.locale(), 'f', 1))}
         Item{
             visible: false //should reference a setting if rtk is turned on

@@ -3,6 +3,8 @@
 //
 // Loaded by FieldOpen.qml. Contains the list of fields
 import QtQuick
+import AOG
+
 
 pragma ComponentBehavior: Bound
 
@@ -30,7 +32,7 @@ ListView {
 
         fieldsModel.clear()
         for( var i=0; i < fieldInterface.field_list.length ;i++)  {
-            distance = utils.distanceLatLon(aog.latitude, aog.longitude, fieldInterface.field_list[i].latitude, fieldInterface.field_list[i].longitude)
+            distance = Utils.distanceLatLon(aog.latitude, aog.longitude, fieldInterface.field_list[i].latitude, fieldInterface.field_list[i].longitude)
             fieldsModel.append( { index: i,
                                   name: fieldInterface.field_list[i].name,
                                   distance: distance,
@@ -132,7 +134,7 @@ ListView {
                 //anchors.verticalCenter: parent.verticalCenter
 
                 text: qsTr("Field name")
-                font.pointSize: 20
+                font.pixelSize: 20
             }
             MouseArea {
                 anchors.fill: parent
@@ -167,7 +169,7 @@ ListView {
                 id: distanceHeader
 
                 text: qsTr("Distance")
-                font.pointSize: 20
+                font.pixelSize: 20
             }
             MouseArea {
                 anchors.fill: parent
@@ -202,7 +204,7 @@ ListView {
                 id: areaHeader
 
                 text: qsTr("Area")
-                font.pointSize: 20
+                font.pixelSize: 20
             }
             MouseArea {
                 anchors.fill: parent
@@ -243,7 +245,7 @@ ListView {
 
             text: fieldDelegate.name
             elide: Text.ElideRight
-            font.pointSize: 18
+            font.pixelSize: 18
         }
         Text {
             anchors.top: parent.top
@@ -253,8 +255,8 @@ ListView {
             width: parent.width * 0.2
 
             id: distanceArea
-            text: utils.km_to_unit_string(fieldDelegate.distance,1)+ " " + utils.km_unit()
-            font.pointSize: 16
+            text: Utils.km_to_unit_string(fieldDelegate.distance,1)+ " " + Utils.km_unit()
+            font.pixelSize: 16
         }
         Text {
             anchors.top: parent.top
@@ -263,8 +265,8 @@ ListView {
 
             text: (fieldDelegate.boundaryArea < 1 ?
                        qsTr("No boundary") :
-                       utils.area_to_unit_string(fieldDelegate.boundaryArea,1) + " " + utils.area_unit())
-            font.pointSize: 16
+                       Utils.area_to_unit_string(fieldDelegate.boundaryArea,1) + " " + Utils.area_unit())
+            font.pixelSize: 16
         }
 
         MouseArea {

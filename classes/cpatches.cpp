@@ -1,7 +1,9 @@
 #include "cpatches.h"
 #include "cfielddata.h"
 #include "ctool.h"
-#include "aogproperty.h"
+#include "classes/settingsmanager.h"
+#include "qmlutil.h"
+#include "formgps.h"
 
 CPatches::CPatches() {
    triangleList = QSharedPointer<PatchTriangleList>( new PatchTriangleList);
@@ -12,6 +14,8 @@ CPatches::CPatches() {
  */
 void CPatches::TurnMappingOn(CTool &tool, int j)
 {
+    QColor display_colorSectionsDay = SettingsManager::instance()->display_colorSectionsDay();
+
     QColor color_prop;
     numTriangles = 0;
 
@@ -28,14 +32,14 @@ void CPatches::TurnMappingOn(CTool &tool, int j)
         //Add Patch colour
         if (!tool.isMultiColoredSections)
         {
-            color_prop = property_setDisplay_colorSectionsDay;
+            color_prop = display_colorSectionsDay;
         }
         else
         {
             if (tool.isSectionsNotZones)
                 color_prop = tool.secColors[j];
             else
-                color_prop = property_setDisplay_colorSectionsDay;
+                color_prop = display_colorSectionsDay;
         }
 
         triangleList->append(QVector3D(color_prop.redF(), color_prop.greenF(), color_prop.blueF()));
@@ -52,9 +56,11 @@ void CPatches::TurnMappingOn(CTool &tool, int j)
 }
 
 void CPatches::TurnMappingOff(CTool &tool,
-                              CFieldData &fd)
+                              CFieldData &fd,
+                              QObject *mainWindow,
+                              FormGPS *formGPS)
 {
-   AddMappingPoint(tool, fd, 0);
+   AddMappingPoint(tool, fd, 0, mainWindow, formGPS);
 
    isDrawing = false;
    numTriangles = 0;
@@ -74,71 +80,77 @@ void CPatches::TurnMappingOff(CTool &tool,
 
 void CPatches::AddMappingPoint(CTool &tool,
                                CFieldData &fd,
-                               int j)
+                               int j,
+                               QObject *mainWindow,
+                               FormGPS *formGPS)
 {
-   Vec2 vleftPoint = tool.section[currentStartSectionNum].leftPoint;
-   Vec2 vrightPoint = tool.section[currentEndSectionNum].rightPoint;
-   QVector3D leftPoint(vleftPoint.easting,vleftPoint.northing,0);
-   QVector3D rightPoint(vrightPoint.easting,vrightPoint.northing,0);
-   QVector3D color;
-   QColor color_prop;
+    Vec2 vleftPoint = tool.section[currentStartSectionNum].leftPoint;
+    Vec2 vrightPoint = tool.section[currentEndSectionNum].rightPoint;
+    QVector3D leftPoint(vleftPoint.easting,vleftPoint.northing,0);
+    QVector3D rightPoint(vrightPoint.easting,vrightPoint.northing,0);
+    QVector3D color;
+    QColor color_prop;
+    QColor display_colorSectionsDay = SettingsManager::instance()->display_colorSectionsDay();
 
 
-   //add two triangles for next step.
-   //left side
+    //add two triangles for next step.
+    //left side
 
-   //add the point to List
-   triangleList->append(leftPoint);
+    //add the point to List
+    triangleList->append(leftPoint);
 
-   //Right side
-   triangleList->append(rightPoint);
+    //Right side
+    triangleList->append(rightPoint);
 
-   //count the triangle pairs
-   numTriangles++;
+    //count the triangle pairs
+    numTriangles++;
 
-   //quick count
-   int c = triangleList->count() - 1;
+    //quick count
+    int c = triangleList->count() - 1;
 
-   //when closing a job the triangle patches all are emptied but the section delay keeps going.
-   //Prevented by quick check. 4 points plus colour
+    //when closing a job the triangle patches all are emptied but the section delay keeps going.
+    //Prevented by quick check. 4 points plus colour
 
-   //torriem: easting is .x(), northing is .y() when using QVector3D
-   double temp = fabs(((*triangleList)[c].x() * ((*triangleList)[c - 1].y() - (*triangleList)[c - 2].y()))
-          + ((*triangleList)[c - 1].x() * ((*triangleList)[c - 2].y() - (*triangleList)[c].y()))
-          + ((*triangleList)[c - 2].x() * ((*triangleList)[c].y() - (*triangleList)[c - 1].y())));
+    //torriem: easting is .x(), northing is .y() when using QVector3D
+    double temp = fabs(((*triangleList)[c].x() * ((*triangleList)[c - 1].y() - (*triangleList)[c - 2].y()))
+                       + ((*triangleList)[c - 1].x() * ((*triangleList)[c - 2].y() - (*triangleList)[c].y()))
+                       + ((*triangleList)[c - 2].x() * ((*triangleList)[c].y() - (*triangleList)[c - 1].y())));
 
-   temp += fabs(((*triangleList)[c - 1].x() * ((*triangleList)[c - 2].y() - (*triangleList)[c - 3].y()))
-                + ((*triangleList)[c - 2].x() * ((*triangleList)[c - 3].y() - (*triangleList)[c - 1].y()))
-                + ((*triangleList)[c - 3].x() * ((*triangleList)[c - 1].y() - (*triangleList)[c - 2].y())));
+    temp += fabs(((*triangleList)[c - 1].x() * ((*triangleList)[c - 2].y() - (*triangleList)[c - 3].y()))
+                 + ((*triangleList)[c - 2].x() * ((*triangleList)[c - 3].y() - (*triangleList)[c - 1].y()))
+                 + ((*triangleList)[c - 3].x() * ((*triangleList)[c - 1].y() - (*triangleList)[c - 2].y())));
 
-   temp *= 0.5;
+    temp *= 0.5;
 
-   //TODO,
-   fd.workedAreaTotal += temp;
-   fd.workedAreaTotalUser += temp;
+    // Update worked area using Q_PROPERTY
+    double currentTotal = formGPS->workedAreaTotal();
+    formGPS->setWorkedAreaTotal(currentTotal + temp);
 
-   if (numTriangles > 61)
-   {
-       numTriangles = 0;
+    double currentUser = formGPS->workedAreaTotalUser();
+    formGPS->setWorkedAreaTotalUser(currentUser + temp);
 
-       //save the cutoff patch to be saved later
-       tool.patchSaveList.append(triangleList);
+    if (numTriangles > 61)
+    {
+        numTriangles = 0;
 
-       triangleList = QSharedPointer<PatchTriangleList>(new PatchTriangleList);
+        //save the cutoff patch to be saved later
+        tool.patchSaveList.append(triangleList);
 
-       patchList.append(triangleList);
+        triangleList = QSharedPointer<PatchTriangleList>(new PatchTriangleList);
 
-       //Add Patch colour
-       if (!tool.isMultiColoredSections)
-           color_prop = property_setDisplay_colorSectionsDay;
-       else
-           color_prop = tool.secColors[j];
+        patchList.append(triangleList);
 
-       color = QVector3D(color_prop.redF(), color_prop.greenF(), color_prop.blueF());
-       //add the points to List, yes its more points, but breaks up patches for culling
-       triangleList->append(color);
+        //Add Patch colour
+        if (!tool.isMultiColoredSections)
+            color_prop = display_colorSectionsDay;
+        else
+            color_prop = tool.secColors[j];
 
-       triangleList->append(leftPoint);
-       triangleList->append(rightPoint);
-   }
+        color = QVector3D(color_prop.redF(), color_prop.greenF(), color_prop.blueF());
+        //add the points to List, yes its more points, but breaks up patches for culling
+        triangleList->append(color);
+
+        triangleList->append(leftPoint);
+        triangleList->append(rightPoint);
+    }
 }

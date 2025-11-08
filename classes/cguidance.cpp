@@ -5,7 +5,7 @@
 #include "cabline.h"
 #include "cabcurve.h"
 #include "glm.h"
-#include "aogproperty.h"
+#include "classes/settingsmanager.h"
 
 CGuidance::CGuidance() {}
 
@@ -14,17 +14,17 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
                                  const CAHRS &ahrs
                                  )
 {
-    double stanleyHeadingErrorGain = property_stanleyHeadingErrorGain;
-    double stanleyDistanceErrorGain = property_stanleyDistanceErrorGain;
-    double stanleyIntegralGainAB = property_stanleyIntegralGainAB;
-    double sideHillCompFactor = property_setAS_sideHillComp;
-    double maxSteerAngle = property_setVehicle_maxSteerAngle;
+    double stanleyHeadingErrorGain = SettingsManager::instance()->vehicle_stanleyHeadingErrorGain();
+    double stanleyDistanceErrorGain = SettingsManager::instance()->vehicle_stanleyDistanceErrorGain();
+    double stanleyIntegralGainAB = SettingsManager::instance()->vehicle_stanleyIntegralGainAB();
+    double sideHillCompFactor = SettingsManager::instance()->as_sideHillCompensation();
+    double maxSteerAngle = SettingsManager::instance()->vehicle_maxSteerAngle();
 
-    if (vehicle.isReverse) steerHeadingError *= -1;
+    if (CVehicle::instance()->isReverse()) steerHeadingError *= -1;
     //Overshoot setting on Stanley tab
     steerHeadingError *= stanleyHeadingErrorGain;
 
-    double sped = fabs(vehicle.avgSpeed);
+    double sped = fabs(CVehicle::instance()->avgSpeed);
     if (sped > 1) sped = 1 + 0.277 * (sped - 1);
     else sped = 1;
     double XTEc = atan((distanceFromCurrentLineSteer * stanleyDistanceErrorGain)
@@ -51,7 +51,7 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
     //pivotDistanceError = atan((distanceFromCurrentLinePivot) / (sped)) * 0.2;
     //pivotErrorTotal = pivotDistanceError + pivotDerivative;
 
-    if (vehicle.avgSpeed > 1
+    if (CVehicle::instance()->avgSpeed > 1
         && isBtnAutoSteerOn
         && fabs(derivativeDistError) < 1
         && fabs(pivotDistanceError) < 0.25)
@@ -71,7 +71,7 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
     }
     else inty *= 0.7;
 
-    if (vehicle.isReverse) inty = 0;
+    if (CVehicle::instance()->isReverse()) inty = 0;
 
     if (ahrs.imuRoll != 88888)
         steerAngleGu += ahrs.imuRoll * -sideHillCompFactor;
@@ -80,11 +80,11 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
     else if (steerAngleGu > maxSteerAngle) steerAngleGu = maxSteerAngle;
 
     //used for smooth mode
-    vehicle.modeActualXTE = (distanceFromCurrentLinePivot);
+    CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
 
     //Convert to millimeters from meters
-    vehicle.guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
-    vehicle.guidanceLineSteerAngle = (short)(steerAngleGu * 100);
+    CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+    CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleGu * 100);
 }
 
 /// <summary>
@@ -104,14 +104,6 @@ void CGuidance::StanleyGuidanceABLine(Vec3 curPtA, Vec3 curPtB,
                                       const CAHRS &ahrs,
                                       CYouTurn &yt)
 {
-    /*
-    double stanleyHeadingErrorGain = property_stanleyHeadingErrorGain;
-    double stanleyDistanceErrorGain = property_stanleyDistanceErrorGain;
-    double stanleyIntegralGainAB = property_stanleyIntegralGainAB;
-    double sideHillCompFactor = property_setAS_sideHillComp;
-    double maxSteerAngle = property_setVehicle_maxSteerAngle;
-    */
-
     //get the pivot distance from currently active AB segment   ///////////  Pivot  ////////////
     double dx = curPtB.easting - curPtA.easting;
     double dy = curPtB.northing - curPtA.northing;
@@ -184,9 +176,9 @@ void CGuidance::StanleyGuidanceABLine(Vec3 curPtA, Vec3 curPtB,
     else if (steerHeadingError < -glm::PIBy2)
         steerHeadingError += M_PI;
 
-    vehicle.modeActualHeadingError = glm::toDegrees(steerHeadingError);
+    CVehicle::instance()->modeActualHeadingError = glm::toDegrees(steerHeadingError);
 
-    DoSteerAngleCalc(isBtnAutoSteerOn, vehicle,ahrs);
+    DoSteerAngleCalc(isBtnAutoSteerOn, *CVehicle::instance(),ahrs);
 }
 
 /// <summary>
@@ -201,14 +193,8 @@ void CGuidance::StanleyGuidanceCurve(Vec3 pivot, Vec3 steer,
                                      CVehicle &vehicle,
                                      CABCurve &curve,
                                      const CAHRS &ahrs)
-{            //calculate required steer angle
-    /*
-    double stanleyHeadingErrorGain = property_stanleyHeadingErrorGain;
-    double standleyDistanceErrorGain = property_stanleyDistanceErrorGain;
-    double stanleyIntegralGainAB = property_stanleyIntegralGainAB;
-    double sideHillCompFactor = property_setAS_sideHillComp;
-    double maxSteerAngle = property_setVehicle_maxSteerAngle;
-    */
+{
+    //calculate required steer angle
 
     //find the closest point roughly
     int cc = 0, dd;
@@ -366,7 +352,7 @@ void CGuidance::StanleyGuidanceCurve(Vec3 pivot, Vec3 steer,
         //if (curvature > glm::PIBy2) curvature -= M_PI; else if (curvature < -glm::PIBy2) curvature += M_PI;
 
         ////because of draft
-        //curvature = sin(curvature) * mf.vehicle.wheelbase * 0.8;
+        //curvature = sin(curvature) * mf.CVehicle::instance()->wheelbase * 0.8;
         //pivotCurvatureOffset = (pivotCurvatureOffset * 0.7) + (curvature * 0.3);
         //pivotCurvatureOffset = 0;
 
@@ -407,13 +393,13 @@ void CGuidance::StanleyGuidanceCurve(Vec3 pivot, Vec3 steer,
         if (steerHeadingError > glm::PIBy2) steerHeadingError -= M_PI;
         else if (steerHeadingError < -glm::PIBy2) steerHeadingError += M_PI;
 
-        DoSteerAngleCalc(isBtnAutoSteerOn, vehicle,ahrs);
+        DoSteerAngleCalc(isBtnAutoSteerOn, *CVehicle::instance(),ahrs);
     }
     else
     {
         //invalid distance so tell AS module
         distanceFromCurrentLineSteer = 32000;
-        vehicle.guidanceLineDistanceOff = 32000;
+        CVehicle::instance()->guidanceLineDistanceOff = 32000;
     }
 }
 

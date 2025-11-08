@@ -1,8 +1,9 @@
 #include "cboundary.h"
 #include "glm.h"
-#include "aogproperty.h"
+#include "classes/settingsmanager.h"
 #include "cabline.h"
 #include "cfielddata.h"
+#include "formgps.h"
 
 /************/
 /* CTurn.cs *
@@ -101,7 +102,7 @@ void CBoundary::FindClosestTurnPoint(const CABLine &ABLine, Vec3 fromPt)
     }
 }
 
-void CBoundary::BuildTurnLines(CFieldData &fd)
+void CBoundary::BuildTurnLines(CFieldData &fd, QObject *mainWindow, FormGPS *formGPS)
 {
     if (bndList.count() == 0)
     {
@@ -110,13 +111,13 @@ void CBoundary::BuildTurnLines(CFieldData &fd)
     }
 
     //update the GUI values for boundaries
-    fd.UpdateFieldBoundaryGUIAreas(bndList);
+    fd.UpdateFieldBoundaryGUIAreas(bndList, mainWindow, formGPS);
 
     //to fill the list of line points
     Vec3 point;
 
     //determine how wide a headland space
-    double totalHeadWidth = property_set_youTurnDistanceFromBoundary;
+    double totalHeadWidth = SettingsManager::instance()->youturn_distanceFromBoundary();
 
     //inside boundaries
     for (int j = 0; j < bndList.count(); j++)

@@ -3,20 +3,24 @@
 #include <iostream>
 #include <cmath>
 #include "glm.h"
-#include "aogproperty.h"
-
+#include "classes/settingsmanager.h"
 
 CSim::CSim(QObject *parent) : QObject(parent)
 {
     loadSettings();
     headingTrue = 0;
-    stepDistance = 0;
+    // ⚡ PHASE 6.0.20: Auto-start with movement for GPS initialization
+    // stepDistance = 0.05 → vtgSpeed ≈ 2 kph → bypasses stationary check (formgps_position.cpp:99)
+    // Allows heading calculation from 3 GPS fixes → question mark disappears automatically
+    stepDistance = 0.00;
+    isAccelForward = false;
+    isAccelBack = false;
 }
 
 void CSim::loadSettings()
 {
-    latitude = property_setGPS_SimLatitude;
-    longitude = property_setGPS_SimLongitude;
+    latitude = SettingsManager::instance()->gps_simLatitude();
+    longitude = SettingsManager::instance()->gps_simLongitude();
 }
 
 void CSim::DoSimTick(double _st)
@@ -175,6 +179,5 @@ void CSim::forward() {
 }
 
 void CSim::reset() {
-    latitude = property_setGPS_SimLatitude;
-    longitude = property_setGPS_SimLongitude;
+    loadSettings();
 }

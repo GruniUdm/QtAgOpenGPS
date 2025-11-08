@@ -26,7 +26,7 @@ Dialog {
     //signal setA(bool start_cancel); //true to mark an A point, false to cancel new point
 
     Connections {
-        target: linesInterface
+        target: formGPS
         function onAbLinesListChanged() {
             abLinePickerDialog.reloadModel()
         }
@@ -34,11 +34,11 @@ Dialog {
 
     function reloadModel() {
         ablineModel.clear()
-        for( var i = 0; i < linesInterface.abLinesList.length ; i++ ) {
-            ablineModel.append(linesInterface.abLinesList[i])
+        for( var i = 0; i < aogInterface.abLinesList.length ; i++ ) {
+            ablineModel.append(aogInterface.abLinesList[i])
         }
-        if (aog.currentABCurve >-1)
-            ablineView.currentIndex = aog.currentABCurve
+        if (aogInterface.currentABCurve >-1)
+            ablineView.currentIndex = aogInterface.currentABCurve
 
     }
 
@@ -46,23 +46,23 @@ Dialog {
         //when we show or hide the dialog, ask the main
         //program to update our lines list in the
         //AOGInterface object
-        linesInterface.abLine_updateLines()
-        ablineView.currentIndex = aog.currentABLine
+        aog.updateABLines()
+        ablineView.currentIndex = aogInterface.currentABLine
         //preselect first AB line if none was in use before
         //to make it faster for user
         if (ablineView.currentIndex < 0)
-            if (linesInterface.abLinesList.length > 0)
+            if (aogInterface.abLinesList.length > 0)
                 ablineView.currentIndex = 0
     }
 
     Rectangle{
         anchors.fill: parent
         border.width: 1
-        border.color: aog.blackDayWhiteNight
-        color: aog.backgroundColor
+        border.color: aogInterface.blackDayWhiteNight
+        color: aogInterface.backgroundColor
         TopLine{
             id: topLine
-            titleText: "AB Line"
+            titleText: qsTr("AB Line")
         }
         ColumnLayout{
             id: rightColumn
@@ -77,7 +77,7 @@ Dialog {
                 icon.source: prefix + "/images/FileCopy.png"
                 onClicked: {
                     if(ablineView.currentIndex > -1) {
-                        copyLineName.set_name("Copy of " + linesInterface.abLinesList[ablineView.currentIndex].name)
+                        copyLineName.set_name("Copy of " + aogInterface.abLinesList[ablineView.currentIndex].name)
                         copyLineName.visible = true
                     }
                 }
@@ -87,7 +87,7 @@ Dialog {
                 icon.source: prefix + "/images/FileEditName.png"
                 onClicked: {
                     if (ablineView.currentIndex > -1) {
-                        editLineName.set_name(linesInterface.abLinesList[ablineView.currentIndex].name)
+                        editLineName.set_name(aogInterface.abLinesList[ablineView.currentIndex].name)
                         editLineName.visible = true
                     }
                 }
@@ -97,7 +97,7 @@ Dialog {
                 icon.source: prefix + "/images/ABSwapPoints.png"
                 onClicked: {
                     if(ablineView.currentIndex > -1)
-                        linesInterface.abLine_swapHeading(ablineView.currentIndex);
+                        aog.swapABLineHeading(ablineView.currentIndex);
                 }
             }
             IconButtonTransparent{
@@ -105,7 +105,7 @@ Dialog {
                 icon.source: prefix + "/images/OK64.png"
                 onClicked: {
                     if (ablineView.currentIndex > -1) {
-                        aog.currentABLine = ablineView.currentIndex
+                        TracksInterface.select(ablineView.currentIndex)  // Qt 6.8: Use TracksInterface.select()
                         abLinePickerDialog.accept()
                     } else
                         abLinePickerDialog.reject()
@@ -135,9 +135,9 @@ Dialog {
 
                     onClicked: {
                         if (ablineView.currentIndex > -1) {
-                            if (aog.currentABLine == ablineView.currentIndex)
-                                aog.currentABLine = -1
-                            linesInterface.abLine_deleteLine(ablineView.currentIndex)
+                            if (aogInterface.currentABLine == ablineView.currentIndex)
+                                TracksInterface.select(-1)  // Qt 6.8: Deselect track
+                            aog.deleteABLine(ablineView.currentIndex)
                             ablineView.currentIndex = -1
                         }
                     }
@@ -146,7 +146,7 @@ Dialog {
                     objectName: "btnLineExit"
                     icon.source: prefix + "/images/SwitchOff.png"
                     onClicked: {
-                        aog.currentABLine = -1
+                        TracksInterface.select(-1)  // Qt 6.8: Deselect track
                         ablineView.currentIndex = -1
                         abLinePickerDialog.reject()
                     }
@@ -197,8 +197,8 @@ Dialog {
             background: Rectangle{
                 id: backgroundABSetter
                 border.width: 1
-                border.color: aog.blackDayWhiteNight
-                color: aog.backgroundColor
+                border.color: aogInterface.blackDayWhiteNight
+                color: aogInterface.backgroundColor
                 anchors.fill: parent
             }
 
@@ -220,9 +220,9 @@ Dialog {
             onAccepted: {
                 //emit signal to create the line
                 //abLinePickerDialog.addLine(
-                linesInterface.abLine_addLine(newLineName.abLineName,a_easting, a_northing, heading)
-                linesInterface.abLine_updateLines()
-                var count = linesInterface.abLinesList.length
+                aog.addABLine(newLineName.abLineName,a_easting, a_northing, heading)
+                aog.updateABLines()
+                var count = aogInterface.abLinesList.length
                 //ablineView.currentIndex = count -1
                 //aog.currentABLine = count - 1
                 abSetter.close()
@@ -258,7 +258,9 @@ Dialog {
                         abSetter.a_northing = aog.toolNorthing
                         abSetter.heading = aog.toolHeading
                         abSetter.heading_degrees = aog.toolHeading * 180 / Math.PI
-                        linesInterface.abLine_setA(true, abSetter.a_easting, abSetter.a_northing, abSetter.heading)
+                        // Qt 6.8 FIXED: Use TracksInterface workflow instead of missing aog.setABLinePointA
+                        TracksInterface.start_new(2)  // Start new AB line
+                        TracksInterface.mark_start(abSetter.a_easting, abSetter.a_northing, abSetter.heading)
                         a_manual_latitude.set_without_onchange(aog.toolLatitude)
                         a_manual_longitude.set_without_onchange(aog.toolLongitude)
                         b_stuff.visible = true
@@ -296,7 +298,9 @@ Dialog {
                                 abSetter.a_northing = northing
                                 abSetter.heading = aog.toolHeading
                                 abSetter.heading_degrees = aog.toolHeading * 180 / Math.PI
-                                linesInterface.abLine_setA(true, abSetter.a_easting, abSetter.a_northing, abSetter.heading)
+                                // Qt 6.8 FIXED: Use TracksInterface workflow instead of missing aog.setABLinePointA
+                        TracksInterface.start_new(2)  // Start new AB line
+                        TracksInterface.mark_start(abSetter.a_easting, abSetter.a_northing, abSetter.heading)
                             }
                         }
                     }
@@ -317,7 +321,9 @@ Dialog {
                                 const [northing, easting] = aog.convertWGS84ToLocal(Number(a_manual_latitude.text), Number(a_manual_longitude.text))
                                 abSetter.a_easting = easting
                                 abSetter.a_northing = northing
-                                linesInterface.abLine_setA(true, abSetter.a_easting, abSetter.a_northing, abSetter.heading)
+                                // Qt 6.8 FIXED: Use TracksInterface workflow instead of missing aog.setABLinePointA
+                        TracksInterface.start_new(2)  // Start new AB line
+                        TracksInterface.mark_start(abSetter.a_easting, abSetter.a_northing, abSetter.heading)
                             }
                         }
                     }
@@ -370,7 +376,9 @@ Dialog {
                             abSetter.heading = value / 100000 * Math.PI / 180.0
                             abSetter.heading_degrees = value / 100000
 
-                            linesInterface.abLine_setA(true, abSetter.a_easting, abSetter.a_northing, abSetter.heading)
+                            // Qt 6.8 FIXED: Use TracksInterface workflow instead of missing aog.setABLinePointA
+                        TracksInterface.start_new(2)  // Start new AB line
+                        TracksInterface.mark_start(abSetter.a_easting, abSetter.a_northing, abSetter.heading)
 
                             //calculate b latitude and longitude for the display
                             //use 100m
@@ -483,7 +491,7 @@ Dialog {
                 icon.source: prefix + "/images/Cancel64.png"
                  onClicked:{
                      //cancel
-                     linesInterface.abLine_setA(false,0,0,0) //turn off line setting
+                     TracksInterface.cancel_new() // Qt 6.8 FIXED: Cancel new track creation
                      abSetter.rejected()
                      abSetter.close()
                 }
@@ -529,11 +537,11 @@ Dialog {
             z: 2
             onAccepted: {
                 if(ablineView.currentIndex > -1) {
-                    var heading = linesInterface.abLinesList[ablineView.currentIndex].heading
-                    var easting = linesInterface.abLinesList[ablineView.currentIndex].easting
-                    var northing = linesInterface.abLinesList[ablineView.currentIndex].northing
-                    linesInterface.abLine_addLine(copyLineName.abLineName, easting, northing, heading)
-                    //linesInterface.abLine_updateLines()
+                    var heading = aogInterface.abLinesList[ablineView.currentIndex].heading
+                    var easting = aogInterface.abLinesList[ablineView.currentIndex].easting
+                    var northing = aogInterface.abLinesList[ablineView.currentIndex].northing
+                    aog.addABLine(copyLineName.abLineName, easting, northing, heading)
+                    //aog.updateABLines()
                     ablineView.positionViewAtEnd()
                 }
             }
@@ -549,8 +557,8 @@ Dialog {
             z: 1
             onAccepted: {
                 if(ablineView.currentIndex > -1) {
-                    linesInterface.abLine_changeName(ablineView.currentIndex, editLineName.abLineName)
-                    //linesInterface.abLine_updateLines()
+                    aog.changeABLineName(ablineView.currentIndex, editLineName.abLineName)
+                    //aog.updateABLines()
                     //ablineView.positionViewAtEnd()
                 }
             }
@@ -564,7 +572,7 @@ Dialog {
             anchors.bottom: bottomRow.top
             anchors.bottomMargin: 0
             anchors.margins: 10
-            color: aog.backgroundColor
+            color: aogInterface.backgroundColor
 
             ListModel {
                 id: ablineModel
@@ -588,8 +596,8 @@ Dialog {
                     indicator: Rectangle{
                         anchors.fill: parent
                         anchors.margins: 2
-                        //color: (control.down) ? aog.backgroundColor : aog.blackDayWhiteNight
-                        //color: (control.down) ? aog.blackDayWhiteNight : aog.backgroundColor
+                        //color: (control.down) ? aogInterface.backgroundColor : aogInterface.blackDayWhiteNight
+                        //color: (control.down) ? aogInterface.blackDayWhiteNight : aogInterface.backgroundColor
                         color: control.checked ? "blue" : "white"
                         visible: control.checked
                     }
@@ -609,8 +617,8 @@ Dialog {
                         text: model.name
                         font.pixelSize: 25
                         font.bold: true
-                        //color: control.checked ? aog.backgroundColor : aog.blackDayWhiteNight
-                        color: control.checked ? aog.blackDayWhiteNight : aog.backgroundColor
+                        //color: control.checked ? aogInterface.backgroundColor : aogInterface.blackDayWhiteNight
+                        color: control.checked ? aogInterface.blackDayWhiteNight : aogInterface.backgroundColor
                         z: 2
                     }
                 }

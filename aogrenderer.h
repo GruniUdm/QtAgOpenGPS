@@ -9,6 +9,8 @@
 //#include <QOpenGLContext>
 #include <QQuickFramebufferObject>
 #include <QtQml/qqmlregistration.h>
+#include <QProperty>
+#include <QBindable>
 
 #include <functional>
 Q_DECLARE_METATYPE(std::function<void (void)>)
@@ -53,12 +55,38 @@ class AOGRendererInSG : public QQuickFramebufferObject
     Q_OBJECT
     QML_NAMED_ELEMENT(AOGRenderer)
 
+    // ===== QML PROPERTIES - Qt 6.8 Rectangle Pattern =====
+    Q_PROPERTY(double shiftX READ shiftX WRITE setShiftX NOTIFY shiftXChanged BINDABLE bindableShiftX)
+    Q_PROPERTY(double shiftY READ shiftY WRITE setShiftY NOTIFY shiftYChanged BINDABLE bindableShiftY)
+
 public:
     AOGRenderer *theRenderer;
 
-    AOGRendererInSG();
+    AOGRendererInSG(QQuickItem* parent = nullptr);
 
     AOGRenderer *createRenderer() const;
+
+    // ===== Qt 6.8 Rectangle Pattern READ/WRITE/BINDABLE Methods =====
+    double shiftX() const;
+    void setShiftX(double value);
+    QBindable<double> bindableShiftX();
+
+    double shiftY() const;
+    void setShiftY(double value);
+    QBindable<double> bindableShiftY();
+
+signals:
+    // Qt 6.8 Rectangle Pattern NOTIFY signals
+    void shiftXChanged();
+    void shiftYChanged();
+
+    // NOTE: clicked, dragged, zoomOut, zoomIn signals are defined in QML
+    // and work via Qt's meta-object system - no C++ declaration needed
+
+private:
+    // ===== Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY Private Members =====
+    Q_OBJECT_BINDABLE_PROPERTY(AOGRendererInSG, double, m_shiftX, &AOGRendererInSG::shiftXChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(AOGRendererInSG, double, m_shiftY, &AOGRendererInSG::shiftYChanged)
 };
 
 #endif // OPENGLCONTROL_H

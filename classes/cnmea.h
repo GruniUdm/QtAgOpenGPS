@@ -21,10 +21,8 @@ public:
 
     double prevLatitude, prevLongitude;
 
-    //local plane geometry
-    double latStart, lonStart;
-
-    double mPerDegreeLat, mPerDegreeLon;
+    // Phase 6.0.20 Task 24 Step 3.5: mPerDegreeLat moved to FormGPS Q_PROPERTY
+    // mPerDegreeLon calculated locally in conversion functions (geodetic precision)
 
     //our current fix
     //moved to CVehicle
@@ -35,10 +33,20 @@ public:
     //used to offset the antenna position to compensate for drift
     Vec2 fixOffset = Vec2(0, 0);
 
-    //other GIS Info
-    double altitude, speed, newSpeed, vtgSpeed = glm::DOUBLE_MAX;
+    // GPS data with safe default values (0.0 = no data yet)
+    // Phase 6.0.24 Problem 18: Initialize to avoid garbage values at startup
+    double altitude = 0.0;
+    double speed = 0.0;
+    double newSpeed = 0.0;
+    double vtgSpeed = 0.0;  // Was DOUBLE_MAX - caused infinite speed display at startup
 
-    double headingTrueDual, headingTrue, hdop, age, headingTrueDualOffset;
+    // Heading and quality data - NMEA standard defaults
+    // hdop=99.9, age=99.9 = standard NMEA values for "no data available"
+    double headingTrueDual = 0.0;
+    double headingTrue = 0.0;
+    double hdop = 99.9;
+    double age = 99.9;
+    double headingTrueDualOffset = 0.0;
 
     int fixQuality, ageAlarm;
     int satellitesTracked;
@@ -51,10 +59,10 @@ public:
 
     //
     //void AverageTheSpeed(); moved to CVehicle
-    void SetLocalMetersPerDegree();
-    void ConvertWGS84ToLocal(double Lat, double Lon, double &outNorthing, double &outEasting);
-    void ConvertLocalToWGS84(double Northing, double Easting, double &outLat, double &outLon);
-    QString GetLocalToWSG84_KML(double Easting, double Northing);
+    void SetLocalMetersPerDegree(QObject* aog);
+    void ConvertWGS84ToLocal(double Lat, double Lon, double &outNorthing, double &outEasting, QObject* aog);
+    void ConvertLocalToWGS84(double Northing, double Easting, double &outLat, double &outLon, QObject* aog);
+    QString GetLocalToWSG84_KML(double Easting, double Northing, QObject* aog);
 
     void loadSettings(void);
 

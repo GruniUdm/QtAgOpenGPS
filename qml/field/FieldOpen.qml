@@ -76,14 +76,14 @@ Dialog {
                 id: deleteField
                 objectName: "btnDeleteField"
                 icon.source: prefix + "/images/skull.png"
-                text: "Delete Field"
+                text: qsTr("Delete Field")
                 //radius: 0
                 //color3: "white"
                 //border: 1
                 //height: 75
                 enabled: fieldTable.currentIndex > -1
                 onClicked: {
-                    fieldInterface.field_delete(fieldTable.currentFieldName)
+                    aog.fieldDelete(fieldTable.currentFieldName) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     //backend should update the list
                 }
             }
@@ -96,7 +96,7 @@ Dialog {
                 icon.source: prefix + "/images/Sort.png"
                 //color3: "white"
                 //height: 75
-                text: "Toggle Sort"
+                text: qsTr("Toggle Sort")
                 //radius: 0
 
                 //border: 1
@@ -109,7 +109,7 @@ Dialog {
                 id: cancel
                 objectName: "btnCancel"
                 icon.source: prefix + "/images/Cancel64.png"
-                text: "Cancel"
+                text: qsTr("Cancel")
                 //color3: "white"
                 //radius: 0
                 //border: 1
@@ -117,21 +117,21 @@ Dialog {
                 onClicked: {
                     fieldTable.clear_selection()
                     fieldOpen.close()
-                    closeDialog()
+                    //closeDialog()
                 }
             }
             IconButtonTransparent {
                 id: useSelected
                 objectName: "btnUseSelected"
                 icon.source: prefix + "/images/FileOpen.png"
-                text: "Use Selected"
+                text: qsTr("Use Selected")
                 //radius: 0
                 //color3: "white"
                 //border: 1
                 //height: 75
                 enabled: fieldTable.currentIndex > -1
                 onClicked: {
-                    fieldInterface.field_open(fieldTable.currentFieldName)
+                    aog.fieldOpen(fieldTable.currentFieldName) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     fieldTable.clear_selection()
                     fieldOpen.close()
                 }
