@@ -697,14 +697,13 @@ void FormGPS::oglBack_Paint()
     pfMatrixMode(PF_MODELVIEW);
     pfLoadIdentity();
     //pfTranslatef(0,0,-500);
-    pfTranslatef(0,0,-50);
+    pfTranslatef(0,0,-500);
     pfRotatef(glm::toDegrees(CVehicle::instance() -> toolPos.heading), 0, 0, 1);
     pfTranslatef(-CVehicle::instance()->toolPos.easting - sin(CVehicle::instance()->toolPos.heading) * 15,
                  -CVehicle::instance()->toolPos.northing - cos(CVehicle::instance()->toolPos.heading) * 15,
                  0);
 
-    pfEnable(PF_CULL_FACE);
-    pfCullFace(PF_BACK);
+    pfDisable(PF_CULL_FACE);
     pfShadeModel(PF_FLAT);
     pfNormal3f(0,0,1);
     pfPolygonMode(PF_FRONT_AND_BACK, PF_FILL);
@@ -778,7 +777,6 @@ void FormGPS::oglBack_Paint()
 
         if (patchCount > 0)
         {
-            float mycolor = 0;
             //for every new chunk of patch
             for (QSharedPointer<QVector<QVector3D>> &triList: triStrip[j].patchList)
             {
@@ -804,16 +802,15 @@ void FormGPS::oglBack_Paint()
                 if (isDraw)
                 {
 #ifdef SOFTGL_BACK
-                    pfBegin(PF_TRIANGLE_STRIP);
+                    pfBegin(PF_TRIANGLES);
+                    pfColor3f(0.0f, 0.5f, 0.0f);
                     pfLineWidth(1);
-                    qWarning() << "Color is " << mycolor << " and count is "<< count2;
-                    for (int i=1; i < count2; i++) {
-                        pfColor3f(mycolor, 0.5f, 0.0f);
+                    for (int i=3; i < count2; i++) {
+                        pfVertex3f((*triList)[i-2].x(), (*triList)[i-2].y(), 0);
+                        pfVertex3f((*triList)[i-1].x(), (*triList)[i-1].y(), 0);
                         pfVertex3f((*triList)[i].x(), (*triList)[i].y(), 0);
                     }
                     pfEnd();
-                    mycolor += 0.5;
-                    if (mycolor > 1) mycolor = 0;
 #else
                     QOpenGLBuffer triBuffer;
 
