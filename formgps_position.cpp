@@ -1528,8 +1528,8 @@ void FormGPS::UpdateFixPosition()
         oglBack_Paint();
         processSectionLookahead();
 
-        oglZoom_Paint();
-        processOverlapCount();
+        //oglZoom_Paint();
+        //processOverlapCount();
 
         glContext->functions()->glViewport(origview[0], origview[1], origview[2], origview[3]);
     }

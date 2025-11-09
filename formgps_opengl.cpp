@@ -14,6 +14,7 @@
 #include "aogrenderer.h"
 #include "cnmea.h"
 #include "qmlutil.h"
+#include "pixelforge.h"
 
 // Helper function to safely get OpenGL control properties with defaults
 struct OpenGLViewport {
@@ -676,10 +677,43 @@ void FormGPS::openGLControl_Shutdown()
 //back buffer openGL draw function
 void FormGPS::oglBack_Paint()
 {
+#define SOFTGL_BACK
 
+#ifdef SOFTGL_BACK
+    //TODO: this probably should be done only once in one of the init functions
+    grnPix = QImage(QSize(500,300), QImage::Format_RGBX8888);
+
+    PFcontext ctx = pfCreateContext(grnPix.bits(), 500,300, PF_RGBA, PF_UNSIGNED_BYTE);
+    pfMakeCurrent(ctx);
+    pfViewport(0,0,500,300);
+
+    pfMatrixMode(PF_PROJECTION);
+    pfLoadIdentity();
+    pfPerspective(0.06f, 1.6666666666666f, 50.0f, 520.0f);
+
+    pfClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    pfClear( PF_COLOR_BUFFER_BIT | PF_DEPTH_BUFFER_BIT );
+
+    pfMatrixMode(PF_MODELVIEW);
+    pfLoadIdentity();
+    //pfTranslatef(0,0,-500);
+    pfTranslatef(0,0,-50);
+    pfRotatef(glm::toDegrees(CVehicle::instance() -> toolPos.heading), 0, 0, 1);
+    pfTranslatef(-CVehicle::instance()->toolPos.easting - sin(CVehicle::instance()->toolPos.heading) * 15,
+                 -CVehicle::instance()->toolPos.northing - cos(CVehicle::instance()->toolPos.heading) * 15,
+                 0);
+
+    pfEnable(PF_CULL_FACE);
+    pfCullFace(PF_BACK);
+    pfShadeModel(PF_FLAT);
+    pfNormal3f(0,0,1);
+    pfPolygonMode(PF_FRONT_AND_BACK, PF_FILL);
+    pfColor3f(0.0f, 0.5f, 0.0f);
+#else
     QOpenGLContext *glContext = QOpenGLContext::currentContext();
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
+
 
     GLHelperOneColorBack gldraw;
 
@@ -723,9 +757,10 @@ void FormGPS::oglBack_Paint()
     modelview.translate(-CVehicle::instance()->toolPos.easting - sin(CVehicle::instance()->toolPos.heading) * 15,
                         -CVehicle::instance()->toolPos.northing - cos(CVehicle::instance()->toolPos.heading) * 15,
                         0);
-
     //patch color
     QColor patchColor = QColor::fromRgbF(0.0f, 0.5f, 0.0f);
+
+#endif
 
     //to draw or not the triangle patch
     bool isDraw;
@@ -743,6 +778,7 @@ void FormGPS::oglBack_Paint()
 
         if (patchCount > 0)
         {
+            float mycolor = 0;
             //for every new chunk of patch
             for (QSharedPointer<QVector<QVector3D>> &triList: triStrip[j].patchList)
             {
@@ -767,6 +803,18 @@ void FormGPS::oglBack_Paint()
 
                 if (isDraw)
                 {
+#ifdef SOFTGL_BACK
+                    pfBegin(PF_TRIANGLE_STRIP);
+                    pfLineWidth(1);
+                    qWarning() << "Color is " << mycolor << " and count is "<< count2;
+                    for (int i=1; i < count2; i++) {
+                        pfColor3f(mycolor, 0.5f, 0.0f);
+                        pfVertex3f((*triList)[i].x(), (*triList)[i].y(), 0);
+                    }
+                    pfEnd();
+                    mycolor += 0.5;
+                    if (mycolor > 1) mycolor = 0;
+#else
                     QOpenGLBuffer triBuffer;
 
                     triBuffer.create();
@@ -786,6 +834,7 @@ void FormGPS::oglBack_Paint()
                                       triBuffer,GL_FLOAT,count2-1);
 
                     triBuffer.destroy();
+#endif
                 }
             }
         }
@@ -805,21 +854,48 @@ void FormGPS::oglBack_Paint()
         {
             for (int i = 0; i < tram.tramList.count(); i++)
             {
+#ifdef SOFTGL_BACK
+                pfColor3ub(0,245,0);
+                pfBegin(PF_LINES);
+                for (int h = 1; h < tram.tramList[i]->count(); h++) {
+                    pfVertex3f((*tram.tramList[i])[h-1].easting, (*tram.tramList[i])[h-1].northing,0);
+                    pfVertex3f((*tram.tramList[i])[h].easting, (*tram.tramList[i])[h].northing,0);
+                }
+                pfEnd();
+#else
                 gldraw.clear();
                 for (int h = 0; h < tram.tramList[i]->count(); h++)
                     gldraw.append(QVector3D((*tram.tramList[i])[h].easting, (*tram.tramList[i])[h].northing, 0));
                 gldraw.draw(gl,projection*modelview,QColor::fromRgb(0,245,0),GL_LINE_STRIP,8);
+#endif
             }
         }
 
         if (tram.displayMode == 1 || tram.displayMode == 3)
         {
+#ifdef SOFTGL_BACK
+            pfColor3ub(0,245,0);
+            pfBegin(PF_LINES);
+
+            for (int h = 1; h < tram.tramBndOuterArr.count(); h++) {
+                pfVertex3f(tram.tramBndOuterArr[h-1].easting, tram.tramBndOuterArr[h-1].northing, 0);
+                pfVertex3f(tram.tramBndOuterArr[h].easting, tram.tramBndOuterArr[h].northing, 0);
+            }
+
+            for (int h = 1; h < tram.tramBndInnerArr.count(); h++) {
+                pfVertex3f(tram.tramBndInnerArr[h-1].easting, tram.tramBndInnerArr[h-1].northing, 0);
+                pfVertex3f(tram.tramBndInnerArr[h].easting, tram.tramBndInnerArr[h].northing, 0);
+            }
+
+            pfEnd();
+#else
             gldraw.clear();
             for (int h = 0; h < tram.tramBndOuterArr.count(); h++)
                 gldraw.append(QVector3D(tram.tramBndOuterArr[h].easting, tram.tramBndOuterArr[h].northing, 0));
             for (int h = 0; h < tram.tramBndInnerArr.count(); h++)
                 gldraw.append(QVector3D(tram.tramBndInnerArr[h].easting, tram.tramBndInnerArr[h].northing, 0));
             gldraw.draw(gl,projection*modelview,QColor::fromRgb(0,245,0),GL_LINE_STRIP,8);
+#endif
         }
     }
 
@@ -829,29 +905,43 @@ void FormGPS::oglBack_Paint()
         ////draw the bnd line
         if (bnd.bndList[0].fenceLine.count() > 3)
         {
+#ifdef SOFTGL_BACK
+            pfColor3ub(0,240,0);
+            pfLineWidth(3);
+#else
             DrawPolygonBack(gl,projection*modelview,bnd.bndList[0].fenceLine,3,QColor::fromRgb(0,240,0));
+#endif
         }
 
 
         //draw 250 green for the headland
         if (this->isHeadlandOn() && bnd.isSectionControlledByHeadland)
         {
+#ifdef SOFTGL_BACK
+            pfColor3ub(0,250,0);
+            pfLineWidth(3);
+#else
             DrawPolygonBack(gl,projection*modelview,bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
+#endif
         }
     }
 
+#ifdef SOFTGL_BACK
+    grnPix = grnPix.mirrored().convertToFormat(QImage::Format_RGBX8888);
+#else
     //finish it up - we need to read the ram of video card
     gl->glFlush();
 
     //read the whole block of pixels up to max lookahead, one read only
     //we'll use Qt's QImage function to grab it.
     grnPix = backFBO->toImage().mirrored().convertToFormat(QImage::Format_RGBX8888);
+#endif
     //qDebug() << grnPix.size();
     //QImage temp = grnPix.copy(tool.rpXPosition, 250, tool.rpWidth, 290 /*(int)rpHeight*/);
     //TODO: is thisn right?
     QImage temp = grnPix.copy(tool.rpXPosition, 0, tool.rpWidth, 290 /*(int)rpHeight*/);
     temp.setPixelColor(0,0,QColor::fromRgb(255,128,0));
-    grnPix = temp; //only show clipped image
+    //grnPix = temp; //only show clipped image
     memcpy(grnPixels, temp.constBits(), temp.size().width() * temp.size().height() * 4);
     //grnPix = temp;
 
@@ -886,11 +976,13 @@ void FormGPS::oglBack_Paint()
     //broken out into a callback in formgps.cpp called
     //processSectionLookahead().
 
+#ifndef SOFTGL_BACK
     glContext->functions()->glFlush();
 
     //restore QML's context
     backFBO->bindDefault();
     //resetOpenGLState();
+#endif
 }
 
 //Draw section OpenGL window, not visible

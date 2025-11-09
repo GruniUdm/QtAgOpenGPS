@@ -369,6 +369,7 @@ add_custom_target(MockQML SOURCES ${qml_mockup_files})
 target_include_directories(QtAgOpenGPS PRIVATE
     .
     classes
+    PixelForge/src
 )
 
 # QtAgIO QML module disabled - migrated to qml/agio/ in Phase 4.2
@@ -385,7 +386,18 @@ target_link_libraries(QtAgOpenGPS PRIVATE
     Qt6::Network
     Qt6::Multimedia
     Qt6::SerialPort
+    pixelforge
 )
+
+if(ANDROID)
+    set(OPENMP_LIBRARY_PATH "${ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/lib/clang/17/lib/linux/aarch64/libomp.so")
+    target_link_libraries(QtAgOpenGPS PRIVATE ${OPENMP_LIBRARY_PATH})
+    target_compile_options(QtAgOpenGPS PRIVATE -fopenmp)
+    set_target_properties(QtAgOpenGPS PROPERTIES
+        QT_ANDROID_EXTRA_LIBS
+        ${OPENMP_LIBRARY_PATH}
+    )
+endif()
 
 # Compile defines
 target_compile_definitions(QtAgOpenGPS PRIVATE
@@ -407,6 +419,8 @@ install(TARGETS QtAgOpenGPS
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qmldir
     DESTINATION "${CMAKE_INSTALL_BINDIR}/QtAgOpenGPS"
 )
+
+add_subdirectory(PixelForge)
 
 # target_compile_options(QtAgOpenGPS PRIVATE
 #     -Wall
