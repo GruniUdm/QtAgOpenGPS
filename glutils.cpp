@@ -9,6 +9,8 @@
 #include <assert.h>
 #include <math.h>
 #include "classes/settingsmanager.h"
+#include "glm.h"
+#include <QPainter>
 
 //module-level symbols
 QOpenGLShaderProgram *simpleColorShader = 0;
@@ -421,6 +423,41 @@ void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec3> &polygo
             gldraw.append(QVector3D(polygon[i].easting, polygon[i].northing, 0));
         }
         gldraw.draw(gl, mvp, color, GL_LINE_LOOP, size);
+    }
+}
+
+void DrawPolygonBack(QPainter &painter, QMatrix4x4 mvp, QVector<Vec2> &polygon, float size, QColor color)
+{
+    if (polygon.count() > 2)
+    {
+        QPolygon p;
+        for (int i = 0; i < polygon.count() ; i++)
+        {
+            p.append(glm::backbuffer_world_to_screen(mvp, polygon[i]));
+        }
+        QPen pen(color);
+        pen.setWidth(size);
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawPolygon(p);
+    }
+}
+
+void DrawPolygonBack(QPainter &painter, QMatrix4x4 mvp, QVector<Vec3> &polygon, float size, QColor color)
+{
+    if (polygon.count() > 2)
+    {
+        QPolygon p;
+
+        for (int i = 0; i < polygon.count() ; i++)
+        {
+            p.append(glm::backbuffer_world_to_screen(mvp, polygon[i]));
+        }
+        QPen pen(color);
+        pen.setWidth(size);
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawPolygon(p);
     }
 }
 

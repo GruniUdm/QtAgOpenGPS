@@ -13,6 +13,7 @@
 #include "vec3.h"
 
 class CCamera;
+class QPainter;
 
 struct ColorVertex {
     QVector3D vertex;
@@ -94,6 +95,8 @@ void DrawPolygon(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec3> &polygon, f
 
 void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec2> &polygon, float size, QColor color);
 void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec3> &polygon, float size, QColor color);
+void DrawPolygonBack(QPainter &painter, QMatrix4x4 mvp, QVector<Vec2> &polygon, float size, QColor color);
+void DrawPolygonBack(QPainter &painter, QMatrix4x4 mvp, QVector<Vec3> &polygon, float size, QColor color);
 
 class GLHelperOneColorBack: public QVector<QVector3D>
 {
