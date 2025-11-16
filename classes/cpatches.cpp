@@ -6,7 +6,8 @@
 #include "formgps.h"
 
 CPatches::CPatches() {
-   triangleList = QSharedPointer<PatchTriangleList>( new PatchTriangleList);
+    triangleList = QSharedPointer<PatchTriangleList>( new PatchTriangleList);
+    triangleListBoundingBox = QSharedPointer<PatchBoundingBox>( new PatchBoundingBox);
 }
 
 /* torriem: modifications. Passing in left, right points, and color, rather than
@@ -102,6 +103,15 @@ void CPatches::AddMappingPoint(CTool &tool,
     //Right side
     triangleList->append(rightPoint);
 
+    if (vleftPoint.easting < (*triangleListBoundingBox).minx) (*triangleListBoundingBox).minx = vleftPoint.easting;
+    if (vleftPoint.easting > (*triangleListBoundingBox).maxx) (*triangleListBoundingBox).maxx = vleftPoint.easting;
+    if (vleftPoint.northing < (*triangleListBoundingBox).maxy) (*triangleListBoundingBox).maxy = vleftPoint.northing;
+    if (vleftPoint.northing > (*triangleListBoundingBox).maxy) (*triangleListBoundingBox).maxy = vleftPoint.northing;
+    if (vrightPoint.easting < (*triangleListBoundingBox).minx) (*triangleListBoundingBox).minx = vrightPoint.easting;
+    if (vrightPoint.easting > (*triangleListBoundingBox).maxx) (*triangleListBoundingBox).maxx = vrightPoint.easting;
+    if (vrightPoint.northing < (*triangleListBoundingBox).maxy) (*triangleListBoundingBox).maxy = vrightPoint.northing;
+    if (vrightPoint.northing > (*triangleListBoundingBox).maxy) (*triangleListBoundingBox).maxy = vrightPoint.northing;
+
     //count the triangle pairs
     numTriangles++;
 
@@ -137,8 +147,10 @@ void CPatches::AddMappingPoint(CTool &tool,
         tool.patchSaveList.append(triangleList);
 
         triangleList = QSharedPointer<PatchTriangleList>(new PatchTriangleList);
+        triangleListBoundingBox = QSharedPointer<PatchBoundingBox>( new PatchBoundingBox);
 
         patchList.append(triangleList);
+        patchBoundingBoxList.append(triangleListBoundingBox);
 
         //Add Patch colour
         if (!tool.isMultiColoredSections)
