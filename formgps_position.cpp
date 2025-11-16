@@ -1368,40 +1368,11 @@ void FormGPS::UpdateFixPosition()
     }
 
     if (isJobStarted()) {
-        GLint oldviewport[4];
-        QOpenGLContext *glContext = QOpenGLContext::currentContext();
-
-        //if there's no context we need to create one because
-        //the qml renderer is in a different thread.
-        if (!glContext) {
-            glContext = new QOpenGLContext;
-            glContext->create();
-        }
-
-        if (!backSurface.isValid()) {
-            QSurfaceFormat format = glContext->format();
-            backSurface.setFormat(format);
-            backSurface.create();
-            auto r = backSurface.isValid();
-            qDebug() << "back surface creation: " << r;
-        }
-
-        auto result = glContext->makeCurrent(&backSurface);
-
-        initializeBackShader();
-
-        GLint origview[4];
-        glContext->functions()->glGetIntegerv(GL_VIEWPORT, origview);
-
-        //oglBack_Paint();
-        grnPix = QImage(QSize(500,300), QImage::Format_RGBX8888);
-        grnPix.fill(0);
+        oglBack_Paint();
         processSectionLookahead();
 
         //oglZoom_Paint();
         //processOverlapCount();
-
-        glContext->functions()->glViewport(origview[0], origview[1], origview[2], origview[3]);
     }
 
     //NOTE: Not sure here.
