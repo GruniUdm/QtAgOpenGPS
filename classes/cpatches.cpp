@@ -27,8 +27,11 @@ void CPatches::TurnMappingOn(CTool &tool, int j)
 
         //starting a new patch chunk so create a new triangle list
         triangleList = QSharedPointer<PatchTriangleList>( new PatchTriangleList);
+        //create a new bounding box
+        triangleListBoundingBox = QSharedPointer<PatchBoundingBox>( new PatchBoundingBox);
 
         patchList.append(triangleList);
+        patchBoundingBoxList.append(triangleListBoundingBox);
 
         //Add Patch colour
         if (!tool.isMultiColoredSections)
@@ -75,7 +78,11 @@ void CPatches::TurnMappingOff(CTool &tool,
    {
        //torriem: patch strip is too small to keep, so get rid of it
        triangleList->clear();
-       if (patchList.count() > 0) patchList.removeAt(patchList.count() - 1);
+       triangleListBoundingBox.clear();
+       if (patchList.count() > 0) {
+           patchList.removeAt(patchList.count() - 1);
+           patchBoundingBoxList.removeAt(patchList.count() - 1);
+       }
    }
 }
 
