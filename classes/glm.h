@@ -352,31 +352,31 @@ namespace glm {
         return 0 <= innerProduct && innerProduct <= dx * dx + dy * dy;
     }
 
-    inline static QPoint backbuffer_world_to_screen(QMatrix4x4 &mvp, QVector3D input) {
+    inline static QPointF backbuffer_world_to_screen(QMatrix4x4 &mvp, QVector3D input) {
         QVector4D temp = QVector4D(input,1.0);
         temp = mvp * temp;
         temp.setX(temp.x() / temp.w() * 250 + 250);
         temp.setY(150 - temp.y() / temp.w() * 150);
 
-        return QPoint(temp.x(), temp.y());
+        return QPointF(temp.x(), temp.y());
     }
 
-    inline static QPoint backbuffer_world_to_screen(QMatrix4x4 &mvp, Vec2 input) {
+    inline static QPointF backbuffer_world_to_screen(QMatrix4x4 &mvp, Vec2 input) {
         QVector4D temp = QVector4D(input.easting, input.northing, 0, 1.0);
         temp = mvp * temp;
         temp.setX(temp.x() / temp.w() * 250 + 250);
         temp.setY(150 - temp.y() / temp.w() * 150);
 
-        return QPoint(temp.x(), temp.y());
+        return QPointF(temp.x(), temp.y());
     }
 
-    inline static QPoint backbuffer_world_to_screen(QMatrix4x4 &mvp, Vec3 input) {
+    inline static QPointF backbuffer_world_to_screen(QMatrix4x4 &mvp, Vec3 input) {
         QVector4D temp = QVector4D(input.easting, input.northing, 0, 1.0);
         temp = mvp * temp;
         temp.setX(temp.x() / temp.w() * 250 + 250);
         temp.setY(150 - temp.y() / temp.w() * 150);
 
-        return QPoint(temp.x(), temp.y());
+        return QPointF(temp.x(), temp.y());
     }
 }
 #endif // GLM_H
