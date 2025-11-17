@@ -430,7 +430,7 @@ void DrawPolygonBack(QPainter &painter, QMatrix4x4 mvp, QVector<Vec2> &polygon, 
 {
     if (polygon.count() > 2)
     {
-        QPolygon p;
+        QPolygonF p;
         for (int i = 0; i < polygon.count() ; i++)
         {
             p.append(glm::backbuffer_world_to_screen(mvp, polygon[i]));
@@ -447,7 +447,7 @@ void DrawPolygonBack(QPainter &painter, QMatrix4x4 mvp, QVector<Vec3> &polygon, 
 {
     if (polygon.count() > 2)
     {
-        QPolygon p;
+        QPolygonF p;
 
         for (int i = 0; i < polygon.count() ; i++)
         {
