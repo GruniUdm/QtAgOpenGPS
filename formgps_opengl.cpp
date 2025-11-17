@@ -683,6 +683,25 @@ void FormGPS::oglBack_Paint()
 
     GLHelperOneColorBack gldraw;
 
+    GLint oldviewport[4];
+
+    //if there's no context we need to create one because
+    //the qml renderer is in a different thread.
+    if (!glContext) {
+        glContext = new QOpenGLContext;
+        glContext->create();
+    }
+
+    if (!backSurface.isValid()) {
+        QSurfaceFormat format = glContext->format();
+        backSurface.setFormat(format);
+        backSurface.create();
+        auto r = backSurface.isValid();
+        qDebug() << "back surface creation: " << r;
+    }
+
+    auto result = glContext->makeCurrent(&backSurface);
+
     initializeBackShader(); //compiler the shader we need if necessary
 
     /* use the QML context with an offscreen surface to draw
@@ -696,6 +715,12 @@ void FormGPS::oglBack_Paint()
     }
 
     backFBO->bind();
+
+    //save current viewport settings in case it conflicts with QML
+    GLint origview[4];
+    glContext->functions()->glGetIntegerv(GL_VIEWPORT, origview);
+
+
     glContext->functions()->glViewport(0,0,500,300);
     QOpenGLFunctions *gl = glContext->functions();
 
@@ -851,9 +876,8 @@ void FormGPS::oglBack_Paint()
     //TODO: is thisn right?
     QImage temp = grnPix.copy(tool.rpXPosition, 0, tool.rpWidth, 290 /*(int)rpHeight*/);
     temp.setPixelColor(0,0,QColor::fromRgb(255,128,0));
-    grnPix = temp; //only show clipped image
+    //grnPix = temp; //only show clipped image
     memcpy(grnPixels, temp.constBits(), temp.size().width() * temp.size().height() * 4);
-    //grnPix = temp;
 
     //first channel
     if (worldGrid.numRateChannels > 0)
@@ -887,6 +911,9 @@ void FormGPS::oglBack_Paint()
     //processSectionLookahead().
 
     glContext->functions()->glFlush();
+
+    //restore viewport
+    glContext->functions()->glViewport(origview[0], origview[1], origview[2], origview[3]);
 
     //restore QML's context
     backFBO->bindDefault();
