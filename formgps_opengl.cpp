@@ -678,6 +678,8 @@ void FormGPS::openGLControl_Shutdown()
 void FormGPS::oglBack_Paint()
 {
 
+    //TODO: put the openGL code back here as an optional code path
+
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
 
@@ -716,20 +718,25 @@ void FormGPS::oglBack_Paint()
     painter.setRenderHint(QPainter::Antialiasing, false);
 
     painter.setPen(Qt::NoPen);
+
     painter.setViewport(0,0,500,300);
     painter.setWindow(0,0,500,300);
     painter.setBrush(QBrush(patchColor));
 
-    QPolygon triangle;
-    QList<QLine> lines;
+    QPolygonF triangle;
+    QList<QLineF> lines;
 
     //to draw or not the triangle patch
     bool isDraw;
+    bool isDrawBB;
 
     double pivEplus = CVehicle::instance()->pivotAxlePos.easting + 50;
     double pivEminus = CVehicle::instance()->pivotAxlePos.easting - 50;
     double pivNplus = CVehicle::instance()->pivotAxlePos.northing + 50;
     double pivNminus = CVehicle::instance()->pivotAxlePos.northing - 50;
+
+    QPolygonF frustum({{pivEminus, pivNplus}, {pivEplus, pivNplus },
+                       { pivEplus, pivNminus}, {pivEminus, pivNminus }});
 
     //draw patches j= # of sections
     for (int j = 0; j < triStrip.count(); j++)
@@ -740,41 +747,43 @@ void FormGPS::oglBack_Paint()
         if (patchCount > 0)
         {
             //for every new chunk of patch
-            for (QSharedPointer<QVector<QVector3D>> &triList: triStrip[j].patchList)
+            for (int k = 0; k < triStrip[j].patchList.size() ; k++)
             {
                 isDraw = false;
-                int count2 = triList->size();
-                for (int i = 1; i < count2; i+=3)
-                {
-                    //determine if point is in frustum or not
-                    if ((*triList)[i].x() > pivEplus)
-                        continue;
-                    if ((*triList)[i].x() < pivEminus)
-                        continue;
-                    if ((*triList)[i].y() > pivNplus)
-                        continue;
-                    if ((*triList)[i].y() < pivNminus)
-                        continue;
+                QSharedPointer<PatchTriangleList> triList = triStrip[j].patchList[k];
+                QSharedPointer<PatchBoundingBox> bb = triStrip[j].patchBoundingBoxList[k];
 
-                    //point is in frustum so draw the entire patch
+                //qDebug() << (*bb).minx << (*bb).maxx << (*bb).miny << (*bb).maxy;
+
+                QPolygonF patchBox({{ (*bb).minx, (*bb).miny }, {(*bb).maxx, (*bb).miny},
+                                    { (*bb).maxx, (*bb).maxy }, { (*bb).minx, (*bb).maxy } });
+
+                if (frustum.intersects(patchBox))
                     isDraw = true;
-                    break;
-                }
+
+                int count2 = triList->size();
 
                 if (isDraw)
                 {
                     triangle.clear();
+                    //triangle strip to polygon:
+                    //first two vertices, then every other one to the end
+                    //then from the end back to vertex #3, but every other one.
+                    triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[1]));
+                    triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[2]));
 
-                    for (int i=1; i < count2; i++) {
-
+                    //even vertices after first two
+                    for (int i=4; i < count2; i+=2) {
                         triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[i]));
-                        if (triangle.length() > 3)
-                            triangle.pop_front();
-
-                        if (triangle.length() == 3) {
-                            painter.drawPolygon(triangle);
-                        }
                     }
+
+                    //odd remaining vertices
+                    for (int i=count2 - (count2 % 2 ? 2 : 1) ; i >2 ; i -=2) {
+                        triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[i]));
+                    }
+
+                    painter.drawPolygon(triangle);
+
                 }
             }
         }
@@ -800,7 +809,7 @@ void FormGPS::oglBack_Paint()
             {
                 lines.clear();
                 for (int h = 1; h < tram.tramList[i]->count(); h++) {
-                    lines.append(QLine(glm::backbuffer_world_to_screen(mvp, (*tram.tramList[i])[h-1]),
+                    lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, (*tram.tramList[i])[h-1]),
                                        glm::backbuffer_world_to_screen(mvp, (*tram.tramList[i])[h])));
                 }
 
@@ -812,12 +821,12 @@ void FormGPS::oglBack_Paint()
         {
             lines.clear();
             for (int h = 0; h < tram.tramBndOuterArr.count(); h++) {
-                lines.append(QLine(glm::backbuffer_world_to_screen(mvp, tram.tramBndOuterArr[h-1]),
+                lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, tram.tramBndOuterArr[h-1]),
                                    glm::backbuffer_world_to_screen(mvp, tram.tramBndOuterArr[h])));
             }
 
             for (int h = 0; h < tram.tramBndInnerArr.count(); h++) {
-                lines.append(QLine(glm::backbuffer_world_to_screen(mvp, tram.tramBndInnerArr[h-1]),
+                lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, tram.tramBndInnerArr[h-1]),
                                    glm::backbuffer_world_to_screen(mvp, tram.tramBndInnerArr[h])));
             }
 
