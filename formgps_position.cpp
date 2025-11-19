@@ -39,6 +39,7 @@ void FormGPS::UpdateFixPosition()
     //swFrame.Stop();
     //Measure the frequency of the GPS updates
     //timeSliceOfLastFix = (double)(swFrame.elapsed()) / 1000;
+    qDebug() << "swFrame time before locking: " << swFrame.elapsed();
     lock.lockForWrite(); //stop GL from updating while we calculate a new position
 
     // Phase 6.0.21: Calculate Hz from CPU timer (AgIOService.nowHz/gpsHz removed)
@@ -808,7 +809,7 @@ void FormGPS::UpdateFixPosition()
         CVehicle::instance()->fixHeading-= glm::twoPI;
 
     //#endregion
-
+//
     //#region Corrected Position for GPS_OUT
     //NOTE: Michael, I'm not sure about this entire region
 
@@ -1383,7 +1384,7 @@ void FormGPS::UpdateFixPosition()
     //stop the timer and calc how long it took to do calcs and draw
     frameTimeRough = swFrame.elapsed();
 
-    if (frameTimeRough > 80) frameTimeRough = 80;
+    //if (frameTimeRough > 80) frameTimeRough = 80;
 
     // Phase 6.0.20: Qt 6.8 BINDABLE - use setter for automatic signal emission
     setFrameTime(frameTime() * 0.90 + frameTimeRough * 0.1);
@@ -1659,8 +1660,6 @@ void FormGPS::processSectionLookahead() {
                 isDraw = false;
                 QSharedPointer<PatchTriangleList> triList = triStrip[j].patchList[k];
                 QSharedPointer<PatchBoundingBox> bb = triStrip[j].patchBoundingBoxList[k];
-
-                //qDebug() << (*bb).minx << (*bb).maxx << (*bb).miny << (*bb).maxy;
 
                 QPolygonF patchBox({{ (*bb).minx, (*bb).miny }, {(*bb).maxx, (*bb).miny},
                                     { (*bb).maxx, (*bb).maxy }, { (*bb).minx, (*bb).maxy } });
@@ -2323,9 +2322,8 @@ void FormGPS::processSectionLookahead() {
 
     //stop the timer and calc how long it took to do calcs and draw
     frameTimeRough = swFrame.elapsed();
-    //qDebug() << "frame time after finishing section lookahead " << frameTimeRough ;
 
-    if (frameTimeRough > 50) frameTimeRough = 50;
+    //if (frameTimeRough > 50) frameTimeRough = 50;
 
     // Phase 6.0.20: Qt 6.8 BINDABLE - use setter for automatic signal emission
     setFrameTime(frameTime() * 0.90 + frameTimeRough * 0.1);
