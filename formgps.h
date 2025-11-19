@@ -774,6 +774,12 @@ public:
     QOffscreenSurface zoomSurface;
     std::unique_ptr<QOpenGLFramebufferObject> zoomFBO; // C++17 RAII - automatic cleanup
 
+    QSurfaceFormat mainSurfaceFormat;
+    QOpenGLContext mainOpenGLContext;
+    QOffscreenSurface mainSurface;
+    std::unique_ptr<QOpenGLFramebufferObject> mainFBO1; // C++17 RAII - automatic cleanup
+    std::unique_ptr<QOpenGLFramebufferObject> mainFBO2; // C++17 RAII - automatic cleanup
+    int active_fbo=-1;
 
     /*******************
      * from FormGPS.cs *
@@ -1648,6 +1654,7 @@ public slots:
     /***************************
      * from OpenGL.Designer.cs *
      ***************************/
+    void render_main_fbo();
     void oglMain_Paint();
     void openGLControl_Initialized();
     void openGLControl_Shutdown();

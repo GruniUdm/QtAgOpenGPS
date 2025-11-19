@@ -15,6 +15,9 @@
 #include "cnmea.h"
 #include "qmlutil.h"
 
+#include <QLabel>
+extern QLabel *overlapPixelsWindow;
+
 // Helper function to safely get OpenGL control properties with defaults
 struct OpenGLViewport {
     int width = 800;
@@ -187,7 +190,7 @@ QVector3D FormGPS::mouseClickToField(int mouseX, int mouseY)
     return fieldCoord;
 }
 
-void FormGPS::oglMain_Paint()
+void FormGPS::render_main_fbo()
 {
     QOpenGLContext *glContext = QOpenGLContext::currentContext();
     QOpenGLFunctions *gl = glContext->functions();
@@ -197,20 +200,49 @@ void FormGPS::oglMain_Paint()
     QMatrix4x4 modelview;
     QColor color;
     GLHelperTexture gldrawtex;
+
+    // Set The Blending Function For Translucency
+    gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    gl->glCullFace(GL_BACK);
+
+    gl->glEnable(GL_BLEND);
+    gl->glClearColor(0.25122f, 0.258f, 0.275f, 1.0f);
+    gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    gl->glDisable(GL_DEPTH_TEST);
+
+    modelview.setToIdentity();
+    projection.setToIdentity();
+
+    /*
+    if (backFBO) {
+        gl->glActiveTexture(GL_TEXTURE19);
+        gl->glBindTexture(GL_TEXTURE_2D, backFBO->texture());
+        gldrawtex.append( { QVector3D(1, 1, 0), QVector2D(1,0) } ); //Top Right
+        gldrawtex.append( { QVector3D(-1, 1, 0), QVector2D(0,0) } ); //Top Left
+        gldrawtex.append( { QVector3D(1, -1, 0), QVector2D(1,1) } ); //Bottom Right
+        gldrawtex.append( { QVector3D(-1, -1, 0), QVector2D(0,1) } ); //Bottom Left
+
+        gldrawtex.draw(gl, projection * modelview, GL_TRIANGLE_STRIP, false);
+    }
+    */
+}
+
+void FormGPS::oglMain_Paint()
+{
+    QOpenGLContext *glContext = QOpenGLContext::currentContext();
+    //if there's no context we need to create one because
+    //the qml renderer is in a different thread.
+    if (!glContext) {
+        glContext = new QOpenGLContext;
+        glContext->create();
+    }
+
+    QMatrix4x4 projection;
+    QMatrix4x4 modelview;
+    QColor color;
+    GLHelperTexture gldrawtex;
     GLHelperColors gldrawcolors;
     GLHelperOneColor gldraw1;
-
-    //if (newframe)
-    //    qDebug() << "start of new frame, waiting for lock at " << swFrame.elapsed();
-    //synchronize with the position code in the main thread
-    if (!lock.tryLockForRead())
-        //if there's no new position to draw, just return so we don't
-        //waste time redrawing.  Frame rate is at most gpsHz.  And if we
-        //need to redraw part of the window on a resize, it will just have
-        //to wait until the next position comes in.  Although if there is
-        //no simulator running and no positions coming in, the GL background
-        //will not update, which isn't what we want either.  Some kind of timeout?
-     return;
 
     float lineWidth = SettingsManager::instance()->display_lineWidth();
     
@@ -221,19 +253,37 @@ void FormGPS::oglMain_Paint()
     double shiftX = viewport.shiftX;
     double shiftY = viewport.shiftY;
     //gl->glViewport(oglX,oglY,width,height);
-    /*
-#ifdef GL_POINT_SPRITE
-    //not compatible with OpenGL ES
-    gl->glEnable(GL_POINT_SPRITE);
-#endif
-    */
-#ifdef GL_PROGRAM_POINT_SIZE
-    //not required on OpenGL ES
-    gl->glEnable(GL_PROGRAM_POINT_SIZE);
-#endif
 
-    //Do stuff that was in the initialized method, since Qt uses OpenGL and may
-    //have messed with the matrix stuff and other defaults
+    if (!mainSurface.isValid()) {
+        QSurfaceFormat format = glContext->format();
+        mainSurface.setFormat(format);
+        mainSurface.create();
+        auto r = mainSurface.isValid();
+        qDebug() << "main surface creation: " << r;
+    }
+
+    auto result = glContext->makeCurrent(&mainSurface);
+
+    QOpenGLFunctions *gl = glContext->functions();
+    initializeTextures();
+    initializeShaders();
+
+    if (!mainFBO1) {
+        QOpenGLFramebufferObjectFormat format;
+        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+        // ✅ C++17 RAII: automatic memory management, no manual delete needed
+        mainFBO1 = std::make_unique<QOpenGLFramebufferObject>(QSize(width,height), format);
+    }
+    if (!mainFBO2) {
+        QOpenGLFramebufferObjectFormat format;
+        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+        // ✅ C++17 RAII: automatic memory management, no manual delete needed
+        mainFBO2 = std::make_unique<QOpenGLFramebufferObject>(QSize(width,height), format);
+    }
+
+    mainFBO1->bind();
+
+    glContext->functions()->glViewport(0,0,width,height);
 
     // Set The Blending Function For Translucency
     gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -562,14 +612,6 @@ void FormGPS::oglMain_Paint()
             gl->glClear(GL_COLOR_BUFFER_BIT);
         }
 
-        //directly call section lookahead GL stuff from here
-        if (! newframe) {
-            //No new position, so no need to repaint the back buffer
-            //and do section look-ahead
-            lock.unlock();
-            //qWarning() << "rendered but skipping section lookahead processing.";
-            return;
-        }
         gl->glFlush();
 
     }
@@ -614,7 +656,18 @@ void FormGPS::oglMain_Paint()
 
         //GUI widgets have to be updated elsewhere
     }
-    lock.unlock();
+
+    /*
+        QImage mainPix = mainFBO1->toImage().convertToFormat(QImage::Format_RGBX8888);
+        qDebug() << "image size is: " << mainPix.size();
+        if (SettingsManager::instance()->display_showBack()) {
+            overlapPixelsWindow->setPixmap(QPixmap::fromImage(mainPix));
+        }
+*/
+
+        mainFBO1->bindDefault();
+
+    //lock.unlock();
     newframe = false;
 }
 
@@ -627,38 +680,11 @@ void FormGPS::openGLControl_Initialized()
 
     //Load all the textures
     //qDebug() << "initializing Open GL.";
-    initializeTextures();
+    //initializeTextures();
     //qDebug() << "textures loaded.";
-    initializeShaders();
+    //initializeShaders();
     //qDebug() << "shaders loaded.";
 
-    /*
-    //load shaders, memory managed by parent thread, which is in this case,
-    //the QML rendering thread, not the Qt main loop.
-    if (!simpleColorShader) {
-        simpleColorShader = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
-        assert(simpleColorShader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/color_vshader.vsh"));
-        assert(simpleColorShader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/color_fshader.fsh"));
-        assert(simpleColorShader->link());
-    }
-    if (!texShader) {
-        texShader = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
-        assert(texShader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/colortex_vshader.vsh"));
-        assert(texShader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/colortex_fshader.fsh"));
-        assert(texShader->link());
-    }
-    if (!interpColorShader) {
-        interpColorShader = new QOpenGLShaderProgram(QThread::currentThread()); //memory managed by Qt
-        assert(interpColorShader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/colors_vshader.vsh"));
-        assert(interpColorShader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/colors_fshader.fsh"));
-        assert(interpColorShader->link());
-    }
-    */
-
-    //now start the timer assuming no errors, otherwise the program will not stop on errors.
-    //TODO:
-    //tmrWatchdog.Enabled = true;
-    //qmlview->resetOpenGLState();
 }
 
 void FormGPS::openGLControl_Shutdown()
@@ -868,9 +894,12 @@ void FormGPS::oglBack_Paint()
     //finish it up - we need to read the ram of video card
     gl->glFlush();
 
+    qDebug() << "Time after drawing back buffer: " << swFrame.elapsed();
+
     //read the whole block of pixels up to max lookahead, one read only
     //we'll use Qt's QImage function to grab it.
     grnPix = backFBO->toImage().mirrored().convertToFormat(QImage::Format_RGBX8888);
+    qDebug() << "Time after glReadPixels: " << swFrame.elapsed();
     //qDebug() << grnPix.size();
     //QImage temp = grnPix.copy(tool.rpXPosition, 250, tool.rpWidth, 290 /*(int)rpHeight*/);
     //TODO: is thisn right?

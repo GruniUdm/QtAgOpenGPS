@@ -112,7 +112,7 @@ void initializeShaders() {
 void initializeTextures() {
     QOpenGLTexture *t;
 
-    texture.clear();
+    if (texture.size()) return; //textures already loaded.
 
     t = new QOpenGLTexture(QImage(PREFIX "/images/textures/floor.png"));
     t->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
@@ -737,6 +737,19 @@ void GLHelperColors::draw(QOpenGLFunctions *gl, QMatrix4x4 mvp, GLenum operation
 
 GLHelperTexture::GLHelperTexture() {
 
+}
+
+void GLHelperTexture::draw(QOpenGLFunctions *gl, QMatrix4x4 mvp, GLenum operation, bool colorize, QColor color)
+{
+    //assume texture is already bound
+    QOpenGLBuffer vertexBuffer;
+    vertexBuffer.create();
+    vertexBuffer.bind();
+    vertexBuffer.allocate(data(),size() * sizeof(VertexTexcoord));
+    vertexBuffer.release();
+
+    glDrawArraysTexture(gl, mvp, operation, vertexBuffer, GL_FLOAT,size(),
+                        colorize, color);
 }
 
 void GLHelperTexture::draw(QOpenGLFunctions *gl, QMatrix4x4 mvp, Textures textureno, GLenum operation, bool colorize, QColor color)

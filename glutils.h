@@ -123,6 +123,8 @@ class GLHelperTexture: public QVector<VertexTexcoord>
 {
 public:
     GLHelperTexture();
+    void draw(QOpenGLFunctions *gl, QMatrix4x4 mvp, GLenum operation,
+              bool colorize=false, QColor color = QColor::fromRgbF(1,1,1));
     void draw(QOpenGLFunctions *gl, QMatrix4x4 mvp, Textures textureno, GLenum operation,
               bool colorize=false, QColor color = QColor::fromRgbF(1,1,1));
 };

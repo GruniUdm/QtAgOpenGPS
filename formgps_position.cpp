@@ -39,8 +39,8 @@ void FormGPS::UpdateFixPosition()
     //swFrame.Stop();
     //Measure the frequency of the GPS updates
     //timeSliceOfLastFix = (double)(swFrame.elapsed()) / 1000;
-    qDebug() << "swFrame time before locking: " << swFrame.elapsed();
-    lock.lockForWrite(); //stop GL from updating while we calculate a new position
+    qDebug() << "swFrame time at new frame: " << swFrame.elapsed();
+    //lock.lockForWrite(); //stop GL from updating while we calculate a new position
 
     // Phase 6.0.21: Calculate Hz from CPU timer (AgIOService.nowHz/gpsHz removed)
     // GPS frequency is calculated from frame timing
@@ -65,7 +65,7 @@ void FormGPS::UpdateFixPosition()
     if (!isGPSPositionInitialized)
     {
         InitializeFirstFewGPSPositions();
-        lock.unlock();
+        //lock.unlock();
         return;
     }
 
@@ -115,7 +115,7 @@ void FormGPS::UpdateFixPosition()
                     stepFixPts[0].easting = pn.fix.easting;
                     stepFixPts[0].northing = pn.fix.northing;
                     stepFixPts[0].isSet = 1;
-                    lock.unlock();
+                    //lock.unlock();
                     return;
                 }
 
@@ -126,7 +126,7 @@ void FormGPS::UpdateFixPosition()
                     stepFixPts[0].easting = pn.fix.easting;
                     stepFixPts[0].northing = pn.fix.northing;
                     stepFixPts[0].isSet = 1;
-                    lock.unlock();
+                    //lock.unlock();
                     return;
                 }
 
@@ -226,7 +226,7 @@ void FormGPS::UpdateFixPosition()
 
                 lastGPS = pn.fix;
 
-                lock.unlock();
+                //lock.unlock();
                 return;
             }
         }
@@ -1380,6 +1380,9 @@ void FormGPS::UpdateFixPosition()
         //processOverlapCount();
     }
 
+    qDebug() << "Time before painting field: " << swFrame.elapsed();
+    oglMain_Paint();
+    qDebug() << "Time after painting field: " << swFrame.elapsed();
     //NOTE: Not sure here.
     //stop the timer and calc how long it took to do calcs and draw
     frameTimeRough = swFrame.elapsed();
@@ -1512,7 +1515,7 @@ void FormGPS::UpdateFixPosition()
 
     newframe = true;
 
-    lock.unlock();
+    //lock.unlock();
     //qDebug() << "frame time after processing a new position part 2 " << swFrame.elapsed();
 
 }
@@ -1773,7 +1776,7 @@ void FormGPS::processSectionLookahead() {
 
     if (SettingsManager::instance()->display_showBack()) {
         grnPixelsWindow->setPixmap(QPixmap::fromImage(grnPix.mirrored()));
-        overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
+        //overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
     }
 
     //determine where the tool is wrt to headland
