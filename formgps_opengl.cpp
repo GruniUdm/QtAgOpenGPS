@@ -200,17 +200,10 @@ void FormGPS::oglMain_Paint()
     GLHelperColors gldrawcolors;
     GLHelperOneColor gldraw1;
 
-    //if (newframe)
-    //    qDebug() << "start of new frame, waiting for lock at " << swFrame.elapsed();
-    //synchronize with the position code in the main thread
+    qDebug() << "before locking " << swFrame.elapsed();
+    //only can paint if main thread is not trying to change the variables on us.
     if (!lock.tryLockForRead())
-        //if there's no new position to draw, just return so we don't
-        //waste time redrawing.  Frame rate is at most gpsHz.  And if we
-        //need to redraw part of the window on a resize, it will just have
-        //to wait until the next position comes in.  Although if there is
-        //no simulator running and no positions coming in, the GL background
-        //will not update, which isn't what we want either.  Some kind of timeout?
-     return;
+        return;  //if there's any contention stop trying until next GPS frame.
 
     float lineWidth = SettingsManager::instance()->display_lineWidth();
     
@@ -562,14 +555,6 @@ void FormGPS::oglMain_Paint()
             gl->glClear(GL_COLOR_BUFFER_BIT);
         }
 
-        //directly call section lookahead GL stuff from here
-        if (! newframe) {
-            //No new position, so no need to repaint the back buffer
-            //and do section look-ahead
-            lock.unlock();
-            //qWarning() << "rendered but skipping section lookahead processing.";
-            return;
-        }
         gl->glFlush();
 
     }
@@ -615,7 +600,7 @@ void FormGPS::oglMain_Paint()
         //GUI widgets have to be updated elsewhere
     }
     lock.unlock();
-    newframe = false;
+    qDebug() << "done drawing " << swFrame.elapsed();
 }
 
 /// Handles the OpenGLInitialized event of the openGLControl control.

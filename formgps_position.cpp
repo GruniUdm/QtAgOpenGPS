@@ -1367,18 +1367,20 @@ void FormGPS::UpdateFixPosition()
     //oglMain.MakeCurrent();
     //oglMain.Refresh();
 
-    AOGRendererInSG *renderer = mainWindow->findChild<AOGRendererInSG *>("openglcontrol");
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
-    if (renderer) {
-        QMetaObject::invokeMethod(renderer, "update", Qt::QueuedConnection);
-    }
-
     if (isJobStarted()) {
         processSectionLookahead();
 
         //oglZoom_Paint();
         //processOverlapCount();
     }
+
+    lock.unlock(); //we're finished updating variables and patch lists.
+
+    AOGRendererInSG *renderer = mainWindow->findChild<AOGRendererInSG *>("openglcontrol");
+    if (renderer) {
+        QMetaObject::invokeMethod(renderer, "update", Qt::DirectConnection);
+    }
+
 
     //NOTE: Not sure here.
     //stop the timer and calc how long it took to do calcs and draw
@@ -1509,12 +1511,6 @@ void FormGPS::UpdateFixPosition()
 
     // Note: Change detection flags (posChangedFlag, vehChangedFlag, etc.)
     // are kept for potential future optimizations but not used for signals
-
-    newframe = true;
-
-    lock.unlock();
-    //qDebug() << "frame time after processing a new position part 2 " << swFrame.elapsed();
-
 }
 
 void FormGPS::TheRest()
