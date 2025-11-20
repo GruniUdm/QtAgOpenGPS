@@ -199,7 +199,10 @@ void FormGPS::render_main_fbo()
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
     QColor color;
-    GLHelperTexture gldrawtex;
+    GLHelperTextureBack gldrawtex;
+    //GLHelperOneColorBack gldrawtex;
+
+    initializeBackShader();
 
     // Set The Blending Function For Translucency
     gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -213,18 +216,40 @@ void FormGPS::render_main_fbo()
     modelview.setToIdentity();
     projection.setToIdentity();
 
-    /*
-    if (backFBO) {
-        gl->glActiveTexture(GL_TEXTURE19);
-        gl->glBindTexture(GL_TEXTURE_2D, backFBO->texture());
+    // Safe access to OpenGL viewport properties
+    OpenGLViewport viewport = getOpenGLViewport(mainWindow);
+    int width = viewport.width;
+    int height = viewport.height;
+    double shiftX = viewport.shiftX;
+    double shiftY = viewport.shiftY;
+
+    //gl->glViewport(0,0,width,height);
+    qDebug() << "viewport is " << width << height;
+
+    if (grnPix.width() > 0) {
+
+        qDebug() << "Texture is " << overPix.size();
+        QOpenGLTexture texture = QOpenGLTexture(grnPix.mirrored(false, true));
+        texture.bind();
+
+
         gldrawtex.append( { QVector3D(1, 1, 0), QVector2D(1,0) } ); //Top Right
         gldrawtex.append( { QVector3D(-1, 1, 0), QVector2D(0,0) } ); //Top Left
         gldrawtex.append( { QVector3D(1, -1, 0), QVector2D(1,1) } ); //Bottom Right
         gldrawtex.append( { QVector3D(-1, -1, 0), QVector2D(0,1) } ); //Bottom Left
+        /*
+        gldrawtex.append( QVector3D(0.75, 0.75, 0)); //Top Right
+        gldrawtex.append( QVector3D(-0.75, 0.75, 0)); //Top Left
+        gldrawtex.append( QVector3D(0.75, -0.75, 0)); //Bottom Right
+        gldrawtex.append( QVector3D(-0.75, -0.75, 0)); //Bottom Left
+        */
 
         gldrawtex.draw(gl, projection * modelview, GL_TRIANGLE_STRIP, false);
+        //gldrawtex.draw(gl, projection * modelview, QColor::fromRgb(255,0,0), GL_LINE_STRIP, 1.0f );
+        texture.release();
+        texture.destroy();
     }
-    */
+    gl->glFlush();
 }
 
 void FormGPS::oglMain_Paint()
@@ -253,6 +278,7 @@ void FormGPS::oglMain_Paint()
     double shiftX = viewport.shiftX;
     double shiftY = viewport.shiftY;
     //gl->glViewport(oglX,oglY,width,height);
+    qDebug() << "viewport is " << width << height;
 
     if (!mainSurface.isValid()) {
         QSurfaceFormat format = glContext->format();
@@ -657,13 +683,11 @@ void FormGPS::oglMain_Paint()
         //GUI widgets have to be updated elsewhere
     }
 
-    /*
-        QImage mainPix = mainFBO1->toImage().convertToFormat(QImage::Format_RGBX8888);
-        qDebug() << "image size is: " << mainPix.size();
         if (SettingsManager::instance()->display_showBack()) {
-            overlapPixelsWindow->setPixmap(QPixmap::fromImage(mainPix));
+            overPix = mainFBO1->toImage().convertToFormat(QImage::Format_RGBX8888);
+            qDebug() << "image size is: " << overPix.size();
+            overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix));
         }
-*/
 
         mainFBO1->bindDefault();
 
