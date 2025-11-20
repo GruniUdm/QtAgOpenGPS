@@ -20,15 +20,26 @@ extern QLabel *overlapPixelsWindow;
 
 // Helper function to safely get OpenGL control properties with defaults
 struct OpenGLViewport {
+    QOpenGLContext *context = nullptr;
     int width = 800;
     int height = 600;
     double shiftX = 0.0;
     double shiftY = 0.0;
 };
 
+QOpenGLContext *getGLContext(QQuickWindow *window) {
+    auto *ri = window->rendererInterface();
+    if (ri->graphicsApi() == QSGRendererInterface::OpenGL) {
+        return static_cast<QOpenGLContext *>(
+            ri->getResource(window, QSGRendererInterface::OpenGLContextResource));
+    }
+    return nullptr; // Not using OpenGL
+}
+
 OpenGLViewport getOpenGLViewport(QObject* mainWindow) {
     OpenGLViewport viewport;
     QObject *openglControl = qmlItem(mainWindow, "openglcontrol");
+
 
     if (openglControl) {
         viewport.width = openglControl->property("width").toReal();
@@ -36,6 +47,7 @@ OpenGLViewport getOpenGLViewport(QObject* mainWindow) {
         // ✅ PHASE 6.3.0 FIX: shiftX/shiftY are now Q_PROPERTY in AOGRendererInSG
         viewport.shiftX = openglControl->property("shiftX").toDouble();
         viewport.shiftY = openglControl->property("shiftY").toDouble();
+        viewport.context = getGLContext(qobject_cast<QQuickItem *>(openglControl)->window());
     } else {
         qWarning() << "⚠️ OpenGL control not found - using default viewport settings";
         // Defaults already set in struct definition
@@ -226,17 +238,20 @@ void FormGPS::render_main_fbo()
     //gl->glViewport(0,0,width,height);
     qDebug() << "viewport is " << width << height;
 
-    if (grnPix.width() > 0) {
+    if (active_fbo >= 0) {
 
-        qDebug() << "Texture is " << overPix.size();
-        QOpenGLTexture texture = QOpenGLTexture(grnPix.mirrored(false, true));
-        texture.bind();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, mainFBO[active_fbo]->texture());
+
+        //qDebug() << "Texture is " << overPix.size();
+        //QOpenGLTexture texture = QOpenGLTexture(grnPix.mirrored(false, true));
+        //texture.bind();
 
 
-        gldrawtex.append( { QVector3D(1, 1, 0), QVector2D(1,0) } ); //Top Right
-        gldrawtex.append( { QVector3D(-1, 1, 0), QVector2D(0,0) } ); //Top Left
-        gldrawtex.append( { QVector3D(1, -1, 0), QVector2D(1,1) } ); //Bottom Right
-        gldrawtex.append( { QVector3D(-1, -1, 0), QVector2D(0,1) } ); //Bottom Left
+        gldrawtex.append( { QVector3D(1, 1, 0), QVector2D(1,1) } ); //Top Right
+        gldrawtex.append( { QVector3D(-1, 1, 0), QVector2D(0,1) } ); //Top Left
+        gldrawtex.append( { QVector3D(1, -1, 0), QVector2D(1,0) } ); //Bottom Right
+        gldrawtex.append( { QVector3D(-1, -1, 0), QVector2D(0,0) } ); //Bottom Left
         /*
         gldrawtex.append( QVector3D(0.75, 0.75, 0)); //Top Right
         gldrawtex.append( QVector3D(-0.75, 0.75, 0)); //Top Left
@@ -246,20 +261,22 @@ void FormGPS::render_main_fbo()
 
         gldrawtex.draw(gl, projection * modelview, GL_TRIANGLE_STRIP, false);
         //gldrawtex.draw(gl, projection * modelview, QColor::fromRgb(255,0,0), GL_LINE_STRIP, 1.0f );
-        texture.release();
-        texture.destroy();
+        //texture.release();
+        glBindTexture(GL_TEXTURE_2D, 0); //unbind the texture
+        //texture.destroy();
     }
     gl->glFlush();
 }
 
 void FormGPS::oglMain_Paint()
 {
-    QOpenGLContext *glContext = QOpenGLContext::currentContext();
+    OpenGLViewport viewport = getOpenGLViewport(mainWindow);
     //if there's no context we need to create one because
     //the qml renderer is in a different thread.
-    if (!glContext) {
-        glContext = new QOpenGLContext;
-        glContext->create();
+    if (!mainOpenGLContext.isValid()) {
+        if (viewport.context)
+            mainOpenGLContext.setShareContext(viewport.context);
+        mainOpenGLContext.create();
     }
 
     QMatrix4x4 projection;
@@ -272,7 +289,6 @@ void FormGPS::oglMain_Paint()
     float lineWidth = SettingsManager::instance()->display_lineWidth();
     
     // Safe access to OpenGL viewport properties
-    OpenGLViewport viewport = getOpenGLViewport(mainWindow);
     int width = viewport.width;
     int height = viewport.height;
     double shiftX = viewport.shiftX;
@@ -281,35 +297,34 @@ void FormGPS::oglMain_Paint()
     qDebug() << "viewport is " << width << height;
 
     if (!mainSurface.isValid()) {
-        QSurfaceFormat format = glContext->format();
+        QSurfaceFormat format = mainOpenGLContext.format();
         mainSurface.setFormat(format);
         mainSurface.create();
         auto r = mainSurface.isValid();
         qDebug() << "main surface creation: " << r;
     }
 
-    auto result = glContext->makeCurrent(&mainSurface);
+    auto result = mainOpenGLContext.makeCurrent(&mainSurface);
 
-    QOpenGLFunctions *gl = glContext->functions();
+    QOpenGLFunctions *gl = mainOpenGLContext.functions();
     initializeTextures();
     initializeShaders();
 
-    if (!mainFBO1) {
+    //we will work on the unused texture in case QML is rendering on
+    //another core
+    int working_fbo = (active_fbo < 0 ? 0 : active_fbo + 1 % 1);
+
+
+    if (!mainFBO[working_fbo] || mainFBO[working_fbo]->size() != QSize(width,height)) {
         QOpenGLFramebufferObjectFormat format;
         format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
         // ✅ C++17 RAII: automatic memory management, no manual delete needed
-        mainFBO1 = std::make_unique<QOpenGLFramebufferObject>(QSize(width,height), format);
-    }
-    if (!mainFBO2) {
-        QOpenGLFramebufferObjectFormat format;
-        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-        // ✅ C++17 RAII: automatic memory management, no manual delete needed
-        mainFBO2 = std::make_unique<QOpenGLFramebufferObject>(QSize(width,height), format);
+        mainFBO[working_fbo].reset(new QOpenGLFramebufferObject(QSize(width,height), format));
     }
 
-    mainFBO1->bind();
+    mainFBO[working_fbo]->bind();
 
-    glContext->functions()->glViewport(0,0,width,height);
+    mainOpenGLContext.functions()->glViewport(0,0,width,height);
 
     // Set The Blending Function For Translucency
     gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -683,16 +698,18 @@ void FormGPS::oglMain_Paint()
         //GUI widgets have to be updated elsewhere
     }
 
-        if (SettingsManager::instance()->display_showBack()) {
-            overPix = mainFBO1->toImage().convertToFormat(QImage::Format_RGBX8888);
-            qDebug() << "image size is: " << overPix.size();
-            overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix));
-        }
+    /*
+    if (SettingsManager::instance()->display_showBack()) {
+        overPix = mainFBO[working_fbo]->toImage().convertToFormat(QImage::Format_RGBX8888);
+        qDebug() << "image size is: " << overPix.size();
+        overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix));
+    }
+    */
 
-        mainFBO1->bindDefault();
+    mainFBO[working_fbo]->bindDefault();
 
-    //lock.unlock();
-    newframe = false;
+    //tell GUI to swich to new texture;
+    active_fbo = working_fbo;
 }
 
 /// Handles the OpenGLInitialized event of the openGLControl control.
@@ -727,7 +744,7 @@ void FormGPS::openGLControl_Shutdown()
 void FormGPS::oglBack_Paint()
 {
 
-    QOpenGLContext *glContext = QOpenGLContext::currentContext();
+    //QOpenGLContext *glContext = QOpenGLContext::currentContext();
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
 
@@ -737,20 +754,19 @@ void FormGPS::oglBack_Paint()
 
     //if there's no context we need to create one because
     //the qml renderer is in a different thread.
-    if (!glContext) {
-        glContext = new QOpenGLContext;
-        glContext->create();
+    if (!backOpenGLContext.isValid()) {
+        backOpenGLContext.create();
     }
 
     if (!backSurface.isValid()) {
-        QSurfaceFormat format = glContext->format();
+        QSurfaceFormat format = backOpenGLContext.format();
         backSurface.setFormat(format);
         backSurface.create();
         auto r = backSurface.isValid();
         qDebug() << "back surface creation: " << r;
     }
 
-    auto result = glContext->makeCurrent(&backSurface);
+    auto result = backOpenGLContext.makeCurrent(&backSurface);
 
     initializeBackShader(); //compiler the shader we need if necessary
 
@@ -768,11 +784,11 @@ void FormGPS::oglBack_Paint()
 
     //save current viewport settings in case it conflicts with QML
     GLint origview[4];
-    glContext->functions()->glGetIntegerv(GL_VIEWPORT, origview);
+    backOpenGLContext.functions()->glGetIntegerv(GL_VIEWPORT, origview);
 
 
-    glContext->functions()->glViewport(0,0,500,300);
-    QOpenGLFunctions *gl = glContext->functions();
+    backOpenGLContext.functions()->glViewport(0,0,500,300);
+    QOpenGLFunctions *gl = backOpenGLContext.functions();
 
     //int width = glContext->surface()->size().width();
     //int height = glContext->surface()->size().height();
@@ -963,10 +979,10 @@ void FormGPS::oglBack_Paint()
     //broken out into a callback in formgps.cpp called
     //processSectionLookahead().
 
-    glContext->functions()->glFlush();
+    backOpenGLContext.functions()->glFlush();
 
     //restore viewport
-    glContext->functions()->glViewport(origview[0], origview[1], origview[2], origview[3]);
+    backOpenGLContext.functions()->glViewport(origview[0], origview[1], origview[2], origview[3]);
 
     //restore QML's context
     backFBO->bindDefault();

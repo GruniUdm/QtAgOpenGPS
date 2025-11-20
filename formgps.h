@@ -777,8 +777,8 @@ public:
     QSurfaceFormat mainSurfaceFormat;
     QOpenGLContext mainOpenGLContext;
     QOffscreenSurface mainSurface;
-    std::unique_ptr<QOpenGLFramebufferObject> mainFBO1; // C++17 RAII - automatic cleanup
-    std::unique_ptr<QOpenGLFramebufferObject> mainFBO2; // C++17 RAII - automatic cleanup
+
+    std::unique_ptr<QOpenGLFramebufferObject> mainFBO[2]; // C++17 RAII - automatic cleanup
     int active_fbo=-1;
 
     /*******************
