@@ -1367,12 +1367,6 @@ void FormGPS::UpdateFixPosition()
     //oglMain.MakeCurrent();
     //oglMain.Refresh();
 
-    AOGRendererInSG *renderer = mainWindow->findChild<AOGRendererInSG *>("openglcontrol");
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
-    if (renderer) {
-        QMetaObject::invokeMethod(renderer, "update", Qt::QueuedConnection);
-    }
-
     if (isJobStarted()) {
         processSectionLookahead();
 
@@ -1385,6 +1379,12 @@ void FormGPS::UpdateFixPosition()
     qDebug() << "Time after painting field: " << swFrame.elapsed();
     //NOTE: Not sure here.
     //stop the timer and calc how long it took to do calcs and draw
+    AOGRendererInSG *renderer = mainWindow->findChild<AOGRendererInSG *>("openglcontrol");
+    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
+    if (renderer) {
+        QMetaObject::invokeMethod(renderer, "update", Qt::DirectConnection);
+    }
+
     frameTimeRough = swFrame.elapsed();
 
     //if (frameTimeRough > 80) frameTimeRough = 80;
@@ -1498,24 +1498,6 @@ void FormGPS::UpdateFixPosition()
     // === Visual Geometry Updates (2 properties) ===
     QVariant newVehicleXY = CVehicle::instance()->pivot_axle_xy;
     QVariant newBoundingBox = CVehicle::instance()->bounding_box;
-    if (m_vehicle_xy != newVehicleXY) { m_vehicle_xy = newVehicleXY; geometryChangedFlag = true; }
-    if (m_vehicle_bounding_box != newBoundingBox) { m_vehicle_bounding_box = newBoundingBox; geometryChangedFlag = true; }
-
-    // === Misc Status Updates (2 properties) ===
-    if (m_steerSwitchHigh != mc.steerSwitchHigh) { m_steerSwitchHigh = mc.steerSwitchHigh; miscChangedFlag = true; }
-    if (m_imuCorrected != _imuCorrected) { m_imuCorrected = _imuCorrected; miscChangedFlag = true; }
-
-    // ===== QProperty + BINDABLE AUTOMATIC NOTIFICATIONS =====
-    // Qt 6.8 QProperty system automatically handles change notifications
-    // Manual signal emissions removed to prevent binding loops and crashes
-    // Performance: QProperty automatic notifications are optimized by Qt
-
-    // Note: Change detection flags (posChangedFlag, vehChangedFlag, etc.)
-    // are kept for potential future optimizations but not used for signals
-
-    newframe = true;
-
-    //lock.unlock();
     //qDebug() << "frame time after processing a new position part 2 " << swFrame.elapsed();
 
 }
