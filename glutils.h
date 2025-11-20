@@ -84,8 +84,15 @@ void glDrawArraysTexture(QOpenGLFunctions *gl, QMatrix4x4 mvp,
                          GLenum operation,
                          QOpenGLBuffer &vertexBuffer, GLenum glType,
                          int count, bool useColor, QColor color);
-//draw arrays
 
+//Buffer format is 5 values per vertice:
+//x,y,z,texX,texY
+void glDrawArraysTextureBack(QOpenGLFunctions *gl, QMatrix4x4 mvp,
+                         GLenum operation,
+                         QOpenGLBuffer &vertexBuffer, GLenum glType,
+                         int count, bool useColor, QColor color);
+
+//draw arrays
 void drawText(QOpenGLFunctions *gl, QMatrix4x4 mvp, double x, double y, QString text, double size = 1.0, bool colorize = false, QColor color = QColor::fromRgbF(1,1,1));
 void drawText3D(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp, double x1, double y1, QString text, double size = 1.0, bool colorize = false, QColor color = QColor::fromRgbF(1,1,1));
 void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp, double x, double y, QString text, double size = 1.0, bool colorize = false, QColor color = QColor::fromRgbF(1,1,1));
@@ -117,6 +124,14 @@ class GLHelperColors: public QVector<ColorVertex>
 public:
     GLHelperColors();
     void draw(QOpenGLFunctions *gl, QMatrix4x4 mvp, GLenum operation, float point_size);
+};
+
+class GLHelperTextureBack: public QVector<VertexTexcoord>
+{
+public:
+    GLHelperTextureBack();
+    void draw(QOpenGLFunctions *gl, QMatrix4x4 mvp, GLenum operation,
+              bool colorize=false, QColor color = QColor::fromRgbF(1,1,1));
 };
 
 class GLHelperTexture: public QVector<VertexTexcoord>
