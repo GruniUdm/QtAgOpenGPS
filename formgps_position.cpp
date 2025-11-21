@@ -1621,15 +1621,14 @@ void FormGPS::processSectionLookahead() {
 
     //to draw or not the triangle patch
     bool isDraw;
-    bool isDrawBB;
 
     double pivEplus = CVehicle::instance()->pivotAxlePos.easting + 50;
     double pivEminus = CVehicle::instance()->pivotAxlePos.easting - 50;
     double pivNplus = CVehicle::instance()->pivotAxlePos.northing + 50;
     double pivNminus = CVehicle::instance()->pivotAxlePos.northing - 50;
 
-    QPolygonF frustum({{pivEminus, pivNplus}, {pivEplus, pivNplus },
-                       { pivEplus, pivNminus}, {pivEminus, pivNminus }});
+    //QPolygonF frustum({{pivEminus, pivNplus}, {pivEplus, pivNplus },
+    //                   { pivEplus, pivNminus}, {pivEminus, pivNminus }});
 
     //draw patches j= # of sections
     for (int j = 0; j < triStrip.count(); j++)
@@ -1646,13 +1645,31 @@ void FormGPS::processSectionLookahead() {
                 QSharedPointer<PatchTriangleList> triList = triStrip[j].patchList[k];
                 QSharedPointer<PatchBoundingBox> bb = triStrip[j].patchBoundingBoxList[k];
 
+                /*
                 QPolygonF patchBox({{ (*bb).minx, (*bb).miny }, {(*bb).maxx, (*bb).miny},
                                     { (*bb).maxx, (*bb).maxy }, { (*bb).minx, (*bb).maxy } });
 
                 if (frustum.intersects(patchBox))
                     isDraw = true;
+                */
 
                 int count2 = triList->size();
+                for (int i = 1; i < count2; i+=3)
+                {
+                    //determine if point is in frustum or not
+                    if ((*triList)[i].x() > pivEplus)
+                        continue;
+                    if ((*triList)[i].x() < pivEminus)
+                        continue;
+                    if ((*triList)[i].y() > pivNplus)
+                        continue;
+                    if ((*triList)[i].y() < pivNminus)
+                        continue;
+
+                    //point is in frustum so draw the entire patch
+                    isDraw = true;
+                    break;
+                }
 
                 if (isDraw)
                 {
