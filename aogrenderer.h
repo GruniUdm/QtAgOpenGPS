@@ -11,9 +11,12 @@
 #include <QtQml/qqmlregistration.h>
 #include <QProperty>
 #include <QBindable>
+#include <QOpenGLFunctions>
 
 #include <functional>
 Q_DECLARE_METATYPE(std::function<void (void)>)
+
+class AOGRendererItem;
 
 class AOGRenderer : public QQuickFramebufferObject::Renderer
 {
@@ -89,4 +92,77 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(AOGRendererInSG, double, m_shiftY, &AOGRendererInSG::shiftYChanged)
 };
 
+class AOGRendererNew : public QObject, protected QOpenGLFunctions
+{
+    Q_OBJECT
+
+public:
+    ~AOGRendererNew();
+    void setViewportSize(const QSize &size) { m_viewportSize = size; }
+    void setWindow(QQuickWindow *window) { m_window = window; }
+    void setItem(AOGRendererItem *item) {this->item = item; }
+
+public slots:
+    void init();
+    void paint();
+
+public:
+    AOGRendererItem *item;
+
+    int samples;
+    QSize m_viewportSize;
+    QQuickWindow *m_window = nullptr;
+
+    bool initDone = false;
+};
+
+class AOGRendererItem : public QQuickItem {
+    Q_OBJECT
+    QML_NAMED_ELEMENT(AOGRendererNew)
+
+    Q_PROPERTY(std::function<void (void)> paintCallback READ getPaintCallback WRITE setPaintCallback NOTIFY paintCallbackChanged)
+    Q_PROPERTY(std::function<void (void)> initCallback READ getInitCallback WRITE setInitCallback NOTIFY initCallbackChanged)
+    Q_PROPERTY(std::function<void (void)> cleanupCallback READ getCleanupCallback WRITE setCleanupCallback NOTIFY cleanupCallbackChanged)
+    Q_PROPERTY(void* callbackObject READ getCallbackObject WRITE setCallbackObject NOTIFY callbackObjectChanged)
+    Q_PROPERTY(int samples READ getSamples WRITE setSamples NOTIFY samplesChanged)
+
+public:
+    AOGRendererItem();
+    std::function<void (void)> getPaintCallback() { return paintCallback; }
+    std::function<void (void)> getInitCallback() { return initCallback; }
+    std::function<void (void)> getCleanupCallback() { return cleanupCallback; }
+    void *getCallbackObject() { return callback_object; }
+    int getSamples() { return samples;}
+
+    void setInitCallback(std::function<void (void)> callback);
+    void setPaintCallback(std::function<void (void)> callback);
+    void setCleanupCallback(std::function<void (void)> callback);
+    void setSamples(int samples);
+    void setCallbackObject(void *object);
+
+    void *callback_object;
+    std::function<void (void)> paintCallback;
+    std::function<void (void)> initCallback;
+    std::function<void (void)> cleanupCallback;
+    int samples;
+
+signals:
+    void paintCallbackChanged();
+    void initCallbackChanged();
+    void cleanupCallbackChanged();
+    void callbackObjectChanged();
+    void samplesChanged();
+
+public slots:
+    void sync();
+    void cleanup();
+
+private slots:
+    void handleWindowChanged(QQuickWindow *win);
+
+private:
+    void releaseResources() override;
+
+    AOGRendererNew *m_renderer;
+};
 #endif // OPENGLCONTROL_H

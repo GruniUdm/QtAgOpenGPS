@@ -39,8 +39,8 @@ void FormGPS::UpdateFixPosition()
     //swFrame.Stop();
     //Measure the frequency of the GPS updates
     //timeSliceOfLastFix = (double)(swFrame.elapsed()) / 1000;
-    qDebug() << "swFrame time before locking: " << swFrame.elapsed();
-    lock.lockForWrite(); //stop GL from updating while we calculate a new position
+    qDebug() << "swFrame time at new frame: " << swFrame.elapsed();
+    //lock.lockForWrite(); //stop GL from updating while we calculate a new position
 
     // Phase 6.0.21: Calculate Hz from CPU timer (AgIOService.nowHz/gpsHz removed)
     // GPS frequency is calculated from frame timing
@@ -65,7 +65,7 @@ void FormGPS::UpdateFixPosition()
     if (!isGPSPositionInitialized)
     {
         InitializeFirstFewGPSPositions();
-        lock.unlock();
+        //lock.unlock();
         return;
     }
 
@@ -115,7 +115,7 @@ void FormGPS::UpdateFixPosition()
                     stepFixPts[0].easting = pn.fix.easting;
                     stepFixPts[0].northing = pn.fix.northing;
                     stepFixPts[0].isSet = 1;
-                    lock.unlock();
+                    //lock.unlock();
                     return;
                 }
 
@@ -126,7 +126,7 @@ void FormGPS::UpdateFixPosition()
                     stepFixPts[0].easting = pn.fix.easting;
                     stepFixPts[0].northing = pn.fix.northing;
                     stepFixPts[0].isSet = 1;
-                    lock.unlock();
+                    //lock.unlock();
                     return;
                 }
 
@@ -226,7 +226,7 @@ void FormGPS::UpdateFixPosition()
 
                 lastGPS = pn.fix;
 
-                lock.unlock();
+                //lock.unlock();
                 return;
             }
         }
@@ -1374,16 +1374,18 @@ void FormGPS::UpdateFixPosition()
         //processOverlapCount();
     }
 
-    lock.unlock(); //we're finished updating variables and patch lists.
+    qDebug() << "Time before painting field: " << swFrame.elapsed();
+    oglMain_Paint();
+    qDebug() << "Time after painting field: " << swFrame.elapsed();
 
+    //NOTE: Not sure here.
+    //stop the timer and calc how long it took to do calcs and draw
     AOGRendererInSG *renderer = mainWindow->findChild<AOGRendererInSG *>("openglcontrol");
+    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
     if (renderer) {
         QMetaObject::invokeMethod(renderer, "update", Qt::DirectConnection);
     }
 
-
-    //NOTE: Not sure here.
-    //stop the timer and calc how long it took to do calcs and draw
     frameTimeRough = swFrame.elapsed();
 
     //if (frameTimeRough > 80) frameTimeRough = 80;
@@ -1632,15 +1634,14 @@ void FormGPS::processSectionLookahead() {
 
     //to draw or not the triangle patch
     bool isDraw;
-    bool isDrawBB;
 
     double pivEplus = CVehicle::instance()->pivotAxlePos.easting + 50;
     double pivEminus = CVehicle::instance()->pivotAxlePos.easting - 50;
     double pivNplus = CVehicle::instance()->pivotAxlePos.northing + 50;
     double pivNminus = CVehicle::instance()->pivotAxlePos.northing - 50;
 
-    QPolygonF frustum({{pivEminus, pivNplus}, {pivEplus, pivNplus },
-                       { pivEplus, pivNminus}, {pivEminus, pivNminus }});
+    //QPolygonF frustum({{pivEminus, pivNplus}, {pivEplus, pivNplus },
+    //                   { pivEplus, pivNminus}, {pivEminus, pivNminus }});
 
     //draw patches j= # of sections
     for (int j = 0; j < triStrip.count(); j++)
@@ -1657,13 +1658,31 @@ void FormGPS::processSectionLookahead() {
                 QSharedPointer<PatchTriangleList> triList = triStrip[j].patchList[k];
                 QSharedPointer<PatchBoundingBox> bb = triStrip[j].patchBoundingBoxList[k];
 
+                /*
                 QPolygonF patchBox({{ (*bb).minx, (*bb).miny }, {(*bb).maxx, (*bb).miny},
                                     { (*bb).maxx, (*bb).maxy }, { (*bb).minx, (*bb).maxy } });
 
                 if (frustum.intersects(patchBox))
                     isDraw = true;
+                */
 
                 int count2 = triList->size();
+                for (int i = 1; i < count2; i+=3)
+                {
+                    //determine if point is in frustum or not
+                    if ((*triList)[i].x() > pivEplus)
+                        continue;
+                    if ((*triList)[i].x() < pivEminus)
+                        continue;
+                    if ((*triList)[i].y() > pivNplus)
+                        continue;
+                    if ((*triList)[i].y() < pivNminus)
+                        continue;
+
+                    //point is in frustum so draw the entire patch
+                    isDraw = true;
+                    break;
+                }
 
                 if (isDraw)
                 {
@@ -1769,7 +1788,7 @@ void FormGPS::processSectionLookahead() {
 
     if (SettingsManager::instance()->display_showBack()) {
         grnPixelsWindow->setPixmap(QPixmap::fromImage(grnPix.mirrored()));
-        overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
+        //overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
     }
 
     //determine where the tool is wrt to headland
