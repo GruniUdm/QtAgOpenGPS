@@ -1272,6 +1272,9 @@ public:
     QOpenGLBuffer skyBuffer;
     QOpenGLBuffer flagsBuffer;
 
+    QVector<QVector<QOpenGLBuffer>> patchesBuffer;
+    bool patchesBufferDirty = true;
+
     /***********************
      * formgps_udpcomm.cpp *
      ***********************/

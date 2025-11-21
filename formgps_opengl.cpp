@@ -236,7 +236,7 @@ void FormGPS::render_main_fbo()
     double shiftY = viewport.shiftY;
 
     //gl->glViewport(0,0,width,height);
-    qDebug() << "viewport is " << width << height;
+    //qDebug() << "viewport is " << width << height;
 
     if (active_fbo >= 0) {
 
@@ -294,7 +294,7 @@ void FormGPS::oglMain_Paint()
     double shiftX = viewport.shiftX;
     double shiftY = viewport.shiftY;
     //gl->glViewport(oglX,oglY,width,height);
-    qDebug() << "viewport is " << width << height;
+    //qDebug() << "viewport is " << width << height;
 
     if (!mainSurface.isValid()) {
         QSurfaceFormat format = mainOpenGLContext.format();
@@ -402,72 +402,64 @@ void FormGPS::oglMain_Paint()
             gl->glEnable(GL_BLEND);
             //draw patches of sections
 
+            if (patchesBufferDirty) {
+                //destroy all GPU patches buffers
+                patchesBuffer.clear();
+                for (int j = 0; j < triStrip.count(); j++) {
+                    patchesBuffer.append(QVector<QOpenGLBuffer>());
+                }
+                patchesBufferDirty = false;
+            }
+
+
+            //draw patches j= # of sections
             for (int j = 0; j < triStrip.count(); j++)
             {
                 //every time the section turns off and on is a new patch
-                bool isDraw;
+                int patchCount = triStrip[j].patchList.size();
 
-                int patches = triStrip[j].patchList.size();
+                for (int k=0; k < patchCount; k++) {
+                    QSharedPointer<PatchTriangleList> triList = triStrip[j].patchList[k];
+                    color.setRgbF((*triList)[0].x(), (*triList)[0].y(), (*triList)[0].z(), 0.596 );
+                    int count2 = triList->size();
 
-                if (patches > 0)
-                {
-                    //initialize the steps for mipmap of triangles (skipping detail while zooming out)
-                    /* Unused since we use the triangle lists directly with the buffers
-                    int mipmap = 0;
-                    if (camera.camSetDistance < -800) mipmap = 2;
-                    if (camera.camSetDistance < -1500) mipmap = 4;
-                    if (camera.camSetDistance < -2400) mipmap = 8;
-                    if (camera.camSetDistance < -4800) mipmap = 16;
-                    */
+                    if (k == patchCount - 1) {
+                        //If this is the last patch in the list, it's currently being worked on
+                        //so we don't save this one.
+                        QOpenGLBuffer triBuffer;
 
-                    //for every new chunk of patch
-                    for (QSharedPointer<PatchTriangleList> &triList: triStrip[j].patchList)
-                    {
-                        isDraw = false;
-                        int count2 = triList->size();
-                        for (int i = 1; i < count2; i += 3) //first vertice is color
-                        {
-                            //determine if point is in frustum or not, if < 0, its outside so abort, z always is 0
-                            //x is easting, y is northing
-                            if (frustum[0] * (*triList)[i].x() + frustum[1] * (*triList)[i].y() + frustum[3] <= 0)
-                                continue;//right
-                            if (frustum[4] * (*triList)[i].x() + frustum[5] * (*triList)[i].y() + frustum[7] <= 0)
-                                continue;//left
-                            if (frustum[16] * (*triList)[i].x() + frustum[17] * (*triList)[i].y() + frustum[19] <= 0)
-                                continue;//bottom
-                            if (frustum[20] * (*triList)[i].x() + frustum[21] * (*triList)[i].y() + frustum[23] <= 0)
-                                continue;//top
-                            if (frustum[8] * (*triList)[i].x() + frustum[9] * (*triList)[i].y() + frustum[11] <= 0)
-                                continue;//far
-                            if (frustum[12] * (*triList)[i].x() + frustum[13] * (*triList)[i].y() + frustum[15] <= 0)
-                                continue;//near
+                        triBuffer.create();
+                        triBuffer.bind();
 
-                            //point is in frustum so draw the entire patch. The downside of triangle strips.
-                            isDraw = true;
-                            break;
-                        }
+                        //triangle lists are now using QVector3D, so we can allocate buffers
+                        //directly from list data.
 
-                        if (isDraw)
-                        {
-                            color.setRgbF((*triList)[0].x(), (*triList)[0].y(), (*triList)[0].z(), 0.596 );
-                            //QVector<QVector3D> vertices;
-                            QOpenGLBuffer triBuffer;
+                        //first vertice is color, so we should skip it
+                        triBuffer.allocate(triList->data() + 1, (count2-1) * sizeof(QVector3D));
+                        //triBuffer.allocate(triList->data(), count2 * sizeof(QVector3D));
+                        triBuffer.release();
 
-                            triBuffer.create();
-                            triBuffer.bind();
+                        //draw the triangles in each triangle strip
+                        glDrawArraysColor(gl,projection*modelview,
+                                          GL_TRIANGLE_STRIP, color,
+                                          triBuffer,GL_FLOAT,count2-1);
 
-                            //triangle lists are now using QVector3D, so we can allocate buffers
-                            //directly from list data.
-                            triBuffer.allocate(triList->data() + 1, (count2-1) * sizeof(QVector3D));
-                            triBuffer.release();
+                        triBuffer.destroy();
+                        continue;
 
-                            glDrawArraysColor(gl,projection*modelview,
-                                              GL_TRIANGLE_STRIP, color,
-                                              triBuffer,GL_FLOAT,count2-1);
+                    } else if (patchesBuffer[j].size() <= k) {
+                        //this patch has no GPU buffer yet, so make one
+                        patchesBuffer[j].append(QOpenGLBuffer());
+                        patchesBuffer[j][k].create();
+                        patchesBuffer[j][k].bind();
+                        patchesBuffer[j][k].allocate(triList->data() + 1, (count2-1) * sizeof(QVector3D));
+                        patchesBuffer[j][k].release();
+                    } //else the buffer is already in the GPU
 
-                            triBuffer.destroy();
-                        }
-                    }
+                    glDrawArraysColor(gl,projection*modelview,
+                                      GL_TRIANGLE_STRIP, color,
+                                      patchesBuffer[j][k],GL_FLOAT,count2-1);
+
                 }
             }
 

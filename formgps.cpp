@@ -1227,6 +1227,11 @@ void FormGPS::JobClose()
     triStrip.clear();
     triStrip.append(CPatches());
 
+    //invalidate all GPU patch list buffers. Must be destroyed
+    //in the OpenGL context, so deferred to the next drawing
+    //pass.
+    patchesBufferDirty = true;
+
     //clear the flags
     flagPts.clear();
 
@@ -1316,6 +1321,7 @@ void FormGPS::JobNew()
     // Vehicle trail (yellow line) needs isRecordOn=true to populate recList (formgps_position.cpp:1821)
     // Phase 6.0.29 initialized isRecordOn=false in constructor, which emptied the trail after JobNew()
     recPath.isRecordOn = true;
+    patchesBufferDirty = true;
 }
 
 void FormGPS::FileSaveEverythingBeforeClosingField(bool saveVehicle)
