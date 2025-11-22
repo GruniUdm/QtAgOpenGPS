@@ -1584,7 +1584,7 @@ void FormGPS::processSectionLookahead() {
     //qDebug() << "frame time before doing section lookahead " << swFrame.elapsed(;
     //lock.lockForWrite(;
     //qDebug() << "frame time after getting lock  " << swFrame.elapsed(;
-//#define USE_QPAINTER_BACKBUFFER
+#define USE_QPAINTER_BACKBUFFER
 
 #ifdef USE_QPAINTER_BACKBUFFER
     auto result = QtConcurrent::run( [this]() {
