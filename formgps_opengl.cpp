@@ -414,6 +414,10 @@ void FormGPS::oglMain_Paint()
                 patchesBufferDirty = false;
             }
 
+            while (patchesBuffer.size() < triStrip.count()) {
+                patchesBuffer.append(QVector<QOpenGLBuffer>());
+            }
+
             bool draw_patch = false;
 
             //draw patches j= # of sections

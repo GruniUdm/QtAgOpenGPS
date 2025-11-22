@@ -1530,6 +1530,8 @@ void FormGPS::onDeleteAppliedArea_clicked()
                     triStrip[j].patchList.clear();
                     triStrip[j].triangleList.clear();
                 }
+
+                patchesBufferDirty=true;
                 //patchSaveList.clear();
                 //shouldn't we clean out triStrip too?
                 tool.patchSaveList.clear();
