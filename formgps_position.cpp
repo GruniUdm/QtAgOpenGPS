@@ -22,6 +22,7 @@
 #include "cpgn.h"
 #include "qmlutil.h"
 #include "glutils.h"
+#include <QtConcurrent/QtConcurrentRun>
 
 extern QLabel *grnPixelsWindow;
 extern QLabel *overlapPixelsWindow;
@@ -1583,205 +1584,208 @@ void FormGPS::processSectionLookahead() {
     //qDebug() << "frame time before doing section lookahead " << swFrame.elapsed(;
     //lock.lockForWrite(;
     //qDebug() << "frame time after getting lock  " << swFrame.elapsed(;
-#define USE_QPAINTER_BACKBUFFER
+//#define USE_QPAINTER_BACKBUFFER
 
 #ifdef USE_QPAINTER_BACKBUFFER
-    QMatrix4x4 projection;
-    QMatrix4x4 modelview;
+    auto result = QtConcurrent::run( [this]() {
+        QMatrix4x4 projection;
+        QMatrix4x4 modelview;
 
-    //  Load the identity.
-    projection.setToIdentity();
+        //  Load the identity.
+        projection.setToIdentity();
 
-    //projection.perspective(6.0f,1,1,6000);
-    projection.perspective(glm::toDegrees((double)0.06f), 1.666666666666f, 50.0f, 520.0f);
+        //projection.perspective(6.0f,1,1,6000);
+        projection.perspective(glm::toDegrees((double)0.06f), 1.666666666666f, 50.0f, 520.0f);
 
-    if (grnPix.isNull())
-        grnPix = QImage(QSize(500,300), QImage::Format_RGBX8888);
+        if (this->grnPix.isNull())
+            this->grnPix = QImage(QSize(500,300), QImage::Format_RGBX8888);
 
-    grnPix.fill(0);
+        this->grnPix.fill(0);
 
-    //gl->glLoadIdentity();					// Reset The View
-    modelview.setToIdentity();
+        //gl->glLoadIdentity();					// Reset The View
+        modelview.setToIdentity();
 
-    //back the camera up
-    modelview.translate(0, 0, -500);
+        //back the camera up
+        modelview.translate(0, 0, -500);
 
-    //rotate camera so heading matched fix heading in the world
-    //gl->glRotated(toDegrees(CVehicle::instance()->fixHeadingSection), 0, 0, 1);
-    modelview.rotate(glm::toDegrees(CVehicle::instance()->toolPos.heading), 0, 0, 1);
+        //rotate camera so heading matched fix heading in the world
+        //gl->glRotated(toDegrees(CVehicle::instance()->fixHeadingSection), 0, 0, 1);
+        modelview.rotate(glm::toDegrees(CVehicle::instance()->toolPos.heading), 0, 0, 1);
 
-    modelview.translate(-CVehicle::instance()->toolPos.easting - sin(CVehicle::instance()->toolPos.heading) * 15,
-                        -CVehicle::instance()->toolPos.northing - cos(CVehicle::instance()->toolPos.heading) * 15,
-                        0);
+        modelview.translate(-CVehicle::instance()->toolPos.easting - sin(CVehicle::instance()->toolPos.heading) * 15,
+                            -CVehicle::instance()->toolPos.northing - cos(CVehicle::instance()->toolPos.heading) * 15,
+                            0);
 
-    QMatrix4x4 mvp = projection * modelview;
+        QMatrix4x4 mvp = projection * modelview;
 
-    //patch color
-    QColor patchColor = QColor::fromRgbF(0.0f, 0.5f, 0.0f);
+        //patch color
+        QColor patchColor = QColor::fromRgbF(0.0f, 0.5f, 0.0f);
 
-    QPainter painter;
-    painter.begin(&grnPix);
-    painter.setRenderHint(QPainter::Antialiasing, false);
+        QPainter painter;
+        painter.begin(&grnPix);
+        painter.setRenderHint(QPainter::Antialiasing, false);
 
-    painter.setPen(Qt::NoPen);
+        painter.setPen(Qt::NoPen);
 
-    painter.setViewport(0,0,500,300);
-    painter.setWindow(0,0,500,300);
-    painter.setBrush(QBrush(patchColor));
+        painter.setViewport(0,0,500,300);
+        painter.setWindow(0,0,500,300);
+        painter.setBrush(QBrush(patchColor));
 
-    QPolygonF triangle;
-    QList<QLineF> lines;
+        QPolygonF triangle;
+        QList<QLineF> lines;
 
-    //to draw or not the triangle patch
-    bool isDraw;
+        //to draw or not the triangle patch
+        bool isDraw;
 
-    double pivEplus = CVehicle::instance()->pivotAxlePos.easting + 50;
-    double pivEminus = CVehicle::instance()->pivotAxlePos.easting - 50;
-    double pivNplus = CVehicle::instance()->pivotAxlePos.northing + 50;
-    double pivNminus = CVehicle::instance()->pivotAxlePos.northing - 50;
+        double pivEplus = CVehicle::instance()->pivotAxlePos.easting + 50;
+        double pivEminus = CVehicle::instance()->pivotAxlePos.easting - 50;
+        double pivNplus = CVehicle::instance()->pivotAxlePos.northing + 50;
+        double pivNminus = CVehicle::instance()->pivotAxlePos.northing - 50;
 
-    //QPolygonF frustum({{pivEminus, pivNplus}, {pivEplus, pivNplus },
-    //                   { pivEplus, pivNminus}, {pivEminus, pivNminus }});
+        //QPolygonF frustum({{pivEminus, pivNplus}, {pivEplus, pivNplus },
+        //                   { pivEplus, pivNminus}, {pivEminus, pivNminus }});
 
-    //draw patches j= # of sections
-    for (int j = 0; j < triStrip.count(); j++)
-    {
-        //every time the section turns off and on is a new patch
-        int patchCount = triStrip[j].patchList.size();
-
-        if (patchCount > 0)
+        //draw patches j= # of sections
+        for (int j = 0; j < this->triStrip.count(); j++)
         {
-            //for every new chunk of patch
-            for (int k = 0; k < triStrip[j].patchList.size() ; k++)
+            //every time the section turns off and on is a new patch
+            int patchCount = this->triStrip[j].patchList.size();
+
+            if (patchCount > 0)
             {
-                isDraw = false;
-                QSharedPointer<PatchTriangleList> triList = triStrip[j].patchList[k];
-                QSharedPointer<PatchBoundingBox> bb = triStrip[j].patchBoundingBoxList[k];
-
-                /*
-                QPolygonF patchBox({{ (*bb).minx, (*bb).miny }, {(*bb).maxx, (*bb).miny},
-                                    { (*bb).maxx, (*bb).maxy }, { (*bb).minx, (*bb).maxy } });
-
-                if (frustum.intersects(patchBox))
-                    isDraw = true;
-                */
-
-                int count2 = triList->size();
-                for (int i = 1; i < count2; i+=3)
+                //for every new chunk of patch
+                for (int k = 0; k < this->triStrip[j].patchList.size() ; k++)
                 {
-                    //determine if point is in frustum or not
-                    if ((*triList)[i].x() > pivEplus)
-                        continue;
-                    if ((*triList)[i].x() < pivEminus)
-                        continue;
-                    if ((*triList)[i].y() > pivNplus)
-                        continue;
-                    if ((*triList)[i].y() < pivNminus)
-                        continue;
+                    isDraw = false;
+                    QSharedPointer<PatchTriangleList> triList = this->triStrip[j].patchList[k];
+                    QSharedPointer<PatchBoundingBox> bb = this->triStrip[j].patchBoundingBoxList[k];
 
-                    //point is in frustum so draw the entire patch
-                    isDraw = true;
-                    break;
-                }
+                    /*
+                    QPolygonF patchBox({{ (*bb).minx, (*bb).miny }, {(*bb).maxx, (*bb).miny},
+                                        { (*bb).maxx, (*bb).maxy }, { (*bb).minx, (*bb).maxy } });
 
-                if (isDraw)
-                {
-                    triangle.clear();
-                    //triangle strip to polygon:
-                    //first two vertices, then every other one to the end
-                    //then from the end back to vertex #3, but every other one.
-                    triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[1]));
-                    triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[2]));
+                    if (frustum.intersects(patchBox))
+                        isDraw = true;
+                    */
 
-                    //even vertices after first two
-                    for (int i=4; i < count2; i+=2) {
-                        triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[i]));
+                    int count2 = triList->size();
+                    for (int i = 1; i < count2; i+=3)
+                    {
+                        //determine if point is in frustum or not
+                        if ((*triList)[i].x() > pivEplus)
+                            continue;
+                        if ((*triList)[i].x() < pivEminus)
+                            continue;
+                        if ((*triList)[i].y() > pivNplus)
+                            continue;
+                        if ((*triList)[i].y() < pivNminus)
+                            continue;
+
+                        //point is in frustum so draw the entire patch
+                        isDraw = true;
+                        break;
                     }
 
-                    //odd remaining vertices
-                    for (int i=count2 - (count2 % 2 ? 2 : 1) ; i >2 ; i -=2) {
-                        triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[i]));
+                    if (isDraw)
+                    {
+                        triangle.clear();
+                        //triangle strip to polygon:
+                        //first two vertices, then every other one to the end
+                        //then from the end back to vertex #3, but every other one.
+                        triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[1]));
+                        triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[2]));
+
+                        //even vertices after first two
+                        for (int i=4; i < count2; i+=2) {
+                            triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[i]));
+                        }
+
+                        //odd remaining vertices
+                        for (int i=count2 - (count2 % 2 ? 2 : 1) ; i >2 ; i -=2) {
+                            triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[i]));
+                        }
+
+                        painter.drawPolygon(triangle);
+
                     }
-
-                    painter.drawPolygon(triangle);
-
                 }
             }
         }
-    }
 
-    //draw tool bar for debugging
-    //gldraw.clear();
-    //gldraw.append(QVector3D(tool.section[0].leftPoint.easting, tool.section[0].leftPoint.northing,0.5));
-    //gldraw.append(QVector3D(tool.section[tool.numOfSections-1].rightPoint.easting, tool.section[tool.numOfSections-1].rightPoint.northing,0.5));
-    //gldraw.draw(gl,projection*modelview,QColor::fromRgb(255,0,0),GL_LINE_STRIP,1);
+        //draw tool bar for debugging
+        //gldraw.clear();
+        //gldraw.append(QVector3D(tool.section[0].leftPoint.easting, tool.section[0].leftPoint.northing,0.5));
+        //gldraw.append(QVector3D(tool.section[tool.numOfSections-1].rightPoint.easting, tool.section[tool.numOfSections-1].rightPoint.northing,0.5));
+        //gldraw.draw(gl,projection*modelview,QColor::fromRgb(255,0,0),GL_LINE_STRIP,1);
 
-    //draw 245 green for the tram tracks
-    QPen pen(QColor::fromRgb(0,245,0));
-    pen.setWidth(8);
-    painter.setPen(pen);
+        //draw 245 green for the tram tracks
+        QPen pen(QColor::fromRgb(0,245,0));
+        pen.setWidth(8);
+        painter.setPen(pen);
 
-    if (tram.displayMode !=0 && tram.displayMode !=0 && (track.idx() > -1))
-    {
-        if ((tram.displayMode == 1 || tram.displayMode == 2))
+        if (this->tram.displayMode !=0 && this->tram.displayMode !=0 && (this->track.idx() > -1))
         {
+            if ((this->tram.displayMode == 1 || this->tram.displayMode == 2))
+            {
 
-            for (int i = 0; i < tram.tramList.count(); i++)
+                for (int i = 0; i < this->tram.tramList.count(); i++)
+                {
+                    lines.clear();
+                    for (int h = 1; h < this->tram.tramList[i]->count(); h++) {
+                        lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, (*this->tram.tramList[i])[h-1]),
+                                           glm::backbuffer_world_to_screen(mvp, (*this->tram.tramList[i])[h])));
+                    }
+
+                    painter.drawLines(lines);
+                }
+            }
+
+            if (this->tram.displayMode == 1 || this->tram.displayMode == 3)
             {
                 lines.clear();
-                for (int h = 1; h < tram.tramList[i]->count(); h++) {
-                    lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, (*tram.tramList[i])[h-1]),
-                                       glm::backbuffer_world_to_screen(mvp, (*tram.tramList[i])[h])));
+                for (int h = 0; h < this->tram.tramBndOuterArr.count(); h++) {
+                    lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, this->tram.tramBndOuterArr[h-1]),
+                                       glm::backbuffer_world_to_screen(mvp, this->tram.tramBndOuterArr[h])));
+                }
+
+                for (int h = 0; h < this->tram.tramBndInnerArr.count(); h++) {
+                    lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, this->tram.tramBndInnerArr[h-1]),
+                                       glm::backbuffer_world_to_screen(mvp, this->tram.tramBndInnerArr[h])));
                 }
 
                 painter.drawLines(lines);
             }
         }
 
-        if (tram.displayMode == 1 || tram.displayMode == 3)
+        //draw 240 green for boundary
+        if (this->bnd.bndList.count() > 0)
         {
-            lines.clear();
-            for (int h = 0; h < tram.tramBndOuterArr.count(); h++) {
-                lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, tram.tramBndOuterArr[h-1]),
-                                   glm::backbuffer_world_to_screen(mvp, tram.tramBndOuterArr[h])));
+            ////draw the bnd line
+            if (this->bnd.bndList[0].fenceLine.count() > 3)
+            {
+                DrawPolygonBack(painter, mvp, this->bnd.bndList[0].fenceLine,3,QColor::fromRgb(0,240,0));
             }
 
-            for (int h = 0; h < tram.tramBndInnerArr.count(); h++) {
-                lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, tram.tramBndInnerArr[h-1]),
-                                   glm::backbuffer_world_to_screen(mvp, tram.tramBndInnerArr[h])));
+
+            //draw 250 green for the headland
+            if (this->isHeadlandOn() && this->bnd.isSectionControlledByHeadland)
+            {
+                DrawPolygonBack(painter, mvp, this->bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
             }
-
-            painter.drawLines(lines);
-        }
-    }
-
-    //draw 240 green for boundary
-    if (bnd.bndList.count() > 0)
-    {
-        ////draw the bnd line
-        if (bnd.bndList[0].fenceLine.count() > 3)
-        {
-            DrawPolygonBack(painter, mvp, bnd.bndList[0].fenceLine,3,QColor::fromRgb(0,240,0));
         }
 
+        painter.end();
 
-        //draw 250 green for the headland
-        if (this->isHeadlandOn() && bnd.isSectionControlledByHeadland)
-        {
-            DrawPolygonBack(painter, mvp, bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
-        }
-    }
+        //TODO adjust coordinate transformations above to eliminate this step
+        this->grnPix = this->grnPix.mirrored().convertToFormat(QImage::Format_RGBX8888);
 
-    painter.end();
+        QImage temp = this->grnPix.copy(tool.rpXPosition, 0, tool.rpWidth, 290 /*(int)rpHeight*/);
+        temp.setPixelColor(0,0,QColor::fromRgb(255,128,0));
+        //grnPix = temp; //only show clipped image
+        memcpy(this->grnPixels, temp.constBits(), temp.size().width() * temp.size().height() * 4);
+        //grnPix = temp;
 
-    //TODO adjust coordinate transformations above to eliminate this step
-    grnPix = grnPix.mirrored().convertToFormat(QImage::Format_RGBX8888);
-
-    QImage temp = grnPix.copy(tool.rpXPosition, 0, tool.rpWidth, 290 /*(int)rpHeight*/);
-    temp.setPixelColor(0,0,QColor::fromRgb(255,128,0));
-    //grnPix = temp; //only show clipped image
-    memcpy(grnPixels, temp.constBits(), temp.size().width() * temp.size().height() * 4);
-    //grnPix = temp;
+        QMetaObject::invokeMethod(this, [this]() {
 #else
     oglBack_Paint();
 #endif
@@ -2335,21 +2339,6 @@ void FormGPS::processSectionLookahead() {
 
     }
 
-    //stop the timer and calc how long it took to do calcs and draw
-    frameTimeRough = swFrame.elapsed();
-
-    //if (frameTimeRough > 50) frameTimeRough = 50;
-
-    // Phase 6.0.20: Qt 6.8 BINDABLE - use setter for automatic signal emission
-    setFrameTime(frameTime() * 0.90 + frameTimeRough * 0.1);
-
-    //TODO 5 hz sections
-    //if (bbCounter++ > 0)
-    //    bbCounter = 0;
-
-    //draw the section control window off screen buffer
-    //if (bbCounter == 0)
-    //{
     if (isJobStarted())
     {
         p_239.pgn[p_239.geoStop] = this->isOutOfBounds() ? 1 : 0;
@@ -2363,6 +2352,11 @@ void FormGPS::processSectionLookahead() {
         }
     }
 
+#ifdef USE_QPAINTER_BACKBUFFER
+    qDebug() << "After threaded back buffer drawing, section lookahead finished at " << swFrame.elapsed();
+    }, Qt::QueuedConnection);
+    });
+#endif
 
     //lock.unlock(;
 

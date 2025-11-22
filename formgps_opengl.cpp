@@ -407,10 +407,14 @@ void FormGPS::oglMain_Paint()
                 patchesBuffer.clear();
                 for (int j = 0; j < triStrip.count(); j++) {
                     patchesBuffer.append(QVector<QOpenGLBuffer>());
+                    for (int k=0; k < triStrip[j].patchList.size()-1 ; k++) {
+                        patchesBuffer[j].append(QOpenGLBuffer());
+                    }
                 }
                 patchesBufferDirty = false;
             }
 
+            bool draw_patch = false;
 
             //draw patches j= # of sections
             for (int j = 0; j < triStrip.count(); j++)
@@ -420,6 +424,31 @@ void FormGPS::oglMain_Paint()
 
                 for (int k=0; k < patchCount; k++) {
                     QSharedPointer<PatchTriangleList> triList = triStrip[j].patchList[k];
+
+                    for (int i = 1; i < triList->size(); i += 3) //first vertice is color
+                    {
+                        //determine if point is in frustum or not, if < 0, its outside so abort, z always is 0
+                        //x is easting, y is northing
+                        if (frustum[0] * (*triList)[i].x() + frustum[1] * (*triList)[i].y() + frustum[3] <= 0)
+                            continue;//right
+                        if (frustum[4] * (*triList)[i].x() + frustum[5] * (*triList)[i].y() + frustum[7] <= 0)
+                            continue;//left
+                        if (frustum[16] * (*triList)[i].x() + frustum[17] * (*triList)[i].y() + frustum[19] <= 0)
+                            continue;//bottom
+                        if (frustum[20] * (*triList)[i].x() + frustum[21] * (*triList)[i].y() + frustum[23] <= 0)
+                            continue;//top
+                        if (frustum[8] * (*triList)[i].x() + frustum[9] * (*triList)[i].y() + frustum[11] <= 0)
+                            continue;//far
+                        if (frustum[12] * (*triList)[i].x() + frustum[13] * (*triList)[i].y() + frustum[15] <= 0)
+                            continue;//near
+
+                        //point is in frustum so draw the entire patch. The downside of triangle strips.
+                        draw_patch = true;
+                        break;
+                    }
+
+                    if (!draw_patch) continue;
+
                     color.setRgbF((*triList)[0].x(), (*triList)[0].y(), (*triList)[0].z(), 0.596 );
                     int count2 = triList->size();
 
@@ -447,19 +476,28 @@ void FormGPS::oglMain_Paint()
                         triBuffer.destroy();
                         continue;
 
-                    } else if (patchesBuffer[j].size() <= k) {
-                        //this patch has no GPU buffer yet, so make one
-                        patchesBuffer[j].append(QOpenGLBuffer());
-                        patchesBuffer[j][k].create();
-                        patchesBuffer[j][k].bind();
-                        patchesBuffer[j][k].allocate(triList->data() + 1, (count2-1) * sizeof(QVector3D));
-                        patchesBuffer[j][k].release();
-                    } //else the buffer is already in the GPU
+                    } else {
+                        while (patchesBuffer[j].size() <= k) {
+                            //fill out list of buffers to match triStrip[j]'s length
+                            //this way we can use patchesBuffer as a sparse cache
+                            patchesBuffer[j].append(QOpenGLBuffer());
+                        }
 
-                    glDrawArraysColor(gl,projection*modelview,
-                                      GL_TRIANGLE_STRIP, color,
-                                      patchesBuffer[j][k],GL_FLOAT,count2-1);
-
+                        if (!patchesBuffer[j][k].isCreated()) {
+                            //this patch has no GPU buffer yet, so make one
+                            patchesBuffer[j].append(QOpenGLBuffer());
+                            patchesBuffer[j][k].create();
+                            patchesBuffer[j][k].bind();
+                            patchesBuffer[j][k].allocate(triList->data() + 1, (count2-1) * sizeof(QVector3D));
+                            patchesBuffer[j][k].release();
+                            //qDebug() << "making new buffer.";
+                        } else {
+                            //qDebug() << "using existing buffer.";
+                        }
+                        glDrawArraysColor(gl,projection*modelview,
+                                          GL_TRIANGLE_STRIP, color,
+                                          patchesBuffer[j][k],GL_FLOAT,count2-1);
+                    }
                 }
             }
 
@@ -506,12 +544,14 @@ void FormGPS::oglMain_Paint()
                 }
             }
 
+            qDebug() << "time after painting patches " << swFrame.elapsed();
+
             if (tram.displayMode != 0) tram.DrawTram(gl,projection*modelview,camera);
 
             //draw contour line if button on
             if (this->isContourBtnOn())
             {
-                ct.DrawContourLine(gl, projection*modelview, mainWindow);
+                ct.DrawContourLine(gl, projection*modelview, mainWindow, swFrame);
             }
             else// draw the current and reference AB Lines or CurveAB Ref and line
             {
@@ -521,9 +561,10 @@ void FormGPS::oglMain_Paint()
 
             track.DrawTrackNew(gl, projection*modelview, camera, *CVehicle::instance());
 
-            //if (recPath.isRecordOn)
-            recPath.DrawRecordedLine(gl, projection*modelview);
-            recPath.DrawDubins(gl, projection*modelview);
+            if (recPath.isRecordOn) {
+                recPath.DrawRecordedLine(gl, projection*modelview);
+                recPath.DrawDubins(gl, projection*modelview);
+            }
 
             if (bnd.bndList.count() > 0 || bnd.isBndBeingMade == true)
             {
