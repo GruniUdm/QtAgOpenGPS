@@ -1375,9 +1375,9 @@ void FormGPS::UpdateFixPosition()
         //processOverlapCount();
     }
 
-    qDebug() << "Time before painting field: " << swFrame.elapsed();
+    qDebug() << "Time before painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
     oglMain_Paint();
-    qDebug() << "Time after painting field: " << swFrame.elapsed();
+    qDebug() << "Time after painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
 
     //NOTE: Not sure here.
     //stop the timer and calc how long it took to do calcs and draw
