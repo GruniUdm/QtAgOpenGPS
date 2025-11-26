@@ -27,6 +27,8 @@ QLabel *overlapPixelsWindow;
 #ifndef TESTING
 int main(int argc, char *argv[])
 {
+    qputenv("QSG_RENDER_LOOP", "threaded");
+
 #ifdef  Q_OS_ANDROID
     QNativeInterface::QAndroidApplication::runOnAndroidMainThread([]() {
         QJniObject activity = QNativeInterface::QAndroidApplication::context();
@@ -39,8 +41,6 @@ int main(int argc, char *argv[])
         }
     });
 #endif
-
-    qputenv("QSG_RENDER_LOOP", "threaded");
 
     // PHASE 6.0.23.1: Disable debug logs to prevent performance issues (40Hz PGN spam)
     // Phase 6.0.24: Allow selective debug logging for AgIOService (change agioservice.debug=false to true)
