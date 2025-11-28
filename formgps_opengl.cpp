@@ -432,6 +432,7 @@ void FormGPS::oglMain_Paint()
                     QVector3D *triListRaw = triList->data();
                     int count2 = triList->size();
                     //total_vertices += count2;
+                    draw_patch = false;
 
                     for (int i = 1; i < count2; i += 3) //first vertice is color
                     {
