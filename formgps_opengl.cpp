@@ -27,6 +27,17 @@ struct OpenGLViewport {
     double shiftY = 0.0;
 };
 
+struct DrawElementsIndirectCommand {
+    GLuint count;         // Number of indices
+    GLuint instanceCount; // Number of instances
+    GLuint firstIndex;    // Offset in index buffer
+    GLuint baseVertex;    // Added to each index
+    GLuint baseInstance;  // Base instance for instanced attributes
+};
+
+#define PATCHBUFFER_LENGTH 4 * 1024 * 1024 //4 MB
+#define VERTEX_SIZE sizeof(ColorVertex) //combined vertex and color, 7 floats
+
 QOpenGLContext *getGLContext(QQuickWindow *window) {
     auto *ri = window->rendererInterface();
     if (ri->graphicsApi() == QSGRendererInterface::OpenGL) {
@@ -362,6 +373,7 @@ void FormGPS::oglMain_Paint()
     gl->glDisable(GL_DEPTH_TEST);
     //gl->glDisable(GL_TEXTURE_2D);
 
+    int currentPatchBuffer = 0;
 
     if(this->sentenceCounter() < 299)
     {
@@ -404,22 +416,40 @@ void FormGPS::oglMain_Paint()
 
             if (patchesBufferDirty) {
                 //destroy all GPU patches buffers
-                patchesBuffer.clear();
+                patchBuffer.clear();
+                patchesInBuffer.clear();
+
                 for (int j = 0; j < triStrip.count(); j++) {
-                    patchesBuffer.append(QVector<QOpenGLBuffer>());
+                    patchesInBuffer.append(QVector<PatchInBuffer>());
                     for (int k=0; k < triStrip[j].patchList.size()-1 ; k++) {
-                        patchesBuffer[j].append(QOpenGLBuffer());
+                        patchesInBuffer[j].append({ -1, -1, -1});
                     }
                 }
-                patchesBufferDirty = false;
-            }
 
-            while (patchesBuffer.size() < triStrip.count()) {
-                patchesBuffer.append(QVector<QOpenGLBuffer>());
+                patchBuffer.append( { QOpenGLBuffer(), 0} );
+                patchBuffer[0].patchBuffer.create();
+                patchBuffer[0].patchBuffer.bind();
+                patchBuffer[0].patchBuffer.allocate(PATCHBUFFER_LENGTH); //4 MB
+                patchBuffer[0].patchBuffer.release();
+                currentPatchBuffer = 0;
+
+                patchesBufferDirty = false;
+            } else {
+                currentPatchBuffer = patchBuffer.count() - 1;
             }
 
             bool draw_patch = false;
             //int total_vertices = 0;
+
+            //initialize the steps for mipmap of triangles (skipping detail while zooming out)
+            int mipmap = 1;
+            if (camera.camSetDistance < -800) mipmap = 2;
+            if (camera.camSetDistance < -1500) mipmap = 4;
+            if (camera.camSetDistance < -2400) mipmap = 8;
+            if (camera.camSetDistance < -5000) mipmap = 16;
+
+            QVector<GLushort> indices;
+            QVector<DrawElementsIndirectCommand> commands;
 
             //draw patches j= # of sections
             for (int j = 0; j < triStrip.count(); j++)
@@ -433,6 +463,7 @@ void FormGPS::oglMain_Paint()
                     int count2 = triList->size();
                     //total_vertices += count2;
 
+                    draw_patch = false;
                     for (int i = 1; i < count2; i += 3) //first vertice is color
                     {
                         //determine if point is in frustum or not, if < 0, its outside so abort, z always is 0
@@ -483,29 +514,58 @@ void FormGPS::oglMain_Paint()
                         //qDebug() << "Last patch, not cached.";
                         continue;
                     } else {
-                        while (patchesBuffer[j].size() <= k) {
-                            //fill out list of buffers to match triStrip[j]'s length
-                            //this way we can use patchesBuffer as a sparse cache
-                            patchesBuffer[j].append(QOpenGLBuffer());
+                        if (patchesInBuffer[j][k].which == -1) {
+                            //patch is not in one of the big buffers yet, so allocate it.
+                            if ((patchBuffer[currentPatchBuffer].length + (count2-1) * VERTEX_SIZE) >= (PATCHBUFFER_LENGTH / 24) ) {
+                                //add a new buffer because the current one is full.
+                                currentPatchBuffer ++;
+                                patchBuffer.append( { QOpenGLBuffer(), 0 });
+                                patchBuffer[currentPatchBuffer].patchBuffer.bind();
+                                patchBuffer[currentPatchBuffer].patchBuffer.create();
+                                patchBuffer[currentPatchBuffer].patchBuffer.allocate(PATCHBUFFER_LENGTH); //4MB
+                                patchBuffer[currentPatchBuffer].patchBuffer.release();
+                            }
+
+                            //there's room for it in the current patch buffer
+                            patchBuffer[currentPatchBuffer].patchBuffer.bind();
+                            QVector<ColorVertex> temp_patch;
+                            temp_patch.reserve(count2-1);
+                            for (int i=1; i < count2; i++) {
+                                temp_patch.append( { triListRaw[i], QVector4D(triListRaw[0], 0.596) } );
+                            }
+                            patchBuffer[currentPatchBuffer].patchBuffer.write(patchBuffer[currentPatchBuffer].length,
+                                                                              temp_patch.data(),
+                                                                              (count2-1) * VERTEX_SIZE);
+                            patchesInBuffer[j][k].which = currentPatchBuffer;
+                            patchesInBuffer[j][k].offset = patchBuffer[currentPatchBuffer].length;
+                            patchesInBuffer[j][k].length = count2 - 1;
+                            patchBuffer[currentPatchBuffer].length += (count2 - 1) * VERTEX_SIZE;
+                            qDebug() << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
+                            patchBuffer[currentPatchBuffer].patchBuffer.release();
+                        }
+                        //generate list of indices for this patch
+
+                        int step = mipmap;
+                        if (count2 - 1 < mipmap + 2) step = 1;
+
+                        int index_count = 0;
+                        int index_offset = patchesInBuffer[j][k].offset;
+
+                        commands.append( { 0, 1, (GLuint) indices.count(), 0, 0 } );
+
+
+                        for (int i = 1; i < count2 ; i += step)
+                        {
+                            indices.append(i-1 + index_offset);
+                            index_count ++;
                         }
 
-                        if (!patchesBuffer[j][k].isCreated()) {
-                            //qDebug() << "Not cached.";
-                            //this patch has no GPU buffer yet, so make one
-                            patchesBuffer[j].append(QOpenGLBuffer());
-                            patchesBuffer[j][k].create();
-                            patchesBuffer[j][k].bind();
-                            patchesBuffer[j][k].allocate(triList->data() + 1, (count2-1) * sizeof(QVector3D));
-                            patchesBuffer[j][k].release();
-                            //qDebug() << "making new buffer.";
-                        } else {
-                            //qDebug() << "using existing buffer.";
-                        }
-                        glDrawArraysColor(gl,projection*modelview,
-                                          GL_TRIANGLE_STRIP, color,
-                                          patchesBuffer[j][k],GL_FLOAT,count2-1);
+                        commands.last().count = index_count;
                     }
                 }
+
+                //create ibo
+                //draw with multi
             }
 
             // the follow up to sections patches

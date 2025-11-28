@@ -63,6 +63,18 @@ class AOGRendererInSG;
 class QQuickCloseEvent;
 class QVector3D;
 
+struct PatchBuffer {
+    QOpenGLBuffer patchBuffer;
+    int length;
+};
+
+struct PatchInBuffer {
+    int which;
+    int offset;
+    int length;
+};
+
+
 class FormGPS : public QQmlApplicationEngine
 {
     Q_OBJECT
@@ -1272,7 +1284,8 @@ public:
     QOpenGLBuffer skyBuffer;
     QOpenGLBuffer flagsBuffer;
 
-    QVector<QVector<QOpenGLBuffer>> patchesBuffer;
+    QVector<QVector<PatchInBuffer>> patchesInBuffer;
+    QVector<PatchBuffer> patchBuffer;
     bool patchesBufferDirty = true;
 
     /***********************
