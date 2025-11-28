@@ -3,6 +3,8 @@
 //
 // Main loop OpenGL stuff
 //#include <QtOpenGL>
+#include <QOpenGLVersionFunctionsFactory>
+#include <QOpenGLVertexArrayObject>
 #include <assert.h>
 #include "formgps.h"
 #include "csection.h"
@@ -14,9 +16,16 @@
 #include "aogrenderer.h"
 #include "cnmea.h"
 #include "qmlutil.h"
+#ifdef Q_OS_ANDROID
+#include <QOpenGLExtraFunctions>
+#define GL_DRAW_INDIRECT_BUFFER           0x8F3F
+#else
+#include <QOpenGLFunctions_4_3_Core>
+#endif
 
 #include <QLabel>
 extern QLabel *overlapPixelsWindow;
+extern QOpenGLShaderProgram *interpColorShader; //pull from glutils.h
 
 // Helper function to safely get OpenGL control properties with defaults
 struct OpenGLViewport {
@@ -35,7 +44,7 @@ struct DrawElementsIndirectCommand {
     GLuint baseInstance;  // Base instance for instanced attributes
 };
 
-#define PATCHBUFFER_LENGTH 4 * 1024 * 1024 //4 MB
+#define PATCHBUFFER_LENGTH 16 * 1024 * 1024 //4 MB
 #define VERTEX_SIZE sizeof(ColorVertex) //combined vertex and color, 7 floats
 
 QOpenGLContext *getGLContext(QQuickWindow *window) {
@@ -318,6 +327,24 @@ void FormGPS::oglMain_Paint()
     auto result = mainOpenGLContext.makeCurrent(&mainSurface);
 
     QOpenGLFunctions *gl = mainOpenGLContext.functions();
+
+#ifdef Q_OS_ANDROID
+    PFNGLMULTIDRAWELEMENTSINDIRECTEXTPROC glMultiDrawElementsIndirectEXT = nullptr;
+
+    // Check for extension support
+    QString extensions = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+    assert(extensions.contains("GL_EXT_multi_draw_indirect"));
+
+    glMultiDrawElementsIndirectEXT = reinterpret_cast<PFNGLMULTIDRAWELEMENTSINDIRECTEXTPROC>(
+        mainOpenGLContext.getProcAddress("glMultiDrawElementsIndirectEXT")
+        );
+    assert(glMultiDrawElementsIndirectEXT);
+#else
+
+    QOpenGLFunctions_4_3_Core *gl43 = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_4_3_Core>(&mainOpenGLContext);
+    assert(gl43);
+#endif
+
     initializeTextures();
     initializeShaders();
 
@@ -448,6 +475,8 @@ void FormGPS::oglMain_Paint()
             if (camera.camSetDistance < -2400) mipmap = 8;
             if (camera.camSetDistance < -5000) mipmap = 16;
 
+            if (mipmap > 1) qDebug() << "mipmap is" << mipmap;
+
             QVector<GLushort> indices;
             QVector<DrawElementsIndirectCommand> commands;
 
@@ -516,8 +545,9 @@ void FormGPS::oglMain_Paint()
                     } else {
                         if (patchesInBuffer[j][k].which == -1) {
                             //patch is not in one of the big buffers yet, so allocate it.
-                            if ((patchBuffer[currentPatchBuffer].length + (count2-1) * VERTEX_SIZE) >= (PATCHBUFFER_LENGTH / 24) ) {
+                            if ((patchBuffer[currentPatchBuffer].length + (count2-1) * VERTEX_SIZE) >= PATCHBUFFER_LENGTH ) {
                                 //add a new buffer because the current one is full.
+                                assert(false);
                                 currentPatchBuffer ++;
                                 patchBuffer.append( { QOpenGLBuffer(), 0 });
                                 patchBuffer[currentPatchBuffer].patchBuffer.bind();
@@ -537,7 +567,7 @@ void FormGPS::oglMain_Paint()
                                                                               temp_patch.data(),
                                                                               (count2-1) * VERTEX_SIZE);
                             patchesInBuffer[j][k].which = currentPatchBuffer;
-                            patchesInBuffer[j][k].offset = patchBuffer[currentPatchBuffer].length;
+                            patchesInBuffer[j][k].offset = patchBuffer[currentPatchBuffer].length / VERTEX_SIZE;
                             patchesInBuffer[j][k].length = count2 - 1;
                             patchBuffer[currentPatchBuffer].length += (count2 - 1) * VERTEX_SIZE;
                             qDebug() << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
@@ -564,8 +594,69 @@ void FormGPS::oglMain_Paint()
                     }
                 }
 
-                //create ibo
-                //draw with multi
+                qDebug() << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
+
+                if (commands.count()) {
+                    interpColorShader->bind();
+                    interpColorShader->setUniformValue("mvpMatrix", projection*modelview);
+                    interpColorShader->setUniformValue("pointSize", 0.0f);
+
+                    //glMultiDraw needs a vertex array object to hold all the buffers we're
+                    //using
+                    QOpenGLVertexArrayObject vao;
+                    vao.create();
+                    vao.bind();
+
+                    patchBuffer[currentPatchBuffer].patchBuffer.bind();
+
+                    //set up vertex positions in buffer for the shader
+                    gl->glEnableVertexAttribArray(0);
+                    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), nullptr); //3D vector
+
+                    gl->glEnableVertexAttribArray(1);
+                    gl->glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float))); //color
+
+                    //create ibo
+                    QOpenGLBuffer ibo{QOpenGLBuffer::IndexBuffer};
+                    ibo.create();
+                    ibo.bind();
+                    ibo.allocate(indices.data(), indices.size() * sizeof(GLushort));
+
+                    GLuint indirectBuffer;
+                    gl->glGenBuffers(1, &indirectBuffer);
+                    gl->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer);
+                    gl->glBufferData(GL_DRAW_INDIRECT_BUFFER,
+                                 commands.size() * sizeof(DrawElementsIndirectCommand),
+                                 commands.data(), GL_STATIC_DRAW);
+
+#ifdef Q_OS_ANDROID
+                    glMultiDrawElementsIndirectEXT(
+                        GL_TRIANGLE_STRIP,
+                        GL_UNSIGNED_SHORT,
+                        nullptr,
+                        commands.count(),
+                        sizeof(DrawElementsIndirectCommand) );
+#else
+                    gl43->glMultiDrawElementsIndirect(
+                        GL_TRIANGLE_STRIP,
+                        GL_UNSIGNED_SHORT,
+                        nullptr,
+                        commands.count(),
+                        sizeof(DrawElementsIndirectCommand) );
+#endif
+
+                    vao.release();
+                    interpColorShader->release();
+
+                    vao.destroy();
+
+                    gl->glDeleteBuffers(1, &indirectBuffer);
+
+                    //probably already released by vao
+                    patchBuffer[currentPatchBuffer].patchBuffer.release();
+                    ibo.release();
+                    ibo.destroy();
+                }
             }
 
             // the follow up to sections patches
