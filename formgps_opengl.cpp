@@ -452,8 +452,13 @@ void FormGPS::oglMain_Paint()
             if (mipmap > 1)
                 qDebug() << "mipmap is" << mipmap;
 
-            QVector<GLuint> indices;
-            indices.reserve(600000);  //enough to index 16 MB worth of vertices
+            //QVector<GLuint> indices;
+            //indices.reserve(PATCHBUFFER_LENGTH / 28 * 3);  //enough to index 16 MB worth of vertices
+            QVector<QVector<GLuint>> indices2;
+            for (int i=0; i < patchBuffer.size(); i++) {
+                indices2.append(QVector<GLuint>());
+                indices2[i].reserve(PATCHBUFFER_LENGTH / 28 * 3);
+            }
 
             //draw patches j= # of sections
             for (int j = 0; j < triStrip.count(); j++)
@@ -550,47 +555,73 @@ void FormGPS::oglMain_Paint()
                         }
                         //generate list of indices for this patch
                         int index_offset = patchesInBuffer[j][k].offset;
+                        int which_buffer = patchesInBuffer[j][k].which;
+
                         int step = mipmap;
                         if (count2 - 1 < mipmap + 2) {
                             for (int i = 1; i < count2 - 2 ; i ++)
                             {
                                 if (i % 2) {  //preserve winding order
-                                    indices.append(i-1 + index_offset);
-                                    indices.append(i   + index_offset);
-                                    indices.append(i+1 + index_offset);
+                                    //indices.append(i-1 + index_offset);
+                                    //indices.append(i   + index_offset);
+                                    //indices.append(i+1 + index_offset);
+
+                                    indices2[which_buffer].append(i-1 + index_offset);
+                                    indices2[which_buffer].append(i   + index_offset);
+                                    indices2[which_buffer].append(i+1 + index_offset);
                                 } else {
-                                    indices.append(i-1 + index_offset);
-                                    indices.append(i+1   + index_offset);
-                                    indices.append(i + index_offset);
+                                    //indices.append(i-1 + index_offset);
+                                    //indices.append(i+1   + index_offset);
+                                    //indices.append(i + index_offset);
+
+                                    indices2[which_buffer].append(i-1 + index_offset);
+                                    indices2[which_buffer].append(i+1   + index_offset);
+                                    indices2[which_buffer].append(i + index_offset);
                                 }
 
                             }
                         } else {
                             //use mipmap to make fewer triangles
-                            int last_index = indices.count();
+                            //int last_index = indices.count();
+                            int last_index2 = indices2[which_buffer].count();
+
                             int vertex_count = 0;
                             for (int i=1; i < count2; i += step) {
                                 //convert triangle strip to triangles
                                 if (vertex_count > 2 ) { //even, normal winding
-                                    indices.append(indices[last_index - 1]);
-                                    indices.append(indices[last_index - 2]);
-                                    last_index+=3;
+                                    //indices.append(indices[last_index - 1]);
+                                    //indices.append(indices[last_index - 2]);
+                                    //last_index+=3;
+
+                                    indices2[which_buffer].append(indices2[which_buffer][last_index2 - 1]);
+                                    indices2[which_buffer].append(indices2[which_buffer][last_index2 - 2]);
+                                    last_index2+=3;
                                 } else {
-                                    last_index ++;
+                                    //last_index ++;
+                                    last_index2 ++;
                                 }
-                                indices.append(i-1 + index_offset);
+                                //indices.append(i-1 + index_offset);
+                                indices2[which_buffer].append(i-1 + index_offset);
+
                                 i++;
                                 vertex_count++;
 
                                 if (vertex_count > 2) { //odd, reverse winding
-                                    indices.append(indices[last_index - 2]);
+                                    //indices.append(indices[last_index - 2]);
+                                    indices2[which_buffer].append(indices2[which_buffer][last_index2 - 2]);
                                 }
-                                indices.append(i-1 + index_offset);
+                                //indices.append(i-1 + index_offset);
+                                indices2[which_buffer].append(i-1 + index_offset);
+
                                 if (vertex_count > 2) {
-                                    indices.append(indices[last_index - 1 ]);
-                                    last_index += 3;
+                                    //indices.append(indices[last_index - 1 ]);
+                                    //last_index += 3;
+
+                                    indices2[which_buffer].append(indices2[which_buffer][last_index2 - 1 ]);
+                                    last_index2 += 3;
                                 } else {
-                                    last_index ++;
+                                    //last_index ++;
+                                    last_index2 ++;
                                 }
                                 i++;
                                 vertex_count++;
@@ -606,7 +637,7 @@ void FormGPS::oglMain_Paint()
 
                 qDebug() << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
 
-                if (indices.count() > 2) {
+                if (indices2.count() && indices2[0].count() > 2) {
                     interpColorShader->bind();
                     interpColorShader->setUniformValue("mvpMatrix", projection*modelview);
                     interpColorShader->setUniformValue("pointSize", 0.0f);
@@ -629,9 +660,9 @@ void FormGPS::oglMain_Paint()
                     QOpenGLBuffer ibo{QOpenGLBuffer::IndexBuffer};
                     ibo.create();
                     ibo.bind();
-                    ibo.allocate(indices.data(), indices.size() * sizeof(GLuint));
+                    ibo.allocate(indices2[0].data(), indices2[0].size() * sizeof(GLuint));
 
-                    gl->glDrawElements(GL_TRIANGLES, indices.count(), GL_UNSIGNED_INT, nullptr);
+                    gl->glDrawElements(GL_TRIANGLES, indices2[0].count(), GL_UNSIGNED_INT, nullptr);
 
                     vao.release();
                     vao.destroy();
