@@ -44,15 +44,15 @@ int main(int argc, char *argv[])
 
     // PHASE 6.0.23.1: Disable debug logs to prevent performance issues (40Hz PGN spam)
     // Phase 6.0.24: Allow selective debug logging for AgIOService (change agioservice.debug=false to true)
-    /*
     QLoggingCategory::setFilterRules(QStringLiteral(
         "*.debug=false\n"
         "agioservice.debug=false\n"  // Change to true to enable AgIOService debug logs
+        "*.qtagopengps.debug=true\n"
+        "qt.scenegraph.general=true\n"
         "*.warning=true\n"
         "*.critical=true\n"
         "*.fatal=true"
     ));
-    */
 
     qSetMessagePattern("%{time hh:mm:ss.zzz} [%{type}] %{function}:%{line} - %{message}");
     QApplication a(argc, argv);
