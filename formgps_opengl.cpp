@@ -460,6 +460,8 @@ void FormGPS::oglMain_Paint()
                 indices2[i].reserve(PATCHBUFFER_LENGTH / 28 * 3);
             }
 
+            bool enough_indices = false;
+
             //draw patches j= # of sections
             for (int j = 0; j < triStrip.count(); j++)
             {
@@ -527,13 +529,14 @@ void FormGPS::oglMain_Paint()
                             //patch is not in one of the big buffers yet, so allocate it.
                             if ((patchBuffer[currentPatchBuffer].length + (count2-1) * VERTEX_SIZE) >= PATCHBUFFER_LENGTH ) {
                                 //add a new buffer because the current one is full.
-                                assert(false);
                                 currentPatchBuffer ++;
                                 patchBuffer.append( { QOpenGLBuffer(), 0 });
-                                patchBuffer[currentPatchBuffer].patchBuffer.bind();
                                 patchBuffer[currentPatchBuffer].patchBuffer.create();
+                                patchBuffer[currentPatchBuffer].patchBuffer.bind();
                                 patchBuffer[currentPatchBuffer].patchBuffer.allocate(PATCHBUFFER_LENGTH); //4MB
                                 patchBuffer[currentPatchBuffer].patchBuffer.release();
+                                indices2.append(QVector<GLuint>());
+                                indices2[currentPatchBuffer].reserve(PATCHBUFFER_LENGTH / 28 * 3);
                             }
 
                             //there's room for it in the current patch buffer
@@ -562,18 +565,10 @@ void FormGPS::oglMain_Paint()
                             for (int i = 1; i < count2 - 2 ; i ++)
                             {
                                 if (i % 2) {  //preserve winding order
-                                    //indices.append(i-1 + index_offset);
-                                    //indices.append(i   + index_offset);
-                                    //indices.append(i+1 + index_offset);
-
                                     indices2[which_buffer].append(i-1 + index_offset);
                                     indices2[which_buffer].append(i   + index_offset);
                                     indices2[which_buffer].append(i+1 + index_offset);
                                 } else {
-                                    //indices.append(i-1 + index_offset);
-                                    //indices.append(i+1   + index_offset);
-                                    //indices.append(i + index_offset);
-
                                     indices2[which_buffer].append(i-1 + index_offset);
                                     indices2[which_buffer].append(i+1   + index_offset);
                                     indices2[which_buffer].append(i + index_offset);
@@ -582,45 +577,32 @@ void FormGPS::oglMain_Paint()
                             }
                         } else {
                             //use mipmap to make fewer triangles
-                            //int last_index = indices.count();
                             int last_index2 = indices2[which_buffer].count();
 
                             int vertex_count = 0;
                             for (int i=1; i < count2; i += step) {
                                 //convert triangle strip to triangles
                                 if (vertex_count > 2 ) { //even, normal winding
-                                    //indices.append(indices[last_index - 1]);
-                                    //indices.append(indices[last_index - 2]);
-                                    //last_index+=3;
-
                                     indices2[which_buffer].append(indices2[which_buffer][last_index2 - 1]);
                                     indices2[which_buffer].append(indices2[which_buffer][last_index2 - 2]);
                                     last_index2+=3;
                                 } else {
-                                    //last_index ++;
                                     last_index2 ++;
                                 }
-                                //indices.append(i-1 + index_offset);
                                 indices2[which_buffer].append(i-1 + index_offset);
 
                                 i++;
                                 vertex_count++;
 
                                 if (vertex_count > 2) { //odd, reverse winding
-                                    //indices.append(indices[last_index - 2]);
                                     indices2[which_buffer].append(indices2[which_buffer][last_index2 - 2]);
                                 }
-                                //indices.append(i-1 + index_offset);
                                 indices2[which_buffer].append(i-1 + index_offset);
 
                                 if (vertex_count > 2) {
-                                    //indices.append(indices[last_index - 1 ]);
-                                    //last_index += 3;
-
                                     indices2[which_buffer].append(indices2[which_buffer][last_index2 - 1 ]);
                                     last_index2 += 3;
                                 } else {
-                                    //last_index ++;
                                     last_index2 ++;
                                 }
                                 i++;
@@ -632,12 +614,14 @@ void FormGPS::oglMain_Paint()
                                     step = 0;
                             }
                         }
+                        if (indices2[which_buffer].count() > 2)
+                            enough_indices = true;
                     }
                 }
 
                 qDebug() << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
 
-                if (indices2.count() && indices2[0].count() > 2) {
+                if (enough_indices) {
                     interpColorShader->bind();
                     interpColorShader->setUniformValue("mvpMatrix", projection*modelview);
                     interpColorShader->setUniformValue("pointSize", 0.0f);
@@ -647,34 +631,35 @@ void FormGPS::oglMain_Paint()
                     vao.create();
                     vao.bind();
 
-                    patchBuffer[currentPatchBuffer].patchBuffer.bind();
-
-                    //set up vertex positions in buffer for the shader
-                    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), nullptr); //3D vector
-                    gl->glEnableVertexAttribArray(0);
-
-                    gl->glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float))); //color
-                    gl->glEnableVertexAttribArray(1);
-
                     //create ibo
                     QOpenGLBuffer ibo{QOpenGLBuffer::IndexBuffer};
                     ibo.create();
-                    ibo.bind();
-                    ibo.allocate(indices2[0].data(), indices2[0].size() * sizeof(GLuint));
 
-                    gl->glDrawElements(GL_TRIANGLES, indices2[0].count(), GL_UNSIGNED_INT, nullptr);
+                    for (int i=0; i < indices2.count(); i++) {
+                        if (indices2[i].count() > 2) {
+                            patchBuffer[i].patchBuffer.bind();
 
+                            //set up vertex positions in buffer for the shader
+                            gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), nullptr); //3D vector
+                            gl->glEnableVertexAttribArray(0);
+
+                            gl->glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float))); //color
+                            gl->glEnableVertexAttribArray(1);
+
+
+                            ibo.bind();
+                            ibo.allocate(indices2[i].data(), indices2[i].size() * sizeof(GLuint));
+
+                            gl->glDrawElements(GL_TRIANGLES, indices2[i].count(), GL_UNSIGNED_INT, nullptr);
+                            patchBuffer[i].patchBuffer.release();
+
+                            ibo.release();
+                        }
+                    }
+                    ibo.destroy();
                     vao.release();
                     vao.destroy();
                     interpColorShader->release();
-
-
-                    //gl->glDeleteBuffers(1, &indirectBuffer);
-
-                    //probably already released by vao
-                    patchBuffer[currentPatchBuffer].patchBuffer.release();
-                    ibo.release();
-                    ibo.destroy();
                 }
             }
 
