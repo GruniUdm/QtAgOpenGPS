@@ -251,8 +251,8 @@ void FormGPS::render_main_fbo()
 
     if (active_fbo >= 0) {
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, mainFBO[active_fbo]->texture());
+        gl->glActiveTexture(GL_TEXTURE0);
+        gl->glBindTexture(GL_TEXTURE_2D, mainFBO[active_fbo]->texture());
 
         //qDebug() << "Texture is " << overPix.size();
         //QOpenGLTexture texture = QOpenGLTexture(grnPix.mirrored(false, true));
@@ -273,7 +273,7 @@ void FormGPS::render_main_fbo()
         gldrawtex.draw(gl, projection * modelview, GL_TRIANGLE_STRIP, false);
         //gldrawtex.draw(gl, projection * modelview, QColor::fromRgb(255,0,0), GL_LINE_STRIP, 1.0f );
         //texture.release();
-        glBindTexture(GL_TEXTURE_2D, 0); //unbind the texture
+        gl->glBindTexture(GL_TEXTURE_2D, 0); //unbind the texture
         //texture.destroy();
     }
     gl->glFlush();
