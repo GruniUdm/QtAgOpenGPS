@@ -1618,7 +1618,13 @@ void FormGPS::processSectionLookahead() {
                             -CVehicle::instance()->toolPos.northing - cos(CVehicle::instance()->toolPos.heading) * 15,
                             0);
 
+        // Viewport: NDC to pixel coordinates
+        QMatrix4x4 viewport;
+        viewport.translate(500 / 2.0f, 300 / 2.0f, 0);
+        viewport.scale(500 / 2.0f, -300 / 2.0f, 1);  // negative Y to flip
+
         QMatrix4x4 mvp = projection * modelview;
+
 
         //patch color
         QColor patchColor = QColor::fromRgbF(0.0f, 0.5f, 0.0f);
@@ -1633,8 +1639,11 @@ void FormGPS::processSectionLookahead() {
 
         painter.setPen(Qt::NoPen);
 
-        painter.setViewport(0,0,500,300);
-        painter.setWindow(0,0,500,300);
+        QMatrix4x4 vmvp = viewport * mvp;
+
+        //painter.setViewport(0,0,500,300);
+        //painter.setWindow(0,0,500,300);
+        painter.setTransform(vmvp.toTransform());
         painter.setBrush(QBrush(patchColor));
 
         QPolygonF triangle;
@@ -1698,17 +1707,18 @@ void FormGPS::processSectionLookahead() {
                         //triangle strip to polygon:
                         //first two vertices, then every other one to the end
                         //then from the end back to vertex #3, but every other one.
-                        triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[1]));
-                        triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[2]));
+
+                        triangle.append(QPointF((*triList)[1].x(), (*triList)[1].y()));
+                        triangle.append(QPointF((*triList)[2].x(), (*triList)[2].y()));
 
                         //even vertices after first two
                         for (int i=4; i < count2; i+=2) {
-                            triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[i]));
+                            triangle.append(QPointF((*triList)[i].x(), (*triList)[i].y()));
                         }
 
                         //odd remaining vertices
                         for (int i=count2 - (count2 % 2 ? 2 : 1) ; i >2 ; i -=2) {
-                            triangle.append(glm::backbuffer_world_to_screen(mvp, (*triList)[i]));
+                            triangle.append(QPointF((*triList)[i].x(), (*triList)[i].y()));
                         }
 
                         painter.drawPolygon(triangle);
