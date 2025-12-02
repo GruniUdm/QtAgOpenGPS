@@ -27,6 +27,8 @@ QLabel *overlapPixelsWindow;
 #ifndef TESTING
 int main(int argc, char *argv[])
 {
+    qputenv("QSG_RENDER_LOOP", "threaded");
+
 #ifdef  Q_OS_ANDROID
     QNativeInterface::QAndroidApplication::runOnAndroidMainThread([]() {
         QJniObject activity = QNativeInterface::QAndroidApplication::context();
@@ -40,10 +42,9 @@ int main(int argc, char *argv[])
     });
 #endif
 
-    qputenv("QSG_RENDER_LOOP", "threaded");
-
     // PHASE 6.0.23.1: Disable debug logs to prevent performance issues (40Hz PGN spam)
     // Phase 6.0.24: Allow selective debug logging for AgIOService (change agioservice.debug=false to true)
+    /*
     QLoggingCategory::setFilterRules(QStringLiteral(
         "*.debug=false\n"
         "agioservice.debug=false\n"  // Change to true to enable AgIOService debug logs
@@ -51,6 +52,7 @@ int main(int argc, char *argv[])
         "*.critical=true\n"
         "*.fatal=true"
     ));
+    */
 
     qSetMessagePattern("%{time hh:mm:ss.zzz} [%{type}] %{function}:%{line} - %{message}");
     QApplication a(argc, argv);
@@ -61,6 +63,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("QtAgOpenGPS");
     QCoreApplication::setOrganizationDomain("qtagopengps");
     QCoreApplication::setApplicationName("QtAgOpenGPS");
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
     QSettings::setDefaultFormat(QSettings::IniFormat);
     QSettings::setPath(QSettings::IniFormat,
                        QSettings::UserScope,
@@ -103,6 +106,7 @@ int main(int argc, char *argv[])
 
     // AOGRenderer: Component registration (OpenGL renderers must be instantiated in QML)
     qmlRegisterType<AOGRendererInSG>("AOG", 1, 0, "AOGRenderer");
+    qmlRegisterType<AOGRendererNew>("AOG", 1, 0, "AOGRendererItem");
 
     // MASSIVE MIGRATION: settings = new Settings(); REMOVED
     //AOGProperty::init_defaults();
@@ -126,8 +130,8 @@ int main(int argc, char *argv[])
         grnPixelsWindow->setFixedHeight(500);
         grnPixelsWindow->show();
         overlapPixelsWindow = new QLabel("overlap buffer");
-        overlapPixelsWindow->setFixedWidth(500);
-        overlapPixelsWindow->setFixedHeight(500);
+        //overlapPixelsWindow->setFixedWidth(1300);
+        //overlapPixelsWindow->setFixedHeight(900);
         overlapPixelsWindow->show();
     }
 

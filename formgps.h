@@ -63,6 +63,18 @@ class AOGRendererInSG;
 class QQuickCloseEvent;
 class QVector3D;
 
+struct PatchBuffer {
+    QOpenGLBuffer patchBuffer;
+    int length;
+};
+
+struct PatchInBuffer {
+    int which;
+    int offset;
+    int length;
+};
+
+
 class FormGPS : public QQmlApplicationEngine
 {
     Q_OBJECT
@@ -774,6 +786,12 @@ public:
     QOffscreenSurface zoomSurface;
     std::unique_ptr<QOpenGLFramebufferObject> zoomFBO; // C++17 RAII - automatic cleanup
 
+    QSurfaceFormat mainSurfaceFormat;
+    QOpenGLContext mainOpenGLContext;
+    QOffscreenSurface mainSurface;
+
+    std::unique_ptr<QOpenGLFramebufferObject> mainFBO[2]; // C++17 RAII - automatic cleanup
+    int active_fbo=-1;
 
     /*******************
      * from FormGPS.cs *
@@ -1266,6 +1284,10 @@ public:
     QOpenGLBuffer skyBuffer;
     QOpenGLBuffer flagsBuffer;
 
+    QVector<QVector<PatchInBuffer>> patchesInBuffer;
+    QVector<PatchBuffer> patchBuffer;
+    bool patchesBufferDirty = true;
+
     /***********************
      * formgps_udpcomm.cpp *
      ***********************/
@@ -1648,6 +1670,7 @@ public slots:
     /***************************
      * from OpenGL.Designer.cs *
      ***************************/
+    void render_main_fbo();
     void oglMain_Paint();
     void openGLControl_Initialized();
     void openGLControl_Shutdown();

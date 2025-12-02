@@ -1530,6 +1530,8 @@ void FormGPS::onDeleteAppliedArea_clicked()
                     triStrip[j].patchList.clear();
                     triStrip[j].triangleList.clear();
                 }
+
+                patchesBufferDirty=true;
                 //patchSaveList.clear();
                 //shouldn't we clean out triStrip too?
                 tool.patchSaveList.clear();
@@ -2034,7 +2036,13 @@ void FormGPS::initializeQMLInterfaces()
         qDebug() << "🎯 Setting up OpenGL callbacks - InterfaceProperty verified safe";
         openGLControl->setProperty("callbackObject",QVariant::fromValue((void *) this));
         openGLControl->setProperty("initCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Initialized, this)));
+#ifdef Q_OS_WINDOWS
+        //direct rendering in the QML render thread.  Will need locking to be safe.
         openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::oglMain_Paint,this)));
+#else
+        //do indirect rendering for now.
+        openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::render_main_fbo,this)));
+#endif
 
         openGLControl->setProperty("samples",SettingsManager::instance()->display_antiAliasSamples());
         openGLControl->setMirrorVertically(true);
