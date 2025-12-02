@@ -1624,7 +1624,11 @@ void FormGPS::processSectionLookahead() {
         QColor patchColor = QColor::fromRgbF(0.0f, 0.5f, 0.0f);
 
         QPainter painter;
-        painter.begin(&grnPix);
+        if (!painter.begin(&grnPix)) {
+            qWarning() << "New GPS frame but back buffer painter is still working on the last one.";
+            return;
+        }
+
         painter.setRenderHint(QPainter::Antialiasing, false);
 
         painter.setPen(Qt::NoPen);
