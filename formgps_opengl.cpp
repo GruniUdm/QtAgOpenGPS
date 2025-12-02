@@ -282,6 +282,7 @@ void FormGPS::render_main_fbo()
 void FormGPS::oglMain_Paint()
 {
     OpenGLViewport viewport = getOpenGLViewport(mainWindow);
+#ifndef Q_OS_WINDOWS
     //if there's no context we need to create one because
     //the qml renderer is in a different thread.
     if (!mainOpenGLContext.isValid()) {
@@ -289,7 +290,7 @@ void FormGPS::oglMain_Paint()
             mainOpenGLContext.setShareContext(viewport.context);
         mainOpenGLContext.create();
     }
-
+#endif
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
     QColor color;
@@ -307,6 +308,7 @@ void FormGPS::oglMain_Paint()
     //gl->glViewport(oglX,oglY,width,height);
     //qDebug() << "viewport is " << width << height;
 
+#ifndef Q_OS_WINDOWS
     if (!mainSurface.isValid()) {
         QSurfaceFormat format = mainOpenGLContext.format();
         mainSurface.setFormat(format);
@@ -318,10 +320,15 @@ void FormGPS::oglMain_Paint()
     auto result = mainOpenGLContext.makeCurrent(&mainSurface);
 
     QOpenGLFunctions *gl = mainOpenGLContext.functions();
+#else
+    QOpenGLContext *glContext = QOpenGLContext::currentContext();
+    QOpenGLFunctions *gl = glContext->functions();
+#endif
 
     initializeTextures();
     initializeShaders();
 
+#ifndef Q_OS_WINDOWS
     //we will work on the unused texture in case QML is rendering on
     //another core
     int working_fbo = (active_fbo < 0 ? 0 : active_fbo + 1 % 1);
@@ -337,6 +344,7 @@ void FormGPS::oglMain_Paint()
     mainFBO[working_fbo]->bind();
 
     mainOpenGLContext.functions()->glViewport(0,0,width,height);
+#endif
 
     // Set The Blending Function For Translucency
     gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -903,11 +911,13 @@ void FormGPS::oglMain_Paint()
         overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix));
     }
     */
+#ifndef Q_OS_WINDOWS
 
     mainFBO[working_fbo]->bindDefault();
 
     //tell GUI to swich to new texture;
     active_fbo = working_fbo;
+#endif
 }
 
 /// Handles the OpenGLInitialized event of the openGLControl control.
