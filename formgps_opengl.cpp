@@ -440,6 +440,10 @@ void FormGPS::oglMain_Paint()
                 patchBuffer[0].patchBuffer.bind();
                 patchBuffer[0].patchBuffer.allocate(PATCHBUFFER_LENGTH); //16 MB
                 patchBuffer[0].patchBuffer.release();
+                if (!patchesInBuffer.count()) {
+                    patchesInBuffer.append(QVector<PatchInBuffer>());
+                    patchesInBuffer[0].append({ -1, -1, -1});
+                }
                 currentPatchBuffer = 0;
 
                 patchesBufferDirty = false;
@@ -534,6 +538,11 @@ void FormGPS::oglMain_Paint()
                         //qDebug() << "Last patch, not cached.";
                         continue;
                     } else {
+                        if (j >= patchesInBuffer.size())
+                            patchesInBuffer.append(QVector<PatchInBuffer>());
+                        if (k >= patchesInBuffer[j].size())
+                            patchesInBuffer[j].append({ -1, -1, -1});
+
                         if (patchesInBuffer[j][k].which == -1) {
                             //patch is not in one of the big buffers yet, so allocate it.
                             if ((patchBuffer[currentPatchBuffer].length + (count2-1) * VERTEX_SIZE) >= PATCHBUFFER_LENGTH ) {
