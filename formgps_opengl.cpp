@@ -545,7 +545,7 @@ void FormGPS::oglMain_Paint()
 
                         if (patchesInBuffer[j][k].which == -1) {
                             //patch is not in one of the big buffers yet, so allocate it.
-                            if ((patchBuffer[currentPatchBuffer].length + (count2-1) * VERTEX_SIZE) >= PATCHBUFFER_LENGTH ) {
+                            if ((patchBuffer[currentPatchBuffer].length + (count2-3) * 3 * VERTEX_SIZE) >= PATCHBUFFER_LENGTH ) {
                                 //add a new buffer because the current one is full.
                                 currentPatchBuffer ++;
                                 patchBuffer.append( { QOpenGLBuffer(), 0 });
@@ -561,19 +561,28 @@ void FormGPS::oglMain_Paint()
                             patchBuffer[currentPatchBuffer].patchBuffer.bind();
                             QVector<ColorVertex> temp_patch;
                             temp_patch.reserve(count2-1);
-                            for (int i=1; i < count2; i++) {
-                                temp_patch.append( { triListRaw[i], QVector4D(triListRaw[0], 0.596) } );
+                            for (int i=1; i < count2-2; i++) {
+                                if (i % 2) {  //preserve winding order
+                                    temp_patch.append( { triListRaw[i], QVector4D(triListRaw[0], 0.596) } );
+                                    temp_patch.append( { triListRaw[i+1], QVector4D(triListRaw[0], 0.596) } );
+                                    temp_patch.append( { triListRaw[i+2], QVector4D(triListRaw[0], 0.596) } );
+                                } else {
+                                    temp_patch.append( { triListRaw[i], QVector4D(triListRaw[0], 0.596) } );
+                                    temp_patch.append( { triListRaw[i+2], QVector4D(triListRaw[0], 0.596) } );
+                                    temp_patch.append( { triListRaw[i+1], QVector4D(triListRaw[0], 0.596) } );
+                                }
                             }
                             patchBuffer[currentPatchBuffer].patchBuffer.write(patchBuffer[currentPatchBuffer].length,
                                                                               temp_patch.data(),
-                                                                              (count2-1) * VERTEX_SIZE);
+                                                                              (count2-3) * 3 * VERTEX_SIZE);
                             patchesInBuffer[j][k].which = currentPatchBuffer;
                             patchesInBuffer[j][k].offset = patchBuffer[currentPatchBuffer].length / VERTEX_SIZE;
                             patchesInBuffer[j][k].length = count2 - 1;
-                            patchBuffer[currentPatchBuffer].length += (count2 - 1) * VERTEX_SIZE;
+                            patchBuffer[currentPatchBuffer].length += (count2 - 1) * 3 * VERTEX_SIZE;
                             qDebug() << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
                             patchBuffer[currentPatchBuffer].patchBuffer.release();
                         }
+                        /*
                         //generate list of indices for this patch
                         int index_offset = patchesInBuffer[j][k].offset;
                         int which_buffer = patchesInBuffer[j][k].which;
@@ -634,27 +643,28 @@ void FormGPS::oglMain_Paint()
                         }
                         if (indices2[which_buffer].count() > 2)
                             enough_indices = true;
+                        */
                     }
                 }
 
                 qDebug() << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
 
-                if (enough_indices) {
+                if (patchBuffer.size() && patchBuffer[0].length) {
                     interpColorShader->bind();
                     interpColorShader->setUniformValue("mvpMatrix", projection*modelview);
                     interpColorShader->setUniformValue("pointSize", 0.0f);
 
                     //glDrawElements needs a vertex array object to hold state
-                    QOpenGLVertexArrayObject vao;
-                    vao.create();
-                    vao.bind();
+                    //QOpenGLVertexArrayObject vao;
+                    //vao.create();
+                    //vao.bind();
 
                     //create ibo
-                    QOpenGLBuffer ibo{QOpenGLBuffer::IndexBuffer};
-                    ibo.create();
+                    //QOpenGLBuffer ibo{QOpenGLBuffer::IndexBuffer};
+                    //ibo.create();
 
-                    for (int i=0; i < indices2.count(); i++) {
-                        if (indices2[i].count() > 2) {
+                    for (int i=0; i < patchBuffer.count(); i++) {
+                        if (patchBuffer[i].length) {
                             patchBuffer[i].patchBuffer.bind();
 
                             //set up vertex positions in buffer for the shader
@@ -665,18 +675,19 @@ void FormGPS::oglMain_Paint()
                             gl->glEnableVertexAttribArray(1);
 
 
-                            ibo.bind();
-                            ibo.allocate(indices2[i].data(), indices2[i].size() * sizeof(GLuint));
+                            //ibo.bind();
+                            //ibo.allocate(indices2[i].data(), indices2[i].size() * sizeof(GLuint));
 
-                            gl->glDrawElements(GL_TRIANGLES, indices2[i].count(), GL_UNSIGNED_INT, nullptr);
+                            //gl->glDrawElements(GL_TRIANGLES, indices2[i].count(), GL_UNSIGNED_INT, nullptr);
+                            gl->glDrawArrays(GL_TRIANGLES,0,patchBuffer[i].length / VERTEX_SIZE);
                             patchBuffer[i].patchBuffer.release();
 
-                            ibo.release();
+                            //ibo.release();
                         }
                     }
-                    ibo.destroy();
-                    vao.release();
-                    vao.destroy();
+                    //ibo.destroy();
+                    //vao.release();
+                    //vao.destroy();
                     interpColorShader->release();
                 }
             }
@@ -833,6 +844,7 @@ void FormGPS::oglMain_Paint()
             {
                 CVehicle::instance()->setHydLiftDown(true);
             }
+            qDebug() << "End of all main rendering" << swFrame.elapsed();
 
             //Reverse indicator in QML
             //RTK alarm implemented in QML
