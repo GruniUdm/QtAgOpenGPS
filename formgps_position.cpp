@@ -25,7 +25,7 @@
 #include <QtConcurrent/QtConcurrentRun>
 
 
-Q_LOGGING_CATEGORY (qtaog, "formgps_position.qtagopengps")
+Q_LOGGING_CATEGORY (qpos, "formgps_position.qtagopengps")
 
 extern QLabel *grnPixelsWindow;
 extern QLabel *overlapPixelsWindow;
@@ -43,7 +43,7 @@ void FormGPS::UpdateFixPosition()
     //swFrame.Stop();
     //Measure the frequency of the GPS updates
     //timeSliceOfLastFix = (double)(swFrame.elapsed()) / 1000;
-    qDebug(qtaog) << "swFrame time at new frame: " << swFrame.elapsed();
+    qDebug(qpos) << "swFrame time at new frame: " << swFrame.elapsed();
     //lock.lockForWrite(); //stop GL from updating while we calculate a new position
 
     // Phase 6.0.21: Calculate Hz from CPU timer (AgIOService.nowHz/gpsHz removed)
@@ -73,7 +73,7 @@ void FormGPS::UpdateFixPosition()
         return;
     }
 
-    //qDebug(qtaog) << "Easting " <<  pn.fix.easting << "Northing" <<  pn.fix.northing << "Time " << swFrame.elapsed() << nowHz;
+    //qDebug(qpos) << "Easting " <<  pn.fix.easting << "Northing" <<  pn.fix.northing << "Time " << swFrame.elapsed() << nowHz;
 
     swFrame.restart();
 
@@ -1378,7 +1378,7 @@ void FormGPS::UpdateFixPosition()
         //processOverlapCount();
     }
 
-    qDebug(qtaog) << "Time before painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
+    qDebug(qpos) << "Time before painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
 #ifndef Q_OS_WINDOWS
     oglMain_Paint();
 #endif
@@ -1390,7 +1390,7 @@ void FormGPS::UpdateFixPosition()
     if (renderer) {
         QMetaObject::invokeMethod(renderer, "update", Qt::DirectConnection);
     }
-    qDebug(qtaog) << "Time after painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
+    qDebug(qpos) << "Time after painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
 
     frameTimeRough = swFrame.elapsed();
 
@@ -1586,9 +1586,9 @@ void FormGPS::TheRest()
 }
 
 void FormGPS::processSectionLookahead() {
-    //qDebug(qtaog) << "frame time before doing section lookahead " << swFrame.elapsed(;
+    //qDebug(qpos) << "frame time before doing section lookahead " << swFrame.elapsed(;
     //lock.lockForWrite(;
-    //qDebug(qtaog) << "frame time after getting lock  " << swFrame.elapsed(;
+    //qDebug(qpos) << "frame time after getting lock  " << swFrame.elapsed(;
 #define USE_QPAINTER_BACKBUFFER
 
 #ifdef USE_QPAINTER_BACKBUFFER
@@ -1885,7 +1885,7 @@ void FormGPS::processSectionLookahead() {
     //bnd.isSectionControlledByHeadland = true;
     if ((rpOnHeight < rpToolHeight && this->isHeadlandOn() && bnd.isSectionControlledByHeadland)) rpHeight = rpToolHeight + 2;
     else rpHeight = rpOnHeight + 2;
-    //qDebug(qtaog) << bnd.isSectionControlledByHeadland << "headland sections";
+    //qDebug(qpos) << bnd.isSectionControlledByHeadland << "headland sections";
 
     if (rpHeight > 290) rpHeight = 290;
     if (rpHeight < 8) rpHeight = 8;
@@ -2372,7 +2372,7 @@ void FormGPS::processSectionLookahead() {
     }
 
 #ifdef USE_QPAINTER_BACKBUFFER
-    qDebug(qtaog) << "After threaded back buffer drawing, section lookahead finished at " << swFrame.elapsed();
+    qDebug(qpos) << "After threaded back buffer drawing, section lookahead finished at " << swFrame.elapsed();
     }, Qt::QueuedConnection);
     });
 #endif
@@ -2418,7 +2418,7 @@ void FormGPS::CalculatePositionHeading()
     static int latencyLogCounter = 0;
     if (++latencyLogCounter % 500 == 0) { // Log every 500 updates (~10s at 50Hz actual frequency)
         double actualHz = 1000000000.0 / intervalBetweenCalls; // Convert ns to Hz
-        qDebug(qtaog) << "📊 UpdateFixPosition - Interval:" << intervalBetweenCalls/1000000 << "ms"
+        qDebug(qpos) << "📊 UpdateFixPosition - Interval:" << intervalBetweenCalls/1000000 << "ms"
                  << "Actual Hz:" << actualHz << "GPS Hz:" << gpsHz;
     }
 
@@ -2561,7 +2561,7 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
 
     //speed max for section kmh*0.277 to m/s * 10 cm per pixel * 1.7 max speed
     double meterPerSecPerPixel = fabs(CVehicle::instance()->avgSpeed) * 4.5;
-    //qDebug(qtaog) << pn.speed << ", m/s per pixel is " << meterPerSecPerPixel;
+    //qDebug(qpos) << pn.speed << ", m/s per pixel is " << meterPerSecPerPixel;
 
     //now loop all the section rights and the one extreme left
     for (int j = 0; j < tool.numOfSections; j++)
@@ -2580,7 +2580,7 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
             //get the speed for left side only once
 
             leftSpeed = left.getLength() * gpsHz * 10;
-            //qDebug(qtaog) << leftSpeed << " - left speed";
+            //qDebug(qpos) << leftSpeed << " - left speed";
             if (leftSpeed > meterPerSecPerPixel) leftSpeed = meterPerSecPerPixel;
         }
         else
@@ -2599,7 +2599,7 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
         tool.section[j].rightPoint = Vec2(cosHeading * (tool.section[j].positionRight) + easting,
                                           sinHeading * (tool.section[j].positionRight) + northing);
         /*
-        qDebug(qtaog) << j << ": " << tool.section[j].leftPoint.easting << "," <<
+        qDebug(qpos) << j << ": " << tool.section[j].leftPoint.easting << "," <<
                                  tool.section[j].leftPoint.northing <<" " <<
                                  tool.section[j].rightPoint.easting << ", " <<
                                  tool.section[j].rightPoint.northing;
@@ -2896,7 +2896,7 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
         // GPS fix INVALID (quality=0 or satellites=0)
         // Don't update position/altitude/hdop/age → preserve last valid values
         // This prevents display from jumping to 0 when GPS signal lost momentarily
-        qDebug(qtaog) << "❌ GPS fix INVALID - quality:" << data.quality
+        qDebug(qpos) << "❌ GPS fix INVALID - quality:" << data.quality
                  << "satellites:" << data.satellites
                  << "→ preserving last valid position";
     }
