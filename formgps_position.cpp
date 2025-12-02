@@ -1376,8 +1376,9 @@ void FormGPS::UpdateFixPosition()
     }
 
     qDebug() << "Time before painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
+#ifndef Q_OS_WINDOWS
     oglMain_Paint();
-    qDebug() << "Time after painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
+#endif
 
     //NOTE: Not sure here.
     //stop the timer and calc how long it took to do calcs and draw
@@ -1386,6 +1387,7 @@ void FormGPS::UpdateFixPosition()
     if (renderer) {
         QMetaObject::invokeMethod(renderer, "update", Qt::DirectConnection);
     }
+    qDebug() << "Time after painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
 
     frameTimeRough = swFrame.elapsed();
 
