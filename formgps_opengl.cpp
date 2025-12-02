@@ -29,6 +29,9 @@
 #include <QElapsedTimer>  // For latency profiling
 
 #include <QLabel>
+
+Q_LOGGING_CATEGORY (qtaog, "formgps_opengl.qtagopengps")
+
 extern QLabel *overlapPixelsWindow;
 extern QOpenGLShaderProgram *interpColorShader; //pull from glutils.h
 
@@ -247,14 +250,14 @@ void FormGPS::render_main_fbo()
     double shiftY = viewport.shiftY;
 
     //gl->glViewport(0,0,width,height);
-    //qDebug() << "viewport is " << width << height;
+    //qDebug(qtaog) << "viewport is " << width << height;
 
     if (active_fbo >= 0) {
 
         gl->glActiveTexture(GL_TEXTURE0);
         gl->glBindTexture(GL_TEXTURE_2D, mainFBO[active_fbo]->texture());
 
-        //qDebug() << "Texture is " << overPix.size();
+        //qDebug(qtaog) << "Texture is " << overPix.size();
         //QOpenGLTexture texture = QOpenGLTexture(grnPix.mirrored(false, true));
         //texture.bind();
 
@@ -306,7 +309,7 @@ void FormGPS::oglMain_Paint()
     double shiftX = viewport.shiftX;
     double shiftY = viewport.shiftY;
     //gl->glViewport(oglX,oglY,width,height);
-    //qDebug() << "viewport is " << width << height;
+    //qDebug(qtaog) << "viewport is " << width << height;
 
 #ifndef Q_OS_WINDOWS
     if (!mainSurface.isValid()) {
@@ -314,7 +317,7 @@ void FormGPS::oglMain_Paint()
         mainSurface.setFormat(format);
         mainSurface.create();
         auto r = mainSurface.isValid();
-        qDebug() << "main surface creation: " << r;
+        qDebug(qtaog) << "main surface creation: " << r;
     }
 
     auto result = mainOpenGLContext.makeCurrent(&mainSurface);
@@ -462,7 +465,7 @@ void FormGPS::oglMain_Paint()
             if (camera.camSetDistance < -5000) mipmap = 16;
 
             if (mipmap > 1)
-                qDebug() << "mipmap is" << mipmap;
+                qDebug(qtaog) << "mipmap is" << mipmap;
 
             //QVector<GLuint> indices;
             //indices.reserve(PATCHBUFFER_LENGTH / 28 * 3);  //enough to index 16 MB worth of vertices
@@ -535,7 +538,7 @@ void FormGPS::oglMain_Paint()
                                           triBuffer,GL_FLOAT,count2-1);
 
                         triBuffer.destroy();
-                        //qDebug() << "Last patch, not cached.";
+                        //qDebug(qtaog) << "Last patch, not cached.";
                         continue;
                     } else {
                         if (j >= patchesInBuffer.size())
@@ -571,7 +574,7 @@ void FormGPS::oglMain_Paint()
                             patchesInBuffer[j][k].offset = patchBuffer[currentPatchBuffer].length / VERTEX_SIZE;
                             patchesInBuffer[j][k].length = count2 - 1;
                             patchBuffer[currentPatchBuffer].length += (count2 - 1) * VERTEX_SIZE;
-                            qDebug() << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
+                            qDebug(qtaog) << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
                             patchBuffer[currentPatchBuffer].patchBuffer.release();
                         }
                         //generate list of indices for this patch
@@ -637,7 +640,7 @@ void FormGPS::oglMain_Paint()
                     }
                 }
 
-                qDebug() << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
+                qDebug(qtaog) << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
 
                 if (enough_indices) {
                     interpColorShader->bind();
@@ -724,9 +727,9 @@ void FormGPS::oglMain_Paint()
                 }
             }
 
-            //qDebug() << "total vertices is "<< total_vertices;
+            //qDebug(qtaog) << "total vertices is "<< total_vertices;
 
-            qDebug() << "time after painting patches " << (float)swFrame.nsecsElapsed() / 1000000;
+            qDebug(qtaog) << "time after painting patches " << (float)swFrame.nsecsElapsed() / 1000000;
 
             if (tram.displayMode != 0) tram.DrawTram(gl,projection*modelview,camera);
 
@@ -916,7 +919,7 @@ void FormGPS::oglMain_Paint()
     /*
     if (SettingsManager::instance()->display_showBack()) {
         overPix = mainFBO[working_fbo]->toImage().convertToFormat(QImage::Format_RGBX8888);
-        qDebug() << "image size is: " << overPix.size();
+        qDebug(qtaog) << "image size is: " << overPix.size();
         overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix));
     }
     */
@@ -937,19 +940,19 @@ void FormGPS::openGLControl_Initialized()
     //qmlview->resetOpenGLState();
 
     //Load all the textures
-    //qDebug() << "initializing Open GL.";
+    //qDebug(qtaog) << "initializing Open GL.";
     //initializeTextures();
-    //qDebug() << "textures loaded.";
+    //qDebug(qtaog) << "textures loaded.";
     //initializeShaders();
-    //qDebug() << "shaders loaded.";
+    //qDebug(qtaog) << "shaders loaded.";
 
 }
 
 void FormGPS::openGLControl_Shutdown()
 {
 
-    //qDebug() << "OpenGL shutting down... destroying buffers and shaders";
-    //qDebug() << QOpenGLContext::currentContext();
+    //qDebug(qtaog) << "OpenGL shutting down... destroying buffers and shaders";
+    //qDebug(qtaog) << QOpenGLContext::currentContext();
     //We should have a valid OpenGL context here so we can clean up shaders and buffers
     destroyShaders();
     destroyTextures();
@@ -980,7 +983,7 @@ void FormGPS::oglBack_Paint()
         backSurface.setFormat(format);
         backSurface.create();
         auto r = backSurface.isValid();
-        qDebug() << "back surface creation: " << r;
+        qDebug(qtaog) << "back surface creation: " << r;
     }
 
     auto result = backOpenGLContext.makeCurrent(&backSurface);
@@ -1151,13 +1154,13 @@ void FormGPS::oglBack_Paint()
     //finish it up - we need to read the ram of video card
     gl->glFlush();
 
-    qDebug() << "Time after drawing back buffer: " << swFrame.elapsed();
+    qDebug(qtaog) << "Time after drawing back buffer: " << swFrame.elapsed();
 
     //read the whole block of pixels up to max lookahead, one read only
     //we'll use Qt's QImage function to grab it.
     grnPix = backFBO->toImage().mirrored().convertToFormat(QImage::Format_RGBX8888);
-    qDebug() << "Time after glReadPixels: " << swFrame.elapsed();
-    //qDebug() << grnPix.size();
+    qDebug(qtaog) << "Time after glReadPixels: " << swFrame.elapsed();
+    //qDebug(qtaog) << grnPix.size();
     //QImage temp = grnPix.copy(tool.rpXPosition, 250, tool.rpWidth, 290 /*(int)rpHeight*/);
     //TODO: is thisn right?
     QImage temp = grnPix.copy(tool.rpXPosition, 0, tool.rpWidth, 290 /*(int)rpHeight*/);
@@ -1329,7 +1332,7 @@ void FormGPS::MakeFlagMark(QOpenGLFunctions *gl)
     uchar data1[768];
     memset(data1,0,768);
 
-    qDebug() << "mouse down at " << mouseX << ", " << mouseY;
+    qDebug(qtaog) << "mouse down at " << mouseX << ", " << mouseY;
     //scan the center of click and a set of square points around
     gl->glReadPixels(mouseX - 8, mouseY - 8, 16, 16, GL_RGB, GL_UNSIGNED_BYTE, data1);
 
@@ -1344,10 +1347,10 @@ void FormGPS::MakeFlagMark(QOpenGLFunctions *gl)
             // Validate flag number is within bounds
             if (candidateFlag > 0 && candidateFlag <= flagPts.size()) {
                 flagNumberPicked = candidateFlag;
-                qDebug() << "Valid flag picked:" << flagNumberPicked;
+                qDebug(qtaog) << "Valid flag picked:" << flagNumberPicked;
             } else {
                 flagNumberPicked = 0; // Invalid flag, reset to no selection
-                qDebug() << "Invalid flag number" << candidateFlag << "- flagPts.size():" << flagPts.size();
+                qDebug(qtaog) << "Invalid flag number" << candidateFlag << "- flagPts.size():" << flagPts.size();
             }
             break;
         }
