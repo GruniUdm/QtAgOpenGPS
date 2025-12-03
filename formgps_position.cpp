@@ -1379,7 +1379,7 @@ void FormGPS::UpdateFixPosition()
     }
 
     qDebug(qpos) << "Time before painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
-#ifndef Q_OS_WINDOWS
+#if !defined(Q_OS_WINDOWS) && !defined(Q_OS_ANDROID)
     oglMain_Paint();
 #endif
 
@@ -1591,6 +1591,8 @@ void FormGPS::processSectionLookahead() {
     //qDebug(qpos) << "frame time after getting lock  " << swFrame.elapsed(;
 #define USE_QPAINTER_BACKBUFFER
 
+    qDebug(qpos) << "Main callback thread is" << QThread::currentThread();
+
 #ifdef USE_QPAINTER_BACKBUFFER
     auto result = QtConcurrent::run( [this]() {
         QMatrix4x4 projection;
@@ -1644,8 +1646,6 @@ void FormGPS::processSectionLookahead() {
 
         QMatrix4x4 vmvp = viewport * mvp;
 
-        //painter.setViewport(0,0,500,300);
-        //painter.setWindow(0,0,500,300);
         painter.setTransform(vmvp.toTransform());
         painter.setBrush(QBrush(patchColor));
 
@@ -1804,10 +1804,16 @@ void FormGPS::processSectionLookahead() {
         memcpy(this->grnPixels, temp.constBits(), temp.size().width() * temp.size().height() * 4);
         //grnPix = temp;
 
-        QMetaObject::invokeMethod(this, [this]() {
+        QThread *currentThread = QThread::currentThread();
+        qDebug(qpos) << "Back render thread is" << currentThread;
+
+        QMetaObject::invokeMethod(QApplication::instance(), [this]() {
 #else
     oglBack_Paint();
 #endif
+
+    QThread *currentThread = QThread::currentThread();
+    qDebug(qpos) << "Back processing thread is" << currentThread;
 
     if (SettingsManager::instance()->display_showBack()) {
         grnPixelsWindow->setPixmap(QPixmap::fromImage(grnPix.mirrored()));
@@ -2372,7 +2378,7 @@ void FormGPS::processSectionLookahead() {
     }
 
 #ifdef USE_QPAINTER_BACKBUFFER
-    qDebug(qpos) << "After threaded back buffer drawing, section lookahead finished at " << swFrame.elapsed();
+    qWarning() << "After threaded back buffer drawing, section lookahead finished at " << swFrame.elapsed();
     }, Qt::QueuedConnection);
     });
 #endif

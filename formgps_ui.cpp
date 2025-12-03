@@ -2036,7 +2036,7 @@ void FormGPS::initializeQMLInterfaces()
         qDebug() << "🎯 Setting up OpenGL callbacks - InterfaceProperty verified safe";
         openGLControl->setProperty("callbackObject",QVariant::fromValue((void *) this));
         openGLControl->setProperty("initCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Initialized, this)));
-#ifdef Q_OS_WINDOWS
+#if defined(Q_OS_WINDOWS) || defined (Q_OS_ANDROID)
         //direct rendering in the QML render thread.  Will need locking to be safe.
         openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::oglMain_Paint,this)));
 #else

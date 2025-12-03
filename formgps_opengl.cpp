@@ -285,7 +285,7 @@ void FormGPS::render_main_fbo()
 void FormGPS::oglMain_Paint()
 {
     OpenGLViewport viewport = getOpenGLViewport(mainWindow);
-#ifndef Q_OS_WINDOWS
+#if !defined(Q_OS_WINDOWS) && !defined(Q_OS_ANDROID)
     //if there's no context we need to create one because
     //the qml renderer is in a different thread.
     if (!mainOpenGLContext.isValid()) {
@@ -311,7 +311,7 @@ void FormGPS::oglMain_Paint()
     //gl->glViewport(oglX,oglY,width,height);
     //qDebug(qgl) << "viewport is " << width << height;
 
-#ifndef Q_OS_WINDOWS
+#if !defined(Q_OS_WINDOWS) && !defined(Q_OS_ANDROID)
     if (!mainSurface.isValid()) {
         QSurfaceFormat format = mainOpenGLContext.format();
         mainSurface.setFormat(format);
@@ -331,7 +331,7 @@ void FormGPS::oglMain_Paint()
     initializeTextures();
     initializeShaders();
 
-#ifndef Q_OS_WINDOWS
+#if !defined(Q_OS_WINDOWS) && !defined(Q_OS_ANDROID)
     //we will work on the unused texture in case QML is rendering on
     //another core
     int working_fbo = (active_fbo < 0 ? 0 : active_fbo + 1 % 1);
@@ -842,8 +842,6 @@ void FormGPS::oglMain_Paint()
             //RTK age implemented in QML
             //guidance line text implemented in QML
 
-            gl->glFlush();
-
             //draw the zoom window
             // ⚡ PHASE 6.3.0 SAFETY: Verify InterfaceProperty before OpenGL access
             bool jobStartedSafe = false;
@@ -870,8 +868,6 @@ void FormGPS::oglMain_Paint()
         {
             gl->glClear(GL_COLOR_BUFFER_BIT);
         }
-
-        gl->glFlush();
 
     }
     else
@@ -911,10 +907,12 @@ void FormGPS::oglMain_Paint()
 
         drawText(gl,projection * modelview,edge,height - 240, "<-- AgIO ?",1.0,true,color);
 
-        gl->glFlush();
 
         //GUI widgets have to be updated elsewhere
     }
+
+    gl->glFlush();
+    qDebug() << "End of all main rendering" << swFrame.elapsed();
 
     /*
     if (SettingsManager::instance()->display_showBack()) {
@@ -923,7 +921,7 @@ void FormGPS::oglMain_Paint()
         overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix));
     }
     */
-#ifndef Q_OS_WINDOWS
+#if !defined(Q_OS_WINDOWS) && !defined(Q_OS_ANDROID)
 
     mainFBO[working_fbo]->bindDefault();
 
