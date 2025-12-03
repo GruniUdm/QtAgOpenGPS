@@ -243,7 +243,7 @@ Window {
     }
 
 
-    AOGRenderer {
+    AOGRendererItem {
         id: glcontrolrect
         objectName: "openglcontrol"
 

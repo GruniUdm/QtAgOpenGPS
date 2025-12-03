@@ -760,7 +760,7 @@ public:
      ***************************/
     //QQuickView *qmlview;
     QWidget *qmlcontainer;
-    AOGRendererInSG *openGLControl;
+    QQuickItem *openGLControl;
 
     //flag context menu and buttons
     QObject *contextFlag;
