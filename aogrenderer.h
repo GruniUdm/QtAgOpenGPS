@@ -12,6 +12,7 @@
 #include <QProperty>
 #include <QBindable>
 #include <QOpenGLFunctions>
+#include <QSGRenderNode>
 
 #include <functional>
 Q_DECLARE_METATYPE(std::function<void (void)>)
@@ -92,33 +93,9 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(AOGRendererInSG, double, m_shiftY, &AOGRendererInSG::shiftYChanged)
 };
 
-class AOGRendererNew : public QObject, protected QOpenGLFunctions
-{
-    Q_OBJECT
-
-public:
-    ~AOGRendererNew();
-    void setViewportSize(const QSize &size) { m_viewportSize = size; }
-    void setWindow(QQuickWindow *window) { m_window = window; }
-    void setItem(AOGRendererItem *item) {this->item = item; }
-
-public slots:
-    void init();
-    void paint();
-
-public:
-    AOGRendererItem *item;
-
-    int samples;
-    QSize m_viewportSize;
-    QQuickWindow *m_window = nullptr;
-
-    bool initDone = false;
-};
-
 class AOGRendererItem : public QQuickItem {
     Q_OBJECT
-    QML_NAMED_ELEMENT(AOGRendererNew)
+    QML_NAMED_ELEMENT(AOGRendererItem)
 
     Q_PROPERTY(std::function<void (void)> paintCallback READ getPaintCallback WRITE setPaintCallback NOTIFY paintCallbackChanged)
     Q_PROPERTY(std::function<void (void)> initCallback READ getInitCallback WRITE setInitCallback NOTIFY initCallbackChanged)
@@ -146,23 +123,68 @@ public:
     std::function<void (void)> cleanupCallback;
     int samples;
 
+    // ===== Qt 6.8 Rectangle Pattern READ/WRITE/BINDABLE Methods =====
+    double shiftX() const;
+    void setShiftX(double value);
+    QBindable<double> bindableShiftX();
+
+    double shiftY() const;
+    void setShiftY(double value);
+    QBindable<double> bindableShiftY();
+
+protected:
+    QSGNode *updatePaintNode(QSGNode *node, UpdatePaintNodeData *) override;
+
 signals:
     void paintCallbackChanged();
     void initCallbackChanged();
     void cleanupCallbackChanged();
     void callbackObjectChanged();
     void samplesChanged();
+    // Qt 6.8 Rectangle Pattern NOTIFY signals
+    void shiftXChanged();
+    void shiftYChanged();
 
-public slots:
-    void sync();
-    void cleanup();
-
-private slots:
-    void handleWindowChanged(QQuickWindow *win);
+    // NOTE: clicked, dragged, zoomOut, zoomIn signals are defined in QML
+    // and work via Qt's meta-object system - no C++ declaration needed
 
 private:
-    void releaseResources() override;
+    // ===== Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY Private Members =====
+    Q_OBJECT_BINDABLE_PROPERTY(AOGRendererItem, double, m_shiftX, &AOGRendererItem::shiftXChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(AOGRendererItem, double, m_shiftY, &AOGRendererItem::shiftYChanged)
 
-    AOGRendererNew *m_renderer;
+public slots:
+    //void sync();
+    //void cleanup();
 };
+
+class AOGRendererNode : public QSGRenderNode
+{
+public:
+    //void setViewportSize(const QSize &size) { m_viewportSize = size; }
+    //void setWindow(QQuickWindow *window) { m_window = window; }
+    //void setItem(AOGRendererItem *item) {this->item = item; }
+    AOGRendererNode(QQuickWindow *window);
+    ~AOGRendererNode();
+    void render(const RenderState *state) override;
+    void releaseResources() override;
+    QSGRenderNode::RenderingFlags flags() const override;
+    QRectF rect() const override;
+
+    void sync(QQuickItem *item);
+
+private:
+    QRectF our_rect;
+    bool initialized = false;
+    QQuickWindow *m_window = nullptr;
+
+
+public:
+    AOGRendererItem *item;
+
+    //int samples;
+    //QSize m_viewportSize;
+    //QQuickWindow *m_window = nullptr;
+};
+
 #endif // OPENGLCONTROL_H

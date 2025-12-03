@@ -125,57 +125,19 @@ QBindable<double> AOGRendererInSG::bindableShiftY() {
 /**************************************************/
 /* NEW QQuickItem-based renderer                  */
 /**************************************************/
-AOGRendererItem::AOGRendererItem() : m_renderer(nullptr) {
-    connect(this, &QQuickItem::windowChanged,
-            this, &AOGRendererItem::handleWindowChanged);
+AOGRendererItem::AOGRendererItem()
+{
+    setFlag(ItemHasContents, true);
 }
 
-void AOGRendererItem::handleWindowChanged(QQuickWindow *win) {
-    if (win) {
-        connect(win, &QQuickWindow::beforeSynchronizing,
-                this, &AOGRendererItem::sync);
-        connect(win, &QQuickWindow::sceneGraphInvalidated,
-                this, &AOGRendererItem::cleanup);
-        //win->setColor(Qt::black); //start with black window
-        win->setPersistentGraphics(true);
-    }
-}
+QSGNode *AOGRendererItem::updatePaintNode(QSGNode *node, UpdatePaintNodeData *)
+{
+    AOGRendererNode *n = static_cast<AOGRendererNode *>(node);
+    if (!n)
+        n = new AOGRendererNode(this->window());
 
-void AOGRendererItem::cleanup() {
-    delete m_renderer;
-    m_renderer = nullptr;
-}
-
-/* not sure about this vs the cleanup() above */
-//private class to schedule removing renderernew instance
-class RendererCleanupJob: public QRunnable {
-public:
-    RendererCleanupJob(AOGRendererNew *renderer) : m_renderer(renderer) { }
-    void run() override { qDebug() << "deleting renderer"; delete m_renderer; }
-private:
-    AOGRendererNew *m_renderer;
-};
-
-void AOGRendererItem::releaseResources() {
-    window()->scheduleRenderJob(new RendererCleanupJob(m_renderer),
-                                QQuickWindow::BeforeSynchronizingStage);
-    m_renderer = nullptr;
-}
-
-void AOGRendererItem::sync() {
-    if (!m_renderer) {
-        qDebug() << "Creating renderer.";
-        //create new renderer
-        m_renderer = new AOGRendererNew();
-        connect(window(), &QQuickWindow::beforeRendering,
-                m_renderer, &AOGRendererNew::init, Qt::DirectConnection);
-        connect(window(), &QQuickWindow::beforeRenderPassRecording,
-                m_renderer, &AOGRendererNew::paint, Qt::DirectConnection);
-    }
-
-    m_renderer->setViewportSize(window()->size() * window()->devicePixelRatio());
-    m_renderer->setWindow(window());
-    m_renderer->setItem(this);
+    n->sync(this);
+    return n;
 }
 
 void AOGRendererItem::setInitCallback(std::function<void ()> callback) {
@@ -203,35 +165,59 @@ void AOGRendererItem::setSamples(int samples) {
     emit samplesChanged();
 }
 
-/**************
- * Renderer
- **************/
-AOGRendererNew::~AOGRendererNew() {
-    //if we have a valid cleanup callback, run it
-    if (item && item->cleanupCallback)
-        item->cleanupCallback();
+/*******************************************
+ * NEW QSGRenderNode renderer for the item *
+ *******************************************/
+AOGRendererNode::AOGRendererNode(QQuickWindow *window): m_window(window)
+{
+
 }
 
-void AOGRendererNew::init() {
-    if (!initDone && item && item->initCallback) {
-        QSGRendererInterface *rif = m_window->rendererInterface();
-        Q_ASSERT(rif->graphicsApi() == QSGRendererInterface::OpenGL);
-        item->initCallback();
-        initDone = true;
+AOGRendererNode::~AOGRendererNode()
+{
+    //releaseResources();
+}
+
+void AOGRendererNode::sync(QQuickItem *item)
+{
+    //bring in stuff from the item
+    our_rect = item->boundingRect();
+    this->item = static_cast<AOGRendererItem *>(item);
+    //this->m_window = item->window();
+}
+
+QSGRenderNode::RenderingFlags AOGRendererNode::flags() const
+{
+    return QSGRenderNode::BoundedRectRendering | QSGRenderNode::DepthAwareRendering;
+}
+
+QRectF AOGRendererNode::rect() const
+{
+    return our_rect;
+}
+
+void AOGRendererNode::render(const RenderState *state)
+{
+    QSGRendererInterface *rif = m_window->rendererInterface();
+    Q_ASSERT(rif->graphicsApi() == QSGRendererInterface::OpenGL);
+    QOpenGLFunctions *gl = QOpenGLContext::currentContext()->functions();
+
+    if (!initialized) {
+        //initialize shaders and such if needed
+        if(item && item->initCallback)
+            item->initCallback();
+        //call initCallback
+        initialized = true;
     }
-}
-
-void AOGRendererNew::paint() {
-    m_window->beginExternalCommands();
-
-    if (!initDone) init(); //call it before we paint
 
     if (item && item->paintCallback)
         item->paintCallback();
 
-    m_window->endExternalCommands();
+    gl->glDisable(GL_BLEND);
 }
 
-
-
-
+void AOGRendererNode::releaseResources()
+{
+    if(item && item->cleanupCallback)
+        item->cleanupCallback();
+}

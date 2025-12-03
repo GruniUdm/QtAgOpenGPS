@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 
     // AOGRenderer: Component registration (OpenGL renderers must be instantiated in QML)
     qmlRegisterType<AOGRendererInSG>("AOG", 1, 0, "AOGRenderer");
-    qmlRegisterType<AOGRendererNew>("AOG", 1, 0, "AOGRendererItem");
+    qmlRegisterType<AOGRendererItem>("AOG", 1, 0, "AOGRendererItem");
 
     // MASSIVE MIGRATION: settings = new Settings(); REMOVED
     //AOGProperty::init_defaults();
