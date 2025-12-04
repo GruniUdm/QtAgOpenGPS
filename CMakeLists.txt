@@ -36,6 +36,7 @@ endif()
 #find_package(Qt6 REQUIRED COMPONENTS Core)
  find_package(Qt6 REQUIRED COMPONENTS Widgets) #used only for opengl ?
  find_package(Qt6 REQUIRED COMPONENTS Gui)
+# find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
  find_package(Qt6 REQUIRED COMPONENTS SerialPort)
 # find_package(Qt6 REQUIRED COMPONENTS OpenGL)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
@@ -110,6 +111,7 @@ qt_add_executable(QtAgOpenGPS
     formheadache.h formheadache.cpp
     formheadland.h formheadland.cpp
     glutils.h glutils.cpp
+    rhiresources.h rhiresources.cpp
     #qmlsectionbuttons.h qmlsectionbuttons.cpp
     qmlutil.h
     setter.h
@@ -379,6 +381,7 @@ target_link_libraries(QtAgOpenGPS PRIVATE
 #   Qt6::Core
     Qt6::Widgets
     Qt6::Gui
+    Qt6::GuiPrivate
 #   Qt6::OpenGL
     Qt6::Quick
     Qt6::QuickWidgets
