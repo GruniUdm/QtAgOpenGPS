@@ -755,6 +755,7 @@ void CContour::DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, QObj
         }
 
         //now draw the remaining points
+        //TODO: android crashes here sometimes with QList index out of range
         for (int h = numbuffs*10000; h < stripList[stripNum]->count(); h++)
             gldraw.append(QVector3D((*stripList[stripNum])[h].easting, (*stripList[stripNum])[h].northing, 0));
 
