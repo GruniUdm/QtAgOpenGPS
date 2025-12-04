@@ -46,6 +46,7 @@ find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools) #for i18n internationalization support
 find_package(Qt6 REQUIRED COMPONENTS Bluetooth)
 find_package(Qt6 REQUIRED COMPONENTS Network)
+find_package(Qt6 REQUIRED COMPONENTS ShaderTools)
 
 
 
@@ -389,6 +390,36 @@ target_link_libraries(QtAgOpenGPS PRIVATE
     Qt6::Network
     Qt6::Multimedia
     Qt6::SerialPort
+)
+
+# ============================================================================
+# QRhi Shader Compilation
+# ============================================================================
+# Automatically compile GLSL shaders to .qsb format for cross-platform use
+# The .qsb files contain compiled shaders for: OpenGL, Vulkan, Metal, Direct3D
+#
+# Shaders are compiled for:
+#   - GLSL 100 ES (OpenGL ES 2.0 / WebGL)
+#   - GLSL 300 ES (OpenGL ES 3.0)
+#   - GLSL 150 (OpenGL 3.2 core)
+#   - HLSL 5.0 (Direct3D 11)
+#   - MSL 1.2 (Metal - macOS/iOS)
+#
+# Output .qsb files are embedded in resources at build time
+# ============================================================================
+
+qt_add_shaders(QtAgOpenGPS "rhi_shaders"
+    PREFIX "/AOG"
+    GLSL "100es,300es,150"
+    HLSL 50
+    MSL 12
+    FILES
+        shaders/color_vshader.vert
+        shaders/color_fshader.frag
+        shaders/colors_vshader.vert
+        shaders/colors_fshader.frag
+        shaders/colortex_vshader.vert
+        shaders/colortex_fshader.frag
 )
 
 # Compile defines
