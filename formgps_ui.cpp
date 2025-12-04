@@ -24,6 +24,9 @@
 // FormLoop removed - Phase 4.4: AgIOService standalone
 #include <algorithm>
 
+//if using qquickframebufferobject, set qml to use AOGRenderer and comment out next line
+//#define USE_QSGRENDERNODE 1 //Also switch qml to use AOGRendererItem
+
 
 QString caseInsensitiveFilename(QString directory, QString filename);
 
@@ -2036,17 +2039,20 @@ void FormGPS::initializeQMLInterfaces()
         qDebug() << "🎯 Setting up OpenGL callbacks - InterfaceProperty verified safe";
         openGLControl->setProperty("callbackObject",QVariant::fromValue((void *) this));
         openGLControl->setProperty("initCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Initialized, this)));
-#if defined(Q_OS_WINDOWS) || defined (Q_OS_ANDROID)
+#if defined(Q_OS_WINDOWS) //|| defined (Q_OS_ANDROID)
         //direct rendering in the QML render thread.  Will need locking to be safe.
         openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::oglMain_Paint,this)));
 #else
         //do indirect rendering for now.
         openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::render_main_fbo,this)));
 #endif
+#ifdef USE_QSGRENDERNODE
         openGLControl->setProperty("cleanupCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Shutdown,this)));
+#else
 
         openGLControl->setProperty("samples",SettingsManager::instance()->display_antiAliasSamples());
-        //static_cast<AOGRendererInSG *>(openGLControl)->setMirrorVertically(true);
+        static_cast<AOGRendererInSG *>(openGLControl)->setMirrorVertically(true);
+#endif
         connect(openGLControl,SIGNAL(clicked(QVariant)),this,SLOT(onGLControl_clicked(QVariant)));
         connect(openGLControl,SIGNAL(dragged(int,int,int,int)),this,SLOT(onGLControl_dragged(int,int,int,int)));
         qDebug() << "✅ OpenGL callbacks configured - rendering can now safely access InterfaceProperty";
@@ -2107,17 +2113,19 @@ void FormGPS::initializeOpenGLCallbacks()
         qDebug() << "🎯 Setting up OpenGL callbacks - InterfaceProperty verified ready";
         openGLControl->setProperty("callbackObject",QVariant::fromValue((void *) this));
         openGLControl->setProperty("initCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Initialized, this)));
-#if defined(Q_OS_WINDOWS) || defined (Q_OS_ANDROID)
+#if defined(Q_OS_WINDOWS) //|| defined (Q_OS_ANDROID)
         //direct rendering in the QML render thread.  Will need locking to be safe.
         openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::oglMain_Paint,this)));
 #else
         //do indirect rendering for now.
         openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::render_main_fbo,this)));
 #endif
+#ifdef USE_QSGRENDERNODE
         openGLControl->setProperty("cleanupCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Shutdown,this)));
-
+#else
         openGLControl->setProperty("samples",SettingsManager::instance()->display_antiAliasSamples());
-        //static_cast<AOGRendererInSG *>(openGLControl)->setMirrorVertically(true);
+        static_cast<AOGRendererInSG *>(openGLControl)->setMirrorVertically(true);
+#endif
         connect(openGLControl,SIGNAL(clicked(QVariant)),this,SLOT(onGLControl_clicked(QVariant)));
         connect(openGLControl,SIGNAL(dragged(int,int,int,int)),this,SLOT(onGLControl_dragged(int,int,int,int)));
         qDebug() << "✅ OpenGL callbacks successfully configured - rendering now safe";

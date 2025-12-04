@@ -243,7 +243,7 @@ Window {
     }
 
 
-    AOGRendererItem {
+    AOGRenderer {
         id: glcontrolrect
         objectName: "openglcontrol"
 
@@ -251,7 +251,7 @@ Window {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        z: -1
+        //z: -1
 
         //for moving the center of the view around
         // ✅ PHASE 6.3.0: shiftX/shiftY are now Q_PROPERTY in C++ AOGRendererInSG class
