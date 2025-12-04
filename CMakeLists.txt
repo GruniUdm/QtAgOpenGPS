@@ -112,6 +112,7 @@ qt_add_executable(QtAgOpenGPS
     formheadland.h formheadland.cpp
     glutils.h glutils.cpp
     rhiresources.h rhiresources.cpp
+    rhihelpers.h rhihelpers.cpp
     #qmlsectionbuttons.h qmlsectionbuttons.cpp
     qmlutil.h
     setter.h
