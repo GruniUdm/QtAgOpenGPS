@@ -798,13 +798,30 @@ void FormGPS::oglMain_Paint()
             //draw the vehicle/implement
             QMatrix4x4 mv = modelview; //push matrix
             // ✅ PHASE 6.3.0: InterfaceProperty guaranteed to be initialized before rendering
-            tool.DrawTool(gl,modelview, projection,isJobStarted(),*CVehicle::instance(), camera,tram);
+
+            QMatrix4x4 vehiclemv = modelview;
+            modelview.translate(CVehicle::instance()->pivotAxlePos.easting,
+                                CVehicle::instance()->pivotAxlePos.northing, 0);
+
+            //setup for tool rendering
+            QMatrix4x4 toolmv = vehiclemv;
+            //translate down to the hitch pin
+            toolmv.translate(sin(v.fixHeading) * hitchLength,
+                         cos(v.fixHeading) * hitchLength, 0);
+
+
+
+
+            tool.DrawTool(gl,modelview, projection,isJobStarted(),camera,tram);
             double steerangle;
             if(timerSim.isActive()) steerangle = sim.steerangleAve;
             else steerangle = mc.actualSteerAngleDegrees;
-            CVehicle::instance()->DrawVehicle(gl, modelview, projection, steerangle, isFirstHeadingSet,
-                                QRect(0,0,width,height),camera,tool,bnd,mainWindow);
-            modelview = mv; //pop matrix
+            CVehicle::instance()->DrawVehicle(gl, vehiclemv,
+                                              projection, steerangle,
+                                              isFirstHeadingSet,
+                                              QRect(0,0,width,height),
+                                              camera,tool,bnd,
+                                              mainWindow);
 
             if (camera.camSetDistance > -150)
             {
@@ -828,6 +845,7 @@ void FormGPS::oglMain_Paint()
             if (tool.isDisplayTramControl && tram.displayMode != 0) { DrawTramMarkers(); }
 
             //if this is on, VehicleInterface.isHydLiftOn is true
+            //why is this here? Should be somewhere in UpdateFixPosition()
             if (p_239.pgn[p_239.hydLift] == 2)
             {
                 CVehicle::instance()->setHydLiftDown(false); //VehicleInterface.hydLiftDown in QML
@@ -862,6 +880,7 @@ void FormGPS::oglMain_Paint()
                 }
                 */
             }
+            //this probably can be in an event handler from QML land
             if (leftMouseDownOnOpenGL) MakeFlagMark(gl); //TODO: not working, fix!
         }
         else

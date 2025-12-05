@@ -1435,9 +1435,9 @@ void FormGPS::UpdateFixPosition()
     // === Vehicle State Updates (8 properties) ===
     if (m_speedKph != CVehicle::instance()->avgSpeed) { m_speedKph = CVehicle::instance()->avgSpeed; vehChangedFlag = true; }
     if (m_fusedHeading != CVehicle::instance()->fixHeading) { m_fusedHeading = CVehicle::instance()->fixHeading; vehChangedFlag = true; }
-    if (m_toolEasting != CVehicle::instance()->toolPos.easting) { m_toolEasting = CVehicle::instance()->toolPos.easting; vehChangedFlag = true; }
-    if (m_toolNorthing != CVehicle::instance()->toolPos.northing) { m_toolNorthing = CVehicle::instance()->toolPos.northing; vehChangedFlag = true; }
-    if (m_toolHeading != CVehicle::instance()->toolPos.heading) { m_toolHeading = CVehicle::instance()->toolPos.heading; vehChangedFlag = true; }
+    if (m_toolEasting != tool.toolPos.easting) { m_toolEasting = tool.toolPos.easting; vehChangedFlag = true; }
+    if (m_toolNorthing != tool.toolPos.northing) { m_toolNorthing = tool.toolPos.northing; vehChangedFlag = true; }
+    if (m_toolHeading != tool.toolPos.heading) { m_toolHeading = tool.toolPos.heading; vehChangedFlag = true; }
     if (m_offlineDistance != CVehicle::instance()->guidanceLineDistanceOff) {
         m_offlineDistance = CVehicle::instance()->guidanceLineDistanceOff;
         // Phase 6.0.20: Q_OBJECT_BINDABLE_PROPERTY auto-emits offlineDistanceChanged()
@@ -1527,7 +1527,7 @@ void FormGPS::TheRest()
     CalculatePositionHeading();
 
     //calculate lookahead at full speed, no sentence misses
-    CalculateSectionLookAhead(CVehicle::instance()->toolPos.northing, CVehicle::instance()->toolPos.easting, CVehicle::instance()->cosSectionHeading, CVehicle::instance()->sinSectionHeading);
+    CalculateSectionLookAhead(tool.toolPos.northing, tool.toolPos.easting, CVehicle::instance()->cosSectionHeading, CVehicle::instance()->sinSectionHeading);
 
     //To prevent drawing high numbers of triangles, determine and test before drawing vertex
     sectionTriggerDistance = glm::Distance(pn.fix, prevSectionPos);
@@ -1617,10 +1617,10 @@ void FormGPS::processSectionLookahead() {
 
         //rotate camera so heading matched fix heading in the world
         //gl->glRotated(toDegrees(CVehicle::instance()->fixHeadingSection), 0, 0, 1);
-        modelview.rotate(glm::toDegrees(CVehicle::instance()->toolPos.heading), 0, 0, 1);
+        modelview.rotate(glm::toDegrees(tool.toolPos.heading), 0, 0, 1);
 
-        modelview.translate(-CVehicle::instance()->toolPos.easting - sin(CVehicle::instance()->toolPos.heading) * 15,
-                            -CVehicle::instance()->toolPos.northing - cos(CVehicle::instance()->toolPos.heading) * 15,
+        modelview.translate(-tool.toolPos.easting - sin(tool.toolPos.heading) * 15,
+                            -tool.toolPos.northing - cos(tool.toolPos.heading) * 15,
                             0);
 
         // Viewport: NDC to pixel coordinates
@@ -1824,11 +1824,11 @@ void FormGPS::processSectionLookahead() {
     if (this->isHeadlandOn()) bnd.WhereAreToolCorners(tool);
 
     //set the look ahead for hyd Lift in pixels per second
-    CVehicle::instance()->hydLiftLookAheadDistanceLeft = tool.farLeftSpeed * CVehicle::instance()->hydLiftLookAheadTime * 10;
-    CVehicle::instance()->hydLiftLookAheadDistanceRight = tool.farRightSpeed * CVehicle::instance()->hydLiftLookAheadTime * 10;
+    tool.hydLiftLookAheadDistanceLeft = tool.farLeftSpeed * SettingsManager::instance()->vehicle_hydraulicLiftLookAhead() * 10;
+    tool.hydLiftLookAheadDistanceRight = tool.farRightSpeed * SettingsManager::instance()->vehicle_hydraulicLiftLookAhead() * 10;
 
-    if (CVehicle::instance()->hydLiftLookAheadDistanceLeft > 200) CVehicle::instance()->hydLiftLookAheadDistanceLeft = 200;
-    if (CVehicle::instance()->hydLiftLookAheadDistanceRight > 200) CVehicle::instance()->hydLiftLookAheadDistanceRight = 200;
+    if (tool.hydLiftLookAheadDistanceLeft > 200) tool.hydLiftLookAheadDistanceLeft = 200;
+    if (tool.hydLiftLookAheadDistanceRight > 200) tool.hydLiftLookAheadDistanceRight = 200;
 
     tool.lookAheadDistanceOnPixelsLeft = tool.farLeftSpeed * tool.lookAheadOnSetting * 10;
     tool.lookAheadDistanceOnPixelsRight = tool.farRightSpeed * tool.lookAheadOnSetting * 10;
@@ -1874,8 +1874,8 @@ void FormGPS::processSectionLookahead() {
     double rpToolHeight = 0;
 
     //pick the larger side
-    if (CVehicle::instance()->hydLiftLookAheadDistanceLeft > CVehicle::instance()->hydLiftLookAheadDistanceRight) rpToolHeight = CVehicle::instance()->hydLiftLookAheadDistanceLeft;
-    else rpToolHeight = CVehicle::instance()->hydLiftLookAheadDistanceRight;
+    if (tool.hydLiftLookAheadDistanceLeft > tool.hydLiftLookAheadDistanceRight) rpToolHeight = tool.hydLiftLookAheadDistanceLeft;
+    else rpToolHeight = tool.hydLiftLookAheadDistanceRight;
 
     if (tool.lookAheadDistanceOnPixelsLeft > tool.lookAheadDistanceOnPixelsRight) rpOnHeight = tool.lookAheadDistanceOnPixelsLeft;
     else rpOnHeight = tool.lookAheadDistanceOnPixelsRight;
@@ -1927,12 +1927,12 @@ void FormGPS::processSectionLookahead() {
     if (this->isHeadlandOn())
     {
         //calculate the slope
-        double m = (CVehicle::instance()->hydLiftLookAheadDistanceRight - CVehicle::instance()->hydLiftLookAheadDistanceLeft) / tool.rpWidth;
+        double m = (tool.hydLiftLookAheadDistanceRight - tool.hydLiftLookAheadDistanceLeft) / tool.rpWidth;
         int height = 1;
 
         for (int pos = 0; pos < tool.rpWidth; pos++)
         {
-            height = (int)(CVehicle::instance()->hydLiftLookAheadDistanceLeft + (m * pos)) - 1;
+            height = (int)(tool.hydLiftLookAheadDistanceLeft + (m * pos)) - 1;
             for (int a = pos; a < height * tool.rpWidth; a += tool.rpWidth)
             {
                 if (grnPixels[a].green == 250)
@@ -2213,7 +2213,11 @@ void FormGPS::processSectionLookahead() {
             for (int j = 0; j < triStrip.count(); j++)
             {
                 if (triStrip[j].isDrawing)
-                    triStrip[j].TurnMappingOff(tool, fd, mainWindow, this);
+                    triStrip[j].TurnMappingOff(tool.secColors[j],
+                                               tool.section[triStrip[j].currentStartSectionNum].leftPoint,
+                                               tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+                                               tool.patchSaveList,
+                                               this);
             }
         }
         else if (!tool.isMultiColoredSections)
@@ -2269,12 +2273,20 @@ void FormGPS::processSectionLookahead() {
                     {
                         //if (tool.isSectionsNotZones)
                         {
-                            triStrip[j].AddMappingPoint(tool,fd, 0, mainWindow, this);
+                            triStrip[j].AddMappingPoint(tool.secColors[j],
+                                                        tool.section[triStrip[j].currentStartSectionNum].leftPoint,
+                                                        tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+                                                        tool.patchSaveList,
+                                                        this);
                         }
 
                         triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
                         triStrip[j].currentEndSectionNum = triStrip[j].newEndSectionNum;
-                        triStrip[j].AddMappingPoint(tool,fd, 0, mainWindow, this);
+                        triStrip[j].AddMappingPoint(tool.secColors[j],
+                                                    tool.section[triStrip[j].currentStartSectionNum].leftPoint,
+                                                    tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+                                                    tool.patchSaveList,
+                                                    this);
                     }
                 }
             }
@@ -2284,14 +2296,20 @@ void FormGPS::processSectionLookahead() {
                 for (int j = 0; j < triStrip.count(); j++)
                 {
                     if (triStrip[j].isDrawing)
-                        triStrip[j].TurnMappingOff(tool, fd, mainWindow, this);
+                        triStrip[j].TurnMappingOff(tool.secColors[j],
+                                                   tool.section[triStrip[j].currentStartSectionNum].leftPoint,
+                                                   tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+                                                   tool.patchSaveList,
+                                                   this);
                 }
 
                 for (int j = 0; j < sectionOnOffZones; j++)
                 {
                     triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
                     triStrip[j].currentEndSectionNum = triStrip[j].newEndSectionNum;
-                    triStrip[j].TurnMappingOn(tool, 0);
+                    triStrip[j].TurnMappingOn(tool.secColors[j],
+                                              tool.section[triStrip[j].currentStartSectionNum].leftPoint,
+                                              tool.section[triStrip[j].currentEndSectionNum].rightPoint);
                 }
             }
         }
@@ -2314,13 +2332,19 @@ void FormGPS::processSectionLookahead() {
                 if (!tool.section[j].isMappingOn)
                 {
                     if (triStrip[j].isDrawing)
-                        triStrip[j].TurnMappingOff(tool, fd, mainWindow, this);
+                        triStrip[j].TurnMappingOff(tool.secColors[j],
+                                                   tool.section[triStrip[j].currentStartSectionNum].leftPoint,
+                                                   tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+                                                   tool.patchSaveList,
+                                                   this);
                 }
                 else
                 {
                     triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
                     triStrip[j].currentEndSectionNum = triStrip[j].newEndSectionNum;
-                    triStrip[j].TurnMappingOn(tool,j);
+                    triStrip[j].TurnMappingOn(tool.secColors[j],
+                                              tool.section[triStrip[j].currentStartSectionNum].leftPoint,
+                                              tool.section[triStrip[j].currentEndSectionNum].rightPoint);
                 }
             }
         }
@@ -2450,78 +2474,78 @@ void FormGPS::CalculatePositionHeading()
             //Torriem rules!!!!! Oh yes, this is all his. Thank-you
             if (distanceCurrentStepFix != 0)
             {
-                CVehicle::instance()->tankPos.heading = atan2(CVehicle::instance()->hitchPos.easting - CVehicle::instance()->tankPos.easting, CVehicle::instance()->hitchPos.northing - CVehicle::instance()->tankPos.northing);
-                if (CVehicle::instance()->tankPos.heading < 0) CVehicle::instance()->tankPos.heading += glm::twoPI;
+                tool.tankPos.heading = atan2(CVehicle::instance()->hitchPos.easting - tool.tankPos.easting, CVehicle::instance()->hitchPos.northing - tool.tankPos.northing);
+                if (tool.tankPos.heading < 0) tool.tankPos.heading += glm::twoPI;
             }
 
             ////the tool is seriously jacknifed or just starting out so just spring it back.
-            over = fabs(M_PI - fabs(fabs(CVehicle::instance()->tankPos.heading - CVehicle::instance()->fixHeading) - M_PI));
+            over = fabs(M_PI - fabs(fabs(tool.tankPos.heading - CVehicle::instance()->fixHeading) - M_PI));
 
             if ((over < 2.0) && (startCounter > 50))
             {
-                CVehicle::instance()->tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(CVehicle::instance()->tankPos.heading) * (tool.tankTrailingHitchLength));
-                CVehicle::instance()->tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(CVehicle::instance()->tankPos.heading) * (tool.tankTrailingHitchLength));
+                tool.tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
+                tool.tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
             }
 
             //criteria for a forced reset to put tool directly behind vehicle
             if (over > 2.0 || startCounter < 51 )
             {
-                CVehicle::instance()->tankPos.heading = CVehicle::instance()->fixHeading;
-                CVehicle::instance()->tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(CVehicle::instance()->tankPos.heading) * (tool.tankTrailingHitchLength));
-                CVehicle::instance()->tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(CVehicle::instance()->tankPos.heading) * (tool.tankTrailingHitchLength));
+                tool.tankPos.heading = CVehicle::instance()->fixHeading;
+                tool.tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
+                tool.tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
             }
 
         }
 
         else
         {
-            CVehicle::instance()->tankPos.heading = CVehicle::instance()->fixHeading;
-            CVehicle::instance()->tankPos.easting = CVehicle::instance()->hitchPos.easting;
-            CVehicle::instance()->tankPos.northing = CVehicle::instance()->hitchPos.northing;
+            tool.tankPos.heading = CVehicle::instance()->fixHeading;
+            tool.tankPos.easting = CVehicle::instance()->hitchPos.easting;
+            tool.tankPos.northing = CVehicle::instance()->hitchPos.northing;
         }
 
         //Torriem rules!!!!! Oh yes, this is all his. Thank-you
         if (distanceCurrentStepFix != 0)
         {
-            CVehicle::instance()->toolPivotPos.heading = atan2(CVehicle::instance()->tankPos.easting - CVehicle::instance()->toolPivotPos.easting, CVehicle::instance()->tankPos.northing - CVehicle::instance()->toolPivotPos.northing);
-            if (CVehicle::instance()->toolPivotPos.heading < 0) CVehicle::instance()->toolPivotPos.heading += glm::twoPI;
+            tool.toolPivotPos.heading = atan2(tool.tankPos.easting - tool.toolPivotPos.easting, tool.tankPos.northing - tool.toolPivotPos.northing);
+            if (tool.toolPivotPos.heading < 0) tool.toolPivotPos.heading += glm::twoPI;
         }
 
         ////the tool is seriously jacknifed or just starting out so just spring it back.
-        over = fabs(M_PI - fabs(fabs(CVehicle::instance()->toolPivotPos.heading - CVehicle::instance()->tankPos.heading) - M_PI));
+        over = fabs(M_PI - fabs(fabs(tool.toolPivotPos.heading - tool.tankPos.heading) - M_PI));
 
         if ((over < 1.9) && (startCounter > 50))
         {
-            CVehicle::instance()->toolPivotPos.easting = CVehicle::instance()->tankPos.easting + (sin(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength));
-            CVehicle::instance()->toolPivotPos.northing = CVehicle::instance()->tankPos.northing + (cos(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength));
+            tool.toolPivotPos.easting = tool.tankPos.easting + (sin(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
+            tool.toolPivotPos.northing = tool.tankPos.northing + (cos(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
         }
 
         //criteria for a forced reset to put tool directly behind vehicle
         if (over > 1.9 || startCounter < 51 )
         {
-            CVehicle::instance()->toolPivotPos.heading = CVehicle::instance()->tankPos.heading;
-            CVehicle::instance()->toolPivotPos.easting = CVehicle::instance()->tankPos.easting + (sin(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength));
-            CVehicle::instance()->toolPivotPos.northing = CVehicle::instance()->tankPos.northing + (cos(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength));
+            tool.toolPivotPos.heading = tool.tankPos.heading;
+            tool.toolPivotPos.easting = tool.tankPos.easting + (sin(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
+            tool.toolPivotPos.northing = tool.tankPos.northing + (cos(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
         }
 
-        CVehicle::instance()->toolPos.heading = CVehicle::instance()->toolPivotPos.heading;
-        CVehicle::instance()->toolPos.easting = CVehicle::instance()->tankPos.easting +
-                                  (sin(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
-        CVehicle::instance()->toolPos.northing = CVehicle::instance()->tankPos.northing +
-                                   (cos(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
+        tool.toolPos.heading = tool.toolPivotPos.heading;
+        tool.toolPos.easting = tool.tankPos.easting +
+                                  (sin(tool.toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
+        tool.toolPos.northing = tool.tankPos.northing +
+                                   (cos(tool.toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
 
     }
 
     //rigidly connected to vehicle
     else
     {
-        CVehicle::instance()->toolPivotPos.heading = CVehicle::instance()->fixHeading;
-        CVehicle::instance()->toolPivotPos.easting = CVehicle::instance()->hitchPos.easting;
-        CVehicle::instance()->toolPivotPos.northing = CVehicle::instance()->hitchPos.northing;
+        tool.toolPivotPos.heading = CVehicle::instance()->fixHeading;
+        tool.toolPivotPos.easting = CVehicle::instance()->hitchPos.easting;
+        tool.toolPivotPos.northing = CVehicle::instance()->hitchPos.northing;
 
-        CVehicle::instance()->toolPos.heading = CVehicle::instance()->fixHeading;
-        CVehicle::instance()->toolPos.easting = CVehicle::instance()->hitchPos.easting;
-        CVehicle::instance()->toolPos.northing = CVehicle::instance()->hitchPos.northing;
+        tool.toolPos.heading = CVehicle::instance()->fixHeading;
+        tool.toolPos.easting = CVehicle::instance()->hitchPos.easting;
+        tool.toolPos.northing = CVehicle::instance()->hitchPos.northing;
     }
 
     //#endregion
@@ -2553,8 +2577,8 @@ void FormGPS::CalculatePositionHeading()
     //if (this->isContourBtnOn()) CVehicle::instance()->sectionTriggerStepDistance *=0.5;
 
     //precalc the sin and cos of heading * -1
-    CVehicle::instance()->sinSectionHeading = sin(-CVehicle::instance()->toolPivotPos.heading);
-    CVehicle::instance()->cosSectionHeading = cos(-CVehicle::instance()->toolPivotPos.heading);
+    CVehicle::instance()->sinSectionHeading = sin(-tool.toolPivotPos.heading);
+    CVehicle::instance()->cosSectionHeading = cos(-tool.toolPivotPos.heading);
 }
 
 //calculate the extreme tool left, right velocities, each section lookahead, and whether or not its going backwards
@@ -2627,14 +2651,14 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
 
         if (head < 0) head += glm::twoPI;
 
-        if (M_PI - fabs(fabs(head - CVehicle::instance()->toolPos.heading) - M_PI) > glm::PIBy2)
+        if (M_PI - fabs(fabs(head - tool.toolPos.heading) - M_PI) > glm::PIBy2)
         {
             if (leftSpeed > 0) leftSpeed *= -1;
         }
 
         head = right.headingXZ();
         if (head < 0) head += glm::twoPI;
-        if (M_PI - fabs(fabs(head - CVehicle::instance()->toolPos.heading) - M_PI) > glm::PIBy2)
+        if (M_PI - fabs(fabs(head - tool.toolPos.heading) - M_PI) > glm::PIBy2)
         {
             if (rightSpeed > 0) rightSpeed *= -1;
         }
@@ -2763,7 +2787,11 @@ void FormGPS::AddSectionOrPathPoints()
                 this->setIsPatchesChangingColor(false);
             }
 
-            triStrip[j].AddMappingPoint(tool, fd, j, mainWindow, this);
+            triStrip[j].AddMappingPoint(tool.secColors[j],
+                                        tool.section[triStrip[j].currentStartSectionNum].leftPoint,
+                                        tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+                                        tool.patchSaveList,
+                                        this);
             patchCounter++;
         }
     }
@@ -2835,7 +2863,7 @@ void FormGPS::InitializeFirstFewGPSPositions()
 
         //in radians
         CVehicle::instance()->fixHeading = 0;
-        CVehicle::instance()->toolPos.heading = CVehicle::instance()->fixHeading;
+        tool.toolPos.heading = CVehicle::instance()->fixHeading;
 
         //send out initial zero settings
         if (isGPSPositionInitialized)

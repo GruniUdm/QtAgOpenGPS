@@ -122,23 +122,19 @@ void CTool::saveSettings()
     SettingsManager::instance()->setTool_isDisplayTramControl(isDisplayTramControl);
 }
 
-void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 projection,
+void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 mv,
+                     QMatrix4x4 projection,
                      bool isJobStarted,
-                     CVehicle &v, CCamera &camera, CTram &tram)
+                     bool isHydLiftOn,
+                     CCamera &camera, CTram &tram)
 {
     double tram_halfWheelTrack = SettingsManager::instance()->vehicle_trackWidth() * 0.5;
     bool tool_isDisplayTramControl = SettingsManager::instance()->tool_isDisplayTramControl();
     //translate and rotate at pivot axle, caller's mvp will be changed
     //all subsequent draws will be based on this point
-    modelview.translate(v.pivotAxlePos.easting, v.pivotAxlePos.northing, 0);
+
 
     GLHelperOneColor gldraw;
-
-    QMatrix4x4 mv = modelview; //push matrix (just have to save it)
-
-    //translate down to the hitch pin
-    mv.translate(sin(v.fixHeading) * hitchLength,
-                            cos(v.fixHeading) * hitchLength, 0);
 
     //settings doesn't change trailing hitch length if set to rigid, so do it here
     double trailingTank, trailingTool;
@@ -153,7 +149,7 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 pro
     if (isToolTBT && isToolTrailing)
     {
         //rotate to tank heading
-        mv.rotate(glm::toDegrees(-v.tankPos.heading), 0.0, 0.0, 1.0);
+        mv.rotate(glm::toDegrees(-tankPos.heading), 0.0, 0.0, 1.0);
 
 
         //draw the tank hitch
@@ -168,14 +164,14 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 pro
 
         //move down the tank hitch, unwind, rotate to section heading
         mv.translate(0.0, trailingTank, 0.0);
-        mv.rotate(glm::toDegrees(v.tankPos.heading), 0.0, 0.0, 1.0);
-        mv.rotate(glm::toDegrees(-v.toolPos.heading), 0.0, 0.0, 1.0);
+        mv.rotate(glm::toDegrees(tankPos.heading), 0.0, 0.0, 1.0);
+        mv.rotate(glm::toDegrees(-toolPos.heading), 0.0, 0.0, 1.0);
     }
 
     //no tow between hitch
     else
     {
-        mv.rotate(glm::toDegrees(-v.toolPos.heading), 0.0, 0.0, 1.0);
+        mv.rotate(glm::toDegrees(-toolPos.heading), 0.0, 0.0, 1.0);
     }
 
     //draw the hitch if trailing
@@ -223,12 +219,12 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 pro
         gldrawcolors.append(cv);
 
 
-        if (v.isHydLiftOn())
+        if (isHydLiftOn)
         {
             cv.color = QVector4D(0.70f, 0.2f, 0.72f, 1);
-            cv.vertex = QVector3D(section[0].positionLeft, (v.hydLiftLookAheadDistanceLeft * 0.1) + trailingTool, 0);
+            cv.vertex = QVector3D(section[0].positionLeft, (hydLiftLookAheadDistanceLeft * 0.1) + trailingTool, 0);
             gldrawcolors.append(cv);
-            cv.vertex = QVector3D(section[numOfSections - 1].positionRight, (v.hydLiftLookAheadDistanceRight * 0.1) + trailingTool, 0);
+            cv.vertex = QVector3D(section[numOfSections - 1].positionRight, (hydLiftLookAheadDistanceRight * 0.1) + trailingTool, 0);
             gldrawcolors.append(cv);
         }
 

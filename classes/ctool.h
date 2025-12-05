@@ -8,6 +8,7 @@
 #include <QColor>
 #include "qmlblockage.h"
 #include "btnenum.h"
+#include "vec3.h"
 
 class QOpenGLFunctions;
 class QMatrix4x4;
@@ -77,6 +78,14 @@ public:
 
     bool isDisplayTramControl;
 
+    double hydLiftLookAheadDistanceLeft = 0.0;
+    double hydLiftLookAheadDistanceRight = 0.0;
+
+    Vec3 toolPivotPos;
+    Vec3 toolPos;
+    Vec3 tankPos;
+
+
     //moved the following from the main form to here
     CSection section[MAXSECTIONS+1];
     btnStates sectionButtonState[65];
@@ -102,9 +111,12 @@ public:
     CTool();
     //this class needs modelview and projection as separate matrices because some
     //additiona transformations need to be done.
-    void DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 projection,
-                  bool isJobStarted,
-                  CVehicle &v, CCamera &camera, CTram &tram);
+    void DrawTool(QOpenGLFunctions *gl,
+                  QMatrix4x4 modelview,
+                  QMatrix4x4 projection,
+                  bool isJobStarted, bool isHydLiftOn,
+                  CCamera &camera, CTram &tram);
+
 };
 
 #endif // CTOOL_H

@@ -78,12 +78,7 @@ public:
     double maxSteerSpeed = 20.0;
     double minSteerSpeed = 1.0;
     double maxAngularVelocity = 1.0;
-    double hydLiftLookAheadTime = 0.0;
     double trackWidth = 2.0;  // Phase 6.0.24 Problem 18: Safe default for OpenGL rendering
-
-    double hydLiftLookAheadDistanceLeft = 0.0;
-    double hydLiftLookAheadDistanceRight = 0.0;
-
 
     double stanleyIntegralDistanceAwayTriggerAB = 0.0;
     double stanleyIntegralGainAB = 0.0;
@@ -118,9 +113,6 @@ public:
     double cosSectionHeading = 1.0, sinSectionHeading = 0.0;
     Vec3 pivotAxlePos;
     Vec3 steerAxlePos;
-    Vec3 toolPivotPos;
-    Vec3 toolPos;
-    Vec3 tankPos;
     Vec3 hitchPos;
     Vec2 guidanceLookPos;
 

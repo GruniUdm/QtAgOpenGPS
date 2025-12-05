@@ -72,7 +72,7 @@ void CVehicle::loadSettings()
     slowSpeedCutoff = SettingsManager::instance()->vehicle_slowSpeedCutoff();
     panicStopSpeed = SettingsManager::instance()->vehicle_panicStopSpeed();
 
-    hydLiftLookAheadTime = SettingsManager::instance()->vehicle_hydraulicLiftLookAhead();
+    //hydLiftLookAheadTime = SettingsManager::instance()->vehicle_hydraulicLiftLookAhead();
 
     goalPointLookAhead = SettingsManager::instance()->vehicle_goalPointLookAhead();
     goalPointLookAheadHold = SettingsManager::instance()->vehicle_goalPointLookAheadHold();
@@ -117,7 +117,7 @@ void CVehicle::saveSettings()
     SettingsManager::instance()->setVehicle_slowSpeedCutoff(slowSpeedCutoff);
     SettingsManager::instance()->setVehicle_panicStopSpeed(panicStopSpeed);
 
-    SettingsManager::instance()->setVehicle_hydraulicLiftLookAhead(hydLiftLookAheadTime);
+    //SettingsManager::instance()->setVehicle_hydraulicLiftLookAhead(hydLiftLookAheadTime);
 
     // ⚡ PHASE 6.0.20 FIX 3: Do NOT overwrite Pure Pursuit settings
     // These are already updated by QML → SettingsManager directly

@@ -1,9 +1,46 @@
 #include "cpatches.h"
-#include "cfielddata.h"
-#include "ctool.h"
 #include "classes/settingsmanager.h"
 #include "qmlutil.h"
 #include "formgps.h"
+
+inline QColor get_SectionColor(int section) {
+    switch (section) {
+    case 0:
+        return SettingsManager::instance()->color_sec01();
+    case 1:
+        return SettingsManager::instance()->color_sec02();
+    case 2:
+        return SettingsManager::instance()->color_sec03();
+    case 3:
+        return SettingsManager::instance()->color_sec04();
+    case 4:
+        return SettingsManager::instance()->color_sec05();
+    case 5:
+        return SettingsManager::instance()->color_sec06();
+    case 6:
+        return SettingsManager::instance()->color_sec07();
+    case 7:
+        return SettingsManager::instance()->color_sec08();
+    case 8:
+        return SettingsManager::instance()->color_sec09();
+    case 9:
+        return SettingsManager::instance()->color_sec10();
+    case 10:
+        return SettingsManager::instance()->color_sec11();
+    case 11:
+        return SettingsManager::instance()->color_sec12();
+    case 12:
+        return SettingsManager::instance()->color_sec13();
+    case 13:
+        return SettingsManager::instance()->color_sec14();
+    case 14:
+        return SettingsManager::instance()->color_sec15();
+    case 15:
+        return SettingsManager::instance()->color_sec16();
+    }
+    return QColor();
+}
+
 
 CPatches::CPatches() {
     triangleList = QSharedPointer<PatchTriangleList>( new PatchTriangleList);
@@ -13,7 +50,8 @@ CPatches::CPatches() {
 /* torriem: modifications. Passing in left, right points, and color, rather than
  * accessing the CSection objects themselves.
  */
-void CPatches::TurnMappingOn(CTool &tool, int j)
+void CPatches::TurnMappingOn(QColor section_color,
+                             Vec2 leftPoint, Vec2 rightPoint)
 {
     QColor display_colorSectionsDay = SettingsManager::instance()->display_colorSectionsDay();
 
@@ -34,22 +72,22 @@ void CPatches::TurnMappingOn(CTool &tool, int j)
         patchBoundingBoxList.append(triangleListBoundingBox);
 
         //Add Patch colour
-        if (!tool.isMultiColoredSections)
+        if (!(bool)SettingsManager::instance()->color_isMultiColorSections())
         {
             color_prop = display_colorSectionsDay;
         }
         else
         {
-            if (tool.isSectionsNotZones)
-                color_prop = tool.secColors[j];
+            if (SettingsManager::instance()->tool_isSectionsNotZones())
+                color_prop = section_color;
             else
                 color_prop = display_colorSectionsDay;
         }
 
         triangleList->append(QVector3D(color_prop.redF(), color_prop.greenF(), color_prop.blueF()));
 
-        leftPoint = tool.section[currentStartSectionNum].leftPoint;
-        rightPoint = tool.section[currentEndSectionNum].rightPoint;
+        //leftPoint = tool.section[currentStartSectionNum].leftPoint;
+        //rightPoint = tool.section[currentEndSectionNum].rightPoint;
 
         //left side of triangle
         triangleList->append(leftPoint);
@@ -59,12 +97,13 @@ void CPatches::TurnMappingOn(CTool &tool, int j)
     }
 }
 
-void CPatches::TurnMappingOff(CTool &tool,
-                              CFieldData &fd,
-                              QObject *mainWindow,
+void CPatches::TurnMappingOff(QColor section_color,
+                              Vec2 leftPoint,
+                              Vec2 rightPoint,
+                              QVector<QSharedPointer<PatchTriangleList>> &patchSaveList,
                               FormGPS *formGPS)
 {
-   AddMappingPoint(tool, fd, 0, mainWindow, formGPS);
+   AddMappingPoint(section_color, leftPoint, rightPoint, patchSaveList, formGPS);
 
    isDrawing = false;
    numTriangles = 0;
@@ -72,7 +111,7 @@ void CPatches::TurnMappingOff(CTool &tool,
    if (triangleList->count() > 4)
    {
        //save the triangle list in a patch list to add to saving file
-       tool.patchSaveList.append(triangleList);
+       patchSaveList.append(triangleList);
    }
    else
    {
@@ -86,14 +125,14 @@ void CPatches::TurnMappingOff(CTool &tool,
    }
 }
 
-void CPatches::AddMappingPoint(CTool &tool,
-                               CFieldData &fd,
-                               int j,
-                               QObject *mainWindow,
+void CPatches::AddMappingPoint(QColor section_color,
+                               Vec2 vleftPoint,
+                               Vec2 vrightPoint,
+                               QVector<QSharedPointer<PatchTriangleList>> &patchSaveList,
                                FormGPS *formGPS)
 {
-    Vec2 vleftPoint = tool.section[currentStartSectionNum].leftPoint;
-    Vec2 vrightPoint = tool.section[currentEndSectionNum].rightPoint;
+    //Vec2 vleftPoint = tool.section[currentStartSectionNum].leftPoint;
+    //Vec2 vrightPoint = tool.section[currentEndSectionNum].rightPoint;
     QVector3D leftPoint(vleftPoint.easting,vleftPoint.northing,0);
     QVector3D rightPoint(vrightPoint.easting,vrightPoint.northing,0);
     QVector3D color;
@@ -151,7 +190,7 @@ void CPatches::AddMappingPoint(CTool &tool,
         numTriangles = 0;
 
         //save the cutoff patch to be saved later
-        tool.patchSaveList.append(triangleList);
+        patchSaveList.append(triangleList);
 
         triangleList = QSharedPointer<PatchTriangleList>(new PatchTriangleList);
         triangleListBoundingBox = QSharedPointer<PatchBoundingBox>( new PatchBoundingBox);
@@ -160,10 +199,10 @@ void CPatches::AddMappingPoint(CTool &tool,
         patchBoundingBoxList.append(triangleListBoundingBox);
 
         //Add Patch colour
-        if (!tool.isMultiColoredSections)
+        if (!(bool)SettingsManager::instance()->color_isMultiColorSections())
             color_prop = display_colorSectionsDay;
         else
-            color_prop = tool.secColors[j];
+            color_prop = section_color;
 
         color = QVector3D(color_prop.redF(), color_prop.greenF(), color_prop.blueF());
         //add the points to List, yes its more points, but breaks up patches for culling
