@@ -22,9 +22,7 @@
 
 QLabel *grnPixelsWindow;
 QLabel *overlapPixelsWindow;
-// MASSIVE MIGRATION: Settings *settings; REMOVED - replaced by SettingsManager singleton
 
-#ifndef TESTING
 int main(int argc, char *argv[])
 {
     qputenv("QSG_RENDER_LOOP", "threaded");
@@ -208,4 +206,3 @@ int main(int argc, char *argv[])
 
     return a.exec();
 }
-#endif
