@@ -851,19 +851,6 @@ public:
 
     double nudNumber = 0;
 
-    //used by filePicker Form to return picked file and directory
-    //QString filePickerFileAndDirectory;
-
-    //the position of the GPS Data window within the FormGPS window
-    //int GPSDataWindowLeft = 76, GPSDataWindowTopOffset = 220;
-
-    //the autoManual drive button. Assume in Auto
-    bool isInAutoDrive = true;
-
-    //isGPSData form up
-    bool isGPSSentencesOn = false, isKeepOffsetsOn = false;
-
-
 private:
     // AgIO Service (main thread for zero-latency OpenGL access)
     AgIOService* m_agioService;

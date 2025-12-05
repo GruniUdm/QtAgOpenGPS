@@ -1128,11 +1128,11 @@ void FormGPS::JobClose()
     sbGrid.clear();
 
     //reset field offsets
-    if (!isKeepOffsetsOn)
-    {
+    //if (!isKeepOffsetsOn)
+    //{
         pn.fixOffset.easting = 0;
         pn.fixOffset.northing = 0;
-    }
+    //}
 
     //turn off headland
     this->setIsHeadlandOn(false); //this turns off the button
