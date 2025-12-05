@@ -64,8 +64,10 @@ void RhiHelperOneColor::draw(RhiResources *resources,
         return; // Nothing to draw
     }
 
-    if (!resources->colorPipeline().isValid()) {
-        qWarning() << "RhiHelperOneColor::draw: Color pipeline not initialized";
+    // Get the appropriate pipeline for this topology
+    QRhiGraphicsPipeline *pipeline = resources->getColorPipeline(topology);
+    if (!pipeline) {
+        qWarning() << "RhiHelperOneColor::draw: No pipeline for topology:" << topology;
         return;
     }
 
@@ -88,7 +90,7 @@ void RhiHelperOneColor::draw(RhiResources *resources,
     uniforms.pointSize = pointSize;
 
     batch->updateDynamicBuffer(
-        resources->colorPipeline().uniformBuffer,
+        resources->colorPipelineSet().uniformBuffer,
         0,
         sizeof(ColorUniforms),
         &uniforms
@@ -97,11 +99,8 @@ void RhiHelperOneColor::draw(RhiResources *resources,
     // Submit resource updates
     cb->resourceUpdate(batch);
 
-    // Note: If topology doesn't match pipeline's default, you may need multiple pipelines
-    // For now, assuming the pipeline was created with the desired topology or it's flexible
-
-    // Set the graphics pipeline
-    cb->setGraphicsPipeline(resources->colorPipeline().pipeline);
+    // Set the graphics pipeline (topology-specific)
+    cb->setGraphicsPipeline(pipeline);
 
     // Bind shader resources (uniform buffer)
     cb->setShaderResources();
@@ -181,8 +180,10 @@ void RhiHelperColors::draw(RhiResources *resources,
         return;
     }
 
-    if (!resources->colorsPipeline().isValid()) {
-        qWarning() << "RhiHelperColors::draw: Colors pipeline not initialized";
+    // Get the appropriate pipeline for this topology
+    QRhiGraphicsPipeline *pipeline = resources->getColorsPipeline(topology);
+    if (!pipeline) {
+        qWarning() << "RhiHelperColors::draw: No pipeline for topology:" << topology;
         return;
     }
 
@@ -203,7 +204,7 @@ void RhiHelperColors::draw(RhiResources *resources,
     uniforms.pointSize = pointSize;
 
     batch->updateDynamicBuffer(
-        resources->colorsPipeline().uniformBuffer,
+        resources->colorsPipelineSet().uniformBuffer,
         0,
         sizeof(ColorsUniforms),
         &uniforms
@@ -212,7 +213,7 @@ void RhiHelperColors::draw(RhiResources *resources,
     cb->resourceUpdate(batch);
 
     // Set pipeline and draw
-    cb->setGraphicsPipeline(resources->colorsPipeline().pipeline);
+    cb->setGraphicsPipeline(pipeline);
     cb->setShaderResources();
 
     const QRhiCommandBuffer::VertexInput vbufBindings[] = {
@@ -293,8 +294,10 @@ void RhiHelperTexture::draw(RhiResources *resources,
         return;
     }
 
-    if (!resources->texturePipeline().isValid()) {
-        qWarning() << "RhiHelperTexture::draw: Texture pipeline not initialized";
+    // Get the appropriate pipeline for this topology
+    QRhiGraphicsPipeline *pipeline = resources->getTexturePipeline(topology);
+    if (!pipeline) {
+        qWarning() << "RhiHelperTexture::draw: No pipeline for topology:" << topology;
         return;
     }
 
@@ -327,7 +330,7 @@ void RhiHelperTexture::draw(RhiResources *resources,
     uniforms.useColor = colorize ? 1 : 0;
 
     batch->updateDynamicBuffer(
-        resources->texturePipeline().uniformBuffer,
+        resources->texturePipelineSet().uniformBuffer,
         0,
         sizeof(TextureUniforms),
         &uniforms
@@ -350,7 +353,7 @@ void RhiHelperTexture::draw(RhiResources *resources,
             QRhiShaderResourceBinding::uniformBuffer(
                 0,
                 QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage,
-                resources->texturePipeline().uniformBuffer
+                resources->texturePipelineSet().uniformBuffer
             ),
             QRhiShaderResourceBinding::sampledTexture(
                 1,
@@ -371,7 +374,7 @@ void RhiHelperTexture::draw(RhiResources *resources,
     }
 
     // Set pipeline and resources
-    cb->setGraphicsPipeline(resources->texturePipeline().pipeline);
+    cb->setGraphicsPipeline(pipeline);
     cb->setShaderResources(m_currentBindings);
 
     // Bind vertex buffer

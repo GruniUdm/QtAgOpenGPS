@@ -24,6 +24,47 @@ void RhiPipeline::destroy()
     uniformBuffer = nullptr;
 }
 
+// RhiPipelineSet implementation
+void RhiPipelineSet::destroy()
+{
+    delete points;
+    delete lines;
+    delete lineStrip;
+    delete triangles;
+    delete triangleStrip;
+    delete bindings;
+    delete uniformBuffer;
+
+    points = nullptr;
+    lines = nullptr;
+    lineStrip = nullptr;
+    triangles = nullptr;
+    triangleStrip = nullptr;
+    bindings = nullptr;
+    uniformBuffer = nullptr;
+}
+
+QRhiGraphicsPipeline* RhiPipelineSet::getPipeline(QRhiGraphicsPipeline::Topology topology) const
+{
+    switch (topology) {
+    case QRhiGraphicsPipeline::Points:
+        return points;
+    case QRhiGraphicsPipeline::Lines:
+        return lines;
+    case QRhiGraphicsPipeline::LineStrip:
+        return lineStrip;
+    case QRhiGraphicsPipeline::Triangles:
+        return triangles;
+    case QRhiGraphicsPipeline::TriangleStrip:
+        return triangleStrip;
+    case QRhiGraphicsPipeline::TriangleFan:
+        return triangleStrip; // Fallback - not all backends support TriangleFan
+    default:
+        qWarning() << "Unsupported topology:" << topology;
+        return nullptr;
+    }
+}
+
 // RhiTextureData implementation
 void RhiTextureData::destroy()
 {
@@ -126,7 +167,7 @@ bool RhiResources::ensurePipelines(QRhiRenderPassDescriptor *renderPass)
     }
 
     // If pipelines already created, verify they're compatible
-    if (m_colorPipeline.isValid()) {
+    if (m_colorPipelineSet.isValid()) {
         if (m_renderPass != renderPass) {
             qWarning() << "Render pass changed - pipelines may be incompatible!";
             qWarning() << "Consider destroying and recreating RhiResources";
@@ -155,10 +196,10 @@ void RhiResources::destroy()
 
     qDebug() << "Destroying RhiResources...";
 
-    // Destroy pipelines
-    m_colorPipeline.destroy();
-    m_colorsPipeline.destroy();
-    m_texturePipeline.destroy();
+    // Destroy pipeline sets
+    m_colorPipelineSet.destroy();
+    m_colorsPipelineSet.destroy();
+    m_texturePipelineSet.destroy();
 
     // Destroy textures
     for (auto &tex : m_textures) {

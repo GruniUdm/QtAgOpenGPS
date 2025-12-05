@@ -48,6 +48,26 @@ struct RhiPipeline {
     bool isValid() const { return pipeline != nullptr; }
 };
 
+// Pipeline variant for different topologies
+// Shares shaders and bindings, but has different topology
+struct RhiPipelineSet {
+    QRhiShaderResourceBindings *bindings = nullptr;
+    QRhiBuffer *uniformBuffer = nullptr;
+
+    // Different pipelines for different topologies
+    QRhiGraphicsPipeline *points = nullptr;
+    QRhiGraphicsPipeline *lines = nullptr;
+    QRhiGraphicsPipeline *lineStrip = nullptr;
+    QRhiGraphicsPipeline *triangles = nullptr;
+    QRhiGraphicsPipeline *triangleStrip = nullptr;
+
+    void destroy();
+    bool isValid() const { return bindings != nullptr; }
+
+    // Get pipeline for specific topology
+    QRhiGraphicsPipeline* getPipeline(QRhiGraphicsPipeline::Topology topology) const;
+};
+
 // Texture resource bundle
 struct RhiTextureData {
     QRhiTexture *texture = nullptr;
@@ -123,10 +143,21 @@ public:
     // Accessors
     QRhi *rhi() const { return m_rhi; }
 
-    // Pipeline accessors
-    RhiPipeline &colorPipeline() { return m_colorPipeline; }
-    RhiPipeline &colorsPipeline() { return m_colorsPipeline; }
-    RhiPipeline &texturePipeline() { return m_texturePipeline; }
+    // Pipeline set accessors (support multiple topologies)
+    RhiPipelineSet &colorPipelineSet() { return m_colorPipelineSet; }
+    RhiPipelineSet &colorsPipelineSet() { return m_colorsPipelineSet; }
+    RhiPipelineSet &texturePipelineSet() { return m_texturePipelineSet; }
+
+    // Convenience methods to get pipeline for specific topology
+    QRhiGraphicsPipeline* getColorPipeline(QRhiGraphicsPipeline::Topology topology) {
+        return m_colorPipelineSet.getPipeline(topology);
+    }
+    QRhiGraphicsPipeline* getColorsPipeline(QRhiGraphicsPipeline::Topology topology) {
+        return m_colorsPipelineSet.getPipeline(topology);
+    }
+    QRhiGraphicsPipeline* getTexturePipeline(QRhiGraphicsPipeline::Topology topology) {
+        return m_texturePipelineSet.getPipeline(topology);
+    }
 
     // Texture accessors
     RhiTextureData &texture(int index);
@@ -146,6 +177,15 @@ private:
     bool createColorsPipeline();
     bool createTexturePipeline();
 
+    // Helper to create a single pipeline variant with specific topology
+    QRhiGraphicsPipeline* createPipelineVariant(
+        const QShader &vertShader,
+        const QShader &fragShader,
+        QRhiShaderResourceBindings *bindings,
+        const QRhiVertexInputLayout &inputLayout,
+        QRhiGraphicsPipeline::Topology topology,
+        bool enableBlending = false);
+
     // Shader loading
     QShader loadShader(const QString &name);
 
@@ -153,10 +193,10 @@ private:
     QRhi *m_rhi = nullptr;
     QRhiRenderPassDescriptor *m_renderPass = nullptr;
 
-    // Pipelines
-    RhiPipeline m_colorPipeline;      // Single color rendering
-    RhiPipeline m_colorsPipeline;     // Per-vertex color interpolation
-    RhiPipeline m_texturePipeline;    // Textured rendering
+    // Pipeline sets (support multiple topologies)
+    RhiPipelineSet m_colorPipelineSet;      // Single color rendering
+    RhiPipelineSet m_colorsPipelineSet;     // Per-vertex color interpolation
+    RhiPipelineSet m_texturePipelineSet;    // Textured rendering
 
     // Textures
     QVector<RhiTextureData> m_textures;
