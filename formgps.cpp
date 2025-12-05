@@ -1345,7 +1345,12 @@ void FormGPS::FileSaveEverythingBeforeClosingField(bool saveVehicle)
     //turn off patching
     for (int j = 0; j < triStrip.count(); j++)
     {
-        if (triStrip[j].isDrawing) triStrip[j].TurnMappingOff(tool, fd, mainWindow, this);
+        if (triStrip[j].isDrawing)
+            triStrip[j].TurnMappingOff(tool.secColors[j],
+                                       tool.section[triStrip[j].currentStartSectionNum].leftPoint,
+                                       tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+                                       tool.patchSaveList,
+                                       this);
     }
     lock.unlock();
     qDebug() << "Test4";

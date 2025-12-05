@@ -430,13 +430,14 @@ void FormGPS::onBtnAgIO_clicked(){
     qDebug()<<"AgIO";
 }
 void FormGPS::onBtnResetTool_clicked(){
-               CVehicle::instance()->tankPos.heading = CVehicle::instance()->fixHeading;
-               CVehicle::instance()->tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(CVehicle::instance()->tankPos.heading) * (tool.tankTrailingHitchLength));
-               CVehicle::instance()->tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(CVehicle::instance()->tankPos.heading) * (tool.tankTrailingHitchLength));
+    //probably should be a method of tool somehow.
+   tool.tankPos.heading = CVehicle::instance()->fixHeading;
+   tool.tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
+   tool.tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
 
-               CVehicle::instance()->toolPivotPos.heading = CVehicle::instance()->tankPos.heading;
-               CVehicle::instance()->toolPivotPos.easting = CVehicle::instance()->tankPos.easting + (sin(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength));
-               CVehicle::instance()->toolPivotPos.northing = CVehicle::instance()->tankPos.northing + (cos(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength));
+   tool.toolPivotPos.heading = tool.tankPos.heading;
+   tool.toolPivotPos.easting = tool.tankPos.easting + (sin(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
+   tool.toolPivotPos.northing = tool.tankPos.northing + (cos(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
 }
 
 // ===== Q_INVOKABLE MODERN ACTIONS - Qt 6.8 Implementation =====

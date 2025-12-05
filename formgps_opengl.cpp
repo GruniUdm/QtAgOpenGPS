@@ -708,13 +708,13 @@ void FormGPS::oglMain_Paint()
                         gldraw1.clear();
 
                         //left side of triangle
-                        QVector3D pt((CVehicle::instance()->cosSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + CVehicle::instance()->toolPos.easting,
-                                (CVehicle::instance()->sinSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + CVehicle::instance()->toolPos.northing, 0);
+                        QVector3D pt((CVehicle::instance()->cosSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + tool.toolPos.easting,
+                                (CVehicle::instance()->sinSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + tool.toolPos.northing, 0);
                         gldraw1.append(pt);
 
                         //Right side of triangle
-                        pt = QVector3D((CVehicle::instance()->cosSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + CVehicle::instance()->toolPos.easting,
-                           (CVehicle::instance()->sinSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + CVehicle::instance()->toolPos.northing, 0);
+                        pt = QVector3D((CVehicle::instance()->cosSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + tool.toolPos.easting,
+                           (CVehicle::instance()->sinSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + tool.toolPos.northing, 0);
                         gldraw1.append(pt);
 
                         int last = triStrip[j].patchList[patchCount -1]->count();
@@ -806,13 +806,13 @@ void FormGPS::oglMain_Paint()
             //setup for tool rendering
             QMatrix4x4 toolmv = vehiclemv;
             //translate down to the hitch pin
-            toolmv.translate(sin(v.fixHeading) * hitchLength,
-                         cos(v.fixHeading) * hitchLength, 0);
+            toolmv.translate(sin(CVehicle::instance()->fixHeading) * tool.hitchLength,
+                         cos(CVehicle::instance()->fixHeading) * tool.hitchLength, 0);
 
-
-
-
-            tool.DrawTool(gl,modelview, projection,isJobStarted(),camera,tram);
+            tool.DrawTool(gl,toolmv, projection,
+                          isJobStarted(),
+                          CVehicle::instance()->isHydLiftOn(),
+                          camera,tram);
             double steerangle;
             if(timerSim.isActive()) steerangle = sim.steerangleAve;
             else steerangle = mc.actualSteerAngleDegrees;
@@ -1046,10 +1046,10 @@ void FormGPS::oglBack_Paint()
 
     //rotate camera so heading matched fix heading in the world
     //gl->glRotated(toDegrees(CVehicle::instance()->fixHeadingSection), 0, 0, 1);
-    modelview.rotate(glm::toDegrees(CVehicle::instance()->toolPos.heading), 0, 0, 1);
+    modelview.rotate(glm::toDegrees(tool.toolPos.heading), 0, 0, 1);
 
-    modelview.translate(-CVehicle::instance()->toolPos.easting - sin(CVehicle::instance()->toolPos.heading) * 15,
-                        -CVehicle::instance()->toolPos.northing - cos(CVehicle::instance()->toolPos.heading) * 15,
+    modelview.translate(-tool.toolPos.easting - sin(tool.toolPos.heading) * 15,
+                        -tool.toolPos.northing - cos(tool.toolPos.heading) * 15,
                         0);
 
     //patch color
