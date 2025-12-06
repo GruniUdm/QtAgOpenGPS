@@ -1112,9 +1112,9 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             // Phase 1.3: Lock only for final assignment (< 50ms)
             lock.lockForWrite();
             this->setDistanceUser(0.0);
-            triStrip[0].triangleList = localTriangleList.isEmpty() ? QSharedPointer<PatchTriangleList>(new PatchTriangleList) : localTriangleList.last();
-            triStrip[0].patchList = localPatchList;
-            triStrip[0].patchBoundingBoxList = localPatchBoundingBoxList;
+            tool.triStrip[0].triangleList = localTriangleList.isEmpty() ? QSharedPointer<PatchTriangleList>(new PatchTriangleList) : localTriangleList.last();
+            tool.triStrip[0].patchList = localPatchList;
+            tool.triStrip[0].patchBoundingBoxList = localPatchBoundingBoxList;
             patchesBufferDirty = true;
             m_workedAreaTotal = m_workedAreaTotal + localWorkedArea;
             lock.unlock();

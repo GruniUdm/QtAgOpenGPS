@@ -1528,16 +1528,15 @@ void FormGPS::onDeleteAppliedArea_clicked()
                 this->setWorkedAreaTotal(0);
 
                 //clear the section lists
-                for (int j = 0; j < triStrip.count(); j++)
+                for (int j = 0; j < tool.triStrip.count(); j++)
                 {
                     //clean out the lists
-                    triStrip[j].patchList.clear();
-                    triStrip[j].triangleList.clear();
+                    tool.triStrip[j].patchList.clear();
+                    tool.triStrip[j].triangleList.clear();
                 }
 
                 patchesBufferDirty=true;
                 //patchSaveList.clear();
-                //shouldn't we clean out triStrip too?
                 tool.patchSaveList.clear();
 
                 FileCreateContour();

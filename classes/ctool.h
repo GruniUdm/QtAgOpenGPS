@@ -16,6 +16,11 @@ class CVehicle;
 class CCamera;
 class CTram;
 
+
+struct PatchBuffer;
+struct PatchInBuffer;
+
+
 class CTool
 {
 public:
@@ -85,7 +90,6 @@ public:
     Vec3 toolPos;
     Vec3 tankPos;
 
-
     //moved the following from the main form to here
     CSection section[MAXSECTIONS+1];
     btnStates sectionButtonState[65];
@@ -99,8 +103,12 @@ public:
     int blockage_max_i;
     int blockage_blocked;
 
-    //list of the list of patch data individual triangles for field sections
+    //list of patches to save to disk at next opportunity
     QVector<QSharedPointer<PatchTriangleList>> patchSaveList;
+
+    //list of patches, one per section.  each one has a list of
+    //individual patches.
+    QVector<CPatches> triStrip = QVector<CPatches>( { CPatches() } );
 
     void sectionCalcWidths();
     void sectionCalcMulti();
@@ -116,6 +124,21 @@ public:
                   QMatrix4x4 projection,
                   bool isJobStarted, bool isHydLiftOn,
                   CCamera &camera, CTram &tram);
+
+    void DrawPatches(QOpenGLFunctions *gl,
+                     QMatrix4x4 mvp,
+                     int patchCounter,
+                     const CCamera &camera,
+                     QElapsedTimer &swFrame
+                     );
+
+    void clearPatches();
+    //void loadPatches();
+
+private:
+    QVector<QVector<PatchInBuffer>> patchesInBuffer;
+    QVector<PatchBuffer> patchBuffer;
+    bool patchesBufferDirty = true;
 
 };
 

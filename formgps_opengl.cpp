@@ -431,9 +431,9 @@ void FormGPS::oglMain_Paint()
                 patchBuffer.clear();
                 patchesInBuffer.clear();
 
-                for (int j = 0; j < triStrip.count(); j++) {
+                for (int j = 0; j < tool.triStrip.count(); j++) {
                     patchesInBuffer.append(QVector<PatchInBuffer>());
-                    for (int k=0; k < triStrip[j].patchList.size()-1 ; k++) {
+                    for (int k=0; k < tool.triStrip[j].patchList.size()-1 ; k++) {
                         patchesInBuffer[j].append({ -1, -1, -1});
                     }
                 }
@@ -478,13 +478,13 @@ void FormGPS::oglMain_Paint()
             bool enough_indices = false;
 
             //draw patches j= # of sections
-            for (int j = 0; j < triStrip.count(); j++)
+            for (int j = 0; j < tool.triStrip.count(); j++)
             {
                 //every time the section turns off and on is a new patch
-                int patchCount = triStrip[j].patchList.size();
+                int patchCount = tool.triStrip[j].patchList.size();
 
                 for (int k=0; k < patchCount; k++) {
-                    QSharedPointer<PatchTriangleList> triList = triStrip[j].patchList[k];
+                    QSharedPointer<PatchTriangleList> triList = tool.triStrip[j].patchList[k];
                     QVector3D *triListRaw = triList->data();
                     int count2 = triList->size();
                     //total_vertices += count2;
@@ -693,34 +693,34 @@ void FormGPS::oglMain_Paint()
                 if (isDay) color.setAlpha(152);
                 else color.setAlpha(76);
 
-                for (int j = 0; j < triStrip.count(); j++)
+                for (int j = 0; j < tool.triStrip.count(); j++)
                 {
-                    if (triStrip[j].isDrawing)
+                    if (tool.triStrip[j].isDrawing)
                     {
                         if (tool.isMultiColoredSections)
                         {
                             color = tool.secColors[j];
                             color.setAlpha(152);
                         }
-                        patchCount = triStrip[j].patchList.count();
+                        patchCount = tool.triStrip[j].patchList.count();
 
                        //draw the triangle in each triangle strip
                         gldraw1.clear();
 
                         //left side of triangle
-                        QVector3D pt((CVehicle::instance()->cosSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + tool.toolPos.easting,
-                                (CVehicle::instance()->sinSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + tool.toolPos.northing, 0);
+                        QVector3D pt((CVehicle::instance()->cosSectionHeading * tool.section[tool.triStrip[j].currentStartSectionNum].positionLeft) + tool.toolPos.easting,
+                                (CVehicle::instance()->sinSectionHeading * tool.section[tool.triStrip[j].currentStartSectionNum].positionLeft) + tool.toolPos.northing, 0);
                         gldraw1.append(pt);
 
                         //Right side of triangle
-                        pt = QVector3D((CVehicle::instance()->cosSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + tool.toolPos.easting,
-                           (CVehicle::instance()->sinSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + tool.toolPos.northing, 0);
+                        pt = QVector3D((CVehicle::instance()->cosSectionHeading * tool.section[tool.triStrip[j].currentEndSectionNum].positionRight) + tool.toolPos.easting,
+                           (CVehicle::instance()->sinSectionHeading * tool.section[tool.triStrip[j].currentEndSectionNum].positionRight) + tool.toolPos.northing, 0);
                         gldraw1.append(pt);
 
-                        int last = triStrip[j].patchList[patchCount -1]->count();
+                        int last = tool.triStrip[j].patchList[patchCount -1]->count();
                         //antenna
-                        gldraw1.append(QVector3D((*triStrip[j].patchList[patchCount-1])[last-2].x(), (*triStrip[j].patchList[patchCount-1])[last-2].y(),0));
-                        gldraw1.append(QVector3D((*triStrip[j].patchList[patchCount-1])[last-1].x(), (*triStrip[j].patchList[patchCount-1])[last-1].y(),0));
+                        gldraw1.append(QVector3D((*tool.triStrip[j].patchList[patchCount-1])[last-2].x(), (*tool.triStrip[j].patchList[patchCount-1])[last-2].y(),0));
+                        gldraw1.append(QVector3D((*tool.triStrip[j].patchList[patchCount-1])[last-1].x(), (*tool.triStrip[j].patchList[patchCount-1])[last-1].y(),0));
 
                         gldraw1.draw(gl, projection*modelview, color, GL_TRIANGLE_STRIP, 1.0f);
                     }
@@ -754,12 +754,12 @@ void FormGPS::oglMain_Paint()
             if (bnd.bndList.count() > 0 || bnd.isBndBeingMade == true)
             {
                 //draw Boundaries
-                bnd.DrawFenceLines(*CVehicle::instance(), mc, gl, projection*modelview, mainWindow);
+                bnd.DrawFenceLines(CVehicle::instance()->pivotAxlePos, gl, projection*modelview, mainWindow);
 
                 //draw the turnLines
                 if (this->isYouTurnBtnOn() && ! this->isContourBtnOn())
                 {
-                    bnd.DrawFenceLines(*CVehicle::instance(),mc,gl,projection*modelview, mainWindow);
+                    bnd.DrawFenceLines(CVehicle::instance()->pivotAxlePos, gl,projection*modelview, mainWindow);
 
                     color.setRgbF(0.3555f, 0.6232f, 0.20f); //TODO: not sure what color turnLines should actually be
 
@@ -1064,15 +1064,15 @@ void FormGPS::oglBack_Paint()
     double pivNminus = CVehicle::instance()->pivotAxlePos.northing - 50;
 
     //draw patches j= # of sections
-    for (int j = 0; j < triStrip.count(); j++)
+    for (int j = 0; j < tool.triStrip.count(); j++)
     {
         //every time the section turns off and on is a new patch
-        int patchCount = triStrip[j].patchList.size();
+        int patchCount = tool.triStrip[j].patchList.size();
 
         if (patchCount > 0)
         {
             //for every new chunk of patch
-            for (QSharedPointer<QVector<QVector3D>> &triList: triStrip[j].patchList)
+            for (QSharedPointer<QVector<QVector3D>> &triList: tool.triStrip[j].patchList)
             {
                 isDraw = false;
                 int count2 = triList->size();
@@ -1287,15 +1287,15 @@ void FormGPS::oglZoom_Paint()
         //draw patches
         int count2;
 
-        for (int j = 0; j < triStrip.count(); j++)
+        for (int j = 0; j < tool.triStrip.count(); j++)
         {
             //every time the section turns off and on is a new patch
-            int patchCount = triStrip[j].patchList.count();
+            int patchCount = tool.triStrip[j].patchList.count();
 
             if (patchCount > 0)
             {
                 //for every new chunk of patch
-                for (auto &triList: triStrip[j].patchList)
+                for (auto &triList: tool.triStrip[j].patchList)
                 {
                     //draw the triangle in each triangle strip
                     gldraw.clear();
@@ -1552,15 +1552,15 @@ void FormGPS::calculateMinMax()
     else
     {
         //draw patches j= # of sections
-        for (int j = 0; j < triStrip.count(); j++)
+        for (int j = 0; j < tool.triStrip.count(); j++)
         {
             //every time the section turns off and on is a new patch
-            int patchCount = triStrip[j].patchList.count();
+            int patchCount = tool.triStrip[j].patchList.count();
 
             if (patchCount > 0)
             {
                 //for every new chunk of patch
-                for (QSharedPointer<PatchTriangleList> &triList: triStrip[j].patchList)
+                for (QSharedPointer<PatchTriangleList> &triList: tool.triStrip[j].patchList)
                 {
                     int count2 = triList->count();
                     for (int i = 0; i < count2; i += 3)

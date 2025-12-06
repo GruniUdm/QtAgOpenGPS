@@ -1217,15 +1217,15 @@ void FormGPS::JobClose()
     */
 
     //clear the section lists
-    for (int j = 0; j < triStrip.count(); j++)
+    for (int j = 0; j < tool.triStrip.count(); j++)
     {
         //clean out the lists
-        triStrip[j].patchList.clear();
-        triStrip[j].triangleList.clear();
+        tool.triStrip[j].patchList.clear();
+        tool.triStrip[j].triangleList.clear();
     }
 
-    triStrip.clear();
-    triStrip.append(CPatches());
+    tool.triStrip.clear();
+    tool.triStrip.append(CPatches());
 
     //invalidate all GPU patch list buffers. Must be destroyed
     //in the OpenGL context, so deferred to the next drawing
@@ -1343,12 +1343,12 @@ void FormGPS::FileSaveEverythingBeforeClosingField(bool saveVehicle)
     }
 
     //turn off patching
-    for (int j = 0; j < triStrip.count(); j++)
+    for (int j = 0; j < tool.triStrip.count(); j++)
     {
-        if (triStrip[j].isDrawing)
-            triStrip[j].TurnMappingOff(tool.secColors[j],
-                                       tool.section[triStrip[j].currentStartSectionNum].leftPoint,
-                                       tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+        if (tool.triStrip[j].isDrawing)
+            tool.triStrip[j].TurnMappingOff(tool.secColors[j],
+                                       tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
+                                       tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
                                        tool.patchSaveList,
                                        this);
     }

@@ -1664,19 +1664,19 @@ void FormGPS::processSectionLookahead() {
         //                   { pivEplus, pivNminus}, {pivEminus, pivNminus }});
 
         //draw patches j= # of sections
-        for (int j = 0; j < this->triStrip.count(); j++)
+        for (int j = 0; j < tool.triStrip.count(); j++)
         {
             //every time the section turns off and on is a new patch
-            int patchCount = this->triStrip[j].patchList.size();
+            int patchCount = tool.triStrip[j].patchList.size();
 
             if (patchCount > 0)
             {
                 //for every new chunk of patch
-                for (int k = 0; k < this->triStrip[j].patchList.size() ; k++)
+                for (int k = 0; k < tool.triStrip[j].patchList.size() ; k++)
                 {
                     isDraw = false;
-                    QSharedPointer<PatchTriangleList> triList = this->triStrip[j].patchList[k];
-                    QSharedPointer<PatchBoundingBox> bb = this->triStrip[j].patchBoundingBoxList[k];
+                    QSharedPointer<PatchTriangleList> triList = tool.triStrip[j].patchList[k];
+                    QSharedPointer<PatchBoundingBox> bb = tool.triStrip[j].patchBoundingBoxList[k];
 
                     /*
                     QPolygonF patchBox({{ (*bb).minx, (*bb).miny }, {(*bb).maxx, (*bb).miny},
@@ -2210,12 +2210,12 @@ void FormGPS::processSectionLookahead() {
         //everything off
         if (number == 0)
         {
-            for (int j = 0; j < triStrip.count(); j++)
+            for (int j = 0; j < tool.triStrip.count(); j++)
             {
-                if (triStrip[j].isDrawing)
-                    triStrip[j].TurnMappingOff(tool.secColors[j],
-                                               tool.section[triStrip[j].currentStartSectionNum].leftPoint,
-                                               tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+                if (tool.triStrip[j].isDrawing)
+                    tool.triStrip[j].TurnMappingOff(tool.secColors[j],
+                                               tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
+                                               tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
                                                tool.patchSaveList,
                                                this);
             }
@@ -2229,11 +2229,11 @@ void FormGPS::processSectionLookahead() {
                 if (!tool.section[j].isMappingOn) continue;
 
                 //do we need more patches created
-                if (triStrip.count() < sectionOnOffZones + 1)
-                    triStrip.append(CPatches());
+                if (tool.triStrip.count() < sectionOnOffZones + 1)
+                    tool.triStrip.append(CPatches());
 
                 //set this strip start edge to edge of this section
-                triStrip[sectionOnOffZones].newStartSectionNum = j;
+                tool.triStrip[sectionOnOffZones].newStartSectionNum = j;
 
                 while ((j + 1) < tool.numOfSections && tool.section[j + 1].isMappingOn)
                 {
@@ -2241,14 +2241,14 @@ void FormGPS::processSectionLookahead() {
                 }
 
                 //set the edge of this section to be end edge of strp
-                triStrip[sectionOnOffZones].newEndSectionNum = j;
+                tool.triStrip[sectionOnOffZones].newEndSectionNum = j;
                 sectionOnOffZones++;
             }
 
             //count current patch strips being made
-            for (int j = 0; j < triStrip.count(); j++)
+            for (int j = 0; j < tool.triStrip.count(); j++)
             {
-                if (triStrip[j].isDrawing) patchingZones++;
+                if (tool.triStrip[j].isDrawing) patchingZones++;
             }
 
             //tests for creating new strips or continuing
@@ -2258,8 +2258,8 @@ void FormGPS::processSectionLookahead() {
             {
                 for (int j = 0; j < sectionOnOffZones; j++)
                 {
-                    if (triStrip[j].newStartSectionNum > triStrip[j].currentEndSectionNum
-                        || triStrip[j].newEndSectionNum < triStrip[j].currentStartSectionNum)
+                    if (tool.triStrip[j].newStartSectionNum > tool.triStrip[j].currentEndSectionNum
+                        || tool.triStrip[j].newEndSectionNum < tool.triStrip[j].currentStartSectionNum)
                         isOk = false;
                 }
             }
@@ -2268,23 +2268,23 @@ void FormGPS::processSectionLookahead() {
             {
                 for (int j = 0; j < sectionOnOffZones; j++)
                 {
-                    if (triStrip[j].newStartSectionNum != triStrip[j].currentStartSectionNum
-                        || triStrip[j].newEndSectionNum != triStrip[j].currentEndSectionNum)
+                    if (tool.triStrip[j].newStartSectionNum != tool.triStrip[j].currentStartSectionNum
+                        || tool.triStrip[j].newEndSectionNum != tool.triStrip[j].currentEndSectionNum)
                     {
                         //if (tool.isSectionsNotZones)
                         {
-                            triStrip[j].AddMappingPoint(tool.secColors[j],
-                                                        tool.section[triStrip[j].currentStartSectionNum].leftPoint,
-                                                        tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+                            tool.triStrip[j].AddMappingPoint(tool.secColors[j],
+                                                        tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
+                                                        tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
                                                         tool.patchSaveList,
                                                         this);
                         }
 
-                        triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
-                        triStrip[j].currentEndSectionNum = triStrip[j].newEndSectionNum;
-                        triStrip[j].AddMappingPoint(tool.secColors[j],
-                                                    tool.section[triStrip[j].currentStartSectionNum].leftPoint,
-                                                    tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+                        tool.triStrip[j].currentStartSectionNum = tool.triStrip[j].newStartSectionNum;
+                        tool.triStrip[j].currentEndSectionNum = tool.triStrip[j].newEndSectionNum;
+                        tool.triStrip[j].AddMappingPoint(tool.secColors[j],
+                                                    tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
+                                                    tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
                                                     tool.patchSaveList,
                                                     this);
                     }
@@ -2293,23 +2293,23 @@ void FormGPS::processSectionLookahead() {
             else
             {
                 //too complicated, just make new strips
-                for (int j = 0; j < triStrip.count(); j++)
+                for (int j = 0; j < tool.triStrip.count(); j++)
                 {
-                    if (triStrip[j].isDrawing)
-                        triStrip[j].TurnMappingOff(tool.secColors[j],
-                                                   tool.section[triStrip[j].currentStartSectionNum].leftPoint,
-                                                   tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+                    if (tool.triStrip[j].isDrawing)
+                        tool.triStrip[j].TurnMappingOff(tool.secColors[j],
+                                                   tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
+                                                   tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
                                                    tool.patchSaveList,
                                                    this);
                 }
 
                 for (int j = 0; j < sectionOnOffZones; j++)
                 {
-                    triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
-                    triStrip[j].currentEndSectionNum = triStrip[j].newEndSectionNum;
-                    triStrip[j].TurnMappingOn(tool.secColors[j],
-                                              tool.section[triStrip[j].currentStartSectionNum].leftPoint,
-                                              tool.section[triStrip[j].currentEndSectionNum].rightPoint);
+                    tool.triStrip[j].currentStartSectionNum = tool.triStrip[j].newStartSectionNum;
+                    tool.triStrip[j].currentEndSectionNum = tool.triStrip[j].newEndSectionNum;
+                    tool.triStrip[j].TurnMappingOn(tool.secColors[j],
+                                              tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
+                                              tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint);
                 }
             }
         }
@@ -2319,32 +2319,32 @@ void FormGPS::processSectionLookahead() {
             for (int j = 0; j < tool.numOfSections; j++)
             {
                 //do we need more patches created
-                if (triStrip.count() < sectionOnOffZones + 1)
-                    triStrip.append(CPatches());
+                if (tool.triStrip.count() < sectionOnOffZones + 1)
+                    tool.triStrip.append(CPatches());
 
                 //set this strip start edge to edge of this section
-                triStrip[sectionOnOffZones].newStartSectionNum = j;
+                tool.triStrip[sectionOnOffZones].newStartSectionNum = j;
 
                 //set the edge of this section to be end edge of strp
-                triStrip[sectionOnOffZones].newEndSectionNum = j;
+                tool.triStrip[sectionOnOffZones].newEndSectionNum = j;
                 sectionOnOffZones++;
 
                 if (!tool.section[j].isMappingOn)
                 {
-                    if (triStrip[j].isDrawing)
-                        triStrip[j].TurnMappingOff(tool.secColors[j],
-                                                   tool.section[triStrip[j].currentStartSectionNum].leftPoint,
-                                                   tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+                    if (tool.triStrip[j].isDrawing)
+                        tool.triStrip[j].TurnMappingOff(tool.secColors[j],
+                                                   tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
+                                                   tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
                                                    tool.patchSaveList,
                                                    this);
                 }
                 else
                 {
-                    triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
-                    triStrip[j].currentEndSectionNum = triStrip[j].newEndSectionNum;
-                    triStrip[j].TurnMappingOn(tool.secColors[j],
-                                              tool.section[triStrip[j].currentStartSectionNum].leftPoint,
-                                              tool.section[triStrip[j].currentEndSectionNum].rightPoint);
+                    tool.triStrip[j].currentStartSectionNum = tool.triStrip[j].newStartSectionNum;
+                    tool.triStrip[j].currentEndSectionNum = tool.triStrip[j].newEndSectionNum;
+                    tool.triStrip[j].TurnMappingOn(tool.secColors[j],
+                                              tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
+                                              tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint);
                 }
             }
         }
@@ -2777,19 +2777,19 @@ void FormGPS::AddSectionOrPathPoints()
     patchCounter = 0;
 
     //send the current and previous GPS fore/aft corrected fix to each section
-    for (int j = 0; j < triStrip.count(); j++)
+    for (int j = 0; j < tool.triStrip.count(); j++)
     {
-        if (triStrip[j].isDrawing)
+        if (tool.triStrip[j].isDrawing)
         {
             if (this->isPatchesChangingColor())
             {
-                triStrip[j].numTriangles = 64;
+                tool.triStrip[j].numTriangles = 64;
                 this->setIsPatchesChangingColor(false);
             }
 
-            triStrip[j].AddMappingPoint(tool.secColors[j],
-                                        tool.section[triStrip[j].currentStartSectionNum].leftPoint,
-                                        tool.section[triStrip[j].currentEndSectionNum].rightPoint,
+            tool.triStrip[j].AddMappingPoint(tool.secColors[j],
+                                        tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
+                                        tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
                                         tool.patchSaveList,
                                         this);
             patchCounter++;

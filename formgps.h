@@ -958,8 +958,6 @@ public:
     //Time to do fix position update and draw routine
     double HzTime = 5;
 
-    QVector<CPatches> triStrip = QVector<CPatches>( { CPatches() } );
-
 
     //used to update the screen status bar etc
     int statusUpdateCounter = 1;
