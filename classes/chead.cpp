@@ -74,7 +74,7 @@ void CBoundary::WhereAreToolLookOnPoints(CVehicle &vehicle, CTool &tool)
     {
         bool isLookRightIn = false;
 
-        Vec3 toolFix = CVehicle::instance()->toolPos;
+        Vec3 toolFix = tool.toolPos;
         double sinAB = sin(toolFix.heading);
         double cosAB = cos(toolFix.heading);
 

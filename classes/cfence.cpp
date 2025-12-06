@@ -51,12 +51,12 @@ bool CBoundary::IsPointInsideFenceArea(Vec2 testPoint) const
 
 }
 
-void CBoundary::DrawFenceLines(const CVehicle &v, const CModuleComm &mc,
+void CBoundary::DrawFenceLines(Vec3 pivot,
                                QOpenGLFunctions *gl,
                                  const QMatrix4x4 &mvp, QObject *mainWindow)
 {
     QColor color;
-    Vec3 pivot = v.pivotAxlePos;
+    //Vec3 pivot = v.pivotAxlePos;
     float line_width = SettingsManager::instance()->display_lineWidth();
     float line_width2;
 
