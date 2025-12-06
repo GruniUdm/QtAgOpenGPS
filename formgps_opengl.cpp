@@ -800,7 +800,7 @@ void FormGPS::oglMain_Paint()
             // ✅ PHASE 6.3.0: InterfaceProperty guaranteed to be initialized before rendering
 
             QMatrix4x4 vehiclemv = modelview;
-            modelview.translate(CVehicle::instance()->pivotAxlePos.easting,
+            vehiclemv.translate(CVehicle::instance()->pivotAxlePos.easting,
                                 CVehicle::instance()->pivotAxlePos.northing, 0);
 
             //setup for tool rendering
