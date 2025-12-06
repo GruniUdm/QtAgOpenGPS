@@ -1536,8 +1536,10 @@ void FormGPS::processSectionLookahead() {
 
         //draw 245 green for the tram tracks
         QPen pen(QColor::fromRgb(0,245,0));
+        pen.setCosmetic(true);
         pen.setWidth(8);
         painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
 
         if (this->tram.displayMode !=0 && this->tram.displayMode !=0 && (this->track.idx() > -1))
         {
@@ -1548,8 +1550,8 @@ void FormGPS::processSectionLookahead() {
                 {
                     lines.clear();
                     for (int h = 1; h < this->tram.tramList[i]->count(); h++) {
-                        lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, (*this->tram.tramList[i])[h-1]),
-                                           glm::backbuffer_world_to_screen(mvp, (*this->tram.tramList[i])[h])));
+                        lines.append(QLineF(vec2point((*this->tram.tramList[i])[h-1]),
+                                            vec2point((*this->tram.tramList[i])[h])));
                     }
 
                     painter.drawLines(lines);
@@ -1560,13 +1562,13 @@ void FormGPS::processSectionLookahead() {
             {
                 lines.clear();
                 for (int h = 0; h < this->tram.tramBndOuterArr.count(); h++) {
-                    lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, this->tram.tramBndOuterArr[h-1]),
-                                       glm::backbuffer_world_to_screen(mvp, this->tram.tramBndOuterArr[h])));
+                    lines.append(QLineF(vec2point(this->tram.tramBndOuterArr[h-1]),
+                                        vec2point(this->tram.tramBndOuterArr[h])));
                 }
 
                 for (int h = 0; h < this->tram.tramBndInnerArr.count(); h++) {
-                    lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, this->tram.tramBndInnerArr[h-1]),
-                                       glm::backbuffer_world_to_screen(mvp, this->tram.tramBndInnerArr[h])));
+                    lines.append(QLineF(vec2point(this->tram.tramBndInnerArr[h-1]),
+                                        vec2point(this->tram.tramBndInnerArr[h])));
                 }
 
                 painter.drawLines(lines);
@@ -1579,14 +1581,14 @@ void FormGPS::processSectionLookahead() {
             ////draw the bnd line
             if (this->bnd.bndList[0].fenceLine.count() > 3)
             {
-                DrawPolygonBack(painter, mvp, this->bnd.bndList[0].fenceLine,3,QColor::fromRgb(0,240,0));
+                DrawPolygonBack(painter, this->bnd.bndList[0].fenceLine,3,QColor::fromRgb(0,240,0));
             }
 
 
             //draw 250 green for the headland
             if (this->isHeadlandOn() && this->bnd.isSectionControlledByHeadland)
             {
-                DrawPolygonBack(painter, mvp, this->bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
+                DrawPolygonBack(painter, this->bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
             }
         }
 

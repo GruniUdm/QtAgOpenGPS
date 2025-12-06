@@ -102,8 +102,8 @@ void DrawPolygon(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec3> &polygon, f
 
 void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec2> &polygon, float size, QColor color);
 void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec3> &polygon, float size, QColor color);
-void DrawPolygonBack(QPainter &painter, QMatrix4x4 mvp, QVector<Vec2> &polygon, float size, QColor color);
-void DrawPolygonBack(QPainter &painter, QMatrix4x4 mvp, QVector<Vec3> &polygon, float size, QColor color);
+void DrawPolygonBack(QPainter &painter, QVector<Vec2> &polygon, float size, QColor color);
+void DrawPolygonBack(QPainter &painter, QVector<Vec3> &polygon, float size, QColor color);
 
 class GLHelperOneColorBack: public QVector<QVector3D>
 {
@@ -181,4 +181,13 @@ inline static void CalcFrustum(QMatrix4x4 mvp, double *frustum) {
     frustum[22] = mvp(3,2) - mvp(1,2);
     frustum[23] = mvp(3,3) - mvp(1,3);
 }
+
+inline static QPointF vec2point(Vec2 v) {
+    return QPointF(v.easting, v.northing);
+}
+
+inline static QPointF vec2point(Vec3 v) {
+    return QPointF(v.easting, v.northing);
+}
+
 #endif // GLUTILS_H

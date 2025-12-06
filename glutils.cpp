@@ -496,24 +496,25 @@ void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec3> &polygo
     }
 }
 
-void DrawPolygonBack(QPainter &painter, QMatrix4x4 mvp, QVector<Vec2> &polygon, float size, QColor color)
+void DrawPolygonBack(QPainter &painter, QVector<Vec2> &polygon, float size, QColor color)
 {
     if (polygon.count() > 2)
     {
         QPolygonF p;
         for (int i = 0; i < polygon.count() ; i++)
         {
-            p.append(glm::backbuffer_world_to_screen(mvp, polygon[i]));
+            p.append(QPointF(polygon[i].easting, polygon[i].northing));
         }
         QPen pen(color);
         pen.setWidth(size);
+        pen.setCosmetic(true);
         painter.setPen(pen);
         painter.setBrush(Qt::NoBrush);
         painter.drawPolygon(p);
     }
 }
 
-void DrawPolygonBack(QPainter &painter, QMatrix4x4 mvp, QVector<Vec3> &polygon, float size, QColor color)
+void DrawPolygonBack(QPainter &painter, QVector<Vec3> &polygon, float size, QColor color)
 {
     if (polygon.count() > 2)
     {
@@ -521,10 +522,11 @@ void DrawPolygonBack(QPainter &painter, QMatrix4x4 mvp, QVector<Vec3> &polygon, 
 
         for (int i = 0; i < polygon.count() ; i++)
         {
-            p.append(glm::backbuffer_world_to_screen(mvp, polygon[i]));
+            p.append(QPointF(polygon[i].easting, polygon[i].northing));
         }
         QPen pen(color);
         pen.setWidth(size);
+        pen.setCosmetic(true);
         painter.setPen(pen);
         painter.setBrush(Qt::NoBrush);
         painter.drawPolygon(p);
