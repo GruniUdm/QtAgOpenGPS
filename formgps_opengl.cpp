@@ -541,9 +541,9 @@ void FormGPS::oglMain_Paint()
                         //qDebug(qgl) << "Last patch, not cached.";
                         continue;
                     } else {
-                        if (j >= patchesInBuffer.size())
+                        while (j >= patchesInBuffer.size())
                             patchesInBuffer.append(QVector<PatchInBuffer>());
-                        if (k >= patchesInBuffer[j].size())
+                        while (k >= patchesInBuffer[j].size())
                             patchesInBuffer[j].append({ -1, -1, -1});
 
                         if (patchesInBuffer[j][k].which == -1) {
