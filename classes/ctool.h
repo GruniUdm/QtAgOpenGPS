@@ -110,6 +110,8 @@ public:
     //individual patches.
     QVector<CPatches> triStrip = QVector<CPatches>( { CPatches() } );
 
+    bool patchesBufferDirty = true;
+
     void sectionCalcWidths();
     void sectionCalcMulti();
     void sectionSetPositions();
@@ -132,13 +134,19 @@ public:
                      QElapsedTimer &swFrame
                      );
 
+    void DrawPatchesTriangles(QOpenGLFunctions *gl,
+                     QMatrix4x4 mvp,
+                     int patchCounter,
+                     const CCamera &camera,
+                     QElapsedTimer &swFrame
+                     );
+
     void clearPatches();
     //void loadPatches();
 
 private:
     QVector<QVector<PatchInBuffer>> patchesInBuffer;
     QVector<PatchBuffer> patchBuffer;
-    bool patchesBufferDirty = true;
 
 };
 

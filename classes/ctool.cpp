@@ -456,7 +456,6 @@ void CTool::DrawPatches(QOpenGLFunctions *gl,
             QVector3D *triListRaw = triList->data();
             int count2 = triList->size();
             //total_vertices += count2;
-            draw_patch = false;
 
             draw_patch = false;
             for (int i = 1; i < count2; i += 3) //first vertice is color
@@ -696,6 +695,240 @@ void CTool::DrawPatches(QOpenGLFunctions *gl,
             }
         }
     }
+
+}
+
+void CTool::DrawPatchesTriangles(QOpenGLFunctions *gl,
+                                 QMatrix4x4 mvp,
+                                 int patchCounter,
+                                 const CCamera &camera,
+                                 QElapsedTimer &swFrame)
+{
+    GLHelperOneColor gldraw1;
+    int currentPatchBuffer = 0;
+    double frustum[24];
+    QColor color;
+
+    double sinSectionHeading = sin(-toolPivotPos.heading);
+    double cosSectionHeading = cos(-toolPivotPos.heading);
+
+    CalcFrustum(mvp, frustum);
+    if (patchesBufferDirty) {
+        //destroy all GPU patches buffers
+        patchBuffer.clear();
+        patchesInBuffer.clear();
+
+        for (int j = 0; j < triStrip.count(); j++) {
+            patchesInBuffer.append(QVector<PatchInBuffer>());
+            for (int k=0; k < triStrip[j].patchList.size()-1 ; k++) {
+                patchesInBuffer[j].append({ -1, -1, -1});
+            }
+        }
+
+        patchBuffer.append( { QOpenGLBuffer(), 0} );
+        patchBuffer[0].patchBuffer.create();
+        patchBuffer[0].patchBuffer.bind();
+        patchBuffer[0].patchBuffer.allocate(PATCHBUFFER_LENGTH); //16 MB
+        patchBuffer[0].patchBuffer.release();
+        if (!patchesInBuffer.count()) {
+            patchesInBuffer.append(QVector<PatchInBuffer>());
+            patchesInBuffer[0].append({ -1, -1, -1});
+        }
+        currentPatchBuffer = 0;
+
+        patchesBufferDirty = false;
+    } else {
+        currentPatchBuffer = patchBuffer.count() - 1;
+    }
+
+    bool draw_patch = false;
+    //int total_vertices = 0;
+
+    bool enough_indices = false;
+
+    //draw patches j= # of sections
+    for (int j = 0; j < triStrip.count(); j++)
+    {
+        //every time the section turns off and on is a new patch
+        int patchCount = triStrip[j].patchList.size();
+
+        for (int k=0; k < patchCount; k++) {
+            QSharedPointer<PatchTriangleList> triList = triStrip[j].patchList[k];
+            QVector3D *triListRaw = triList->data();
+            int count2 = triList->size();
+            //total_vertices += count2;
+            draw_patch = false;
+
+            draw_patch = false;
+            for (int i = 1; i < count2; i += 3) //first vertice is color
+            {
+                //determine if point is in frustum or not, if < 0, its outside so abort, z always is 0
+                //x is easting, y is northing
+                if (frustum[0] * triListRaw[i].x() + frustum[1] * triListRaw[i].y() + frustum[3] <= 0)
+                    continue;//right
+                if (frustum[4] * triListRaw[i].x() + frustum[5] * triListRaw[i].y() + frustum[7] <= 0)
+                    continue;//left
+                if (frustum[16] * triListRaw[i].x() + frustum[17] * triListRaw[i].y() + frustum[19] <= 0)
+                    continue;//bottom
+                if (frustum[20] * triListRaw[i].x() + frustum[21] * triListRaw[i].y() + frustum[23] <= 0)
+                    continue;//top
+                if (frustum[8] * triListRaw[i].x() + frustum[9] * triListRaw[i].y() + frustum[11] <= 0)
+                    continue;//far
+                if (frustum[12] * triListRaw[i].x() + frustum[13] * triListRaw[i].y() + frustum[15] <= 0)
+                    continue;//near
+
+                //point is in frustum so draw the entire patch. The downside of triangle strips.
+                draw_patch = true;
+                break;
+            }
+
+            if (!draw_patch) continue;
+            color.setRgbF((*triList)[0].x(), (*triList)[0].y(), (*triList)[0].z(), 0.596 );
+
+            if (k == patchCount - 1) {
+                //If this is the last patch in the list, it's currently being worked on
+                //so we don't save this one.
+                QOpenGLBuffer triBuffer;
+
+                triBuffer.create();
+                triBuffer.bind();
+
+                //triangle lists are now using QVector3D, so we can allocate buffers
+                //directly from list data.
+
+                //first vertice is color, so we should skip it
+                triBuffer.allocate(triList->data() + 1, (count2-1) * sizeof(QVector3D));
+                //triBuffer.allocate(triList->data(), count2 * sizeof(QVector3D));
+                triBuffer.release();
+
+                //draw the triangles in each triangle strip
+                glDrawArraysColor(gl,mvp,
+                                  GL_TRIANGLE_STRIP, color,
+                                  triBuffer,GL_FLOAT,count2-1);
+
+                triBuffer.destroy();
+                //qDebug(ctool) << "Last patch, not cached.";
+                continue;
+            } else {
+                while (j >= patchesInBuffer.size())
+                    patchesInBuffer.append(QVector<PatchInBuffer>());
+                while (k >= patchesInBuffer[j].size())
+                    patchesInBuffer[j].append({ -1, -1, -1});
+
+                if (patchesInBuffer[j][k].which == -1) {
+                    //patch is not in one of the big buffers yet, so allocate it.
+                    if ((patchBuffer[currentPatchBuffer].length + (count2-3) * 3 * VERTEX_SIZE) >= PATCHBUFFER_LENGTH ) {
+                        //add a new buffer because the current one is full.
+                        currentPatchBuffer ++;
+                        patchBuffer.append( { QOpenGLBuffer(), 0 });
+                        patchBuffer[currentPatchBuffer].patchBuffer.create();
+                        patchBuffer[currentPatchBuffer].patchBuffer.bind();
+                        patchBuffer[currentPatchBuffer].patchBuffer.allocate(PATCHBUFFER_LENGTH); //4MB
+                        patchBuffer[currentPatchBuffer].patchBuffer.release();
+                    }
+
+                    //there's room for it in the current patch buffer
+                    patchBuffer[currentPatchBuffer].patchBuffer.bind();
+                    QVector<ColorVertex> temp_patch;
+                    temp_patch.reserve(count2-1);
+                    for (int i=1; i < count2-2; i++) {
+                        if (i % 2) {  //preserve winding order
+                            temp_patch.append( { triListRaw[i], QVector4D(triListRaw[0], 0.596) } );
+                            temp_patch.append( { triListRaw[i+1], QVector4D(triListRaw[0], 0.596) } );
+                            temp_patch.append( { triListRaw[i+2], QVector4D(triListRaw[0], 0.596) } );
+                        } else {
+                            temp_patch.append( { triListRaw[i], QVector4D(triListRaw[0], 0.596) } );
+                            temp_patch.append( { triListRaw[i+2], QVector4D(triListRaw[0], 0.596) } );
+                            temp_patch.append( { triListRaw[i+1], QVector4D(triListRaw[0], 0.596) } );
+                        }
+                    }
+                    patchBuffer[currentPatchBuffer].patchBuffer.write(patchBuffer[currentPatchBuffer].length,
+                                                                      temp_patch.data(),
+                                                                      (count2-3) * 3 * VERTEX_SIZE);
+                    patchesInBuffer[j][k].which = currentPatchBuffer;
+                    patchesInBuffer[j][k].offset = patchBuffer[currentPatchBuffer].length / VERTEX_SIZE;
+                    patchesInBuffer[j][k].length = count2 - 1;
+                    patchBuffer[currentPatchBuffer].length += (count2 - 1) * 3 * VERTEX_SIZE;
+                    qDebug() << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
+                    patchBuffer[currentPatchBuffer].patchBuffer.release();
+                }
+            }
+        }
+
+        qDebug(ctool) << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
+
+        if (patchBuffer.size() && patchBuffer[0].length) {
+            interpColorShader->bind();
+            interpColorShader->setUniformValue("mvpMatrix", mvp);
+            interpColorShader->setUniformValue("pointSize", 0.0f);
+
+            for (int i=0; i < patchBuffer.count(); i++) {
+                if (patchBuffer[i].length) {
+                    //draw entire buffer of triangles since it's fast.
+
+                    patchBuffer[i].patchBuffer.bind();
+
+                    //set up vertex positions in buffer for the shader
+                    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), nullptr); //3D vector
+                    gl->glEnableVertexAttribArray(0);
+
+                    gl->glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float))); //color
+                    gl->glEnableVertexAttribArray(1);
+
+                    gl->glDrawArrays(GL_TRIANGLES,0,patchBuffer[i].length / VERTEX_SIZE);
+                    patchBuffer[i].patchBuffer.release();
+                }
+            }
+            interpColorShader->release();
+        }
+    }
+
+    // the follow up to sections patches
+    int patchCount = 0;
+
+    if (patchCounter > 0)
+    {
+        color = SettingsManager::instance()->display_colorSectionsDay();
+        if (SettingsManager::instance()->display_isDayMode())
+            color.setAlpha(152);
+        else
+            color.setAlpha(76);
+
+        for (int j = 0; j < triStrip.count(); j++)
+        {
+            if (triStrip[j].isDrawing)
+            {
+                if (isMultiColoredSections)
+                {
+                    color = secColors[j];
+                    color.setAlpha(152);
+                }
+                patchCount = triStrip[j].patchList.count();
+
+               //draw the triangle in each triangle strip
+                gldraw1.clear();
+
+                //left side of triangle
+                QVector3D pt((cosSectionHeading * section[triStrip[j].currentStartSectionNum].positionLeft) + toolPos.easting,
+                             (sinSectionHeading * section[triStrip[j].currentStartSectionNum].positionLeft) + toolPos.northing, 0);
+                gldraw1.append(pt);
+
+                //Right side of triangle
+                pt = QVector3D((cosSectionHeading * section[triStrip[j].currentEndSectionNum].positionRight) + toolPos.easting,
+                               (sinSectionHeading * section[triStrip[j].currentEndSectionNum].positionRight) + toolPos.northing, 0);
+                gldraw1.append(pt);
+
+                int last = triStrip[j].patchList[patchCount -1]->count();
+                //antenna
+                gldraw1.append(QVector3D((*triStrip[j].patchList[patchCount-1])[last-2].x(), (*triStrip[j].patchList[patchCount-1])[last-2].y(),0));
+                gldraw1.append(QVector3D((*triStrip[j].patchList[patchCount-1])[last-1].x(), (*triStrip[j].patchList[patchCount-1])[last-1].y(),0));
+
+                gldraw1.draw(gl, mvp, color, GL_TRIANGLE_STRIP, 1.0f);
+            }
+        }
+    }
+
+
 
 }
 

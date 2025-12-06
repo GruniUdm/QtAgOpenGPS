@@ -1115,7 +1115,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             tool.triStrip[0].triangleList = localTriangleList.isEmpty() ? QSharedPointer<PatchTriangleList>(new PatchTriangleList) : localTriangleList.last();
             tool.triStrip[0].patchList = localPatchList;
             tool.triStrip[0].patchBoundingBoxList = localPatchBoundingBoxList;
-            patchesBufferDirty = true;
+            tool.patchesBufferDirty = true;
             m_workedAreaTotal = m_workedAreaTotal + localWorkedArea;
             lock.unlock();
         }
