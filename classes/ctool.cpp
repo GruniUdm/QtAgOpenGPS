@@ -5,11 +5,13 @@
 #include "glutils.h"
 #include "ccamera.h"
 #include "ctram.h"
+#include "cboundary.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QLabel>
+#include <QPainter>
 
 extern QLabel *overlapPixelsWindow;
 extern QOpenGLShaderProgram *interpColorShader;
@@ -927,10 +929,229 @@ void CTool::DrawPatchesTriangles(QOpenGLFunctions *gl,
             }
         }
     }
-
-
-
 }
+
+QImage CTool::DrawPatchesBackQP(const CTram &tram,
+                                const CBoundary &bnd,
+                                Vec3 pivotAxlePos,
+                                bool isHeadlandOn,
+                                bool onTrack
+                                )
+{
+    QMatrix4x4 projection;
+    QMatrix4x4 modelview;
+    QImage back_image;
+
+    //  Load the identity.
+    projection.setToIdentity();
+
+    //projection.perspective(6.0f,1,1,6000);
+    projection.perspective(glm::toDegrees((double)0.06f), 1.666666666666f, 50.0f, 520.0f);
+
+    if (back_image.isNull())
+        back_image = QImage(QSize(500,300), QImage::Format_RGBX8888);
+
+    back_image.fill(0);
+
+    //gl->glLoadIdentity();					// Reset The View
+    modelview.setToIdentity();
+
+    //back the camera up
+    modelview.translate(0, 0, -500);
+
+    //rotate camera so heading matched fix heading in the world
+    //gl->glRotated(toDegrees(CVehicle::instance()->fixHeadingSection), 0, 0, 1);
+    modelview.rotate(glm::toDegrees(toolPos.heading), 0, 0, 1);
+
+    modelview.translate(-toolPos.easting - sin(toolPos.heading) * 15,
+                        -toolPos.northing - cos(toolPos.heading) * 15,
+                        0);
+
+    // Viewport: NDC to pixel coordinates
+    QMatrix4x4 viewport;
+    viewport.translate(500 / 2.0f, 300 / 2.0f, 0);
+    viewport.scale(500 / 2.0f, -300 / 2.0f, 1);  // negative Y to flip
+
+    QMatrix4x4 mvp = projection * modelview;
+
+
+    //patch color
+    QColor patchColor = QColor::fromRgbF(0.0f, 0.5f, 0.0f);
+
+    QPainter painter;
+    if (!painter.begin(&back_image)) {
+        qWarning() << "New GPS frame but back buffer painter is still working on the last one.";
+        return QImage();
+    }
+
+    painter.setRenderHint(QPainter::Antialiasing, false);
+
+    painter.setPen(Qt::NoPen);
+
+    QMatrix4x4 vmvp = viewport * mvp;
+
+    painter.setTransform(vmvp.toTransform());
+    painter.setBrush(QBrush(patchColor));
+
+    QPolygonF triangle;
+    QList<QLineF> lines;
+
+    //to draw or not the triangle patch
+    bool isDraw;
+
+    double pivEplus = pivotAxlePos.easting + 50;
+    double pivEminus = pivotAxlePos.easting - 50;
+    double pivNplus = pivotAxlePos.northing + 50;
+    double pivNminus = pivotAxlePos.northing - 50;
+
+    //QPolygonF frustum({{pivEminus, pivNplus}, {pivEplus, pivNplus },
+    //                   { pivEplus, pivNminus}, {pivEminus, pivNminus }});
+
+    //draw patches j= # of sections
+    for (int j = 0; j < triStrip.count(); j++)
+    {
+        //every time the section turns off and on is a new patch
+        int patchCount = triStrip[j].patchList.size();
+
+        if (patchCount > 0)
+        {
+            //for every new chunk of patch
+            for (int k = 0; k < triStrip[j].patchList.size() ; k++)
+            {
+                isDraw = false;
+                QSharedPointer<PatchTriangleList> triList = triStrip[j].patchList[k];
+                QSharedPointer<PatchBoundingBox> bb = triStrip[j].patchBoundingBoxList[k];
+
+                /*
+                QPolygonF patchBox({{ (*bb).minx, (*bb).miny }, {(*bb).maxx, (*bb).miny},
+                                    { (*bb).maxx, (*bb).maxy }, { (*bb).minx, (*bb).maxy } });
+
+                if (frustum.intersects(patchBox))
+                    isDraw = true;
+                */
+
+                int count2 = triList->size();
+                for (int i = 1; i < count2; i+=3)
+                {
+                    //determine if point is in frustum or not
+                    if ((*triList)[i].x() > pivEplus)
+                        continue;
+                    if ((*triList)[i].x() < pivEminus)
+                        continue;
+                    if ((*triList)[i].y() > pivNplus)
+                        continue;
+                    if ((*triList)[i].y() < pivNminus)
+                        continue;
+
+                    //point is in frustum so draw the entire patch
+                    isDraw = true;
+                    break;
+                }
+
+                if (isDraw)
+                {
+                    triangle.clear();
+                    //triangle strip to polygon:
+                    //first two vertices, then every other one to the end
+                    //then from the end back to vertex #3, but every other one.
+
+                    triangle.append(QPointF((*triList)[1].x(), (*triList)[1].y()));
+                    triangle.append(QPointF((*triList)[2].x(), (*triList)[2].y()));
+
+                    //even vertices after first two
+                    for (int i=4; i < count2; i+=2) {
+                        triangle.append(QPointF((*triList)[i].x(), (*triList)[i].y()));
+                    }
+
+                    //odd remaining vertices
+                    for (int i=count2 - (count2 % 2 ? 2 : 1) ; i >2 ; i -=2) {
+                        triangle.append(QPointF((*triList)[i].x(), (*triList)[i].y()));
+                    }
+
+                    painter.drawPolygon(triangle);
+
+                }
+            }
+        }
+    }
+
+    //draw tool bar for debugging
+    //gldraw.clear();
+    //gldraw.append(QVector3D(tool.section[0].leftPoint.easting, tool.section[0].leftPoint.northing,0.5));
+    //gldraw.append(QVector3D(tool.section[tool.numOfSections-1].rightPoint.easting, tool.section[tool.numOfSections-1].rightPoint.northing,0.5));
+    //gldraw.draw(gl,projection*modelview,QColor::fromRgb(255,0,0),GL_LINE_STRIP,1);
+
+    //draw 245 green for the tram tracks
+    QPen pen(QColor::fromRgb(0,245,0));
+    pen.setCosmetic(true);
+    pen.setWidth(8);
+    painter.setPen(pen);
+    painter.setBrush(Qt::NoBrush);
+
+    if (tram.displayMode !=0 && tram.displayMode !=0 && onTrack)
+    {
+        if ((tram.displayMode == 1 || tram.displayMode == 2))
+        {
+
+            for (int i = 0; i < tram.tramList.count(); i++)
+            {
+                lines.clear();
+                for (int h = 1; h < tram.tramList[i]->count(); h++) {
+                    lines.append(QLineF(vec2point((*tram.tramList[i])[h-1]),
+                                        vec2point((*tram.tramList[i])[h])));
+                }
+
+                painter.drawLines(lines);
+            }
+        }
+
+        if (tram.displayMode == 1 || tram.displayMode == 3)
+        {
+            lines.clear();
+            for (int h = 0; h < tram.tramBndOuterArr.count(); h++) {
+                lines.append(QLineF(vec2point(tram.tramBndOuterArr[h-1]),
+                                    vec2point(tram.tramBndOuterArr[h])));
+            }
+
+            for (int h = 0; h < tram.tramBndInnerArr.count(); h++) {
+                lines.append(QLineF(vec2point(tram.tramBndInnerArr[h-1]),
+                                    vec2point(tram.tramBndInnerArr[h])));
+            }
+
+            painter.drawLines(lines);
+        }
+    }
+
+    //draw 240 green for boundary
+    if (bnd.bndList.count() > 0)
+    {
+        ////draw the bnd line
+        if (bnd.bndList[0].fenceLine.count() > 3)
+        {
+            DrawPolygonBack(painter, bnd.bndList[0].fenceLine,3,QColor::fromRgb(0,240,0));
+        }
+
+
+        //draw 250 green for the headland
+        if (isHeadlandOn && bnd.isSectionControlledByHeadland)
+        {
+            DrawPolygonBack(painter, bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
+        }
+    }
+
+    painter.end();
+
+    //TODO adjust coordinate transformations above to eliminate this step
+    back_image = back_image.mirrored().convertToFormat(QImage::Format_RGBX8888);
+
+    QImage temp = back_image.copy(rpXPosition, 0, rpWidth, 290 /*(int)rpHeight*/);
+    temp.setPixelColor(0,0,QColor::fromRgb(255,128,0));
+    //grnPix = temp; //only show clipped image
+    memcpy(grnPixels, temp.constBits(), temp.size().width() * temp.size().height() * 4);
+
+    return back_image;
+}
+
 
 void CTool::sectionCalcWidths()
 {
