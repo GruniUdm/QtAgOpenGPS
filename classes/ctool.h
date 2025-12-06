@@ -15,6 +15,7 @@ class QMatrix4x4;
 class CVehicle;
 class CCamera;
 class CTram;
+class CBoundary;
 
 
 struct PatchBuffer;
@@ -68,6 +69,10 @@ public:
     bool areAllSectionBtnsOn = true;
 
     bool isLeftSideInHeadland = true, isRightSideInHeadland = true, isSectionsNotZones;
+    bool isHeadlandClose = false;
+    bool isToolInHeadland, isToolOuterPointsInHeadland=false, isSectionControlledByHeadland;
+
+    ulong number = 0, lastNumber = 0;
 
     //read pixel values
     int rpXPosition;
@@ -141,12 +146,28 @@ public:
                      QElapsedTimer &swFrame
                      );
 
+    void DrawPatchesBack(QOpenGLFunctions *gl,
+                               QMatrix4x4 mvp);
+
+    QImage DrawPatchesBackQP(const CTram &tram, const CBoundary &bnd, Vec3 pivotAxlePos, bool isHeadlandOn, bool onTrack);
+
+    void NewPosition();
+    void ProcessLookAhead(bool isHeadlandOn, btnStates autoBtnState,
+                          const CBoundary &bnd, CTram &tram, QObject *formGPS);
+
     void clearPatches();
-    //void loadPatches();
+    void loadPatches();
+
+    void WhereAreToolCorners(const CBoundary &bnd);
+    void WhereAreToolLookOnPoints(const CBoundary &bnd);
+
 
 private:
+
     QVector<QVector<PatchInBuffer>> patchesInBuffer;
     QVector<PatchBuffer> patchBuffer;
+    LookAheadPixels grnPixels[150001];
+    LookAheadPixels *overPixels = new LookAheadPixels[160000]; //400x400
 
 };
 

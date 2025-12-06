@@ -101,7 +101,7 @@ void CPatches::TurnMappingOff(QColor section_color,
                               Vec2 leftPoint,
                               Vec2 rightPoint,
                               QVector<QSharedPointer<PatchTriangleList>> &patchSaveList,
-                              FormGPS *formGPS)
+                              QObject *formGPS)
 {
    AddMappingPoint(section_color, leftPoint, rightPoint, patchSaveList, formGPS);
 
@@ -129,7 +129,7 @@ void CPatches::AddMappingPoint(QColor section_color,
                                Vec2 vleftPoint,
                                Vec2 vrightPoint,
                                QVector<QSharedPointer<PatchTriangleList>> &patchSaveList,
-                               FormGPS *formGPS)
+                               QObject *formGPS)
 {
     //Vec2 vleftPoint = tool.section[currentStartSectionNum].leftPoint;
     //Vec2 vrightPoint = tool.section[currentEndSectionNum].rightPoint;
@@ -179,11 +179,11 @@ void CPatches::AddMappingPoint(QColor section_color,
     temp *= 0.5;
 
     // Update worked area using Q_PROPERTY
-    double currentTotal = formGPS->workedAreaTotal();
-    formGPS->setWorkedAreaTotal(currentTotal + temp);
+    double currentTotal = formGPS->property("workedAreaTotal").toDouble();
+    formGPS->setProperty("workedAreaTotal", currentTotal + temp);
 
-    double currentUser = formGPS->workedAreaTotalUser();
-    formGPS->setWorkedAreaTotalUser(currentUser + temp);
+    double currentUser = formGPS->property("workedAreaTotalUser").toDouble();
+    formGPS->setProperty("workedAreaTotalUser", currentUser + temp);
 
     if (numTriangles > 61)
     {

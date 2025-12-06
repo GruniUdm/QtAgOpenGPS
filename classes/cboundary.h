@@ -76,12 +76,7 @@ public:
 
     //CHead.cs
     void SetHydPosition(btnStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle); //TODO sounds, p_239
-    void WhereAreToolCorners(CTool &tool);
-    void WhereAreToolLookOnPoints(CVehicle &vehicle, CTool &tool);
-    bool IsPointInsideHeadArea(Vec2 pt);
-
-
-
+    bool IsPointInsideHeadArea(Vec2 pt) const;
 
     /*
     void findClosestBoundaryPoint(Vec2 fromPt, double headAB);

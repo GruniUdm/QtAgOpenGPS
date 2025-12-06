@@ -48,11 +48,11 @@ public:
                         Vec2 leftPoint,
                         Vec2 rightPoint,
                         QVector<QSharedPointer<PatchTriangleList> > &patchSaveList,
-                        class FormGPS *formGPS);
+                        QObject *formGPS);
     void AddMappingPoint(QColor section_color,
                          Vec2 rightPoint, Vec2 leftPoint,
                          QVector<QSharedPointer<PatchTriangleList> > &patchSaveList,
-                         class FormGPS *formGPS);
+                         QObject *formGPS);
 
 
 

@@ -6,6 +6,7 @@
 #include "ccamera.h"
 #include "ctram.h"
 #include "cboundary.h"
+#include "cvehicle.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
@@ -1286,4 +1287,45 @@ void CTool::sectionSetPositions()
 
     section[15].positionLeft = section_position16 + vehicle_toolOffset;
     section[15].positionRight = section_position17 + vehicle_toolOffset;
+}
+
+void CTool::ProcessLookAhead(bool isHeadlandOn,
+                             btnStates autoBtnState,
+                             const CBoundary &bnd,
+                             CTram &tram,
+                             QObject *formGPS)
+{
+}
+
+void CTool::WhereAreToolLookOnPoints(const CBoundary &bnd)
+{
+    if (bnd.bndList.count() > 0 && bnd.bndList[0].hdLine.count() > 0)
+    {
+        bool isLookRightIn = false;
+
+        Vec3 toolFix = toolPos;
+        double sinAB = sin(toolFix.heading);
+        double cosAB = cos(toolFix.heading);
+
+        //generated box for finding closest point
+        double pos = 0;
+        double mOn = (lookAheadDistanceOnPixelsRight - lookAheadDistanceOnPixelsLeft) / rpWidth;
+
+        for (int j = 0; j < numOfSections; j++)
+        {
+            bool isLookLeftIn = j == 0 ? bnd.IsPointInsideHeadArea(Vec2(
+                                    section[j].leftPoint.easting + (sinAB * lookAheadDistanceOnPixelsLeft * 0.1),
+                                    section[j].leftPoint.northing + (cosAB * lookAheadDistanceOnPixelsLeft * 0.1))) : isLookRightIn;
+
+            pos += section[j].rpSectionWidth;
+            double endHeight = (lookAheadDistanceOnPixelsLeft + (mOn * pos)) * 0.1;
+
+            isLookRightIn = bnd.IsPointInsideHeadArea(Vec2(
+                section[j].rightPoint.easting + (sinAB * endHeight),
+                section[j].rightPoint.northing + (cosAB * endHeight)));
+
+            section[j].isLookOnInHeadland = !isLookLeftIn && !isLookRightIn;
+        }
+    }
+
 }

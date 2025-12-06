@@ -1620,7 +1620,7 @@ void FormGPS::processSectionLookahead() {
     }
 
     //determine where the tool is wrt to headland
-    if (this->isHeadlandOn()) bnd.WhereAreToolCorners(tool);
+    if (this->isHeadlandOn()) tool.WhereAreToolCorners(bnd);
 
     //set the look ahead for hyd Lift in pixels per second
     tool.hydLiftLookAheadDistanceLeft = tool.farLeftSpeed * SettingsManager::instance()->vehicle_hydraulicLiftLookAhead() * 10;
@@ -1759,7 +1759,7 @@ void FormGPS::processSectionLookahead() {
 
     int endHeight = 1, startHeight = 1;
 
-    if (this->isHeadlandOn() && bnd.isSectionControlledByHeadland) bnd.WhereAreToolLookOnPoints(*CVehicle::instance(), tool);
+    if (this->isHeadlandOn() && tool.isSectionControlledByHeadland) tool.WhereAreToolLookOnPoints(bnd);
 
     for (int j = 0; j < tool.numOfSections; j++)
     {
