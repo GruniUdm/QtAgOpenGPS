@@ -422,6 +422,13 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qmldir
 # )
 # install(SCRIPT ${deploy_script})
 
+add_custom_command(TARGET QtAgOpenGPS POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/icons
+        $<TARGET_FILE_DIR:QtAgOpenGPS>/icons
+    COMMENT "Copying icons"
+)
+
 
 
 
