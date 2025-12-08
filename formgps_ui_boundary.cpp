@@ -160,3 +160,34 @@ void FormGPS::boundary_delete_all() {
     }
     boundary_update_list();
 }
+void FormGPS::boundary_new_from_KML(QString filename) {
+
+    // qDebug() << "Opening KML file:" << filename;
+    // QUrl fileUrl(filename);
+    // QString localPath = fileUrl.toLocalFile();
+    // FindLatLon(localPath);
+    // pn.latStart = latK;
+    // pn.lonStart = lonK;
+    // if (timerSim.isActive())
+    // {
+    //     pn.latitude = pn.latStart;
+    //     pn.longitude = pn.lonStart;
+    //     sim.latitude = pn.latStart;
+    //     settings->setValue(SETTINGS_gps_simLatitude, (double)pn.latStart);
+    //     sim.longitude = pn.lonStart;
+    //     settings->setValue(SETTINGS_gps_simLongitude, (double)pn.lonStart);
+    // }
+    // pn.SetLocalMetersPerDegree();
+    // LoadKMLBoundary(localPath);
+    // boundary_stop();
+}
+void FormGPS::addboundaryOSMPoint(double latitude, double longitude)
+{   qDebug()<<"point.easting";
+    double northing;
+    double easting;
+    pn.ConvertWGS84ToLocal(latitude, longitude, northing, easting, this);
+    //save the north & east as previous
+    Vec3 point(easting,northing,0);
+    bnd.bndBeingMadePts.append(point);
+    boundary_calculate_area();
+}

@@ -793,6 +793,16 @@ void FormGPS::boundaryDeleteAll() {
     boundary_delete_all();
 }
 
+void FormGPS::boundary_New_From_KML(QString filename) {
+    // Modern implementation
+    boundary_new_from_KML(filename);
+}
+
+void FormGPS::addBoundaryOSMPoint(double latitude, double longitude) {
+    // Modern implementation
+    addboundaryOSMPoint(latitude, longitude);
+}
+
 // ===== RecordedPath Management (6 methods) - ZERO EMIT =====
 
 void FormGPS::recordedPathUpdateLines() {

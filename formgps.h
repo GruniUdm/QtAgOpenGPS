@@ -1371,6 +1371,8 @@ public:
     Q_INVOKABLE void boundaryDeleteBoundary(int boundaryId);
     Q_INVOKABLE void boundarySetDriveThrough(int boundaryId, bool isDriveThrough);
     Q_INVOKABLE void boundaryDeleteAll();
+    Q_INVOKABLE void boundary_New_From_KML(QString filename);
+    Q_INVOKABLE void addBoundaryOSMPoint(double latitude, double longitude);
 
     // RecordedPath Management (6 methods) - ZERO EMIT
     Q_INVOKABLE void recordedPathUpdateLines();
@@ -1596,6 +1598,8 @@ public slots:
     void boundary_delete(int which_boundary);
     void boundary_set_drivethru(int which_boundary, bool drive_through);
     void boundary_delete_all();
+    void boundary_new_from_KML(QString filename);
+    void addboundaryOSMPoint(double latitude, double longitude);
 
     void headland_save();
     void headlines_save();
