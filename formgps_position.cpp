@@ -1379,7 +1379,7 @@ void FormGPS::UpdateFixPosition()
     }
 
     qDebug(qpos) << "Time before painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
-#if !defined(Q_OS_WINDOWS) //&& !defined(Q_OS_ANDROID)
+#if !defined(Q_OS_WINDOWS) && !defined(Q_OS_ANDROID)
     oglMain_Paint();
 #endif
 
