@@ -4,6 +4,7 @@
 //GUI to backend boundary interface
 #include "formgps.h"
 #include "qmlutil.h"
+#include "classes/settingsmanager.h"
 
 void FormGPS::boundary_calculate_area() {
     int ptCount = bnd.bndBeingMadePts.count();
@@ -162,24 +163,29 @@ void FormGPS::boundary_delete_all() {
 }
 void FormGPS::boundary_new_from_KML(QString filename) {
 
-    // qDebug() << "Opening KML file:" << filename;
-    // QUrl fileUrl(filename);
-    // QString localPath = fileUrl.toLocalFile();
-    // FindLatLon(localPath);
-    // pn.latStart = latK;
-    // pn.lonStart = lonK;
-    // if (timerSim.isActive())
-    // {
-    //     pn.latitude = pn.latStart;
-    //     pn.longitude = pn.lonStart;
-    //     sim.latitude = pn.latStart;
-    //     settings->setValue(SETTINGS_gps_simLatitude, (double)pn.latStart);
-    //     sim.longitude = pn.lonStart;
-    //     settings->setValue(SETTINGS_gps_simLongitude, (double)pn.lonStart);
-    // }
-    // pn.SetLocalMetersPerDegree();
-    // LoadKMLBoundary(localPath);
-    // boundary_stop();
+    qDebug() << "Opening KML file:" << filename;
+    QUrl fileUrl(filename);
+    QString localPath = fileUrl.toLocalFile();
+    FindLatLon(localPath);
+
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLatStart(latK);
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLonStart(lonK);
+    if (timerSim.isActive())
+    {
+        pn.latitude = this->latStart();
+        pn.longitude = this->lonStart();
+
+        sim.latitude = this->latStart();
+        SettingsManager::instance()->setGps_simLatitude(this->latStart());
+        sim.longitude = this->lonStart();
+        SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+    }
+    // Phase 6.3.1: Use PropertyWrapper for safe QObject access
+    pn.SetLocalMetersPerDegree(this);
+    LoadKMLBoundary(localPath);
+    boundary_stop();
 }
 void FormGPS::addboundaryOSMPoint(double latitude, double longitude)
 {   qDebug()<<"point.easting";

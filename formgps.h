@@ -1371,7 +1371,7 @@ public:
     Q_INVOKABLE void boundaryDeleteBoundary(int boundaryId);
     Q_INVOKABLE void boundarySetDriveThrough(int boundaryId, bool isDriveThrough);
     Q_INVOKABLE void boundaryDeleteAll();
-    Q_INVOKABLE void boundary_New_From_KML(QString filename);
+    Q_INVOKABLE void loadBoundaryFromKML(QString filename);
     Q_INVOKABLE void addBoundaryOSMPoint(double latitude, double longitude);
 
     // RecordedPath Management (6 methods) - ZERO EMIT
@@ -1439,7 +1439,7 @@ public:
 
     // void SendPgnToLoop(QByteArray byteData);  // ❌ REMOVED - AgIOService Workers only
     void DisableSim();
-    void LoadKMLBoundary(const std::string& filename);
+
     // void ReceiveFromAgIO(); // ❌ REMOVED - AgIOService Workers only
 
     /******************
@@ -1492,6 +1492,7 @@ private:
     double m_lastKnownLatitude = 0;
     double m_lastKnownLongitude = 0;
     const double GPS_JUMP_THRESHOLD_KM = 1.0;  // 1 km threshold for jump detection
+    double latK, lonK = 0.0;
 
 private:
     void setupGui();
@@ -1576,6 +1577,8 @@ public slots:
     void field_delete(QString field_name);
     void field_saveas(QString field_name);
     void field_load_json(QString field_name);
+    void FindLatLon(QString filename);
+    void LoadKMLBoundary(QString filename);
 
     //modules ui callback
     void modules_send_238();
@@ -1600,6 +1603,7 @@ public slots:
     void boundary_delete_all();
     void boundary_new_from_KML(QString filename);
     void addboundaryOSMPoint(double latitude, double longitude);
+
 
     void headland_save();
     void headlines_save();

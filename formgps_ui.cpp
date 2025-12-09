@@ -724,6 +724,7 @@ void FormGPS::fieldNewFrom(const QString& fieldName, const QString& sourceField,
 
 void FormGPS::fieldNewFromKML(const QString& fieldName, const QString& kmlPath) {
     // Modern implementation - same logic as field_new_from_KML(QString,QString)
+    qDebug() << fieldName << " " << kmlPath;
     field_new_from_KML(fieldName, kmlPath);
 }
 
@@ -793,7 +794,7 @@ void FormGPS::boundaryDeleteAll() {
     boundary_delete_all();
 }
 
-void FormGPS::boundary_New_From_KML(QString filename) {
+void FormGPS::loadBoundaryFromKML(QString filename) {
     // Modern implementation
     boundary_new_from_KML(filename);
 }
