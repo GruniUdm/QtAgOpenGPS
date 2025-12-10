@@ -433,6 +433,9 @@ void AgIOService::onUdpDataReady()
                 if (parsedData.pgnNumber == 211) {
                     if (!imuConnected()) setImuConnected(true);
                 }
+                if (parsedData.pgnNumber == 244 || parsedData.pgnNumber == 123) {
+                    if (!machineConnected()) setMachineConnected(true);
+                }
             }
         }
 

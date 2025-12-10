@@ -1013,6 +1013,7 @@ PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
     result.sourceType = "PGN";
     result.pgnNumber = 244;
     result.sentenceType = "Blockage_Data_IN";
+    result.moduleType = "Machine";
 
     // // Debug log (throttled to prevent spam at 40 Hz)
     // static int logCounter = 0;
