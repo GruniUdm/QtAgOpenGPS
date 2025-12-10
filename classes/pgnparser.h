@@ -74,6 +74,12 @@ public:
         QString sourceID;             // IP address (UDP) or COM port name (Serial)
         QString moduleType;           // "GPS", "IMU", "Steer", "Machine", "Unknown"
         qint64 timestampMs = 0;       // Reception timestamp (msecs since epoch)
+
+        // Blockage
+        int blockageseccount1[16];
+        int blockageseccount2[16];
+        int blockageseccount3[16];
+        int blockageseccount4[16];
     };
 
     explicit PGNParser(QObject *parent = nullptr);
@@ -144,6 +150,7 @@ private:
     ParsedData parsePGN121(const QByteArray& data); // Hello IMU (heartbeat only)
     ParsedData parsePGN123(const QByteArray& data); // Hello Machine (relay status)
     ParsedData parsePGN250(const QByteArray& data); // AutoSteer Sensor (pressure/current)
+    ParsedData parsePGN244(const QByteArray& data); // Blockage Data In
 
     // Legacy PGN parsers (incorrect byte extraction - to be removed)
     ParsedData parsePGN127(const QByteArray& data); // OLD - was extracting Source ID 0x7F

@@ -114,6 +114,8 @@ PGNParser::ParsedData PGNParser::parsePGN(const QByteArray& data) {
             return parsePGN253(data);
         case 250:  // 0xFA - AutoSteer Sensor (pressure/current monitoring)
             return parsePGN250(data);
+        case 244:  // 0xFA - AutoSteer Sensor (pressure/current monitoring)
+            return parsePGN244(data);
         case 211:  // 0xD3 - IMU Data (heading, roll, pitch)
             return parsePGN211(data);
         case 212:  // 0xD4 - IMU Disconnect (Phase 6.0.25)
@@ -966,6 +968,59 @@ PGNParser::ParsedData PGNParser::parsePGN253(const QByteArray& data) {
                  << "deg, PWM:" << result.pwmDisplay
                  << ", Switch:" << QString::number(result.switchByte, 16);
     }
+
+    return result;
+}
+
+PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
+    // PGN 253 (0xF4): Blockage Data
+    // Byte 0-1: Header (0x80 0x81)
+    // Byte 2: Source ID (0x7b = Machine)
+    // Byte 3: PGN (0xF4 = 244)
+    // Byte 4: Length (8 bytes)
+    // Byte 5: ID
+    // Byte 6: Section Number
+    // Byte 7-8: Section value
+    // Byte 9: Checksum
+
+    ParsedData result;
+
+    if (data.size() < 10) {
+        return result;
+    }
+
+    // Validate header and PGN
+    if ((unsigned char)data[0] != 0x80 || (unsigned char)data[1] != 0x81) {
+        return result;
+    }
+    if ((unsigned char)data[3] != 0xF4) {
+        return result;
+    }
+
+    // PHASE 6.0.23: Extract steer angle (bytes 5-6) - int16 x100
+    int i = data[6];
+
+    if (data[5] == 0 && i >= 0 && i < (sizeof(result.blockageseccount1) / sizeof(result.blockageseccount1[0])))
+        result.blockageseccount1[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
+    if (data[5] == 1 && i >= 0 && i < (sizeof(result.blockageseccount2) / sizeof(result.blockageseccount2[0])))
+        result.blockageseccount2[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
+    if (data[5] == 2 && i >= 0 && i < (sizeof(result.blockageseccount3) / sizeof(result.blockageseccount3[0])))
+        result.blockageseccount3[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
+    if (data[5] == 3 && i >= 0 && i < (sizeof(result.blockageseccount4) / sizeof(result.blockageseccount4[0])))
+        result.blockageseccount4[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
+
+    result.isValid = true;
+    result.sourceType = "PGN";
+    result.pgnNumber = 244;
+    result.sentenceType = "Blockage_Data_IN";
+
+    // // Debug log (throttled to prevent spam at 40 Hz)
+    // static int logCounter = 0;
+    // if (++logCounter % 200 == 0) {  // Log every 200th message (5 sec at 40Hz)
+    qDebug() << "PGN 244 - Blockage:" ;
+    //              << "deg, PWM:" << result.pwmDisplay
+    //              << ", Switch:" << QString::number(result.switchByte, 16);
+    // }
 
     return result;
 }
