@@ -973,11 +973,11 @@ PGNParser::ParsedData PGNParser::parsePGN253(const QByteArray& data) {
 }
 
 PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
-    // PGN 253 (0xF4): Blockage Data
+    // PGN 244 (0xF4): Blockage Data
     // Byte 0-1: Header (0x80 0x81)
     // Byte 2: Source ID (0x7b = Machine)
     // Byte 3: PGN (0xF4 = 244)
-    // Byte 4: Length (8 bytes)
+    // Byte 4: Length (4 bytes)
     // Byte 5: ID
     // Byte 6: Section Number
     // Byte 7-8: Section value
@@ -998,16 +998,16 @@ PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
     }
 
     // PHASE 6.0.23: Extract steer angle (bytes 5-6) - int16 x100
-    int i = data[6];
+    int arrayIndex = data[5]; // ID: 0, 1, 2, 3
+    int sectionIndex = data[6]; // Section Number
 
-    if (data[5] == 0 && i >= 0 && i < (sizeof(result.blockageseccount1) / sizeof(result.blockageseccount1[0])))
-        result.blockageseccount1[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
-    if (data[5] == 1 && i >= 0 && i < (sizeof(result.blockageseccount2) / sizeof(result.blockageseccount2[0])))
-        result.blockageseccount2[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
-    if (data[5] == 2 && i >= 0 && i < (sizeof(result.blockageseccount3) / sizeof(result.blockageseccount3[0])))
-        result.blockageseccount3[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
-    if (data[5] == 3 && i >= 0 && i < (sizeof(result.blockageseccount4) / sizeof(result.blockageseccount4[0])))
-        result.blockageseccount4[i] = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
+    // Проверяем корректность индексов
+    if (arrayIndex >= 0 && arrayIndex < result.blockageseccount.size() &&
+        sectionIndex >= 0 && sectionIndex < result.blockageseccount[arrayIndex].size()) {
+
+        qint16 value = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
+        result.blockageseccount[arrayIndex][sectionIndex] = value;
+    }
 
     result.isValid = true;
     result.sourceType = "PGN";
