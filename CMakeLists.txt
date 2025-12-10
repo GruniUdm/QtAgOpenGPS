@@ -55,7 +55,7 @@ qt_policy(SET QTP0004 NEW)
 # Qt standard project setup with internationalization support
 qt_standard_project_setup(REQUIRES 6.8
     I18N_SOURCE_LANGUAGE en
-    I18N_TRANSLATED_LANGUAGES en fr ru sr de
+    I18N_TRANSLATED_LANGUAGES en fr ru sr de hi kz
 )
 
 # Because modules are not in top folder//
