@@ -11,8 +11,13 @@
 #include <QDataStream>
 #include <QIODevice>
 #include <QTimer>
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY (settingsmanager, "settingsmanager.qtagopengps")
 
 SettingsManager* SettingsManager::s_instance = nullptr;
+QMutex SettingsManager::s_mutex;
+bool SettingsManager::s_cpp_created = false;
 
 SettingsManager::SettingsManager(QObject *parent) : QObject(parent), m_disableAutoSave(false)
 {
@@ -47,11 +52,35 @@ SettingsManager::~SettingsManager()
 
 SettingsManager* SettingsManager::instance()
 {
+    QMutexLocker locker(&s_mutex);
     if (!s_instance) {
         s_instance = new SettingsManager();
+        qDebug(settingsmanager) << "Singleton created by C++ code.";
+        s_cpp_created = true;
+        // ensure cleanup on app exit
+        QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+                         s_instance, []() {
+                             delete s_instance; s_instance = nullptr;
+                         });
     }
     return s_instance;
 }
+
+SettingsManager *SettingsManager::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
+    Q_UNUSED(jsEngine)
+
+    QMutexLocker locker(&s_mutex);
+
+    if(!s_instance) {
+        s_instance = new SettingsManager();
+        qDebug(settingsmanager) << "Singleton created by QML engine.";
+    } else if (s_cpp_created) {
+        qmlEngine->setObjectOwnership(s_instance, QQmlEngine::CppOwnership);
+    }
+
+    return s_instance;
+}
+
 
 // ===== JSON PROFILE SYSTEM (Vehicle/Field profiles) =====
 

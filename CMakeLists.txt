@@ -318,6 +318,8 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         ${SOUND_REL_PATHS}
         RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
         SOURCES rendering.h
+        SOURCES backend.h backend.cpp
+        SOURCES simpleproperty.h
 
     )  
 
