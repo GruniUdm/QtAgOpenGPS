@@ -19,6 +19,7 @@
 #include <QtQml/QJSEngine>
 #include <QtQml/qqmlregistration.h>
 #include <QLoggingCategory>
+#include "backend.h"
 
 QLabel *grnPixelsWindow;
 QLabel *overlapPixelsWindow;
@@ -71,50 +72,20 @@ int main(int argc, char *argv[])
     //from this version of AOG:
     QCoreApplication::setApplicationVersion("4.1.0");
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    qRegisterMetaTypeStreamOperators<QList<int> >("QList<int>");
-    qRegisterMetaTypeStreamOperators<QVector<int> >("QVector<int>");
+#error Requires Qt 6
 #endif
 
     // Phase 6.0.21: Register PGNParser::ParsedData for Qt::QueuedConnection signals
     qRegisterMetaType<PGNParser::ParsedData>("PGNParser::ParsedData");
 
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
-    
-    // PHASE 6.0.11.4: Manual QML singleton registration (workaround for qmldir limitation)
-    qmlRegisterSingletonType<SettingsManager>("AOG", 1, 0, "SettingsManager",
-        [](QQmlEngine *engine, QJSEngine *jsEngine) -> QObject* {
-            Q_UNUSED(engine)
-            Q_UNUSED(jsEngine)
-            return SettingsManager::instance();
-        });
 
-    qmlRegisterSingletonType<AgIOService>("AOG", 1, 0, "AgIOService",
-        [](QQmlEngine *engine, QJSEngine *jsEngine) -> QObject* {
-            Q_UNUSED(engine)
-            Q_UNUSED(jsEngine)
-            return AgIOService::instance();
-        });
+    // Explicit QML module registration (ensures static initializer runs)
+    // qt_add_qml_module generates this function in qtagopengps_qmltyperegistrations.cpp
+    extern void qml_register_types_AOG();
+    qml_register_types_AOG();
 
-    qmlRegisterSingletonType<CVehicle>("AOG", 1, 0, "VehicleInterface",
-        [](QQmlEngine *engine, QJSEngine *jsEngine) -> QObject* {
-            Q_UNUSED(engine)
-            Q_UNUSED(jsEngine)
-            return CVehicle::instance();
-        });
 
-    // AOGRenderer: Component registration (OpenGL renderers must be instantiated in QML)
-    qmlRegisterType<AOGRendererInSG>("AOG", 1, 0, "AOGRenderer");
-    qmlRegisterType<AOGRendererItem>("AOG", 1, 0, "AOGRendererItem");
-
-    // MASSIVE MIGRATION: settings = new Settings(); REMOVED
-    //AOGProperty::init_defaults();
-    // Qt6 Pure Architecture: Properties auto-initialize with defaults, no manual sync needed
-
-    // qDebug() << "=== PHASE 6.0.11.4 QML_SINGLETON AUTOMATIC REGISTRATION ===\n"
-    //          << "Qt 6.8 QML_SINGLETON pure architecture active\n"
-    //          << "CMAKE_AUTOMOC enabled for automatic registration\n"
-    //          << "All singletons: QML_ELEMENT + QML_SINGLETON + qt_add_qml_module\n"
-    //          << "Status: Phase 6.0.11.4 automatic registration active";
     FormGPS w;
     //w.show();
     
@@ -132,77 +103,6 @@ int main(int argc, char *argv[])
         //overlapPixelsWindow->setFixedHeight(900);
         overlapPixelsWindow->show();
     }
-
-// //auto start AgIO
-// #ifndef __ANDROID__
-//     QProcess process;
-//     if(SettingsManager::instance()->feature_isAgIOOn()) {
-//         QObject::connect(&process, &QProcess::errorOccurred, [&](QProcess::ProcessError error) {
-//             if (error == QProcess::Crashed) {
-//                 qDebug() << "AgIO Crashed! Continuing QtAgOpenGPS like normal";
-//             }
-//         });
-
-// //start the application
-// #ifdef __WIN32
-//         process.start("./QtAgIO.exe");
-
-// #else //assume linux
-//         process.start("./QtAgIO/QtAgIO");
-
-// #endif
-
-//         // Ensure process starts successfully
-//         if (!process.waitForStarted()) {
-//             qWarning() << "AgIO failed to start. Continuing QtAgOpenGPS like normal";
-//         }
-//     }
-// #endif
-
-
-
-
-    /*
-    CDubinsTurningRadius = 5.25;
-
-    CDubins c;
-    Vec3 start(0,0,0);
-    Vec3 goal (8,0,0);
-    QVector<Vec3> pathlist;
-    pathlist = c.GenerateDubins(start, goal);
-
-    foreach(Vec3 goal: pathlist) {
-        qDebug() << goal.easting<< ", "<<goal.northing;
-    }
-    return 0;
-    */
-
-    //Test file I/O
-    //w.fileSaveCurveLines();
-    //w.fileSaveBoundary();
-    //w.fileSaveABLines();
-    //w.fileSaveContour();
-    //w.fileSaveVehicle("/tmp/TestVehicle.txt");
-    //w.fileOpenField("49111 1 1 2020.Mar.21 09_58");
-    //w.ABLine.isBtnABLineOn = true;
-    //w.hd.isOn = true;
-
-    //w.ABLine.isBtnABLineOn = true;
-    //w.fileOpenTool("/tmp/TestTool1.txt");
-    //w.fileOpenVehicle("/tmp/TestVehicle2.txt");
-    //w.fileSaveTool("/tmp/TestTool.TXT");
-    /*
-    //testing to see how locale affects numbers in the stream writer
-    QFileInfo testit("/tmp/noexistant/file.txt");
-    qDebug() << testit.baseName();
-    qDebug() << testit.suffix();
-    QFile testFile("/tmp/test.txt");
-    testFile.open(QIODevice::WriteOnly);
-    QTextStream writer(&testFile);
-    writer << "Testing" << Qt::endl;
-    writer << qSetFieldWidth(3) << (double)3.1415926535 << Qt::endl;
-    testFile.close();
-    */
 
     return a.exec();
 }

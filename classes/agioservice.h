@@ -225,13 +225,10 @@ public:
                NOTIFY ntripUrlIPChanged BINDABLE bindableNtripUrlIP)
 
 public:
-    ~AgIOService();
-
     // C++ singleton access (strict singleton pattern - same as CTrack/CVehicle)
-    static AgIOService* instance() {
-        static AgIOService* s_instance = new AgIOService(nullptr);
-        return s_instance;
-    }
+    static AgIOService* instance();
+    static AgIOService *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
+
     
     // ============================================================================
     // RECTANGLE PATTERN: Manual Method Declarations for all 54 Properties
@@ -904,6 +901,15 @@ signals:
 private:
     // Private constructor for strict singleton pattern
     explicit AgIOService(QObject* parent = nullptr);
+    ~AgIOService();
+
+    //prevent copying
+    AgIOService(const AgIOService &) = delete;
+    AgIOService &operator=(const AgIOService &) = delete;
+
+    static AgIOService *s_instance;
+    static QMutex s_mutex;
+    static bool s_cpp_created;
 
     // ✅ CDC COMPLIANT: Private async methods for non-blocking subnet configuration
     void sendPGN201ToAllInterfaces();

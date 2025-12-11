@@ -12,6 +12,7 @@
 #include <QJSEngine>
 #include <QProperty>
 #include <QBindable>
+#include <QMutex>
 
 #include <QOpenGLBuffer>
 
@@ -30,7 +31,9 @@ class CTrack;
 class CVehicle: public QObject
 {
     Q_OBJECT
-    // QML registration handled manually in main.cpp
+    QML_NAMED_ELEMENT(VehicleInterface)
+    QML_SINGLETON
+
     // ===== QML PROPERTIES - Qt 6.8 QProperty + BINDABLE + NOTIFY =====
     Q_PROPERTY(bool isHydLiftOn READ isHydLiftOn WRITE setIsHydLiftOn NOTIFY isHydLiftOnChanged BINDABLE bindableIsHydLiftOn)
     Q_PROPERTY(bool hydLiftDown READ hydLiftDown WRITE setHydLiftDown NOTIFY hydLiftDownChanged BINDABLE bindableHydLiftDown)
@@ -42,11 +45,8 @@ class CVehicle: public QObject
 
 public:
     // C++ singleton access (strict singleton pattern - same as CTrack)
-    static CVehicle* instance() {
-        static CVehicle* s_instance = new CVehicle(nullptr);
-        return s_instance;
-    }
-
+    static CVehicle *instance();
+    static CVehicle *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
     bool isSteerAxleAhead;
     bool isPivotBehindAntenna;
@@ -250,6 +250,12 @@ private:
         // Formula: avgSpeed = newSpeed*0.75 + avgSpeed*0.25 means 25% of old value persists
         avgSpeed = 0.0;
     }
+
+    ~CVehicle() override=default;
+
+    static CVehicle *s_instance;
+    static QMutex s_mutex;
+    static bool s_cpp_created;
 
     // Qt 6.8 MIGRATION: Lazy initialization flag
     mutable bool m_settingsLoaded = false;
