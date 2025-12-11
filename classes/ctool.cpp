@@ -1295,6 +1295,570 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
                              CTram &tram,
                              QObject *formGPS)
 {
+#if 0
+      //determine where the tool is wrt to headland
+    if (isHeadlandOn) WhereAreToolCorners(bnd);
+
+    //set the look ahead for hyd Lift in pixels per second
+    hydLiftLookAheadDistanceLeft = farLeftSpeed * SettingsManager::instance()->vehicle_hydraulicLiftLookAhead() * 10;
+    hydLiftLookAheadDistanceRight = farRightSpeed * SettingsManager::instance()->vehicle_hydraulicLiftLookAhead() * 10;
+
+    if (hydLiftLookAheadDistanceLeft > 200) hydLiftLookAheadDistanceLeft = 200;
+    if (hydLiftLookAheadDistanceRight > 200) hydLiftLookAheadDistanceRight = 200;
+
+    lookAheadDistanceOnPixelsLeft = farLeftSpeed * lookAheadOnSetting * 10;
+    lookAheadDistanceOnPixelsRight = farRightSpeed * lookAheadOnSetting * 10;
+
+    if (lookAheadDistanceOnPixelsLeft > 200) lookAheadDistanceOnPixelsLeft = 200;
+    if (lookAheadDistanceOnPixelsRight > 200) lookAheadDistanceOnPixelsRight = 200;
+
+    lookAheadDistanceOffPixelsLeft = farLeftSpeed * lookAheadOffSetting * 10;
+    lookAheadDistanceOffPixelsRight = farRightSpeed * lookAheadOffSetting * 10;
+
+    if (lookAheadDistanceOffPixelsLeft > 160) lookAheadDistanceOffPixelsLeft = 160;
+    if (lookAheadDistanceOffPixelsRight > 160) lookAheadDistanceOffPixelsRight = 160;
+
+    //determine if section is in boundary and headland using the section left/right positions
+    bool isLeftIn = true, isRightIn = true;
+
+    if (bnd.bndList.count() > 0)
+    {
+        for (int j = 0; j < numOfSections; j++)
+        {
+            //only one first left point, the rest are all rights moved over to left
+            isLeftIn = j == 0 ? bnd.IsPointInsideFenceArea(section[j].leftPoint) : isRightIn;
+            isRightIn = bnd.IsPointInsideFenceArea(section[j].rightPoint);
+
+            if (isSectionOffWhenOut)
+            {
+                //merge the two sides into in or out
+                if (isLeftIn || isRightIn) section[j].isInBoundary = true;
+                else section[j].isInBoundary = false;
+            }
+            else
+            {
+                //merge the two sides into in or out
+                if (!isLeftIn || !isRightIn) section[j].isInBoundary = false;
+                else section[j].isInBoundary = true;
+            }
+        }
+    }
+
+    //determine farthest ahead lookahead - is the height of the readpixel line
+    double rpHeight = 0;
+    double rpOnHeight = 0;
+    double rpToolHeight = 0;
+
+    //pick the larger side
+    if (hydLiftLookAheadDistanceLeft > hydLiftLookAheadDistanceRight) rpToolHeight = hydLiftLookAheadDistanceLeft;
+    else rpToolHeight = hydLiftLookAheadDistanceRight;
+
+    if (lookAheadDistanceOnPixelsLeft > lookAheadDistanceOnPixelsRight) rpOnHeight = lookAheadDistanceOnPixelsLeft;
+    else rpOnHeight = lookAheadDistanceOnPixelsRight;
+
+    isHeadlandClose = false;
+
+    //clamp the height after looking way ahead, this is for switching off super section only
+    rpOnHeight = fabs(rpOnHeight);
+    rpToolHeight = fabs(rpToolHeight);
+
+    //10 % min is required for overlap, otherwise it never would be on.
+    int pixLimit = (int)((double)(section[0].rpSectionWidth * rpOnHeight) / (double)(5.0));
+    //bnd.isSectionControlledByHeadland = true;
+    if ((rpOnHeight < rpToolHeight && isHeadlandOn && bnd.isSectionControlledByHeadland)) rpHeight = rpToolHeight + 2;
+    else rpHeight = rpOnHeight + 2;
+    //qDebug(qpos) << bnd.isSectionControlledByHeadland << "headland sections";
+
+    if (rpHeight > 290) rpHeight = 290;
+    if (rpHeight < 8) rpHeight = 8;
+
+    //read the whole block of pixels up to max lookahead, one read only
+    //pixels are already read in another thread.
+
+    //determine if headland is in read pixel buffer left middle and right.
+    int start = 0, end = 0, tagged = 0, totalPixel = 0;
+
+    //slope of the look ahead line
+    double mOn = 0, mOff = 0;
+
+    //tram and hydraulics
+    if (tram.displayMode > 0 && width > SettingsManager::instance()->vehicle_trackWidth())
+    {
+        tram.controlByte = 0;
+        //1 pixels in is there a tram line?
+        if (tram.isOuter)
+        {
+            if (grnPixels[(int)(tram.halfWheelTrack * 10)].green == 245) tram.controlByte += 2;
+            if (grnPixels[rpWidth - (int)(tram.halfWheelTrack * 10)].green == 245) tram.controlByte += 1;
+        }
+        else
+        {
+            if (grnPixels[rpWidth / 2 - (int)(tram.halfWheelTrack * 10)].green == 245) tram.controlByte += 2;
+            if (grnPixels[rpWidth / 2 + (int)(tram.halfWheelTrack * 10)].green == 245) tram.controlByte += 1;
+        }
+    }
+    else tram.controlByte = 0;
+
+    //determine if in or out of headland, do hydraulics if on
+    if (isHeadlandOn)
+    {
+        //calculate the slope
+        double m = (hydLiftLookAheadDistanceRight - hydLiftLookAheadDistanceLeft) / rpWidth;
+        int height = 1;
+
+        for (int pos = 0; pos < rpWidth; pos++)
+        {
+            height = (int)(hydLiftLookAheadDistanceLeft + (m * pos)) - 1;
+            for (int a = pos; a < height * rpWidth; a += rpWidth)
+            {
+                if (grnPixels[a].green == 250)
+                {
+                    isHeadlandClose = true;
+                    goto GetOutTool;
+                }
+            }
+        }
+
+    GetOutTool: //goto
+
+        //is the tool completely in the headland or not
+        isToolInHeadland = bnd.isToolOuterPointsInHeadland && !isHeadlandClose;
+
+        //set hydraulics based on tool in headland or not
+        bnd.SetHydPosition(autoBtnState, p_239, *CVehicle::instance());
+
+        //set hydraulics based on tool in headland or not
+        bnd.SetHydPosition(autoBtnState, p_239, *CVehicle::instance());
+
+    }
+
+    ///////////////////////////////////////////   Section control        ssssssssssssssssssssss
+
+    int endHeight = 1, startHeight = 1;
+
+    if (isHeadlandOn && bnd.isSectionControlledByHeadland)
+        WhereAreToolLookOnPoints(bnd);
+
+    for (int j = 0; j < numOfSections; j++)
+    {
+        //Off or too slow or going backwards
+        if (sectionButtonState[j] == btnStates::Off || CVehicle::instance()->avgSpeed < SettingsManager::instance()->vehicle_slowSpeedCutoff() || section[j].speedPixels < 0)
+        {
+            section[j].sectionOnRequest = false;
+            section[j].sectionOffRequest = true;
+
+            // Manual on, force the section On
+            if (sectionButtonState[j] == btnStates::On)
+            {
+                section[j].sectionOnRequest = true;
+                section[j].sectionOffRequest = false;
+                continue;
+            }
+            continue;
+        }
+
+        // Manual on, force the section On
+        if (sectionButtonState[j] == btnStates::On)
+        {
+            section[j].sectionOnRequest = true;
+            section[j].sectionOffRequest = false;
+            continue;
+        }
+
+
+        //AutoSection - If any nowhere applied, send OnRequest, if its all green send an offRequest
+        section[j].isSectionRequiredOn = false;
+
+        //calculate the slopes of the lines
+        mOn = (lookAheadDistanceOnPixelsRight - lookAheadDistanceOnPixelsLeft) / rpWidth;
+        mOff = (lookAheadDistanceOffPixelsRight - lookAheadDistanceOffPixelsLeft) / rpWidth;
+
+        start = section[j].rpSectionPosition - section[0].rpSectionPosition;
+        end = section[j].rpSectionWidth - 1 + start;
+
+        if (end >= rpWidth)
+            end = rpWidth - 1;
+
+        totalPixel = 1;
+        tagged = 0;
+
+        for (int pos = start; pos <= end; pos++)
+        {
+            startHeight = (int)(lookAheadDistanceOffPixelsLeft + (mOff * pos)) * rpWidth + pos;
+            endHeight = (int)(lookAheadDistanceOnPixelsLeft + (mOn * pos)) * rpWidth + pos;
+
+            for (int a = startHeight; a <= endHeight; a += rpWidth)
+            {
+                totalPixel++;
+                if (grnPixels[a].green == 0) tagged++;
+            }
+        }
+
+        //determine if meeting minimum coverage
+        section[j].isSectionRequiredOn = ((tagged * 100) / totalPixel > (100 - minCoverage));
+
+        //logic if in or out of boundaries or headland
+        if (bnd.bndList.count() > 0)
+        {
+            //if out of boundary, turn it off
+            if (!section[j].isInBoundary)
+            {
+                section[j].isSectionRequiredOn = false;
+                section[j].sectionOffRequest = true;
+                section[j].sectionOnRequest = false;
+                section[j].sectionOffTimer = 0;
+                section[j].sectionOnTimer = 0;
+                continue;
+            }
+            else
+            {
+                //is headland coming up
+                if (isHeadlandOn && isSectionControlledByHeadland)
+                {
+                    bool isHeadlandInLookOn = false;
+
+                    //is headline in off to on area
+                    mOn = (lookAheadDistanceOnPixelsRight - lookAheadDistanceOnPixelsLeft) / rpWidth;
+                    mOff = (lookAheadDistanceOffPixelsRight - lookAheadDistanceOffPixelsLeft) / rpWidth;
+
+                    start = section[j].rpSectionPosition - section[0].rpSectionPosition;
+
+                    end = section[j].rpSectionWidth - 1 + start;
+
+                    if (end >= rpWidth)
+                        end = rpWidth - 1;
+
+                    tagged = 0;
+
+                    for (int pos = start; pos <= end; pos++)
+                    {
+                        startHeight = (int)(lookAheadDistanceOffPixelsLeft + (mOff * pos)) * rpWidth + pos;
+                        endHeight = (int)(lookAheadDistanceOnPixelsLeft + (mOn * pos)) * rpWidth + pos;
+
+                        for (int a = startHeight; a <= endHeight; a += rpWidth)
+                        {
+                            if (a < 0)
+                                mOn = 0;
+                            if (grnPixels[a].green == 250)
+                            {
+                                isHeadlandInLookOn = true;
+                                goto GetOutHdOn;
+                            }
+                        }
+                    }
+                GetOutHdOn:
+
+                    //determine if look ahead points are completely in headland
+                    if (section[j].isSectionRequiredOn && section[j].isLookOnInHeadland && !isHeadlandInLookOn)
+                    {
+                        section[j].isSectionRequiredOn = false;
+                        section[j].sectionOffRequest = true;
+                        section[j].sectionOnRequest = false;
+                    }
+
+                    if (section[j].isSectionRequiredOn && !section[j].isLookOnInHeadland && isHeadlandInLookOn)
+                    {
+                        section[j].isSectionRequiredOn = true;
+                        section[j].sectionOffRequest = false;
+                        section[j].sectionOnRequest = true;
+                    }
+                }
+            }
+        }
+
+
+        //global request to turn on section
+        section[j].sectionOnRequest = section[j].isSectionRequiredOn;
+        section[j].sectionOffRequest = !section[j].sectionOnRequest;
+
+    }  // end of go thru all sections "for"
+
+    //Set all the on and off times based from on off section requests
+    for (int j = 0; j < numOfSections; j++)
+    {
+        //SECTION timers
+
+        if (section[j].sectionOnRequest) {
+            bool wasOn = section[j].isSectionOn;
+            section[j].isSectionOn = true;
+            // PHASE 6.0.36: sectionButtonState (user preference) should NOT be modified here
+            // Only isSectionOn (calculated state) changes - matches C# original architecture
+        }
+
+        //turn off delay
+        if (turnOffDelay > 0)
+        {
+            if (!section[j].sectionOffRequest) section[j].sectionOffTimer = (int)(gpsHz / 2.0 * turnOffDelay);
+
+            if (section[j].sectionOffTimer > 0) section[j].sectionOffTimer--;
+
+            if (section[j].sectionOffRequest && section[j].sectionOffTimer == 0)
+            {
+                if (section[j].isSectionOn) {
+                    section[j].isSectionOn = false;
+                    // PHASE 6.0.36: sectionButtonState (user preference) NOT modified
+                    // Only isSectionOn (calculated state) changes - matches C# original
+                }
+            }
+        }
+        else
+        {
+            if (section[j].sectionOffRequest) {
+                bool wasOn = section[j].isSectionOn;
+                section[j].isSectionOn = false;
+                // PHASE 6.0.36: sectionButtonState (user preference) NOT modified here
+                // Only isSectionOn (calculated state) changes - matches C# original architecture
+                // sectionButtonState controlled ONLY by user actions: button clicks, Master Auto
+            }
+        }
+
+        //Mapping timers
+        if (section[j].sectionOnRequest && !section[j].isMappingOn && section[j].mappingOnTimer == 0)
+        {
+            section[j].mappingOnTimer = (int)(lookAheadOnSetting * (gpsHz / 2) - 1);
+        }
+        else if (section[j].sectionOnRequest && section[j].isMappingOn && section[j].mappingOffTimer > 1)
+        {
+            section[j].mappingOffTimer = 0;
+            section[j].mappingOnTimer = (int)(lookAheadOnSetting * (gpsHz / 2) - 1);
+        }
+
+        if (lookAheadOffSetting > 0)
+        {
+            if (section[j].sectionOffRequest && section[j].isMappingOn && section[j].mappingOffTimer == 0)
+            {
+                section[j].mappingOffTimer = (int)(lookAheadOffSetting * (gpsHz / 2) + 4);
+            }
+        }
+        else if (turnOffDelay > 0)
+        {
+            if (section[j].sectionOffRequest && section[j].isMappingOn && section[j].mappingOffTimer == 0)
+                section[j].mappingOffTimer = (int)(turnOffDelay * gpsHz / 2);
+        }
+        else
+        {
+            section[j].mappingOffTimer = 0;
+        }
+
+        //MAPPING - Not the making of triangle patches - only status - on or off
+        if (section[j].sectionOnRequest)
+        {
+            section[j].mappingOffTimer = 0;
+            if (section[j].mappingOnTimer > 1)
+                section[j].mappingOnTimer--;
+            else
+            {
+                section[j].isMappingOn = true;
+            }
+        }
+
+        if (section[j].sectionOffRequest)
+        {
+            section[j].mappingOnTimer = 0;
+            if (section[j].mappingOffTimer > 1)
+                section[j].mappingOffTimer--;
+            else
+            {
+                section[j].isMappingOn = false;
+            }
+        }
+    }
+
+    //Checks the workswitch or steerSwitch if required
+    if (ahrs.isAutoSteerAuto || mc.isRemoteWorkSystemOn)
+        mc.CheckWorkAndSteerSwitch(ahrs,isBtnAutoSteerOn());
+
+    // check if any sections have changed status
+    number = 0;
+
+    for (int j = 0; j < numOfSections; j++)
+    {
+        if (section[j].isMappingOn)
+        {
+            number |= 1ul << j;
+        }
+    }
+
+    //there has been a status change of section on/off
+    if (number != lastNumber)
+    {
+        int sectionOnOffZones = 0, patchingZones = 0;
+
+        //everything off
+        if (number == 0)
+        {
+            for (int j = 0; j < triStrip.count(); j++)
+            {
+                if (triStrip[j].isDrawing)
+                    triStrip[j].TurnMappingOff(secColors[j],
+                                               section[triStrip[j].currentStartSectionNum].leftPoint,
+                                               section[triStrip[j].currentEndSectionNum].rightPoint,
+                                               patchSaveList,
+                                               formGPS);
+            }
+        }
+        else if (!isMultiColoredSections)
+        {
+            //set the start and end positions from section points
+            for (int j = 0; j < numOfSections; j++)
+            {
+                //skip till first mapping section
+                if (!section[j].isMappingOn) continue;
+
+                //do we need more patches created
+                if (triStrip.count() < sectionOnOffZones + 1)
+                    triStrip.append(CPatches());
+
+                //set this strip start edge to edge of this section
+                triStrip[sectionOnOffZones].newStartSectionNum = j;
+
+                while ((j + 1) < numOfSections && section[j + 1].isMappingOn)
+                {
+                    j++;
+                }
+
+                //set the edge of this section to be end edge of strp
+                triStrip[sectionOnOffZones].newEndSectionNum = j;
+                sectionOnOffZones++;
+            }
+
+            //count current patch strips being made
+            for (int j = 0; j < triStrip.count(); j++)
+            {
+                if (triStrip[j].isDrawing) patchingZones++;
+            }
+
+            //tests for creating new strips or continuing
+            bool isOk = (patchingZones == sectionOnOffZones && sectionOnOffZones < 3);
+
+            if (isOk)
+            {
+                for (int j = 0; j < sectionOnOffZones; j++)
+                {
+                    if (triStrip[j].newStartSectionNum > triStrip[j].currentEndSectionNum
+                        || triStrip[j].newEndSectionNum < triStrip[j].currentStartSectionNum)
+                        isOk = false;
+                }
+            }
+
+            if (isOk)
+            {
+                for (int j = 0; j < sectionOnOffZones; j++)
+                {
+                    if (triStrip[j].newStartSectionNum != triStrip[j].currentStartSectionNum
+                        || triStrip[j].newEndSectionNum != triStrip[j].currentEndSectionNum)
+                    {
+                        //if (isSectionsNotZones)
+                        {
+                            triStrip[j].AddMappingPoint(secColors[j],
+                                                        section[triStrip[j].currentStartSectionNum].leftPoint,
+                                                        section[triStrip[j].currentEndSectionNum].rightPoint,
+                                                        patchSaveList,
+                                                        formGPS);
+                        }
+
+                        triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
+                        triStrip[j].currentEndSectionNum = triStrip[j].newEndSectionNum;
+                        triStrip[j].AddMappingPoint(secColors[j],
+                                                    section[triStrip[j].currentStartSectionNum].leftPoint,
+                                                    section[triStrip[j].currentEndSectionNum].rightPoint,
+                                                    patchSaveList,
+                                                    formGPS);
+                    }
+                }
+            }
+            else
+            {
+                //too complicated, just make new strips
+                for (int j = 0; j < triStrip.count(); j++)
+                {
+                    if (triStrip[j].isDrawing)
+                        triStrip[j].TurnMappingOff(secColors[j],
+                                                   section[triStrip[j].currentStartSectionNum].leftPoint,
+                                                   section[triStrip[j].currentEndSectionNum].rightPoint,
+                                                   patchSaveList,
+                                                   formGPS);
+                }
+
+                for (int j = 0; j < sectionOnOffZones; j++)
+                {
+                    triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
+                    triStrip[j].currentEndSectionNum = triStrip[j].newEndSectionNum;
+                    triStrip[j].TurnMappingOn(secColors[j],
+                                              section[triStrip[j].currentStartSectionNum].leftPoint,
+                                              section[triStrip[j].currentEndSectionNum].rightPoint);
+                }
+            }
+        }
+        else if (isMultiColoredSections) //could be else only but this is more clear
+        {
+            //set the start and end positions from section points
+            for (int j = 0; j < numOfSections; j++)
+            {
+                //do we need more patches created
+                if (triStrip.count() < sectionOnOffZones + 1)
+                    triStrip.append(CPatches());
+
+                //set this strip start edge to edge of this section
+                triStrip[sectionOnOffZones].newStartSectionNum = j;
+
+                //set the edge of this section to be end edge of strp
+                triStrip[sectionOnOffZones].newEndSectionNum = j;
+                sectionOnOffZones++;
+
+                if (!section[j].isMappingOn)
+                {
+                    if (triStrip[j].isDrawing)
+                        triStrip[j].TurnMappingOff(secColors[j],
+                                                   section[triStrip[j].currentStartSectionNum].leftPoint,
+                                                   section[triStrip[j].currentEndSectionNum].rightPoint,
+                                                   patchSaveList,
+                                                   formGPS);
+                }
+                else
+                {
+                    triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
+                    triStrip[j].currentEndSectionNum = triStrip[j].newEndSectionNum;
+                    triStrip[j].TurnMappingOn(secColors[j],
+                                              section[triStrip[j].currentStartSectionNum].leftPoint,
+                                              section[triStrip[j].currentEndSectionNum].rightPoint);
+                }
+            }
+        }
+
+
+        lastNumber = number;
+    }
+#endif
+
+}
+
+void CTool::WhereAreToolCorners(const CBoundary &bnd)
+{
+    if (bnd.bndList.count() > 0 && bnd.bndList[0].hdLine.count() > 0)
+    {
+        bool isLeftInWk, isRightInWk = true;
+
+        for (int j = 0; j < numOfSections; j++)
+        {
+            isLeftInWk = j == 0 ? bnd.IsPointInsideHeadArea(section[j].leftPoint) : isRightInWk;
+            isRightInWk = bnd.IsPointInsideHeadArea(section[j].rightPoint);
+
+            //save left side
+            if (j == 0)
+                isLeftSideInHeadland = !isLeftInWk;
+
+            //merge the two sides into in or out
+            section[j].isInHeadlandArea = !isLeftInWk && !isRightInWk;
+        }
+
+        //save right side
+        isRightSideInHeadland = !isRightInWk;
+
+        //is the tool in or out based on endpoints
+        isToolOuterPointsInHeadland = isLeftSideInHeadland && isRightSideInHeadland;
+    }
+
 }
 
 void CTool::WhereAreToolLookOnPoints(const CBoundary &bnd)

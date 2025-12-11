@@ -243,10 +243,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY areaOuterBoundaryChanged BINDABLE bindableAreaOuterBoundary)
     Q_PROPERTY(double areaBoundaryOuterLessInner READ areaBoundaryOuterLessInner WRITE setAreaBoundaryOuterLessInner
                NOTIFY areaBoundaryOuterLessInnerChanged BINDABLE bindableAreaBoundaryOuterLessInner)
-    Q_PROPERTY(double workedAreaTotal READ workedAreaTotal WRITE setWorkedAreaTotal
-               NOTIFY workedAreaTotalChanged BINDABLE bindableWorkedAreaTotal)
-    Q_PROPERTY(double workedAreaTotalUser READ workedAreaTotalUser WRITE setWorkedAreaTotalUser
-               NOTIFY workedAreaTotalUserChanged BINDABLE bindableWorkedAreaTotalUser)
     Q_PROPERTY(double distanceUser READ distanceUser WRITE setDistanceUser
                NOTIFY distanceUserChanged BINDABLE bindableDistanceUser)
     Q_PROPERTY(double actualAreaCovered READ actualAreaCovered WRITE setActualAreaCovered
@@ -606,14 +602,6 @@ public:
     double areaBoundaryOuterLessInner() const;
     void setAreaBoundaryOuterLessInner(double value);
     QBindable<double> bindableAreaBoundaryOuterLessInner();
-
-    double workedAreaTotal() const;
-    void setWorkedAreaTotal(double value);
-    QBindable<double> bindableWorkedAreaTotal();
-
-    double workedAreaTotalUser() const;
-    void setWorkedAreaTotalUser(double value);
-    QBindable<double> bindableWorkedAreaTotalUser();
 
     double distanceUser() const;
     void setDistanceUser(double value);
@@ -1399,9 +1387,6 @@ public:
     Q_INVOKABLE void changeImuHeading(double heading);
     Q_INVOKABLE void changeImuRoll(double roll);
 
-    // ===== Q_INVOKABLE USER DATA MANAGEMENT =====
-    Q_INVOKABLE void setDistanceUser(const QString& value);
-    Q_INVOKABLE void setWorkedAreaTotalUser(const QString& value);
     // Phase 6.0.20: setAvgPivDistance is now Q_PROPERTY setter (line 471) - no Q_INVOKABLE needed
 
     // Qt BINDABLE: Automatic property synchronization - no manual sync needed

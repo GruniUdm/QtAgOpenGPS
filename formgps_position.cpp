@@ -2015,8 +2015,7 @@ void FormGPS::processSectionLookahead() {
                     tool.triStrip[j].TurnMappingOff(tool.secColors[j],
                                                tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
                                                tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
-                                               tool.patchSaveList,
-                                               this);
+                                               tool.patchSaveList);
             }
         }
         else if (!tool.isMultiColoredSections)
@@ -2075,8 +2074,7 @@ void FormGPS::processSectionLookahead() {
                             tool.triStrip[j].AddMappingPoint(tool.secColors[j],
                                                         tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
                                                         tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
-                                                        tool.patchSaveList,
-                                                        this);
+                                                        tool.patchSaveList);
                         }
 
                         tool.triStrip[j].currentStartSectionNum = tool.triStrip[j].newStartSectionNum;
@@ -2084,8 +2082,7 @@ void FormGPS::processSectionLookahead() {
                         tool.triStrip[j].AddMappingPoint(tool.secColors[j],
                                                     tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
                                                     tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
-                                                    tool.patchSaveList,
-                                                    this);
+                                                    tool.patchSaveList);
                     }
                 }
             }
@@ -2098,8 +2095,7 @@ void FormGPS::processSectionLookahead() {
                         tool.triStrip[j].TurnMappingOff(tool.secColors[j],
                                                    tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
                                                    tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
-                                                   tool.patchSaveList,
-                                                   this);
+                                                   tool.patchSaveList);
                 }
 
                 for (int j = 0; j < sectionOnOffZones; j++)
@@ -2134,8 +2130,7 @@ void FormGPS::processSectionLookahead() {
                         tool.triStrip[j].TurnMappingOff(tool.secColors[j],
                                                    tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
                                                    tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
-                                                   tool.patchSaveList,
-                                                   this);
+                                                   tool.patchSaveList);
                 }
                 else
                 {
@@ -2589,8 +2584,7 @@ void FormGPS::AddSectionOrPathPoints()
             tool.triStrip[j].AddMappingPoint(tool.secColors[j],
                                         tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
                                         tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
-                                        tool.patchSaveList,
-                                        this);
+                                        tool.patchSaveList);
             patchCounter++;
         }
     }

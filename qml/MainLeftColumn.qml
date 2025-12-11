@@ -22,7 +22,7 @@ ColumnLayout {
         Layout.alignment: Qt.AlignCenter
         onClicked: {
             aog.distanceUser = parseFloat("0")
-            aog.workedAreaTotalUser = parseFloat("0")
+            Backend.workedAreaTotalUser = parseFloat("0")
         }
 
         background: Rectangle{
@@ -47,7 +47,7 @@ ColumnLayout {
                 anchors.margins: 5
                 width: parent.width
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: Utils.area_to_unit_string(aog.workedAreaTotalUser, 2)
+                text: Utils.area_to_unit_string(Backend.workedAreaTotalUser, 2)
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter

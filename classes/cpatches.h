@@ -47,12 +47,10 @@ public:
     void TurnMappingOff(QColor section_color,
                         Vec2 leftPoint,
                         Vec2 rightPoint,
-                        QVector<QSharedPointer<PatchTriangleList> > &patchSaveList,
-                        QObject *formGPS);
+                        QVector<QSharedPointer<PatchTriangleList> > &patchSaveList);
     void AddMappingPoint(QColor section_color,
                          Vec2 rightPoint, Vec2 leftPoint,
-                         QVector<QSharedPointer<PatchTriangleList> > &patchSaveList,
-                         QObject *formGPS);
+                         QVector<QSharedPointer<PatchTriangleList> > &patchSaveList);
 
 
 

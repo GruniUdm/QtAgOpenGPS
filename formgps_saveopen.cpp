@@ -8,6 +8,7 @@
 #include "classes/settingsmanager.h"
 #include "qmlutil.h"
 #include <QString>
+#include "backend.h"
 
 enum OPEN_FLAGS {
     LOAD_MAPPING = 1,
@@ -1116,7 +1117,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             tool.triStrip[0].patchList = localPatchList;
             tool.triStrip[0].patchBoundingBoxList = localPatchBoundingBoxList;
             tool.patchesBufferDirty = true;
-            m_workedAreaTotal = m_workedAreaTotal + localWorkedArea;
+            Backend::instance()->addWorkedAreaTotal(localWorkedArea);
             lock.unlock();
         }
     }

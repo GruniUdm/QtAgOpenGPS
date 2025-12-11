@@ -15,6 +15,7 @@
 #include <QPixmapCache>        // Phase 6.0.45: Memory leak fixes - image cache management
 #include <QCoreApplication>    // Phase 6.0.45: Memory leak fixes - sendPostedEvents for deferred deletion
 #include <QEvent>              // Phase 6.0.45: Memory leak fixes - QEvent::DeferredDelete enum
+#include "backend.h"
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
@@ -454,14 +455,6 @@ double FormGPS::areaBoundaryOuterLessInner() const { return m_areaBoundaryOuterL
 void FormGPS::setAreaBoundaryOuterLessInner(double areaBoundaryOuterLessInner) { m_areaBoundaryOuterLessInner = areaBoundaryOuterLessInner; }
 QBindable<double> FormGPS::bindableAreaBoundaryOuterLessInner() { return &m_areaBoundaryOuterLessInner; }
 
-double FormGPS::workedAreaTotal() const { return m_workedAreaTotal; }
-void FormGPS::setWorkedAreaTotal(double workedAreaTotal) { m_workedAreaTotal = workedAreaTotal; }
-QBindable<double> FormGPS::bindableWorkedAreaTotal() { return &m_workedAreaTotal; }
-
-double FormGPS::workedAreaTotalUser() const { return m_workedAreaTotalUser; }
-void FormGPS::setWorkedAreaTotalUser(double workedAreaTotalUser) { m_workedAreaTotalUser = workedAreaTotalUser; }
-QBindable<double> FormGPS::bindableWorkedAreaTotalUser() { return &m_workedAreaTotalUser; }
-
 double FormGPS::distanceUser() const { return m_distanceUser; }
 void FormGPS::setDistanceUser(double distanceUser) { m_distanceUser = distanceUser; }
 QBindable<double> FormGPS::bindableDistanceUser() { return &m_distanceUser; }
@@ -712,7 +705,7 @@ void FormGPS::processOverlapCount()
 
         if (total2 > 0)
         {
-            this->setActualAreaCovered( (total / total2 * (double)this->workedAreaTotal()));
+            this->setActualAreaCovered( (total / total2 * Backend::instance()->workedAreaTotal()));
             fd.overlapPercent = ((1 - total / total2) * 100);
         }
         else
@@ -1271,7 +1264,7 @@ void FormGPS::JobClose()
     yt.ResetYouTurn();
 
     //reset acre and distance counters
-    setWorkedAreaTotal(0);
+    Backend::instance()->set_workedAreaTotal(0);
 
     //reset GUI areas
     fd.UpdateFieldBoundaryGUIAreas(bnd.bndList, mainWindow, this);
@@ -1349,8 +1342,7 @@ void FormGPS::FileSaveEverythingBeforeClosingField(bool saveVehicle)
             tool.triStrip[j].TurnMappingOff(tool.secColors[j],
                                        tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
                                        tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
-                                       tool.patchSaveList,
-                                       this);
+                                       tool.patchSaveList);
     }
     lock.unlock();
     qDebug() << "Test4";

@@ -1,7 +1,7 @@
 #include "cpatches.h"
 #include "classes/settingsmanager.h"
 #include "qmlutil.h"
-#include "formgps.h"
+#include "backend.h"
 
 inline QColor get_SectionColor(int section) {
     switch (section) {
@@ -100,10 +100,10 @@ void CPatches::TurnMappingOn(QColor section_color,
 void CPatches::TurnMappingOff(QColor section_color,
                               Vec2 leftPoint,
                               Vec2 rightPoint,
-                              QVector<QSharedPointer<PatchTriangleList>> &patchSaveList,
-                              QObject *formGPS)
+                              QVector<QSharedPointer<PatchTriangleList>> &patchSaveList
+                              )
 {
-   AddMappingPoint(section_color, leftPoint, rightPoint, patchSaveList, formGPS);
+   AddMappingPoint(section_color, leftPoint, rightPoint, patchSaveList);
 
    isDrawing = false;
    numTriangles = 0;
@@ -128,8 +128,8 @@ void CPatches::TurnMappingOff(QColor section_color,
 void CPatches::AddMappingPoint(QColor section_color,
                                Vec2 vleftPoint,
                                Vec2 vrightPoint,
-                               QVector<QSharedPointer<PatchTriangleList>> &patchSaveList,
-                               QObject *formGPS)
+                               QVector<QSharedPointer<PatchTriangleList>> &patchSaveList
+                               )
 {
     //Vec2 vleftPoint = tool.section[currentStartSectionNum].leftPoint;
     //Vec2 vrightPoint = tool.section[currentEndSectionNum].rightPoint;
@@ -179,11 +179,8 @@ void CPatches::AddMappingPoint(QColor section_color,
     temp *= 0.5;
 
     // Update worked area using Q_PROPERTY
-    double currentTotal = formGPS->property("workedAreaTotal").toDouble();
-    formGPS->setProperty("workedAreaTotal", currentTotal + temp);
-
-    double currentUser = formGPS->property("workedAreaTotalUser").toDouble();
-    formGPS->setProperty("workedAreaTotalUser", currentUser + temp);
+    Backend::instance()->addWorkedAreaTotal(temp);
+    Backend::instance()->addWorkedAreaTotalUser(temp);
 
     if (numTriangles > 61)
     {

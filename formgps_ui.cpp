@@ -23,6 +23,7 @@
 #include <QTranslator>
 // FormLoop removed - Phase 4.4: AgIOService standalone
 #include <algorithm>
+#include "backend.h"
 
 //if using qquickframebufferobject, set qml to use AOGRenderer and comment out next line
 //#define USE_QSGRENDERNODE 1 //Also switch qml to use AOGRendererItem
@@ -1525,7 +1526,8 @@ void FormGPS::onDeleteAppliedArea_clicked()
                 //clear out the contour Lists
                 ct.StopContourLine(contourSaveList);
                 ct.ResetContour();
-                this->setWorkedAreaTotal(0);
+
+                Backend::instance()->set_workedAreaTotal(0);
 
                 //clear the section lists
                 for (int j = 0; j < tool.triStrip.count(); j++)
@@ -2173,23 +2175,6 @@ void FormGPS::changeImuHeading(double heading) {
 void FormGPS::changeImuRoll(double roll) {
     // Met à jour la propriété IMU roll
     m_imuRoll = roll;
-}
-
-// ===== USER DATA MANAGEMENT IMPLEMENTATIONS =====
-void FormGPS::setDistanceUser(const QString& value) {
-    bool ok;
-    double distance = value.toDouble(&ok);
-    if (ok) {
-        m_distanceUser = distance;
-    }
-}
-
-void FormGPS::setWorkedAreaTotalUser(const QString& value) {
-    bool ok;
-    double area = value.toDouble(&ok);
-    if (ok) {
-        m_workedAreaTotalUser = area;
-    }
 }
 
 // Phase 6.0.20: Qt 6.8 BINDABLE implementation moved to formgps.cpp:303-305
