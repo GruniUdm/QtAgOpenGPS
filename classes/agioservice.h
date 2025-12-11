@@ -727,6 +727,7 @@ signals:
     void nmeaDataReady(const PGNParser::ParsedData& data);     // GPS position data (NMEA only)
     void imuDataReady(const PGNParser::ParsedData& data);      // External IMU data (PGN 211 only)
     void steerDataReady(const PGNParser::ParsedData& data);    // AutoSteer feedback (PGN 253/250)
+    void machineDataReady(const PGNParser::ParsedData& data);    // Machine / blockage
 
     // Rectangle Pattern NOTIFY signals for STATUS properties only
     // GPS/IMU data properties removed - moved to FormGPS

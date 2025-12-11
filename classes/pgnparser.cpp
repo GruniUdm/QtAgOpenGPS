@@ -976,9 +976,9 @@ PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
     // PGN 244 (0xF4): Blockage Data
     // Byte 0-1: Header (0x80 0x81)
     // Byte 2: Source ID (0x7b = Machine)
-    // Byte 3: PGN (0xF4 = 244)
+    // Byte 3: PGN (0xF4 = 244) Blockage Monitor
     // Byte 4: Length (4 bytes)
-    // Byte 5: ID
+    // Byte 5: Module ID
     // Byte 6: Section Number
     // Byte 7-8: Section value
     // Byte 9: Checksum
@@ -998,7 +998,7 @@ PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
     }
 
     // PHASE 6.0.23: Extract steer angle (bytes 5-6) - int16 x100
-    int arrayIndex = data[5]; // ID: 0, 1, 2, 3
+    int arrayIndex = data[5]; // Module ID: 0, 1, 2, 3
     int sectionIndex = data[6]; // Section Number
 
     // Проверяем корректность индексов

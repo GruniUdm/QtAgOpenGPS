@@ -1540,6 +1540,7 @@ public slots:
     void onNmeaDataReady(const PGNParser::ParsedData& data);    // GPS position updates
     void onImuDataReady(const PGNParser::ParsedData& data);     // External IMU updates
     void onSteerDataReady(const PGNParser::ParsedData& data);   // AutoSteer feedback
+    void onMachineDataReady(const PGNParser::ParsedData& data); // Machine Blockage
 
     /*******************
      * from FormGPS.cs *

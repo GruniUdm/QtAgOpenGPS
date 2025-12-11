@@ -487,6 +487,9 @@ void AgIOService::onUdpDataReady()
                     // PGN 253/250 → AutoSteer feedback (~40 Hz throttled by timer)
                     emit steerDataReady(parsedData);
                     break;
+                case 244:  // Blockage Data
+                    emit machineDataReady(parsedData);
+                    break;
 
                 case 212:  // IMU disconnect sentinel
                     // PGN 212 → IMU disconnect (set sentinel values)
