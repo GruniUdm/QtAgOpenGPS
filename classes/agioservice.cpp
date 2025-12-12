@@ -394,6 +394,7 @@ QString AgIOService::getProtocolDescription(const QString& protocolId) const
         {"PGN237", "Machine Status OUT"},
         {"PGN229", "64 Sections IN"},
         {"PGN123", "Hello Machine OUT"},
+        {"PGN244", "Blockage Data IN"},
 
         // PGN Messages - IMU Module
         {"PGN211", "IMU Data OUT"},
@@ -1362,6 +1363,7 @@ QString AgIOService::detectModuleType(const PGNParser::ParsedData& data)
     } else if (data.sourceType == "PGN") {
         // PGN binary data
         if (data.pgnNumber == 211) return "IMU";         // IMU data
+        if (data.pgnNumber == 123) return "MACHINE";         // Machine data
         if (data.pgnNumber == 253) return "Steer";       // AutoSteer status
         if (data.pgnNumber == 214) return "GPS";         // GPS main antenna
         if (data.pgnNumber == 126 || data.pgnNumber == 127) return "Steer";  // WAS data

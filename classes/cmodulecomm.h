@@ -20,12 +20,6 @@ public:
 
     uchar ssP[9];
 
-    qint64 blockage_lastUpdate;
-    double blockageseccount[64];
-    int blockageseccount1[16];
-    int blockageseccount2[16];
-    int blockageseccount3[16];
-    int blockageseccount4[16];
     int
         swHeader = 0,
         swMain = 1,
@@ -41,6 +35,13 @@ public:
     double actualSteerAngleDegrees = 0;
     int actualSteerAngleChart = 0;
     int sensorData = -1;  // PHASE 6.0.23: Sensor value from PGN 250
+
+    qint64 blockage_lastUpdate;
+    double blockageseccount[64];
+    int blockageseccount1[16];
+    int blockageseccount2[16];
+    int blockageseccount3[16];
+    int blockageseccount4[16];
 
 
     //for the workswitch

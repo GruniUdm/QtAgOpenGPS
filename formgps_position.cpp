@@ -3199,6 +3199,26 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
     // NO UpdateFixPosition() - AutoSteer feedback only
 }
 
+void FormGPS::onMachineDataReady(const PGNParser::ParsedData& data)
+{
+    // AutoSteer module feedback handler (~40 Hz throttled by timer)
+    // Updates mc.* variables and AutoSteer IMU fallback
+    // NO GPS position update
+
+    if (!data.isValid) return;
+
+    // PGN 244: Blockage Data
+    if (data.pgnNumber == 244) {
+
+        // Reset module connection timeout counter
+        //setMachineModuleConnectedCounter(0);
+    }
+
+
+
+
+}
+
 // Phase 6.0.24: GPS timer callback - UpdateFixPosition() at 40 Hz fixed rate
 void FormGPS::onGPSTimerTimeout()
 {

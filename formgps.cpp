@@ -65,6 +65,9 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     connect(m_agioService, &AgIOService::steerDataReady,
             this, &FormGPS::onSteerDataReady, Qt::DirectConnection);
 
+    connect(m_agioService, &AgIOService::machineDataReady,
+            this, &FormGPS::onMachineDataReady, Qt::DirectConnection);
+
     qDebug() << "Phase 6.0.25: Separated NMEA/IMU/Steer signal connections established";
 
     qDebug() << "ðŸŽ¯ Initializing singletons...";

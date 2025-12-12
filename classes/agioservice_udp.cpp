@@ -433,6 +433,9 @@ void AgIOService::onUdpDataReady()
                 if (parsedData.pgnNumber == 211) {
                     if (!imuConnected()) setImuConnected(true);
                 }
+                if (parsedData.pgnNumber == 244 || parsedData.pgnNumber == 123) {
+                    if (!machineConnected()) setMachineConnected(true);
+                }
             }
         }
 
@@ -483,6 +486,9 @@ void AgIOService::onUdpDataReady()
                 case 250:  // AutoSteer sensor (pressure/current)
                     // PGN 253/250 → AutoSteer feedback (~40 Hz throttled by timer)
                     emit steerDataReady(parsedData);
+                    break;
+                case 244:  // Blockage Data
+                    emit machineDataReady(parsedData);
                     break;
 
                 case 212:  // IMU disconnect sentinel

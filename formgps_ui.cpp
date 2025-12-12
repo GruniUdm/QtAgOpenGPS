@@ -721,6 +721,7 @@ void FormGPS::fieldNewFrom(const QString& fieldName, const QString& sourceField,
 
 void FormGPS::fieldNewFromKML(const QString& fieldName, const QString& kmlPath) {
     // Modern implementation - same logic as field_new_from_KML(QString,QString)
+    qDebug() << fieldName << " " << kmlPath;
     field_new_from_KML(fieldName, kmlPath);
 }
 
@@ -788,6 +789,16 @@ void FormGPS::boundarySetDriveThrough(int boundaryId, bool isDriveThrough) {
 void FormGPS::boundaryDeleteAll() {
     // Modern implementation - same logic as boundary_delete_all()
     boundary_delete_all();
+}
+
+void FormGPS::loadBoundaryFromKML(QString filename) {
+    // Modern implementation
+    boundary_new_from_KML(filename);
+}
+
+void FormGPS::addBoundaryOSMPoint(double latitude, double longitude) {
+    // Modern implementation
+    addboundaryOSMPoint(latitude, longitude);
 }
 
 // ===== RecordedPath Management (6 methods) - ZERO EMIT =====
