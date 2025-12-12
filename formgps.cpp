@@ -325,6 +325,39 @@ double FormGPS::rawHz() const { return m_rawHz; }
 void FormGPS::setRawHz(double rawHz) { m_rawHz = rawHz; }
 QBindable<double> FormGPS::bindableRawHz() { return &m_rawHz; }
 
+// ===== Blockage Properties =====
+double FormGPS::blockage_avg() const { return m_blockage_avg; }
+void FormGPS::setBlockage_avg(double blockage_avg) { m_blockage_avg = blockage_avg; }
+QBindable<double> FormGPS::bindableBlockage_avg() { return &m_blockage_avg; }
+
+double FormGPS::blockage_min1() const { return m_blockage_min1; }
+void FormGPS::setBlockage_min1(double blockage_min1) { m_blockage_min1 = blockage_min1; }
+QBindable<double> FormGPS::bindableBlockage_min1() { return &m_blockage_min1; }
+
+double FormGPS::blockage_min2() const { return m_blockage_min2; }
+void FormGPS::setBlockage_min2(double blockage_min2) { m_blockage_min2 = blockage_min2; }
+QBindable<double> FormGPS::bindableBlockage_min2() { return &m_blockage_min2; }
+
+double FormGPS::blockage_max() const { return m_blockage_max; }
+void FormGPS::setBlockage_max(double blockage_max) { m_blockage_max = blockage_max; }
+QBindable<double> FormGPS::bindableBlockage_max() { return &m_blockage_max; }
+
+int FormGPS::blockage_min1_i() const { return m_blockage_min1_i; }
+void FormGPS::setBlockage_min1_i(int blockage_min1_i) { m_blockage_min1_i = blockage_min1_i; }
+QBindable<int> FormGPS::bindableBlockage_min1_i() { return &m_blockage_min1_i; }
+
+int FormGPS::blockage_min2_i() const { return m_blockage_min2_i; }
+void FormGPS::setBlockage_min2_i(int blockage_min2_i) { m_blockage_min2_i = blockage_min2_i; }
+QBindable<int> FormGPS::bindableBlockage_min2_i() { return &m_blockage_min2_i; }
+
+int FormGPS::blockage_max_i() const { return m_blockage_max_i; }
+void FormGPS::setBlockage_max_i(int blockage_max_i) { m_blockage_max_i = blockage_max_i; }
+QBindable<int> FormGPS::bindableBlockage_max_i() { return &m_blockage_max_i; }
+
+bool FormGPS::blockage_blocked() const { return m_blockage_blocked; }
+void FormGPS::setBlockage_blocked(bool blockage_blocked) { m_blockage_blocked = blockage_blocked; }
+QBindable<bool> FormGPS::bindableBlockage_blocked() { return &m_blockage_blocked; }
+
 double FormGPS::avgPivDistance() const { return m_avgPivDistance; }
 void FormGPS::setAvgPivDistance(double avgPivDistance) { m_avgPivDistance = avgPivDistance; }
 QBindable<double> FormGPS::bindableAvgPivDistance() { return &m_avgPivDistance; }

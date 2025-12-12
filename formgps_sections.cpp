@@ -336,3 +336,80 @@ void FormGPS::DoRemoteSwitches()
     // Qt BINDABLE: Property binding handles automatic QML synchronization
     // No manual sync needed - BINDABLE properties update automatically
 }
+
+void FormGPS::doBlockageMonitoring()
+{
+    // Phase 6.0.20: FormGPS context available via 'this' - no qmlItem() needed
+    int k = 0;
+    int k1 = SettingsManager::instance()->seed_blockRow1();
+    int k2 = SettingsManager::instance()->seed_blockRow2();
+    int k3 = SettingsManager::instance()->seed_blockRow3();
+    int k4 = SettingsManager::instance()->seed_blockRow4();
+    int k5 = SettingsManager::instance()->seed_numRows();
+    int k6 = SettingsManager::instance()->seed_blockCountMin();
+    double k7 = SettingsManager::instance()->vehicle_toolWidth();
+    double rowwidth = k7 / k5;
+    if (pn.vtgSpeed != 0 && rowwidth != 0) {
+        for (int i = 0; i < k1 && i < (sizeof(mc.blockageseccount1) / sizeof(mc.blockageseccount1[0])); i++)
+            mc.blockageseccount[k++] = floor(mc.blockageseccount1[i] * 7.2 / rowwidth / pn.vtgSpeed);
+        for (int i = 0; i < k2 && i < (sizeof(mc.blockageseccount2) / sizeof(mc.blockageseccount2[0])); i++)
+            mc.blockageseccount[k++] = floor(mc.blockageseccount2[i] * 7.2 / rowwidth / pn.vtgSpeed);
+        for (int i = 0; i < k3 && i < (sizeof(mc.blockageseccount3) / sizeof(mc.blockageseccount3[0])); i++)
+            mc.blockageseccount[k++] = floor(mc.blockageseccount3[i] * 7.2 / rowwidth / pn.vtgSpeed);
+        for (int i = 0; i < k4 && i < (sizeof(mc.blockageseccount4) / sizeof(mc.blockageseccount4[0])); i++)
+            mc.blockageseccount[k++] = floor(mc.blockageseccount4[i] * 7.2 / rowwidth / pn.vtgSpeed);
+        if(QDateTime::currentMSecsSinceEpoch() - mc.blockage_lastUpdate >= 3000){
+            qDebug() << "!!!blockageRowState.set Start!!!";
+            tool.blockageRowState.set(mc.blockageseccount, (sizeof(mc.blockageseccount)/sizeof(mc.blockageseccount[0])));
+            qDebug() << "!!!blockageRowState.set END!!!";
+            mc.blockage_lastUpdate = QDateTime::currentMSecsSinceEpoch();
+
+    double avg = std::accumulate(std::begin(mc.blockageseccount), std::end(mc.blockageseccount), 0);
+    avg /= k5;
+    int max = 0;
+    int i_max = 0;
+    for (int i = 0; i < k5 && i < (sizeof(mc.blockageseccount) / sizeof(mc.blockageseccount[0])); ++i) {
+        if (mc.blockageseccount[i] > max) {
+            max = (mc.blockageseccount[i]);
+            i_max = i;
+        }
+    }
+    int min1 = 65535;
+    int min2 = 65535;
+    int i_min1 = 0;
+    int i_min2 = 0;
+    for (int i = 0; i < k5 && i < (sizeof(mc.blockageseccount) / sizeof(mc.blockageseccount[0])); ++i) {
+        if (mc.blockageseccount[i] < min1) {
+            min1 = (mc.blockageseccount[i]);
+            i_min1 = i;
+        }
+    }
+    for (int i = 0; i < k5 && i < (sizeof(mc.blockageseccount) / sizeof(mc.blockageseccount[0])); i++)
+        if (mc.blockageseccount[i] < min2 && i_min1 != i) {
+            min2 = (mc.blockageseccount[i]);
+            i_min2 = i;
+        }
+    int count = 0;
+    for (int i = 0; i < k5 && i < (sizeof(mc.blockageseccount) / sizeof(mc.blockageseccount[0])); i++)
+        if (mc.blockageseccount[i] < k6)
+            count++;
+
+    tool.blockage_avg = avg;
+    tool.blockage_min1 = min1;
+    tool.blockage_min2 = min2;
+    tool.blockage_max = max;
+    tool.blockage_min1_i = (i_min1 + 1);
+    tool.blockage_min2_i = (i_min2 + 1);
+    tool.blockage_max_i = i_max + 1;
+    tool.blockage_blocked = count;
+
+    // Phase 6.3.1: Set blockage connection status
+    isConnectedBlockage = true;
+        }
+    }
+}
+
+
+
+
+

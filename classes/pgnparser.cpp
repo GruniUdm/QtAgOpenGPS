@@ -1014,7 +1014,7 @@ PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
     result.pgnNumber = 244;
     result.sentenceType = "Blockage_Data_IN";
     result.moduleType = "Machine";
-    blockageRowState.set(result.blockageseccount);
+
     // // Debug log (throttled to prevent spam at 40 Hz)
     // static int logCounter = 0;
     // if (++logCounter % 200 == 0) {  // Log every 200th message (5 sec at 40Hz)

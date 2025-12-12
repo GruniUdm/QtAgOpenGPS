@@ -1474,6 +1474,16 @@ void FormGPS::UpdateFixPosition()
     if (m_droppedSentences != 0) { m_droppedSentences = 0; gpsChangedFlag = true; }
     // frameTime and steerModuleConnectedCounter use existing variables directly - no members needed
 
+    // === Blockage Sensors Updates (8 properties) - Qt 6.8 QProperty ===
+    if (m_blockage_avg != tool.blockage_avg) { m_blockage_avg = tool.blockage_avg; blockageChangedFlag = true; }
+    if (m_blockage_min1 != tool.blockage_min1) { m_blockage_min1 = tool.blockage_min1; blockageChangedFlag = true; }
+    if (m_blockage_min2 != tool.blockage_min2) { m_blockage_min2 = tool.blockage_min2; blockageChangedFlag = true; }
+    if (m_blockage_max != tool.blockage_max) { m_blockage_max = tool.blockage_max; blockageChangedFlag = true; }
+    if (m_blockage_min1_i != tool.blockage_min1_i) { m_blockage_min1_i = tool.blockage_min1_i; blockageChangedFlag = true; }
+    if (m_blockage_min2_i != tool.blockage_min2_i) { m_blockage_min2_i = tool.blockage_min2_i; blockageChangedFlag = true; }
+    if (m_blockage_max_i != tool.blockage_max_i) { m_blockage_max_i = tool.blockage_max_i; blockageChangedFlag = true; }
+    if (m_blockage_blocked != (bool)tool.blockage_blocked) { m_blockage_blocked = (bool)tool.blockage_blocked; blockageChangedFlag = true; }
+
     // === Navigation Updates (6 properties) ===
     if (m_distancePivotToTurnLine != _distancePivotToTurnLine) { m_distancePivotToTurnLine = _distancePivotToTurnLine; navChangedFlag = true; }
     if (m_isYouTurnRight != yt.isYouTurnRight) { m_isYouTurnRight = yt.isYouTurnRight; navChangedFlag = true; }
