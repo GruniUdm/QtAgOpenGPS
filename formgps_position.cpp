@@ -1384,12 +1384,11 @@ void FormGPS::UpdateFixPosition()
     oglMain_Paint();
 #endif
 
-    //NOTE: Not sure here.
-    //stop the timer and calc how long it took to do calcs and draw
-    AOGRendererInSG *renderer = mainWindow->findChild<AOGRendererInSG *>("openglcontrol");
+    //Both the framebuffer and the qquickitem renderer share the same interface here.
+    QQuickItem *renderer = mainWindow->findChild<QQuickItem *>("openglcontrol");
     // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
     if (renderer) {
-        QMetaObject::invokeMethod(renderer, "update", Qt::DirectConnection);
+        renderer->update();
     }
     qDebug(qpos) << "Time after painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
 

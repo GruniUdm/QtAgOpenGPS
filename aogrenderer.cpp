@@ -6,6 +6,7 @@
 
 #include <functional>
 
+#ifndef USE_QSGRENDERNODE
 void AOGRenderer::render()
 {
     //update();
@@ -121,10 +122,10 @@ void AOGRendererInSG::setShiftY(double value) {
 QBindable<double> AOGRendererInSG::bindableShiftY() {
     return QBindable<double>(&m_shiftY);
 }
-
-/**************************************************/
-/* NEW QQuickItem-based renderer                  */
-/**************************************************/
+#else
+/**********************************************/
+/* QQuickItem-based renderer                  */
+/**********************************************/
 AOGRendererItem::AOGRendererItem()
 {
     setFlag(ItemHasContents, true);
@@ -165,9 +166,9 @@ void AOGRendererItem::setSamples(int samples) {
     emit samplesChanged();
 }
 
-/*******************************************
- * NEW QSGRenderNode renderer for the item *
- *******************************************/
+/***************************************
+ * QSGRenderNode renderer for the item *
+ ***************************************/
 AOGRendererNode::AOGRendererNode(QQuickWindow *window): m_window(window)
 {
 
@@ -188,7 +189,7 @@ void AOGRendererNode::sync(QQuickItem *item)
 
 QSGRenderNode::RenderingFlags AOGRendererNode::flags() const
 {
-    return QSGRenderNode::BoundedRectRendering | QSGRenderNode::DepthAwareRendering;
+    return QSGRenderNode::BoundedRectRendering;
 }
 
 QRectF AOGRendererNode::rect() const
@@ -221,3 +222,4 @@ void AOGRendererNode::releaseResources()
     if(item && item->cleanupCallback)
         item->cleanupCallback();
 }
+#endif
