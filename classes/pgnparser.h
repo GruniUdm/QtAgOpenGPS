@@ -10,6 +10,7 @@
 #include <QString>
 #include <QByteArray>
 #include <QStringList>
+#include "qmlblockage.h"
 
 /**
  * @brief Centralized PGN & NMEA parser
@@ -78,6 +79,7 @@ public:
         // Blockage
         QVector<QVector<double>> blockageseccount;
     };
+    qmlblockage blockageRowState;
 
     explicit PGNParser(QObject *parent = nullptr);
 
