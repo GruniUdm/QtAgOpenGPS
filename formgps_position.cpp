@@ -22,7 +22,7 @@
 #include "cpgn.h"
 #include "qmlutil.h"
 #include "glutils.h"
-#include "indirect.h"
+#include "rendering.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 

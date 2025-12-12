@@ -24,7 +24,7 @@
 #include "classes/agioservice.h"  // For zero-latency GPS access
 #include "classes/settingsmanager.h"
 #include "cpgn.h"
-#include "indirect.h"
+#include "rendering.h"
 
 #include <assert.h>
 #include <QElapsedTimer>  // For latency profiling

@@ -23,11 +23,7 @@
 #include <QTranslator>
 // FormLoop removed - Phase 4.4: AgIOService standalone
 #include <algorithm>
-#include "indirect.h"
-
-//if using qquickframebufferobject, set qml to use AOGRenderer and comment out next line
-//#define USE_QSGRENDERNODE 1 //Also switch qml to use AOGRendererItem
-
+#include "rendering.h"
 
 QString caseInsensitiveFilename(QString directory, QString filename);
 
