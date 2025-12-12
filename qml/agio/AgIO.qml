@@ -171,7 +171,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("Steer")
                 icon.source: "../images/Com_AutosteerModule.png"
-              //  color:  AgIOService.steerConnected ? "green" : "red"
+                color:  AgIOService.steerConnected ? "green" : "red"
                 onClicked: autosteerConfig.visible = !autosteerConfig.visible
             }
             Comp.IconButtonTextBeside {
@@ -179,7 +179,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("GPS")
                 icon.source: "../images/B_GPS.png"
-             //   color:  AgIOService.gpsConnected ? "green" : "red"
+                color:  AgIOService.gpsConnected ? "green" : "red"
                 onClicked: gnssConfig.visible = !gnssConfig.visible
             }
             Comp.IconButtonTextBeside {
@@ -187,7 +187,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("Machine")
                 icon.source: "../images/B_Machine.png"
-               // color:  AgIOService.machineConnected ? "green" : "red"
+                color:  AgIOService.machineConnected ? "green" : "red"
             }
             Comp.IconButtonTextBeside {
                 //objectName: btnModuleBlockage

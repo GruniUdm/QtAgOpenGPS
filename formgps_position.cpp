@@ -22,6 +22,7 @@
 #include "cpgn.h"
 #include "qmlutil.h"
 #include "glutils.h"
+#include "rendering.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -1176,16 +1177,15 @@ void FormGPS::UpdateFixPosition()
     }
 
     qDebug(qpos) << "Time before painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
-#if !defined(Q_OS_WINDOWS) //&& !defined(Q_OS_ANDROID)
+#ifdef USE_INDIRECT_RENDERING
     oglMain_Paint();
 #endif
 
-    //NOTE: Not sure here.
-    //stop the timer and calc how long it took to do calcs and draw
-    AOGRendererInSG *renderer = mainWindow->findChild<AOGRendererInSG *>("openglcontrol");
+    //Both the framebuffer and the qquickitem renderer share the same interface here.
+    QQuickItem *renderer = mainWindow->findChild<QQuickItem *>("openglcontrol");
     // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
     if (renderer) {
-        QMetaObject::invokeMethod(renderer, "update", Qt::DirectConnection);
+        renderer->update();
     }
     qDebug(qpos) << "Time after painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
 
@@ -3015,6 +3015,26 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
     }
 
     // NO UpdateFixPosition() - AutoSteer feedback only
+}
+
+void FormGPS::onMachineDataReady(const PGNParser::ParsedData& data)
+{
+    // AutoSteer module feedback handler (~40 Hz throttled by timer)
+    // Updates mc.* variables and AutoSteer IMU fallback
+    // NO GPS position update
+
+    if (!data.isValid) return;
+
+    // PGN 244: Blockage Data
+    if (data.pgnNumber == 244) {
+
+        // Reset module connection timeout counter
+        //setMachineModuleConnectedCounter(0);
+    }
+
+
+
+
 }
 
 // Phase 6.0.24: GPS timer callback - UpdateFixPosition() at 40 Hz fixed rate

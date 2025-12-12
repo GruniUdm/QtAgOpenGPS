@@ -3,6 +3,7 @@
 //
 // main
 #include "formgps.h"
+#include "backend.h"
 #include <QApplication>
 #include <QCoreApplication>
 #include <QLabel>
@@ -19,10 +20,20 @@
 #include <QtQml/QJSEngine>
 #include <QtQml/qqmlregistration.h>
 #include <QLoggingCategory>
-#include "backend.h"
+#include <QIcon>
 
 QLabel *grnPixelsWindow;
 QLabel *overlapPixelsWindow;
+
+QString findIconPath() {
+    QString appDir = QCoreApplication::applicationDirPath();
+
+#ifdef Q_OS_WIN
+    return appDir + "/icons/icon.ico";
+#else
+    return appDir + "/icons/64x64/icon.png";
+#endif
+}
 
 int main(int argc, char *argv[])
 {
@@ -55,6 +66,11 @@ int main(int argc, char *argv[])
 
     qSetMessagePattern("%{time hh:mm:ss.zzz} [%{type}] %{function}:%{line} - %{message}");
     QApplication a(argc, argv);
+
+    QString iconPath = findIconPath();
+    if (QFile::exists(iconPath)) {
+        a.setWindowIcon(QIcon(iconPath));
+    }
 
     QFont f = a.font();
     f.setPointSize(16);

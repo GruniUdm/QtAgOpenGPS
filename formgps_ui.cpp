@@ -23,11 +23,8 @@
 #include <QTranslator>
 // FormLoop removed - Phase 4.4: AgIOService standalone
 #include <algorithm>
+#include "rendering.h"
 #include "backend.h"
-
-//if using qquickframebufferobject, set qml to use AOGRenderer and comment out next line
-//#define USE_QSGRENDERNODE 1 //Also switch qml to use AOGRendererItem
-
 
 QString caseInsensitiveFilename(QString directory, QString filename);
 
@@ -726,6 +723,7 @@ void FormGPS::fieldNewFrom(const QString& fieldName, const QString& sourceField,
 
 void FormGPS::fieldNewFromKML(const QString& fieldName, const QString& kmlPath) {
     // Modern implementation - same logic as field_new_from_KML(QString,QString)
+    qDebug() << fieldName << " " << kmlPath;
     field_new_from_KML(fieldName, kmlPath);
 }
 
@@ -793,6 +791,16 @@ void FormGPS::boundarySetDriveThrough(int boundaryId, bool isDriveThrough) {
 void FormGPS::boundaryDeleteAll() {
     // Modern implementation - same logic as boundary_delete_all()
     boundary_delete_all();
+}
+
+void FormGPS::loadBoundaryFromKML(QString filename) {
+    // Modern implementation
+    boundary_new_from_KML(filename);
+}
+
+void FormGPS::addBoundaryOSMPoint(double latitude, double longitude) {
+    // Modern implementation
+    addboundaryOSMPoint(latitude, longitude);
 }
 
 // ===== RecordedPath Management (6 methods) - ZERO EMIT =====
@@ -2041,12 +2049,12 @@ void FormGPS::initializeQMLInterfaces()
         qDebug() << "🎯 Setting up OpenGL callbacks - InterfaceProperty verified safe";
         openGLControl->setProperty("callbackObject",QVariant::fromValue((void *) this));
         openGLControl->setProperty("initCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Initialized, this)));
-#if defined(Q_OS_WINDOWS) //|| defined (Q_OS_ANDROID)
-        //direct rendering in the QML render thread.  Will need locking to be safe.
-        openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::oglMain_Paint,this)));
-#else
+#ifdef USE_INDIRECT_RENDERING
         //do indirect rendering for now.
         openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::render_main_fbo,this)));
+#else
+        //direct rendering in the QML render thread.  Will need locking to be safe.
+        openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::oglMain_Paint,this)));
 #endif
 #ifdef USE_QSGRENDERNODE
         openGLControl->setProperty("cleanupCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Shutdown,this)));

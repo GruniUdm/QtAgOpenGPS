@@ -114,6 +114,8 @@ PGNParser::ParsedData PGNParser::parsePGN(const QByteArray& data) {
             return parsePGN253(data);
         case 250:  // 0xFA - AutoSteer Sensor (pressure/current monitoring)
             return parsePGN250(data);
+        case 244:  // 0xFA - AutoSteer Sensor (pressure/current monitoring)
+            return parsePGN244(data);
         case 211:  // 0xD3 - IMU Data (heading, roll, pitch)
             return parsePGN211(data);
         case 212:  // 0xD4 - IMU Disconnect (Phase 6.0.25)
@@ -966,6 +968,60 @@ PGNParser::ParsedData PGNParser::parsePGN253(const QByteArray& data) {
                  << "deg, PWM:" << result.pwmDisplay
                  << ", Switch:" << QString::number(result.switchByte, 16);
     }
+
+    return result;
+}
+
+PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
+    // PGN 244 (0xF4): Blockage Data
+    // Byte 0-1: Header (0x80 0x81)
+    // Byte 2: Source ID (0x7b = Machine)
+    // Byte 3: PGN (0xF4 = 244) Blockage Monitor
+    // Byte 4: Length (4 bytes)
+    // Byte 5: Module ID
+    // Byte 6: Section Number
+    // Byte 7-8: Section value
+    // Byte 9: Checksum
+
+    ParsedData result;
+
+    if (data.size() < 10) {
+        return result;
+    }
+
+    // Validate header and PGN
+    if ((unsigned char)data[0] != 0x80 || (unsigned char)data[1] != 0x81) {
+        return result;
+    }
+    if ((unsigned char)data[3] != 0xF4) {
+        return result;
+    }
+
+    // PHASE 6.0.23: Extract steer angle (bytes 5-6) - int16 x100
+    int arrayIndex = data[5]; // Module ID: 0, 1, 2, 3
+    int sectionIndex = data[6]; // Section Number
+
+    // Проверяем корректность индексов
+    if (arrayIndex >= 0 && arrayIndex < result.blockageseccount.size() &&
+        sectionIndex >= 0 && sectionIndex < result.blockageseccount[arrayIndex].size()) {
+
+        qint16 value = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
+        result.blockageseccount[arrayIndex][sectionIndex] = value;
+    }
+
+    result.isValid = true;
+    result.sourceType = "PGN";
+    result.pgnNumber = 244;
+    result.sentenceType = "Blockage_Data_IN";
+    result.moduleType = "Machine";
+
+    // // Debug log (throttled to prevent spam at 40 Hz)
+    // static int logCounter = 0;
+    // if (++logCounter % 200 == 0) {  // Log every 200th message (5 sec at 40Hz)
+    qDebug() << "PGN 244 - Blockage:" ;
+    //              << "deg, PWM:" << result.pwmDisplay
+    //              << ", Switch:" << QString::number(result.switchByte, 16);
+    // }
 
     return result;
 }

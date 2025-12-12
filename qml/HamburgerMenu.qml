@@ -157,7 +157,7 @@ Drawer{
             anchors.topMargin: 5
             spacing: 10
             flow: Grid.TopToBottom
-            rows: 5
+            rows: 7
             columns: 1
 
             Comp.IconButtonTextBeside{
@@ -203,6 +203,20 @@ Drawer{
                     hamburgerMenuRoot.visible = false
                     // Threading Phase 1: Language selection - German
                     SettingsManager.menu_language = "de"
+                    aog.settings_save()}
+            }
+            Comp.IconButtonTextBeside{
+                text: qsTr("हिंदी")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    SettingsManager.menu_language = "hi"
+                    aog.settings_save()}
+            }
+            Comp.IconButtonTextBeside{
+                text: qsTr("Қазақ")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    SettingsManager.menu_language = "kz"
                     aog.settings_save()}
             }
         }

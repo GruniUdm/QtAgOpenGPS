@@ -4,6 +4,7 @@
 //GUI to backend boundary interface
 #include "formgps.h"
 #include "qmlutil.h"
+#include "classes/settingsmanager.h"
 
 void FormGPS::boundary_calculate_area() {
     int ptCount = bnd.bndBeingMadePts.count();
@@ -159,4 +160,40 @@ void FormGPS::boundary_delete_all() {
         boundaryInterface->setProperty("count", bnd.bndList.count());
     }
     boundary_update_list();
+}
+void FormGPS::boundary_new_from_KML(QString filename) {
+
+    qDebug() << "Opening KML file:" << filename;
+    QUrl fileUrl(filename);
+    QString localPath = fileUrl.toLocalFile();
+    FindLatLon(localPath);
+
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLatStart(latK);
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLonStart(lonK);
+    if (timerSim.isActive())
+    {
+        pn.latitude = this->latStart();
+        pn.longitude = this->lonStart();
+
+        sim.latitude = this->latStart();
+        SettingsManager::instance()->setGps_simLatitude(this->latStart());
+        sim.longitude = this->lonStart();
+        SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+    }
+    // Phase 6.3.1: Use PropertyWrapper for safe QObject access
+    pn.SetLocalMetersPerDegree(this);
+    LoadKMLBoundary(localPath);
+    boundary_stop();
+}
+void FormGPS::addboundaryOSMPoint(double latitude, double longitude)
+{   qDebug()<<"point.easting";
+    double northing;
+    double easting;
+    pn.ConvertWGS84ToLocal(latitude, longitude, northing, easting, this);
+    //save the north & east as previous
+    Vec3 point(easting,northing,0);
+    bnd.bndBeingMadePts.append(point);
+    boundary_calculate_area();
 }

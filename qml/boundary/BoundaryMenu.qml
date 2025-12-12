@@ -94,6 +94,10 @@ Item {
                 IconButtonTransparent{
                     objectName: "btnBoundaryFancyDrawer"
                     icon.source: prefix + "/images/bing.png"
+                    onClicked: {
+                        boundaryOSM.show()
+                        boundaryMenuPopup.visible = false
+                    }
                 }
                 IconButtonTransparent{
                     icon.source: prefix + "/images/AddNew.png"
@@ -132,6 +136,10 @@ Item {
     }
     BoundaryType {
         id: boundaryType
+        visible: false
+    }
+    BoundaryOSM {
+        id: boundaryOSM
         visible: false
     }
 }
