@@ -22,6 +22,7 @@
 #include "cpgn.h"
 #include "qmlutil.h"
 #include "glutils.h"
+#include "indirect.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -1379,7 +1380,7 @@ void FormGPS::UpdateFixPosition()
     }
 
     qDebug(qpos) << "Time before painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
-#if !defined(Q_OS_WINDOWS) //&& !defined(Q_OS_ANDROID)
+#ifdef USE_INDIRECT_RENDERING
     oglMain_Paint();
 #endif
 

@@ -24,6 +24,7 @@
 #include "classes/agioservice.h"  // For zero-latency GPS access
 #include "classes/settingsmanager.h"
 #include "cpgn.h"
+#include "indirect.h"
 
 #include <assert.h>
 #include <QElapsedTimer>  // For latency profiling
@@ -285,15 +286,7 @@ void FormGPS::render_main_fbo()
 void FormGPS::oglMain_Paint()
 {
     OpenGLViewport viewport = getOpenGLViewport(mainWindow);
-#if !defined(Q_OS_WINDOWS) && !defined(Q_OS_ANDROID)
-    //if there's no context we need to create one because
-    //the qml renderer is in a different thread.
-    if (!mainOpenGLContext.isValid()) {
-        if (viewport.context)
-            mainOpenGLContext.setShareContext(viewport.context);
-        mainOpenGLContext.create();
-    }
-#endif
+
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
     QColor color;
@@ -311,7 +304,16 @@ void FormGPS::oglMain_Paint()
     //gl->glViewport(oglX,oglY,width,height);
     //qDebug(qgl) << "viewport is " << width << height;
 
-#if !defined(Q_OS_WINDOWS) && !defined(Q_OS_ANDROID)
+#ifdef USE_INDIRECT_RENDERING
+    //If we're rendering to a texture, this method is being called
+    //by the main thread from UpdateFixPostion and needs to create
+    //its own OpenGL context.
+    if (!mainOpenGLContext.isValid()) {
+        if (viewport.context)
+            mainOpenGLContext.setShareContext(viewport.context);
+        mainOpenGLContext.create();
+    }
+
     if (!mainSurface.isValid()) {
         QSurfaceFormat format = mainOpenGLContext.format();
         mainSurface.setFormat(format);
@@ -331,7 +333,7 @@ void FormGPS::oglMain_Paint()
     initializeTextures();
     initializeShaders();
 
-#if !defined(Q_OS_WINDOWS) && !defined(Q_OS_ANDROID)
+#ifdef USE_INDIRECT_RENDERING
     //we will work on the unused texture in case QML is rendering on
     //another core
     int working_fbo = (active_fbo < 0 ? 0 : active_fbo + 1 % 1);
@@ -921,7 +923,7 @@ void FormGPS::oglMain_Paint()
         overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix));
     }
     */
-#if !defined(Q_OS_WINDOWS) && !defined(Q_OS_ANDROID)
+#ifdef USE_INDIRECT_RENDERING
 
     mainFBO[working_fbo]->bindDefault();
 

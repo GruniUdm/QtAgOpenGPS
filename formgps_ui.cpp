@@ -23,6 +23,7 @@
 #include <QTranslator>
 // FormLoop removed - Phase 4.4: AgIOService standalone
 #include <algorithm>
+#include "indirect.h"
 
 //if using qquickframebufferobject, set qml to use AOGRenderer and comment out next line
 //#define USE_QSGRENDERNODE 1 //Also switch qml to use AOGRendererItem
@@ -2039,12 +2040,12 @@ void FormGPS::initializeQMLInterfaces()
         qDebug() << "🎯 Setting up OpenGL callbacks - InterfaceProperty verified safe";
         openGLControl->setProperty("callbackObject",QVariant::fromValue((void *) this));
         openGLControl->setProperty("initCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Initialized, this)));
-#if defined(Q_OS_WINDOWS) //|| defined (Q_OS_ANDROID)
-        //direct rendering in the QML render thread.  Will need locking to be safe.
-        openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::oglMain_Paint,this)));
-#else
+#ifdef USE_INDIRECT_RENDERING
         //do indirect rendering for now.
         openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::render_main_fbo,this)));
+#else
+        //direct rendering in the QML render thread.  Will need locking to be safe.
+        openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::oglMain_Paint,this)));
 #endif
 #ifdef USE_QSGRENDERNODE
         openGLControl->setProperty("cleanupCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Shutdown,this)));
