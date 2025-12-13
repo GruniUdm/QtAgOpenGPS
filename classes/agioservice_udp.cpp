@@ -488,7 +488,7 @@ void AgIOService::onUdpDataReady()
                     emit steerDataReady(parsedData);
                     break;
                 case 244:  // Blockage Data
-                    emit machineDataReady(parsedData);
+                    emit blockageDataReady(parsedData);
                     break;
 
                 case 212:  // IMU disconnect sentinel

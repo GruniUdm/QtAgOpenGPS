@@ -77,6 +77,10 @@ public:
 
         // Blockage
         QVector<QVector<double>> blockageseccount;
+        int blockageseccount1[16];
+        int blockageseccount2[16];
+        int blockageseccount3[16];
+        int blockageseccount4[16];
     };
 
     explicit PGNParser(QObject *parent = nullptr);

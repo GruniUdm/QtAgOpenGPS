@@ -3199,6 +3199,9 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
 }
 
 void FormGPS::onMachineDataReady(const PGNParser::ParsedData& data)
+{}
+
+void FormGPS::onBlockageDataReady(const PGNParser::ParsedData& data)
 {
     // AutoSteer module feedback handler (~40 Hz throttled by timer)
     // Updates mc.* variables and AutoSteer IMU fallback
@@ -3209,13 +3212,17 @@ void FormGPS::onMachineDataReady(const PGNParser::ParsedData& data)
     // PGN 244: Blockage Data
     if (data.pgnNumber == 244) {
 
+        //qDebug(qpos)<< "Blockage Data1" << data.blockageseccount1;
+        qDebug(qpos)<< "Blockage Data2" << data.blockageseccount2;
+
+        for (int i = 0; i < 16; ++i) {
+            qDebug(qpos) << "[" << i << "] =" << data.blockageseccount2[i];
+        }
+
+
         // Reset module connection timeout counter
         //setMachineModuleConnectedCounter(0);
     }
-
-
-
-
 }
 
 // Phase 6.0.24: GPS timer callback - UpdateFixPosition() at 40 Hz fixed rate

@@ -114,7 +114,7 @@ PGNParser::ParsedData PGNParser::parsePGN(const QByteArray& data) {
             return parsePGN253(data);
         case 250:  // 0xFA - AutoSteer Sensor (pressure/current monitoring)
             return parsePGN250(data);
-        case 244:  // 0xFA - AutoSteer Sensor (pressure/current monitoring)
+        case 244:  // 0xFA - Blockage Data
             return parsePGN244(data);
         case 211:  // 0xD3 - IMU Data (heading, roll, pitch)
             return parsePGN211(data);
@@ -985,7 +985,7 @@ PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
 
     ParsedData result;
 
-    if (data.size() < 10) {
+    if (data.size() != 10) {
         return result;
     }
 
@@ -997,19 +997,28 @@ PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
         return result;
     }
 
+    // Проверка контрольной суммы
+    uint16_t checksum = 0;
+    for (int i = 2; i < 9; i++) {  // i < 9, а не i <= 8
+        checksum += static_cast<uint8_t>(data[i]);
+    }
+
+    uint8_t calculatedChecksum = checksum & 0xFF;
+    uint8_t receivedChecksum = static_cast<uint8_t>(data[9]);
+
+     if (calculatedChecksum == receivedChecksum) result.isValid = true;
+     else result.isValid = false;
     // PHASE 6.0.23: Extract steer angle (bytes 5-6) - int16 x100
     int arrayIndex = data[5]; // Module ID: 0, 1, 2, 3
     int sectionIndex = data[6]; // Section Number
 
-    // Проверяем корректность индексов
-    if (arrayIndex >= 0 && arrayIndex < result.blockageseccount.size() &&
-        sectionIndex >= 0 && sectionIndex < result.blockageseccount[arrayIndex].size()) {
-
-        qint16 value = (qint16)((uint8_t(data[8]) << 8) + uint8_t(data[7]));
-        result.blockageseccount[arrayIndex][sectionIndex] = value;
+    if (result.isValid){
+        result.blockageseccount1[sectionIndex] = uint8_t(data[6]);
+        result.blockageseccount2[sectionIndex] = (uint8_t(data[8]) << 8) + uint8_t(data[7]);
     }
+        qint16 value = (uint8_t(data[8]) << 8) + uint8_t(data[7]);
+        //result.blockageseccount[arrayIndex][sectionIndex] = value;
 
-    result.isValid = true;
     result.sourceType = "PGN";
     result.pgnNumber = 244;
     result.sentenceType = "Blockage_Data_IN";
