@@ -14,6 +14,8 @@
 #include <QRect>
 #include <QTimer>
 #include <QtQml/qqmlregistration.h>
+#include <QMutex>
+#include <QQmlEngine>
 
 // Include Qt6 macros before class definition
 #include "settingsmanager_macros.h"
@@ -35,12 +37,23 @@ class SettingsManager : public QObject
     QML_SINGLETON
     QML_ELEMENT
 
-public:
+private:
     explicit SettingsManager(QObject *parent = nullptr);
     virtual ~SettingsManager();
 
+    //prevent copying
+    SettingsManager(const SettingsManager &) = delete;
+    SettingsManager &operator=(const SettingsManager &) = delete;
+
+    static SettingsManager *s_instance;
+    static QMutex s_mutex;
+    static bool s_cpp_created;
+
+public:
     // Singleton pattern
     static SettingsManager* instance();
+    static SettingsManager *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
+
 
     // Qt6 QSettings initialization
     void initializeFromSettings();
@@ -457,9 +470,6 @@ signals:
 
 
 private:
-    // Singleton instance
-    static SettingsManager* s_instance;
-
     // Qt6 Pure Architecture - Only QSettings needed
     QSettings* m_qsettings;
 

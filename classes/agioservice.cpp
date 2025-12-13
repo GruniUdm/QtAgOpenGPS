@@ -15,6 +15,10 @@
 // Control via main.cpp: agioservice.debug=true|false
 Q_LOGGING_CATEGORY(agioservice, "agioservice")
 
+AgIOService *AgIOService::s_instance = nullptr;
+QMutex AgIOService::s_mutex;
+bool AgIOService::s_cpp_created = false;
+
 // SomcoSoftware approach: Qt manages the singleton automatically
 
 AgIOService::AgIOService(QObject *parent)
@@ -217,7 +221,36 @@ AgIOService::~AgIOService()
     }
 }
 
-// Meyer's singleton pattern - no explicit create() method needed in .cpp
+AgIOService *AgIOService::instance() {
+    QMutexLocker locker(&s_mutex);
+    if (!s_instance) {
+        s_instance = new AgIOService();
+        qDebug(agioservice) << "singleton created by C++ code.";
+        s_cpp_created = true;
+        // ensure cleanup on app exit
+        QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+                         s_instance, []() {
+                             delete s_instance; s_instance = nullptr;
+                         });
+    }
+    return s_instance;
+}
+
+AgIOService *AgIOService::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
+    Q_UNUSED(jsEngine)
+
+    QMutexLocker locker(&s_mutex);
+
+    if(!s_instance) {
+        s_instance = new AgIOService();
+        qDebug(agioservice) << "singleton created by QML engine.";
+    } else if (s_cpp_created) {
+        qmlEngine->setObjectOwnership(s_instance, QQmlEngine::CppOwnership);
+    }
+
+    return s_instance;
+}
+
 
 // ============================================================================
 // RECTANGLE PATTERN: Manual Implementation of Getters, Setters, and Bindables

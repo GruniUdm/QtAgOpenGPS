@@ -21,8 +21,47 @@
 #include "cabcurve.h"
 #include "ccontour.h"
 #include "ctrack.h"
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY (cvehicle, "cvehicle.qtagopengps")
 
 // SomcoSoftware approach: Qt manages the singleton automatically
+
+CVehicle* CVehicle::s_instance = nullptr;
+QMutex CVehicle::s_mutex;
+bool CVehicle::s_cpp_created = false;
+
+CVehicle* CVehicle::instance()
+{
+    QMutexLocker locker(&s_mutex);
+    if (!s_instance) {
+        s_instance = new CVehicle();
+        qDebug(cvehicle) << "Singleton created by C++ code.";
+        s_cpp_created = true;
+        // ensure cleanup on app exit
+        QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+                         s_instance, []() {
+                             delete s_instance; s_instance = nullptr;
+                         });
+    }
+    return s_instance;
+}
+
+CVehicle *CVehicle::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
+    Q_UNUSED(jsEngine)
+
+    QMutexLocker locker(&s_mutex);
+
+    if(!s_instance) {
+        s_instance = new CVehicle();
+        qDebug(cvehicle) << "Singleton created by QML engine.";
+    } else if (s_cpp_created) {
+        qmlEngine->setObjectOwnership(s_instance, QQmlEngine::CppOwnership);
+    }
+
+    return s_instance;
+}
+
 
 QRect find_bounding_box(int viewport_height, QVector3D p1, QVector3D p2, QVector3D p3, QVector3D p4) {
     float x_min = glm::FLOAT_MAX;
