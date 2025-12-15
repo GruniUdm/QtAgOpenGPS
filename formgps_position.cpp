@@ -1375,6 +1375,7 @@ void FormGPS::UpdateFixPosition()
     if (isJobStarted()) {
         processSectionLookahead();
 
+
         //oglZoom_Paint();
         //processOverlapCount();
     }
@@ -1475,14 +1476,14 @@ void FormGPS::UpdateFixPosition()
     // frameTime and steerModuleConnectedCounter use existing variables directly - no members needed
 
     // === Blockage Sensors Updates (8 properties) - Qt 6.8 QProperty ===
-    if (m_blockage_avg != tool.blockage_avg) { m_blockage_avg = tool.blockage_avg; blockageChangedFlag = true; }
-    if (m_blockage_min1 != tool.blockage_min1) { m_blockage_min1 = tool.blockage_min1; blockageChangedFlag = true; }
-    if (m_blockage_min2 != tool.blockage_min2) { m_blockage_min2 = tool.blockage_min2; blockageChangedFlag = true; }
-    if (m_blockage_max != tool.blockage_max) { m_blockage_max = tool.blockage_max; blockageChangedFlag = true; }
-    if (m_blockage_min1_i != tool.blockage_min1_i) { m_blockage_min1_i = tool.blockage_min1_i; blockageChangedFlag = true; }
-    if (m_blockage_min2_i != tool.blockage_min2_i) { m_blockage_min2_i = tool.blockage_min2_i; blockageChangedFlag = true; }
-    if (m_blockage_max_i != tool.blockage_max_i) { m_blockage_max_i = tool.blockage_max_i; blockageChangedFlag = true; }
-    if (m_blockage_blocked != (bool)tool.blockage_blocked) { m_blockage_blocked = (bool)tool.blockage_blocked; blockageChangedFlag = true; }
+    if (m_blockage_avg != blockage.blockage_avg) { m_blockage_avg = blockage.blockage_avg; blockageChangedFlag = true; }
+    if (m_blockage_min1 != blockage.blockage_min1) { m_blockage_min1 = blockage.blockage_min1; blockageChangedFlag = true; }
+    if (m_blockage_min2 != blockage.blockage_min2) { m_blockage_min2 = blockage.blockage_min2; blockageChangedFlag = true; }
+    if (m_blockage_max != blockage.blockage_max) { m_blockage_max = blockage.blockage_max; blockageChangedFlag = true; }
+    if (m_blockage_min1_i != blockage.blockage_min1_i) { m_blockage_min1_i = blockage.blockage_min1_i; blockageChangedFlag = true; }
+    if (m_blockage_min2_i != blockage.blockage_min2_i) { m_blockage_min2_i = blockage.blockage_min2_i; blockageChangedFlag = true; }
+    if (m_blockage_max_i != blockage.blockage_max_i) { m_blockage_max_i = blockage.blockage_max_i; blockageChangedFlag = true; }
+    if (m_blockage_blocked != blockage.blockage_blocked) { m_blockage_blocked = blockage.blockage_blocked; blockageChangedFlag = true; }
 
     // === Navigation Updates (6 properties) ===
     if (m_distancePivotToTurnLine != _distancePivotToTurnLine) { m_distancePivotToTurnLine = _distancePivotToTurnLine; navChangedFlag = true; }
@@ -3203,28 +3204,50 @@ void FormGPS::onMachineDataReady(const PGNParser::ParsedData& data)
 
 void FormGPS::onBlockageDataReady(const PGNParser::ParsedData& data)
 {
-    // AutoSteer module feedback handler (~40 Hz throttled by timer)
-    // Updates mc.* variables and AutoSteer IMU fallback
-    // NO GPS position update
+
+    // Update data from Blockage modules
 
     if (!data.isValid) return;
 
     // PGN 244: Blockage Data
     if (data.pgnNumber == 244) {
 
-        //qDebug(qpos)<< "Blockage Data1" << data.blockageseccount1;
-        qDebug(qpos)<< "Blockage Data2" << data.blockageseccount2;
+        int i = data.blockagesection[1];
+        int sectionType = data.blockagesection[0];
+        int value = data.blockagesection[2];
 
-        for (int i = 0; i < 16; ++i) {
-            qDebug(qpos) << "[" << i << "] =" << data.blockageseccount2[i];
+        if (i >= 0) {
+            switch(sectionType) {
+            case 0:
+                if (i < (int)(sizeof(blockage.blockageSecCount1) / sizeof(blockage.blockageSecCount1[0])))
+                    blockage.blockageSecCount1[i] = value;
+                break;
+            case 1:
+                if (i < (int)(sizeof(blockage.blockageSecCount2) / sizeof(blockage.blockageSecCount2[0])))
+                    blockage.blockageSecCount2[i] = value;
+                break;
+            case 2:
+                if (i < (int)(sizeof(blockage.blockageSecCount3) / sizeof(blockage.blockageSecCount3[0])))
+                    blockage.blockageSecCount3[i] = value;
+                break;
+            case 3:
+                if (i < (int)(sizeof(blockage.blockageSecCount4) / sizeof(blockage.blockageSecCount4[0])))
+                    blockage.blockageSecCount4[i] = value;
+                break;
+            }
         }
 
+        blockage.statistics(pn.speed);
 
-        // Reset module connection timeout counter
-        //setMachineModuleConnectedCounter(0);
+     // qDebug(qpos) << "blockage_blocked: " << m_blockage_avg;
+     // qDebug(qpos) << "blockageseccount1:";
+     // for (int i = 0; i < 16; i++) {
+     //     if (blockage.blockageSecCount4[i] != 0) {
+     //         qDebug(qpos) << QString("  [%1] = %2").arg(i).arg(blockage.blockageSecCount4[i]);
+     //     }
+     //    }
     }
 }
-
 // Phase 6.0.24: GPS timer callback - UpdateFixPosition() at 40 Hz fixed rate
 void FormGPS::onGPSTimerTimeout()
 {

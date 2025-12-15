@@ -3,7 +3,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-//import Settings
+import AOG
 //This is a the row of on-screen section-control buttonw
 
 Rectangle {
@@ -17,25 +17,25 @@ Rectangle {
     color: "transparent"
 
     // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
-    property bool isDayMode: true
-    property int seedBlockRow1: 0
-    property int seedBlockRow2: 0
-    property int seedBlockRow3: 0
-    property int seedBlockRow4: 0
-    property int seedBlockCountMin: 0
-    property int seedBlockCountMax: 10000
+    property bool isDayMode: SettingsManager.display_isDayMode
+    property int seedBlockRow1: SettingsManager.seed_blockRow1
+    property int seedBlockRow2: SettingsManager.seed_blockRow2
+    property int seedBlockRow3: SettingsManager.seed_blockRow3
+    property int seedBlockRow4: SettingsManager.seed_blockRow4
+    property int seedBlockCountMin: SettingsManager.seed_blockCountMin
+    property int seedBlockCountMax: SettingsManager.seed_blockCountMax
 
     // Threading Phase 1: Seed blockage configuration
     property int numRows:  Number(seedBlockRow1 + seedBlockRow2 + seedBlockRow3 + seedBlockRow4)
-    property int countMin: Number(seedBlockCountMin*10000)
-    property int countMax: Number(seedBlockCountMax*10000)
+    property int countMin: Number(seedBlockCountMin)
+    property int countMax: Number(seedBlockCountMax)
     property color offColor: "Crimson"
     property color offTextColor: "White"
     property color onColor: "DarkGoldenrod"
     property color onTextColor: "White"
     property color autoColor: "ForestGreen"
     property color autoTextColor: "White"
-    property variant blockageRowCount: aog.blockageRowCount
+    property variant blockageRowCount: aog.blockageseccount
 
 
     //methods
@@ -101,17 +101,17 @@ Rectangle {
             //height: (10 * theme.scaleWidth)
             height: (blockageRows.blockageRowCount[model.rowNo] * 40/(aog.blockage_max+1)+20)*theme.scaleHeight<45*theme.scaleHeight?(blockageRows.blockageRowCount[model.rowNo] * 40/(aog.blockage_max+1)+20)*theme.scaleHeight:40*theme.scaleHeight
             //anchors.bottom: parent.bottom
-            //buttonText: (model.rowNo + 1).toFixed(0)
+            buttonText: (model.rowNo + 1).toFixed(0)
             // visible: (model.rowNo < numRows) ? true : false
             color: {
-                var count = blockageRows.blockageRowCount[model.rowNo];
+                var count = (blockageRows.blockageRowCount[model.rowNo]+aog.blockage_max)/2;
                 var dayMode = isDayMode;
                 var off = dayMode ? "Red" : "Crimson";
                 var auto = dayMode ? "Lime" : "ForestGreen";
                 var on = dayMode ? "Yellow" : "DarkGoldenRod";
                 return count < countMin ? off : (count < countMax ? auto : on);
             }
-            //textColor: (blockageRows.blockageRowCount[model.rowNo]===0 ? offTextColor : (blockageRows.blockageRowCount[model.rowNo] === 1 ? autoTextColor : onTextColor))
+            textColor: "black"
         }
     }
 

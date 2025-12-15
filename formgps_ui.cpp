@@ -171,7 +171,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     // ⚡ MOVED: Interface initialization moved to initializeQMLInterfaces() for proper timing
 
     // QMLSectionButtons completely removed - using direct btnStates[] array instead
-    qmlblockage::set_aog_root(qmlItem(mainWindow, "aog"));
 
     //initialize interface properties (MOVED to initializeQMLInterfaces() after PropertyWrapper init)
     setIsBtnAutoSteerOn(false);
@@ -183,7 +182,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     // Qt 6.8 BINDABLE: Q_OBJECT_BINDABLE_PROPERTY automatically emits sectionButtonStateChanged() when .setValue() is called
     // NO CONNECTION NEEDED: Using direct btnStates[] array eliminates all circular dependency issues
-    //connect(aog,SIGNAL(rowCountChanged()), &tool.blockageRowState, SLOT(onRowsUpdated())); //Dim
 
     // ⚡ PHASE 6.3.0 TIMING FIX: OpenGL callbacks setup moved to initializeQMLInterfaces()
     // This ensures InterfaceProperty are initialized BEFORE any rendering can occur
@@ -584,10 +582,10 @@ void FormGPS::modulesSend252() {
     modules_send_252();
 }
 
-void FormGPS::blockageMonitoring() {
+void FormGPS::toBlockageMonitoring() {
     // Modern implementation - renamed to avoid conflict with existing doBlockageMonitoring()
     // Call the original doBlockageMonitoring() method from formgps_sections.cpp
-    doBlockageMonitoring();
+    //modules_send_245(); blockage settings
 }
 
 void FormGPS::steerAngleUp() {

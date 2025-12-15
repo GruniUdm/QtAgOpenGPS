@@ -598,6 +598,7 @@ Window {
             }
             BlockageData{ //window that displays GPS data
                 id: blockageData
+                z: 2
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 visible: AgIOService.blockageConnected && SettingsManager.seed_blockageIsOn
@@ -658,12 +659,12 @@ Window {
             }
             Comp.BlockageRows {
                 id: blockageRows
-                visible: AgIOService.blockageConnected && SettingsManager.seed_blockageIsOn
+                visible:  AgIOService.blockageConnected && SettingsManager.seed_blockageIsOn
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 8
                 height: 120 * theme.scaleHeight
-                //width: 800  * theme.scaleWidth
+                width: 800  * theme.scaleWidth
 
             }
             DisplayButtons{ // window that shows the buttons to change display. Rotate up/down, day/night, zoom in/out etc. See DisplayButtons.qml

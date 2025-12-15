@@ -357,9 +357,20 @@ int FormGPS::blockage_max_i() const { return m_blockage_max_i; }
 void FormGPS::setBlockage_max_i(int blockage_max_i) { m_blockage_max_i = blockage_max_i; }
 QBindable<int> FormGPS::bindableBlockage_max_i() { return &m_blockage_max_i; }
 
-bool FormGPS::blockage_blocked() const { return m_blockage_blocked; }
-void FormGPS::setBlockage_blocked(bool blockage_blocked) { m_blockage_blocked = blockage_blocked; }
-QBindable<bool> FormGPS::bindableBlockage_blocked() { return &m_blockage_blocked; }
+int FormGPS::blockage_blocked() const { return m_blockage_blocked; }
+void FormGPS::setBlockage_blocked(int blockage_blocked) { m_blockage_blocked = blockage_blocked; }
+QBindable<int> FormGPS::bindableBlockage_blocked() { return &m_blockage_blocked; }
+
+QVariantList FormGPS::blockageseccount() const {
+
+    QVariantList state;
+    for (int i = 0; i < 65; i++) {
+        state.append(static_cast<int>(blockage.blockageseccount[i]));
+    }
+    return state;
+}
+void FormGPS::setblockageseccount(const QVariantList& value) { }
+QBindable<QVariantList> FormGPS::bindableblockageseccount() { return &m_blockageseccount; }
 
 double FormGPS::avgPivDistance() const { return m_avgPivDistance; }
 void FormGPS::setAvgPivDistance(double avgPivDistance) { m_avgPivDistance = avgPivDistance; }

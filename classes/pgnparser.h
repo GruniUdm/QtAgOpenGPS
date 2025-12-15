@@ -76,11 +76,7 @@ public:
         qint64 timestampMs = 0;       // Reception timestamp (msecs since epoch)
 
         // Blockage
-        QVector<QVector<double>> blockageseccount;
-        int blockageseccount1[16];
-        int blockageseccount2[16];
-        int blockageseccount3[16];
-        int blockageseccount4[16];
+        int blockagesection[4] = {0, 0, 0, 0};
     };
 
     explicit PGNParser(QObject *parent = nullptr);

@@ -435,6 +435,7 @@ void AgIOService::onUdpDataReady()
                 }
                 if (parsedData.pgnNumber == 244 || parsedData.pgnNumber == 123) {
                     if (!machineConnected()) setMachineConnected(true);
+                    if (!blockageConnected()) setBlockageConnected(true);
                 }
             }
         }
@@ -1528,10 +1529,12 @@ void AgIOService::doTraffic()
     }
 
     bool machineConnected = (m_localCntrMachine < 3);
+    bool blockageConnected = (m_localCntrMachine < 3);
     bool steerConnected = (m_localCntrSteer < 3);
     bool imuConnected = (m_localCntrIMU < 3);
 
     static bool lastMachineConnected = false;
+    static bool lastBlockageConnected = false;
     static bool lastSteerConnected = false;
     static bool lastIMUConnected = false;
 
@@ -1539,6 +1542,11 @@ void AgIOService::doTraffic()
         emit moduleMachineStatusChanged(machineConnected);
         lastMachineConnected = machineConnected;
         qCDebug(agioservice) << "Machine module:" << (machineConnected ? "CONNECTED" : "DISCONNECTED");
+    }
+    if (blockageConnected != lastBlockageConnected) {
+        emit moduleMachineStatusChanged(blockageConnected);
+        lastBlockageConnected = blockageConnected;
+        qCDebug(agioservice) << "Blockage module:" << (blockageConnected ? "CONNECTED" : "DISCONNECTED");
     }
     if (steerConnected != lastSteerConnected) {
         emit moduleSteerStatusChanged(steerConnected);

@@ -48,7 +48,7 @@
 #include "cheadline.h"
 #include "cpgn.h"
 #include "ctrack.h"
-
+#include "qmlblockage.h"
 #include "formheadland.h"
 #include "formheadache.h"
 
@@ -185,8 +185,10 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY blockage_min2_iChanged BINDABLE bindableBlockage_min2_i)
     Q_PROPERTY(int blockage_max_i READ blockage_max_i WRITE setBlockage_max_i
                NOTIFY blockage_max_iChanged BINDABLE bindableBlockage_max_i)
-    Q_PROPERTY(bool blockage_blocked READ blockage_blocked WRITE setBlockage_blocked
+    Q_PROPERTY(int blockage_blocked READ blockage_blocked WRITE setBlockage_blocked
                NOTIFY blockage_blockedChanged BINDABLE bindableBlockage_blocked)
+    Q_PROPERTY(QVariantList blockageseccount READ blockageseccount WRITE setblockageseccount
+                   NOTIFY blockageseccountChanged BINDABLE bindableblockageseccount)
 
     // === Navigation (7 properties) - Important for guidance - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(double distancePivotToTurnLine READ distancePivotToTurnLine WRITE setDistancePivotToTurnLine
@@ -501,9 +503,13 @@ public:
     void setBlockage_max_i(int value);
     QBindable<int> bindableBlockage_max_i();
 
-    bool blockage_blocked() const;
-    void setBlockage_blocked(bool value);
-    QBindable<bool> bindableBlockage_blocked();
+    int blockage_blocked() const;
+    void setBlockage_blocked(int value);
+    QBindable<int> bindableBlockage_blocked();
+
+    QVariantList blockageseccount() const;
+    void setblockageseccount(const QVariantList& value);
+    QBindable<QVariantList> bindableblockageseccount();
 
     double avgPivDistance() const;
     void setAvgPivDistance(double value);
@@ -988,6 +994,8 @@ public:
     //QScopedPointer<CNMEA> pn;
     CNMEA pn;
 
+    qmlblockage blockage;
+
     //ABLine Instance
     //QScopedPointer<CABLine> ABLine;
 
@@ -1239,7 +1247,6 @@ public:
     //void SectionCalcMulti();
     void BuildMachineByte();
     void DoRemoteSwitches();
-    //void doBlockageMonitoring();
 
 
     /************************
@@ -1324,7 +1331,7 @@ public:
     Q_INVOKABLE void modulesSend238();
     Q_INVOKABLE void modulesSend251();
     Q_INVOKABLE void modulesSend252();
-    Q_INVOKABLE void blockageMonitoring();
+    Q_INVOKABLE void toBlockageMonitoring();
     Q_INVOKABLE void steerAngleUp();
     Q_INVOKABLE void steerAngleDown();
     Q_INVOKABLE void freeDrive();
@@ -1589,8 +1596,6 @@ public slots:
     void modules_send_252();
     // Note: modulesSend238/251/252 are Q_INVOKABLE versions for QML
 
-    void doBlockageMonitoring();
-
     //boundary UI for recording new boundary
     void boundary_calculate_area();
     void boundary_update_list();
@@ -1792,6 +1797,7 @@ signals:
     void blockage_min2_iChanged();
     void blockage_max_iChanged();
     void blockage_blockedChanged();
+    void blockageseccountChanged();
     void avgPivDistanceChanged();
     void frameTimeChanged();
 
@@ -1938,7 +1944,8 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min1_i, &FormGPS::blockage_min1_iChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min2_i, &FormGPS::blockage_min2_iChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_max_i, &FormGPS::blockage_max_iChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_blockage_blocked, &FormGPS::blockage_blockedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_blocked, &FormGPS::blockage_blockedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariantList, m_blockageseccount, &FormGPS::blockageseccountChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_avgPivDistance, &FormGPS::avgPivDistanceChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_frameTime, &FormGPS::frameTimeChanged)
 

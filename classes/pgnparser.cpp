@@ -997,37 +997,23 @@ PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
         return result;
     }
 
-    // Проверка контрольной суммы
-    uint16_t checksum = 0;
-    for (int i = 2; i < 9; i++) {  // i < 9, а не i <= 8
-        checksum += static_cast<uint8_t>(data[i]);
-    }
+    int m_ID = static_cast<quint8>(data[5]);
+    int sect_n = static_cast<quint8>(data[6]);
+    qint16 sect_val = static_cast<qint16>((static_cast<quint8>(data[8]) << 8) | static_cast<quint8>(data[7]));
 
-    uint8_t calculatedChecksum = checksum & 0xFF;
-    uint8_t receivedChecksum = static_cast<uint8_t>(data[9]);
-
-     if (calculatedChecksum == receivedChecksum) result.isValid = true;
-     else result.isValid = false;
-    // PHASE 6.0.23: Extract steer angle (bytes 5-6) - int16 x100
-    int arrayIndex = data[5]; // Module ID: 0, 1, 2, 3
-    int sectionIndex = data[6]; // Section Number
-
-    if (result.isValid){
-        result.blockageseccount1[sectionIndex] = uint8_t(data[6]);
-        result.blockageseccount2[sectionIndex] = (uint8_t(data[8]) << 8) + uint8_t(data[7]);
-    }
-        qint16 value = (uint8_t(data[8]) << 8) + uint8_t(data[7]);
-        //result.blockageseccount[arrayIndex][sectionIndex] = value;
-
+    result.isValid = true;
     result.sourceType = "PGN";
     result.pgnNumber = 244;
     result.sentenceType = "Blockage_Data_IN";
     result.moduleType = "Machine";
+    result.blockagesection[0] = m_ID;
+    result.blockagesection[1] = sect_n;
+    result.blockagesection[2] = sect_val;
 
     // // Debug log (throttled to prevent spam at 40 Hz)
     // static int logCounter = 0;
     // if (++logCounter % 200 == 0) {  // Log every 200th message (5 sec at 40Hz)
-    qDebug() << "PGN 244 - Blockage:" ;
+    //qDebug() << "PGN 244 - Blockage:" ;
     //              << "deg, PWM:" << result.pwmDisplay
     //              << ", Switch:" << QString::number(result.switchByte, 16);
     // }

@@ -54,7 +54,7 @@ Rectangle{
         blockageRows.setSizes()
         mandatory.visible = false
 
-        aog.blockageMonitoring() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        aog.toBlockageMonitoring() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
     }
     Label{
         id: top
