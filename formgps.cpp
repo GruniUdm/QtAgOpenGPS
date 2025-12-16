@@ -596,22 +596,6 @@ bool FormGPS::isPatchesChangingColor() const { return m_isPatchesChangingColor; 
 void FormGPS::setIsPatchesChangingColor(bool isPatchesChangingColor) { m_isPatchesChangingColor = isPatchesChangingColor; }
 QBindable<bool> FormGPS::bindableIsPatchesChangingColor() { return &m_isPatchesChangingColor; }
 
-bool FormGPS::isOutOfBounds() const { return m_isOutOfBounds; }
-void FormGPS::setIsOutOfBounds(bool isOutOfBounds) { m_isOutOfBounds = isOutOfBounds; }
-QBindable<bool> FormGPS::bindableIsOutOfBounds() { return &m_isOutOfBounds; }
-
-bool FormGPS::isHeadlandOn() const { return m_isHeadlandOn; }
-void FormGPS::setIsHeadlandOn(bool isHeadlandOn) { m_isHeadlandOn = isHeadlandOn; }
-QBindable<bool> FormGPS::bindableIsHeadlandOn() { return &m_isHeadlandOn; }
-
-double FormGPS::createBndOffset() const { return m_createBndOffset; }
-void FormGPS::setCreateBndOffset(double createBndOffset) { m_createBndOffset = createBndOffset; }
-QBindable<double> FormGPS::bindableCreateBndOffset() { return &m_createBndOffset; }
-
-bool FormGPS::isDrawRightSide() const { return m_isDrawRightSide; }
-void FormGPS::setIsDrawRightSide(bool isDrawRightSide) { m_isDrawRightSide = isDrawRightSide; }
-QBindable<bool> FormGPS::bindableIsDrawRightSide() { return &m_isDrawRightSide; }
-
 bool FormGPS::isDrivingRecordedPath() const { return m_isDrivingRecordedPath; }
 void FormGPS::setIsDrivingRecordedPath(bool isDrivingRecordedPath) { m_isDrivingRecordedPath = isDrivingRecordedPath; }
 QBindable<bool> FormGPS::bindableIsDrivingRecordedPath() { return &m_isDrivingRecordedPath; }
@@ -1131,7 +1115,7 @@ void FormGPS::JobClose()
     //}
 
     //turn off headland
-    this->setIsHeadlandOn(false); //this turns off the button
+    Backend::instance()->set_isHeadlandOn(false); //this turns off the button
 
     recPath.recList.clear();
     recPath.StopDrivingRecordedPath();

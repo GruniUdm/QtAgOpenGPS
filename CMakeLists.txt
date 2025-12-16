@@ -45,6 +45,8 @@ find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools) #for i18n internationalization support
 find_package(Qt6 REQUIRED COMPONENTS Bluetooth)
 find_package(Qt6 REQUIRED COMPONENTS Network)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 
 
@@ -390,6 +392,8 @@ target_link_libraries(QtAgOpenGPS PRIVATE
     Qt6::Multimedia
     Qt6::SerialPort
 )
+target_link_libraries(QtAgOpenGPS PRIVATE Qt6::Core)
+target_link_libraries(QtAgOpenGPS PRIVATE Qt6::Core)
 
 # Compile defines
 target_compile_definitions(QtAgOpenGPS PRIVATE

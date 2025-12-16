@@ -228,39 +228,19 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
                            QMatrix4x4 projection,
                            double steerAngle,
                            bool isFirstHeadingSet,
+                           double markLeft,
+                           double markRight,
                            QRect viewport,
-                           const CCamera &camera,
-                           const CTool &tool,
-                           CBoundary &bnd,
-                           QObject *mainWindow
+                           const CCamera &camera
                            )
 {
     ensureSettingsLoaded();  // Qt 6.8 MIGRATION: Lazy load settings
-    // ⚡ PHASE 6.3.0 SAFETY: Check if InterfaceProperty are initialized before accessing settings
-    bool display_isVehicleImage = false;
-    if (SettingsManager::instance()) {
-        try {
-            display_isVehicleImage = SettingsManager::instance()->display_isVehicleImage();
-        } catch (...) {
-            qDebug() << "⚠️ Settings not yet available for display_isVehicleImage - using default false";
-            display_isVehicleImage = false;
-        }
-    }
-    // ⚡ PHASE 6.3.0 SAFETY: Protected settings access
-    bool display_isSvennArrowOn = false;
-    float display_lineWidth = 2.0f;
-    if (SettingsManager::instance()) {
-        try {
-            display_isSvennArrowOn = SettingsManager::instance()->display_isSvennArrowOn();
-            display_lineWidth = SettingsManager::instance()->display_lineWidth();
-        } catch (...) {
-            qDebug() << "⚠️ Settings not yet available for vehicle display - using defaults";
-        }
-    }
 
-    // Phase 6.0.24 Problem 18: Validate fixHeading before rotation to prevent nan in modelview matrix
-    // If FormGPS::_imuCorrected uninitialized at startup, garbage gets copied to fixHeading
-    // Garbage rotation angle → trig overflow → nan → project() division by zero → CRASH
+    float display_lineWidth = 2.0f; //GL doesn't honor this
+    bool display_isVehicleImage = SettingsManager::instance()->display_isVehicleImage();
+    bool display_isSvennArrowOn = SettingsManager::instance()->display_isSvennArrowOn();
+    display_lineWidth = SettingsManager::instance()->display_lineWidth();
+
     if (!std::isfinite(fixHeading) || fabs(fixHeading) > 1000.0) {
         qWarning() << "DrawVehicle skipped: invalid fixHeading =" << fixHeading
                    << "(garbage not yet replaced by valid GPS/IMU data)";
@@ -295,19 +275,19 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     p1 = s.project(modelview, projection, viewport);
     pivot_axle_xy = QPoint(p1.x(), p1.y());
 
-    if (isFirstHeadingSet && !tool.isToolFrontFixed)
+    if (isFirstHeadingSet && !SettingsManager::instance()->tool_isToolFront())
     {
-        if (!tool.isToolRearFixed)
+        if (!SettingsManager::instance()->tool_isToolRearFixed())
         {
             //draw the rigid hitch
             color.setRgbF(0, 0, 0);
-            gldraw.append(QVector3D(0, tool.hitchLength, 0));
+            gldraw.append(QVector3D(0, SettingsManager::instance()->vehicle_hitchLength(), 0));
             gldraw.append(QVector3D(0, 0, 0));
             gldraw.draw(gl,mvp,color,GL_LINES,4);
 
             gldraw.clear();
             color.setRgbF(1.237f, 0.037f, 0.0397f);
-            gldraw.append(QVector3D(0, tool.hitchLength, 0));
+            gldraw.append(QVector3D(0, SettingsManager::instance()->vehicle_hitchLength(), 0));
             gldraw.append(QVector3D(0, 0, 0));
             gldraw.draw(gl,mvp,color,GL_LINES,1);
         }
@@ -315,16 +295,16 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
         {
             //draw the rigid hitch
             color.setRgbF(0, 0, 0);
-            gldraw.append(QVector3D(-0.35, tool.hitchLength, 0));
+            gldraw.append(QVector3D(-0.35, SettingsManager::instance()->vehicle_hitchLength(), 0));
             gldraw.append(QVector3D(-0.350, 0, 0));
-            gldraw.append(QVector3D(0.35, tool.hitchLength, 0));
+            gldraw.append(QVector3D(0.35, SettingsManager::instance()->vehicle_hitchLength(), 0));
             gldraw.append(QVector3D(0.350, 0, 0));
             gldraw.draw(gl,mvp,color,GL_LINES,4);
 
             color.setRgbF(1.237f, 0.037f, 0.0397f);
-            gldraw.append(QVector3D(-0.35, tool.hitchLength, 0));
+            gldraw.append(QVector3D(-0.35, SettingsManager::instance()->vehicle_hitchLength(), 0));
             gldraw.append(QVector3D(-0.35, 0, 0));
-            gldraw.append(QVector3D(0.35, tool.hitchLength, 0));
+            gldraw.append(QVector3D(0.35, SettingsManager::instance()->vehicle_hitchLength(), 0));
             gldraw.append(QVector3D(0.35, 0, 0));
             gldraw.draw(gl,mvp,color,GL_LINES,1);
         }
@@ -347,6 +327,8 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     //3 vehicle types  tractor=0 harvestor=1 4wd=2
     if (display_isVehicleImage)
     {
+        //get an on-screen coordinate and bounding box for the
+        //vehicle for detecting when the vehicle is clicked
         s = QVector3D(0,0,0); //should be pivot axle
         p1 = s.project(modelview, projection, viewport);
         pivot_axle_xy = QPoint(p1.x(), viewport.height() - p1.y());
@@ -592,43 +574,36 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
         gldraw.draw(gl,mvp,color,GL_POINTS,10.0f);
     }
 
-    if (bnd.isBndBeingMade)
-    {
-        glcolors.clear();
+    glcolors.clear();
 
-        gl->glLineWidth(2);
-        cv.color = QVector4D(0.0, 1.270, 0.0, 1.0);
+    gl->glLineWidth(2);
+    cv.color = QVector4D(0.0, 1.270, 0.0, 1.0);
 
-        if (mainWindow->property("isDrawRightSide").toBool())
-        {
-            cv.vertex = QVector3D(0.0, 0, 0);
-            glcolors.append(cv);
 
-            cv.color = QVector4D(1.270, 1.220, 0.20, 1.0);
-            cv.vertex = QVector3D(static_cast<float>(mainWindow->property("createBndOffset").toDouble()), 0.0f, 0.0f);
-            glcolors.append(cv);
+    if (markLeft) {
+        cv.vertex = QVector3D(0.0, 0, 0);
+        glcolors.append(cv);
 
-            cv.vertex = QVector3D(static_cast<float>(mainWindow->property("createBndOffset").toDouble()*0.75), 0.25f, 0.0f);
-            glcolors.append(cv);
+        cv.color = QVector4D(1.270, 1.220, 0.20, 1.0);
+        cv.vertex = QVector3D(markLeft, 0.0f, 0.0f);
+        glcolors.append(cv);
 
-            glcolors.draw(gl,mvp,GL_LINE_STRIP, 2);
-        }
+        cv.vertex = QVector3D(markLeft * 0.75, 0.25f, 0.0f);
+        glcolors.append(cv);
 
-        //draw on left side
-        else
-        {
-            cv.vertex = QVector3D(0.0, 0, 0);
-            glcolors.append(cv);
+        glcolors.draw(gl,mvp,GL_LINE_STRIP, 2);
+    } else if (markRight) {
+        cv.vertex = QVector3D(0.0, 0, 0);
+        glcolors.append(cv);
 
-            cv.color = QVector4D(1.270, 1.220, 0.20, 1.0);
-            cv.vertex = QVector3D(static_cast<float>(-mainWindow->property("createBndOffset").toDouble()), 0.0f, 0.0f);
-            glcolors.append(cv);
+        cv.color = QVector4D(1.270, 1.220, 0.20, 1.0);
+        cv.vertex = QVector3D(-markRight, 0.0f, 0.0f);
+        glcolors.append(cv);
 
-            cv.vertex = QVector3D(static_cast<float>(-mainWindow->property("createBndOffset").toDouble()*0.75), 0.25f, 0.0f);
-            glcolors.append(cv);
+        cv.vertex = QVector3D(-markRight * 0.75, 0.25f, 0.0f);
+        glcolors.append(cv);
 
-            glcolors.draw(gl,mvp,GL_LINE_STRIP, 2);
-        }
+        glcolors.draw(gl,mvp,GL_LINE_STRIP, 2);
     }
 
     //Svenn Arrow
@@ -648,88 +623,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
         gldraw.draw(gl,mvp,color,GL_LINE_STRIP,display_lineWidth);
     }
 
-    /*
-    // TODO: Track number and nudge offset need to be done in QML.
-    // Probably will need CTrack to put this information in its model
-
-    if(!(bool)property_setDisplay_topTrackNum && track.idx() > -1 && !mainWindow->property("isContourBtnOn").toBool()) {
-        color.setRgbF(1.269, 1.25, 1.2510, 0.87); //?? why over 1.0?
-
-        if (curve.isBtnCurveOn && mainWindow->property("isContourBtnOn").toBool() == false)
-        {
-            if (curve.howManyPathsAway == 0) {
-                drawTextVehicle(camera, gl, mvp, 2, wheelbase+1, "0", 1,
-                                true, color);
-            } else if (curve.howManyPathsAway > 0) {
-                drawTextVehicle(camera, gl, mvp, 2, wheelbase+1,
-                                QString("%1").arg(curve.howManyPathsAway,0,'f',0), 1,
-                                true, color);
-            }else {
-                drawTextVehicle(camera, gl, mvp, 2, wheelbase+1,
-                                QString("%1L").arg(curve.howManyPathsAway,0,'f',0) + "L", 1,
-                                true, color);
-            }
-        }
-        else if (ABLine.isBtnABLineOn && mainWindow->property("isContourBtnOn").toBool() == false)
-        {
-            if(mainWindow->property("isContourBtnOn").toBool())
-            if (ABLine.howManyPathsAway == 0) {
-                drawTextVehicle(camera, gl, mvp, 2, wheelbase+1, "0", 1,
-                                true, color);
-            } else if (ABLine.howManyPathsAway > 0) {
-                drawTextVehicle(camera, gl, mvp, 2, wheelbase+1,
-                                QString("%1R").arg(ABLine.howManyPathsAway,0,'f',0), 1,
-                                true, color);
-            }else {
-                drawTextVehicle(camera, gl, mvp, 2, wheelbase+1,
-                                QString("%1L").arg(ABLine.howManyPathsAway,0,'f',0), 1,
-                                true, color);
-            }
-        }
-    }
-    */
-
-    //if (camera.camSetDistance < -500)
-    //{
-    //    double theta = glm::twoPI / 20;
-    //    double c = cos(theta);//precalculate the sine and cosine
-    //    double s = sin(theta);
-
-    //    double x = camera.camSetDistance * -.015;//we start at angle = 0
-    //    double y = 0;
-
-    //    gldraw.clear();
-    //    gldraw.append(QVector3D(x, y, 0.0));
-    //    for (int ii = 0; ii < 20; ii++)
-    //    {
-    //        //output vertex
-    //        gldraw.append(QVector3D(x, y, 0.0));
-
-    //        //apply the rotation matrix
-    //        double t = x;
-    //        x = (c * x) - (s * y);
-    //        y = (s * t) + (c * y);
-    //        // GL.Vertex3(x, y, 0.0);
-    //    }
-    //    gldraw.draw(gl,mvp,QColor::fromRgbF(0.5f, 0.5f, 1.2f, 0.25),
-    //                GL_TRIANGLE_FAN, 1);
-
-    //    gldraw.clear();
-
-    //    for (int ii = 0; ii < 20; ii++)
-    //    {
-    //        //output vertex
-    //        gldraw.append(QVector3D(x, y, 0.0));
-
-    //        //apply the rotation matrix
-    //        double t = x;
-    //        x = (c * x) - (s * y);
-    //        y = (s * t) + (c * y);
-    //        // GL.Vertex3(x, y, 0.0);
-    //    }
-    //    gldraw.draw(gl, mvp, QColor::fromRgbF(0.5f, 1.2f, 0.2f),
-    //                GL_LINE_LOOP, 2);
-    //}
+    //Track number and nudge offset done in QML
 }
 
 void CVehicle::AverageTheSpeed(double newSpeed) {

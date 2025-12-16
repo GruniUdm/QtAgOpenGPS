@@ -17,8 +17,8 @@
 #include <QOpenGLFunctions>
 #include "glutils.h"
 #include "classes/settingsmanager.h"
-#include "formgps.h"  // Include full header for FormGPS methods
 #include <QTime>
+#include "backend.h"
 
 // ===== CRITICAL: Safe QML access helper function =====
 // Crash fix: secure access to headacheRenderer dimensions with default values
@@ -386,13 +386,8 @@ void FormHeadache::FormHeadLine_FormClosing()
     //hdl
     if (hdl->idx == -1)
     {
-        // Phase 6.0.20: Qt 6.8 type-safe access - cast QObject* to FormGPS*
-        QWidget *mainWindow = qApp->activeWindow();
-        FormGPS* formGPS = mainWindow ? qobject_cast<FormGPS*>(mainWindow) : nullptr;
-        if (formGPS) {
+        Backend::instance()->set_isYouTurnBtnOn(false);
             formGPS->setIsBtnAutoSteerOn(false);
-            formGPS->setIsYouTurnBtnOn(false);
-        }
     }
 
     emit saveHeadlines();
@@ -1125,7 +1120,7 @@ void FormHeadache::btnHeadlandOff_Click()
     bnd->bndList[0].hdLine.clear();
     update_headland();
     emit saveHeadland();
-    if (formGPS) formGPS->setIsHeadlandOn(false);
+    Backend::instance()->set_isHeadlandOn(false);
     CVehicle::instance()->setIsHydLiftOn(false);
     update_ab();
     update_headland();

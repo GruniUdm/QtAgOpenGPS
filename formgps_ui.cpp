@@ -283,7 +283,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     headache_form.bnd = &bnd;
     headache_form.hdl = &hdl;
     headache_form.tool = &tool;
-    headache_form.setFormGPS(this);
+    //headache_form.setFormGPS(this);
 
     // Initialize CYouTurn FormGPS and CTrack references
     yt.setFormGPS(this);
@@ -863,28 +863,26 @@ void FormGPS::recordedPathClear() {
 }
 
 void FormGPS::onBtnHeadland_clicked(){
+    //TODO: this should all be done in QML; we need a way to toggle the PGN though,
+    //probably through the property setter?
     qDebug()<<"Headland";
-    // Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY: Direct access
-    m_isHeadlandOn = !m_isHeadlandOn;
-               if (this->isHeadlandOn())
-               {
-                   //btnHeadlandOnOff.Image = Properties.Resources.HeadlandOn;
-               }
-               else
-               {
-                   //btnHeadlandOnOff.Image = Properties.Resources.HeadlandOff;
-               }
 
-               if (CVehicle::instance()->isHydLiftOn() && !this->isHeadlandOn()) CVehicle::instance()->setIsHydLiftOn(false);
+    //toggle the property
+    Backend::instance()->set_isHeadlandOn(! Backend::instance()->isHeadlandOn());
 
-               if (!this->isHeadlandOn())
-               {
-                   p_239.pgn[p_239.hydLift] = 0;
-                   //btnHydLift.Image = Properties.Resources.HydraulicLiftOff;
-               }
+
+    if (CVehicle::instance()->isHydLiftOn() && !Backend::instance()->isHeadlandOn())
+        CVehicle::instance()->setIsHydLiftOn(false);
+
+    if (!Backend::instance()->isHeadlandOn())
+    {
+        //shut off the hyd lift pgn
+        p_239.pgn[p_239.hydLift] = 0;
+        //btnHydLift.Image = Properties.Resources.HydraulicLiftOff;
+    }
 }
 void FormGPS::onBtnHydLift_clicked(){
-    if (this->isHeadlandOn())
+    if (Backend::instance()->isHeadlandOn())
     {
         CVehicle::instance()->setIsHydLiftOn(!CVehicle::instance()->isHydLiftOn());
         if (CVehicle::instance()->isHydLiftOn())
@@ -1944,7 +1942,7 @@ void FormGPS::initializeQMLInterfaces()
     this->setManualBtnState((int)btnStates::Off);
     this->setAutoBtnState((int)btnStates::Off);
     this->setIsPatchesChangingColor( false);
-    this->setIsOutOfBounds(false);
+    Backend::instance()->set_isOutOfBounds(false);
     qDebug() << "  ✅ PropertyWrapper initial values set successfully";
 
     // ===== CRITICAL: Initialize QML members AFTER QML objects are created =====

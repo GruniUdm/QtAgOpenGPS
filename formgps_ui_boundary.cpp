@@ -5,6 +5,7 @@
 #include "formgps.h"
 #include "qmlutil.h"
 #include "classes/settingsmanager.h"
+#include "backend.h"
 
 void FormGPS::boundary_calculate_area() {
     int ptCount = bnd.bndBeingMadePts.count();
@@ -50,7 +51,7 @@ void FormGPS::boundary_update_list() {
 }
 
 void FormGPS::boundary_start() {
-    this->setCreateBndOffset(tool.width * 0.5);
+    Backend::instance()->set_createBndOffset(tool.width * 0.5);
     bnd.isBndBeingMade = true;
     bnd.bndBeingMadePts.clear();
     boundary_calculate_area();

@@ -13,13 +13,11 @@ class CVehicle;
 class QOpenGLFunctions;
 
 
-class FormGPS; // Forward declaration
 
 class FormHeadache : public QObject
 {
     Q_OBJECT
 protected:
-    FormGPS* formGPS = nullptr; // Reference to parent FormGPS
     //InterfaceProperty<HeadacheDesigner,double> maxFieldDistance = InterfaceProperty<HeadacheDesigner,double>("maxFieldDistance");
     //InterfaceProperty<HeadacheDesigner,double> fieldCenterX = InterfaceProperty<HeadacheDesigner,double>("fieldCenterX");
     //InterfaceProperty<HeadacheDesigner,double> fieldCenterY = InterfaceProperty<HeadacheDesigner,double>("fieldCenterY");
@@ -65,7 +63,7 @@ public:
     HeadacheDesigner *designer;
 
     explicit FormHeadache(QObject *parent = nullptr);
-    void setFormGPS(FormGPS* gps) { formGPS = gps; }
+    //void setFormGPS(FormGPS* gps) { formGPS = gps; }
 
     //this class is pretty closely coupled to the QML file
     //of necessity

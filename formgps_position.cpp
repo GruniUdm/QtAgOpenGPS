@@ -23,6 +23,7 @@
 #include "qmlutil.h"
 #include "glutils.h"
 #include "rendering.h"
+#include "backend.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -1053,7 +1054,7 @@ void FormGPS::UpdateFixPosition()
         //check if inside all fence
         if (!this->isYouTurnBtnOn())
         {
-            this->setIsOutOfBounds(!bnd.IsPointInsideFenceArea(CVehicle::instance()->pivotAxlePos));
+            Backend::instance()->set_isOutOfBounds(!bnd.IsPointInsideFenceArea(CVehicle::instance()->pivotAxlePos));
             // Qt 6.8 FIX: Removed redundant self-assignment that could cause binding loop
         }
         else //Youturn is on
@@ -1064,8 +1065,7 @@ void FormGPS::UpdateFixPosition()
             //if (!yt.isYouTurnTriggered)
             if (isInTurnBounds)
             {
-                this->setIsOutOfBounds(false);
-                this->setIsOutOfBounds(false);
+                Backend::instance()->set_isOutOfBounds(false);
                 //now check to make sure we are not in an inner turn boundary - drive thru is ok
                 if (yt.youTurnPhase != 10)
                 {
@@ -1130,7 +1130,7 @@ void FormGPS::UpdateFixPosition()
                 if (!yt.isYouTurnTriggered)
                 {
                     yt.ResetCreatedYouTurn();
-                    this->setIsOutOfBounds(!bnd.IsPointInsideFenceArea(CVehicle::instance()->pivotAxlePos));
+                    Backend::instance()->set_isOutOfBounds(!bnd.IsPointInsideFenceArea(CVehicle::instance()->pivotAxlePos));
                     // Qt 6.8 FIX: Removed redundant self-assignment that could cause binding loop
                 }
 
@@ -1159,8 +1159,7 @@ void FormGPS::UpdateFixPosition()
     }
     else
     {
-        this->setIsOutOfBounds(false);
-        this->setIsOutOfBounds(false);
+        Backend::instance()->set_isOutOfBounds(false);
     }
 
     //#endregion
@@ -1586,7 +1585,7 @@ void FormGPS::processSectionLookahead() {
 
 
             //draw 250 green for the headland
-            if (this->isHeadlandOn() && this->bnd.isSectionControlledByHeadland)
+            if (Backend::instance()->isHeadlandOn() && this->bnd.isSectionControlledByHeadland)
             {
                 DrawPolygonBack(painter, this->bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
             }
@@ -1620,7 +1619,7 @@ void FormGPS::processSectionLookahead() {
     }
 
     //determine where the tool is wrt to headland
-    if (this->isHeadlandOn()) tool.WhereAreToolCorners(bnd);
+    if (Backend::instance()->isHeadlandOn()) tool.WhereAreToolCorners(bnd);
 
     //set the look ahead for hyd Lift in pixels per second
     tool.hydLiftLookAheadDistanceLeft = tool.farLeftSpeed * SettingsManager::instance()->vehicle_hydraulicLiftLookAhead() * 10;
@@ -1688,7 +1687,7 @@ void FormGPS::processSectionLookahead() {
     //10 % min is required for overlap, otherwise it never would be on.
     int pixLimit = (int)((double)(tool.section[0].rpSectionWidth * rpOnHeight) / (double)(5.0));
     //bnd.isSectionControlledByHeadland = true;
-    if ((rpOnHeight < rpToolHeight && this->isHeadlandOn() && bnd.isSectionControlledByHeadland)) rpHeight = rpToolHeight + 2;
+    if ((rpOnHeight < rpToolHeight && Backend::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)) rpHeight = rpToolHeight + 2;
     else rpHeight = rpOnHeight + 2;
     //qDebug(qpos) << bnd.isSectionControlledByHeadland << "headland sections";
 
@@ -1723,7 +1722,7 @@ void FormGPS::processSectionLookahead() {
     else tram.controlByte = 0;
 
     //determine if in or out of headland, do hydraulics if on
-    if (this->isHeadlandOn())
+    if (Backend::instance()->isHeadlandOn())
     {
         //calculate the slope
         double m = (tool.hydLiftLookAheadDistanceRight - tool.hydLiftLookAheadDistanceLeft) / tool.rpWidth;
@@ -1759,7 +1758,7 @@ void FormGPS::processSectionLookahead() {
 
     int endHeight = 1, startHeight = 1;
 
-    if (this->isHeadlandOn() && tool.isSectionControlledByHeadland) tool.WhereAreToolLookOnPoints(bnd);
+    if (Backend::instance()->isHeadlandOn() && tool.isSectionControlledByHeadland) tool.WhereAreToolLookOnPoints(bnd);
 
     for (int j = 0; j < tool.numOfSections; j++)
     {
@@ -1835,7 +1834,7 @@ void FormGPS::processSectionLookahead() {
             else
             {
                 //is headland coming up
-                if (this->isHeadlandOn() && bnd.isSectionControlledByHeadland)
+                if (Backend::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
                 {
                     bool isHeadlandInLookOn = false;
 
@@ -2184,7 +2183,7 @@ void FormGPS::processSectionLookahead() {
 
     if (isJobStarted())
     {
-        p_239.pgn[p_239.geoStop] = this->isOutOfBounds() ? 1 : 0;
+        p_239.pgn[p_239.geoStop] = Backend::instance()->isOutOfBounds() ? 1 : 0;
 
         // SendPgnToLoop(p_239.pgn;  // âŒ REMOVED - Phase 4.6: AgIOService Workers handle PGN
 
@@ -2494,11 +2493,11 @@ void FormGPS::AddBoundaryPoint()
     //build the boundary line
     if (bnd.isOkToAddPoints)
     {
-        if (this->isDrawRightSide())
+        if (Backend::instance()->isDrawRightSide())
         {
             //Right side
-            Vec3 point(CVehicle::instance()->pivotAxlePos.easting + sin(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * -this->createBndOffset(),
-                       CVehicle::instance()->pivotAxlePos.northing + cos(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * -this->createBndOffset(),
+            Vec3 point(CVehicle::instance()->pivotAxlePos.easting + sin(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * -Backend::instance()->createBndOffset(),
+                       CVehicle::instance()->pivotAxlePos.northing + cos(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * -Backend::instance()->createBndOffset(),
                        CVehicle::instance()->pivotAxlePos.heading);
             bnd.bndBeingMadePts.append(point);
         }
@@ -2507,8 +2506,8 @@ void FormGPS::AddBoundaryPoint()
         else
         {
             //Right side
-            Vec3 point(CVehicle::instance()->pivotAxlePos.easting + sin(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * this->createBndOffset(),
-                       CVehicle::instance()->pivotAxlePos.northing + cos(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * this->createBndOffset(),
+            Vec3 point(CVehicle::instance()->pivotAxlePos.easting + sin(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * Backend::instance()->createBndOffset(),
+                       CVehicle::instance()->pivotAxlePos.northing + cos(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * Backend::instance()->createBndOffset(),
                        CVehicle::instance()->pivotAxlePos.heading);
             bnd.bndBeingMadePts.append(point);
         }

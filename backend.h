@@ -32,7 +32,9 @@ public:
     static Backend *instance();
     static Backend *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
-    //field data (11 properties) and related methods
+
+    /* field data (11 properties) and related methods */
+    /**************************************************/
     SIMPLE_BINDABLE_PROPERTY(double, areaOuterBoundary)
     SIMPLE_BINDABLE_PROPERTY(double, areaBoundaryOuterLessInner)
     SIMPLE_BINDABLE_PROPERTY(double, workedAreaTotal)
@@ -52,6 +54,22 @@ public:
     SIMPLE_BINDABLE_PROPERTY(int, sensorData)
     SIMPLE_BINDABLE_PROPERTY(bool, btnIsContourLocked)
 
+    /* Boundary Properties */
+    /***********************/
+    SIMPLE_BINDABLE_PROPERTY(bool, isOutOfBounds)
+    SIMPLE_BINDABLE_PROPERTY(bool, isHeadlandOn)
+    SIMPLE_BINDABLE_PROPERTY(double, createBndOffset)
+    SIMPLE_BINDABLE_PROPERTY(bool, isDrawRightSide)
+
+    /* Vehicle state */
+    /*****************/
+    SIMPLE_BINDABLE_PROPERTY(bool, isHydLiftOn)
+    SIMPLE_BINDABLE_PROPERTY(bool, hydLiftDown)
+    SIMPLE_BINDABLE_PROPERTY(bool, isChangingDirection)
+    SIMPLE_BINDABLE_PROPERTY(bool, isReverse)
+    SIMPLE_BINDABLE_PROPERTY(QList<QVariant>, vehicleList)
+
+
 private:
     //field data (11 properties
     Q_OBJECT_BINDABLE_PROPERTY(Backend, double, m_areaOuterBoundary, &Backend::areaOuterBoundaryChanged)
@@ -65,6 +83,21 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_isYouTurnBtnOn, &Backend::isYouTurnBtnOnChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Backend, int, m_sensorData, &Backend::sensorDataChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_btnIsContourLocked, &Backend::btnIsContourLockedChanged)
+
+    //boundary properties
+    //vehicle state
+    Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_isOutOfBounds, &Backend::isOutOfBoundsChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_isHeadlandOn, &Backend::isHeadlandOnChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Backend, double, m_createBndOffset, &Backend::createBndOffsetChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_isDrawRightSide, &Backend::isDrawRightSideChanged)
+
+    //vehicle state
+    Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_isHydLiftOn, &Backend::isHydLiftOnChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_hydLiftDown, &Backend::hydLiftDownChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_isChangingDirection, &Backend::isChangingDirectionChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_isReverse, &Backend::isReverseChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Backend, QList<QVariant>, m_vehicleList, &Backend::vehicleListChanged)
+
 signals:
     //signals implicitly created by BINDABLE_PROPERTY() macro
 };

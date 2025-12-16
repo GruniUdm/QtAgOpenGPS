@@ -23,6 +23,7 @@
 #include "qmlutil.h"
 #include "classes/agioservice.h"  // For zero-latency GPS access
 #include "classes/settingsmanager.h"
+#include "backend.h"
 #include "cpgn.h"
 #include "rendering.h"
 
@@ -387,8 +388,6 @@ void FormGPS::oglMain_Paint()
     gl->glDisable(GL_DEPTH_TEST);
     //gl->glDisable(GL_TEXTURE_2D);
 
-    int currentPatchBuffer = 0;
-
     if(this->sentenceCounter() < 299)
     {
         if (isGPSPositionInitialized)
@@ -475,7 +474,7 @@ void FormGPS::oglMain_Paint()
                 }
 
                 //Draw headland
-                if (this->isHeadlandOn())
+                if (Backend::instance()->isHeadlandOn())
                 {
                     color.setRgbF(0.960f, 0.96232f, 0.30f);
                     DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,lineWidth,color);
@@ -521,12 +520,27 @@ void FormGPS::oglMain_Paint()
             double steerangle;
             if(timerSim.isActive()) steerangle = sim.steerangleAve;
             else steerangle = mc.actualSteerAngleDegrees;
+
+            double markLeft, markRight;
+            if (bnd.isBndBeingMade) {
+                if (Backend::instance()->isDrawRightSide()) {
+                    markLeft = 0;
+                    markRight = Backend::instance()->createBndOffset();
+                } else {
+                    markLeft = Backend::instance()->createBndOffset();
+                    markRight = 0;
+                }
+            } else {
+                markLeft = 0;
+                markRight = 0;
+            }
+
             CVehicle::instance()->DrawVehicle(gl, vehiclemv,
                                               projection, steerangle,
                                               isFirstHeadingSet,
+                                              markLeft, markRight,
                                               QRect(0,0,width,height),
-                                              camera,tool,bnd,
-                                              mainWindow);
+                                              camera);
 
             if (camera.camSetDistance > -150)
             {
@@ -602,18 +616,6 @@ void FormGPS::oglMain_Paint()
         //modelview.rotate(-60, 1.0, 0.0, 0.0);
         modelview.rotate(deadCam, 0.0, 1.0, 0.0);
         deadCam += 5;
-
-        //TODO: replace with QML widget
-
-        //draw with NoGPS texture 21
-       /* color.setRgbF(1.25f, 1.25f, 1.275f, 0.75);
-        gldrawtex.append( { QVector3D(2.5, 2.5, 0), QVector2D(1,0) } ); //Top Right
-        gldrawtex.append( { QVector3D(-2.5, 2.5, 0), QVector2D(0,0) } ); //Top Left
-        gldrawtex.append( { QVector3D(2.5, -2.5, 0), QVector2D(1,1) } ); //Bottom Right
-        gldrawtex.append( { QVector3D(-2.5, -2.5, 0), QVector2D(0,1) } ); //Bottom Left
-
-        gldrawtex.draw(gl, projection * modelview, Textures::NOGPS, GL_TRIANGLE_STRIP, true,color);
-*/
 
         // 2D Ortho ---------------------------------------////////-------------------------------------------------
 
@@ -867,7 +869,7 @@ void FormGPS::oglBack_Paint()
 
 
         //draw 250 green for the headland
-        if (this->isHeadlandOn() && bnd.isSectionControlledByHeadland)
+        if (Backend::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
         {
             DrawPolygonBack(gl,projection*modelview,bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
         }

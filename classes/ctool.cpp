@@ -1290,12 +1290,11 @@ void CTool::sectionSetPositions()
 }
 
 void CTool::ProcessLookAhead(bool isHeadlandOn,
+                             int gpsHz,
                              btnStates autoBtnState,
                              const CBoundary &bnd,
-                             CTram &tram,
-                             QObject *formGPS)
+                             CTram &tram)
 {
-#if 0
       //determine where the tool is wrt to headland
     if (isHeadlandOn) WhereAreToolCorners(bnd);
 
@@ -1693,8 +1692,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
                     triStrip[j].TurnMappingOff(secColors[j],
                                                section[triStrip[j].currentStartSectionNum].leftPoint,
                                                section[triStrip[j].currentEndSectionNum].rightPoint,
-                                               patchSaveList,
-                                               formGPS);
+                                               patchSaveList);
             }
         }
         else if (!isMultiColoredSections)
@@ -1753,8 +1751,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
                             triStrip[j].AddMappingPoint(secColors[j],
                                                         section[triStrip[j].currentStartSectionNum].leftPoint,
                                                         section[triStrip[j].currentEndSectionNum].rightPoint,
-                                                        patchSaveList,
-                                                        formGPS);
+                                                        patchSaveList);
                         }
 
                         triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
@@ -1762,8 +1759,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
                         triStrip[j].AddMappingPoint(secColors[j],
                                                     section[triStrip[j].currentStartSectionNum].leftPoint,
                                                     section[triStrip[j].currentEndSectionNum].rightPoint,
-                                                    patchSaveList,
-                                                    formGPS);
+                                                    patchSaveList);
                     }
                 }
             }
@@ -1776,8 +1772,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
                         triStrip[j].TurnMappingOff(secColors[j],
                                                    section[triStrip[j].currentStartSectionNum].leftPoint,
                                                    section[triStrip[j].currentEndSectionNum].rightPoint,
-                                                   patchSaveList,
-                                                   formGPS);
+                                                   patchSaveList);
                 }
 
                 for (int j = 0; j < sectionOnOffZones; j++)
@@ -1812,8 +1807,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
                         triStrip[j].TurnMappingOff(secColors[j],
                                                    section[triStrip[j].currentStartSectionNum].leftPoint,
                                                    section[triStrip[j].currentEndSectionNum].rightPoint,
-                                                   patchSaveList,
-                                                   formGPS);
+                                                   patchSaveList);
                 }
                 else
                 {
@@ -1829,8 +1823,6 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
 
         lastNumber = number;
     }
-#endif
-
 }
 
 void CTool::WhereAreToolCorners(const CBoundary &bnd)

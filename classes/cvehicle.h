@@ -152,11 +152,11 @@ public:
     void DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview, QMatrix4x4 projection,
                      double steerAngle,
                      bool isFirstHeadingSet,
+                     double markLeft,
+                     double markRight,
                      QRect viewport,
-                     const CCamera &camera,
-                     const CTool &tool,
-                     CBoundary &bnd,
-                     QObject *mainWindow);
+                     const CCamera &camera
+                     );
 
     //C++ code should use Qt 6.8 QProperty setters above
     //QML bindings work automatically with BINDABLE functions

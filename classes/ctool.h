@@ -152,8 +152,8 @@ public:
     QImage DrawPatchesBackQP(const CTram &tram, const CBoundary &bnd, Vec3 pivotAxlePos, bool isHeadlandOn, bool onTrack);
 
     void NewPosition();
-    void ProcessLookAhead(bool isHeadlandOn, btnStates autoBtnState,
-                          const CBoundary &bnd, CTram &tram, QObject *formGPS);
+    void ProcessLookAhead(bool isHeadlandOn, int gpsHz, btnStates autoBtnState,
+                          const CBoundary &bnd, CTram &tram);
 
     void clearPatches();
     void loadPatches();

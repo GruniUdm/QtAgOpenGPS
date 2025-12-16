@@ -295,16 +295,6 @@ class FormGPS : public QQmlApplicationEngine
     Q_PROPERTY(bool isPatchesChangingColor READ isPatchesChangingColor WRITE setIsPatchesChangingColor
                NOTIFY isPatchesChangingColorChanged BINDABLE bindableIsPatchesChangingColor)
 
-    // Boundary Interface - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(bool isOutOfBounds READ isOutOfBounds WRITE setIsOutOfBounds
-               NOTIFY isOutOfBoundsChanged BINDABLE bindableIsOutOfBounds)
-    Q_PROPERTY(bool isHeadlandOn READ isHeadlandOn WRITE setIsHeadlandOn
-               NOTIFY isHeadlandOnChanged BINDABLE bindableIsHeadlandOn)
-    Q_PROPERTY(double createBndOffset READ createBndOffset WRITE setCreateBndOffset
-               NOTIFY createBndOffsetChanged BINDABLE bindableCreateBndOffset)
-    Q_PROPERTY(bool isDrawRightSide READ isDrawRightSide WRITE setIsDrawRightSide
-               NOTIFY isDrawRightSideChanged BINDABLE bindableIsDrawRightSide)
-
     // RecordedPath Interface - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
     Q_PROPERTY(bool isDrivingRecordedPath READ isDrivingRecordedPath WRITE setIsDrivingRecordedPath
                NOTIFY isDrivingRecordedPathChanged BINDABLE bindableIsDrivingRecordedPath)
@@ -689,23 +679,6 @@ public:
     bool isPatchesChangingColor() const;
     void setIsPatchesChangingColor(bool value);
     QBindable<bool> bindableIsPatchesChangingColor();
-
-    // Boundary Interface
-    bool isOutOfBounds() const;
-    void setIsOutOfBounds(bool value);
-    QBindable<bool> bindableIsOutOfBounds();
-
-    bool isHeadlandOn() const;
-    void setIsHeadlandOn(bool value);
-    QBindable<bool> bindableIsHeadlandOn();
-
-    double createBndOffset() const;
-    void setCreateBndOffset(double value);
-    QBindable<double> bindableCreateBndOffset();
-
-    bool isDrawRightSide() const;
-    void setIsDrawRightSide(bool value);
-    QBindable<bool> bindableIsDrawRightSide();
 
     // RecordedPath Interface
     bool isDrivingRecordedPath() const;
@@ -1805,10 +1778,6 @@ signals:
     void autoTrackBtnStateChanged();
     void autoYouturnBtnStateChanged();
     void isPatchesChangingColorChanged();
-    void isOutOfBoundsChanged();
-    void isHeadlandOnChanged();
-    void createBndOffsetChanged();
-    void isDrawRightSideChanged();
     void isDrivingRecordedPathChanged();
     void recordedPathNameChanged();
     void boundaryIsRecordingChanged();
@@ -1962,12 +1931,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_autoTrackBtnState, &FormGPS::autoTrackBtnStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_autoYouturnBtnState, &FormGPS::autoYouturnBtnStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isPatchesChangingColor, &FormGPS::isPatchesChangingColorChanged)
-
-    // Boundary Properties (4) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isOutOfBounds, &FormGPS::isOutOfBoundsChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isHeadlandOn, &FormGPS::isHeadlandOnChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_createBndOffset, &FormGPS::createBndOffsetChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isDrawRightSide, &FormGPS::isDrawRightSideChanged)
 
     // RecordedPath Properties - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isDrivingRecordedPath, &FormGPS::isDrivingRecordedPathChanged)
