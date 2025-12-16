@@ -7,6 +7,7 @@
 #include <QMutex>
 
 #include "simpleproperty.h"
+#include "mainwindowstate.h"
 
 
 
@@ -15,6 +16,8 @@ class Backend : public QObject
     Q_OBJECT
     QML_SINGLETON
     QML_ELEMENT
+
+    Q_PROPERTY(MainWindowState mainWindow READ mainWindow CONSTANT)
 
 private:
     explicit Backend(QObject *parent = nullptr);
@@ -31,6 +34,8 @@ private:
 public:
     static Backend *instance();
     static Backend *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
+
+    MainWindowState *mainWindow() { return m_mainWindow; }
 
 
     /* field data (11 properties) and related methods */
@@ -71,6 +76,8 @@ public:
 
 
 private:
+    MainWindowState *m_mainWindow = nullptr;
+
     //field data (11 properties
     Q_OBJECT_BINDABLE_PROPERTY(Backend, double, m_areaOuterBoundary, &Backend::areaOuterBoundaryChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Backend, double, m_areaBoundaryOuterLessInner, &Backend::areaBoundaryOuterLessInnerChanged)

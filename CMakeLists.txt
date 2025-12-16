@@ -374,6 +374,7 @@ add_custom_target(MockQML SOURCES ${qml_mockup_files})
 target_include_directories(QtAgOpenGPS PRIVATE
     .
     classes
+    backend
 )
 
 # QtAgIO QML module disabled - migrated to qml/agio/ in Phase 4.2

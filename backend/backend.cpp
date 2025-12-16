@@ -9,7 +9,7 @@ QMutex Backend::s_mutex;
 bool Backend::s_cpp_created = false;
 
 Backend::Backend(QObject *parent)
-    : QObject{parent}
+    : QObject{parent}, m_mainWindow(new MainWindowState(this))
 {}
 
 Backend *Backend::instance() {
