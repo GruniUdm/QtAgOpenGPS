@@ -474,7 +474,7 @@ void FormGPS::oglMain_Paint()
                 }
 
                 //Draw headland
-                if (Backend::instance()->isHeadlandOn())
+                if (Backend::instance()->mainWindow()->isHeadlandOn())
                 {
                     color.setRgbF(0.960f, 0.96232f, 0.30f);
                     DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,lineWidth,color);
@@ -869,7 +869,7 @@ void FormGPS::oglBack_Paint()
 
 
         //draw 250 green for the headland
-        if (Backend::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
+        if (Backend::instance()->mainWindow()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
         {
             DrawPolygonBack(gl,projection*modelview,bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
         }

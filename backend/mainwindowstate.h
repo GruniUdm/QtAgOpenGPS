@@ -12,11 +12,14 @@ public:
     explicit MainWindowState(QObject *parent = nullptr);
 
     SIMPLE_BINDABLE_PROPERTY(bool, isBtnAutoSteerOn)
+    SIMPLE_BINDABLE_PROPERTY(bool, isHeadlandOn)
 
 signals:
 
 private:
-    Q_OBJECT_BINDABLE_PROPERTY(MainWindowState, bool, m_isBtnAutoSteerOn)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(MainWindowState, bool, m_isBtnAutoSteerOn, false, &MainWindowState::isBtnAutoSteerOnChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(MainWindowState, bool, m_isHeadlandOn, false, &MainWindowState::isHeadlandOnChanged)
+
 };
 
 #endif // MAINWINDOWSTATE_H

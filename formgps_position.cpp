@@ -847,28 +847,28 @@ void FormGPS::UpdateFixPosition()
 
     if (this->isContourBtnOn())
     {
-        ct.DistanceFromContourLine(isBtnAutoSteerOn(), *CVehicle::instance(), yt, ahrs, pn, CVehicle::instance()->pivotAxlePos, CVehicle::instance()->steerAxlePos, mainWindow);
+        ct.DistanceFromContourLine(Backend::instance()->mainWindow()->isBtnAutoSteerOn(), *CVehicle::instance(), yt, ahrs, pn, CVehicle::instance()->pivotAxlePos, CVehicle::instance()->steerAxlePos, mainWindow);
     }
     else
     {
         //auto track routine
         // PHASE 6.0.42.9: Fix auto-track condition (C# Position.designer.cs:826)
         // Added timer check to prevent rapid switching (max 1 switch/second)
-        if (track.isAutoTrack() && !isBtnAutoSteerOn() && track.autoTrack3SecTimer >= 1)
+        if (track.isAutoTrack() && !Backend::instance()->mainWindow()->isBtnAutoSteerOn() && track.autoTrack3SecTimer >= 1)
         {
             track.autoTrack3SecTimer = 0;  // Reset timer after switch
 
             track.SwitchToClosestRefTrack(CVehicle::instance()->steerAxlePos, *CVehicle::instance());
         }
 
-        bool autoSteerState = isBtnAutoSteerOn();
+        bool autoSteerState = Backend::instance()->mainWindow()->isBtnAutoSteerOn();
         track.BuildCurrentLine(CVehicle::instance()->pivotAxlePos,secondsSinceStart,autoSteerState,yt,*CVehicle::instance(),bnd,ahrs,gyd,pn);
     }
 
     // autosteer at full speed of updates
 
     //if the whole path driving driving process is green
-    if (this->isDrivingRecordedPath()) recPath.UpdatePosition(*CVehicle::instance(), yt, isBtnAutoSteerOn());
+    if (this->isDrivingRecordedPath()) recPath.UpdatePosition(*CVehicle::instance(), yt, Backend::instance()->mainWindow()->isBtnAutoSteerOn());
 
     // If Drive button off - normal autosteer
     if (!CVehicle::instance()->isInFreeDriveMode)
@@ -881,7 +881,7 @@ void FormGPS::UpdateFixPosition()
         //save distance for display
         lightbarDistance = CVehicle::instance()->guidanceLineDistanceOff;
 
-        if (!isBtnAutoSteerOn()) //32020 means auto steer is off
+        if (!Backend::instance()->mainWindow()->isBtnAutoSteerOn()) //32020 means auto steer is off
         {
             //NOTE: Is this supposed to be commented out?
             //CVehicle::instance()->guidanceLineDistanceOff = 32020;
@@ -902,7 +902,7 @@ void FormGPS::UpdateFixPosition()
             // Reset auto-snap flag so it can snap again when autosteer re-enabled
             track.setIsAutoSnapped(false);
         }
-        else if (isBtnAutoSteerOn())
+        else if (Backend::instance()->mainWindow()->isBtnAutoSteerOn())
         {
             // Autosteer is ON → perform auto-snap if enabled and not already snapped
             if (track.isAutoSnapToPivot() && !track.isAutoSnapped())
@@ -923,7 +923,7 @@ void FormGPS::UpdateFixPosition()
         //convert to cm from mm and divide by 2 - lightbar
         int distanceX2;
         //if (CVehicle::instance()->guidanceLineDistanceOff == 32020 || CVehicle::instance()->guidanceLineDistanceOff == 32000)
-        if (!isBtnAutoSteerOn() || CVehicle::instance()->guidanceLineDistanceOff == 32000)
+        if (!Backend::instance()->mainWindow()->isBtnAutoSteerOn() || CVehicle::instance()->guidanceLineDistanceOff == 32000)
             distanceX2 = 255;
 
         else
@@ -939,7 +939,7 @@ void FormGPS::UpdateFixPosition()
 
         if (!timerSim.isActive())
         {
-            if (isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed > CVehicle::instance()->maxSteerSpeed)
+            if (Backend::instance()->mainWindow()->isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed > CVehicle::instance()->maxSteerSpeed)
             {
                 onStopAutoSteer();
                 if (isMetric)
@@ -948,7 +948,7 @@ void FormGPS::UpdateFixPosition()
                     TimedMessageBox(3000, tr("AutoSteer Disabled"), tr("Above Maximum Safe Steering Speed: ") + locale.toString(CVehicle::instance()->maxSteerSpeed * 0.621371, 'g', 1) + tr(" MPH"));
             }
 
-            if (isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed < CVehicle::instance()->minSteerSpeed)
+            if (Backend::instance()->mainWindow()->isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed < CVehicle::instance()->minSteerSpeed)
             {
                 minSteerSpeedTimer++;
                 if (minSteerSpeedTimer > 80)
@@ -1119,7 +1119,7 @@ void FormGPS::UpdateFixPosition()
                         //sounds.isBoundAlarming = false;
                     }
 
-                    //if (isBtnAutoSteerOn() && CVehicle::instance()->guidanceLineDistanceOff > 300 && !yt.isYouTurnTriggered)
+                    //if (Backend::instance()->mainWindow->isBtnAutoSteerOn() && CVehicle::instance()->guidanceLineDistanceOff > 300 && !yt.isYouTurnTriggered)
                     //{
                     //    yt.ResetCreatedYouTurn();
                     //}
@@ -1141,7 +1141,7 @@ void FormGPS::UpdateFixPosition()
             //else
             //{
             //    //this->setIsOutOfBounds(true);
-            //    if (isBtnAutoSteerOn())
+            //    if (Backend::instance()->mainWindow->isBtnAutoSteerOn())
             //    {
             //        if (this->isYouTurnBtnOn())
             //        {
@@ -1375,7 +1375,7 @@ void FormGPS::TheRest()
 
     if ((CVehicle::instance()->avgSpeed - previousSpeed  ) < -CVehicle::instance()->panicStopSpeed && CVehicle::instance()->panicStopSpeed != 0)
     {
-        if (isBtnAutoSteerOn()) onStopAutoSteer();
+        if (Backend::instance()->mainWindow()->isBtnAutoSteerOn()) onStopAutoSteer();
     }
 
     previousSpeed = CVehicle::instance()->avgSpeed;
@@ -1585,7 +1585,7 @@ void FormGPS::processSectionLookahead() {
 
 
             //draw 250 green for the headland
-            if (Backend::instance()->isHeadlandOn() && this->bnd.isSectionControlledByHeadland)
+            if (Backend::instance()->mainWindow()->isHeadlandOn() && this->bnd.isSectionControlledByHeadland)
             {
                 DrawPolygonBack(painter, this->bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
             }
@@ -1619,7 +1619,7 @@ void FormGPS::processSectionLookahead() {
     }
 
     //determine where the tool is wrt to headland
-    if (Backend::instance()->isHeadlandOn()) tool.WhereAreToolCorners(bnd);
+    if (Backend::instance()->mainWindow()->isHeadlandOn()) tool.WhereAreToolCorners(bnd);
 
     //set the look ahead for hyd Lift in pixels per second
     tool.hydLiftLookAheadDistanceLeft = tool.farLeftSpeed * SettingsManager::instance()->vehicle_hydraulicLiftLookAhead() * 10;
@@ -1687,7 +1687,7 @@ void FormGPS::processSectionLookahead() {
     //10 % min is required for overlap, otherwise it never would be on.
     int pixLimit = (int)((double)(tool.section[0].rpSectionWidth * rpOnHeight) / (double)(5.0));
     //bnd.isSectionControlledByHeadland = true;
-    if ((rpOnHeight < rpToolHeight && Backend::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)) rpHeight = rpToolHeight + 2;
+    if ((rpOnHeight < rpToolHeight && Backend::instance()->mainWindow()->isHeadlandOn() && bnd.isSectionControlledByHeadland)) rpHeight = rpToolHeight + 2;
     else rpHeight = rpOnHeight + 2;
     //qDebug(qpos) << bnd.isSectionControlledByHeadland << "headland sections";
 
@@ -1722,7 +1722,7 @@ void FormGPS::processSectionLookahead() {
     else tram.controlByte = 0;
 
     //determine if in or out of headland, do hydraulics if on
-    if (Backend::instance()->isHeadlandOn())
+    if (Backend::instance()->mainWindow()->isHeadlandOn())
     {
         //calculate the slope
         double m = (tool.hydLiftLookAheadDistanceRight - tool.hydLiftLookAheadDistanceLeft) / tool.rpWidth;
@@ -1758,7 +1758,7 @@ void FormGPS::processSectionLookahead() {
 
     int endHeight = 1, startHeight = 1;
 
-    if (Backend::instance()->isHeadlandOn() && tool.isSectionControlledByHeadland) tool.WhereAreToolLookOnPoints(bnd);
+    if (Backend::instance()->mainWindow()->isHeadlandOn() && tool.isSectionControlledByHeadland) tool.WhereAreToolLookOnPoints(bnd);
 
     for (int j = 0; j < tool.numOfSections; j++)
     {
@@ -1834,7 +1834,7 @@ void FormGPS::processSectionLookahead() {
             else
             {
                 //is headland coming up
-                if (Backend::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
+                if (Backend::instance()->mainWindow()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
                 {
                     bool isHeadlandInLookOn = false;
 
@@ -1987,7 +1987,7 @@ void FormGPS::processSectionLookahead() {
 
     //Checks the workswitch or steerSwitch if required
     if (ahrs.isAutoSteerAuto || mc.isRemoteWorkSystemOn)
-        mc.CheckWorkAndSteerSwitch(ahrs,isBtnAutoSteerOn());
+        mc.CheckWorkAndSteerSwitch(ahrs,Backend::instance()->mainWindow()->isBtnAutoSteerOn());
 
     // check if any sections have changed status
     number = 0;
@@ -2776,7 +2776,7 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
         if (data.switchByte != 0) {
             mc.workSwitchHigh = (data.switchByte & 0x01) == 0x01;
             mc.steerSwitchHigh = (data.switchByte & 0x02) == 0x02;
-            mc.CheckWorkAndSteerSwitch(ahrs, isBtnAutoSteerOn());
+            mc.CheckWorkAndSteerSwitch(ahrs, Backend::instance()->mainWindow()->isBtnAutoSteerOn());
         }
 
         // PWM Display (from PGN 253 byte 12)

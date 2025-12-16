@@ -395,7 +395,7 @@ Window {
                              "#f0f218f0" :
                              (aog.steerSwitchHigh === true ?
                                   "#faf80007" :
-                                  (aog.isBtnAutoSteerOn === true ?
+                                  (Backend.mainWindow.isBtnAutoSteerOn === true ?
                                        "#f80df807" : "#f0f2c007")))
 
         }

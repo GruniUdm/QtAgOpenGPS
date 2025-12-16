@@ -175,7 +175,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     qmlblockage::set_aog_root(qmlItem(mainWindow, "aog"));
 
     //initialize interface properties (MOVED to initializeQMLInterfaces() after PropertyWrapper init)
-    setIsBtnAutoSteerOn(false);
+    Backend::instance()->mainWindow()->set_isBtnAutoSteerOn(false);
     this->setLatStart(0.0);
     this->setLonStart(0.0);
 
@@ -868,13 +868,13 @@ void FormGPS::onBtnHeadland_clicked(){
     qDebug()<<"Headland";
 
     //toggle the property
-    Backend::instance()->set_isHeadlandOn(! Backend::instance()->isHeadlandOn());
+    MAINWINDOWSTATE->set_isHeadlandOn(! MAINWINDOWSTATE->isHeadlandOn());
 
 
-    if (CVehicle::instance()->isHydLiftOn() && !Backend::instance()->isHeadlandOn())
+    if (CVehicle::instance()->isHydLiftOn() && !Backend::instance()->mainWindow()->isHeadlandOn())
         CVehicle::instance()->setIsHydLiftOn(false);
 
-    if (!Backend::instance()->isHeadlandOn())
+    if (!Backend::instance()->mainWindow()->isHeadlandOn())
     {
         //shut off the hyd lift pgn
         p_239.pgn[p_239.hydLift] = 0;
@@ -882,7 +882,7 @@ void FormGPS::onBtnHeadland_clicked(){
     }
 }
 void FormGPS::onBtnHydLift_clicked(){
-    if (Backend::instance()->isHeadlandOn())
+    if (Backend::instance()->mainWindow()->isHeadlandOn())
     {
         CVehicle::instance()->setIsHydLiftOn(!CVehicle::instance()->isHydLiftOn());
         if (CVehicle::instance()->isHydLiftOn())
@@ -1214,7 +1214,7 @@ void FormGPS::onBtnAutoYouTurn_clicked(){
          //new direction so reset where to put turn diagnostic
          yt.ResetCreatedYouTurn();
 
-         if (!isBtnAutoSteerOn()) return;
+         if (!Backend::instance()->mainWindow()->isBtnAutoSteerOn()) return;
          this->setIsYouTurnBtnOn(true);
          yt.isTurnCreationTooClose = false;
          yt.isTurnCreationNotCrossingError = false;
@@ -1751,7 +1751,7 @@ bool FormGPS::ShouldCollectSample(double steerAngle, double speed)
 {
     if (speed < MIN_SPEED_THRESHOLD) return false;
     if (std::abs(steerAngle) > MAX_ANGLE_THRESHOLD) return false;
-    if (!isBtnAutoSteerOn()) return false;
+    if (!Backend::instance()->mainWindow()->isBtnAutoSteerOn()) return false;
     if (std::abs(CVehicle::instance()->guidanceLineDistanceOff) > 15000) return false;
 
     return true;
@@ -2035,7 +2035,7 @@ void FormGPS::initializeQMLInterfaces()
     try {
         // Test if InterfaceProperty are accessible without crash
         bool testJob = isJobStarted();
-        bool testAutosteer = isBtnAutoSteerOn();
+        bool testAutosteer = Backend::instance()->mainWindow()->isBtnAutoSteerOn();
         interfacePropertiesReady = true;
         qDebug() << "✅ InterfaceProperty validation successful - isJobStarted:" << testJob << "isBtnAutoSteerOn():" << testAutosteer;
     } catch (...) {
@@ -2106,7 +2106,7 @@ void FormGPS::initializeOpenGLCallbacks()
     bool interfacePropertiesReady = false;
     try {
         bool testJob = isJobStarted();
-        bool testAutosteer = isBtnAutoSteerOn();
+        bool testAutosteer = Backend::instance()->mainWindow()->isBtnAutoSteerOn();
         interfacePropertiesReady = true;
         qDebug() << "✅ InterfaceProperty retry validation successful - isJobStarted:" << testJob << "isBtnAutoSteerOn():" << testAutosteer;
     } catch (...) {

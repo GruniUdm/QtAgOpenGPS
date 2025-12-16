@@ -24,7 +24,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     // Phase 6.0.24 Problem 18: Initialize Q_OBJECT_BINDABLE_PROPERTY to default values
     // CRITICAL: Q_OBJECT_BINDABLE_PROPERTY does NOT auto-initialize to false/0
     // Without explicit initialization, bool members contain random memory values
-    m_isBtnAutoSteerOn = false;      // AutoSteer OFF at startup
     m_isJobStarted = false;          // No job started
     m_applicationClosing = false;    // Not closing
     m_isDrivingRecordedPath = false; // PHASE 6.0.29: Not driving recorded path at startup
@@ -148,10 +147,6 @@ bool FormGPS::isJobStarted() const { return m_isJobStarted; }
 void FormGPS::setIsJobStarted(bool isJobStarted) { m_isJobStarted = isJobStarted; }
 QBindable<bool> FormGPS::bindableIsJobStarted() { return &m_isJobStarted; }
 
-bool FormGPS::isBtnAutoSteerOn() const { return m_isBtnAutoSteerOn; }
-void FormGPS::setIsBtnAutoSteerOn(bool isBtnAutoSteerOn) { m_isBtnAutoSteerOn = isBtnAutoSteerOn; }
-QBindable<bool> FormGPS::bindableIsBtnAutoSteerOn() { return &m_isBtnAutoSteerOn; }
-
 bool FormGPS::applicationClosing() const { return m_applicationClosing; }
 void FormGPS::setApplicationClosing(bool applicationClosing) { m_applicationClosing = applicationClosing; }
 QBindable<bool> FormGPS::bindableApplicationClosing() { return &m_applicationClosing; }
@@ -220,14 +215,15 @@ void FormGPS::setSpeedKph(double speedKph) {
 
     // ⚡ PHASE 6.0.20 AutoSteer Protection: Automatic speed-based deactivation
     // Covers both simulation and real GPS modes (single entry point)
-    if (m_isBtnAutoSteerOn) {
+    if (Backend::instance()->mainWindow()->isBtnAutoSteerOn()) {
         auto* settings = SettingsManager::instance();
         if (speedKph < settings->as_minSteerSpeed() ||
             speedKph > settings->as_maxSteerSpeed()) {
-            setIsBtnAutoSteerOn(false);
+            Backend::instance()->mainWindow()->set_isBtnAutoSteerOn(false);
         }
     }
 }
+
 QBindable<double> FormGPS::bindableSpeedKph() { return &m_speedKph; }
 
 double FormGPS::fusedHeading() const { return m_fusedHeading; }
@@ -1052,7 +1048,7 @@ void FormGPS::tmrWatchdog_timeout()
         worldGrid.isRateTrigger = true;
 
         //Make sure it is off when it should
-        if ((!this->isContourBtnOn() && track.idx() == -1 && isBtnAutoSteerOn())
+        if ((!this->isContourBtnOn() && track.idx() == -1 && Backend::instance()->mainWindow()->isBtnAutoSteerOn())
             ) onStopAutoSteer();
 
     } //end every 1/2 second
@@ -1115,7 +1111,7 @@ void FormGPS::JobClose()
     //}
 
     //turn off headland
-    Backend::instance()->set_isHeadlandOn(false); //this turns off the button
+    Backend::instance()->mainWindow()->set_isHeadlandOn(false); //this turns off the button
 
     recPath.recList.clear();
     recPath.StopDrivingRecordedPath();
@@ -1140,7 +1136,7 @@ void FormGPS::JobClose()
     this->setAutoBtnState((int)btnStates::Off);
 
     // ⚡ PHASE 6.0.20: Disable AutoSteer when job closes (safety + clean state)
-    setIsBtnAutoSteerOn(false);
+    Backend::instance()->mainWindow()->set_isBtnAutoSteerOn(false);
 
     /*
     btnZone1.BackColor = Color.Silver;
@@ -1243,7 +1239,7 @@ void FormGPS::JobClose()
 
     //AutoSteer
     //btnAutoSteer.Enabled = false;
-    setIsBtnAutoSteerOn(false);
+    Backend::instance()->mainWindow()->set_isBtnAutoSteerOn(false);
 
     //auto YouTurn shutdown
     this->setIsYouTurnBtnOn(false);

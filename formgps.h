@@ -85,8 +85,6 @@ class FormGPS : public QQmlApplicationEngine
     // === Core Application State (2 properties) - Critical for basic operations - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(bool isJobStarted READ isJobStarted WRITE setIsJobStarted
                NOTIFY isJobStartedChanged BINDABLE bindableIsJobStarted)
-    Q_PROPERTY(bool isBtnAutoSteerOn READ isBtnAutoSteerOn WRITE setIsBtnAutoSteerOn
-               NOTIFY isBtnAutoSteerOnChanged BINDABLE bindableIsBtnAutoSteerOn)
 
     // === CRITICAL: applicationClosing property for save_everything fix ===
     Q_PROPERTY(bool applicationClosing READ applicationClosing WRITE setApplicationClosing
@@ -320,10 +318,6 @@ public:
     bool isJobStarted() const;
     void setIsJobStarted(bool value);
     QBindable<bool> bindableIsJobStarted();
-
-    bool isBtnAutoSteerOn() const;
-    void setIsBtnAutoSteerOn(bool value);
-    QBindable<bool> bindableIsBtnAutoSteerOn();
 
     bool applicationClosing() const;
     void setApplicationClosing(bool value);
@@ -785,7 +779,6 @@ public:
     //this bool actually lives in the QML aog object.
     // ⚡ PHASE 6.3.0: Migrated to Q_PROPERTY system above
     // InterfaceProperty<AOGInterface,bool> isJobStarted = InterfaceProperty<AOGInterface,bool>("isJobStarted");
-    // InterfaceProperty<AOGInterface,bool> isBtnAutoSteerOn = InterfaceProperty<AOGInterface,bool>("isBtnAutoSteerOn");
 
     //if we are saving a file
     bool isSavingFile = false, isLogElevation = false;
@@ -1676,7 +1669,6 @@ signals:
 
     // Application State signals
     void isJobStartedChanged();
-    void isBtnAutoSteerOnChanged();
     void applicationClosingChanged();  // CRITICAL: for save_everything fix
 
     // Position GPS signals
@@ -1811,7 +1803,6 @@ private:
 
     // Application State (3) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isJobStarted, &FormGPS::isJobStartedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isBtnAutoSteerOn, &FormGPS::isBtnAutoSteerOnChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_applicationClosing, &FormGPS::applicationClosingChanged)
 
     // ⚡ PHASE 6.0.3.2: QML Interface Ready State

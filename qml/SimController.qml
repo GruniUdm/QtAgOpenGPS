@@ -4,6 +4,7 @@
 // Sim controller panel on main screen
 import QtQuick
 import QtQuick.Controls.Fusion
+import AOG
 //import Settings
 import "components" as Comp
 import "../"
@@ -75,7 +76,7 @@ Rectangle{
             icon.source: prefix + "/images/YouTurn80.png"
             onClicked: {
                 aog.rotateSim() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-                aog.isBtnAutoSteerOn = false; // Qt 6.8 FIX: Use property setter, not method call
+                Backend.mainWindow.isBtnAutoSteerOn = false; // Qt 6.8 FIX: Use property setter, not method call
             }
         }
     }

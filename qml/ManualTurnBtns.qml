@@ -9,7 +9,7 @@ Grid{
     rows: 2
     columns: 2
     flow: Grid.LeftToRight
-    visible: aog.isBtnAutoSteerOn
+    visible: Backend.mainWindow.isBtnAutoSteerOn
     Comp.IconButtonTransparent{
         implicitHeight: 65 * theme.scaleHeight
         implicitWidth: 85 * theme.scaleWidth

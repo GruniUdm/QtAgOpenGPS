@@ -1430,21 +1430,11 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
         if (bnd.bndList.count() > 0 && bnd.bndList[0].hdLine.count() > 0)
         {
-            Backend::instance()->set_isHeadlandOn(true);
-            //TODO: tell GUI to enable headlands
-            //btnHeadlandOnOff.Image = Properties.Resources.HeadlandOn;
-            //btnHeadlandOnOff.Visible = true;
-            //btnHydLift.Visible = true;
-            //btnHydLift.Image = Properties.Resources.HydraulicLiftOff;
-
+            Backend::instance()->mainWindow()->set_isHeadlandOn(true);
         }
         else
         {
-            Backend::instance()->set_isHeadlandOn(false);
-            //TODO: tell GUI
-            //btnHeadlandOnOff.Image = Properties.Resources.HeadlandOff;
-            //btnHeadlandOnOff.Visible = false;
-            //btnHydLift.Visible = false;
+            Backend::instance()->mainWindow()->set_isHeadlandOn(false);
         }
     }
 

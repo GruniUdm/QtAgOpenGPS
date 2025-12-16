@@ -9,7 +9,8 @@
 #include "simpleproperty.h"
 #include "mainwindowstate.h"
 
-
+//convenience macro for accessing containers
+#define MAINWINDOWSTATE Backend::instance()->mainWindow()
 
 class Backend : public QObject
 {
@@ -17,7 +18,7 @@ class Backend : public QObject
     QML_SINGLETON
     QML_ELEMENT
 
-    Q_PROPERTY(MainWindowState mainWindow READ mainWindow CONSTANT)
+    Q_PROPERTY(MainWindowState *mainWindow READ mainWindow CONSTANT)
 
 private:
     explicit Backend(QObject *parent = nullptr);
@@ -62,7 +63,6 @@ public:
     /* Boundary Properties */
     /***********************/
     SIMPLE_BINDABLE_PROPERTY(bool, isOutOfBounds)
-    SIMPLE_BINDABLE_PROPERTY(bool, isHeadlandOn)
     SIMPLE_BINDABLE_PROPERTY(double, createBndOffset)
     SIMPLE_BINDABLE_PROPERTY(bool, isDrawRightSide)
 
@@ -94,7 +94,6 @@ private:
     //boundary properties
     //vehicle state
     Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_isOutOfBounds, &Backend::isOutOfBoundsChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_isHeadlandOn, &Backend::isHeadlandOnChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Backend, double, m_createBndOffset, &Backend::createBndOffsetChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_isDrawRightSide, &Backend::isDrawRightSideChanged)
 

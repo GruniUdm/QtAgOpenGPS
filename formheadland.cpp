@@ -14,6 +14,7 @@
 #include <QOpenGLFunctions>
 #include "glutils.h"
 #include "classes/settingsmanager.h"
+#include "backend.h"
 #include "formgps.h"  // Include full header for FormGPS methods
 
 // ===== CRITICAL: Safe QML access helper function =====
@@ -488,9 +489,9 @@ void FormHeadland::FormHeadLine_FormClosing()
         QWidget *mainWindow = qApp->activeWindow();
         FormGPS* formGPS = mainWindow ? qobject_cast<FormGPS*>(mainWindow) : nullptr;
         if (formGPS) {
-            formGPS->setIsBtnAutoSteerOn(false);
             formGPS->setIsYouTurnBtnOn(false);
         }
+        Backend::instance()->mainWindow()->set_isBtnAutoSteerOn(false);
     }
 
     if (sliceArr.count() > 0)
@@ -1109,7 +1110,7 @@ void FormHeadland::btnHeadlandOff_Click()
     update_headland();
     update_slice();
     emit saveHeadland();
-    if (formGPS) formGPS->setIsHeadlandOn(false);
+    Backend::instance()->mainWindow()->set_isHeadlandOn(false);
     CVehicle::instance()->setIsHydLiftOn(false);
     updateVehiclePositionTimer.stop();
 }

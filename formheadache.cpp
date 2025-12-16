@@ -387,7 +387,7 @@ void FormHeadache::FormHeadLine_FormClosing()
     if (hdl->idx == -1)
     {
         Backend::instance()->set_isYouTurnBtnOn(false);
-            formGPS->setIsBtnAutoSteerOn(false);
+        Backend::instance()->mainWindow()->set_isBtnAutoSteerOn(false);
     }
 
     emit saveHeadlines();
@@ -1120,7 +1120,7 @@ void FormHeadache::btnHeadlandOff_Click()
     bnd->bndList[0].hdLine.clear();
     update_headland();
     emit saveHeadland();
-    Backend::instance()->set_isHeadlandOn(false);
+    MAINWINDOWSTATE->set_isHeadlandOn(false);
     CVehicle::instance()->setIsHydLiftOn(false);
     update_ab();
     update_headland();
