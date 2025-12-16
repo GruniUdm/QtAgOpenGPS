@@ -7,6 +7,8 @@
 #include "ctram.h"
 #include "cboundary.h"
 #include "cvehicle.h"
+#include "backend.h"
+
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
@@ -1421,13 +1423,13 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
     GetOutTool: //goto
 
         //is the tool completely in the headland or not
-        isToolInHeadland = bnd.isToolOuterPointsInHeadland && !isHeadlandClose;
+        isToolInHeadland = isToolOuterPointsInHeadland && !isHeadlandClose;
 
         //set hydraulics based on tool in headland or not
-        bnd.SetHydPosition(autoBtnState, p_239, *CVehicle::instance());
+        emit SetHydPosition(autoBtnState);
 
         //set hydraulics based on tool in headland or not
-        bnd.SetHydPosition(autoBtnState, p_239, *CVehicle::instance());
+        emit SetHydPosition(autoBtnState);
 
     }
 
@@ -1665,7 +1667,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
 
     //Checks the workswitch or steerSwitch if required
     if (ahrs.isAutoSteerAuto || mc.isRemoteWorkSystemOn)
-        mc.CheckWorkAndSteerSwitch(ahrs,isBtnAutoSteerOn());
+        mc.CheckWorkAndSteerSwitch(ahrs,Backend::instance()->isBtnAutoSteerOn());
 
     // check if any sections have changed status
     number = 0;

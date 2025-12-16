@@ -22,8 +22,9 @@ struct PatchBuffer;
 struct PatchInBuffer;
 
 
-class CTool
+class CTool: public QObject
 {
+    Q_OBJECT
 public:
     ///---- in settings
     double width;
@@ -168,6 +169,9 @@ private:
     QVector<PatchBuffer> patchBuffer;
     LookAheadPixels grnPixels[150001];
     LookAheadPixels *overPixels = new LookAheadPixels[160000]; //400x400
+public:
+signals:
+    void SetHydPosition(btnStates autoBtnState);
 
 };
 
