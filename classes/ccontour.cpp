@@ -13,8 +13,7 @@
 #include "classes/settingsmanager.h"
 #include "cnmea.h"
 #include "qmlutil.h"
-//#include "common.h"
-#include "formgps.h" //TODO get rid of this; it's a circular reference
+#include "mainwindowstate.h"
 #include <QElapsedTimer>
 
 CContour::CContour(QObject *parent)
@@ -23,11 +22,11 @@ CContour::CContour(QObject *parent)
     ptList = QSharedPointer<QVector<Vec3>>(new QVector<Vec3>());
 }
 
-void CContour::SetLockToLine(FormGPS *formGPS)
+void CContour::SetLockToLine()
 {
     if (ctList.count() > 5) {
-        bool currentLocked = formGPS->btnIsContourLocked();
-        formGPS->setBtnIsContourLocked(!currentLocked);
+        bool currentLocked = MainWindowState::instance()->btnIsContourLocked();
+        MainWindowState::instance()->set_btnIsContourLocked(!currentLocked);
     }
 }
 
@@ -73,7 +72,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
     boxB.easting = pivot.easting + sin2HL + sinH;
     boxB.northing = pivot.northing + cos2HL + cosH;
 
-    if (!mainWindow->property("btnIsContourLocked").toBool())
+    if (!MainWindowState::instance()->btnIsContourLocked())
     {
         stripNum = -1;
         for (int s = 0; s < stripCount; s++)
@@ -115,7 +114,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
         {
             //no points in the box, exit
             ctList.clear();
-            mainWindow->setProperty("btnIsContourLocked", false);
+            MainWindowState::instance()->set_btnIsContourLocked(false);
             return;
         }
     }
@@ -129,7 +128,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
         if (ptCount < 2)
         {
             ctList.clear();
-            mainWindow->setProperty("btnIsContourLocked", false);
+            MainWindowState::instance()->set_btnIsContourLocked(false);
             return;
         }
 
@@ -159,7 +158,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
         if (minDistance > toolContourDistance)
         {
             ctList.clear();
-            mainWindow->setProperty("btnIsContourLocked", false);
+            MainWindowState::instance()->set_btnIsContourLocked(false);
             return;
         }
     }
@@ -284,14 +283,14 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
         if (ptc < 5)
         {
             ctList.clear();
-            mainWindow->setProperty("btnIsContourLocked", false);
+            MainWindowState::instance()->set_btnIsContourLocked(false);
             return;
         }
     }
     else
     {
         ctList.clear();
-        mainWindow->setProperty("btnIsContourLocked", false);
+        MainWindowState::instance()->set_btnIsContourLocked(false);
         return;
     }
 
@@ -428,10 +427,11 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             //just need to make sure the points continue ascending in list order or heading switches all over the place
             if (A > B) { C = A; A = B; B = C; }
 
-            if (mainWindow->property("btnIsContourLocked").toBool() && (A < 2 || B > ptCount - 3))
+            if (MainWindowState::instance()->btnIsContourLocked() &&
+                (A < 2 || B > ptCount - 3))
             {
                 //ctList.clear();
-                mainWindow->setProperty("btnIsContourLocked", false);
+                MainWindowState::instance()->set_btnIsContourLocked(false);
                 lastLockPt = INT_MAX;
                 return;
             }
@@ -708,7 +708,7 @@ void CContour::DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, QObj
     //Draw the captured ref strip, red if locked
     double useWidth;
 
-    if (mainWindow->property("btnIsContourLocked").toBool())
+    if (MainWindowState::instance()->btnIsContourLocked())
     {
         color.setRgbF(0.983f, 0.92f, 0.420f);
         useWidth = 4;
