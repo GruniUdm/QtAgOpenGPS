@@ -29,7 +29,7 @@ Item{
         anchors.fill: parent
         source: aog.isYouTurnTriggered?turnCancelImage:autoTurnImage
         //visible: TracksInterface.idx > -1
-        visible: aog.isYouTurnBtnOn
+        visible: MainWindowState.isYouTurnBtnOn
         //color: "#E5E54B"
         colorizationColor: if (aog.isYouTurnTriggered)
                                 "red"

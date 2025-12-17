@@ -107,7 +107,7 @@ RowLayout{
     }
     Comp.MainWindowBtns {
         id: btnHeadland
-        isChecked: aog.isHeadlandOn
+        isChecked: MainWindowState.isHeadlandOn
         checkable: true
         icon.source: prefix + "/images/HeadlandOff.png"
         iconChecked: prefix + "/images/HeadlandOn.png"

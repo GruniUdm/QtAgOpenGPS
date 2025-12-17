@@ -23,7 +23,7 @@ ColumnLayout {
     Comp.MainWindowBtns {
         property bool isContourLockedByUser //store if user locked
         id: btnContourLock
-        isChecked: aog.btnIsContourLocked
+        isChecked: MainWindowState.btnIsContourLocked
         visible: btnContour.checked
         checkable: true
         icon.source: prefix + "/images/ColorUnlocked.png"
@@ -31,13 +31,13 @@ ColumnLayout {
         buttonText: qsTr("Lock")
         onClicked: {
             aog.contourLock() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-            if (aog.btnIsContourLocked)
+            if (MainWindowState.btnIsContourLocked)
                 isContourLockedByUser = true
         }
         // Connections{
         //     target: aogInterface
         //     function onBtnIsContourLockedChanged() {
-        //         btnContourLock.checked = aog.btnIsContourLocked
+        //         btnContourLock.checked = MainWindowState.btnIsContourLocked
         //         if(btnContourLock.isContourLockedByUser)
         //             btnContourLock.isContourLockedByUser = false
         //     }
@@ -52,7 +52,7 @@ ColumnLayout {
     }
     Comp.MainWindowBtns {
         id: btnContour
-        isChecked: aog.isContourBtnOn // Qt 6.8 MODERN: Q_PROPERTY access
+        isChecked: MainWindowState.isContourBtnOn // Qt 6.8 MODERN: Q_PROPERTY access
         checkable: true
         icon.source: prefix + "/images/ContourOff.png"
         iconChecked: prefix + "/images/ContourOn.png"
@@ -147,7 +147,7 @@ ColumnLayout {
     }
     Comp.MainWindowBtns {
         id: btnAutoYouTurn
-        isChecked: aog.isYouTurnBtnOn // Qt 6.8 MODERN: Q_PROPERTY access
+        isChecked: MainWindowState.isYouTurnBtnOn // Qt 6.8 MODERN: Q_PROPERTY access
         checkable: true
         icon.source: prefix + "/images/YouTurnNo.png"
         iconChecked: prefix + "/images/YouTurn80.png"
@@ -161,9 +161,9 @@ ColumnLayout {
         icon.source: prefix + "/images/AutoSteerOff.png"
         iconChecked: prefix + "/images/AutoSteerOn.png"
         checkable: true
-        isChecked: Backend.mainWindow.isBtnAutoSteerOn  // ⚡ PHASE 6.0.20 FIX: Use isChecked for bidirectional binding (sync with C++ protection)
+        isChecked: MainWindowState.isBtnAutoSteerOn  // ⚡ PHASE 6.0.20 FIX: Use isChecked for bidirectional binding (sync with C++ protection)
         // ⚡ PHASE 6.0.20 FIX: Require ACTIVE line (not just in memory) - currentABLine/Curve check mode === AB/Curve
-        enabled: ((aogInterface.currentABLine > -1 || aogInterface.currentABCurve > -1) || aog.isContourBtnOn) && aog.isJobStarted
+        enabled: ((aogInterface.currentABLine > -1 || aogInterface.currentABCurve > -1) || MainWindowState.isContourBtnOn) && aog.isJobStarted
         //Is remote activation of autosteer enabled? //todo. Eliminated in 6.3.3
         // Threading Phase 1: Auto steer mode display
         buttonText: (SettingsManager.as_isAutoSteerAutoOn ? "R" : "M")
@@ -171,10 +171,10 @@ ColumnLayout {
         onClicked: {
             // ⚡ PHASE 6.0.20 FIX: Check ACTIVE line (not just in memory)
             if ((aogInterface.currentABLine > -1 || aogInterface.currentABCurve > -1) || btnContour.isChecked) {
-                Backend.mainWindow.isBtnAutoSteerOn = !Backend.mainWindow.isBtnAutoSteerOn; // Qt 6.8 MODERN: Q_PROPERTY assignment
+                MainWindowState.isBtnAutoSteerOn = !MainWindowState.isBtnAutoSteerOn; // Qt 6.8 MODERN: Q_PROPERTY assignment
             } else {
                 // No active line or contour: don't allow AutoSteer
-                Backend.mainWindow.isBtnAutoSteerOn = false; // Qt 6.8 MODERN: Q_PROPERTY assignment
+                MainWindowState.isBtnAutoSteerOn = false; // Qt 6.8 MODERN: Q_PROPERTY assignment
             }
         }
 

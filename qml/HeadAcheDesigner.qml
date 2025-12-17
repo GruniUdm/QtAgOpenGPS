@@ -492,7 +492,7 @@ Popup{
                 Layout.alignment: Qt.AlignCenter
                 onClicked: {
                     save_exit()
-                    aog.isHeadlandOn = true
+                    MainWindowState.isHeadlandOn = true
                     headacheDesigner.visible = false
                 }
             }
