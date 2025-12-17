@@ -7,18 +7,12 @@
 #include <QMutex>
 
 #include "simpleproperty.h"
-#include "mainwindowstate.h"
-
-//convenience macro for accessing containers
-#define MAINWINDOWSTATE Backend::instance()->mainWindow()
 
 class Backend : public QObject
 {
     Q_OBJECT
     QML_SINGLETON
     QML_ELEMENT
-
-    Q_PROPERTY(MainWindowState *mainWindow READ mainWindow CONSTANT)
 
 private:
     explicit Backend(QObject *parent = nullptr);
@@ -36,9 +30,6 @@ public:
     static Backend *instance();
     static Backend *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
-    MainWindowState *mainWindow() { return m_mainWindow; }
-
-
     /* field data (11 properties) and related methods */
     /**************************************************/
     SIMPLE_BINDABLE_PROPERTY(double, areaOuterBoundary)
@@ -55,10 +46,7 @@ public:
 
     SIMPLE_BINDABLE_PROPERTY(double, actualAreaCovered)
     SIMPLE_BINDABLE_PROPERTY(double, userSquareMetersAlarm)
-    SIMPLE_BINDABLE_PROPERTY(bool, isContourBtnOn)
-    SIMPLE_BINDABLE_PROPERTY(bool, isYouTurnBtnOn)
-    SIMPLE_BINDABLE_PROPERTY(int, sensorData)
-    SIMPLE_BINDABLE_PROPERTY(bool, btnIsContourLocked)
+        SIMPLE_BINDABLE_PROPERTY(int, sensorData)
 
     /* Boundary Properties */
     /***********************/
@@ -76,8 +64,6 @@ public:
 
 
 private:
-    MainWindowState *m_mainWindow = nullptr;
-
     //field data (11 properties
     Q_OBJECT_BINDABLE_PROPERTY(Backend, double, m_areaOuterBoundary, &Backend::areaOuterBoundaryChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Backend, double, m_areaBoundaryOuterLessInner, &Backend::areaBoundaryOuterLessInnerChanged)
@@ -86,10 +72,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(Backend, double, m_distanceUser, &Backend::distanceUserChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Backend, double, m_actualAreaCovered, &Backend::actualAreaCoveredChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Backend, double, m_userSquareMetersAlarm, &Backend::userSquareMetersAlarmChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_isContourBtnOn, &Backend::isContourBtnOnChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_isYouTurnBtnOn, &Backend::isYouTurnBtnOnChanged)
     Q_OBJECT_BINDABLE_PROPERTY(Backend, int, m_sensorData, &Backend::sensorDataChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(Backend, bool, m_btnIsContourLocked, &Backend::btnIsContourLockedChanged)
 
     //boundary properties
     //vehicle state
