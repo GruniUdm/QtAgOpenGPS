@@ -22,7 +22,7 @@ Popup{
         name: "osm"
         parameters: [
             PluginParameter {
-                name: "osm.mapping.custom.host"
+                name: "osm.mapping.host"
                 //value: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/%z/%y/%x"
                 //value: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                 //value: "https://tiles.arcgis.com/tiles/nGt4QxSblgDfeJn9/arcgis/rest/services/WorldImagery/MapServer/tile/%z/%y/%x"
@@ -107,31 +107,6 @@ Popup{
         }
     }
 
-    // Функция обновления ComboBox
-    function updateComboBox() {
-        if (!mapLoader.item) return;
-
-        let mapLayers = [];
-        for(var i = 0; i < mapLoader.item.supportedMapTypes.length; i++) {
-            mapLayers.push({
-                               "name": mapLoader.item.supportedMapTypes[i].name,
-                               "value": mapLoader.item.supportedMapTypes[i]
-                           });
-        }
-
-        _comboBox.model = mapLayers;
-
-        // Устанавливаем текущий активный слой в ComboBox
-        if (mapLoader.item.activeMapType) {
-            for (var j = 0; j < mapLayers.length; j++) {
-                if (mapLayers[j].value === mapLoader.item.activeMapType) {
-                    _comboBox.currentIndex = j;
-                    break;
-                }
-            }
-        }
-    }
-
     property real perimeter: 0 // Периметр в метрах
 
     // Функция для расчета периметра
@@ -204,12 +179,6 @@ Popup{
         Loader {
             id: mapLoader
             anchors.fill: parent
-
-            onLoaded: {
-                // Обновляем ComboBox после загрузки
-                item.supportedMapTypesChanged.connect(updateComboBox);
-                updateComboBox();
-            }
         }
 
         // Компонент карты OSM
@@ -223,13 +192,7 @@ Popup{
                 center:  QtPositioning.coordinate(aog.latitude, aog.longitude)
                 zoomLevel: 15
                 copyrightsVisible: true
-
-                Component.onCompleted: {
-                    // Автоматически устанавливаем Custom URL Map для ESRI спутника
-                    if (supportedMapTypes.length > 6) {
-                        activeMapType = supportedMapTypes[7];
-                    }
-                }
+                activeMapType: supportedMapTypes[supportedMapTypes.length - 1]
 
                 // Круг для текущей позиции
                 MapCircle {
@@ -437,21 +400,6 @@ Popup{
         }
     }
 
-    // ComboBox для выбора слоев карты
-    ComboBox {
-        id: _comboBox
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.margins: 10
-        width: 200* theme.scaleWidth
-        textRole: "name"
-        valueRole: "value"
-        onCurrentValueChanged: {
-            if (mapLoader.item && currentValue) {
-                mapLoader.item.activeMapType = currentValue;
-            }
-        }
-    }
 
     ListModel {
         id: pointsModel
