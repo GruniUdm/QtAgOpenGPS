@@ -35,7 +35,7 @@ Rectangle {
     property color onTextColor: "White"
     property color autoColor: "ForestGreen"
     property color autoTextColor: "White"
-    property variant blockageRowCount: aog.blockageseccount
+    property variant blockageRowCount: aog.blockageSecCount
 
 
     //methods
@@ -104,7 +104,7 @@ Rectangle {
             buttonText: (model.rowNo + 1).toFixed(0)
             // visible: (model.rowNo < numRows) ? true : false
             color: {
-                var count = (blockageRows.blockageRowCount[model.rowNo]+aog.blockage_max)/2;
+                var count = blockageRows.blockageRowCount[model.rowNo];
                 var dayMode = isDayMode;
                 var off = dayMode ? "Red" : "Crimson";
                 var auto = dayMode ? "Lime" : "ForestGreen";

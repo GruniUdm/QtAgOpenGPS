@@ -26,42 +26,38 @@ void qmlblockage::statistics(const double speed){
         for (int i = 0; i < numRows4 && i < (sizeof(blockageSecCount4) / sizeof(blockageSecCount4[0])); i++)
             blockageseccount[k++] = floor(blockageSecCount4[i] * 7.2 / rowwidth / speed);
     //}
-    //if(QDateTime::currentMSecsSinceEpoch() - blockage_lastUpdate >= 3000){
 
-    //set(blockageseccount, (sizeof(blockageseccount)/sizeof(blockageseccount[0])));
 
-    //blockage_lastUpdate = QDateTime::currentMSecsSinceEpoch();
-
-    blockage_avg = std::accumulate(std::begin(blockageseccount), std::end(blockageseccount), 0);
-    blockage_avg = blockage_avg / numRows;
-
-    blockage_max_i = 0;
-    blockage_max_i = 0;
-    for (int i = 0; i < numRows && i < (sizeof(blockageseccount) / sizeof(blockageseccount[0])); ++i) {
-        if (blockageseccount[i] > blockage_max_i) {
-            blockage_max = (blockageseccount[i]);
-            blockage_max_i = i+1;
+        blockage_avg=0;
+        for(int i = 0; i < numRows; i++) blockage_avg += (blockageseccount[i]); // среднее значение семян на гектар
+        blockage_avg /= numRows;
+        blockage_max = 0;
+        blockage_max_i=0;
+        for (int i = 0; i < numRows; ++i) {
+            if (blockageseccount[i] > blockage_max) {
+                blockage_max = (blockageseccount[i]); // максимальное количество семян на гектар на сошнике
+                blockage_max_i = i; // номер сошника на ктором максимальное значение
+            }
         }
-    }
-    blockage_min1 = 65535;
-    blockage_min2 = 65535;
-    blockage_min1_i = 0;
-    blockage_min2_i = 0;
+        blockage_min1 = 65535;
+        blockage_min2 = 65535;
+        blockage_min1_i = 0;
+        blockage_min2_i = 0;
 
-    for (int i = 0; i < numRows && i < (sizeof(blockageseccount) / sizeof(blockageseccount[0])); ++i) {
-        if (blockageseccount[i] < blockage_min1) {
-            blockage_min1 = (blockageseccount[i]);
-            blockage_min1_i = i+1;
+        for (int i = 0; i < numRows; ++i) {
+            if (blockageseccount[i] < blockage_min1) {
+                blockage_min1 = (blockageseccount[i]);
+                blockage_min1_i = i;
+            }
         }
-    }
-    for (int i = 0; i < numRows && i < (sizeof(blockageseccount) / sizeof(blockageseccount[0])); i++)
-        if (blockageseccount[i] < blockage_min2 && blockage_min1 != i) {
-            blockage_min2 = (blockageseccount[i]);
-            blockage_min2_i = i+1;
-        }
-    blockage_blocked = 0;
-    for (int i = 0; i < numRows && i < (sizeof(blockageseccount) / sizeof(blockageseccount[0])); i++)
-        if (blockageseccount[i] < blockCountMin)
-            blockage_blocked = blockage_blocked+1;
+        for(int i = 0; i < numRows; i++)
+            if(blockageseccount[i] < blockage_min2 && blockage_min1_i != i) // минимальные значения на гектар и номер сошника
+            {
+                blockage_min2 =(blockageseccount[i]);
+                blockage_min2_i = i;
+            }
+        blockage_blocked=0;
+        for (int i = 0; i < numRows; i++)
+            if (blockageseccount[i] < blockCountMin) blockage_blocked++; // количество забитых сошников
     }
 }

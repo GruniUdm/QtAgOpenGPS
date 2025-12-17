@@ -3236,16 +3236,11 @@ void FormGPS::onBlockageDataReady(const PGNParser::ParsedData& data)
                 break;
             }
         }
-
-        blockage.statistics(pn.speed);
-
-     // qDebug(qpos) << "blockage_blocked: " << m_blockage_avg;
-     // qDebug(qpos) << "blockageseccount1:";
-     // for (int i = 0; i < 16; i++) {
-     //     if (blockage.blockageSecCount4[i] != 0) {
-     //         qDebug(qpos) << QString("  [%1] = %2").arg(i).arg(blockage.blockageSecCount4[i]);
-     //     }
-     //    }
+        if(QDateTime::currentMSecsSinceEpoch() - blockage_lastUpdate >= 1000){
+            blockage_lastUpdate = QDateTime::currentMSecsSinceEpoch();
+            blockage.statistics(pn.speed);
+            m_blockageseccount.notify();
+        }
     }
 }
 // Phase 6.0.24: GPS timer callback - UpdateFixPosition() at 40 Hz fixed rate

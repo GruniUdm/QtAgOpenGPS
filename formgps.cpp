@@ -361,7 +361,7 @@ int FormGPS::blockage_blocked() const { return m_blockage_blocked; }
 void FormGPS::setBlockage_blocked(int blockage_blocked) { m_blockage_blocked = blockage_blocked; }
 QBindable<int> FormGPS::bindableBlockage_blocked() { return &m_blockage_blocked; }
 
-QVariantList FormGPS::blockageseccount() const {
+QVariantList FormGPS::blockageSecCount() const {
 
     QVariantList state;
     for (int i = 0; i < 65; i++) {
@@ -369,8 +369,8 @@ QVariantList FormGPS::blockageseccount() const {
     }
     return state;
 }
-void FormGPS::setblockageseccount(const QVariantList& value) { }
-QBindable<QVariantList> FormGPS::bindableblockageseccount() { return &m_blockageseccount; }
+void FormGPS::setBlockageSecCount(const QVariantList& value) { }
+QBindable<QVariantList> FormGPS::bindableBlockageSecCount() { return &m_blockageseccount; }
 
 double FormGPS::avgPivDistance() const { return m_avgPivDistance; }
 void FormGPS::setAvgPivDistance(double avgPivDistance) { m_avgPivDistance = avgPivDistance; }

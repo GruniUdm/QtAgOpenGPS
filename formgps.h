@@ -187,8 +187,8 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY blockage_max_iChanged BINDABLE bindableBlockage_max_i)
     Q_PROPERTY(int blockage_blocked READ blockage_blocked WRITE setBlockage_blocked
                NOTIFY blockage_blockedChanged BINDABLE bindableBlockage_blocked)
-    Q_PROPERTY(QVariantList blockageseccount READ blockageseccount WRITE setblockageseccount
-                   NOTIFY blockageseccountChanged BINDABLE bindableblockageseccount)
+    Q_PROPERTY(QVariantList blockageSecCount READ blockageSecCount WRITE setBlockageSecCount
+                   NOTIFY blockageSecCountChanged BINDABLE bindableBlockageSecCount)
 
     // === Navigation (7 properties) - Important for guidance - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(double distancePivotToTurnLine READ distancePivotToTurnLine WRITE setDistancePivotToTurnLine
@@ -507,9 +507,9 @@ public:
     void setBlockage_blocked(int value);
     QBindable<int> bindableBlockage_blocked();
 
-    QVariantList blockageseccount() const;
-    void setblockageseccount(const QVariantList& value);
-    QBindable<QVariantList> bindableblockageseccount();
+    QVariantList blockageSecCount() const;
+    void setBlockageSecCount(const QVariantList& value);
+    QBindable<QVariantList> bindableBlockageSecCount();
 
     double avgPivDistance() const;
     void setAvgPivDistance(double value);
@@ -1797,7 +1797,7 @@ signals:
     void blockage_min2_iChanged();
     void blockage_max_iChanged();
     void blockage_blockedChanged();
-    void blockageseccountChanged();
+    void blockageSecCountChanged();
     void avgPivDistanceChanged();
     void frameTimeChanged();
 
@@ -1945,7 +1945,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min2_i, &FormGPS::blockage_min2_iChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_max_i, &FormGPS::blockage_max_iChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_blocked, &FormGPS::blockage_blockedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariantList, m_blockageseccount, &FormGPS::blockageseccountChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariantList, m_blockageseccount, &FormGPS::blockageSecCountChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_avgPivDistance, &FormGPS::avgPivDistanceChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_frameTime, &FormGPS::frameTimeChanged)
 
@@ -2039,6 +2039,7 @@ public:
     double ConfidenceLevel = 0;
     bool HasValidRecommendation = false;
     QDateTime LastCollectionTime;
+    qint64 blockage_lastUpdate;
 
     // Средние показатели распределения
     double Mean;
