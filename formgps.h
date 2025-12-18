@@ -247,14 +247,8 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY actualAreaCoveredChanged BINDABLE bindableActualAreaCovered)
     Q_PROPERTY(double userSquareMetersAlarm READ userSquareMetersAlarm WRITE setUserSquareMetersAlarm
                NOTIFY userSquareMetersAlarmChanged BINDABLE bindableUserSquareMetersAlarm)
-    Q_PROPERTY(bool isContourBtnOn READ isContourBtnOn WRITE setIsContourBtnOn
-               NOTIFY isContourBtnOnChanged BINDABLE bindableIsContourBtnOn)
-    Q_PROPERTY(bool isYouTurnBtnOn READ isYouTurnBtnOn WRITE setIsYouTurnBtnOn
-               NOTIFY isYouTurnBtnOnChanged BINDABLE bindableIsYouTurnBtnOn)
     Q_PROPERTY(int sensorData READ sensorData WRITE setSensorData
                NOTIFY sensorDataChanged BINDABLE bindableSensorData)
-    Q_PROPERTY(bool btnIsContourLocked READ btnIsContourLocked WRITE setBtnIsContourLocked
-               NOTIFY btnIsContourLockedChanged BINDABLE bindableBtnIsContourLocked)
 
     // GPS/NMEA Coordinates - Phase 6.0.4.2
     // Phase 6.0.20 Task 24 Step 3.5: Read-only Q_PROPERTY (QML cannot modify field origin)
@@ -599,21 +593,9 @@ public:
     void setUserSquareMetersAlarm(double value);
     QBindable<double> bindableUserSquareMetersAlarm();
 
-    bool isContourBtnOn() const;
-    void setIsContourBtnOn(bool value);
-    QBindable<bool> bindableIsContourBtnOn();
-
-    bool isYouTurnBtnOn() const;
-    void setIsYouTurnBtnOn(bool value);
-    QBindable<bool> bindableIsYouTurnBtnOn();
-
     int sensorData() const;
     void setSensorData(int value);
     QBindable<int> bindableSensorData();
-
-    bool btnIsContourLocked() const;
-    void setBtnIsContourLocked(bool value);
-    QBindable<bool> bindableBtnIsContourLocked();
 
     // GPS/NMEA Coordinates
     double latStart() const;
@@ -894,7 +876,6 @@ public:
     // ⚡ PHASE 6.3.0: manualBtnState and autoBtnState converted to Q_PROPERTY
     // Access via: qmlItem(mainWindow, "aog")->property("manualBtnState").toInt()
     // Access via: qmlItem(mainWindow, "aog")->property("autoBtnState").toInt()
-    //InterfaceProperty<AOGInterface,bool> ct.isLocked = InterfaceProperty<AOGInterface,bool>("btnIsContourLocked");
 
 private:
 public:
@@ -1754,10 +1735,7 @@ signals:
     void distanceUserChanged();
     void actualAreaCoveredChanged();
     void userSquareMetersAlarmChanged();
-    void isContourBtnOnChanged();
-    void isYouTurnBtnOnChanged();
     void sensorDataChanged();
-    void btnIsContourLockedChanged();
     void latStartChanged();
     void lonStartChanged();
     void mPerDegreeLatChanged();
@@ -1904,10 +1882,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_distanceUser, &FormGPS::distanceUserChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_actualAreaCovered, &FormGPS::actualAreaCoveredChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_userSquareMetersAlarm, &FormGPS::userSquareMetersAlarmChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isContourBtnOn, &FormGPS::isContourBtnOnChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isYouTurnBtnOn, &FormGPS::isYouTurnBtnOnChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_sensorData, &FormGPS::sensorDataChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_btnIsContourLocked, &FormGPS::btnIsContourLockedChanged)
 
     // Additional AOG Properties (9) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_latStart, &FormGPS::latStartChanged)

@@ -45,6 +45,7 @@ find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools) #for i18n internationalization support
 find_package(Qt6 REQUIRED COMPONENTS Bluetooth)
 find_package(Qt6 REQUIRED COMPONENTS Network)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 
 
@@ -323,6 +324,7 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         #SOURCES globals.h globals.cpp
 
         SOURCES backend/mainwindowstate.h backend/mainwindowstate.cpp
+        SOURCES backend/boundaryinterface.h backend/boundaryinterface.cpp
     )  
 
 else() #LOCAL_QML ON
@@ -392,6 +394,7 @@ target_link_libraries(QtAgOpenGPS PRIVATE
     Qt6::Multimedia
     Qt6::SerialPort
 )
+target_link_libraries(QtAgOpenGPS PRIVATE Qt6::Core)
 
 # Compile defines
 target_compile_definitions(QtAgOpenGPS PRIVATE

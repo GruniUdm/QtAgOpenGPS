@@ -1,18 +1,18 @@
-#include "mainwindowstate.h"
 #include <QCoreApplication>
+#include "boundaryinterface.h"
 
-MainWindowState *MainWindowState::s_instance = nullptr;
-QMutex MainWindowState::s_mutex;
-bool MainWindowState::s_cpp_created = false;
+BoundaryInterface *BoundaryInterface::s_instance = nullptr;
+QMutex BoundaryInterface::s_mutex;
+bool BoundaryInterface::s_cpp_created = false;
 
-MainWindowState::MainWindowState(QObject *parent)
+BoundaryInterface::BoundaryInterface(QObject *parent)
     : QObject{parent}
 {}
 
-MainWindowState *MainWindowState::instance() {
+BoundaryInterface *BoundaryInterface::instance() {
     QMutexLocker locker(&s_mutex);
     if (!s_instance) {
-        s_instance = new MainWindowState();
+        s_instance = new BoundaryInterface();
         s_cpp_created = true;
         // ensure cleanup on app exit
         QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
@@ -23,17 +23,16 @@ MainWindowState *MainWindowState::instance() {
     return s_instance;
 }
 
-MainWindowState *MainWindowState::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
+BoundaryInterface *BoundaryInterface::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
     Q_UNUSED(jsEngine)
 
     QMutexLocker locker(&s_mutex);
 
     if(!s_instance) {
-        s_instance = new MainWindowState();
+        s_instance = new BoundaryInterface();
     } else if (s_cpp_created) {
         qmlEngine->setObjectOwnership(s_instance, QQmlEngine::CppOwnership);
     }
 
     return s_instance;
-
 }
