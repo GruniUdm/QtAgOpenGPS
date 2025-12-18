@@ -1,6 +1,10 @@
 #include <QCoreApplication>
 #include "fieldinterface.h"
 
+FieldInterface *FieldInterface::s_instance = nullptr;
+QMutex FieldInterface::s_mutex;
+bool FieldInterface::s_cpp_created = false;
+
 FieldInterface::FieldInterface(QObject *parent)
     : QObject{parent}
 {}
