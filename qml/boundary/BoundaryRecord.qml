@@ -48,8 +48,8 @@ MoveablePopup {
             text: qsTr("Centimeter")
             from: 0
             to: 1968
-            boundValue: aog.createBndOffset
-            onValueChanged: aog.createBndOffset = value
+            boundValue: BoundaryInterface.createBndOffset
+            onValueChanged: BoundaryInterface.createBndOffset = value
         }
         IconButtonTransparent{
             id: side2Record
@@ -63,12 +63,12 @@ MoveablePopup {
             border: 1
             height: 80  * theme.scaleHeight
             width: 80  * theme.scaleWidth
-            isChecked: !aog.isDrawRightSide
+            isChecked: !BoundaryInterface.isDrawRightSide
             onClicked: {
                 if (checked)
-                    aog.isDrawRightSide = false
+                    BoundaryInterface.isDrawRightSide = false
                 else
-                    aog.isDrawRightSide = true
+                    BoundaryInterface.isDrawRightSide = true
             }
         }
 

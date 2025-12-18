@@ -10,7 +10,7 @@ import "components" as Comp
 import "../"
 
 Rectangle{
-    color: aog.isOutOfBounds ? "darksalmon" : "gray"
+    color: BoundaryInterface.isOutOfBounds ? "darksalmon" : "gray"
     height: 60 * theme.scaleHeight
     width: 650 * theme.scaleWidth
     z: 100
@@ -76,7 +76,7 @@ Rectangle{
             icon.source: prefix + "/images/YouTurn80.png"
             onClicked: {
                 aog.rotateSim() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-                Backend.mainWindow.isBtnAutoSteerOn = false; // Qt 6.8 FIX: Use property setter, not method call
+                MainWindowState.isBtnAutoSteerOn = false; // Qt 6.8 FIX: Use property setter, not method call
             }
         }
     }
