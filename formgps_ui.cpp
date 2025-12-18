@@ -26,6 +26,7 @@
 #include "rendering.h"
 #include "backend.h"
 #include "boundaryinterface.h"
+#include "fieldinterface.h"
 #include "mainwindowstate.h"
 
 QString caseInsensitiveFilename(QString directory, QString filename);
@@ -1888,8 +1889,6 @@ void FormGPS::initializeQMLInterfaces()
 
     // ===== CRITICAL: Initialize QML members AFTER QML objects are created =====
     // Crash fix: these variables MUST be initialized after QML components load
-    boundaryInterface = qmlItem(mainWindow, "boundaryInterface");
-    fieldInterface = qmlItem(mainWindow, "fieldInterface");
     recordedPathInterface = qmlItem(mainWindow, "recordedPathInterface");
 
     //have to do this for each Interface and supported data type.
@@ -1921,33 +1920,21 @@ void FormGPS::initializeQMLInterfaces()
     //     });
     // }
 
-    // Initialize other interface properties (these should work as they use immediate objects)
-    if (fieldInterface) {
-    }
-
-    if (boundaryInterface) {
-    }
-
     if (recordedPathInterface) {
     }
 
-    qDebug() << "🎯 QML Interface initialization procedure completed";
+    connect(FieldInterface::instance(), &FieldInterface::updateListRequested, this, &FormGPS::field_update_list);
+    connect(FieldInterface::instance(), &FieldInterface::newFieldRequested, this, &FormGPS::field_new);
+    connect(FieldInterface::instance(), &FieldInterface::openFieldRequested, this, &FormGPS::field_open);
+    connect(FieldInterface::instance(), &FieldInterface::newFieldFromRequested, this, &FormGPS::field_new_from);
+    connect(FieldInterface::instance(), &FieldInterface::newFieldFromKMLRequested, this, &FormGPS::field_new_from_KML);
+    connect(FieldInterface::instance(), &FieldInterface::closeFieldRequested, this, &FormGPS::field_close);
+    connect(FieldInterface::instance(), &FieldInterface::deleteFieldRequested, this, &FormGPS::field_delete);
+    connect(FieldInterface::instance(), &FieldInterface::updateListRequested, this, &FormGPS::field_update_list);
+    //connect(FieldInterface::instance(), &FieldInterface::exportFieldZipRequested, this, &FormGPS::field_export_zip);
+    //connect(FieldInterface::instance(), &FieldInterface::importFieldZipRequested, this, &FormGPS::field_import_zip);
 
-    // ⚡ PHASE 6.3.0 TIMING FIX: Connect Interface signals AFTER QML objects are initialized
-    if (fieldInterface) {
-        qDebug() << "🔗 fieldInterface found - Qt 6.8 Q_INVOKABLE calls ready";
-        // ===== BATCH 13 - Field Management Connections REMOVED - Qt 6.8 modernized to Q_INVOKABLE calls =====
-        // REMOVED: connect(fieldInterface,SIGNAL(field_update_list()), this, SLOT(field_update_list()));
-        // REMOVED: connect(fieldInterface,SIGNAL(field_close()), this, SLOT(field_close()));
-        // REMOVED: connect(fieldInterface,SIGNAL(field_open(QString)), this, SLOT(field_open(QString)));
-        // REMOVED: connect(fieldInterface,SIGNAL(field_new(QString)), this, SLOT(field_new(QString)));
-        // REMOVED: connect(fieldInterface,SIGNAL(field_new_from(QString,QString,int)), this, SLOT(field_new_from(QString,QString,int)));
-        // REMOVED: connect(fieldInterface,SIGNAL(field_new_from_KML(QString,QString)), this, SLOT(field_new_from_KML(QString,QString)));
-        // REMOVED: connect(fieldInterface,SIGNAL(field_delete(QString)), this, SLOT(field_delete(QString)));
-        qDebug() << "✅ fieldInterface modernized to Q_INVOKABLE pattern - 7 connections replaced";
-    } else {
-        qWarning() << "❌ fieldInterface not found - field operations will not work";
-    }
+    qDebug() << "🎯 Connected FieldInterface signals.";
 
     qDebug() << "🔗 Connecting boundaryInterface signals...";
     // ⚡ YouTurn out of bounds signal
@@ -1955,20 +1942,7 @@ void FormGPS::initializeQMLInterfaces()
             BoundaryInterface::instance()->set_isOutOfBounds(true);
     });
 
-    // ⚡ PHASE 6.3.0 TIMING FIX: Verify InterfaceProperty are really initialized before OpenGL
-    bool interfacePropertiesReady = false;
-    try {
-        // Test if InterfaceProperty are accessible without crash
-        bool testJob = isJobStarted();
-        bool testAutosteer = MainWindowState::instance()->isBtnAutoSteerOn();
-        interfacePropertiesReady = true;
-        qDebug() << "✅ InterfaceProperty validation successful - isJobStarted:" << testJob << "isBtnAutoSteerOn():" << testAutosteer;
-    } catch (...) {
-        qWarning() << "❌ InterfaceProperty not yet ready - OpenGL setup will be retried";
-        interfacePropertiesReady = false;
-    }
-
-    if (openGLControl && interfacePropertiesReady) {
+    if (openGLControl) {
         qDebug() << "🎯 Setting up OpenGL callbacks - InterfaceProperty verified safe";
         openGLControl->setProperty("callbackObject",QVariant::fromValue((void *) this));
         openGLControl->setProperty("initCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Initialized, this)));
@@ -1989,79 +1963,17 @@ void FormGPS::initializeQMLInterfaces()
         connect(openGLControl,SIGNAL(clicked(QVariant)),this,SLOT(onGLControl_clicked(QVariant)));
         connect(openGLControl,SIGNAL(dragged(int,int,int,int)),this,SLOT(onGLControl_dragged(int,int,int,int)));
         qDebug() << "✅ OpenGL callbacks configured - rendering can now safely access InterfaceProperty";
-    } else if (openGLControl && !interfacePropertiesReady) {
-        qWarning() << "⚠️ OpenGL setup deferred - InterfaceProperty not ready yet";
-        // Retry OpenGL setup after additional delay
-        QTimer::singleShot(100, this, [this]() {
-            qDebug() << "🔄 Retrying OpenGL setup after additional delay...";
-            initializeOpenGLCallbacks();
-        });
+    } else {
+        //I don't think this is necessary; QML is already set up by now.
+        qWarning() << "⚠️ AOGRenderer item was not found in QML tree.";
     }
 
-    // ⚡ PHASE 6.3.0 TIMING FIX: Start simulator timer AFTER InterfaceProperty initialization
     if (SettingsManager::instance()->menu_isSimulatorOn()) {
         if (!timerSim.isActive()) {
             // Verify that InterfaceProperty actually work before starting timer
-            try {
-                bool testProperty = isJobStarted();  // Test basic Q_PROPERTY access
-                timerSim.start(100); // 10Hz sync with GPS update
-                qDebug() << "✅ Simulator timer started (10Hz) - InterfaceProperty safe access verified";
-            } catch (...) {
-                qWarning() << "⚠️ InterfaceProperty test failed - deferring simulator start by 100ms";
-                QTimer::singleShot(100, this, [this]() {
-                    qDebug() << "🚀 Starting simulator timer (10Hz) after additional delay";
-                    timerSim.start(100);  // 10Hz
-                });
-            }
+            timerSim.start(100); // 10Hz sync with GPS update
+            qDebug() << "✅ Simulator timer started (10Hz)";
         }
-    }
-}
-
-// ===== OPENGL CALLBACKS SETUP - WITH INTERFACEPROPERTY VALIDATION =====
-void FormGPS::initializeOpenGLCallbacks()
-{
-    qDebug() << "🔄 Attempting OpenGL callbacks setup...";
-
-    if (!openGLControl) {
-        qWarning() << "❌ OpenGL control not available for callback setup";
-        return;
-    }
-
-    // Test if InterfaceProperty are accessible
-    bool interfacePropertiesReady = false;
-    try {
-        bool testJob = isJobStarted();
-        bool testAutosteer = MainWindowState::instance()->isBtnAutoSteerOn();
-        interfacePropertiesReady = true;
-        qDebug() << "✅ InterfaceProperty retry validation successful - isJobStarted:" << testJob << "isBtnAutoSteerOn():" << testAutosteer;
-    } catch (...) {
-        qWarning() << "❌ InterfaceProperty still not ready - scheduling another retry in 200ms";
-        QTimer::singleShot(200, this, [this]() {
-            initializeOpenGLCallbacks();
-        });
-        return;
-    }
-
-    if (interfacePropertiesReady) {
-        qDebug() << "🎯 Setting up OpenGL callbacks - InterfaceProperty verified ready";
-        openGLControl->setProperty("callbackObject",QVariant::fromValue((void *) this));
-        openGLControl->setProperty("initCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Initialized, this)));
-#if defined(Q_OS_WINDOWS) //|| defined (Q_OS_ANDROID)
-        //direct rendering in the QML render thread.  Will need locking to be safe.
-        openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::oglMain_Paint,this)));
-#else
-        //do indirect rendering for now.
-        openGLControl->setProperty("paintCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::render_main_fbo,this)));
-#endif
-#ifdef USE_QSGRENDERNODE
-        openGLControl->setProperty("cleanupCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Shutdown,this)));
-#else
-        openGLControl->setProperty("samples",SettingsManager::instance()->display_antiAliasSamples());
-        static_cast<AOGRendererInSG *>(openGLControl)->setMirrorVertically(true);
-#endif
-        connect(openGLControl,SIGNAL(clicked(QVariant)),this,SLOT(onGLControl_clicked(QVariant)));
-        connect(openGLControl,SIGNAL(dragged(int,int,int,int)),this,SLOT(onGLControl_dragged(int,int,int,int)));
-        qDebug() << "✅ OpenGL callbacks successfully configured - rendering now safe";
     }
 }
 

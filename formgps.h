@@ -758,8 +758,6 @@ private:
 
     // ⚡ QML Interface Initialization - Delayed to avoid timing issues
     void initializeQMLInterfaces();
-    // ⚡ OpenGL Callbacks Setup - With InterfaceProperty validation
-    void initializeOpenGLCallbacks();
 
     // ⚡ Safe QML Object Access - With NULL protection and retries
     QObject* safeQmlItem(const QString& objectName, int maxRetries = 3);

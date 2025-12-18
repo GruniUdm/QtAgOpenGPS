@@ -37,6 +37,7 @@ void FormGPS::connect_classes()
 
     connect(&bnd, &CBoundary::TimedMessage, this, &FormGPS::TimedMessageBox, Qt::QueuedConnection);
     //connect(&bnd, SIGNAL(soundHydLiftChange(bool)),sounds,SLOT(onHydLiftChange(bool)));
+    connect(&bnd, &CBoundary::saveBoundaryRequested, this, &FormGPS::FileSaveBoundary, Qt::DirectConnection);
 
     connect(&yt, &CYouTurn::outOfBounds, &mc, &CModuleComm::setOutOfBounds, Qt::QueuedConnection);
     //TODO: connect(&yt,SIGNAL(turnOffBoundAlarm()),&sounds,SLOT(onTurnOffBoundAlarm()));
