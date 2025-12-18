@@ -7,7 +7,7 @@
 #include "ctram.h"
 #include "cboundary.h"
 #include "cvehicle.h"
-#include "backend.h"
+#include "mainwindowstate.h"
 
 
 #include <QOpenGLShaderProgram>
@@ -1667,7 +1667,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
 
     //Checks the workswitch or steerSwitch if required
     if (ahrs.isAutoSteerAuto || mc.isRemoteWorkSystemOn)
-        mc.CheckWorkAndSteerSwitch(ahrs,Backend::instance()->mainWindow()->isBtnAutoSteerOn());
+        mc.CheckWorkAndSteerSwitch(ahrs,MainWindowState::instance()->isBtnAutoSteerOn());
 
     // check if any sections have changed status
     number = 0;
