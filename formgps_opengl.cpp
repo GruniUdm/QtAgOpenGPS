@@ -24,6 +24,7 @@
 #include "classes/agioservice.h"  // For zero-latency GPS access
 #include "classes/settingsmanager.h"
 #include "backend.h"
+#include "boundaryinterface.h"
 #include "mainwindowstate.h"
 #include "cpgn.h"
 #include "rendering.h"
@@ -524,11 +525,11 @@ void FormGPS::oglMain_Paint()
 
             double markLeft, markRight;
             if (bnd.isBndBeingMade) {
-                if (Backend::instance()->isDrawRightSide()) {
+                if (BoundaryInterface::instance()->isDrawRightSide()) {
                     markLeft = 0;
-                    markRight = Backend::instance()->createBndOffset();
+                    markRight = BoundaryInterface::instance()->createBndOffset();
                 } else {
-                    markLeft = Backend::instance()->createBndOffset();
+                    markLeft = BoundaryInterface::instance()->createBndOffset();
                     markRight = 0;
                 }
             } else {
@@ -978,10 +979,10 @@ void FormGPS::oglZoom_Paint()
         calculateMinMax();
         //back the camera up
 
-        modelview.translate(0, 0, -maxFieldDistance);
+        modelview.translate(0, 0, -Backend::instance()->m_currentField.maxDistance);
 
         //translate to that spot in the world
-        modelview.translate(-fieldCenterX, -fieldCenterY, 0);
+        modelview.translate(-Backend::instance()->m_currentField.centerX, -Backend::instance()->m_currentField.centerY, 0);
 
         //draw patches
         int count2;
@@ -1226,30 +1227,9 @@ void FormGPS::CalcFrustum(const QMatrix4x4 &mvp)
 void FormGPS::calculateMinMax()
 {
 
-    minFieldX = 9999999; minFieldY = 9999999;
-    maxFieldX = -9999999; maxFieldY = -9999999;
-
-
-    //min max of the boundary
-    //min max of the boundary
-    if (bnd.bndList.count() > 0)
-    {
-        int bndCnt = bnd.bndList[0].fenceLine.count();
-        for (int i = 0; i < bndCnt; i++)
-        {
-            double x = bnd.bndList[0].fenceLine[i].easting;
-            double y = bnd.bndList[0].fenceLine[i].northing;
-
-            //also tally the max/min of field x and z
-            if (minFieldX > x) minFieldX = x;
-            if (maxFieldX < x) maxFieldX = x;
-            if (minFieldY > y) minFieldY = y;
-            if (maxFieldY < y) maxFieldY = y;
-        }
-
-    }
-    else
-    {
+    //calculate field extents from boundary
+    if (! bnd.CalculateMinMax() ) {
+        //otherwise calculate from coverage
         //draw patches j= # of sections
         for (int j = 0; j < tool.triStrip.count(); j++)
         {
@@ -1268,38 +1248,43 @@ void FormGPS::calculateMinMax()
                         double y = (*triList)[i].y();
 
                         //also tally the max/min of field x and z
-                        if (minFieldX > x) minFieldX = x;
-                        if (maxFieldX < x) maxFieldX = x;
-                        if (minFieldY > y) minFieldY = y;
-                        if (maxFieldY < y) maxFieldY = y;
+                        if (Backend::instance()->m_currentField.minX > x) Backend::instance()->m_currentField.minX = x;
+                        if (Backend::instance()->m_currentField.maxX < x) Backend::instance()->m_currentField.maxX = x;
+                        if (Backend::instance()->m_currentField.minY > y) Backend::instance()->m_currentField.minY = y;
+                        if (Backend::instance()->m_currentField.maxY < y) Backend::instance()->m_currentField.maxY = y;
                     }
                 }
             }
         }
     }
 
-
-    if (maxFieldX == -9999999 || minFieldX == 9999999 || maxFieldY == -9999999 || minFieldY == 9999999)
+    if (Backend::instance()->m_currentField.minX == -9999999 ||
+        Backend::instance()->m_currentField.maxX ==  9999999 ||
+        Backend::instance()->m_currentField.minY == -9999999 ||
+        Backend::instance()->m_currentField.maxY ==  9999999 )
     {
-        maxFieldX = 0; minFieldX = 0; maxFieldY = 0; minFieldY = 0;
+        //there was no boundary and no coverage
+        Backend::instance()->m_currentField.minX = 0;
+        Backend::instance()->m_currentField.minY = 0;
+        Backend::instance()->m_currentField.maxX = 0;
+        Backend::instance()->m_currentField.maxY = 0;
     }
     else
     {
+        double maxFieldDistance;
         //the largest distancew across field
-        double dist = fabs(minFieldX - maxFieldX);
-        double dist2 = fabs(minFieldY - maxFieldY);
+        double dist = fabs(Backend::instance()->m_currentField.minX - Backend::instance()->m_currentField.maxX);
+        double dist2 = fabs(Backend::instance()->m_currentField.minY - Backend::instance()->m_currentField.maxY);
 
         if (dist > dist2) maxFieldDistance = (dist);
         else maxFieldDistance = (dist2);
 
         if (maxFieldDistance < 100) maxFieldDistance = 100;
         if (maxFieldDistance > 19900) maxFieldDistance = 19900;
-        //lblMax.Text = ((int)maxFieldDistance).ToString();
 
-        fieldCenterX = (maxFieldX + minFieldX) / 2.0;
-        fieldCenterY = (maxFieldY + minFieldY) / 2.0;
+        Backend::instance()->m_currentField.calcCenter();
+        Backend::instance()->m_currentField.maxDistance = maxFieldDistance;
     }
 
-    headland_form.setFieldInfo(maxFieldDistance,fieldCenterX,fieldCenterY);
-    headache_form.setFieldInfo(maxFieldDistance,fieldCenterX,fieldCenterY);
+    Backend::instance()->currentFieldChanged();
 }

@@ -442,27 +442,6 @@ int FormGPS::droppedSentences() const { return m_droppedSentences; }
 void FormGPS::setDroppedSentences(int value) { m_droppedSentences = value; }
 QBindable<int> FormGPS::bindableDroppedSentences() { return &m_droppedSentences; }
 
-// ===== Area and Boundary Properties =====
-double FormGPS::areaOuterBoundary() const { return m_areaOuterBoundary; }
-void FormGPS::setAreaOuterBoundary(double areaOuterBoundary) { m_areaOuterBoundary = areaOuterBoundary; }
-QBindable<double> FormGPS::bindableAreaOuterBoundary() { return &m_areaOuterBoundary; }
-
-double FormGPS::areaBoundaryOuterLessInner() const { return m_areaBoundaryOuterLessInner; }
-void FormGPS::setAreaBoundaryOuterLessInner(double areaBoundaryOuterLessInner) { m_areaBoundaryOuterLessInner = areaBoundaryOuterLessInner; }
-QBindable<double> FormGPS::bindableAreaBoundaryOuterLessInner() { return &m_areaBoundaryOuterLessInner; }
-
-double FormGPS::distanceUser() const { return m_distanceUser; }
-void FormGPS::setDistanceUser(double distanceUser) { m_distanceUser = distanceUser; }
-QBindable<double> FormGPS::bindableDistanceUser() { return &m_distanceUser; }
-
-double FormGPS::actualAreaCovered() const { return m_actualAreaCovered; }
-void FormGPS::setActualAreaCovered(double actualAreaCovered) { m_actualAreaCovered = actualAreaCovered; }
-QBindable<double> FormGPS::bindableActualAreaCovered() { return &m_actualAreaCovered; }
-
-double FormGPS::userSquareMetersAlarm() const { return m_userSquareMetersAlarm; }
-void FormGPS::setUserSquareMetersAlarm(double userSquareMetersAlarm) { m_userSquareMetersAlarm = userSquareMetersAlarm; }
-QBindable<double> FormGPS::bindableUserSquareMetersAlarm() { return &m_userSquareMetersAlarm; }
-
 // ===== Button State Properties =====
 int FormGPS::sensorData() const { return m_sensorData; }
 void FormGPS::setSensorData(int sensorData) { m_sensorData = sensorData; }
@@ -673,12 +652,12 @@ void FormGPS::processOverlapCount()
 
         if (total2 > 0)
         {
-            this->setActualAreaCovered( (total / total2 * Backend::instance()->workedAreaTotal()));
+            Backend::instance()->currentField_setActualAreaCovered( (total / total2 * Backend::instance()->m_currentField.workedAreaTotal));
             fd.overlapPercent = ((1 - total / total2) * 100);
         }
         else
         {
-            this->setActualAreaCovered( 0);
+            Backend::instance()->currentField_setActualAreaCovered( 0);
             fd.overlapPercent = 0;
         }
     }
@@ -1235,10 +1214,10 @@ void FormGPS::JobClose()
     yt.ResetYouTurn();
 
     //reset acre and distance counters
-    Backend::instance()->set_workedAreaTotal(0);
+    Backend::instance()->currentField_setWorkedAreaTotal(0);
 
     //reset GUI areas
-    fd.UpdateFieldBoundaryGUIAreas(bnd.bndList, mainWindow, this);
+    bnd.UpdateFieldBoundaryGUIAreas();
 
     displayFieldName = tr("None");
 

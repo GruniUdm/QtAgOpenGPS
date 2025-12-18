@@ -79,7 +79,7 @@ void FormGPS::loadSettings()
     //gyd pulls directly from settings
     //gyd.sideHillCompFactor = property_setAS_sideHillComp;
 
-    fd.UpdateFieldBoundaryGUIAreas(bnd.bndList, mainWindow, this);
+    bnd.UpdateFieldBoundaryGUIAreas();
 
     isStanleyUsed = SettingsManager::instance()->vehicle_isStanleyUsed();
     isDay = SettingsManager::instance()->display_isDayMode();

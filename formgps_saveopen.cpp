@@ -1113,12 +1113,12 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
             // Phase 1.3: Lock only for final assignment (< 50ms)
             lock.lockForWrite();
-            this->setDistanceUser(0.0);
+            Backend::instance()->currentField_setDistanceUser(0.0);
             tool.triStrip[0].triangleList = localTriangleList.isEmpty() ? QSharedPointer<PatchTriangleList>(new PatchTriangleList) : localTriangleList.last();
             tool.triStrip[0].patchList = localPatchList;
             tool.triStrip[0].patchBoundingBoxList = localPatchBoundingBoxList;
             tool.patchesBufferDirty = true;
-            Backend::instance()->addWorkedAreaTotal(localWorkedArea);
+            Backend::instance()->currentField_addWorkedAreaTotal(localWorkedArea);
             lock.unlock();
         }
     }
@@ -1357,7 +1357,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         lock.lockForWrite();
         bnd.bndList = localBndList;
         calculateMinMax();
-        bnd.BuildTurnLines(fd, mainWindow, this);
+        bnd.BuildTurnLines();
 
         if(bnd.bndList.count() > 0)
         {

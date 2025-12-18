@@ -179,8 +179,8 @@ void CPatches::AddMappingPoint(QColor section_color,
     temp *= 0.5;
 
     // Update worked area using Q_PROPERTY
-    Backend::instance()->addWorkedAreaTotal(temp);
-    Backend::instance()->addWorkedAreaTotalUser(temp);
+    Backend::instance()->currentField_addWorkedAreaTotal(temp);
+    Backend::instance()->currentField_addWorkedAreaTotalUser(temp);
 
     if (numTriangles > 61)
     {

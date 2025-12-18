@@ -25,6 +25,7 @@
 #include "rendering.h"
 #include "backend.h"
 #include "mainwindowstate.h"
+#include "boundaryinterface.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -100,9 +101,9 @@ void FormGPS::UpdateFixPosition()
         //#region Start
 
         distanceCurrentStepFixDisplay = glm::Distance(prevDistFix, pn.fix);
-        double newDistance = this->distanceUser() + distanceCurrentStepFixDisplay;
+        double newDistance = Backend::instance()->m_currentField.distanceUser + distanceCurrentStepFixDisplay;
         if (newDistance > 999) newDistance = 0;
-        this->setDistanceUser(newDistance);
+        Backend::instance()->currentField_setDistanceUser(newDistance);
         distanceCurrentStepFixDisplay *= 100;
 
         prevDistFix = pn.fix;
@@ -759,9 +760,9 @@ void FormGPS::UpdateFixPosition()
         distanceCurrentStepFix = glm::Distance(pn.fix, prevDistFix);
 
         //userDistance can be reset
-        double userDistance = this->distanceUser() + distanceCurrentStepFix;
+        double userDistance = Backend::instance()->m_currentField.distanceUser + distanceCurrentStepFix;
         if (userDistance > 999) userDistance = 0;
-        this->setDistanceUser(userDistance);
+        Backend::instance()->currentField_setDistanceUser(userDistance);
 
         distanceCurrentStepFixDisplay = distanceCurrentStepFix * 100;
         prevDistFix = pn.fix;
@@ -1055,7 +1056,7 @@ void FormGPS::UpdateFixPosition()
         //check if inside all fence
         if (!MainWindowState::instance()->isYouTurnBtnOn())
         {
-            Backend::instance()->set_isOutOfBounds(!bnd.IsPointInsideFenceArea(CVehicle::instance()->pivotAxlePos));
+            BoundaryInterface::instance()->set_isOutOfBounds(!bnd.IsPointInsideFenceArea(CVehicle::instance()->pivotAxlePos));
             // Qt 6.8 FIX: Removed redundant self-assignment that could cause binding loop
         }
         else //Youturn is on
@@ -1066,7 +1067,7 @@ void FormGPS::UpdateFixPosition()
             //if (!yt.isYouTurnTriggered)
             if (isInTurnBounds)
             {
-                Backend::instance()->set_isOutOfBounds(false);
+                BoundaryInterface::instance()->set_isOutOfBounds(false);
                 //now check to make sure we are not in an inner turn boundary - drive thru is ok
                 if (yt.youTurnPhase != 10)
                 {
@@ -1130,7 +1131,7 @@ void FormGPS::UpdateFixPosition()
                 if (!yt.isYouTurnTriggered)
                 {
                     yt.ResetCreatedYouTurn();
-                    Backend::instance()->set_isOutOfBounds(!bnd.IsPointInsideFenceArea(CVehicle::instance()->pivotAxlePos));
+                    BoundaryInterface::instance()->set_isOutOfBounds(!bnd.IsPointInsideFenceArea(CVehicle::instance()->pivotAxlePos));
                     // Qt 6.8 FIX: Removed redundant self-assignment that could cause binding loop
                 }
 
@@ -1159,7 +1160,7 @@ void FormGPS::UpdateFixPosition()
     }
     else
     {
-        Backend::instance()->set_isOutOfBounds(false);
+        BoundaryInterface::instance()->set_isOutOfBounds(false);
     }
 
     //#endregion
@@ -1365,8 +1366,8 @@ void FormGPS::TheRest()
     //test if travelled far enough for new boundary point
     if (bnd.isOkToAddPoints)
     {
-        double boundaryDistance = glm::Distance(pn.fix, prevBoundaryPos);
-        if (boundaryDistance > 1) AddBoundaryPoint();
+        //if at least 1 metre distance from last point, add a new one
+        bnd.AddCurrentPoint(1);
     }
 
     //calc distance travelled since last GPS fix
@@ -2183,7 +2184,7 @@ void FormGPS::processSectionLookahead() {
 
     if (isJobStarted())
     {
-        p_239.pgn[p_239.geoStop] = Backend::instance()->isOutOfBounds() ? 1 : 0;
+        p_239.pgn[p_239.geoStop] = BoundaryInterface::instance()->isOutOfBounds() ? 1 : 0;
 
         // SendPgnToLoop(p_239.pgn;  // âŒ REMOVED - Phase 4.6: AgIOService Workers handle PGN
 
@@ -2480,38 +2481,6 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
         }
         else sped = rightSpeed;
         tool.section[j].speedPixels = tool.section[j].speedPixels * 0.7 + sped * 0.3;
-    }
-}
-
-//perimeter and boundary point generation
-void FormGPS::AddBoundaryPoint()
-{
-    //save the north & east as previous
-    prevBoundaryPos.easting = pn.fix.easting;
-    prevBoundaryPos.northing = pn.fix.northing;
-
-    //build the boundary line
-    if (bnd.isOkToAddPoints)
-    {
-        if (Backend::instance()->isDrawRightSide())
-        {
-            //Right side
-            Vec3 point(CVehicle::instance()->pivotAxlePos.easting + sin(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * -Backend::instance()->createBndOffset(),
-                       CVehicle::instance()->pivotAxlePos.northing + cos(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * -Backend::instance()->createBndOffset(),
-                       CVehicle::instance()->pivotAxlePos.heading);
-            bnd.bndBeingMadePts.append(point);
-        }
-
-        //draw on left side
-        else
-        {
-            //Right side
-            Vec3 point(CVehicle::instance()->pivotAxlePos.easting + sin(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * Backend::instance()->createBndOffset(),
-                       CVehicle::instance()->pivotAxlePos.northing + cos(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * Backend::instance()->createBndOffset(),
-                       CVehicle::instance()->pivotAxlePos.heading);
-            bnd.bndBeingMadePts.append(point);
-        }
-        boundary_calculate_area(); //in formgps_ui_boundary.cpp
     }
 }
 
