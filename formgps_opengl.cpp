@@ -581,16 +581,7 @@ void FormGPS::oglMain_Paint()
             //guidance line text implemented in QML
 
             //draw the zoom window
-            // ⚡ PHASE 6.3.0 SAFETY: Verify InterfaceProperty before OpenGL access
-            bool jobStartedSafe = false;
-            try {
-                jobStartedSafe = this->isJobStarted();
-            } catch (...) {
-                // InterfaceProperty not ready, skip this rendering cycle
-                jobStartedSafe = false;
-            }
-
-            if (jobStartedSafe)
+            if (this->isJobStarted())
             {
                 /*TODO implement floating zoom windo
                 if (threeSeconds != zoomUpdateCounter)

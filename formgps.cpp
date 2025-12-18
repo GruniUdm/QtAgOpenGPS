@@ -96,10 +96,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     qDebug() << "ðŸŽ¨ Now loading QML interface (AFTER constructor completion)...";
     setupGui();
 
-    // Initialize mainWindow reference for classes that need qmlItem access
-    yt.setMainWindow(mainWindow);
-    vehicle->setMainWindow(mainWindow);  // Qt 6.8 FIX: Use existing pointer instead of creating new instance
-
     // ===== PHASE 6.3.1: PropertyWrapper initialization moved to initializeQMLInterfaces() =====
     // PropertyWrapper must be initialized AFTER QML objects are fully loaded and accessible
     qDebug() << "ðŸ”§ Phase 6.3.1: PropertyWrapper initialization will happen in initializeQMLInterfaces()";

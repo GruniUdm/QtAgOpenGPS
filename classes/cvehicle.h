@@ -225,10 +225,6 @@ public:
     void setLeftTramIndicator(int value) { setLeftTramState(value); }
     void setRightTramIndicator(int value) { setRightTramState(value); }
 
-    // MainWindow reference methods
-    void setMainWindow(QObject* window);
-    QObject* getMainWindow() const { return mainWindow; }
-
 public slots:
     void AverageTheSpeed(double newSpeed);
     //void settingsChanged(); //notify us that settings changed so buffers need to be redone.
@@ -265,9 +261,6 @@ private:
             m_settingsLoaded = true;
         }
     }
-
-    //reference to mainWindow for qmlItem access
-    QObject *mainWindow = nullptr;
 
     // ===== Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY Private Members =====
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, bool, m_isHydLiftOn, &CVehicle::isHydLiftOnChanged)

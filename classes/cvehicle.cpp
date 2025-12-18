@@ -663,10 +663,6 @@ void CVehicle::setVehicleList(const QList<QVariant>& value) {
     m_vehicleList = value;
 }
 
-void CVehicle::setMainWindow(QObject *mw) {
-    mainWindow = mw;
-}
-
 // ===== Qt 6.8 Rectangle Pattern Getters =====
 bool CVehicle::isHydLiftOn() const {
     return m_isHydLiftOn;
