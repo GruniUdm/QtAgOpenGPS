@@ -25,6 +25,7 @@
 #include <algorithm>
 #include "rendering.h"
 #include "backend.h"
+#include "boundaryinterface.h"
 #include "mainwindowstate.h"
 
 QString caseInsensitiveFilename(QString directory, QString filename);
@@ -275,7 +276,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     headland_form.bnd = &bnd;
     headland_form.hdl = &hdl;
     headland_form.tool = &tool;
-    headland_form.setFormGPS(this);
 
     headland_form.connect_ui(qmlItem(mainWindow, "headlandDesigner"));
     connect(&headland_form, SIGNAL(saveHeadland()),this,SLOT(headland_save()));
@@ -284,7 +284,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     headache_form.bnd = &bnd;
     headache_form.hdl = &hdl;
     headache_form.tool = &tool;
-    //headache_form.setFormGPS(this);
 
     headache_form.connect_ui(qmlItem(mainWindow, "headacheDesigner"));
     connect(&headache_form, SIGNAL(saveHeadland()),this,SLOT(headland_save()));
@@ -727,67 +726,6 @@ void FormGPS::fieldNewFromKML(const QString& fieldName, const QString& kmlPath) 
 void FormGPS::fieldDelete(const QString& fieldName) {
     // Modern implementation - same logic as field_delete(QString)
     field_delete(fieldName);
-}
-
-// ===== BATCH 14 - 11 ACTIONS Boundary Management - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::boundaryCalculateArea() {
-    // Modern implementation - same logic as boundary_calculate_area()
-    boundary_calculate_area();
-}
-
-void FormGPS::boundaryUpdateList() {
-    // Modern implementation - same logic as boundary_update_list()
-    boundary_update_list();
-}
-
-void FormGPS::boundaryStart() {
-    // Modern implementation - same logic as boundary_start()
-    boundary_start();
-}
-
-void FormGPS::boundaryStop() {
-    // Modern implementation - same logic as boundary_stop()
-    boundary_stop();
-}
-
-void FormGPS::boundaryAddPoint() {
-    // Modern implementation - same logic as boundary_add_point()
-    boundary_add_point();
-}
-
-void FormGPS::boundaryDeleteLastPoint() {
-    // Modern implementation - same logic as boundary_delete_last_point()
-    boundary_delete_last_point();
-}
-
-void FormGPS::boundaryPause() {
-    // Modern implementation - same logic as boundary_pause()
-    boundary_pause();
-}
-
-void FormGPS::boundaryRecord() {
-    // Modern implementation - same logic as boundary_record()
-    boundary_record();
-}
-
-void FormGPS::boundaryReset() {
-    // Modern implementation - same logic as boundary_restart()
-    boundary_restart();
-}
-
-void FormGPS::boundaryDeleteBoundary(int boundaryId) {
-    // Modern implementation - same logic as boundary_delete(int)
-    boundary_delete(boundaryId);
-}
-
-void FormGPS::boundarySetDriveThrough(int boundaryId, bool isDriveThrough) {
-    // Modern implementation - same logic as boundary_set_drivethru(int,bool)
-    boundary_set_drivethru(boundaryId, isDriveThrough);
-}
-
-void FormGPS::boundaryDeleteAll() {
-    // Modern implementation - same logic as boundary_delete_all()
-    boundary_delete_all();
 }
 
 void FormGPS::loadBoundaryFromKML(QString filename) {
@@ -1536,7 +1474,7 @@ void FormGPS::onDeleteAppliedArea_clicked()
                 ct.StopContourLine(contourSaveList);
                 ct.ResetContour();
 
-                Backend::instance()->set_workedAreaTotal(0);
+                Backend::instance()->currentField_setWorkedAreaTotal(0);
 
                 //clear the section lists
                 for (int j = 0; j < tool.triStrip.count(); j++)
@@ -1945,7 +1883,7 @@ void FormGPS::initializeQMLInterfaces()
     this->setManualBtnState((int)btnStates::Off);
     this->setAutoBtnState((int)btnStates::Off);
     this->setIsPatchesChangingColor( false);
-    Backend::instance()->set_isOutOfBounds(false);
+    BoundaryInterface::instance()->set_isOutOfBounds(false);
     qDebug() << "  ✅ PropertyWrapper initial values set successfully";
 
     // ===== CRITICAL: Initialize QML members AFTER QML objects are created =====
@@ -2011,27 +1949,11 @@ void FormGPS::initializeQMLInterfaces()
         qWarning() << "❌ fieldInterface not found - field operations will not work";
     }
 
-    if (boundaryInterface) {
-        qDebug() << "🔗 Connecting boundaryInterface signals...";
-        // ⚡ YouTurn out of bounds signal
-        connect(&yt, SIGNAL(outOfBounds()),boundaryInterface,SLOT(setIsOutOfBoundsTrue()));
-        // ===== BATCH 14 - Boundary Management Connections REMOVED - Qt 6.8 modernized to Q_INVOKABLE calls =====
-        // REMOVED: connect(boundaryInterface, SIGNAL(calculate_area()), this, SLOT(boundary_calculate_area()));
-        // REMOVED: connect(boundaryInterface, SIGNAL(update_list()), this, SLOT(boundary_update_list()));
-        // REMOVED: connect(boundaryInterface, SIGNAL(start()), this, SLOT(boundary_start()));
-        // REMOVED: connect(boundaryInterface, SIGNAL(stop()), this, SLOT(boundary_stop()));
-        // REMOVED: connect(boundaryInterface, SIGNAL(add_point()), this, SLOT(boundary_add_point()));
-        // REMOVED: connect(boundaryInterface, SIGNAL(delete_last_point()), this, SLOT(boundary_delete_last_point()));
-        // REMOVED: connect(boundaryInterface, SIGNAL(pause()), this, SLOT(boundary_pause()));
-        // REMOVED: connect(boundaryInterface, SIGNAL(record()), this, SLOT(boundary_record()));
-        // REMOVED: connect(boundaryInterface, SIGNAL(reset()), this, SLOT(boundary_restart()));
-        // REMOVED: connect(boundaryInterface, SIGNAL(delete_boundary(int)), this, SLOT(boundary_delete(int)));
-        // REMOVED: connect(boundaryInterface, SIGNAL(set_drive_through(int, bool)), this, SLOT(boundary_set_drivethru(int,bool)));
-        // REMOVED: connect(boundaryInterface, SIGNAL(delete_all()), this, SLOT(boundary_delete_all()));
-        qDebug() << "✅ boundaryInterface modernized to Q_INVOKABLE pattern - 11 connections replaced";
-    } else {
-        qWarning() << "❌ boundaryInterface not found - boundary operations will not work";
-    }
+    qDebug() << "🔗 Connecting boundaryInterface signals...";
+    // ⚡ YouTurn out of bounds signal
+    connect(&yt, &CYouTurn::outOfBounds, this, [this]() {
+            BoundaryInterface::instance()->set_isOutOfBounds(true);
+    });
 
     // ⚡ PHASE 6.3.0 TIMING FIX: Verify InterfaceProperty are really initialized before OpenGL
     bool interfacePropertiesReady = false;
