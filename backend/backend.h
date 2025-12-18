@@ -40,8 +40,34 @@ public:
     //const getter for QML
     FieldInfo currentField() const { return m_currentField; }
 
-    Q_INVOKABLE void clearDistanceUser() {
-        m_currentField.distanceUser = 0;
+    //mutation methods for currentField
+    Q_INVOKABLE void currentField_setDistanceUser(double newdist) {
+        m_currentField.distanceUser = newdist;
+        emit currentFieldChanged();
+    }
+
+    Q_INVOKABLE void currentField_addWorkedAreaTotal(double netarea) {
+        m_currentField.workedAreaTotal += netarea;
+        emit currentFieldChanged();
+    }
+
+    Q_INVOKABLE void currentField_setWorkedAreaTotal(double area) {
+        m_currentField.workedAreaTotal = area;
+        emit currentFieldChanged();
+    }
+
+    Q_INVOKABLE void currentField_addWorkedAreaTotalUser(double netarea) {
+        m_currentField.workedAreaTotalUser += netarea;
+        emit currentFieldChanged();
+    }
+
+    Q_INVOKABLE void currentField_setWorkedAreaTotalUser(double area) {
+        m_currentField.workedAreaTotalUser = area;
+        emit currentFieldChanged();
+    }
+
+    Q_INVOKABLE void currentField_setActualAreaCovered(double area) {
+        m_currentField.actualAreaCovered = area;
         emit currentFieldChanged();
     }
 
