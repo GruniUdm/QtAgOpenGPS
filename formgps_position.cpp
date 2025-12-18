@@ -1078,13 +1078,12 @@ void FormGPS::UpdateFixPosition()
                     {
                         if (track.getMode() == TrackMode::AB)
                         {
-                            yt.BuildABLineDubinsYouTurn(this, yt.isYouTurnRight,*CVehicle::instance(),bnd,
+                            yt.BuildABLineDubinsYouTurn(yt.isYouTurnRight,bnd,
                                                         track,secondsSinceStart);
                         }
                         else
                         {
-                            yt.BuildCurveDubinsYouTurn(yt.isYouTurnRight, CVehicle::instance()->pivotAxlePos,
-                                                       *CVehicle::instance(),bnd,track,secondsSinceStart);
+                            yt.BuildCurveDubinsYouTurn(yt.isYouTurnRight, bnd,track,secondsSinceStart);
                         }
                     }
 
@@ -1115,7 +1114,7 @@ void FormGPS::UpdateFixPosition()
                     //if we are close enough to pattern, trigger.
                     if ((_distancePivotToTurnLine <= 1.0) && (_distancePivotToTurnLine >= 0) && !yt.isYouTurnTriggered)
                     {
-                        yt.YouTurnTrigger(track, *CVehicle::instance());
+                        yt.YouTurnTrigger(track);
                         //moved to QML
                         //sounds.isBoundAlarming = false;
                     }

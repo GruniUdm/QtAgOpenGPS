@@ -709,7 +709,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
 
     if (curList.count() > 0)
     {
-        if (yt.isYouTurnTriggered && yt.DistanceFromYouTurnLine(*CVehicle::instance(),pn))//do the pure pursuit from youTurn
+        if (yt.isYouTurnTriggered && yt.DistanceFromYouTurnLine(pn))//do the pure pursuit from youTurn
         {
             //now substitute what it thinks are AB line values with auto turn values
             steerAngleCu = yt.steerAngleYT;

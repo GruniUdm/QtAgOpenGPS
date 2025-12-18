@@ -161,7 +161,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
     double as_sideHillCompensation = SettingsManager::instance()->as_sideHillCompensation();
 
     //Check uturn first
-    if (yt.isYouTurnTriggered && yt.DistanceFromYouTurnLine(*CVehicle::instance(),pn))//do the pure pursuit from youTurn
+    if (yt.isYouTurnTriggered && yt.DistanceFromYouTurnLine(pn))//do the pure pursuit from youTurn
     {
         //now substitute what it thinks are AB line values with auto turn values
         steerAngleAB = yt.steerAngleYT;

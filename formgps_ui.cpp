@@ -286,9 +286,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     headache_form.tool = &tool;
     //headache_form.setFormGPS(this);
 
-    // Initialize CYouTurn FormGPS and CTrack references
-    yt.setFormGPS(this);
-
     headache_form.connect_ui(qmlItem(mainWindow, "headacheDesigner"));
     connect(&headache_form, SIGNAL(saveHeadland()),this,SLOT(headland_save()));
     connect(&headache_form, SIGNAL(timedMessageBox(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
@@ -1273,13 +1270,13 @@ void FormGPS::onBtnManUTurn_clicked(bool right)
     }else {
         yt.loadSettings(); // PHASE6-0-20: Sync rowSkipsWidth with SettingsManager before manual U-turn
         yt.isYouTurnTriggered = true;
-        yt.BuildManualYouTurn(this, right, true, *CVehicle::instance(), track);
+        yt.BuildManualYouTurn(right, true, track);
    }
 }
 
 void FormGPS::onBtnLateral_clicked(bool right)
 {
-   yt.BuildManualYouLateral(this, right, *CVehicle::instance(), track);
+   yt.BuildManualYouLateral(right, track);
 }
 
 void FormGPS::btnSteerAngleUp_clicked(){
