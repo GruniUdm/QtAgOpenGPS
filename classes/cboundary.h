@@ -18,7 +18,6 @@ class CVehicle;
 class CABLine;
 class CYouTurn;
 class CModuleComm;
-class CFieldData;
 class CTool;
 class CPGN_EF;
 
@@ -32,6 +31,8 @@ private:
 
     bool bufferCurrent = false;
     bool backBufferCurrent = false;
+
+    Vec2 prevBoundaryPos;
 
 public:
     //area of boundaries
@@ -72,7 +73,7 @@ public:
     //CTurn.sh
     int IsPointInsideTurnArea(Vec3 pt) const;
     void FindClosestTurnPoint(const CABLine &abline, Vec3 fromPt);
-    void BuildTurnLines(CFieldData &fd, QObject *mainWindow, class FormGPS *formGPS);
+    void BuildTurnLines();
 
     //CHead.cs
     void SetHydPosition(btnStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle); //TODO sounds, p_239
@@ -85,9 +86,30 @@ public:
     //void drawClosestPoint(QOpenGLFunctions *g, const QMatrix4x4 &mvp);
     //void drawBoundaryLineOnBackBuffer(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
 
+    void AddCurrentPoint(double min_dist);
+    void UpdateFieldBoundaryGUIAreas();
+    bool CalculateMinMax();
+
+public slots:
+    // methods to be used by GUI.
+    void calculateArea();
+    void updateList();
+    void start();
+    void stop();
+    void addPoint();
+    void deleteLastPoint();
+    void pause();
+    void record();
+    void reset();
+    void deleteBoundary(int which_boundary);
+    void setDriveThrough(int which_boundary, bool drive_thru);
+    void deleteAll();
+
 signals:
     void TimedMessage(int timeout, QString title, QString message);
     void soundHydLiftChange(bool);
+
+    void saveBoundaryRequested();
 
 };
 
