@@ -208,17 +208,6 @@ Window {
         else return false
     }
 
-
-    Interfaces.FieldInterface {
-        id: fieldInterface
-        objectName: "fieldInterface"
-    }
-
-    Interfaces.BoundaryInterface {
-        id: boundaryInterface
-        objectName: "boundaryInterface"
-    }
-
     Interfaces.RecordedPathInterface {
         id: recordedPathInterface
         objectName: "recordedPathInterface"

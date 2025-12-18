@@ -21,7 +21,7 @@ MoveablePopup {
     onVisibleChanged: {
         if (visible) {
             boundaryRecordBtn.checked = false
-            aog.boundaryStart() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+            BoundaryInterface.start() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         }
     }
     TopLine{
@@ -86,17 +86,17 @@ MoveablePopup {
                 icon.source: prefix + "/images/BoundaryDelete.png"
                 height: 80  * theme.scaleHeight
                 width: 80  * theme.scaleWidth
-                onClicked: aog.boundaryReset() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                onClicked: BoundaryInterface.reset() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
             Column{
                 height: boundaryDelete.height
                 width: boundaryDelete.width
                 spacing: 20 * theme.scaleHeight
                 Text{
-                    text: qsTr("Area:") + " " + Utils.area_to_unit_string(aog.boundaryArea,1) + " " + Utils.area_unit()
+                    text: qsTr("Area:") + " " + Utils.area_to_unit_string(BoundaryInterface.area,1) + " " + Utils.area_unit()
                 }
                 Text{
-                    text: qsTr("Points:") + " " + aog.boundaryPointCount
+                    text: qsTr("Points:") + " " + BoundaryInterface.pointCount
                 }
             }
         }
@@ -118,7 +118,7 @@ MoveablePopup {
                 icon.source: prefix + "/images/PointAdd.png"
                 height: 80  * theme.scaleHeight
                 width: 80  * theme.scaleWidth
-                onClicked: aog.boundaryAddPoint() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                onClicked: BoundaryInterface.addPoint() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
             IconButtonTransparent{
                 border: 1
@@ -126,7 +126,7 @@ MoveablePopup {
                 icon.source: prefix + "/images/PointDelete.png"
                 height: 80  * theme.scaleHeight
                 width: 80  * theme.scaleWidth
-                onClicked: aog.boundaryDeleteLastPoint() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                onClicked: BoundaryInterface.deleteLastPoint() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
             IconButtonTransparent{
                 id: boundaryRecordBtn
@@ -139,9 +139,9 @@ MoveablePopup {
 
                 onCheckedChanged: {
                     if (checked)
-                        aog.boundaryRecord() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                        BoundaryInterface.record() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     else
-                        aog.boundaryPause() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                        BoundaryInterface.pause() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 }
             }
 
@@ -150,7 +150,7 @@ MoveablePopup {
                 icon.source: prefix + "/images/OK64.png"
                 onClicked: {
                     boundaryRecord.visible = false
-                    aog.boundaryStop() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    BoundaryInterface.stop() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 }
                 height: 80  * theme.scaleHeight
                 width: 80  * theme.scaleWidth

@@ -4,6 +4,7 @@ import QtLocation
 import QtPositioning
 import QtQuick.Controls 2.15
 import QtQuick.Layouts
+import AOG
 import ".."
 import "../components"
 
@@ -332,7 +333,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             onClicked: {
                 pointsModel.clear();
-                aog.boundary_restart();
+                BoundaryInterface.reset();
                 currentPointsCount = 0;
 
                 // Обновляем линию маршрута в текущей карте
@@ -349,7 +350,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             enabled: addBoundary.checked
             onClicked: {
-                aog.boundary_stop();
+                BoundaryInterface.stop();
                 pointsModel.clear();
                 currentPointsCount = 0;
 
@@ -376,7 +377,7 @@ Popup{
             onClicked: {
                 if (pointsModel.count > 0) {
                     pointsModel.remove(pointsModel.count - 1);
-                    aog.boundary_delete_last_point();
+                    BoundaryInterface.delete_last_point();
                     currentPointsCount = pointsModel.count;
 
                     if (mapLoader.item) {
@@ -392,7 +393,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             font.bold: true
             font.pixelSize: 15
-            text: qsTr("Площадь: \n") + " " + Utils.area_to_unit_string(aog.area,1) + " " + Utils.area_unit() + qsTr("\nПериметр: \n") + " " + formatDistance(perimeter)
+            text: qsTr("Площадь: \n") + " " + Utils.area_to_unit_string(BoundaryInterface.area,1) + " " + Utils.area_unit() + qsTr("\nПериметр: \n") + " " + formatDistance(perimeter)
         }
 
         IconButtonTransparent{
@@ -430,7 +431,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             onClicked: {
                 pointsModel.clear();
-                aog.boundary_restart()
+                BoundaryInterface.reset()
                 boundaryOSM.visible = false;
                 unloadMap()
             }

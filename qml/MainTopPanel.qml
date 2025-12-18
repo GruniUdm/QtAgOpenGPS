@@ -98,8 +98,8 @@ import "components" as Comp
                     playText.mainString = qsTr("Field: %1").arg(SettingsManager.f_currentDir)
                 }else if(increment == 4) {
                     var percentLeft = ""
-                    if (aog.areaBoundaryOuterLessInner > 0) {
-                        percentLeft = qsTr("%1%").arg(Qt.locale().toString((aog.areaBoundaryOuterLessInner - Backend.currentField.workedAreaTotal) / aog.areaBoundaryOuterLessInner * 100, 'f', 0))
+                    if (Backend.currentField.areaBoundaryOuterLessInner > 0) {
+                        percentLeft = qsTr("%1%").arg(Qt.locale().toString((Backend.currentField.areaBoundaryOuterLessInner - Backend.currentField.workedAreaTotal) / Backend.currentField.areaBoundaryOuterLessInner * 100, 'f', 0))
                     } else {
                         percentLeft = "--"
                     }
