@@ -99,13 +99,13 @@ import "components" as Comp
                 }else if(increment == 4) {
                     var percentLeft = ""
                     if (aog.areaBoundaryOuterLessInner > 0) {
-                        percentLeft = qsTr("%1%").arg(Qt.locale().toString((aog.areaBoundaryOuterLessInner - Backend.workedAreaTotal) / aog.areaBoundaryOuterLessInner * 100, 'f', 0))
+                        percentLeft = qsTr("%1%").arg(Qt.locale().toString((aog.areaBoundaryOuterLessInner - Backend.currentField.workedAreaTotal) / aog.areaBoundaryOuterLessInner * 100, 'f', 0))
                     } else {
                         percentLeft = "--"
                     }
                     playText.mainString = qsTr("App: %1 Actual: %2 %3 %4")
-                            .arg(Utils.area_to_unit_string(Backend.workedAreaTotal, 2))
-                            .arg(Utils.area_to_unit_string(aog.actualAreaCovered, 2))
+                            .arg(Utils.area_to_unit_string(Backend.currentField.workedAreaTotal, 2))
+                            .arg(Utils.area_to_unit_string(Backend.currentField.actualAreaCovered, 2))
                             .arg(percentLeft)
                             .arg(Utils.workRateString(aog.speedKph))
                 }
