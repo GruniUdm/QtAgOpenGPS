@@ -15,7 +15,7 @@
 #include "glutils.h"
 #include "classes/settingsmanager.h"
 #include "mainwindowstate.h"
-#include "formgps.h"  // Include full header for FormGPS methods
+#include "backend.h"
 
 // ===== CRITICAL: Safe QML access helper function =====
 // Crash fix: secure access to headlandRenderer dimensions with default values
@@ -160,12 +160,6 @@ void FormHeadland::connect_ui(QObject *headland_designer_instance) {
     connect(headland_designer_instance,SIGNAL(save_exit()),this,SLOT(btn_Exit_Click()));
 }
 
-void FormHeadland::setFieldInfo(double maxFieldDistance, double fieldCenterX, double fieldCenterY) {
-    this->maxFieldDistance = maxFieldDistance;
-    this->fieldCenterX = fieldCenterX;
-    this->fieldCenterY = fieldCenterY;
-}
-
 void FormHeadland::SetLineDistance() {
     hdl->desList.clear();
 
@@ -242,11 +236,11 @@ QVector3D FormHeadland::mouseClickToField(int mouseX, int mouseY) {
 
     modelview.setToIdentity();
     //back the camera up
-    modelview.translate(0, 0, -(double)maxFieldDistance * (double)designer->zoom());
+    modelview.translate(0, 0, -(double)Backend::instance()->m_currentField.maxDistance * (double)designer->zoom());
 
     //translate to that spot in the world
-    modelview.translate(-(double)fieldCenterX + (double)designer->sX() * (double)maxFieldDistance,
-                        -(double)fieldCenterY + (double)designer->sY() * (double)maxFieldDistance,
+    modelview.translate(-(double)Backend::instance()->m_currentField.centerX + (double)designer->sX() * (double)Backend::instance()->m_currentField.maxDistance,
+                        -(double)Backend::instance()->m_currentField.centerY + (double)designer->sY() * (double)Backend::instance()->m_currentField.maxDistance,
                         0);
 
     float x,y;
@@ -317,11 +311,11 @@ void FormHeadland::setup_matrices(QMatrix4x4 &modelview, QMatrix4x4 &projection)
 
     modelview.setToIdentity();
     //back the camera up
-    modelview.translate(0, 0, -(double)maxFieldDistance * (double)designer->zoom());
+     modelview.translate(0, 0, -(double)Backend::instance()->m_currentField.maxDistance * (double)designer->zoom());
 
     //translate to that spot in the world
-    modelview.translate(-(double)fieldCenterX + (double)designer->sX() * (double)maxFieldDistance,
-                        -(double)fieldCenterY + (double)designer->sY() * (double)maxFieldDistance,
+    modelview.translate(-(double)Backend::instance()->m_currentField.centerX + (double)designer->sX() * (double)Backend::instance()->m_currentField.maxDistance,
+                        -(double)Backend::instance()->m_currentField.centerY + (double)designer->sY() * (double)Backend::instance()->m_currentField.maxDistance,
                         0);
 }
 

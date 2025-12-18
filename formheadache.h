@@ -18,18 +18,6 @@ class FormHeadache : public QObject
 {
     Q_OBJECT
 protected:
-    //InterfaceProperty<HeadacheDesigner,double> maxFieldDistance = InterfaceProperty<HeadacheDesigner,double>("maxFieldDistance");
-    //InterfaceProperty<HeadacheDesigner,double> fieldCenterX = InterfaceProperty<HeadacheDesigner,double>("fieldCenterX");
-    //InterfaceProperty<HeadacheDesigner,double> fieldCenterY = InterfaceProperty<HeadacheDesigner,double>("fieldCenterY");
-
-    double maxFieldDistance = 0;
-    double fieldCenterX = 0;
-    double fieldCenterY = 0;
-
-
-    // ⚡ PHASE 6.3.0: DUPLICATION REMOVED - isYouTurnBtnOn only exists in cyouturn.h (main version)
-    // Access via: formGPS->isYouTurnBtnOn
-
     int fixX, fixY;
     //InterfaceProperty<HeadacheDesigner,bool> isA = InterfaceProperty<HeadacheDesigner,bool>("isA");
     bool isA = true;
@@ -70,10 +58,6 @@ public:
     void connect_ui(QObject *headache_designer_instance);
 
 public slots:
-    void setFieldInfo(double maxFieldDistance,
-                      double fieldCenterX,
-                      double fieldCenterY);
-
     void load_headline();
     void update_lines(); //update the boundary lines in GUI
     void update_headland(); //update headland line

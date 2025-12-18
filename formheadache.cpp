@@ -19,6 +19,7 @@
 #include "classes/settingsmanager.h"
 #include <QTime>
 #include "mainwindowstate.h"
+#include "backend.h"
 
 // ===== CRITICAL: Safe QML access helper function =====
 // Crash fix: secure access to headacheRenderer dimensions with default values
@@ -84,12 +85,6 @@ void FormHeadache::connect_ui(QObject *headache_designer_instance) {
     connect(headache_designer_instance,SIGNAL(save_exit()),this,SLOT(btnExit_Click()));
 }
 
-void FormHeadache::setFieldInfo(double maxFieldDistance, double fieldCenterX, double fieldCenterY) {
-    this->maxFieldDistance = maxFieldDistance;
-    this->fieldCenterX = fieldCenterX;
-    this->fieldCenterY = fieldCenterY;
-}
-
 QVector3D FormHeadache::mouseClickToField(int mouseX, int mouseY) {
     /* returns the field easting and northing position of a
      * mouse click
@@ -112,11 +107,11 @@ QVector3D FormHeadache::mouseClickToField(int mouseX, int mouseY) {
 
     modelview.setToIdentity();
     //back the camera up
-    modelview.translate(0, 0, -(double)maxFieldDistance * (double)designer->zoom());
+    modelview.translate(0, 0, -(double)Backend::instance()->m_currentField.maxDistance * (double)designer->zoom());
 
     //translate to that spot in the world
-    modelview.translate(-(double)fieldCenterX + (double)designer->sX() * (double)maxFieldDistance,
-                        -(double)fieldCenterY + (double)designer->sY() * (double)maxFieldDistance,
+    modelview.translate(-(double)Backend::instance()->m_currentField.centerX + (double)designer->sX() * (double)Backend::instance()->m_currentField.maxDistance,
+                        -(double)Backend::instance()->m_currentField.centerY + (double)designer->sY() * (double)Backend::instance()->m_currentField.maxDistance,
                         0);
 
     float x,y;
@@ -162,11 +157,11 @@ void FormHeadache::setup_matrices(QMatrix4x4 &modelview, QMatrix4x4 &projection)
 
     modelview.setToIdentity();
     //back the camera up
-    modelview.translate(0, 0, -(double)maxFieldDistance * (double)designer->zoom());
+    modelview.translate(0, 0, -(double)Backend::instance()->m_currentField.maxDistance * (double)designer->zoom());
 
     //translate to that spot in the world
-    modelview.translate(-(double)fieldCenterX + (double)designer->sX() * (double)maxFieldDistance,
-                        -(double)fieldCenterY + (double)designer->sY() * (double)maxFieldDistance,
+    modelview.translate(-(double)Backend::instance()->m_currentField.centerX + (double)designer->sX() * (double)Backend::instance()->m_currentField.maxDistance,
+                        -(double)Backend::instance()->m_currentField.centerY + (double)designer->sY() * (double)Backend::instance()->m_currentField.maxDistance,
                         0);
 }
 
