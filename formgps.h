@@ -235,6 +235,8 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY lblDiameterChanged BINDABLE bindableLblDiameter)
     Q_PROPERTY(int droppedSentences READ droppedSentences WRITE setDroppedSentences
                NOTIFY droppedSentencesChanged BINDABLE bindableDroppedSentences)
+    Q_PROPERTY(int sensorData READ sensorData WRITE setSensorData
+               NOTIFY sensorDataChanged BINDABLE bindableSensorData)
 
     // GPS/NMEA Coordinates - Phase 6.0.4.2
     // Phase 6.0.20 Task 24 Step 3.5: Read-only Q_PROPERTY (QML cannot modify field origin)
