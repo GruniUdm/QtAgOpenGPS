@@ -41,7 +41,7 @@ public:
     FieldInfo currentField() const { return m_currentField; }
 
     Q_INVOKABLE void clearDistanceUser() {
-        m_currentField = 0;
+        m_currentField.distanceUser = 0;
         emit currentFieldChanged();
     }
 
