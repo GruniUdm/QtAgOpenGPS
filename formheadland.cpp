@@ -14,7 +14,7 @@
 #include <QOpenGLFunctions>
 #include "glutils.h"
 #include "classes/settingsmanager.h"
-#include "backend.h"
+#include "mainwindowstate.h"
 #include "formgps.h"  // Include full header for FormGPS methods
 
 // ===== CRITICAL: Safe QML access helper function =====
@@ -485,12 +485,7 @@ void FormHeadland::FormHeadLine_FormClosing()
     //hdl
     if (hdl->idx == -1)
     {
-        // Phase 6.0.20: Qt 6.8 type-safe access - cast QObject* to FormGPS*
-        QWidget *mainWindow = qApp->activeWindow();
-        FormGPS* formGPS = mainWindow ? qobject_cast<FormGPS*>(mainWindow) : nullptr;
-        if (formGPS) {
-            formGPS->setIsYouTurnBtnOn(false);
-        }
+        MainWindowState::instance()->set_isYouTurnBtnOn(false);
         MainWindowState::instance()->set_isBtnAutoSteerOn(false);
     }
 
