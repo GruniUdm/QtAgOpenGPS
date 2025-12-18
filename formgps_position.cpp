@@ -2196,7 +2196,7 @@ void FormGPS::processSectionLookahead() {
     }
 
 #ifdef USE_QPAINTER_BACKBUFFER
-    qWarning() << "After threaded back buffer drawing, section lookahead finished at " << swFrame.elapsed();
+    qDebug(qpos) << "After threaded back buffer drawing, section lookahead finished at " << swFrame.elapsed();
     }, Qt::QueuedConnection);
     });
 #endif
