@@ -236,20 +236,6 @@ class FormGPS : public QQmlApplicationEngine
     Q_PROPERTY(int droppedSentences READ droppedSentences WRITE setDroppedSentences
                NOTIFY droppedSentencesChanged BINDABLE bindableDroppedSentences)
 
-    // === Field Data (11 properties) - Qt 6.8 QProperty + BINDABLE ===
-    Q_PROPERTY(double areaOuterBoundary READ areaOuterBoundary WRITE setAreaOuterBoundary
-               NOTIFY areaOuterBoundaryChanged BINDABLE bindableAreaOuterBoundary)
-    Q_PROPERTY(double areaBoundaryOuterLessInner READ areaBoundaryOuterLessInner WRITE setAreaBoundaryOuterLessInner
-               NOTIFY areaBoundaryOuterLessInnerChanged BINDABLE bindableAreaBoundaryOuterLessInner)
-    Q_PROPERTY(double distanceUser READ distanceUser WRITE setDistanceUser
-               NOTIFY distanceUserChanged BINDABLE bindableDistanceUser)
-    Q_PROPERTY(double actualAreaCovered READ actualAreaCovered WRITE setActualAreaCovered
-               NOTIFY actualAreaCoveredChanged BINDABLE bindableActualAreaCovered)
-    Q_PROPERTY(double userSquareMetersAlarm READ userSquareMetersAlarm WRITE setUserSquareMetersAlarm
-               NOTIFY userSquareMetersAlarmChanged BINDABLE bindableUserSquareMetersAlarm)
-    Q_PROPERTY(int sensorData READ sensorData WRITE setSensorData
-               NOTIFY sensorDataChanged BINDABLE bindableSensorData)
-
     // GPS/NMEA Coordinates - Phase 6.0.4.2
     // Phase 6.0.20 Task 24 Step 3.5: Read-only Q_PROPERTY (QML cannot modify field origin)
     Q_PROPERTY(double latStart READ latStart
@@ -571,27 +557,6 @@ public:
     int droppedSentences() const;
     void setDroppedSentences(int value);
     QBindable<int> bindableDroppedSentences();
-
-    // Field Data
-    double areaOuterBoundary() const;
-    void setAreaOuterBoundary(double value);
-    QBindable<double> bindableAreaOuterBoundary();
-
-    double areaBoundaryOuterLessInner() const;
-    void setAreaBoundaryOuterLessInner(double value);
-    QBindable<double> bindableAreaBoundaryOuterLessInner();
-
-    double distanceUser() const;
-    void setDistanceUser(double value);
-    QBindable<double> bindableDistanceUser();
-
-    double actualAreaCovered() const;
-    void setActualAreaCovered(double value);
-    QBindable<double> bindableActualAreaCovered();
-
-    double userSquareMetersAlarm() const;
-    void setUserSquareMetersAlarm(double value);
-    QBindable<double> bindableUserSquareMetersAlarm();
 
     int sensorData() const;
     void setSensorData(int value);
@@ -1094,7 +1059,6 @@ public:
 
     void TheRest();
     void CalculatePositionHeading(); // compute all headings and fixes
-    void AddBoundaryPoint();
     void AddContourPoints();
     void AddSectionOrPathPoints();
     void CalculateSectionLookAhead(double northing, double easting, double cosHeading, double sinHeading);
@@ -1180,13 +1144,6 @@ public:
     double mouseEasting = 0, mouseNorthing = 0;
     int lastWidth=-1, lastHeight=-1;
     // Phase 6.0.24 Problem 18: Initialize field boundary variables
-    double maxFieldX = 0.0;
-    double maxFieldY = 0.0;
-    double minFieldX = 0.0;
-    double minFieldY = 0.0;
-    double fieldCenterX = 0.0;
-    double fieldCenterY = 0.0;
-    double maxFieldDistance = 0.0;
     double offX = 0.0, offY = 0.0;
 
     //data buffer for pixels read from off screen buffer
@@ -1275,18 +1232,6 @@ public:
     Q_INVOKABLE void fieldDelete(const QString& fieldName);
 
     // Batch 14 - 11 actions Boundary Management - lines 1843-1854
-    Q_INVOKABLE void boundaryCalculateArea();
-    Q_INVOKABLE void boundaryUpdateList();
-    Q_INVOKABLE void boundaryStart();
-    Q_INVOKABLE void boundaryStop();
-    Q_INVOKABLE void boundaryAddPoint();
-    Q_INVOKABLE void boundaryDeleteLastPoint();
-    Q_INVOKABLE void boundaryPause();
-    Q_INVOKABLE void boundaryRecord();
-    Q_INVOKABLE void boundaryReset();
-    Q_INVOKABLE void boundaryDeleteBoundary(int boundaryId);
-    Q_INVOKABLE void boundarySetDriveThrough(int boundaryId, bool isDriveThrough);
-    Q_INVOKABLE void boundaryDeleteAll();
     Q_INVOKABLE void loadBoundaryFromKML(QString filename);
     Q_INVOKABLE void addBoundaryOSMPoint(double latitude, double longitude);
 
@@ -1503,18 +1448,6 @@ public slots:
     void doBlockageMonitoring();
 
     //boundary UI for recording new boundary
-    void boundary_calculate_area();
-    void boundary_update_list();
-    void boundary_start();
-    void boundary_stop();
-    void boundary_add_point();
-    void boundary_delete_last_point();
-    void boundary_pause();
-    void boundary_record();
-    void boundary_restart();
-    void boundary_delete(int which_boundary);
-    void boundary_set_drivethru(int which_boundary, bool drive_through);
-    void boundary_delete_all();
     void boundary_new_from_KML(QString filename);
     void addboundaryOSMPoint(double latitude, double longitude);
 
@@ -1728,13 +1661,6 @@ signals:
     void lblCalcSteerAngleInnerChanged();
     void lblDiameterChanged();
     void droppedSentencesChanged();
-    void areaOuterBoundaryChanged();
-    void areaBoundaryOuterLessInnerChanged();
-    void workedAreaTotalChanged();
-    void workedAreaTotalUserChanged();
-    void distanceUserChanged();
-    void actualAreaCoveredChanged();
-    void userSquareMetersAlarmChanged();
     void sensorDataChanged();
     void latStartChanged();
     void lonStartChanged();
@@ -1874,14 +1800,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblDiameter, &FormGPS::lblDiameterChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_droppedSentences, &FormGPS::droppedSentencesChanged)
 
-    // Field Data (11) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_areaOuterBoundary, &FormGPS::areaOuterBoundaryChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_areaBoundaryOuterLessInner, &FormGPS::areaBoundaryOuterLessInnerChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_workedAreaTotal, &FormGPS::workedAreaTotalChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_workedAreaTotalUser, &FormGPS::workedAreaTotalUserChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_distanceUser, &FormGPS::distanceUserChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_actualAreaCovered, &FormGPS::actualAreaCoveredChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_userSquareMetersAlarm, &FormGPS::userSquareMetersAlarmChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_sensorData, &FormGPS::sensorDataChanged)
 
     // Additional AOG Properties (9) - Qt 6.8 Rectangle Pattern
