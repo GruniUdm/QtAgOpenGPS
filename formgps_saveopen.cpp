@@ -10,6 +10,7 @@
 #include <QString>
 #include "backend.h"
 #include "mainwindowstate.h"
+#include "boundaryinterface.h"
 
 enum OPEN_FLAGS {
     LOAD_MAPPING = 1,
@@ -1625,10 +1626,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
     }
 
     //update boundary list count in qml
-    if (boundaryInterface) {
-        boundaryInterface->setProperty("count", bnd.bndList.count());
-    }
-
+    BoundaryInterface::instance()->set_count(bnd.bndList.count());
     return true;
 }
 

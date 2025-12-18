@@ -668,8 +668,6 @@ public:
 
     //flag context menu and buttons
     QObject *contextFlag;
-    QObject *boundaryInterface;
-    QObject *fieldInterface;
     QObject *recordedPathInterface;
     QObject *btnDeleteFlag;
     QObject *btnDeleteAllFlags;

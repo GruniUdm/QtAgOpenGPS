@@ -16,6 +16,7 @@
 #include <iomanip>
 
 #include "cboundarylist.h"
+#include "fieldinterface.h"
 
 
 
@@ -43,9 +44,7 @@ void FormGPS::field_update_list() {
         }
     }
 
-    if (fieldInterface) {
-        fieldInterface->setProperty("field_list", fieldList);
-    }
+    FieldInterface::instance()->set_field_list(fieldList);
 }
 
 void FormGPS::field_close() {

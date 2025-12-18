@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Controls.Material
+import AOG
 
 import ".."
 import "../components"
@@ -83,7 +84,7 @@ Dialog {
                 //height: 75
                 enabled: fieldTable.currentIndex > -1
                 onClicked: {
-                    aog.fieldDelete(fieldTable.currentFieldName) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    FieldInterface.deleteField(fieldTable.currentFieldName) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     //backend should update the list
                 }
             }
@@ -131,7 +132,7 @@ Dialog {
                 //height: 75
                 enabled: fieldTable.currentIndex > -1
                 onClicked: {
-                    aog.fieldOpen(fieldTable.currentFieldName) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    FieldInterface.openField(fieldTable.currentFieldName) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     fieldTable.clear_selection()
                     fieldOpen.close()
                 }

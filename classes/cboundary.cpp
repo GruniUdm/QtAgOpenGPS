@@ -80,7 +80,7 @@ void CBoundary::UpdateFieldBoundaryGUIAreas() {
         Backend::instance()->m_currentField.areaBoundaryOuterLessInner = 0;
     }
 
-    Backend::instance()->currentFieldChanged();
+    emit Backend::instance()->currentFieldChanged();
 }
 
 bool CBoundary::CalculateMinMax() {
@@ -152,8 +152,7 @@ void CBoundary::calculateArea() {
 }
 
 void CBoundary::updateList() {
-    BoundaryInterface::instance()->list().clear();
-
+    QList<QVariant> boundaryList;
     QMap<QString, QVariant> bndMap;
 
     int index = 0;
@@ -162,10 +161,11 @@ void CBoundary::updateList() {
         bndMap["index"] = index++;
         bndMap["area"] = b.area;
         bndMap["drive_through"] = b.isDriveThru;
-        BoundaryInterface::instance()->list().append(bndMap);
+
+        boundaryList.append(bndMap);
     }
 
-    BoundaryInterface::instance()->listChanged();
+    BoundaryInterface::instance()->set_list(boundaryList);
 }
 
 void CBoundary::start() {
