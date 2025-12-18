@@ -9,6 +9,9 @@ struct FieldInfo
     Q_PROPERTY(double areaOuterBoundary MEMBER areaOuterBoundary)
     Q_PROPERTY(double areaBoundaryOuterLessInner MEMBER areaBoundaryOuterLessInner)
     Q_PROPERTY(double distanceUser MEMBER distanceUser)
+    Q_PROPERTY(double workedAreaTotal MEMBER workedAreaTotal)
+    Q_PROPERTY(double workedAreaTotalUser MEMBER workedAreaTotalUser)
+
     Q_PROPERTY(double actualAreaCovered MEMBER actualAreaCovered)
     Q_PROPERTY(double userSquareMetersAlarm MEMBER userSquareMetersAlarm)
     Q_PROPERTY(double minX MEMBER minX)
@@ -24,6 +27,10 @@ public:
     double areaOuterBoundary = 0.0;
     double areaBoundaryOuterLessInner = 0.0;
     double distanceUser = 0.0;
+
+    double workedAreaTotal = 0.0;
+    double workedAreaTotalUser = 0.0;
+
     double actualAreaCovered = 0.0;
     double userSquareMetersAlarm = 0.0;
 
