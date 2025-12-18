@@ -18,7 +18,7 @@
 #include "glutils.h"
 #include "classes/settingsmanager.h"
 #include <QTime>
-#include "backend.h"
+#include "mainwindowstate.h"
 
 // ===== CRITICAL: Safe QML access helper function =====
 // Crash fix: secure access to headacheRenderer dimensions with default values
@@ -387,7 +387,7 @@ void FormHeadache::FormHeadLine_FormClosing()
     if (hdl->idx == -1)
     {
         Backend::instance()->set_isYouTurnBtnOn(false);
-        Backend::instance()->mainWindow()->set_isBtnAutoSteerOn(false);
+        MainWindowState::instance()->set_isBtnAutoSteerOn(false);
     }
 
     emit saveHeadlines();

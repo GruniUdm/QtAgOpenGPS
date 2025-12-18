@@ -491,7 +491,7 @@ void FormHeadland::FormHeadLine_FormClosing()
         if (formGPS) {
             formGPS->setIsYouTurnBtnOn(false);
         }
-        Backend::instance()->mainWindow()->set_isBtnAutoSteerOn(false);
+        MainWindowState::instance()->set_isBtnAutoSteerOn(false);
     }
 
     if (sliceArr.count() > 0)
@@ -1110,7 +1110,7 @@ void FormHeadland::btnHeadlandOff_Click()
     update_headland();
     update_slice();
     emit saveHeadland();
-    Backend::instance()->mainWindow()->set_isHeadlandOn(false);
+    MainWindowState::instance()->set_isHeadlandOn(false);
     CVehicle::instance()->setIsHydLiftOn(false);
     updateVehiclePositionTimer.stop();
 }

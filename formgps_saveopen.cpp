@@ -9,6 +9,7 @@
 #include "qmlutil.h"
 #include <QString>
 #include "backend.h"
+#include "mainwindowstate.h"
 
 enum OPEN_FLAGS {
     LOAD_MAPPING = 1,
@@ -1430,11 +1431,11 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
         if (bnd.bndList.count() > 0 && bnd.bndList[0].hdLine.count() > 0)
         {
-            Backend::instance()->mainWindow()->set_isHeadlandOn(true);
+            MainWindowState::instance()->set_isHeadlandOn(true);
         }
         else
         {
-            Backend::instance()->mainWindow()->set_isHeadlandOn(false);
+            MainWindowState::instance()->set_isHeadlandOn(false);
         }
     }
 

@@ -7,7 +7,7 @@
 #include "qmlutil.h"
 #include "classes/settingsmanager.h"
 #include <QTime>
-#include "backend.h"
+#include "mainwindowstate.h"
 
 /* Callback for Simulator new position */
 void FormGPS::simConnectSlots()
@@ -138,19 +138,11 @@ void FormGPS::onSimNewSteerAngle(double steerAngleAve)
 /* iterate the simulator on a timer */
 void FormGPS::onSimTimerTimeout()
 {
-    // ⚡ PHASE 6.3.0 SAFETY: Verify QML interfaces are initialized before accessing InterfaceProperty
-    try {
-        bool testAccess = (bool)Backend::instance()->mainWindow()->isBtnAutoSteerOn();  // Test if InterfaceProperty works
-    } catch (...) {
-        qDebug() << "⏳ Simulator tick skipped - InterfaceProperty not yet ready";
-        return;  // Skip this timer tick, wait for initialization
-    }
-
     //qWarning() << "sim tick.";
     QObject *qmlobject;
     //double stepDistance = qmlobject->property("value").toReal() / 10.0 /gpsHz;
     //sim.setSimStepDistance(stepDistance);
-    if (this->isDrivingRecordedPath() || (Backend::instance()->mainWindow()->isBtnAutoSteerOn() && (CVehicle::instance()->guidanceLineDistanceOff !=32000)))
+    if (this->isDrivingRecordedPath() || (MainWindowState::instance()->isBtnAutoSteerOn() && (CVehicle::instance()->guidanceLineDistanceOff !=32000)))
     {
         sim.DoSimTick(CVehicle::instance()->guidanceLineSteerAngle * 0.01);
     } else {

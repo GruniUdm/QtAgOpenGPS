@@ -16,6 +16,7 @@
 #include <QCoreApplication>    // Phase 6.0.45: Memory leak fixes - sendPostedEvents for deferred deletion
 #include <QEvent>              // Phase 6.0.45: Memory leak fixes - QEvent::DeferredDelete enum
 #include "backend.h"
+#include "mainwindowstate.h"
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
@@ -215,11 +216,11 @@ void FormGPS::setSpeedKph(double speedKph) {
 
     // ⚡ PHASE 6.0.20 AutoSteer Protection: Automatic speed-based deactivation
     // Covers both simulation and real GPS modes (single entry point)
-    if (Backend::instance()->mainWindow()->isBtnAutoSteerOn()) {
+    if (MainWindowState::instance()->isBtnAutoSteerOn()) {
         auto* settings = SettingsManager::instance();
         if (speedKph < settings->as_minSteerSpeed() ||
             speedKph > settings->as_maxSteerSpeed()) {
-            Backend::instance()->mainWindow()->set_isBtnAutoSteerOn(false);
+            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
         }
     }
 }
@@ -467,21 +468,9 @@ void FormGPS::setUserSquareMetersAlarm(double userSquareMetersAlarm) { m_userSqu
 QBindable<double> FormGPS::bindableUserSquareMetersAlarm() { return &m_userSquareMetersAlarm; }
 
 // ===== Button State Properties =====
-bool FormGPS::isContourBtnOn() const { return m_isContourBtnOn; }
-void FormGPS::setIsContourBtnOn(bool isContourBtnOn) { m_isContourBtnOn = isContourBtnOn; }
-QBindable<bool> FormGPS::bindableIsContourBtnOn() { return &m_isContourBtnOn; }
-
-bool FormGPS::isYouTurnBtnOn() const { return m_isYouTurnBtnOn; }
-void FormGPS::setIsYouTurnBtnOn(bool isYouTurnBtnOn) { m_isYouTurnBtnOn = isYouTurnBtnOn; }
-QBindable<bool> FormGPS::bindableIsYouTurnBtnOn() { return &m_isYouTurnBtnOn; }
-
 int FormGPS::sensorData() const { return m_sensorData; }
 void FormGPS::setSensorData(int sensorData) { m_sensorData = sensorData; }
 QBindable<int> FormGPS::bindableSensorData() { return &m_sensorData; }
-
-bool FormGPS::btnIsContourLocked() const { return m_btnIsContourLocked; }
-void FormGPS::setBtnIsContourLocked(bool btnIsContourLocked) { m_btnIsContourLocked = btnIsContourLocked; }
-QBindable<bool> FormGPS::bindableBtnIsContourLocked() { return &m_btnIsContourLocked; }
 
 double FormGPS::latStart() const { return m_latStart.value(); }
 void FormGPS::setLatStart(double latStart) {
@@ -1048,8 +1037,11 @@ void FormGPS::tmrWatchdog_timeout()
         worldGrid.isRateTrigger = true;
 
         //Make sure it is off when it should
-        if ((!this->isContourBtnOn() && track.idx() == -1 && Backend::instance()->mainWindow()->isBtnAutoSteerOn())
-            ) onStopAutoSteer();
+        if ((!MainWindowState::instance()->isContourBtnOn() &&
+             track.idx() == -1 &&
+             MainWindowState::instance()->isBtnAutoSteerOn()) ) {
+            onStopAutoSteer();
+        }
 
     } //end every 1/2 second
 
@@ -1088,9 +1080,9 @@ void FormGPS::SwapDirection() {
         yt.isYouTurnRight = ! yt.isYouTurnRight;
         yt.ResetCreatedYouTurn();
     }
-    else if (this->isYouTurnBtnOn())
+    else if (MainWindowState::instance()->isYouTurnBtnOn())
     {
-        this->setIsYouTurnBtnOn(false);
+        MainWindowState::instance()->set_isYouTurnBtnOn(false);
     }
 }
 
@@ -1111,7 +1103,7 @@ void FormGPS::JobClose()
     //}
 
     //turn off headland
-    Backend::instance()->mainWindow()->set_isHeadlandOn(false); //this turns off the button
+    MainWindowState::instance()->set_isHeadlandOn(false); //this turns off the button
 
     recPath.recList.clear();
     recPath.StopDrivingRecordedPath();
@@ -1136,7 +1128,7 @@ void FormGPS::JobClose()
     this->setAutoBtnState((int)btnStates::Off);
 
     // ⚡ PHASE 6.0.20: Disable AutoSteer when job closes (safety + clean state)
-    Backend::instance()->mainWindow()->set_isBtnAutoSteerOn(false);
+    MainWindowState::instance()->set_isBtnAutoSteerOn(false);
 
     /*
     btnZone1.BackColor = Color.Silver;
@@ -1228,7 +1220,7 @@ void FormGPS::JobClose()
 
     //clear out contour and Lists
     ct.ResetContour();
-    this->setIsContourBtnOn(false); //turns off button in gui
+    MainWindowState::instance()->set_isContourBtnOn(false); //turns off button in gui
     ct.isContourOn = false;
 
     //btnABDraw.Enabled = false;
@@ -1239,10 +1231,10 @@ void FormGPS::JobClose()
 
     //AutoSteer
     //btnAutoSteer.Enabled = false;
-    Backend::instance()->mainWindow()->set_isBtnAutoSteerOn(false);
+    MainWindowState::instance()->set_isBtnAutoSteerOn(false);
 
     //auto YouTurn shutdown
-    this->setIsYouTurnBtnOn(false);
+    MainWindowState::instance()->set_isYouTurnBtnOn(false);
 
     yt.ResetYouTurn();
 

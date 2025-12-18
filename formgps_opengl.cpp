@@ -24,6 +24,7 @@
 #include "classes/agioservice.h"  // For zero-latency GPS access
 #include "classes/settingsmanager.h"
 #include "backend.h"
+#include "mainwindowstate.h"
 #include "cpgn.h"
 #include "rendering.h"
 
@@ -438,7 +439,7 @@ void FormGPS::oglMain_Paint()
             if (tram.displayMode != 0) tram.DrawTram(gl,projection*modelview,camera);
 
             //draw contour line if button on
-            if (this->isContourBtnOn())
+            if (MainWindowState::instance()->isContourBtnOn())
             {
                 ct.DrawContourLine(gl, projection*modelview, mainWindow, swFrame);
             }
@@ -461,7 +462,7 @@ void FormGPS::oglMain_Paint()
                 bnd.DrawFenceLines(CVehicle::instance()->pivotAxlePos, gl, projection*modelview, mainWindow);
 
                 //draw the turnLines
-                if (this->isYouTurnBtnOn() && ! this->isContourBtnOn())
+                if (MainWindowState::instance()->isYouTurnBtnOn() && ! MainWindowState::instance()->isContourBtnOn())
                 {
                     bnd.DrawFenceLines(CVehicle::instance()->pivotAxlePos, gl,projection*modelview, mainWindow);
 
@@ -474,7 +475,7 @@ void FormGPS::oglMain_Paint()
                 }
 
                 //Draw headland
-                if (Backend::instance()->mainWindow()->isHeadlandOn())
+                if (MainWindowState::instance()->isHeadlandOn())
                 {
                     color.setRgbF(0.960f, 0.96232f, 0.30f);
                     DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,lineWidth,color);
@@ -869,7 +870,7 @@ void FormGPS::oglBack_Paint()
 
 
         //draw 250 green for the headland
-        if (Backend::instance()->mainWindow()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
+        if (MainWindowState::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
         {
             DrawPolygonBack(gl,projection*modelview,bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
         }

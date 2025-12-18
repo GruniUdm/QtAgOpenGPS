@@ -25,6 +25,7 @@
 #include <algorithm>
 #include "rendering.h"
 #include "backend.h"
+#include "mainwindowstate.h"
 
 QString caseInsensitiveFilename(QString directory, QString filename);
 
@@ -175,7 +176,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     qmlblockage::set_aog_root(qmlItem(mainWindow, "aog"));
 
     //initialize interface properties (MOVED to initializeQMLInterfaces() after PropertyWrapper init)
-    Backend::instance()->mainWindow()->set_isBtnAutoSteerOn(false);
+    MainWindowState::instance()->set_isBtnAutoSteerOn(false);
     this->setLatStart(0.0);
     this->setLonStart(0.0);
 
@@ -287,7 +288,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     // Initialize CYouTurn FormGPS and CTrack references
     yt.setFormGPS(this);
-    yt.setTrack(&track);
 
     headache_form.connect_ui(qmlItem(mainWindow, "headacheDesigner"));
     connect(&headache_form, SIGNAL(saveHeadland()),this,SLOT(headland_save()));
@@ -868,13 +868,13 @@ void FormGPS::onBtnHeadland_clicked(){
     qDebug()<<"Headland";
 
     //toggle the property
-    MAINWINDOWSTATE->set_isHeadlandOn(! MAINWINDOWSTATE->isHeadlandOn());
+    MainWindowState::instance()->set_isHeadlandOn(! MainWindowState::instance()->isHeadlandOn());
 
 
-    if (CVehicle::instance()->isHydLiftOn() && !Backend::instance()->mainWindow()->isHeadlandOn())
+    if (CVehicle::instance()->isHydLiftOn() && !MainWindowState::instance()->isHeadlandOn())
         CVehicle::instance()->setIsHydLiftOn(false);
 
-    if (!Backend::instance()->mainWindow()->isHeadlandOn())
+    if (!MainWindowState::instance()->isHeadlandOn())
     {
         //shut off the hyd lift pgn
         p_239.pgn[p_239.hydLift] = 0;
@@ -882,7 +882,7 @@ void FormGPS::onBtnHeadland_clicked(){
     }
 }
 void FormGPS::onBtnHydLift_clicked(){
-    if (Backend::instance()->mainWindow()->isHeadlandOn())
+    if (MainWindowState::instance()->isHeadlandOn())
     {
         CVehicle::instance()->setIsHydLiftOn(!CVehicle::instance()->isHydLiftOn());
         if (CVehicle::instance()->isHydLiftOn())
@@ -919,7 +919,7 @@ void FormGPS::onBtnYouSkip_clicked(){
         yt.Set_Alternate_skips();
         yt.ResetCreatedYouTurn();
 
-        //if (!this->isYouTurnBtnOn()) btnAutoYouTurn.PerformClick();
+        //if (!MainWindowState::instance()->isYouTurnBtnOn()) btnAutoYouTurn.PerformClick();
     }
 
 }
@@ -971,11 +971,13 @@ void FormGPS::onBtnRed_clicked(double lat, double lon, int color)
 }
 
 void FormGPS::onBtnContour_clicked(){
-    // Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY: Direct access and automatic QML binding
-    m_isContourBtnOn = !m_isContourBtnOn;
+    //TODO: make guidanceLookAheadTime a property in a gadget in Backend and
+    //do all this logic in QML
+    //toggle state here.
+    MainWindowState::instance()->set_isContourBtnOn(
+        ! MainWindowState::instance()->isContourBtnOn());
 
-
-    if (this->isContourBtnOn()) {
+    if (MainWindowState::instance()->isContourBtnOn()) {
         guidanceLookAheadTime = 0.5;
     }else{
         //if (ABLine.isBtnABLineOn | curve.isBtnCurveOn){
@@ -993,7 +995,7 @@ void FormGPS::onBtnContourPriority_clicked(bool isRight){
 }
 
 void FormGPS::onBtnContourLock_clicked(){
-    ct.SetLockToLine(this);
+    ct.SetLockToLine();
 }
 
 void FormGPS::onBtnTiltDown_clicked(){
@@ -1200,6 +1202,10 @@ void FormGPS::onBtnCancelFlag_clicked()
 
 void FormGPS::onBtnAutoYouTurn_clicked(){
     qDebug()<<"activate youturn";
+
+
+    //TODO: expose properties to QML, and expose methods to QML
+    //from the CYouTurn class as a singleton?
     yt.loadSettings();
     yt.isTurnCreationTooClose = false;
 
@@ -1209,13 +1215,13 @@ void FormGPS::onBtnAutoYouTurn_clicked(){
 //         return;
 //     }
 
-     if (!this->isYouTurnBtnOn())
+     if (!MainWindowState::instance()->isYouTurnBtnOn())
      {
          //new direction so reset where to put turn diagnostic
          yt.ResetCreatedYouTurn();
 
-         if (!Backend::instance()->mainWindow()->isBtnAutoSteerOn()) return;
-         this->setIsYouTurnBtnOn(true);
+         if (!MainWindowState::instance()->isBtnAutoSteerOn()) return;
+         MainWindowState::instance()->set_isYouTurnBtnOn(true);
          yt.isTurnCreationTooClose = false;
          yt.isTurnCreationNotCrossingError = false;
          yt.ResetYouTurn();
@@ -1225,7 +1231,7 @@ void FormGPS::onBtnAutoYouTurn_clicked(){
      }
      else
      {
-         this->setIsYouTurnBtnOn(false);
+         MainWindowState::instance()->set_isYouTurnBtnOn(false);
 //         yt.rowSkipsWidth = Properties.Vehicle.Default.set_youSkipWidth;
 //         btnAutoYouTurn.Image = Properties.Resources.YouTurnNo;
          yt.ResetYouTurn();
@@ -1244,7 +1250,7 @@ void FormGPS::onBtnSwapAutoYouTurnDirection_clicked()
          yt.isYouTurnRight = !yt.isYouTurnRight;
          yt.ResetCreatedYouTurn();
      }
-     //else if (this->isYouTurnBtnOn())
+     //else if (MainWindowState::instance()->isYouTurnBtnOn())
          //btnAutoYouTurn.PerformClick();
  }
 
@@ -1751,7 +1757,7 @@ bool FormGPS::ShouldCollectSample(double steerAngle, double speed)
 {
     if (speed < MIN_SPEED_THRESHOLD) return false;
     if (std::abs(steerAngle) > MAX_ANGLE_THRESHOLD) return false;
-    if (!Backend::instance()->mainWindow()->isBtnAutoSteerOn()) return false;
+    if (!MainWindowState::instance()->isBtnAutoSteerOn()) return false;
     if (std::abs(CVehicle::instance()->guidanceLineDistanceOff) > 15000) return false;
 
     return true;
@@ -2035,7 +2041,7 @@ void FormGPS::initializeQMLInterfaces()
     try {
         // Test if InterfaceProperty are accessible without crash
         bool testJob = isJobStarted();
-        bool testAutosteer = Backend::instance()->mainWindow()->isBtnAutoSteerOn();
+        bool testAutosteer = MainWindowState::instance()->isBtnAutoSteerOn();
         interfacePropertiesReady = true;
         qDebug() << "✅ InterfaceProperty validation successful - isJobStarted:" << testJob << "isBtnAutoSteerOn():" << testAutosteer;
     } catch (...) {
@@ -2106,7 +2112,7 @@ void FormGPS::initializeOpenGLCallbacks()
     bool interfacePropertiesReady = false;
     try {
         bool testJob = isJobStarted();
-        bool testAutosteer = Backend::instance()->mainWindow()->isBtnAutoSteerOn();
+        bool testAutosteer = MainWindowState::instance()->isBtnAutoSteerOn();
         interfacePropertiesReady = true;
         qDebug() << "✅ InterfaceProperty retry validation successful - isJobStarted:" << testJob << "isBtnAutoSteerOn():" << testAutosteer;
     } catch (...) {
