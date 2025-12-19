@@ -10,18 +10,18 @@ CBoundary::CBoundary(QObject *parent) : QObject(parent)
     turnSelected = 0;
 
     //automatically connect to BoundaryInterface for QML interaction
-    connect(BoundaryInterface::instance(), &BoundaryInterface::calculateAreaRequested, this, &CBoundary::calculateArea);
-    connect(BoundaryInterface::instance(), &BoundaryInterface::updateListRequested, this, &CBoundary::updateList);
-    connect(BoundaryInterface::instance(), &BoundaryInterface::startRequested, this, &CBoundary::start);
-    connect(BoundaryInterface::instance(), &BoundaryInterface::stopRequested, this, &CBoundary::stop);
-    connect(BoundaryInterface::instance(), &BoundaryInterface::addPointRequested, this, &CBoundary::addPoint);
-    connect(BoundaryInterface::instance(), &BoundaryInterface::deleteLastPointRequested, this, &CBoundary::deleteLastPoint);
-    connect(BoundaryInterface::instance(), &BoundaryInterface::pauseRequested, this, &CBoundary::pause);
-    connect(BoundaryInterface::instance(), &BoundaryInterface::recordRequested, this, &CBoundary::record);
-    connect(BoundaryInterface::instance(), &BoundaryInterface::resetRequested, this, &CBoundary::reset);
-    connect(BoundaryInterface::instance(), &BoundaryInterface::deleteBoundaryRequested, this, &CBoundary::deleteBoundary);
-    connect(BoundaryInterface::instance(), &BoundaryInterface::setDriveThroughRequested, this, &CBoundary::setDriveThrough);
-    connect(BoundaryInterface::instance(), &BoundaryInterface::deleteAllRequested, this, &CBoundary::deleteAll);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::calculateArea, this, &CBoundary::calculateArea);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::updateList, this, &CBoundary::updateList);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::start, this, &CBoundary::start);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::stop, this, &CBoundary::stop);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::addPoint, this, &CBoundary::addPoint);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::deleteLastPoint, this, &CBoundary::deleteLastPoint);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::pause, this, &CBoundary::pause);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::record, this, &CBoundary::record);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::reset, this, &CBoundary::reset);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::deleteBoundary, this, &CBoundary::deleteBoundary);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::setDriveThrough, this, &CBoundary::setDriveThrough);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::deleteAll, this, &CBoundary::deleteAll);
 }
 
 void CBoundary::loadSettings() {

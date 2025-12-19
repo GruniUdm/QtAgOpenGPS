@@ -39,26 +39,20 @@ public:
 
     SIMPLE_BINDABLE_PROPERTY(QList<QVariant>, field_list)
 
-    Q_INVOKABLE void updateList() { emit updateListRequested(); }
-    Q_INVOKABLE void newField(QString field_name)
-        { emit newFieldRequested(field_name); }
-    Q_INVOKABLE void openField(QString field_name)
-        { emit openFieldRequested(field_name); }
-    Q_INVOKABLE void newFieldFrom(QString existing_field, QString new_field, int flags)
-        { emit newFieldFromRequested(existing_field,new_field, flags); }
-    Q_INVOKABLE void newFieldFromKML(QString field_name, QString file_name)
-        { emit newFieldFromKMLRequested(field_name, file_name); }
-    Q_INVOKABLE void closeField() { emit closeFieldRequested(); }
-    Q_INVOKABLE void deleteField(QString field_name)
-        { emit deleteFieldRequested(field_name); }
+signals:
+    // QML can call these signals directly - no need for Q_INVOKABLE wrappers
+    void updateList();
+    void newField(QString field_name);
+    void openField(QString field_name);
+    void newFieldFrom(QString existing_field, QString new_field, int flags);
+    void newFieldFromKML(QString field_name, QString file_name);
+    void closeField();
+    void deleteField(QString field_name);
 
     //on android permissions restrict what we can do
     //so import and export to zip files
-    Q_INVOKABLE void exportFieldZip(QString field_name, QString zipfilename)
-        { emit exportFieldZipRequested(field_name, zipfilename); }
-    Q_INVOKABLE void importFieldZip(QString zipfilename)
-        { emit importFieldZip(zipfilename); }
-
+    void exportFieldZip(QString field_name, QString zipfilename);
+    void importFieldZip(QString zipfilename);
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY(FieldInterface, QList<QVariant>, m_field_list, &FieldInterface::field_listChanged)
@@ -78,18 +72,6 @@ private:
         { index: 11, name: "test2", latitude: 53.1, longitude: -111.2, hasBoundary: true, boundaryArea: -10 }
     ]
      */
-
-signals:
-    void updateListRequested();
-    void newFieldRequested(QString field_name);
-    void openFieldRequested(QString field_name);
-    void newFieldFromRequested(QString existing_field, QString new_field, int flags);
-    void newFieldFromKMLRequested(QString field_name, QString file_name);
-    void closeFieldRequested();
-    void deleteFieldRequested(QString field_name);
-
-    void exportFieldZipRequested(QString field_name, QString zipfilename);
-    void importFieldZipRequested(QString zipfilename);
 };
 
 #endif // FIELDINTERFACE_H

@@ -1923,16 +1923,15 @@ void FormGPS::initializeQMLInterfaces()
     if (recordedPathInterface) {
     }
 
-    connect(FieldInterface::instance(), &FieldInterface::updateListRequested, this, &FormGPS::field_update_list);
-    connect(FieldInterface::instance(), &FieldInterface::newFieldRequested, this, &FormGPS::field_new);
-    connect(FieldInterface::instance(), &FieldInterface::openFieldRequested, this, &FormGPS::field_open);
-    connect(FieldInterface::instance(), &FieldInterface::newFieldFromRequested, this, &FormGPS::field_new_from);
-    connect(FieldInterface::instance(), &FieldInterface::newFieldFromKMLRequested, this, &FormGPS::field_new_from_KML);
-    connect(FieldInterface::instance(), &FieldInterface::closeFieldRequested, this, &FormGPS::field_close);
-    connect(FieldInterface::instance(), &FieldInterface::deleteFieldRequested, this, &FormGPS::field_delete);
-    connect(FieldInterface::instance(), &FieldInterface::updateListRequested, this, &FormGPS::field_update_list);
-    //connect(FieldInterface::instance(), &FieldInterface::exportFieldZipRequested, this, &FormGPS::field_export_zip);
-    //connect(FieldInterface::instance(), &FieldInterface::importFieldZipRequested, this, &FormGPS::field_import_zip);
+    connect(FieldInterface::instance(), &FieldInterface::updateList, this, &FormGPS::field_update_list);
+    connect(FieldInterface::instance(), &FieldInterface::newField, this, &FormGPS::field_new);
+    connect(FieldInterface::instance(), &FieldInterface::openField, this, &FormGPS::field_open);
+    connect(FieldInterface::instance(), &FieldInterface::newFieldFrom, this, &FormGPS::field_new_from);
+    connect(FieldInterface::instance(), &FieldInterface::newFieldFromKML, this, &FormGPS::field_new_from_KML);
+    connect(FieldInterface::instance(), &FieldInterface::closeField, this, &FormGPS::field_close);
+    connect(FieldInterface::instance(), &FieldInterface::deleteField, this, &FormGPS::field_delete);
+    //connect(FieldInterface::instance(), &FieldInterface::exportFieldZip, this, &FormGPS::field_export_zip);
+    //connect(FieldInterface::instance(), &FieldInterface::importFieldZip, this, &FormGPS::field_import_zip);
 
     qDebug() << "🎯 Connected FieldInterface signals.";
 
