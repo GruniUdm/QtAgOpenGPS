@@ -276,11 +276,9 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     headland_form.bnd = &bnd;
     headland_form.hdl = &hdl;
-    headland_form.tool = &tool;
 
-    headland_form.connect_ui(qmlItem(mainWindow, "headlandDesigner"));
-    connect(&headland_form, SIGNAL(saveHeadland()),this,SLOT(headland_save()));
-    connect(&headland_form, SIGNAL(timedMessageBox(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
+    connect(&headland_form, &FormHeadland::saveHeadland, this, &FormGPS::headland_save);
+    connect(&headland_form, &FormHeadland::timedMessageBox, this, &FormGPS::TimedMessageBox);
 
     headache_form.bnd = &bnd;
     headache_form.hdl = &hdl;

@@ -328,6 +328,7 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         SOURCES backend/boundaryinterface.h backend/boundaryinterface.cpp
         SOURCES backend/fieldinterface.h backend/fieldinterface.cpp
         SOURCES backend/fieldinfo.h backend/fieldinfo.cpp
+        SOURCES backend/headlandinterface.h backend/headlandinterface.cpp
     )  
 
 else() #LOCAL_QML ON
@@ -374,6 +375,10 @@ set(qml_mockup_files
 )
 
 add_custom_target(MockQML SOURCES ${qml_mockup_files})
+
+# Show documentation files in claudedocs/ in the project tree without compiling them
+file(GLOB_RECURSE claudedocs_files "claudedocs/*")
+add_custom_target(ClaudeDocs SOURCES ${claudedocs_files})
 
 # Where to look for header files
 target_include_directories(QtAgOpenGPS PRIVATE

@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QVector>
 #include "vec3.h"
-#include "classes/headlanddesigner.h"
 #include <QTimer>
 
 class CBoundary;
@@ -40,23 +39,12 @@ protected:
     void setup_matrices(QMatrix4x4 &modelview, QMatrix4x4 &projection);
 
 public:
+    explicit FormHeadland(QObject *parent = nullptr);
     double iE = 0, iN = 0;
     QVector<int> crossings;
 
-    CBoundary *bnd;
-    CHeadLine *hdl;
-    CTool *tool;
-    QObject *headland_designer_instance;
-    QObject *mainWindow;
-
-    // Phase 6.0.4.3 - Native Q_PROPERTY designer
-    HeadlandDesigner *designer;
-
-    explicit FormHeadland(QObject *parent = nullptr);
-
-    //this class is pretty closely coupled to the QML file
-    //of necessity
-    void connect_ui(QObject *headland_designer_instance);
+    CBoundary *bnd = nullptr;
+    CHeadLine *hdl = nullptr;
 
 public slots:
     void load_headline();
