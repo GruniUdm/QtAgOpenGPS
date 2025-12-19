@@ -9,6 +9,7 @@ import QtQuick.Shapes
 
 import ".."
 import "../components" as Comp
+import AOG
 //import AgOpenGPS 1.0
 
 Popup{
@@ -54,25 +55,25 @@ Popup{
 
             Rectangle {
                 id: a_rect
-                visible: headlandDesigner.showa
+                visible: HeadlandInterface.showa
                 width: 24
                 height: 24
                 radius: 12
                 color: "#ffc059"
-                x: headlandDesigner.apoint.x - 12
-                y: headlandDesigner.apoint.y - 12
+                x: HeadlandInterface.apoint.x - 12
+                y: HeadlandInterface.apoint.y - 12
                 z: 1
             }
 
             Rectangle {
                 id: b_rect
-                visible: headlandDesigner.showb
+                visible: HeadlandInterface.showb
                 width: 24
                 height: 24
                 radius: 12
                 color:  "#80c0ff"
-                x: headlandDesigner.bpoint.x - 12
-                y: headlandDesigner.bpoint.y - 12
+                x: HeadlandInterface.bpoint.x - 12
+                y: HeadlandInterface.bpoint.y - 12
                 z: 1
             }
 
@@ -83,8 +84,8 @@ Popup{
                 height: 24
                 radius: 12
                 color:  "#f33033"
-                x: headlandDesigner.vehiclePoint.x - 12
-                y: headlandDesigner.vehiclePoint.y - 12
+                x: HeadlandInterface.vehiclePoint.x - 12
+                y: HeadlandInterface.vehiclePoint.y - 12
             }
 
             Repeater {
@@ -98,7 +99,7 @@ Popup{
 
                     anchors.fill: parent
                     Connections {
-                        target: headlandDesigner
+                        target: HeadlandInterface
                         function onBoundaryLinesChanged() {
                             shapePath.draw_boundaries()
                         }
@@ -193,19 +194,19 @@ Popup{
                 property int fromY: 0
 
                 onClicked: {
-                    if (cboxIsZoom.checked && headlandDesigner.zoom === 1) {
+                    if (cboxIsZoom.checked && HeadlandInterface.zoom === 1) {
                         sX = ((parent.width / 2 - mouseX) / parent.width) * 1.1
                         sY = ((parent.height / 2 - mouseY) / -parent.height) * 1.1
                         //console.debug("width,mouse, sx,sy",parent.width / 2, mouseX, mouseY, sX,sY);
                         zoom = 0.1
-                        headlandDesigner.update_lines()
+                        HeadlandInterface.updateLines()
                     } else {
-                        headlandDesigner.mouseClicked(mouseX, mouseY)
+                        HeadlandInterface.mouseClicked(mouseX, mouseY)
                         if (zoom != 1.0) {
                             zoom = 1.0;
                             sX = 0;
                             sY = 0;
-                            headlandDesigner.update_lines()
+                            HeadlandInterface.updateLines()
                         }
                     }
                 }
@@ -217,7 +218,7 @@ Popup{
                 }
 
                 onPositionChanged: {
-                    headlandDesigner.mouseDragged(fromX, fromY, mouseX, mouseY)
+                    HeadlandInterface.mouseDragged(fromX, fromY, mouseX, mouseY)
                     fromX = mouseX
                     fromY = mouseY
                 }

@@ -5,6 +5,7 @@ import QtQuick.Layouts
 // 
 import "../components"
 import "interfaces"
+import AOG
 
 Window {
 	title: "Module and GPS Info"

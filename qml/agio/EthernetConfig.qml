@@ -5,6 +5,7 @@ import QtQuick.Layouts
 // Qt 6 compatible - Using TabBar + StackLayout instead of TabView
 //
 import "../components" as Comp
+import AOG
 
 Window {
     objectName: "ethernetConfig"

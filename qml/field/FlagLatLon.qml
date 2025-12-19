@@ -57,7 +57,7 @@ Comp.MoveablePopup {
             font.pixelSize: 15
         }
 
-        NumberTextField {
+        Comp.NumberTextField {
             id: newLatPoint
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top:latTextBottom.bottom
@@ -89,7 +89,7 @@ Comp.MoveablePopup {
             font.pixelSize: 15
         }
 
-        NumberTextField {
+        Comp.NumberTextField {
             id: newLonPoint
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top:lonTextBottom.bottom

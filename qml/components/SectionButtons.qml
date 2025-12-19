@@ -3,6 +3,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 //import Settings
+import AOG
 
 //This is a the row of on-screen section-control buttonw
 

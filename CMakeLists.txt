@@ -272,73 +272,73 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         ${SINGLETONS_REL_PATHS} # adding singletons relative paths
     )
 
+
     # message(WARNING "All relative paths: ${ALL_REL_PATHS}")
 
     #add singletons (singletons/ path)
     set_source_files_properties(${SINGLETONS_REL_PATHS}
         PROPERTIES QT_QML_SINGLETON_TYPE TRUE
     )
-
-    # Qt 6.8 PURE OFFICIAL convention
-    qt_add_qml_module(QtAgOpenGPS
-        URI AOG
-        VERSION 1.0
-        RESOURCE_PREFIX "/"
-        QML_FILES
-        ${ALL_REL_PATHS} #all qml files
-        SOURCES
-        aogrenderer.cpp
-        aogrenderer.h
-        classes/settingsmanager.cpp
-        classes/settingsmanager.h
-        classes/settingsmanager_macros.h
-        classes/settingsmanager_properties.h
-        classes/settingsmanager_members.h
-        # NOTE: settingsmanager_implementations.cpp is INCLUDED, not compiled separately
-        classes/ctrack.cpp
-        classes/ctrack.h
-        classes/cvehicle.cpp
-        classes/cvehicle.h
-        classes/agioservice.cpp
-        classes/agioservice.h
-        # Phase 6.0.21: GPSWorker removed (useless thread - no I/O)
-        classes/pgnparser.cpp
-        classes/pgnparser.h
-        classes/ctraffic.cpp
-        classes/ctraffic.h
-        classes/ntripworker.cpp
-        classes/ntripworker.h
-        # Phase 6.0.24: udpworker removed (event-driven QUdpSocket in main thread)
-        # classes/udpworker.cpp
-        # classes/udpworker.h
-        classes/serialworker.cpp
-        classes/serialworker.h
-
-        RESOURCES
-        ${IMAGE_REL_PATHS}
-        ${SHADER_REL_PATHS}
-        ${SOUND_REL_PATHS}
-        RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
-        SOURCES rendering.h
-        SOURCES backend/backend.h backend/backend.cpp
-        SOURCES simpleproperty.h
-        #SOURCES globals.h globals.cpp
-
-        SOURCES backend/mainwindowstate.h backend/mainwindowstate.cpp
-        SOURCES backend/boundaryinterface.h backend/boundaryinterface.cpp
-        SOURCES backend/fieldinterface.h backend/fieldinterface.cpp
-        SOURCES backend/fieldinfo.h backend/fieldinfo.cpp
-        SOURCES backend/headlandinterface.h backend/headlandinterface.cpp
-    )  
-
 else() #LOCAL_QML ON
+    file(GLOB_RECURSE qml_files "qml/*")
+    add_custom_target(AOGQML SOURCES ${qml_files})
     message("Local QML is ON!")
     add_compile_definitions(LOCAL_QML)
 
-    # Display the qrc file in the project tree without compiling it
-    add_custom_target(AOGQML SOURCES agopengps.qrc)
-
 endif()
+
+# Qt 6.8 PURE OFFICIAL convention
+qt_add_qml_module(QtAgOpenGPS
+    URI AOG
+    VERSION 1.0
+    RESOURCE_PREFIX "/"
+    QML_FILES
+    ${ALL_REL_PATHS} #all qml files
+    SOURCES
+    aogrenderer.cpp
+    aogrenderer.h
+    classes/settingsmanager.cpp
+    classes/settingsmanager.h
+    classes/settingsmanager_macros.h
+    classes/settingsmanager_properties.h
+    classes/settingsmanager_members.h
+    # NOTE: settingsmanager_implementations.cpp is INCLUDED, not compiled separately
+    classes/ctrack.cpp
+    classes/ctrack.h
+    classes/cvehicle.cpp
+    classes/cvehicle.h
+    classes/agioservice.cpp
+    classes/agioservice.h
+    # Phase 6.0.21: GPSWorker removed (useless thread - no I/O)
+    classes/pgnparser.cpp
+    classes/pgnparser.h
+    classes/ctraffic.cpp
+    classes/ctraffic.h
+    classes/ntripworker.cpp
+    classes/ntripworker.h
+    # Phase 6.0.24: udpworker removed (event-driven QUdpSocket in main thread)
+    # classes/udpworker.cpp
+    # classes/udpworker.h
+    classes/serialworker.cpp
+    classes/serialworker.h
+
+    RESOURCES
+    ${IMAGE_REL_PATHS}
+    ${SHADER_REL_PATHS}
+    ${SOUND_REL_PATHS}
+    RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
+    SOURCES rendering.h
+    SOURCES backend/backend.h backend/backend.cpp
+    SOURCES simpleproperty.h
+    #SOURCES globals.h globals.cpp
+
+    SOURCES backend/mainwindowstate.h backend/mainwindowstate.cpp
+    SOURCES backend/boundaryinterface.h backend/boundaryinterface.cpp
+    SOURCES backend/fieldinterface.h backend/fieldinterface.cpp
+    SOURCES backend/fieldinfo.h backend/fieldinfo.cpp
+    SOURCES backend/headlandinterface.h backend/headlandinterface.cpp
+)
+
 ###### End Script of Handling QML in module ######
 
 ###### Script for Translation ######

@@ -143,7 +143,7 @@ Drawer {
         Comp.ScrollViewExpandableColumn{
             id: mainWindowAgIOColumn
             anchors.fill: parent
-            IconButtonTextBeside{
+            Comp.IconButtonTextBeside{
                 //objectName: bluetooth
                 text: qsTr("Bluetooth")
                 icon.source: "../images/BlueTooth.png"

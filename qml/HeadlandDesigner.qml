@@ -37,10 +37,6 @@ Popup{
             sliceShapePath.p = HeadlandInterface.sliceLine
         }
 
-        function onBoundaryLinesChanged() {
-            shapePath.draw_boundaries()
-        }
-
     }
 
     Connections {
@@ -51,7 +47,7 @@ Popup{
         }
 
         function onHeightChanged() {
-            HeadlandInterface.viewportHeight = headlandRenderer.Height;
+            HeadlandInterface.viewportHeight = headlandRenderer.height;
         }
 
     }
@@ -130,6 +126,14 @@ Popup{
                     smooth: true
 
                     anchors.fill: parent
+
+                    Connections {
+                        target: HeadlandInterface
+
+                        function onBoundaryLinesChanged() {
+                            shapePath.draw_boundaries()
+                        }
+                    }
 
                     ShapePath {
                         id: shapePath
