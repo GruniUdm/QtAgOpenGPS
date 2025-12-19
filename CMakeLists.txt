@@ -134,7 +134,6 @@ qt_add_executable(QtAgOpenGPS
     classes/cpatches.h classes/cpatches.cpp
     classes/cpgn.h classes/cpgn.cpp
     classes/headachedesigner.h classes/headachedesigner.cpp
-    classes/headlanddesigner.h classes/headlanddesigner.cpp
     classes/crecordedpath.h classes/crecordedpath.cpp
     classes/csection.h classes/csection.cpp
     classes/csim.h classes/csim.cpp
