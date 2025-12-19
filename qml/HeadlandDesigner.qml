@@ -119,47 +119,26 @@ Popup{
             Repeater {
                 id: boundaryRepeater
 
-                model: HeadlandInterface.boundaryLines.length
+                model: HeadlandInterface.boundaryLineModel
 
                 Shape {
-                    property int outerIndex: index
                     smooth: true
 
                     anchors.fill: parent
 
-                    Connections {
-                        target: HeadlandInterface
-
-                        function onBoundaryLinesChanged() {
-                            shapePath.draw_boundaries()
-                        }
-                    }
-
                     ShapePath {
                         id: shapePath
-                        strokeColor: HeadlandInterface.boundaryLines[index].color
-                        strokeWidth: HeadlandInterface.boundaryLines[index].width
+                        strokeColor: model.color
+                        strokeWidth: model.width
                         fillColor: "transparent"
-                        startX: p[0].x
-                        startY: p[0].y
+                        startX: model.points[0].x
+                        startY: model.points[0].y
                         scale: Qt.size(1,1)
                         joinStyle: ShapePath.RoundJoin
 
-                        property var p: [Qt.point(0,0), Qt.point(headlandRenderer.width, headlandRenderer.height)]
-
                         PathPolyline {
                             id: ps
-                            path: shapePath.p
-                        }
-
-
-                        Component.onCompleted: draw_boundaries()
-
-
-                        function draw_boundaries()
-                        {
-                        //    console.debug(HeadlandInterface.boundaryLines[index].points)
-                            p = HeadlandInterface.boundaryLines[index].points
+                            path: model.points
                         }
                     }
                 }

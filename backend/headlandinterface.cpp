@@ -7,7 +7,9 @@ bool HeadlandInterface::s_cpp_created = false;
 
 HeadlandInterface::HeadlandInterface(QObject *parent)
     : QObject{parent}
-{}
+{
+    m_boundaryLineModel = new BoundaryLineModel(this);
+}
 
 HeadlandInterface *HeadlandInterface::instance() {
     QMutexLocker locker(&s_mutex);

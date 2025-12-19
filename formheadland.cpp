@@ -18,6 +18,7 @@
 #include "mainwindowstate.h"
 #include "backend.h"
 #include "headlandinterface.h"
+#include "backend/boundarylinemodel.h"
 
 //here for now.  Put in another module for use in other places.
 void CalculateHeadings(QVector<Vec3> &xList)
@@ -321,11 +322,7 @@ void FormHeadland::updateVehiclePosition() {
 void FormHeadland::update_lines() {
     if (!bnd) return; //FormGPS is not yet fully initialized
 
-    QVariantList lines;
-    QVariantMap linemap;
-    QVariantList linepoints;
-    QPoint linepoint;
-    QColor color;
+    QVector<BoundaryLineModel::BoundaryLine> boundaries;
     QMatrix4x4 modelview;
     QMatrix4x4 projection;
 
@@ -339,31 +336,34 @@ void FormHeadland::update_lines() {
 
     for (int j = 0; j < bnd->bndList.count(); j++)
     {
+        BoundaryLineModel::BoundaryLine line;
+        line.index = j;
+
         if (j == bndSelect)
-            color = QColor::fromRgbF(0.75f, 0.75f, 0.750f);
+            line.color = QColor::fromRgbF(0.75f, 0.75f, 0.750f);
         else
-            color = QColor::fromRgbF(0.0f, 0.25f, 0.10f);
+            line.color = QColor::fromRgbF(0.0f, 0.25f, 0.10f);
 
-        linemap.clear();
-        linemap["index"] = j;
-        linemap["color"] = color;
-        linemap["width"] = 4;
+        line.width = 4;
 
-        linepoints.clear();
+        QVariantList linepoints;
         for (int i = 0; i < bnd->bndList[j].fenceLine.count(); i++)
         {
             p = QVector3D (bnd->bndList[j].fenceLine[i].easting,
                            bnd->bndList[j].fenceLine[i].northing,
                            0);
             s = p.project(modelview, projection, QRect(0,0,width,height));
-            linepoint = QPoint(s.x(),height - s.y());
+            QPoint linepoint = QPoint(s.x(),height - s.y());
             linepoints.append(linepoint);
         }
-        linemap["points"] = linepoints;
+        line.points = linepoints;
 
-        lines.append(linemap);
+        boundaries.append(line);
     }
-    HeadlandInterface::instance()->set_boundaryLines(lines);
+
+    // Update the model
+    HeadlandInterface::instance()->boundaryLineModel()->setBoundaries(boundaries);
+
     update_slice();
     update_headland();
 }
