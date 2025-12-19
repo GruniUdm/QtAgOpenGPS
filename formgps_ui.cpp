@@ -99,7 +99,9 @@ void FormGPS::setupGui()
         QDir d = QDir(QDir::currentPath() + "/" + search_path + "/qml/");
         if (d.exists("AOGInterface.qml")) {
             QDir::addSearchPath("local",QDir::currentPath() + "/" + search_path);
+            addImportPath(QDir::currentPath() + "/" + search_path + "/qml/");
             qWarning() << "QML path is " << search_path;
+            qWarning() << "added" << (QDir::currentPath() + "/" + search_path + "/qml/") << "to qml engine path.";
             break;
         }
 
@@ -107,16 +109,21 @@ void FormGPS::setupGui()
         d = QDir(QCoreApplication::applicationDirPath() + "/" + search_path + "/qml/");
         if (d.exists("AOGInterface.qml")) {
             QDir::addSearchPath("local",QCoreApplication::applicationDirPath() + "/" + search_path);
+            addImportPath( QCoreApplication::applicationDirPath() + "/" + search_path + "/qml/");
             qWarning() << "QML path is " << search_path;
+            qWarning() << "added" << (QCoreApplication::applicationDirPath() + "/" + search_path + "/qml/") << "to qml engine path.";
             break;
         }
     }
 
+    /*
     QObject::connect(this, &QQmlApplicationEngine::warnings, [=] (const QList<QQmlError> &warnings) {
         foreach (const QQmlError &error, warnings) {
             qWarning() << "warning: " << error.toString();
         }
     });
+    */
+
 
     rootContext()->setContextProperty("prefix","local:");
     load("local:/qml/MainWindow.qml");
