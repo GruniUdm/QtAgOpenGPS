@@ -102,7 +102,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(HeadlandInterface, int, m_backupCount, 0, &HeadlandInterface::backupCountChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(HeadlandInterface, bool, m_curveLine, true, &HeadlandInterface::curveLineChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(HeadlandInterface, double, m_lineDistance, 0, &HeadlandInterface::lineDistanceChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(HeadlandInterface, double, m_zoom, 0, &HeadlandInterface::zoomChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(HeadlandInterface, double, m_zoom, 1, &HeadlandInterface::zoomChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(HeadlandInterface, double, m_sX, 0, &HeadlandInterface::sXChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(HeadlandInterface, double, m_sY, 0, &HeadlandInterface::sYChanged)
 
