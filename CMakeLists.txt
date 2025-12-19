@@ -376,8 +376,16 @@ set(qml_mockup_files
 add_custom_target(MockQML SOURCES ${qml_mockup_files})
 
 # Show documentation files in claudedocs/ in the project tree without compiling them
-file(GLOB_RECURSE claudedocs_files "claudedocs/*")
-add_custom_target(ClaudeDocs SOURCES ${claudedocs_files})
+file(GLOB_RECURSE claudedocs_files "claudedocs/*.md" "claudedocs/*.txt")
+file(GLOB_RECURSE docs_files "docs/*")
+add_custom_target(Documentation SOURCES
+    ${claudedocs_files}
+    ${docs_files}
+    TODO.md
+    README.md
+    README_TRANSLATIONS.md
+)
+
 
 # Where to look for header files
 target_include_directories(QtAgOpenGPS PRIVATE
