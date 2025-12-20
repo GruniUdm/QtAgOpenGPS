@@ -137,8 +137,8 @@ Popup{
                     strokeColor: "#f1e817"
                     strokeWidth: 8
                     fillColor: "transparent"
-                    startX: p[0].x
-                    startY: p[0].y
+                    startX: HeadlandInterface.headlandLine.length > 0 ? HeadlandInterface.headlandLine[0].x : 0
+                    startY: HeadlandInterface.headlandLine.length > 0 ? HeadlandInterface.headlandLine[0].y : 0
                     joinStyle: ShapePath.RoundJoin
 
                     PathPolyline {
@@ -157,8 +157,8 @@ Popup{
                     strokeColor: headlandAB.checked ? "#f31700" : "#21f305"
                     strokeWidth: 8
                     fillColor: "transparent"
-                    startX: p[0].x
-                    startY: p[0].y
+                    startX: HeadlandInterface.sliceLine.length ? HeadlandInterface.sliceLine[0].x : 0
+                    startY: HeadlandInterface.sliceLine.length ? HeadlandInterface.sliceLine[0].y : 0
                     joinStyle: ShapePath.RoundJoin
 
                     PathPolyline {
@@ -350,7 +350,7 @@ Popup{
             icon.source: prefix + "/images/SwitchOff.png"
             Layout.alignment: Qt.AlignCenter
             onClicked: {
-                MainWindowState.isHeadlandOn = false
+                HeadlandInterface.headlandOff();
                 headlandDesigner.visible = false
             }
         }

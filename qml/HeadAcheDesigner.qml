@@ -29,7 +29,8 @@ Popup{
         }
     }
 
-    property var boundaryLines: [
+    /*
+    property var boundaryLineModel: [
         {
             index: 0,
             color: "#FF0000",
@@ -56,7 +57,7 @@ Popup{
         }
     ]
 
-    property var headacheLines: [
+    property var headacheLineModel: [
         {
             index: 0,
             color: "#FF0000",
@@ -84,23 +85,19 @@ Popup{
             dashed: true
         }
     ]
-
-    property var headlandLine: [
-        Qt.point(0,0),
-        Qt.point(100,20)
-    ]
+    */
 
     Connections {
         //Let backend interface know about the viewport size
         target: headacheRenderer
 
         function onWidthChanged() {
-            HeadacheInterface.viewportWidth = headlandRenderer.width;
+            HeadacheInterface.viewportWidth = headacheRenderer.width;
             HeadacheInterface.updateLines()
         }
 
         function onHeightChanged() {
-            HeadacheInterface.viewportHeight = headlandRenderer.height;
+            HeadacheInterface.viewportHeight = headacheRenderer.height;
             HeadacheInterface.updateLines()
         }
 
@@ -209,15 +206,15 @@ Popup{
 
             Shape {
                 id: headlandShape
-                visible: headlandLine.length > 0
+                visible: HeadacheInterface.headlandLine.length > 0
                 anchors.fill: parent
                 ShapePath {
                     id: headlandShapePath
                     strokeColor: "#f1e817"
                     strokeWidth: 8
                     fillColor: "transparent"
-                    startX: p[0].x
-                    startY: p[0].y
+                    startX: HeadacheInterface.headlandLine.length > 0 ? HeadacheInterface.headlandLine[0].x : 0
+                    startY: HeadacheInterface.headlandLine.length > 0 ? HeadacheInterface.headlandLine[0].y : 0
                     joinStyle: ShapePath.RoundJoin
 
                     PathPolyline {
@@ -307,7 +304,7 @@ Popup{
                 Layout.alignment: Qt.AlignCenter
                 // Threading Phase 1: Headland section control
                 isChecked: SettingsManager.headland_isSectionControlled
-                onCheckedChanged: isSectionControlled(checked)
+                onCheckedChanged: HeadacheInterface.isSectionControlled(checked)
             }
             Comp.IconButtonTransparent{
                 //objectName: "btnALength"
@@ -382,7 +379,7 @@ Popup{
 
                 icon.source: prefix + "/images/HeadlandBuild.png"
                 Layout.alignment: Qt.AlignCenter
-                onClicked: createHeadland()
+                onClicked: HeadacheInterface.createHeadland()
             }
         }
         GridLayout{
@@ -395,7 +392,7 @@ Popup{
                 //objectName: "btnDeletePoints"
                 icon.source: prefix + "/images/HeadlandReset.png"
                 Layout.alignment: Qt.AlignCenter
-                onClicked: deleteHeadland()
+                onClicked: HeadacheInterface.deleteHeadland()
             }
             Comp.IconButtonTransparent{
                 icon.source: prefix + "/images/ABLineCycleBk.png"
@@ -411,8 +408,8 @@ Popup{
                 icon.source: prefix + "/images/SwitchOff.png"
                 Layout.alignment: Qt.AlignCenter
                 onClicked: {
-                    headlandOff()
-                    HeadacheInterface.visible = false
+                    HeadacheInterface.headlandOff();
+                    headacheDesigner.visible = false
                 }
             }
             Comp.IconButtonTransparent{
@@ -424,9 +421,9 @@ Popup{
                 icon.source: prefix + "/images/OK64.png"
                 Layout.alignment: Qt.AlignCenter
                 onClicked: {
-                    save_exit()
+                    HeadacheInterface.saveExit()
                     MainWindowState.isHeadlandOn = true
-                    HeadacheInterface.visible = false
+                    headacheDesigner.visible = false
                 }
             }
         }
