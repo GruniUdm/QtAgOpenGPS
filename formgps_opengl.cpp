@@ -1031,36 +1031,15 @@ void FormGPS::oglZoom_Paint()
 void FormGPS::MakeFlagMark(QOpenGLFunctions *gl)
 {
     leftMouseDownOnOpenGL = false;
-    uchar data1[768];
-    memset(data1,0,768);
 
     qDebug(qgl) << "mouse down at " << mouseX << ", " << mouseY;
-    //scan the center of click and a set of square points around
-    gl->glReadPixels(mouseX - 8, mouseY - 8, 16, 16, GL_RGB, GL_UNSIGNED_BYTE, data1);
 
-    //made it here so no flag found
-    flagNumberPicked = 0;
+    //figure out what the screen coordinates of all the flags are
+    //check for clicks within a bounding box.
+    //select it.  popup box to edit name or allow delete?
 
-    for (int ctr = 0; ctr < 768; ctr += 3)
-    {
-        if ((data1[ctr] == 255) || (data1[ctr + 1] == 255))
-        {
-            int candidateFlag = data1[ctr + 2];
-            // Validate flag number is within bounds
-            if (candidateFlag > 0 && candidateFlag <= flagPts.size()) {
-                flagNumberPicked = candidateFlag;
-                qDebug(qgl) << "Valid flag picked:" << flagNumberPicked;
-            } else {
-                flagNumberPicked = 0; // Invalid flag, reset to no selection
-                qDebug(qgl) << "Invalid flag number" << candidateFlag << "- flagPts.size():" << flagPts.size();
-            }
-            break;
-        }
-    }
-
-    /*TODO: popup flag menu*/
-    //have to set a flag for the main loop
-
+    //if no flag is clicked on, deselect flag. Maybe do this in
+    //qml and javascript?
 }
 
 //DrawTramMarkers moved to QML

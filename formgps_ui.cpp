@@ -308,44 +308,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     //         SLOT(onBtnFlag_clicked()));
 
 
-    //Any objects we don't need to access later we can just store
-    //temporarily
-    //QObject *flag = qmlItem(mainWindow, "flag");
-    // Flag controls - REMOVED: Modernized to Q_INVOKABLE direct calls
-    // REMOVED: connect(aog, SIGNAL(btnRedFlag()), this, SLOT(onBtnRedFlag_clicked()));
-    // REMOVED: connect(aog, SIGNAL(btnGreenFlag()), this, SLOT(onBtnGreenFlag_clicked()));
-    // REMOVED: connect(aog, SIGNAL(btnYellowFlag()), this, SLOT(onBtnYellowFlag_clicked()));
-    // REMOVED: connect(aog, SIGNAL(btnDeleteFlag()), this, SLOT(onBtnDeleteFlag_clicked()));
-    // REMOVED: connect(aog, SIGNAL(btnDeleteAllFlags()), this, SLOT(onBtnDeleteAllFlags_clicked()));
-    // REMOVED: connect(aog, SIGNAL(btnNextFlag()), this, SLOT(onBtnNextFlag_clicked()));
-    // REMOVED: connect(aog, SIGNAL(btnPrevFlag()), this, SLOT(onBtnPrevFlag_clicked()));
-    // REMOVED: connect(aog, SIGNAL(btnCancelFlag()), this, SLOT(onBtnCancelFlag_clicked()));
-    // REMOVED: connect(aog, SIGNAL(btnRed(double, double, int)), this, SLOT(onBtnRed_clicked(double, double, int)));
-
-
-
-    // ===== BATCH 12 - Wizard & Calibration Connections REMOVED - Qt 6.8 modernized to Q_INVOKABLE calls =====
-    // REMOVED: connect(aog, SIGNAL(stopDataCollection()), this, SLOT(StopDataCollection()));
-    // REMOVED: connect(aog, SIGNAL(startDataCollection()), this, SLOT(StartDataCollection()));
-    // REMOVED: connect(aog, SIGNAL(resetData()), this, SLOT(ResetData()));
-    // REMOVED: connect(aog, SIGNAL(applyOffsetToCollectedData(double)), this, SLOT(ApplyOffsetToCollectedData(double)));
-    // REMOVED: connect(aog, SIGNAL(smartCalLabelClick()), this, SLOT(SmartCalLabelClick()));
-    // REMOVED: connect(aog, SIGNAL(on_btnSmartZeroWAS_clicked()), this, SLOT(on_btnSmartZeroWAS_clicked()));
-    // QObject *temp;
-    // temp = qmlItem(mainWindow,"btnRedFlag");
-    // connect(temp,SIGNAL(clicked()),this,SLOT(onBtnRedFlag_clicked()));
-    // temp = qmlItem(mainWindow,"btnGreenFlag");
-    // connect(temp,SIGNAL(clicked()),this,SLOT(onBtnGreenFlag_clicked()));
-    // temp = qmlItem(mainWindow,"btnYellowFlag");
-    // connect(temp,SIGNAL(clicked()),this,SLOT(onBtnYellowFlag_clicked()));
-
-    // btnDeleteFlag = qmlItem(mainWindow,"btnDeleteFlag");
-    // connect(btnDeleteFlag,SIGNAL(clicked()),this,SLOT(onBtnDeleteFlag_clicked()));
-    // btnDeleteAllFlags = qmlItem(mainWindow,"btnDeleteAllFlags");
-    // connect(btnDeleteAllFlags,SIGNAL(clicked()),this,SLOT(onBtnDeleteAllFlags_clicked()));
-    contextFlag = qmlItem(mainWindow, "contextFlag");
-    // boundaryInterface, fieldInterface, recordedPathInterface already initialized above (lines 152-154)
-
     //txtDistanceOffABLine = qmlItem(qml_root,"txtDistanceOffABLine");
 
     tmrWatchdog = new QTimer(this);
@@ -514,10 +476,6 @@ void FormGPS::autoTrack() {
     onBtnAutoTrack_clicked();
 }
 
-void FormGPS::flag() {
-    onBtnFlag_clicked();
-}
-
 // ===== BATCH 3 - 8 ACTIONS Camera Navigation - Qt 6.8 Q_INVOKABLE Implementation =====
 void FormGPS::zoomIn() {
     onBtnZoomIn_clicked();
@@ -617,52 +575,6 @@ void FormGPS::startSAAction() {
     // Modern implementation - renamed to avoid conflict with Q_PROPERTY bool startSA()
     // Call the original btnStartSA_clicked() method
     btnStartSA_clicked();
-}
-
-// ===== BATCH 11 - 9 ACTIONS Flag Management - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::redFlag() {
-    // Modern implementation - same logic as onBtnRedFlag_clicked()
-    onBtnRedFlag_clicked();
-}
-
-void FormGPS::greenFlag() {
-    // Modern implementation - same logic as onBtnGreenFlag_clicked()
-    onBtnGreenFlag_clicked();
-}
-
-void FormGPS::yellowFlag() {
-    // Modern implementation - same logic as onBtnYellowFlag_clicked()
-    onBtnYellowFlag_clicked();
-}
-
-void FormGPS::deleteFlag() {
-    // Modern implementation - same logic as onBtnDeleteFlag_clicked()
-    onBtnDeleteFlag_clicked();
-}
-
-void FormGPS::deleteAllFlags() {
-    // Modern implementation - same logic as onBtnDeleteAllFlags_clicked()
-    onBtnDeleteAllFlags_clicked();
-}
-
-void FormGPS::nextFlag() {
-    // Modern implementation - same logic as onBtnNextFlag_clicked()
-    onBtnNextFlag_clicked();
-}
-
-void FormGPS::prevFlag() {
-    // Modern implementation - same logic as onBtnPrevFlag_clicked()
-    onBtnPrevFlag_clicked();
-}
-
-void FormGPS::cancelFlag() {
-    // Modern implementation - same logic as onBtnCancelFlag_clicked()
-    onBtnCancelFlag_clicked();
-}
-
-void FormGPS::redFlagAt(double lat, double lon, int color) {
-    // Modern implementation - same logic as onBtnRed_clicked(double, double, int)
-    onBtnRed_clicked(lat, lon, color);
 }
 
 // ===== BATCH 12 - 6 ACTIONS Wizard & Calibration - Qt 6.8 Q_INVOKABLE Implementation =====
@@ -876,39 +788,6 @@ void FormGPS::onBtnResetDirection_clicked(){
     CVehicle::instance()->setIsReverse(false);
     TimedMessageBox(2000, "Reset Direction", "Drive Forward > 1.5 kmh");
 }
-void FormGPS::onBtnFlag_clicked() {
-
-    //TODO if this button is disabled until field is started, we won't
-    //need this check.
-
-    if(isGPSPositionInitialized) {
-        int nextflag = flagPts.size() + 1;
-        QString notes = QString::number(nextflag);
-        double currentGpsHeading = gpsHeading(); // Store value for CFlag constructor (needs double& reference)
-        CFlag flagPt(pn.latitude, pn.longitude, pn.fix.easting, pn.fix.northing, currentGpsHeading, flagColor, nextflag, notes);
-        flagPts.append(flagPt);
-        flagsBufferCurrent = false;
-        if (contextFlag) {
-            contextFlag->setProperty("ptlat",pn.latitude);
-            contextFlag->setProperty("ptlon",pn.longitude);
-            contextFlag->setProperty("ptId",nextflag);
-            contextFlag->setProperty("ptText",notes);
-        }
-        //FileSaveFlags();
-    }
-}
-void FormGPS::onBtnRed_clicked(double lat, double lon, int color)
-{   qDebug()<<"onBtnRed_clicked";
-    if(isGPSPositionInitialized) {
-    double east, nort, ptHeading = 0;
-    int nextflag = flagPts.size() + 1;
-    QString notes = notes.number(nextflag);
-    pn.ConvertWGS84ToLocal((double)lat, (double)lon, nort, east, this);
-    CFlag flagPt(lat, lon, east, nort, ptHeading, color, nextflag, notes);
-    flagPts.append(flagPt);
-    FileSaveFlags();
-    }
-}
 
 void FormGPS::onBtnContour_clicked(){
     //TODO: make guidanceLookAheadTime a property in a gadget in Backend and
@@ -1016,128 +895,6 @@ void FormGPS::onBtnZoomOut_clicked(){
     if (openGLControl) {
         QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
     }
-}
-
-void FormGPS::onBtnRedFlag_clicked()
-{   qDebug()<<"onBtnRedFlag_clicked";
-    flagColor = 0;
-    if (contextFlag) {
-        contextFlag->setProperty("visible",false);
-        contextFlag->setProperty("icon","/images/FlagRed.png");
-    }
-}
-
-void FormGPS::onBtnGreenFlag_clicked()
-{   qDebug()<<"onBtnGreenFlag_clicked";
-    flagColor = 1;
-    if (contextFlag) {
-        contextFlag->setProperty("visible",false);
-        contextFlag->setProperty("icon","/images/FlagGrn.png");
-    }
-}
-
-void FormGPS::onBtnYellowFlag_clicked()
-{   qDebug()<<"onBtnYellowFlag_clicked";
-    flagColor = 2;
-    if (contextFlag) {
-        contextFlag->setProperty("visible",false);
-        contextFlag->setProperty("icon","/images/FlagYel.png");
-    }
-}
-
-void FormGPS::onBtnDeleteFlag_clicked()
-{   qDebug()<<"onBtnDeleteFlag_clicked";
-    //delete selected flag and set selected to none
-    if (flagNumberPicked>0) {
-    if (flagPts.size() > 0) {
-    flagPts.remove(flagNumberPicked-1, 1);
-    flagsBufferCurrent = false;
-    flagNumberPicked = flagNumberPicked-1;
-
-    int flagCnt = flagPts.size();
-    if (flagCnt > 0) {
-        for (int i = 0; i < flagCnt; i++)
-            flagPts[i].ID = i + 1;
-    }
-    if (contextFlag) {
-        contextFlag->setProperty("visible",false);
-        if (flagNumberPicked > 0 && flagNumberPicked <= flagPts.size()) {
-            contextFlag->setProperty("ptlat",flagPts[flagNumberPicked-1].latitude);
-            contextFlag->setProperty("ptlon",flagPts[flagNumberPicked-1].longitude);
-            contextFlag->setProperty("ptId",flagPts[flagNumberPicked-1].ID);
-            contextFlag->setProperty("ptText",flagPts[flagNumberPicked-1].notes);
-        }
-        else    {
-            contextFlag->setProperty("ptlat",0);
-            contextFlag->setProperty("ptlon",0);
-            contextFlag->setProperty("ptId",0);
-            contextFlag->setProperty("ptText","");
-        }
-    }
-    }
-}
-    else if (flagPts.size() > 0) {
-        flagPts.remove(flagPts.size()-1, 1);
-
-        if (contextFlag) {
-            contextFlag->setProperty("visible",false);
-            if (flagPts.size()>0) {
-                contextFlag->setProperty("ptlat",flagPts[flagPts.size()-1].latitude);
-                contextFlag->setProperty("ptlon",flagPts[flagPts.size()-1].longitude);
-                contextFlag->setProperty("ptId",flagPts[flagPts.size()-1].ID);
-                contextFlag->setProperty("ptText",flagPts[flagPts.size()-1].notes);
-            }
-            else    {
-                contextFlag->setProperty("ptlat",0);
-                contextFlag->setProperty("ptlon",0);
-                contextFlag->setProperty("ptId",0);
-                contextFlag->setProperty("ptText","");
-            }
-        }
-    }
-}
-void FormGPS::onBtnDeleteAllFlags_clicked()
-{   qDebug()<<"onBtnDeleteAllFlag_clicked";
-    if (contextFlag) {
-        contextFlag->setProperty("visible",false);
-    }
-    flagPts.clear();
-    flagsBufferCurrent = false;
-    flagNumberPicked = 0;
-    //TODO: FileSaveFlags
-}
-void FormGPS::onBtnNextFlag_clicked()
-{   qDebug()<<"onBtnNextFlag_clicked";
-
-    if (flagNumberPicked<flagPts.size()){
-        flagNumberPicked = flagNumberPicked + 1;}
-    else flagNumberPicked = 0;
-    if (flagNumberPicked > 0 && flagNumberPicked <= flagPts.size() && contextFlag){
-        contextFlag->setProperty("ptlat",flagPts[flagNumberPicked-1].latitude);
-        contextFlag->setProperty("ptlon",flagPts[flagNumberPicked-1].longitude);
-        contextFlag->setProperty("ptId",flagPts[flagNumberPicked-1].ID);
-        contextFlag->setProperty("ptText",flagPts[flagNumberPicked-1].notes);
-    }
-}
-void FormGPS::onBtnPrevFlag_clicked()
-{   qDebug()<<"onBtnPrevFlag_clicked";
-
-if (flagNumberPicked>1){
-        flagNumberPicked = flagNumberPicked -1 ;}
-else {flagNumberPicked = flagPts.size();
-
-}
-if (flagNumberPicked > 0 && flagNumberPicked <= flagPts.size() && contextFlag){
-    contextFlag->setProperty("ptlat",flagPts[flagNumberPicked-1].latitude);
-    contextFlag->setProperty("ptlon",flagPts[flagNumberPicked-1].longitude);
-    contextFlag->setProperty("ptId",flagPts[flagNumberPicked-1].ID);
-    contextFlag->setProperty("ptText",flagPts[flagNumberPicked-1].notes);
-}
-}
-void FormGPS::onBtnCancelFlag_clicked()
-{
-    flagNumberPicked = 0;
-    FileSaveFlags();
 }
 
 void FormGPS::onBtnAutoYouTurn_clicked(){

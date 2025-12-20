@@ -23,7 +23,6 @@
 #include "vecfix2fix.h"
 #include "vec2.h"
 #include "vec3.h"
-#include "cflag.h"
 #include "cmodulecomm.h"
 #include "ccamera.h"
 #include "btnenum.h"
@@ -656,9 +655,6 @@ public:
     QTimer timerGPS;  // Phase 6.0.24: Fixed 40 Hz timer for real GPS mode (like timerSim for simulation)
     QTimer *timer_tick;
 
-    //other
-    QObject *btnFlagObject;
-
     /***************************
      * Qt and QML GUI elements *
      ***************************/
@@ -667,10 +663,7 @@ public:
     QQuickItem *openGLControl;
 
     //flag context menu and buttons
-    QObject *contextFlag;
     QObject *recordedPathInterface;
-    QObject *btnDeleteFlag;
-    QObject *btnDeleteAllFlags;
 
     //section buttons
     QObject *sectionButton[MAXSECTIONS-1]; //zero based array
@@ -1000,10 +993,6 @@ public:
     //Everything is so wonky at the start
     int startCounter = 0;
 
-    //individual points for the flags in a list
-    QVector<CFlag> flagPts;
-    bool flagsBufferCurrent = false;
-
     //tally counters for display
     //public double totalSquareMetersWorked = 0, totalUserSquareMeters = 0, userSquareMetersAlarm = 0;
 
@@ -1157,7 +1146,6 @@ public:
     QOpenGLShaderProgram *interpColorShader = 0;
     */
     QOpenGLBuffer skyBuffer;
-    QOpenGLBuffer flagsBuffer;
 
     /***********************
      * formgps_udpcomm.cpp *
@@ -1201,16 +1189,6 @@ public:
     Q_INVOKABLE void freeDrive();
     Q_INVOKABLE void freeDriveZero();
     Q_INVOKABLE void startSAAction();
-    // Batch 11 - 9 actions Flag Management - lines 312-320
-    Q_INVOKABLE void redFlag();
-    Q_INVOKABLE void greenFlag();
-    Q_INVOKABLE void yellowFlag();
-    Q_INVOKABLE void deleteFlag();
-    Q_INVOKABLE void deleteAllFlags();
-    Q_INVOKABLE void nextFlag();
-    Q_INVOKABLE void prevFlag();
-    Q_INVOKABLE void cancelFlag();
-    Q_INVOKABLE void redFlagAt(double lat, double lon, int color);
 
     // Batch 12 - 6 actions Wizard & Calibration - lines 325-330
     Q_INVOKABLE void stopDataCollection();
@@ -1244,7 +1222,6 @@ public:
     Q_INVOKABLE void swapAutoYouTurnDirection();
     Q_INVOKABLE void resetCreatedYouTurn();
     Q_INVOKABLE void autoTrack();
-    Q_INVOKABLE void flag();
     // Batch 3 - 8 actions Camera Navigation - lines 201-208
     Q_INVOKABLE void zoomIn();
     Q_INVOKABLE void zoomOut();
@@ -1272,7 +1249,6 @@ public:
     // ===== Q_INVOKABLE ALIASES FOR QML CONSISTENCY =====
     Q_INVOKABLE void settings_save() { settingsSave(); }
     Q_INVOKABLE void settings_revert() { settingsReload(); }
-    Q_INVOKABLE void btnFlag() { flag(); }
     // modules_send_252 not needed - modulesSend252() already exists as Q_INVOKABLE
 
     // ===== Q_INVOKABLE IMU CONFIGURATION =====
@@ -1471,7 +1447,6 @@ public slots:
     void onBtnResetTool_clicked();
     void onBtnHeadland_clicked();
     void onBtnHydLift_clicked();
-    void onBtnFlag_clicked();
     void onBtnTramlines_clicked();
     void onBtnSnapSideways_clicked(double distance);
     void onBtnSnapToPivot_clicked();
@@ -1489,16 +1464,6 @@ public slots:
 
     void onBtnZoomIn_clicked();
     void onBtnZoomOut_clicked();
-
-    void onBtnRedFlag_clicked();
-    void onBtnGreenFlag_clicked();
-    void onBtnYellowFlag_clicked();
-    void onBtnDeleteFlag_clicked();
-    void onBtnDeleteAllFlags_clicked();
-    void onBtnNextFlag_clicked();
-    void onBtnPrevFlag_clicked();
-    void onBtnCancelFlag_clicked();
-    void onBtnRed_clicked(double lat, double lon, int color);
 
     void SwapDirection();
     void turnOffBoundAlarm();
