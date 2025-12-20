@@ -4,15 +4,9 @@
 #include <QObject>
 #include <QVector>
 #include "vec3.h"
-#include "classes/headachedesigner.h"
 
 class CBoundary;
 class CHeadLine;
-class CTool;
-class CVehicle;
-class QOpenGLFunctions;
-
-
 
 class FormHeadache : public QObject
 {
@@ -43,19 +37,9 @@ public:
 
     CBoundary *bnd;
     CHeadLine *hdl;
-    CTool *tool;
-    QObject *headache_designer_instance;
-    QObject *mainWindow;
-
-    // Phase 6.0.4.3 - Native Q_PROPERTY designer
-    HeadacheDesigner *designer;
 
     explicit FormHeadache(QObject *parent = nullptr);
-    //void setFormGPS(FormGPS* gps) { formGPS = gps; }
 
-    //this class is pretty closely coupled to the QML file
-    //of necessity
-    void connect_ui(QObject *headache_designer_instance);
 
 public slots:
     void load_headline();
