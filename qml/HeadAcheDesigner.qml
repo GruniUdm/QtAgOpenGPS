@@ -397,12 +397,12 @@ Popup{
             Comp.IconButtonTransparent{
                 icon.source: prefix + "/images/ABLineCycleBk.png"
                 Layout.alignment: Qt.AlignCenter
-                onClicked: cycleBackward()
+                onClicked: HeadacheInterface.cycleBackward()
             }
             Comp.IconButtonTransparent{
                 icon.source: prefix + "/images/ABLineCycle.png"
                 Layout.alignment: Qt.AlignCenter
-                onClicked: cycleForward()
+                onClicked: HeadacheInterface.cycleForward()
             }
             Comp.IconButtonTransparent{
                 icon.source: prefix + "/images/SwitchOff.png"
@@ -415,7 +415,7 @@ Popup{
             Comp.IconButtonTransparent{
                 icon.source: prefix + "/images/Trash.png"
                 Layout.alignment: Qt.AlignCenter
-                onClicked: deleteCurve()
+                onClicked: HeadacheInterface.deleteCurve()
             }
             Comp.IconButtonTransparent{
                 icon.source: prefix + "/images/OK64.png"
