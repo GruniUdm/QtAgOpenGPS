@@ -9,7 +9,7 @@
 #include <QColor>
 #include <QRect>
 #include "simpleproperty.h"
-#include "boundarylinemodel.h"
+#include "fencelinemodel.h"
 
 class HeadlandInterface : public QObject
 {
@@ -50,12 +50,10 @@ public:
     SIMPLE_BINDABLE_PROPERTY(QPoint, vehiclePoint)
 
     // Model-based boundary lines (new approach)
-    Q_PROPERTY(BoundaryLineModel* boundaryLineModel READ boundaryLineModel CONSTANT)
-    BoundaryLineModel* boundaryLineModel() const { return m_boundaryLineModel; }
+    Q_PROPERTY(FenceLineModel* boundaryLineModel READ boundaryLineModel CONSTANT)
+    FenceLineModel* boundaryLineModel() const { return m_boundaryLineModel; }
 
-    // Legacy property - kept for backward compatibility during transition
-    SIMPLE_BINDABLE_PROPERTY(QVariantList, boundaryLines)
-    /*
+   /*
     property var boundaryLines: [
         {
             index: 0,
@@ -121,14 +119,13 @@ private:
 
     Q_OBJECT_BINDABLE_PROPERTY(HeadlandInterface, QPoint, m_vehiclePoint, &HeadlandInterface::vehiclePointChanged)
 
-    Q_OBJECT_BINDABLE_PROPERTY(HeadlandInterface, QVariantList, m_boundaryLines, &HeadlandInterface::boundaryLinesChanged)
     Q_OBJECT_BINDABLE_PROPERTY(HeadlandInterface, QVariantList, m_headlandLine, &HeadlandInterface::headlandLineChanged)
     Q_OBJECT_BINDABLE_PROPERTY(HeadlandInterface, QVariantList, m_sliceLine, &HeadlandInterface::sliceLineChanged)
 
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(HeadlandInterface, int, m_viewportWidth, 0, &HeadlandInterface::viewportWidthChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(HeadlandInterface, int, m_viewportHeight, 0, &HeadlandInterface::viewportHeightChanged)
 
-    BoundaryLineModel *m_boundaryLineModel;
+    FenceLineModel *m_boundaryLineModel;
 
 signals:
     // These can be called by QML to initiate action in formheadache.cpp

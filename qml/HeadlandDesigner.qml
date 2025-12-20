@@ -21,33 +21,17 @@ Popup{
         headlandCurve.isChecked = true
     }
 
-    //onClosed: { console.debug("closed.") }
-    onWidthChanged: if(aog.isJobStarted) HeadlandInterface.updateLines()
-    onHeightChanged: if(aog.isJobStarted) HeadlandInterface.updateLines()
-
-    Connections {
-        target: HeadlandInterface
-
-        function onHeadlandLineChanged() {
-            if (HeadlandInterface.headlandLine.length > 0)
-                headlandShapePath.p = HeadlandInterface.headlandLine
-        }
-
-        function onSliceLineChanged() {
-            sliceShapePath.p = HeadlandInterface.sliceLine
-        }
-
-    }
-
     Connections {
         target: headlandRenderer
 
         function onWidthChanged() {
             HeadlandInterface.viewportWidth = headlandRenderer.width;
+            HeadlandInterface.updateLines();
         }
 
         function onHeightChanged() {
             HeadlandInterface.viewportHeight = headlandRenderer.height;
+            HeadlandInterface.updateLines();
         }
 
     }
@@ -157,22 +141,16 @@ Popup{
                     startY: p[0].y
                     joinStyle: ShapePath.RoundJoin
 
-                    property var p: [
-                        Qt.point(0,0),
-                        Qt.point(20,100),
-                        Qt.point(200,150)
-                    ]
-
                     PathPolyline {
                         id: headlandShapePolyine
-                        path: headlandShapePath.p
+                        path: HeadlandInterface.headlandLine
                     }
                 }
             }
 
             Shape {
                 id: sliceShape
-                visible: HeadlandInterface.sliceCount != 0
+                visible: HeadlandInterface.sliceCount !== 0
                 anchors.fill: parent
                 ShapePath {
                     id: sliceShapePath
@@ -183,14 +161,9 @@ Popup{
                     startY: p[0].y
                     joinStyle: ShapePath.RoundJoin
 
-                    property var p: [
-                        Qt.point(0,0),
-                        Qt.point(100,20),
-                    ]
-
                     PathPolyline {
                         id: sliceShapePolyLine
-                        path: sliceShapePath.p
+                        path: HeadlandInterface.sliceLine
                     }
                 }
             }

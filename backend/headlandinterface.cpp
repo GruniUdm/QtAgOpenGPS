@@ -8,7 +8,7 @@ bool HeadlandInterface::s_cpp_created = false;
 HeadlandInterface::HeadlandInterface(QObject *parent)
     : QObject{parent}
 {
-    m_boundaryLineModel = new BoundaryLineModel(this);
+    m_boundaryLineModel = new FenceLineModel(this);
 }
 
 HeadlandInterface *HeadlandInterface::instance() {

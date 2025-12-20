@@ -1,14 +1,14 @@
 // Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
-#ifndef BOUNDARYLINEMODEL_H
-#define BOUNDARYLINEMODEL_H
+#ifndef FENCELINEMODEL_H
+#define FENCELINEMODEL_H
 
 #include <QAbstractListModel>
 #include <QColor>
 #include <QVariantList>
 #include <QVector>
 
-class BoundaryLineModel : public QAbstractListModel
+class FenceLineModel : public QAbstractListModel
 {
     Q_OBJECT
 
@@ -17,18 +17,20 @@ public:
         IndexRole = Qt::UserRole + 1,
         ColorRole,
         WidthRole,
-        PointsRole
+        PointsRole,
+        DashedRole,
     };
     Q_ENUM(Roles)
 
-    struct BoundaryLine {
+    struct FenceLine {
         int index;
         QColor color;
         int width;
         QVariantList points; // List of QPoint
+        bool dashed = false;
     };
 
-    explicit BoundaryLineModel(QObject *parent = nullptr);
+    explicit FenceLineModel(QObject *parent = nullptr);
 
     // QAbstractListModel interface
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -36,11 +38,11 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     // Data management
-    void setBoundaries(const QVector<BoundaryLine> &lines);
+    void setFenceLines(const QVector<FenceLine> &lines);
     void clear();
 
 private:
-    QVector<BoundaryLine> m_boundaries;
+    QVector<FenceLine> m_boundaries;
 };
 
-#endif // BOUNDARYLINEMODEL_H
+#endif // FENCELINEMODEL_H
