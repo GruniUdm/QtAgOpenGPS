@@ -18,7 +18,7 @@
 #include "mainwindowstate.h"
 #include "backend.h"
 #include "headlandinterface.h"
-#include "backend/boundarylinemodel.h"
+#include "backend/fencelinemodel.h"
 
 //here for now.  Put in another module for use in other places.
 void CalculateHeadings(QVector<Vec3> &xList)
@@ -322,7 +322,7 @@ void FormHeadland::updateVehiclePosition() {
 void FormHeadland::update_lines() {
     if (!bnd) return; //FormGPS is not yet fully initialized
 
-    QVector<BoundaryLineModel::BoundaryLine> boundaries;
+    QVector<FenceLineModel::FenceLine> boundaries;
     QMatrix4x4 modelview;
     QMatrix4x4 projection;
 
@@ -336,7 +336,7 @@ void FormHeadland::update_lines() {
 
     for (int j = 0; j < bnd->bndList.count(); j++)
     {
-        BoundaryLineModel::BoundaryLine line;
+        FenceLineModel::FenceLine line;
         line.index = j;
 
         if (j == bndSelect)
@@ -362,7 +362,7 @@ void FormHeadland::update_lines() {
     }
 
     // Update the model
-    HeadlandInterface::instance()->boundaryLineModel()->setBoundaries(boundaries);
+    HeadlandInterface::instance()->boundaryLineModel()->setFenceLines(boundaries);
 
     update_slice();
     update_headland();

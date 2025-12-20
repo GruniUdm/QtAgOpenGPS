@@ -8,10 +8,6 @@
 
 class CBoundary;
 class CHeadLine;
-class CTool;
-class CVehicle;
-class QOpenGLFunctions;
-
 
 class FormHeadland : public QObject
 {
