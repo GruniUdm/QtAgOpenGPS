@@ -190,97 +190,13 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     this->setLatStart(0.0);
     this->setLonStart(0.0);
 
-    // Phase 6.0.20: AOGInterface properties accessible via 'this' context
-    // No qmlItem() needed - FormGPS is registered as context property "aog"
-
-    // Qt 6.8 BINDABLE: Q_OBJECT_BINDABLE_PROPERTY automatically emits sectionButtonStateChanged() when .setValue() is called
-    // NO CONNECTION NEEDED: Using direct btnStates[] array eliminates all circular dependency issues
-    //connect(aog,SIGNAL(rowCountChanged()), &tool.blockageRowState, SLOT(onRowsUpdated())); //Dim
-
-    // ⚡ PHASE 6.3.0 TIMING FIX: OpenGL callbacks setup moved to initializeQMLInterfaces()
-    // This ensures InterfaceProperty are initialized BEFORE any rendering can occur
-    openGLControl = mainWindow->findChild<QQuickItem *>("openglcontrol");
-    if (openGLControl) {
-        qDebug() << "🎯 OpenGL control found - callbacks will be set after InterfaceProperty initialization";
-    } else {
-        qWarning() << "⚠️ OpenGL control not found during initialization";
-    }
-
-    // REMOVED: Duplicate connection - already connected at line 187
-    // connect(aog, SIGNAL(sectionButtonStateChanged()), &tool.sectionButtonState, SLOT(onStatesUpdated()));
-
-    //on screen buttons
-    // ===== BATCH 3 REMOVED - 8 Camera Navigation - Qt 6.8 Q_INVOKABLE direct calls =====
-    // Qt 6.8 REMOVED: zoomIn → zoomIn(), zoomOut → zoomOut(), tiltDown → tiltDown(), tiltUp → tiltUp()
-    // Qt 6.8 REMOVED: btn2D → view2D(), btn3D → view3D(), n2D → normal2D(), n3D → normal3D()
-    // Qt 6.8 REMOVED: isHydLiftOn is now Q_OBJECT_BINDABLE_PROPERTY with automatic QML binding
-    // Qt 6.8 REMOVED: btnResetTool now uses Q_INVOKABLE direct call - see resetTool()
-    // Qt 6.8 REMOVED: btnContour now uses Q_INVOKABLE direct call - see contour()
-    // Qt 6.8 REMOVED: btnContourLock now uses Q_INVOKABLE direct call - see contourLock()
-    // Qt 6.8 REMOVED: btnContourPriority(bool) now uses Q_INVOKABLE direct call - see contourPriority(bool)
-    // ===== BATCH 7 REMOVED - Qt 6.8 Q_INVOKABLE direct calls =====
-    // Qt 6.8 REMOVED: btnHeadland → headland(), isYouSkipOn → youSkip()
-    // Qt 6.8 REMOVED: btnResetSim → resetSim(), sim_rotate → rotateSim(), reset_direction → resetDirection()
-    // Qt 6.8 REMOVED: centerOgl → centerOgl(), deleteAppliedArea → deleteAppliedArea()
-    // ===== BATCH 2 REMOVED - 7 You-Turn Navigation - Qt 6.8 Q_INVOKABLE direct calls =====
-    // Qt 6.8 REMOVED: uturn(bool) → manualUTurn(bool), lateral(bool) → lateral(bool)
-    // Qt 6.8 REMOVED: autoYouTurn → autoYouTurn(), swapAutoYouTurnDirection → swapAutoYouTurnDirection()
-    // Qt 6.8 REMOVED: btnResetCreatedYouTurn → resetCreatedYouTurn(), btnAutoTrack → autoTrack(), btnFlag → flag()
-
-    // REMOVED: save_everything signal/slot replaced by applicationClosing property binding
-    // Old: QObject::connect(mainWindow, SIGNAL(save_everything(bool)), this, SLOT(FileSaveEverythingBeforeClosingField(bool)));
-    // New: applicationClosing binding in FormGPS constructor handles save logic automatically
-    //connect(qml_root,SIGNAL(closing(QQuickCloseEvent *)), this, SLOT(fileSaveEverythingBeforeClosingField(QQuickCloseEvent *)));
-
-    // ===== BATCH 4 REMOVED - 2 Settings - Qt 6.8 Q_INVOKABLE direct calls =====
-    // Qt 6.8 REMOVED: settings_reload → settingsReload(), settings_save → settingsSave()
-    // connect(aog, SIGNAL(settings_reload()), this, SLOT(on_settings_reload()));
-    // connect(aog, SIGNAL(settings_save()), this, SLOT(on_settings_save()));
-
-    // Qt 6.8 RESTORED: Language change signal/slot for dynamic translation reloading
-    // PHASE6-0-20: SettingsManager::menu_languageChanged signal exists and FormGPS::on_language_changed works
-    // Reconnect for automatic QML retranslation when language changes
     connect(SettingsManager::instance(), &SettingsManager::menu_languageChanged, this, &FormGPS::on_language_changed);
 
-    //snap track button - REMOVED: Modernized to Q_INVOKABLE direct calls
-    // REMOVED: connect(aog, SIGNAL(snapSideways(double)), this, SLOT(onBtnSnapSideways_clicked(double)));
-    // REMOVED: connect(aog, SIGNAL(snapToPivot()), this, SLOT(onBtnSnapToPivot_clicked()));
-
-    //vehicle saving and loading - Phase 1 Thread-Safe Architecture
+    //vehicle saving and loading
     connect(CVehicle::instance(), &CVehicle::vehicle_update_list, this, &FormGPS::vehicle_update_list, Qt::QueuedConnection);
     connect(CVehicle::instance(), &CVehicle::vehicle_load, this, &FormGPS::vehicle_load, Qt::QueuedConnection);
     connect(CVehicle::instance(), &CVehicle::vehicle_delete, this, &FormGPS::vehicle_delete, Qt::QueuedConnection);
     connect(CVehicle::instance(), &CVehicle::vehicle_saveas, this, &FormGPS::vehicle_saveas, Qt::QueuedConnection);
-
-    // ⚡ PHASE 6.3.0 TIMING FIX: Interface connections moved to initializeQMLInterfaces()
-    // fieldInterface connections will be established after QML object initialization
-
-    // Phase 6.0.20: Connect FormGPS signals to ahrs slots (changeImuHeading/Roll are Q_INVOKABLE methods called from QML)
-    // QML calls aog.changeImuHeading(value) -> FormGPS Q_INVOKABLE directly updates ahrs
-    // No signal/slot connection needed - Q_INVOKABLE handles direct method calls
-
-    //React to UI setting hyd life settings - REMOVED: Modernized to Q_INVOKABLE direct calls
-    // REMOVED: connect(aog, SIGNAL(modules_send_238()), this, SLOT(modules_send_238()));
-    // REMOVED: connect(aog, SIGNAL(modules_send_251()), this, SLOT(modules_send_251()));
-    // REMOVED: connect(aog, SIGNAL(modules_send_252()), this, SLOT(modules_send_252()));
-
-    // REMOVED: connect(aog, SIGNAL(doBlockageMonitoring()), this, SLOT(doBlockageMonitoring()));
-
-    // REMOVED: Simulator signals modernized to Q_INVOKABLE direct calls in Qt 6.8 migration
-    // REMOVED: connect(aog, SIGNAL(sim_bump_speed(bool)), &sim, SLOT(speed_bump(bool)));
-    // REMOVED: connect(aog, SIGNAL(sim_zero_speed()), &sim, SLOT(speed_zero()));
-    // REMOVED: connect(aog, SIGNAL(sim_reset()), &sim, SLOT(reset()));
-
-    // Steering controls - REMOVED: Modernized to Q_INVOKABLE direct calls
-    // REMOVED: connect(aog, SIGNAL(btnSteerAngleUp()), this, SLOT(btnSteerAngleUp_clicked()));
-    // REMOVED: connect(aog, SIGNAL(btnSteerAngleDown()), this, SLOT(btnSteerAngleDown_clicked()));
-    // REMOVED: connect(aog, SIGNAL(btnFreeDrive()), this, SLOT(btnFreeDrive_clicked()));
-    // REMOVED: connect(aog, SIGNAL(btnFreeDriveZero()), this, SLOT(btnFreeDriveZero_clicked()));
-    // REMOVED: connect(aog, SIGNAL(btnStartSA()), this, SLOT(btnStartSA_clicked()));
-
-    // ⚡ PHASE 6.3.0 TIMING FIX: boundaryInterface connections moved to initializeQMLInterfaces()
-    // All boundary-related connections will be established after QML object initialization
-
 
     headland_form.bnd = &bnd;
     headland_form.hdl = &hdl;
@@ -296,19 +212,30 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(&headache_form, SIGNAL(saveHeadlines()), this,SLOT(headlines_save()));
     connect(&headache_form, SIGNAL(loadHeadlines()), this,SLOT(headlines_load()));
 
+    BoundaryInterface::instance()->set_isOutOfBounds(false);
+
+    connect(FieldInterface::instance(), &FieldInterface::updateList, this, &FormGPS::field_update_list);
+    connect(FieldInterface::instance(), &FieldInterface::newField, this, &FormGPS::field_new);
+    connect(FieldInterface::instance(), &FieldInterface::openField, this, &FormGPS::field_open);
+    connect(FieldInterface::instance(), &FieldInterface::newFieldFrom, this, &FormGPS::field_new_from);
+    connect(FieldInterface::instance(), &FieldInterface::newFieldFromKML, this, &FormGPS::field_new_from_KML);
+    connect(FieldInterface::instance(), &FieldInterface::closeField, this, &FormGPS::field_close);
+    connect(FieldInterface::instance(), &FieldInterface::deleteField, this, &FormGPS::field_delete);
+    //connect(FieldInterface::instance(), &FieldInterface::exportFieldZip, this, &FormGPS::field_export_zip);
+    //connect(FieldInterface::instance(), &FieldInterface::importFieldZip, this, &FormGPS::field_import_zip);
+
+    qDebug() << "🎯 Connected FieldInterface signals.";
+
+    qDebug() << "🔗 Connecting boundaryInterface signals...";
+    // ⚡ YouTurn out of bounds signal
+    connect(&yt, &CYouTurn::outOfBounds, this, [this]() {
+            BoundaryInterface::instance()->set_isOutOfBounds(true);
+    });
+
+    connect(FlagsInterface::instance(), &FlagsInterface::saveFlags, this, &FormGPS::FileSaveFlags);
+
+
     //connect qml button signals to callbacks (it's not automatic with qml)
-
-    /*btnPerimeter = qmlItem(qml_root,"btnPerimeter");
-    connect(btnPerimeter,SIGNAL(clicked()),this,
-            SLOT(onBtnPerimeter_clicked()));
-    */
-
-    // btnFlag = qmlItem(mainWindow,"btnFlag");
-    // connect(btnFlag,SIGNAL(clicked()),this,
-    //         SLOT(onBtnFlag_clicked()));
-
-
-    //txtDistanceOffABLine = qmlItem(qml_root,"txtDistanceOffABLine");
 
     tmrWatchdog = new QTimer(this);
     connect (tmrWatchdog, SIGNAL(timeout()),this,SLOT(tmrWatchdog_timeout()));
@@ -1639,75 +1566,15 @@ void FormGPS::initializeQMLInterfaces()
 
     qDebug() << "✅ mainWindow valid, proceeding with interface initialization";
 
-    // ===== PHASE 6.0.3.1: Initialize PropertyWrapper FIRST - before any QML interface access =====
-    // Phase 6.0.4.5: PropertyWrapper initialization removed - using native Qt 6.8 Q_PROPERTY
-
-    // ===== PHASE 6.0.3.2: Initialize PropertyWrapper properties AFTER roots are ready =====
-    qDebug() << "🔧 Phase 6.0.3.2: Setting initial PropertyWrapper values...";
     this->setSentenceCounter(0);
     this->setManualBtnState((int)btnStates::Off);
     this->setAutoBtnState((int)btnStates::Off);
     this->setIsPatchesChangingColor( false);
-    BoundaryInterface::instance()->set_isOutOfBounds(false);
-    qDebug() << "  ✅ PropertyWrapper initial values set successfully";
 
-    // ===== CRITICAL: Initialize QML members AFTER QML objects are created =====
-    // Crash fix: these variables MUST be initialized after QML components load
-    recordedPathInterface = qmlItem(mainWindow, "recordedPathInterface");
 
-    //have to do this for each Interface and supported data type.
-    // QObject *aog = qmlItem(mainWindow, "aog");
-    // if (aog) {
-    //     qDebug() << "✅ AOG interface found - setting InterfaceProperty roots";
+    openGLControl = qobject_cast<QQuickItem *>(Backend::instance()->aogRenderer);
 
-    //     qDebug() << "✅ InterfaceProperty initialization completed successfully";
-
-    //     // ⚡ PHASE 6.3.0 ARCHITECTURAL FIX: Delay OpenGL callbacks setup
-    //     // Give time for set_qml_root() to fully stabilize before enabling rendering
-    //     QTimer::singleShot(10, this, [this]() {
-    //         initializeOpenGLCallbacks();
-    //     });
-
-    // } else {
-    //     qWarning() << "❌ AOG interface STILL not found after delay - scheduling retry in 500ms";
-
-    //     // ⚡ FALLBACK: Retry after additional delay if still not found
-    //     QTimer::singleShot(500, this, [this]() {
-    //         QObject *aog = qmlItem(mainWindow, "aog");
-    //         if (aog) {
-    //             qDebug() << "✅ AOG interface found on retry - setting InterfaceProperty roots";
-    //             qDebug() << "✅ InterfaceProperty initialization completed on retry";
-    //         } else {
-    //             qCritical() << "🚨 CRITICAL: AOG interface not found after multiple attempts!";
-    //             qCritical() << "🚨 This will cause InterfaceProperty errors - check QML loading";
-    //         }
-    //     });
-    // }
-
-    if (recordedPathInterface) {
-    }
-
-    connect(FieldInterface::instance(), &FieldInterface::updateList, this, &FormGPS::field_update_list);
-    connect(FieldInterface::instance(), &FieldInterface::newField, this, &FormGPS::field_new);
-    connect(FieldInterface::instance(), &FieldInterface::openField, this, &FormGPS::field_open);
-    connect(FieldInterface::instance(), &FieldInterface::newFieldFrom, this, &FormGPS::field_new_from);
-    connect(FieldInterface::instance(), &FieldInterface::newFieldFromKML, this, &FormGPS::field_new_from_KML);
-    connect(FieldInterface::instance(), &FieldInterface::closeField, this, &FormGPS::field_close);
-    connect(FieldInterface::instance(), &FieldInterface::deleteField, this, &FormGPS::field_delete);
-    //connect(FieldInterface::instance(), &FieldInterface::exportFieldZip, this, &FormGPS::field_export_zip);
-    //connect(FieldInterface::instance(), &FieldInterface::importFieldZip, this, &FormGPS::field_import_zip);
-
-    qDebug() << "🎯 Connected FieldInterface signals.";
-
-    qDebug() << "🔗 Connecting boundaryInterface signals...";
-    // ⚡ YouTurn out of bounds signal
-    connect(&yt, &CYouTurn::outOfBounds, this, [this]() {
-            BoundaryInterface::instance()->set_isOutOfBounds(true);
-    });
-
-    connect(FlagsInterface::instance(), &FlagsInterface::saveFlags, this, &FormGPS::FileSaveFlags);
-
-    if (openGLControl) {
+    auto setup_gl_callbacks = [this]() {
         qDebug() << "🎯 Setting up OpenGL callbacks - InterfaceProperty verified safe";
         openGLControl->setProperty("callbackObject",QVariant::fromValue((void *) this));
         openGLControl->setProperty("initCallback",QVariant::fromValue<std::function<void (void)>>(std::bind(&FormGPS::openGLControl_Initialized, this)));
@@ -1728,9 +1595,14 @@ void FormGPS::initializeQMLInterfaces()
         connect(openGLControl,SIGNAL(clicked(QVariant)),this,SLOT(onGLControl_clicked(QVariant)));
         connect(openGLControl,SIGNAL(dragged(int,int,int,int)),this,SLOT(onGLControl_dragged(int,int,int,int)));
         qDebug() << "✅ OpenGL callbacks configured - rendering can now safely access InterfaceProperty";
+    };
+
+    if (!openGLControl) {
+        // If QML not ready yet; defer setting up of rendering callbacks
+        connect(Backend::instance(), &Backend::aogRendererChanged, this, setup_gl_callbacks);
     } else {
-        //I don't think this is necessary; QML is already set up by now.
-        qWarning() << "⚠️ AOGRenderer item was not found in QML tree.";
+        // set everything up.
+        setup_gl_callbacks();
     }
 
     if (SettingsManager::instance()->menu_isSimulatorOn()) {
