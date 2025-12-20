@@ -46,7 +46,7 @@ QVariant FlagModel::data(const QModelIndex &index, int role) const
 QHash<int, QByteArray> FlagModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
-    roles[IdRole] = "flagId";
+    roles[IdRole] = "id";
     roles[ColorRole] = "color";
     roles[LatitudeRole] = "latitude";
     roles[LongitudeRole] = "longitude";
@@ -68,16 +68,25 @@ void FlagModel::addFlag(const Flag &flag)
 {
     beginInsertRows(QModelIndex(), flags.count(), flags.count());
     flags.append(flag);
+    //adjust flagId to match index position
+    for (int i=0; i < flags.count(); i++) {
+        flags[i].id = i+1;
+    }
     endInsertRows();
 }
 
-void FlagModel::removeFlag(int index)
+void FlagModel::removeFlag(int id)
 {
-    if (index < 0 || index >= flags.count())
+    //flag id is base 1!
+    if (id <= 0 || id > flags.count())
         return;
 
-    beginRemoveRows(QModelIndex(), index, index);
-    flags.remove(index);
+    beginRemoveRows(QModelIndex(), id-1, id-1);
+    flags.remove(id-1);
+    //adjust flagId to match index position
+    for (int i=0; i < flags.count(); i++) {
+        flags[i].id = i+1;
+    }
     endRemoveRows();
 }
 
@@ -88,21 +97,25 @@ void FlagModel::clear()
     endResetModel();
 }
 
-void FlagModel::setNotes(int index, QString notes) {
-    beginResetModel();
-    flags[index].notes = notes;
-    endResetModel();
+void FlagModel::setNotes(int id, QString notes) {
+    if (id > 0 && id <= flags.count()) {
+        beginResetModel();
+        flags[id-1].notes = notes;
+        endResetModel();
+    }
 }
 
-void FlagModel::setColor(int index, QColor color) {
-    beginResetModel();
-    flags[index].color = color;
-    endResetModel();
+void FlagModel::setColor(int id, int color) {
+    if (id > 0 && id <= flags.count()) {
+        beginResetModel();
+        flags[id-1].color = color;
+        endResetModel();
+    }
 }
 
-FlagModel::Flag FlagModel::flagAt(int index) const
+FlagModel::Flag FlagModel::flagAt(int id) const
 {
-    if (index >= 0 && index < flags.count())
-        return flags[index];
+    if (id > 0 && id <= flags.count())
+        return flags[id - 1];
     return Flag();
 }

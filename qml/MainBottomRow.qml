@@ -120,8 +120,14 @@ RowLayout{
         isChecked: false
         icon.source: prefix + contextFlag.icon
         onClicked: {
+            FlagsInterface.currentFlag = FlagsInterface.flag(aog.latitude,
+                                                             aog.longitude,
+                                                             aog.easting,
+                                                             aog.northing,
+                                                             aog.heading,
+                                                             FlagsInterface.Red,
+                                                             Number(FlagsInterface.count+1).toLocaleString(Qt.locale(),'f',0))
             flags.show();
-            aog.flag(); // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         }
         onPressAndHold: {
             if (contextFlag.visible) {

@@ -26,7 +26,7 @@ public:
 
     struct Flag {
         int id;
-        QColor color;
+        int color;
         double latitude;
         double longitude;
         double heading;
@@ -45,15 +45,15 @@ public:
     // Data management
     void setFlags(const QVector<Flag> &flags);
     void addFlag(const Flag &flag);
-    void removeFlag(int index);
+    void removeFlag(int id);
     void clear();
 
-    void setNotes(int index, QString notes);
-    void setColor(int index, QColor color);
+    void setNotes(int id, QString notes);
+    void setColor(int id, int color);
 
     // Utility
     int count() const { return flags.count(); }
-    Flag flagAt(int index) const;
+    Flag flagAt(int id) const;
 
     QVector<Flag> flags;
 

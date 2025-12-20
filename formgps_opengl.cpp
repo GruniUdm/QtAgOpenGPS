@@ -26,6 +26,7 @@
 #include "backend.h"
 #include "boundaryinterface.h"
 #include "mainwindowstate.h"
+#include "flagsinterface.h"
 #include "cpgn.h"
 #include "rendering.h"
 
@@ -482,24 +483,8 @@ void FormGPS::oglMain_Paint()
                     DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,lineWidth,color);
                 }
             }
-            if (flagPts.count()>0) DrawFlags(gl, projection*modelview);
-            //Direct line to flag if flag selected
-            if (flagNumberPicked > 0)
-            {
-                if (flagPts.count() > flagNumberPicked) {
-                    gldraw1.clear();
-                    gl->glLineWidth(2);
-                    //TODO: implement with shader: GL.LineStipple(1, 0x0707);
-                    gldraw1.append(QVector3D(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, 0));
-                    gldraw1.append(QVector3D(flagPts[flagNumberPicked-1].easting, flagPts[flagNumberPicked-1].northing, 0));
-                    gldraw1.draw(gl, projection*modelview,
-                                QColor::fromRgbF(0.930f, 0.72f, 0.32f),
-                                GL_LINES, lineWidth);
-                    gl->glLineWidth(1);
-                } else {
-                    flagNumberPicked = 0;//reset
-                }
-            }
+
+            DrawFlags(gl, projection*modelview);
 
             //draw the vehicle/implement
             QMatrix4x4 mv = modelview; //push matrix
@@ -1115,46 +1100,55 @@ void FormGPS::DrawFlags(QOpenGLFunctions *gl, QMatrix4x4 mvp)
 {
     GLHelperOneColor gldraw;
 
-    int flagCnt = flagPts.count();
+    int flagCnt = FlagsInterface::instance()->count();
     for (int f = 0; f < flagCnt; f++)
     {
         QColor color;
         QString flagColor = "&";
+        FlagModel::Flag flag = FlagsInterface::instance()->flagModel()->flagAt(f+1);
 
-        if (flagPts[f].color == 0) {
-            color = QColor::fromRgb(255, 0, flagPts[f].ID);
+        if (flag.color == 0) {
+            color = QColor::fromRgb(255, 0, flag.id);
         }
-        if (flagPts[f].color == 1) {
-            color = QColor::fromRgb(0, 255, flagPts[f].ID);
+        if (flag.color == 1) {
+            color = QColor::fromRgb(0, 255, flag.id);
             flagColor = "|";
         }
-        if (flagPts[f].color == 2) {
-            color = QColor::fromRgb(255, 255, flagPts[f].ID);
+        if (flag.color == 2) {
+            color = QColor::fromRgb(255, 255, flag.id);
             flagColor = "~";
         }
 
-        gldraw.append(QVector3D(flagPts[f].easting, flagPts[f].northing, 0));
+        gldraw.append(QVector3D(flag.easting, flag.northing, 0));
         gldraw.draw(gl, mvp, color, GL_POINTS, 8.0f);
-        flagColor += flagPts[f].notes;
+        flagColor += flag.notes;
 
-        drawText3D(camera, gl, mvp, flagPts[f].easting, flagPts[f].northing, flagColor,1,true,color);
-    }
+        drawText3D(camera, gl, mvp, flag.easting, flag.northing, flagColor,1,true,color);
 
-    if (flagNumberPicked != 0)
-    {
-        ////draw the box around flag
-        gldraw.clear();
+        if (FlagsInterface::instance()->currentFlag() == (f + 1)) {
+            ////draw the box around flag
+            gldraw.clear();
 
-        double offSet = (camera.zoomValue * camera.zoomValue * 0.01);
-        gl->glLineWidth(4);
-        gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting, flagPts[flagNumberPicked - 1].northing + offSet, 0));
-        gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting - offSet, flagPts[flagNumberPicked - 1].northing, 0));
-        gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting, flagPts[flagNumberPicked - 1].northing - offSet, 0));
-        gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting + offSet, flagPts[flagNumberPicked - 1].northing, 0));
-        gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting, flagPts[flagNumberPicked - 1].northing + offSet, 0));
-        gldraw.draw(gl, mvp, QColor::fromRgbF(0.980f, 0.0f, 0.980f),
-                    GL_LINE_STRIP, 4.0);
-        gl->glLineWidth(1);
+            double offSet = (camera.zoomValue * camera.zoomValue * 0.01);
+            gldraw.append(QVector3D(flag.easting, flag.northing + offSet, 0));
+            gldraw.append(QVector3D(flag.easting - offSet, flag.northing, 0));
+            gldraw.append(QVector3D(flag.easting, flag.northing - offSet, 0));
+            gldraw.append(QVector3D(flag.easting + offSet, flag.northing, 0));
+            gldraw.append(QVector3D(flag.easting, flag.northing + offSet, 0));
+            gldraw.draw(gl, mvp, QColor::fromRgbF(0.980f, 0.0f, 0.980f),
+                        GL_LINE_STRIP, 4.0);
+
+            //draw line to vehicle
+            gldraw.clear();
+            gl->glLineWidth(2);
+            //TODO: implement with shader: GL.LineStipple(1, 0x0707);
+            gldraw.append(QVector3D(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, 0));
+            gldraw.append(QVector3D(flag.easting, flag.northing, 0));
+            gldraw.draw(gl, mvp,
+                        QColor::fromRgbF(0.930f, 0.72f, 0.32f),
+                        GL_LINES, 1.0);
+
+        }
     }
 }
 

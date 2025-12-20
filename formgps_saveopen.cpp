@@ -11,6 +11,7 @@
 #include "backend.h"
 #include "mainwindowstate.h"
 #include "boundaryinterface.h"
+#include "flagsinterface.h"
 
 enum OPEN_FLAGS {
     LOAD_MAPPING = 1,
@@ -1193,7 +1194,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
             reader.setDevice(&flagsFile);
 
-            flagPts.clear();
+            FlagsInterface::instance()->flagModel()->clear();
+
             //read header
             line = reader.readLine();
 
@@ -1203,8 +1205,6 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
             if (points > 0)
             {
-                flagPts.reserve(points);  // Phase 1.1: Pre-allocate memory
-
                 double lat;
                 double longi;
                 double east;
@@ -1213,7 +1213,6 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                 int color, ID;
                 QString notes;
 
-                lock.lockForWrite();
 
                 for (int v = 0; v < points; v++)
                 {
@@ -1251,11 +1250,16 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                         notes = "";
                     }
 
-                    CFlag flagPt(lat, longi, east, nort, head, color, ID, notes);
-                    flagPts.append(flagPt);
+                    lock.lockForWrite();
+                    FlagModel::Flag flagPt ( {ID, color, lat, longi, head, east, nort, notes} );
+                    FlagsInterface::instance()->flagModel()->addFlag(flagPt);
+                    lock.unlock();
                 }
-                lock.unlock();
             }
+
+            //a bit hackish but sync FlagsInterface count with
+            //the model count, in case any properties are bound to it
+            FlagsInterface::instance()->syncCount();
             flagsFile.close();
 
         }
@@ -2420,19 +2424,21 @@ void FormGPS::FileSaveFlags()
 
     writer << "$Flags" << Qt::endl;
 
-    int count2 = flagPts.count();
+    int count2 = FlagsInterface::instance()->flagModel()->count();
     writer << count2 << Qt::endl;
 
+    FlagModel::Flag flag;
     for (int i = 0; i < count2; i++)
     {
-        writer << flagPts[i].latitude << ","
-               << flagPts[i].longitude << ","
-               << flagPts[i].easting << ","
-               << flagPts[i].northing << ","
-               << flagPts[i].heading << ","
-               << flagPts[i].color << ","
-               << flagPts[i].ID << ","
-               << flagPts[i].notes << Qt::endl;
+        flag = FlagsInterface::instance()->flagModel()->flagAt(i+1);
+        writer << flag.latitude << ","
+               << flag.longitude << ","
+               << flag.easting << ","
+               << flag.northing << ","
+               << flag.heading << ","
+               << flag.color << ","
+               << flag.id << ","
+               << flag.notes << Qt::endl;
     }
 
     flagsfile.close();
@@ -2548,21 +2554,22 @@ void FormGPS::FileSaveSingleFlagKML2(int flagNumber)
     writer << "<?xml version=""1.0"" encoding=""UTF-8""?" << Qt::endl;
     writer << "<kml xmlns=""http://www.opengis.net/kml/2.2""> " << Qt::endl;
 
-    //int count2 = flagPts.count();
     double lat, lon;
 
-    // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.ConvertLocalToWGS84(flagPts[flagNumber - 1].northing, flagPts[flagNumber - 1].easting, lat, lon, this);
+    FlagModel::Flag flag;
+    flag = FlagsInterface::instance()->flagModel()->flagAt(flagNumber);
+
+    pn.ConvertLocalToWGS84(flag.northing, flag.easting, lat, lon, this);
 
     writer << "<Document>" << Qt::endl;
 
     writer << "<Placemark>"  << Qt::endl;;
     writer << "<Style><IconStyle>" << Qt::endl;
-    if (flagPts[flagNumber - 1].color == 0)  //red - xbgr
+    if (flag.color == 0)  //red - xbgr
         writer << "<color>ff4400ff</color>" << Qt::endl;
-    if (flagPts[flagNumber - 1].color == 1)  //grn - xbgr
+    if (flag.color == 1)  //grn - xbgr
         writer << "<color>ff44ff00</color>" << Qt::endl;
-    if (flagPts[flagNumber - 1].color == 2)  //yel - xbgr
+    if (flag.color == 2)  //yel - xbgr
         writer << "<color>ff44ffff</color>" << Qt::endl;
     writer << "</IconStyle></Style>" << Qt::endl;
     writer << "<name>" << flagNumber << "</name>" << Qt::endl;
@@ -2608,23 +2615,24 @@ void FormGPS::FileSaveSingleFlagKML(int flagNumber)
     writer << "<?xml version=""1.0"" encoding=""UTF-8""?" << Qt::endl;
     writer << "<kml xmlns=""http://www.opengis.net/kml/2.2""> " << Qt::endl;
 
-    //int count2 = flagPts.count();
+    FlagModel::Flag flag;
+    flag = FlagsInterface::instance()->flagModel()->flagAt(flagNumber);
 
     writer << "<Document>" << Qt::endl;
 
     writer << "<Placemark>"  << Qt::endl;;
     writer << "<Style><IconStyle>" << Qt::endl;
-    if (flagPts[flagNumber - 1].color == 0)  //red - xbgr
+    if (flag.color == 0)  //red - xbgr
         writer << "<color>ff4400ff</color>" << Qt::endl;
-    if (flagPts[flagNumber - 1].color == 1)  //grn - xbgr
+    if (flag.color == 1)  //grn - xbgr
         writer << "<color>ff44ff00</color>" << Qt::endl;
-    if (flagPts[flagNumber - 1].color == 2)  //yel - xbgr
+    if (flag.color == 2)  //yel - xbgr
         writer << "<color>ff44ffff</color>" << Qt::endl;
     writer << "</IconStyle></Style>" << Qt::endl;
     writer << "<name>" << flagNumber << "</name>" << Qt::endl;
     writer << "<Point><coordinates>"
-           << flagPts[flagNumber-1].longitude << ","
-           << flagPts[flagNumber-1].latitude << ",0"
+           << flag.longitude << ","
+           << flag.latitude << ",0"
            << "</coordinates></Point>" << Qt::endl;
     writer << "</Placemark>" << Qt::endl;
     writer << "</Document>" << Qt::endl;

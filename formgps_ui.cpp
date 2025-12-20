@@ -28,6 +28,7 @@
 #include "boundaryinterface.h"
 #include "fieldinterface.h"
 #include "mainwindowstate.h"
+#include "flagsinterface.h"
 
 QString caseInsensitiveFilename(QString directory, QString filename);
 
@@ -1946,6 +1947,8 @@ void FormGPS::initializeQMLInterfaces()
     connect(&yt, &CYouTurn::outOfBounds, this, [this]() {
             BoundaryInterface::instance()->set_isOutOfBounds(true);
     });
+
+    connect(FlagsInterface::instance(), &FlagsInterface::saveFlags, this, &FormGPS::FileSaveFlags);
 
     if (openGLControl) {
         qDebug() << "🎯 Setting up OpenGL callbacks - InterfaceProperty verified safe";

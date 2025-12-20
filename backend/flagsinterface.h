@@ -18,6 +18,13 @@ class FlagsInterface : public QObject
     Q_OBJECT
     QML_SINGLETON
     QML_ELEMENT
+public:
+    enum Color {
+        Red = 0,
+        Green = 1,
+        Yellow = 2
+    };
+    Q_ENUM(Color)
 
 private:
     explicit FlagsInterface(QObject *parent = nullptr);
@@ -57,11 +64,11 @@ public:
     void setCurrentNotes(const QString &value);
     QBindable<QString> bindableCurrentNotes();
 
-    Q_PROPERTY(QColor currentColor READ currentColor WRITE setCurrentColor
+    Q_PROPERTY(FlagsInterface::Color currentColor READ currentColor WRITE setCurrentColor
                    NOTIFY currentColorChanged BINDABLE bindableCurrentColor)
-    QColor currentColor();
-    void setCurrentColor(const QColor &value);
-    QBindable<QColor> bindableCurrentColor();
+    FlagsInterface::Color currentColor();
+    void setCurrentColor(const Color &value);
+    QBindable<FlagsInterface::Color> bindableCurrentColor();
 
     SIMPLE_BINDABLE_PROPERTY(double, currentLatitude)
     SIMPLE_BINDABLE_PROPERTY(double, currentLongitude)
@@ -71,16 +78,24 @@ public:
 
     //methods for QML to use
     Q_INVOKABLE void setNotes(int index, QString notes);
-    Q_INVOKABLE void setColor(int index, QColor color);
+    Q_INVOKABLE void setColor(int index, FlagsInterface::Color color);
 
-    Q_INVOKABLE int drop(double latitude, double longitude, double easting, double northing, double heading, QColor color, QString notes);
+    Q_INVOKABLE int flag(double latitude, double longitude, double easting, double northing, double heading, FlagsInterface::Color color, QString notes);
+    Q_INVOKABLE void nextFlag();
+    Q_INVOKABLE void prevFlag();
+    Q_INVOKABLE void deleteCurrentFlag();
+    Q_INVOKABLE void cancelCurrentFlag();
 
+    Q_INVOKABLE void syncCount();
+    Q_INVOKABLE void clearFlags();
 
 signals:
     void countChanged();
     void currentFlagChanged();
     void currentNotesChanged();
     void currentColorChanged();
+
+    void saveFlags();
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FlagsInterface, int, m_count, 0, &FlagsInterface::countChanged)
@@ -91,7 +106,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FlagsInterface, double, m_currentNorthing, 99999999, &FlagsInterface::currentNorthingChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FlagsInterface, double, m_currentHeading, 999, &FlagsInterface::currentHeadingChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FlagsInterface, QString, m_currentNotes, &FlagsInterface::currentNotesChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FlagsInterface, QColor, m_currentColor, &FlagsInterface::currentColorChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(FlagsInterface, FlagsInterface::Color, m_currentColor, &FlagsInterface::currentColorChanged)
 };
 
 #endif // FLAGSINTERFACE_H

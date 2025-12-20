@@ -17,6 +17,7 @@
 #include <QEvent>              // Phase 6.0.45: Memory leak fixes - QEvent::DeferredDelete enum
 #include "backend.h"
 #include "mainwindowstate.h"
+#include "flagsinterface.h"
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
@@ -1176,7 +1177,7 @@ void FormGPS::JobClose()
     tool.patchesBufferDirty = true;
 
     //clear the flags
-    flagPts.clear();
+    FlagsInterface::instance()->clearFlags();
 
     //ABLine
     tram.tramList.clear();
