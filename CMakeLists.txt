@@ -336,7 +336,8 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/fieldinterface.h backend/fieldinterface.cpp
     SOURCES backend/fieldinfo.h backend/fieldinfo.cpp
     SOURCES backend/headlandinterface.h backend/headlandinterface.cpp
-    SOURCES backend/boundarylinemodel.h backend/boundarylinemodel.cpp
+    SOURCES backend/headacheinterface.h backend/headacheinterface.cpp
+    SOURCES backend/fencelinemodel.h backend/fencelinemodel.cpp
 )
 
 ###### End Script of Handling QML in module ######
