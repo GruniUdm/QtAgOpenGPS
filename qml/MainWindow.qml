@@ -217,6 +217,9 @@ Window {
         //This is a popup message that dismisses itself after a timeout
         id: timedMessage
         objectName: "timedMessage"
+
+        //give the back end a pointer to this object for displaying messages
+        Component.onCompleted: { Backend.timedMessage = timedMessage; }
     }
 
     SystemPalette {

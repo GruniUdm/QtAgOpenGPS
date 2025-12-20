@@ -17,6 +17,7 @@ class Backend : public QObject
     QML_ELEMENT
 
     Q_PROPERTY(FieldInfo currentField READ currentField NOTIFY currentFieldChanged)
+    Q_PROPERTY(QObject* timedMessage MEMBER timedMessage) //only ever written to by QML
 
 private:
     explicit Backend(QObject *parent = nullptr);
@@ -33,6 +34,7 @@ private:
 public:
     //allow direct access from C++
     FieldInfo m_currentField;
+    QObject *timedMessage;
 
     static Backend *instance();
     static Backend *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
@@ -72,9 +74,11 @@ public:
     }
 
 private:
+
 signals:
     //signals implicitly created by BINDABLE_PROPERTY() macro
     void currentFieldChanged();
+    void timedMessageChanged();
 };
 
 #endif // BACKEND_H
