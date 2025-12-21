@@ -340,6 +340,7 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/flagsinterface.h backend/flagsinterface.cpp
     SOURCES backend/fencelinemodel.h backend/fencelinemodel.cpp
     SOURCES backend/flagmodel.h backend/flagmodel.cpp
+    SOURCES backend/fixframe.h
 )
 
 ###### End Script of Handling QML in module ######

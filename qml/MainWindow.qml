@@ -245,6 +245,12 @@ Window {
         anchors.bottom: parent.bottom
         //z: -1
 
+        Component.onCompleted: {
+            //Let the backend have access to this item to
+            //set properties and render callbacks
+            Backend.aogRenderer = glcontrolrect;
+        }
+
         //for moving the center of the view around
         // ✅ PHASE 6.3.0: shiftX/shiftY are now Q_PROPERTY in C++ AOGRendererInSG class
         // shiftX: 0 //-1 left to 1 right (default value set in C++)

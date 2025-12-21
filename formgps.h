@@ -824,15 +824,6 @@ public:
     //makes nav panel disappear after 6 seconds
     int navPanelCounter = 0;
 
-    // ✅ PHASE 6.3.0: sentenceCounter converted to Q_PROPERTY in AOGInterface.qml:154
-
-    //master Manual and Auto, 3 states possible
-    //btnStates manualBtnState = btnStates::Off;
-    //btnStates autoBtnState = btnStates::Off;
-    // ⚡ PHASE 6.3.0: manualBtnState and autoBtnState converted to Q_PROPERTY
-    // Access via: qmlItem(mainWindow, "aog")->property("manualBtnState").toInt()
-    // Access via: qmlItem(mainWindow, "aog")->property("autoBtnState").toInt()
-
 private:
 public:
     //for animated submenu
@@ -921,9 +912,6 @@ public:
 public:
     bool isTT;
     bool isABCyled = false;
-
-    // ⚡ PHASE 6.3.0: isPatchesChangingColor converted to Q_PROPERTY
-    // Access via: qmlItem(mainWindow, "aog")->property("isPatchesChangingColor").toBool()
 
     void GetHeadland();
     void CloseTopMosts();

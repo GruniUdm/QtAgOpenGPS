@@ -7,6 +7,7 @@
 #include <QMutex>
 
 #include "fieldinfo.h"
+#include "fixframe.h"
 
 #include "simpleproperty.h"
 
@@ -17,6 +18,7 @@ class Backend : public QObject
     QML_ELEMENT
 
     Q_PROPERTY(FieldInfo currentField READ currentField NOTIFY currentFieldChanged)
+    Q_PROPERTY(FixFrame fixFrame READ fixFrame NOTIFY fixFrameChanged)
     Q_PROPERTY(QObject* timedMessage MEMBER timedMessage) //only ever written to by QML
     Q_PROPERTY(QObject* aogRenderer MEMBER aogRenderer NOTIFY aogRendererChanged) //only ever written to by QML
 public:
@@ -37,6 +39,8 @@ private:
 public:
     //allow direct access from C++
     FieldInfo m_currentField;
+    FixFrame m_fixFrame;
+
     QObject *timedMessage = nullptr;
     QObject *aogRenderer = nullptr;
 
@@ -45,6 +49,7 @@ public:
 
     //const getter for QML
     FieldInfo currentField() const { return m_currentField; }
+    FixFrame fixFrame() const { return m_fixFrame; }
 
     //mutation methods for currentField
     Q_INVOKABLE void currentField_setDistanceUser(double newdist) {
@@ -77,13 +82,14 @@ public:
         emit currentFieldChanged();
     }
 
-private:
-
 signals:
     //signals implicitly created by BINDABLE_PROPERTY() macro
     void currentFieldChanged();
     void timedMessageChanged(); //may not be needed
-    void aogRendererChanged(); //may not be needed
+    void aogRendererChanged();
+    void fixFrameChanged();
+
+private:
 };
 
 #endif // BACKEND_H

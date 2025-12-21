@@ -71,8 +71,7 @@ QOpenGLContext *getGLContext(QQuickWindow *window) {
 
 OpenGLViewport getOpenGLViewport(QObject* mainWindow) {
     OpenGLViewport viewport;
-    QObject *openglControl = qmlItem(mainWindow, "openglcontrol");
-
+    QObject *openglControl = Backend::instance()->aogRenderer;
 
     if (openglControl) {
         viewport.width = openglControl->property("width").toReal();
