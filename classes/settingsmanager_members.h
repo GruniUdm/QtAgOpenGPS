@@ -4,7 +4,7 @@
 // File 3/3: Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS members for private: section
 
 // Generated property members with Qt6 bindable support
-// Total members: 387
+// Total members: 391
 
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_menu_language, "en", &SettingsManager::menu_languageChanged)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_feature_isOffsetFixOn, false, &SettingsManager::feature_isOffsetFixOnChanged)
@@ -393,5 +393,9 @@ Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_mod_isMachineConne
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_ip_localAOG, "127.0.0.1", &SettingsManager::ip_localAOGChanged)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_udp_isSendNMEAToUDP, false, &SettingsManager::udp_isSendNMEAToUDPChanged)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QVariantList, m_bluetooth_deviceList, QVariantList(), &SettingsManager::bluetooth_deviceListChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_agShare_server, "", &SettingsManager::agShare_serverChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_agShare_apiKey, "", &SettingsManager::agShare_apiKeyChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_agShare_enabled, false, &SettingsManager::agShare_enabledChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_agShare_uploadActive, false, &SettingsManager::agShare_uploadActiveChanged)
 
 // End of generated property members

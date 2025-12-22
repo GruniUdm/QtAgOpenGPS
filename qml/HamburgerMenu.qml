@@ -80,6 +80,14 @@ Drawer{
                 visible: true
             }
             Comp.IconButtonTextBeside{
+                text: qsTr("AgShare")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    agShareApi.visible = !agShareApi.visible
+                }
+                visible: true
+            }
+            Comp.IconButtonTextBeside{
                 text: qsTr("Directories")
                 onClicked: console.log("")
                 visible: false//todo

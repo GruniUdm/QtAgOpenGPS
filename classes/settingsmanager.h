@@ -78,7 +78,7 @@ public:
     #include "settingsmanager_properties.h"
 
 signals:
-    // ===== GENERATED NOTIFY SIGNALS (387 signals) =====
+    // ===== GENERATED NOTIFY SIGNALS (391 signals) =====
     // Required for Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS signal references
     void menu_languageChanged();
     void feature_isOffsetFixOnChanged();
@@ -467,6 +467,10 @@ signals:
     void ip_localAOGChanged();
     void udp_isSendNMEAToUDPChanged();
     void bluetooth_deviceListChanged();
+    void agShare_serverChanged();
+    void agShare_apiKeyChanged();
+    void agShare_enabledChanged();
+    void agShare_uploadActiveChanged();
 
 
 private:

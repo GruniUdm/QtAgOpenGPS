@@ -764,6 +764,10 @@ Window {
             objectName: "slideoutMenu"
             visible: false
         }
+        Field.AgShareApi {
+            id: agShareApi
+            visible: false
+        }
         ToolsWindow {
             id: toolsMenu
             visible: false

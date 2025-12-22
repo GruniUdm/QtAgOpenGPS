@@ -389,3 +389,7 @@ mod_isMachineConnected|agio/isMachineConnected|false|bool|
 ip_localAOG|agio/localAOGIP|"127.0.0.1"|QString|
 udp_isSendNMEAToUDP|agio/sendNMEAToUDP|false|bool|
 bluetooth_deviceList|bluetooth/deviceList|""|QVariantList|
+agShare_server|agShare/server|""|QString|
+agShare_apiKey|agShare/apiKey|""|QString|
+agShare_enabled|agShare/enabled|false|bool|
+agShare_uploadActive|agShare/uploadActive|false|bool|

@@ -152,6 +152,10 @@ qt_add_executable(QtAgOpenGPS
     classes/vec4.h classes/vec4.cpp
     classes/vecfix2fix.h
     classes/qmlblockage.h classes/qmlblockage.cpp
+    classes/agshareclient.h classes/agshareclient.cpp
+    #classes/agshare/agsharedownloader.h classes/agshare/agsharedownloader.cpp
+    #classes/agshare/agshareuploader.h classes/agshare/agshareuploader.cpp
+    #classes/agshare/agsharedtos.h
     # LICENSE
     # TODO.md
     # README.md
