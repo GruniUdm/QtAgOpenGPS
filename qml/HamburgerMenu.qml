@@ -83,7 +83,7 @@ Drawer{
                 text: qsTr("AgShare")
                 onClicked: {
                     hamburgerMenuRoot.visible = false
-                    agShareApi.visible = !agShareApi.visible
+                    agShareApi.show()
                 }
                 visible: true
             }

@@ -56,7 +56,7 @@ SETTINGS_PROPERTY_STRING_IMPL(port_portNameRadio, "agio/portNameRadio", "", setP
 SETTINGS_PROPERTY_STRING_IMPL(port_portNameRtcm, "agio/portNameRtcm", "", setPort_portNameRtcm)
 SETTINGS_PROPERTY_STRING_IMPL(port_portNameTool, "agio/portNameTool", "", setPort_portNameTool)
 SETTINGS_PROPERTY_STRING_IMPL(ip_localAOG, "agio/localAOGIP", "127.0.0.1", setIp_localAOG)
-SETTINGS_PROPERTY_STRING_IMPL(agShare_server, "agShare/server", "", setAgShare_server)
+SETTINGS_PROPERTY_STRING_IMPL(agShare_server, "agShare/server", "https://agshare.agopengps.com", setAgShare_server)
 SETTINGS_PROPERTY_STRING_IMPL(agShare_apiKey, "agShare/apiKey", "", setAgShare_apiKey)
 
 

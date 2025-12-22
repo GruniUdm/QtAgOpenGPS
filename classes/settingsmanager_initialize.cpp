@@ -417,7 +417,7 @@ void SettingsManager::initializeFromSettings()
     m_ip_localAOG.setValue(m_qsettings->value("agio/localAOGIP", "127.0.0.1").toString());
     m_udp_isSendNMEAToUDP.setValue(m_qsettings->value("agio/sendNMEAToUDP", false).toBool());
     m_bluetooth_deviceList.setValue(m_qsettings->value("bluetooth/deviceList", QVariantList()).toList());
-    m_agShare_server.setValue(m_qsettings->value("agShare/server", "").toString());
+    m_agShare_server.setValue(m_qsettings->value("agShare/server", "https://agshare.agopengps.com").toString());
     m_agShare_apiKey.setValue(m_qsettings->value("agShare/apiKey", "").toString());
     m_agShare_enabled.setValue(m_qsettings->value("agShare/enabled", false).toBool());
     m_agShare_uploadActive.setValue(m_qsettings->value("agShare/uploadActive", false).toBool());
