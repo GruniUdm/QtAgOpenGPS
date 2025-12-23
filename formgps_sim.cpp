@@ -3,44 +3,17 @@
 //
 // Main event sim comms
 #include "formgps.h"
-#include "classes/csim.h"
 #include "qmlutil.h"
 #include "classes/settingsmanager.h"
 #include <QTime>
 #include "mainwindowstate.h"
+#include "siminterface.h"
 
 /* Callback for Simulator new position */
 void FormGPS::simConnectSlots()
 {
-    connect(&sim, &CSim::setActualSteerAngle, this, &FormGPS::onSimNewSteerAngle, Qt::QueuedConnection);
-    connect(&sim, &CSim::newPosition, this, &FormGPS::onSimNewPosition, Qt::UniqueConnection);
-    connect(&timerSim, &QTimer::timeout, this, &FormGPS::onSimTimerTimeout, Qt::UniqueConnection);
-
-    // Ensure stable gpsHz by using precise timer, accurate to 1 ms.
-    // With this timer, any deviation from expected Hz is guaranteed
-    // to not be in the simulator mechanism but must be in the
-    // actual calculations in FormGPS.
-    timerSim.setTimerType(Qt::PreciseTimer);
-
-    if (SettingsManager::instance()->menu_isSimulatorOn()) {
-        pn.latitude = sim.latitude;
-        pn.longitude = sim.longitude;
-        pn.headingTrue = 0;
-
-        // PHASE 6.0.35 FIX: Initialize latStart/lonStart BEFORE first conversion
-        // Problem: onSimNewPosition() calls ConvertWGS84ToLocal() BEFORE UpdateFixPosition() initializes latStart/lonStart
-        // Solution: Initialize latStart/lonStart here when simulation starts (similar to real GPS mode)
-        // This ensures ConvertWGS84ToLocal() uses correct reference point from first conversion
-        this->setLatStart(sim.latitude);
-        this->setLonStart(sim.longitude);
-        pn.SetLocalMetersPerDegree(this);
-
-        // PHASE 6.3.0 FIX: Timer will be started AFTER InterfaceProperty initialization
-        // timerSim.start(20); // MOVED to initializeQMLInterfaces()
-        gpsHz = 10;  //synced with 100ms timer in initializeQMLInterfaces()
-        qDebug() << "Simulator ready - timer will start after QML interface initialization";
-        qDebug() << "Simulation origin: latStart=" << sim.latitude << "lonStart=" << sim.longitude;
-    }
+    connect(SimInterface::instance(), &SimInterface::newPosition,
+            this, &FormGPS::onSimNewPosition, Qt::UniqueConnection);
 }
 
 void FormGPS::onSimNewPosition(double vtgSpeed,
@@ -127,51 +100,4 @@ void FormGPS::onSimNewPosition(double vtgSpeed,
 
     //qWarning() << "Acted on new position.";
     UpdateFixPosition();
-}
-
-void FormGPS::onSimNewSteerAngle(double steerAngleAve)
-{
-    // ✅ Direct update - no throttling needed with Q_PROPERTY system
-    mc.actualSteerAngleDegrees = steerAngleAve;
-}
-
-/* iterate the simulator on a timer */
-void FormGPS::onSimTimerTimeout()
-{
-    //qWarning() << "sim tick.";
-    QObject *qmlobject;
-    //double stepDistance = qmlobject->property("value").toReal() / 10.0 /gpsHz;
-    //sim.setSimStepDistance(stepDistance);
-    if (this->isDrivingRecordedPath() || (MainWindowState::instance()->isBtnAutoSteerOn() && (CVehicle::instance()->guidanceLineDistanceOff !=32000)))
-    {
-        sim.DoSimTick(CVehicle::instance()->guidanceLineSteerAngle * 0.01);
-    } else {
-        // ⚡ SAFE QML access - handle case where simSteer is not yet loaded (Drawer content)
-        static QObject* simSteerObject = nullptr;
-
-        if (!simSteerObject) {
-            simSteerObject = safeQmlItem("simSteer", 1);  // Try once, don't block
-        }
-
-        if (simSteerObject) {
-            double steerAngle = (simSteerObject->property("value").toReal() - 300) * 0.1;
-            sim.DoSimTick(steerAngle);
-        } else {
-            // Fallback: Use default steering when simSteer is not available
-            sim.DoSimTick(0.0);  // No steering input
-        }
-    }
-}
-
-// Qt 6.8 Q_INVOKABLE wrappers for CSim methods
-void FormGPS::sim_bump_speed(bool increase) {
-    sim.speed_bump(increase);
-}
-
-void FormGPS::sim_zero_speed() {
-    sim.speed_zero();
-}
-
-void FormGPS::sim_reset() {
-    sim.reset();
 }

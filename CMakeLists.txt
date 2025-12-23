@@ -104,7 +104,7 @@ qt_add_executable(QtAgOpenGPS
     formgps_sections.cpp
     formgps_settings.cpp
     formgps_sim.cpp
-    formgps_udpcomm.cpp
+
     formgps_ui.cpp
     formgps_ui_boundary.cpp
     formgps_ui_field.cpp
@@ -136,7 +136,7 @@ qt_add_executable(QtAgOpenGPS
     classes/headachedesigner.h classes/headachedesigner.cpp
     classes/crecordedpath.h classes/crecordedpath.cpp
     classes/csection.h classes/csection.cpp
-    classes/csim.h classes/csim.cpp
+
     classes/ctool.h classes/ctool.cpp
     # classes/ctrack.h classes/ctrack.cpp      # MOVED to qt_add_qml_module (QML_ELEMENT)
     classes/ctram.h classes/ctram.cpp
@@ -338,6 +338,9 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/headlandinterface.h backend/headlandinterface.cpp
     SOURCES backend/headacheinterface.h backend/headacheinterface.cpp
     SOURCES backend/flagsinterface.h backend/flagsinterface.cpp
+    SOURCES backend/recordedpathmodel.h backend/recordedpathmodel.cpp
+    SOURCES backend/recordedpath.h backend/recordedpath.cpp
+    SOURCES backend/siminterface.h backend/siminterface.cpp
     SOURCES backend/fencelinemodel.h backend/fencelinemodel.cpp
     SOURCES backend/flagmodel.h backend/flagmodel.cpp
     SOURCES backend/fixframe.h

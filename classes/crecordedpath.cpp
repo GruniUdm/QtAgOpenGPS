@@ -6,8 +6,9 @@
 #include "btnenum.h"
 #include "glm.h"
 #include "qmlutil.h"
+#include "recordedpath.h"
 
-CRecordedPath::CRecordedPath(QObject *parent) : QObject(parent), mainWindow(nullptr)
+CRecordedPath::CRecordedPath(QObject *parent) : QObject(parent)
 {
     // PHASE 6.0.29: Initialize bool flags to prevent garbage values
     // Without explicit initialization, bool members contain random memory values
@@ -15,14 +16,9 @@ CRecordedPath::CRecordedPath(QObject *parent) : QObject(parent), mainWindow(null
     isFollowingDubinsToPath = false;
     isFollowingRecPath = false;
     isFollowingDubinsHome = false;
-    isBtnFollowOn = false;
     isEndOfTheRecLine = false;
     isRecordOn = false;
     trig = false;
-}
-
-void CRecordedPath::setMainWindow(QObject *mainWindow) {
-    this->mainWindow = mainWindow;
 }
 
 bool CRecordedPath::StartDrivingRecordedPath(CVehicle &vehicle,
@@ -101,11 +97,11 @@ bool CRecordedPath::StartDrivingRecordedPath(CVehicle &vehicle,
     isFollowingDubinsToPath = true;
     isEndOfTheRecLine = false;
     //currentPositonIndex = 0;
-    if (mainWindow) qmlItem(mainWindow, "recordedPathInterface")->setProperty("isDrivingRecordedPath", true);
+    RecordedPath::instance()->set_isDrivingRecordedPath(true);
     return true;
 }
 
-void CRecordedPath::UpdatePosition(CVehicle &vehicle, const CYouTurn &yt, bool isBtnAutoSteerOn)
+void CRecordedPath::UpdatePosition(const CYouTurn &yt, bool isBtnAutoSteerOn)
 {
     if (isFollowingDubinsToPath)
     {
@@ -194,7 +190,7 @@ void CRecordedPath::StopDrivingRecordedPath()
     shortestDubinsList.clear();
     emit setSimStepDistance(0);
     //mf.sim.stepDistance = 0;
-    if (mainWindow) qmlItem(mainWindow, "recordedPathInterface")->setProperty("isDrivingRecordedPath", false);
+    RecordedPath::instance()->set_isDrivingRecordedPath(false);
 
     /* slot in main form can make sure gui is right*/
     //mf.btnPathGoStop.Image = Properties.Resources.boundaryPlay;

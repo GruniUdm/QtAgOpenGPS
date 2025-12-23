@@ -40,7 +40,6 @@
 #include "cabcurve.h"
 #include "cyouturn.h"
 #include "cfielddata.h"
-#include "csim.h"
 #include "cahrs.h"
 #include "crecordedpath.h"
 #include "cguidance.h"
@@ -273,12 +272,6 @@ class FormGPS : public QQmlApplicationEngine
     // Job Control - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
     Q_PROPERTY(bool isPatchesChangingColor READ isPatchesChangingColor WRITE setIsPatchesChangingColor
                NOTIFY isPatchesChangingColorChanged BINDABLE bindableIsPatchesChangingColor)
-
-    // RecordedPath Interface - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(bool isDrivingRecordedPath READ isDrivingRecordedPath WRITE setIsDrivingRecordedPath
-               NOTIFY isDrivingRecordedPathChanged BINDABLE bindableIsDrivingRecordedPath)
-    Q_PROPERTY(QString recordedPathName READ recordedPathName WRITE setRecordedPathName
-               NOTIFY recordedPathNameChanged BINDABLE bindableRecordedPathName)
 
     // Boundary State - Phase 6.0.20 - Qt 6.8 BINDABLE
     Q_PROPERTY(bool boundaryIsRecording READ boundaryIsRecording WRITE setBoundaryIsRecording
@@ -622,15 +615,6 @@ public:
     void setIsPatchesChangingColor(bool value);
     QBindable<bool> bindableIsPatchesChangingColor();
 
-    // RecordedPath Interface
-    bool isDrivingRecordedPath() const;
-    void setIsDrivingRecordedPath(bool value);
-    QBindable<bool> bindableIsDrivingRecordedPath();
-
-    QString recordedPathName() const;
-    void setRecordedPathName(const QString& value);
-    QBindable<QString> bindableRecordedPathName();
-
     // Boundary State
     bool boundaryIsRecording() const;
     void setBoundaryIsRecording(bool value);
@@ -651,7 +635,6 @@ public:
     QObject *mainWindow;
     QSignalMapper *sectionButtonsSignalMapper;
     QTimer *tmrWatchdog;
-    QTimer timerSim;
     QTimer timerGPS;  // Phase 6.0.24: Fixed 40 Hz timer for real GPS mode (like timerSim for simulation)
     QTimer *timer_tick;
 
@@ -879,7 +862,6 @@ public:
     //boundary instance
     CBoundary bnd;
 
-    CSim sim;
     CAHRS ahrs;
     CRecordedPath recPath;
     CFieldData fd;
@@ -1152,11 +1134,6 @@ public:
     // Batch 7 actions - lines 215-222
     Q_INVOKABLE void headland();
     Q_INVOKABLE void youSkip();
-    Q_INVOKABLE void resetSim();
-    Q_INVOKABLE void rotateSim();
-    Q_INVOKABLE void sim_bump_speed(bool increase);
-    Q_INVOKABLE void sim_zero_speed();
-    Q_INVOKABLE void sim_reset();
     Q_INVOKABLE void resetDirection();
     Q_INVOKABLE void centerOgl();
     Q_INVOKABLE void deleteAppliedArea();
@@ -1199,14 +1176,6 @@ public:
     Q_INVOKABLE void loadBoundaryFromKML(QString filename);
     Q_INVOKABLE void addBoundaryOSMPoint(double latitude, double longitude);
 
-    // RecordedPath Management (6 methods) - ZERO EMIT
-    Q_INVOKABLE void recordedPathUpdateLines();
-    Q_INVOKABLE void recordedPathOpen(const QString& pathName);
-    Q_INVOKABLE void recordedPathDelete(const QString& pathName);
-    Q_INVOKABLE void recordedPathStartDriving();
-    Q_INVOKABLE void recordedPathStopDriving();
-    Q_INVOKABLE void recordedPathClear();
-
     Q_INVOKABLE void swapAutoYouTurnDirection();
     Q_INVOKABLE void resetCreatedYouTurn();
     Q_INVOKABLE void autoTrack();
@@ -1242,25 +1211,6 @@ public:
     // ===== Q_INVOKABLE IMU CONFIGURATION =====
     Q_INVOKABLE void changeImuHeading(double heading);
     Q_INVOKABLE void changeImuRoll(double roll);
-
-    // Phase 6.0.20: setAvgPivDistance is now Q_PROPERTY setter (line 471) - no Q_INVOKABLE needed
-
-    // Qt BINDABLE: Automatic property synchronization - no manual sync needed
-
-    // UDP FormGPS variables REMOVED - Phase 4.6: AgIOService Workers only
-    // QElapsedTimer udpWatch;        // ❌ REMOVED
-    // int udpWatchLimit = 70;        // ❌ REMOVED
-    // int udpWatchCounts = 0;        // ❌ REMOVED
-    // bool isUDPServerOn = false;    // ❌ REMOVED
-
-    // UDP FormGPS methods REMOVED - Phase 4.6: AgIOService Workers only
-    // void StartLoopbackServer();    // ❌ REMOVED
-    // void stopUDPServer();          // ❌ REMOVED
-
-    // void SendPgnToLoop(QByteArray byteData);  // ❌ REMOVED - AgIOService Workers only
-    void DisableSim();
-
-    // void ReceiveFromAgIO(); // ❌ REMOVED - AgIOService Workers only
 
     /******************
      * formgps_ui.cpp *
@@ -1458,9 +1408,6 @@ public slots:
 
     void onBtnManUTurn_clicked(bool right); //TODO add the skip number as a parameter
     void onBtnLateral_clicked(bool right); //TODO add the skip number as a parameter
-    void onBtnResetSim_clicked();
-    void onBtnRotateSim_clicked();
-
     void onBtnCenterOgl_clicked();
 
     void onDeleteAppliedArea_clicked();
@@ -1505,10 +1452,6 @@ public slots:
                      double longitude, double hdop,
                      double altitude,
                      double satellitesTracked);
-
-    void onSimNewSteerAngle(double steerAngleAve);
-
-    void onSimTimerTimeout();
 
     // Phase 6.0.24: GPS timer callback for real GPS mode (40 Hz fixed rate)
     void onGPSTimerTimeout();
@@ -1625,8 +1568,6 @@ signals:
     void autoTrackBtnStateChanged();
     void autoYouturnBtnStateChanged();
     void isPatchesChangingColorChanged();
-    void isDrivingRecordedPathChanged();
-    void recordedPathNameChanged();
     void boundaryIsRecordingChanged();
     void boundaryAreaChanged();
     void boundaryPointCountChanged();
@@ -1767,10 +1708,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_autoYouturnBtnState, &FormGPS::autoYouturnBtnStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isPatchesChangingColor, &FormGPS::isPatchesChangingColorChanged)
 
-    // RecordedPath Properties - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isDrivingRecordedPath, &FormGPS::isDrivingRecordedPathChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_recordedPathName, &FormGPS::recordedPathNameChanged)
-
     // Boundary State Properties - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_boundaryIsRecording, &FormGPS::boundaryIsRecordingChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_boundaryArea, &FormGPS::boundaryAreaChanged)
@@ -1778,15 +1715,13 @@ private:
 
 
 public:
-    // ===== MODE DETECTION SYSTEM - TASK 6.3.0.4 =====
-    // Consolidated mode detection methods for consistent operation
-    bool isSimulatorMode() const { return timerSim.isActive(); }
-    bool isAgIOActive() const { return m_agioService != nullptr; }
-    bool isRealMode() const { return !isSimulatorMode() && isAgIOActive(); }
-    bool isMixedMode() const { return isSimulatorMode() && isAgIOActive(); }
+    //bool isSimulatorMode() const { return SimInterface::instance()->isRunning(); }
+    //bool isAgIOActive() const { return m_agioService != nullptr; }
+    //bool isRealMode() const { return !isSimulatorMode() && isAgIOActive(); }
+    //bool isMixedMode() const { return isSimulatorMode() && isAgIOActive(); }
 
     // Operational mode for NTRIP compatibility
-    bool isNTRIPCompatible() const { return isRealMode() || isMixedMode(); }
+    //bool isNTRIPCompatible() const { return isRealMode() || isMixedMode(); }
     // Публичные свойства was wizard
     bool IsCollectingData = false;
     int SampleCount = 0;

@@ -17,7 +17,7 @@
 
 #include "cboundarylist.h"
 #include "fieldinterface.h"
-
+#include "siminterface.h"
 
 
 void FormGPS::field_update_list() {
@@ -412,15 +412,14 @@ void FormGPS::field_new_from_KML(QString field_name, QString file_name) {
     this->setLatStart(latK);
     // Phase 6.3.1: Use PropertyWrapper for safe property access
     this->setLonStart(lonK);
-    if (timerSim.isActive())
+    if (SimInterface::instance()->isRunning())
         {
             pn.latitude = this->latStart();
             pn.longitude = this->lonStart();
 
-            sim.latitude = this->latStart();
             SettingsManager::instance()->setGps_simLatitude(this->latStart());
-            sim.longitude = this->lonStart();
             SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+            SimInterface::instance()->reset();
         }
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
     pn.SetLocalMetersPerDegree(this);

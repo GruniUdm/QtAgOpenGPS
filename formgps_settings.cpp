@@ -104,8 +104,6 @@ void FormGPS::loadSettings()
     ahrs.loadSettings();
     camera.loadSettings();
     pn.loadSettings();
-    if(!isJobStarted())
-        sim.loadSettings();
     CVehicle::instance()->loadSettings();
     yt.loadSettings();
 }

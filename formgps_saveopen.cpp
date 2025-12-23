@@ -12,6 +12,7 @@
 #include "mainwindowstate.h"
 #include "boundaryinterface.h"
 #include "flagsinterface.h"
+#include "siminterface.h"
 
 enum OPEN_FLAGS {
     LOAD_MAPPING = 1,
@@ -987,16 +988,15 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             track.setIdx(-1);
         }
 
-        if (timerSim.isActive())
+        if (SimInterface::instance()->isRunning())
         {
             // Phase 6.3.1: Use PropertyWrapper for safe property access
             pn.latitude = this->latStart();
             pn.longitude = this->lonStart();
 
-            sim.latitude = this->latStart();
             SettingsManager::instance()->setGps_simLatitude(this->latStart());
-            sim.longitude = this->lonStart();
             SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+            SimInterface::instance()->reset();
 
             pn.SetLocalMetersPerDegree(this);
         } else {

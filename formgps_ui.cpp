@@ -29,6 +29,8 @@
 #include "fieldinterface.h"
 #include "mainwindowstate.h"
 #include "flagsinterface.h"
+#include "recordedpath.h"
+#include "siminterface.h"
 
 Q_LOGGING_CATEGORY (formgps_ui, "formgps_ui.qtagopengps")
 #define QDEBUG qDebug(formgps_ui)
@@ -169,9 +171,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     mainWindow = root_context.first();
 
-    // Initialize mainWindow reference for all components
-    recPath.setMainWindow(mainWindow);
-
     mainWindow->setProperty("visible",true);
 
     // ⚡ Qt 6.8 Modern Pattern: objectCreated signal has fired, QML root is ready
@@ -260,7 +259,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     // StartLoopbackServer(); // ❌ REMOVED - Phase 4.6: UDP FormGPS completely eliminated
     if (SettingsManager::instance()->menu_isSimulatorOn() == false) {
         QDEBUG << "Stopping simulator because it's off in settings.";
-        timerSim.stop();
+        SimInterface::instance()->stop();
     }
 
     //star Sim
@@ -359,14 +358,6 @@ void FormGPS::headland() {
 
 void FormGPS::youSkip() {
     onBtnYouSkip_clicked();
-}
-
-void FormGPS::resetSim() {
-    onBtnResetSim_clicked();
-}
-
-void FormGPS::rotateSim() {
-    onBtnRotateSim_clicked();
 }
 
 void FormGPS::resetDirection() {
@@ -585,25 +576,8 @@ void FormGPS::addBoundaryOSMPoint(double latitude, double longitude) {
     addboundaryOSMPoint(latitude, longitude);
 }
 
-// ===== RecordedPath Management (6 methods) - ZERO EMIT =====
-
-void FormGPS::recordedPathUpdateLines() {
-    // TODO: Backend implementation needed in CRecordedPath
-    // This would refresh the list of available recorded paths from disk
-    // For now, just trigger a property update to refresh QML
-
-    // NO EMIT - List updates automatically via Qt 6.8 bindings
-}
-
-void FormGPS::recordedPathOpen(const QString& pathName) {
-    // TODO: Backend implementation needed in CRecordedPath
-    // This would load a recorded path file from disk into recPath.recList
-    // Similar to how boundary/field files are loaded
-
-    // Update property with automatic Qt 6.8 notification
-    setRecordedPathName(pathName);
-}
-
+/*
+ * put as methods in CRecPath
 void FormGPS::recordedPathDelete(const QString& pathName) {
     // TODO: Backend implementation needed in CRecordedPath
     // This would delete a recorded path file from disk
@@ -643,6 +617,7 @@ void FormGPS::recordedPathClear() {
     setRecordedPathName("");
     setIsDrivingRecordedPath(false);
 }
+*/
 
 void FormGPS::onBtnHeadland_clicked(){
     //TODO: this should all be done in QML; we need a way to toggle the PGN though,
@@ -1100,26 +1075,12 @@ void FormGPS::headlines_save() {
     //TODO make FileSaveHeadLines a slot, skip this wrapper
     FileSaveHeadLines();
 }
-void FormGPS::onBtnResetSim_clicked(){
-    sim.latitude = SettingsManager::instance()->gps_simLatitude();
-    sim.longitude = SettingsManager::instance()->gps_simLongitude();
-}
-
-void FormGPS::onBtnRotateSim_clicked(){
-    QDEBUG << "Rotate Sim";
-    QDEBUG << "But nothing else";
-    /*QDEBUG << sim.headingTrue;
-    sim.headingTrue += M_PI;
-    QDEBUG << sim.headingTrue;
-    ABLine.isABValid = false;
-    curve.isCurveValid = false;*/
-    //curve.lastHowManyPathsAway = 98888; not in v5
-}
 
 //Track Snap buttons
 void FormGPS::onBtnSnapToPivot_clicked(){
     QDEBUG<<"snap to pivot";
 }
+
 void FormGPS::onBtnSnapSideways_clicked(double distance){
     int blah = distance;
 
@@ -1608,9 +1569,8 @@ void FormGPS::initializeQMLInterfaces()
     }
 
     if (SettingsManager::instance()->menu_isSimulatorOn()) {
-        if (!timerSim.isActive()) {
-            // Verify that InterfaceProperty actually work before starting timer
-            timerSim.start(100); // 10Hz sync with GPS update
+        if (!SimInterface::instance()->isRunning()) {
+            SimInterface::instance()->startUp();
             QDEBUG << "✅ Simulator timer started (10Hz)";
         }
     }

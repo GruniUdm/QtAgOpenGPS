@@ -31,7 +31,6 @@ void FormGPS::connect_classes()
 
     connect(&pn, &CNMEA::checkZoomWorldGrid, &worldGrid, &CWorldGrid::checkZoomWorldGrid, Qt::QueuedConnection);
 
-    connect(&recPath, &CRecordedPath::setSimStepDistance, &sim, &CSim::setSimStepDistance, Qt::QueuedConnection);
     connect(&recPath, &CRecordedPath::turnOffSectionMasterAuto, this, &FormGPS::onSectionMasterAutoOff, Qt::QueuedConnection);
     connect(&recPath, &CRecordedPath::stoppedDriving, this, &FormGPS::onStoppedDriving, Qt::QueuedConnection);
 

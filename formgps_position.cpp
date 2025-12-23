@@ -26,6 +26,8 @@
 #include "backend.h"
 #include "mainwindowstate.h"
 #include "boundaryinterface.h"
+#include "recordedpath.h"
+#include "siminterface.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -870,7 +872,7 @@ void FormGPS::UpdateFixPosition()
     // autosteer at full speed of updates
 
     //if the whole path driving driving process is green
-    if (this->isDrivingRecordedPath()) recPath.UpdatePosition(*CVehicle::instance(), yt, MainWindowState::instance()->isBtnAutoSteerOn());
+    if (RecordedPath::instance()->isDrivingRecordedPath()) recPath.UpdatePosition(yt, MainWindowState::instance()->isBtnAutoSteerOn());
 
     // If Drive button off - normal autosteer
     if (!CVehicle::instance()->isInFreeDriveMode)
@@ -892,7 +894,7 @@ void FormGPS::UpdateFixPosition()
 
         else p_254.pgn[p_254.status] = 1;  // PHASE 6.0.29: ON → send 1 (match C# original)
 
-        if (this->isDrivingRecordedPath() || recPath.isFollowingDubinsToPath) p_254.pgn[p_254.status] = 1;  // PHASE 6.0.29: Force ON (match C# original)
+        if (RecordedPath::instance()->isDrivingRecordedPath() || recPath.isFollowingDubinsToPath) p_254.pgn[p_254.status] = 1;  // PHASE 6.0.29: Force ON (match C# original)
 
         // PHASE 6.0.42.8: Auto-snap track to pivot when autosteer turns ON
         // C# original: OpenGL.Designer.cs:1858-1876
@@ -939,7 +941,7 @@ void FormGPS::UpdateFixPosition()
 
         p_254.pgn[p_254.lineDistance] = (char)distanceX2;
 
-        if (!timerSim.isActive())
+        if (!SimInterface::instance()->isRunning())
         {
             if (MainWindowState::instance()->isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed > CVehicle::instance()->maxSteerSpeed)
             {
@@ -1214,7 +1216,7 @@ void FormGPS::UpdateFixPosition()
     setAvgPivDistance(avgPivDistance() * 0.5 + CVehicle::instance()->guidanceLineDistanceOff * 0.5);
 
     // Steer module counter logic - Phase 6.0.20 Task 24 Step 3.2
-    if (!timerSim.isActive()) {
+    if (!SimInterface::instance()->isRunning()) {
         int counter = steerModuleConnectedCounter();
         if (counter++ > 30)
             counter = 31;
@@ -2250,7 +2252,7 @@ void FormGPS::CalculatePositionHeading()
 
     if (!track.ABLine.isLateralTriggered && !track.curve.isLateralTriggered)
     {
-        double guidanceLookDist = (max(tool.width * 0.5, CVehicle::instance()->avgSpeed * 0.277777 * guidanceLookAheadTime));
+        double guidanceLookDist = (std::max(tool.width * 0.5, CVehicle::instance()->avgSpeed * 0.277777 * guidanceLookAheadTime));
         CVehicle::instance()->guidanceLookPos.easting = CVehicle::instance()->pivotAxlePos.easting + (sin(CVehicle::instance()->fixHeading) * guidanceLookDist);
         CVehicle::instance()->guidanceLookPos.northing = CVehicle::instance()->pivotAxlePos.northing + (cos(CVehicle::instance()->fixHeading) * guidanceLookDist);
     }

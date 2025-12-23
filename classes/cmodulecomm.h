@@ -58,9 +58,7 @@ signals:
     void turnOffAutoSections(void);
 
 public slots:
-    void set_actualSteerAngleDegrees(double newSteerAngleDegrees) {
-        actualSteerAngleDegrees = newSteerAngleDegrees;
-    }
+    void onSimSteerAngleActualChanged();
 
     void setOutOfBounds() {
         isOutOfBounds = true;

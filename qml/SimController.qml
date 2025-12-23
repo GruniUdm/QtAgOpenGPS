@@ -33,10 +33,10 @@ Rectangle{
             font.pointSize: 11
             height: parent.height
             width: 65 * theme.scaleWidth
-            onClicked: aog.sim_reset()
+            onClicked: SimInterface.reset()
         }
         Button{
-            text: aog.steerAngleActual
+            text: SimInterface.steerAngleActual
             font.pointSize: 11
             height: parent.height
             width: 65 * theme.scaleWidth
@@ -56,26 +56,26 @@ Rectangle{
             height: parent.height
             width: 65 * theme.scaleWidth
             icon.source: prefix + "/images/DnArrow64.png"
-            onClicked: aog.sim_bump_speed(false)
+            onClicked: SimInterface.slowdown();
         }
         Comp.IconButtonTransparent{
             height: parent.height
             width: 65 * theme.scaleWidth
             icon.source: prefix + "/images/AutoStop.png"
-            onClicked: aog.sim_zero_speed()
+            onClicked: SimInterface.stop()
         }
         Comp.IconButtonTransparent{
             height: parent.height
             width: 65 * theme.scaleWidth
             icon.source: prefix + "/images/UpArrow64.png"
-            onClicked: aog.sim_bump_speed(true)
+            onClicked: SimInterface.speedup()
         }
         Comp.IconButtonTransparent{
             height: parent.height
             width: 65 * theme.scaleWidth
             icon.source: prefix + "/images/YouTurn80.png"
             onClicked: {
-                aog.rotateSim() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                SimInterface.rotate() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 MainWindowState.isBtnAutoSteerOn = false; // Qt 6.8 FIX: Use property setter, not method call
             }
         }

@@ -1,5 +1,6 @@
 #include "cmodulecomm.h"
 #include "cahrs.h"
+#include "siminterface.h"
 
 CModuleComm::CModuleComm(QObject *parent) : QObject(parent)
 {
@@ -79,4 +80,8 @@ void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
             }
         }
     }
+}
+
+void CModuleComm::onSimSteerAngleActualChanged() {
+    this->actualSteerAngleDegrees = SimInterface::instance()->steerAngleActual();
 }

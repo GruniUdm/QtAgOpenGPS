@@ -27,6 +27,7 @@
 #include "boundaryinterface.h"
 #include "mainwindowstate.h"
 #include "flagsinterface.h"
+#include "siminterface.h"
 #include "cpgn.h"
 #include "rendering.h"
 
@@ -504,7 +505,10 @@ void FormGPS::oglMain_Paint()
                           CVehicle::instance()->isHydLiftOn(),
                           camera,tram);
             double steerangle;
-            if(timerSim.isActive()) steerangle = sim.steerangleAve;
+
+
+            //TODO: this is redundant. The simulator sets mc.actualSteerangleDegrees
+            if(SimInterface::instance()->isRunning()) steerangle = SimInterface::instance()->steerAngleActual();
             else steerangle = mc.actualSteerAngleDegrees;
 
             double markLeft, markRight;

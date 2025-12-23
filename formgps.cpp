@@ -18,6 +18,8 @@
 #include "backend.h"
 #include "mainwindowstate.h"
 #include "flagsinterface.h"
+#include "siminterface.h"
+#include "recordedpath.h"
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
@@ -28,7 +30,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     // Without explicit initialization, bool members contain random memory values
     m_isJobStarted = false;          // No job started
     m_applicationClosing = false;    // Not closing
-    m_isDrivingRecordedPath = false; // PHASE 6.0.29: Not driving recorded path at startup
 
     // PHASE 6.0.33: Initialize raw GPS position (two-buffer pattern)
     m_rawGpsPosition = {0.0, 0.0};   // Will be updated when first NMEA packet arrives
@@ -557,14 +558,6 @@ bool FormGPS::isPatchesChangingColor() const { return m_isPatchesChangingColor; 
 void FormGPS::setIsPatchesChangingColor(bool isPatchesChangingColor) { m_isPatchesChangingColor = isPatchesChangingColor; }
 QBindable<bool> FormGPS::bindableIsPatchesChangingColor() { return &m_isPatchesChangingColor; }
 
-bool FormGPS::isDrivingRecordedPath() const { return m_isDrivingRecordedPath; }
-void FormGPS::setIsDrivingRecordedPath(bool isDrivingRecordedPath) { m_isDrivingRecordedPath = isDrivingRecordedPath; }
-QBindable<bool> FormGPS::bindableIsDrivingRecordedPath() { return &m_isDrivingRecordedPath; }
-
-QString FormGPS::recordedPathName() const { return m_recordedPathName; }
-void FormGPS::setRecordedPathName(const QString& value) { m_recordedPathName = value; }
-QBindable<QString> FormGPS::bindableRecordedPathName() { return &m_recordedPathName; }
-
 // Boundary State
 bool FormGPS::boundaryIsRecording() const { return m_boundaryIsRecording; }
 void FormGPS::setBoundaryIsRecording(bool value) { m_boundaryIsRecording = value; }
@@ -702,18 +695,18 @@ void FormGPS::ResetGPSState(bool toSimMode)
 
     if (toSimMode) {
         // Initialize with simulation coordinates
-        pn.latitude = sim.latitude;
-        pn.longitude = sim.longitude;
+        pn.latitude = SimInterface::instance()->latitude;
+        pn.longitude = SimInterface::instance()->longitude;
         pn.headingTrue = 0;
 
         // CRITICAL: Initialize latStart/lonStart for sim mode
         // Without this, ConvertWGS84ToLocal uses wrong reference point
-        setLatStart(sim.latitude);
-        setLonStart(sim.longitude);
+        setLatStart(pn.latitude);
+        setLonStart(pn.longitude);
         pn.SetLocalMetersPerDegree(this);
 
         // Convert sim position to local coords
-        pn.ConvertWGS84ToLocal(sim.latitude, sim.longitude, pn.fix.northing, pn.fix.easting, this);
+        pn.ConvertWGS84ToLocal(SimInterface::instance()->latitude, SimInterface::instance()->longitude, pn.fix.northing, pn.fix.easting, this);
 
         // Initialize raw GPS position for sim (used for heading calculation)
         {
@@ -724,8 +717,8 @@ void FormGPS::ResetGPSState(bool toSimMode)
 
         // PHASE 6.0.42: Update last known position for jump detection
         // Prevents false jump detection when switching to simulation
-        m_lastKnownLatitude = sim.latitude;
-        m_lastKnownLongitude = sim.longitude;
+        m_lastKnownLatitude = pn.latitude;
+        m_lastKnownLongitude = pn.longitude;
 
         // PHASE 6.0.42.6: Reset IMU values for simulation mode
         // Simulation = perfect flat terrain, no roll/pitch/yaw
@@ -894,20 +887,32 @@ void FormGPS::tmrWatchdog_timeout()
     if (wasSimulatorOn != isSimulatorOn) {
         // Mode changed - reset GPS state to prevent gray screen bug
         qDebug() << "Mode switch detected:" << (wasSimulatorOn ? "SIM to REAL" : "REAL to SIM");
+        //TODO: redundant code with ResetGPSState()
         ResetGPSState(isSimulatorOn);
         wasSimulatorOn = isSimulatorOn;
     }
 
-    if (! isSimulatorOn && timerSim.isActive()) {
+    if (! isSimulatorOn && SimInterface::instance()->isRunning()) {
         qDebug() << "Shutting down simulator.";
-        timerSim.stop();
-    } else if (isSimulatorOn && ! timerSim.isActive() ) {
+        SimInterface::instance()->shutDown();
+    } else if (isSimulatorOn && ! SimInterface::instance()->isRunning() ) {
         qDebug() << "Starting up simulator.";
         // Old initialization removed - now done in ResetGPSState()
-        timerSim.start(100); //fire simulator every 100 ms = 10Hz
-        gpsHz = 10; // sync gpsHz to sim rate
-    }
+        pn.latitude = SimInterface::instance()->latitude;
+        pn.longitude = SimInterface::instance()->longitude;
+        pn.headingTrue = 0;
 
+        // PHASE 6.0.35 FIX: Initialize latStart/lonStart BEFORE first conversion
+        // Problem: onSimNewPosition() calls ConvertWGS84ToLocal() BEFORE UpdateFixPosition() initializes latStart/lonStart
+        // Solution: Initialize latStart/lonStart here when simulation starts (similar to real GPS mode)
+        // This ensures ConvertWGS84ToLocal() uses correct reference point from first conversion
+        this->setLatStart(pn.latitude);
+        this->setLonStart(pn.longitude);
+        pn.SetLocalMetersPerDegree(this);
+
+        gpsHz = 10;
+        SimInterface::instance()->startUp();
+    }
 
     // This is done in QML
 //    if ((uint)sentenceCounter++ > 20)
@@ -1256,7 +1261,7 @@ void FormGPS::JobNew()
 
     // PHASE 6.0.29: Reset recorded path flags when opening field
     // Prevents steer from activating due to garbage flag values (formgps_position.cpp:800)
-    setIsDrivingRecordedPath(false);
+    RecordedPath::instance()->set_isDrivingRecordedPath(false);
     recPath.isFollowingDubinsToPath = false;
     recPath.isFollowingRecPath = false;
     recPath.isFollowingDubinsHome = false;
