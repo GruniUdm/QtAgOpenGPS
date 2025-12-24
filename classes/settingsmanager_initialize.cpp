@@ -7,7 +7,7 @@
 
 void SettingsManager::initializeFromSettings()
 {
-    // Load all 391 properties from QSettings with default fallback
+    // Load all 387 properties from QSettings with default fallback
     // IMPORTANT: Uses QSettings second parameter for defaults (not hardcoded 0/false)
 
     m_menu_language.setValue(m_qsettings->value("menu/language", "en").toString());
@@ -123,7 +123,7 @@ void SettingsManager::initializeFromSettings()
     m_display_lineWidth.setValue(m_qsettings->value("display/lineWidth", 2).toDouble());
     m_display_panelSimLocation.setValue(m_qsettings->value("display/panelSimLocation", QPoint(97, 600)).toPoint());
     m_display_showBack.setValue(m_qsettings->value("display/showBack", false).toBool());
-    m_display_topTrackNum.setValue(m_qsettings->value("display/topTrackNum", true).toBool());
+    m_display_topTrackNum.setValue(m_qsettings->value("display/topTrackNum", false).toBool());
     m_display_triangleResolution.setValue(m_qsettings->value("display/triangleResolution", 1).toDouble());
     m_display_useTrackZero.setValue(m_qsettings->value("display/useTrackZero", false).toBool());
     m_display_vehicleOpacity.setValue(m_qsettings->value("display/vehicleOpacity", 100).toDouble());
@@ -417,11 +417,7 @@ void SettingsManager::initializeFromSettings()
     m_ip_localAOG.setValue(m_qsettings->value("agio/localAOGIP", "127.0.0.1").toString());
     m_udp_isSendNMEAToUDP.setValue(m_qsettings->value("agio/sendNMEAToUDP", false).toBool());
     m_bluetooth_deviceList.setValue(m_qsettings->value("bluetooth/deviceList", QVariantList()).toList());
-    m_agShare_server.setValue(m_qsettings->value("agShare/server", "").toString());
-    m_agShare_apiKey.setValue(m_qsettings->value("agShare/apiKey", "").toString());
-    m_agShare_enabled.setValue(m_qsettings->value("agShare/enabled", false).toBool());
-    m_agShare_uploadActive.setValue(m_qsettings->value("agShare/uploadActive", false).toBool());
 
     // All properties loaded with proper defaults
-    qDebug() << "SettingsManager: initialized" << 391 << "properties from" << m_qsettings->fileName();
+    qDebug() << "SettingsManager: initialized" << 387 << "properties from" << m_qsettings->fileName();
 }

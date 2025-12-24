@@ -49,7 +49,6 @@
 #include "cpgn.h"
 #include "ctrack.h"
 #include "qmlblockage.h"
-#include "agshareclient.h"
 #include "formheadland.h"
 #include "formheadache.h"
 
@@ -996,7 +995,6 @@ public:
     CNMEA pn;
 
     qmlblockage blockage;
-    AgShareClient agshareclient;
 
     //ABLine Instance
     //QScopedPointer<CABLine> ABLine;
@@ -1683,14 +1681,7 @@ public slots:
     void btnFreeDriveZero_clicked();
     void btnStartSA_clicked();
 
-    //AgShare
-    void agshareclient_getOwnFields();
-    void agshareclient_uploadField(const QUuid& fieldId, const QJsonObject& fieldData);
-    void agshareclient_downloadField(const QUuid& fieldId);
-    void agshareclient_getPublicFields(double latitude, double longitude, double radius = 50.0);
-    void agshareclient_checkApi();
-    void agshareclient_setServerUrl(const QString& url);
-    void agshareclient_setApiKey(const QString& key);
+
 
     /***************************
      * from OpenGL.Designer.cs *

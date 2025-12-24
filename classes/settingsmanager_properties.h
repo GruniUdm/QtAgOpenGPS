@@ -6,10 +6,10 @@
 #include "settingsmanager_macros.h"
 
 // Generated Q_PROPERTY declarations with Qt6 bindable support
-// Total properties: 391
+// Total properties: 387
 
 
-// QString Properties (48 properties) - DECLARATIONS ONLY
+// QString Properties (46 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_STRING_DECLARATIONS(menu_language, setMenu_language)
 SETTINGS_PROPERTY_STRING_DECLARATIONS(brand_HBrand, setBrand_HBrand)
 SETTINGS_PROPERTY_STRING_DECLARATIONS(brand_TBrand, setBrand_TBrand)
@@ -56,10 +56,8 @@ SETTINGS_PROPERTY_STRING_DECLARATIONS(port_portNameRadio, setPort_portNameRadio)
 SETTINGS_PROPERTY_STRING_DECLARATIONS(port_portNameRtcm, setPort_portNameRtcm)
 SETTINGS_PROPERTY_STRING_DECLARATIONS(port_portNameTool, setPort_portNameTool)
 SETTINGS_PROPERTY_STRING_DECLARATIONS(ip_localAOG, setIp_localAOG)
-SETTINGS_PROPERTY_STRING_DECLARATIONS(agShare_server, setAgShare_server)
-SETTINGS_PROPERTY_STRING_DECLARATIONS(agShare_apiKey, setAgShare_apiKey)
 
-// bool Properties (133 properties) - DECLARATIONS ONLY
+// bool Properties (131 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_DECLARATIONS(bool, feature_isOffsetFixOn, setFeature_isOffsetFixOn)
 SETTINGS_PROPERTY_DECLARATIONS(bool, ardMac_isDanFoss, setArdMac_isDanFoss)
 SETTINGS_PROPERTY_DECLARATIONS(bool, ardMac_isHydEnabled, setArdMac_isHydEnabled)
@@ -191,8 +189,6 @@ SETTINGS_PROPERTY_DECLARATIONS(bool, mod_isIMUConnected, setMod_isIMUConnected)
 SETTINGS_PROPERTY_DECLARATIONS(bool, mod_isSteerConnected, setMod_isSteerConnected)
 SETTINGS_PROPERTY_DECLARATIONS(bool, mod_isMachineConnected, setMod_isMachineConnected)
 SETTINGS_PROPERTY_DECLARATIONS(bool, udp_isSendNMEAToUDP, setUdp_isSendNMEAToUDP)
-SETTINGS_PROPERTY_DECLARATIONS(bool, agShare_enabled, setAgShare_enabled)
-SETTINGS_PROPERTY_DECLARATIONS(bool, agShare_uploadActive, setAgShare_uploadActive)
 
 // double Properties (104 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_DECLARATIONS(double, ab_lineLength, setAb_lineLength)

@@ -588,34 +588,6 @@ void FormGPS::toBlockageMonitoring() {
     //modules_send_245(); blockage settings
 }
 
-void FormGPS::agshareclient_getOwnFields() {
-    agshareclient.getOwnFields();
-}
-
-void FormGPS::agshareclient_uploadField(const QUuid& fieldId, const QJsonObject& fieldData) {
-    agshareclient.uploadField(fieldId, fieldData);
-}
-
-void FormGPS::agshareclient_downloadField(const QUuid& fieldId) {
-    agshareclient.downloadField(fieldId);
-}
-
-void FormGPS::agshareclient_getPublicFields(double latitude, double longitude, double radius) {
-    agshareclient.getPublicFields(latitude, longitude, radius);
-}
-
-void FormGPS::agshareclient_checkApi() {
-    agshareclient.checkApi();
-}
-
-void FormGPS::agshareclient_setServerUrl(const QString& url) {
-    agshareclient.setServerUrl(url);
-}
-
-void FormGPS::agshareclient_setApiKey(const QString& key) {
-    agshareclient.setApiKey(key);
-}
-
 void FormGPS::steerAngleUp() {
     // Modern implementation - same logic as btnSteerAngleUp_clicked()
     btnSteerAngleUp_clicked();

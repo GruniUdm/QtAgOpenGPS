@@ -6,10 +6,10 @@
 #include "settingsmanager.h"
 
 // Generated implementations with Qt6 + QSettings persistence
-// Total implementations: 391
+// Total implementations: 387
 
 
-// QString Implementations (48 properties)
+// QString Implementations (46 properties)
 SETTINGS_PROPERTY_STRING_IMPL(menu_language, "menu/language", "en", setMenu_language)
 SETTINGS_PROPERTY_STRING_IMPL(brand_HBrand, "brand/HBrand", "AgOpenGPS", setBrand_HBrand)
 SETTINGS_PROPERTY_STRING_IMPL(brand_TBrand, "brand/TBrand", "AGOpenGPS", setBrand_TBrand)
@@ -56,11 +56,9 @@ SETTINGS_PROPERTY_STRING_IMPL(port_portNameRadio, "agio/portNameRadio", "", setP
 SETTINGS_PROPERTY_STRING_IMPL(port_portNameRtcm, "agio/portNameRtcm", "", setPort_portNameRtcm)
 SETTINGS_PROPERTY_STRING_IMPL(port_portNameTool, "agio/portNameTool", "", setPort_portNameTool)
 SETTINGS_PROPERTY_STRING_IMPL(ip_localAOG, "agio/localAOGIP", "127.0.0.1", setIp_localAOG)
-SETTINGS_PROPERTY_STRING_IMPL(agShare_server, "agShare/server", "", setAgShare_server)
-SETTINGS_PROPERTY_STRING_IMPL(agShare_apiKey, "agShare/apiKey", "", setAgShare_apiKey)
 
 
-// bool Implementations (133 properties)
+// bool Implementations (131 properties)
 SETTINGS_PROPERTY_IMPL(bool, feature_isOffsetFixOn, "feature/isOffsetFixOn", false, setFeature_isOffsetFixOn)
 SETTINGS_PROPERTY_IMPL(bool, ardMac_isDanFoss, "ardMac/isDanFoss", false, setArdMac_isDanFoss)
 SETTINGS_PROPERTY_IMPL(bool, ardMac_isHydEnabled, "ardMac/isHydEnabled", 0, setArdMac_isHydEnabled)
@@ -86,7 +84,7 @@ SETTINGS_PROPERTY_IMPL(bool, display_isTermsAccepted, "display/isTermsAccepted",
 SETTINGS_PROPERTY_IMPL(bool, display_isTextureOn, "display/isTextureOn", true, setDisplay_isTextureOn)
 SETTINGS_PROPERTY_IMPL(bool, display_isVehicleImage, "display/isVehicleImage", true, setDisplay_isVehicleImage)
 SETTINGS_PROPERTY_IMPL(bool, display_showBack, "display/showBack", false, setDisplay_showBack)
-SETTINGS_PROPERTY_IMPL(bool, display_topTrackNum, "display/topTrackNum", true, setDisplay_topTrackNum)
+SETTINGS_PROPERTY_IMPL(bool, display_topTrackNum, "display/topTrackNum", false, setDisplay_topTrackNum)
 SETTINGS_PROPERTY_IMPL(bool, display_useTrackZero, "display/useTrackZero", false, setDisplay_useTrackZero)
 SETTINGS_PROPERTY_IMPL(bool, f_isRemoteWorkSystemOn, "f/isRemoteWorkSystemOn", false, setF_isRemoteWorkSystemOn)
 SETTINGS_PROPERTY_IMPL(bool, f_isSteerWorkSwitchEnabled, "f/isSteerWorkSwitchEnabled", false, setF_isSteerWorkSwitchEnabled)
@@ -192,8 +190,6 @@ SETTINGS_PROPERTY_IMPL(bool, mod_isIMUConnected, "agio/isIMUConnected", false, s
 SETTINGS_PROPERTY_IMPL(bool, mod_isSteerConnected, "agio/isSteerConnected", false, setMod_isSteerConnected)
 SETTINGS_PROPERTY_IMPL(bool, mod_isMachineConnected, "agio/isMachineConnected", false, setMod_isMachineConnected)
 SETTINGS_PROPERTY_IMPL(bool, udp_isSendNMEAToUDP, "agio/sendNMEAToUDP", false, setUdp_isSendNMEAToUDP)
-SETTINGS_PROPERTY_IMPL(bool, agShare_enabled, "agShare/enabled", false, setAgShare_enabled)
-SETTINGS_PROPERTY_IMPL(bool, agShare_uploadActive, "agShare/uploadActive", false, setAgShare_uploadActive)
 
 
 // double Implementations (104 properties)
