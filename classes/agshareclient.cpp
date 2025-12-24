@@ -68,7 +68,7 @@ void AgShareClient::buildClient()
 
 void AgShareClient::setServerUrl(const QString& url)
 {
-    //QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&m_mutex);
 
     QString cleanedUrl = url.trimmed();
     if (cleanedUrl.endsWith('/')) {
@@ -84,7 +84,7 @@ void AgShareClient::setServerUrl(const QString& url)
 
 void AgShareClient::setApiKey(const QString& key)
 {
-   // QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&m_mutex);
 
     if (m_apiKey != key) {
         m_apiKey = key;

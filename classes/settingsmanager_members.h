@@ -393,7 +393,7 @@ Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_mod_isMachineConne
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_ip_localAOG, "127.0.0.1", &SettingsManager::ip_localAOGChanged)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_udp_isSendNMEAToUDP, false, &SettingsManager::udp_isSendNMEAToUDPChanged)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QVariantList, m_bluetooth_deviceList, QVariantList(), &SettingsManager::bluetooth_deviceListChanged)
-Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_agShare_server, "https://agshare.agopengps.com", &SettingsManager::agShare_serverChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_agShare_server, "", &SettingsManager::agShare_serverChanged)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_agShare_apiKey, "", &SettingsManager::agShare_apiKeyChanged)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_agShare_enabled, false, &SettingsManager::agShare_enabledChanged)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_agShare_uploadActive, false, &SettingsManager::agShare_uploadActiveChanged)
