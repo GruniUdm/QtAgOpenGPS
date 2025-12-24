@@ -1041,6 +1041,7 @@ public:
     CPGN_EC p_236;
     CPGN_EB p_235;
     CPGN_E5 p_229;
+    CPGN_F5 p_245;
 
     /* GUI synchronization lock */
     QReadWriteLock lock;
@@ -1331,6 +1332,7 @@ public:
     Q_INVOKABLE void modulesSend238();
     Q_INVOKABLE void modulesSend251();
     Q_INVOKABLE void modulesSend252();
+    Q_INVOKABLE void modules_send_245();
     Q_INVOKABLE void toBlockageMonitoring();
     Q_INVOKABLE void steerAngleUp();
     Q_INVOKABLE void steerAngleDown();

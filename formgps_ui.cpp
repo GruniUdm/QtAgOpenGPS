@@ -585,7 +585,7 @@ void FormGPS::modulesSend252() {
 void FormGPS::toBlockageMonitoring() {
     // Modern implementation - renamed to avoid conflict with existing doBlockageMonitoring()
     // Call the original doBlockageMonitoring() method from formgps_sections.cpp
-    //modules_send_245(); blockage settings
+    modules_send_245();// blockage settings
 }
 
 void FormGPS::steerAngleUp() {
@@ -1444,6 +1444,39 @@ void FormGPS::modules_send_252() {
     // SendPgnToLoop(p_252.pgn); // ❌ REMOVED - Phase 4.6: AgIOService Workers handle PGN
     if (m_agioService) {
         m_agioService->sendPgn(p_252.pgn);
+    }
+}
+
+void FormGPS::modules_send_245() {
+    //qDebug() << "Sending 245 message to AgIO";
+
+    // Получаем все значения строк
+    int row1 = SettingsManager::instance()->seed_blockRow1();
+    int row2 = SettingsManager::instance()->seed_blockRow2();
+    int row3 = SettingsManager::instance()->seed_blockRow3();
+    int row4 = SettingsManager::instance()->seed_blockRow4();
+    uint16_t min_count = SettingsManager::instance()->seed_blockCountMin();
+    uint16_t max_count = SettingsManager::instance()->seed_blockCountMax();
+
+    // Массив значений для удобства обработки
+    int rows[] = {row1, row2, row3, row4};
+
+    // Отправляем данные для каждого модуля
+    for (int module_index = 0; module_index < 4; module_index++) {
+        // Получаем значения для текущего модуля
+
+        p_245.pgn[p_245.module_id] = module_index;
+        p_245.pgn[p_245.module_rows] = rows[module_index];
+        p_245.pgn[p_245.min_countLO] = min_count & 0xFF;
+        p_245.pgn[p_245.min_countHI] = (min_count >> 8) & 0xFF;
+        p_245.pgn[p_245.max_countLO] = max_count & 0xFF;
+        p_245.pgn[p_245.max_countHI] = (max_count >> 8) & 0xFF;
+
+        //qDebug() << "Module " << module_index << ": " << p_245.pgn;
+
+        if (m_agioService) {
+            m_agioService->sendPgn(p_245.pgn);
+        }
     }
 }
 

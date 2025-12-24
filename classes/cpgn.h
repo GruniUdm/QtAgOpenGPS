@@ -230,6 +230,22 @@ public:
     void Reset() {}
 };
 
+//Machine Config
+class CPGN_F5
+{
+public:
+    QByteArray pgn;
+    int module_id = 5;
+    int module_rows = 6;
+    int min_countLO = 7;
+    int min_countHI = 8;
+    int max_countLO = 9;
+    int max_countHI = 10;
+
+    CPGN_F5();
+    void MakeCRC();
+    void Reset() { }
+};
 /*
 extern CPGN_FE p_254;
 extern CPGN_FC p_252;
