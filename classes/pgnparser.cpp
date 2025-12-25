@@ -128,6 +128,8 @@ PGNParser::ParsedData PGNParser::parsePGN(const QByteArray& data) {
             return parsePGN121(data);
         case 123:  // 0x7B - Hello Machine (relay status)
             return parsePGN123(data);
+        case 124:  // 0x7B - Hello Blockage
+            return parsePGN124(data);
 
         // Legacy PGN (to be removed after validation)
         case 127:  // OLD - incorrectly extracted Source ID 0x7F
@@ -1186,6 +1188,36 @@ PGNParser::ParsedData PGNParser::parsePGN123(const QByteArray& data) {
     qDebug() << "✅ PGN 123: Machine module detected (relays:"
              << QString::number(relayLo, 16).toUpper()
              << QString::number(relayHi, 16).toUpper() << ")";
+
+    return result;
+}
+
+PGNParser::ParsedData PGNParser::parsePGN124(const QByteArray& data) {
+    // PGN 124 (0x7C): Hello Blockage OUT
+    // Format: 0x80 0x81 0x7B 0x7C 0x05 [00 00] [00 00] [00 00 00] [CRC]
+    // Purpose: Module identification
+
+    ParsedData result;
+
+    if (data.size() < 11) {
+        return result;
+    }
+
+    // Validate header
+    if ((unsigned char)data[0] != 0x80 || (unsigned char)data[1] != 0x81) {
+        return result;
+    }
+
+    // Validate source and PGN
+    if ((unsigned char)data[2] != 0x7B || (unsigned char)data[3] != 0x7C) {
+        return result;
+    }
+
+
+    result.isValid = true;
+    result.sourceType = "PGN";
+    result.pgnNumber = 124;
+    result.sentenceType = "BLOCKAGE_HELLO";
 
     return result;
 }

@@ -1109,6 +1109,7 @@ private:
 
     // Phase 6.0.24: Local traffic counters (main thread)
     quint32 m_localCntrMachine;
+    quint32 m_localCntrBlockage;
     quint32 m_localCntrSteer;
     quint32 m_localCntrIMU;
     quint32 m_localCntrUDPOut;
