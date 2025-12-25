@@ -1379,6 +1379,44 @@ void FormGPS::on_language_changed() {
     QString lang = SettingsManager::instance()->menu_language();
     qDebug() << "Changing language to:" << lang;
 
+#ifdef Q_OS_ANDROID
+    // Для Android - упрощенный подход
+    QStringList paths;
+    paths << QString("assets:/i18n/qml_%1.qm").arg(lang);
+    paths << QString(":/i18n/qml_%1.qm").arg(lang);
+
+    bool translationLoaded = false;
+
+    for (const QString &path : paths) {
+        if (m_translator->load(path)) {
+            translationLoaded = true;
+            //qDebug() << "Translation loaded from:" << path;
+            break;
+        }
+    }
+
+    if (!translationLoaded) {
+        // qDebug() << "Failed to load translation for:" << lang;
+
+        if (lang != "en") {
+            for (const QString &path : paths) {
+                if (m_translator->load(path.arg("en"))) {
+                    translationLoaded = true;
+                    //qDebug() << "Loaded English fallback from:" << path.arg("en");
+                    break;
+                }
+            }
+        }
+    }
+
+    if (translationLoaded) {
+        QCoreApplication::installTranslator(m_translator);
+        this->retranslate();
+        //qDebug() << "Language switched to:" << lang;
+    }
+
+#else
+
     // Load translation file (note: CMake generates resources with i18n/ prefix)
     if (m_translator->load(QString(":/qt/qml/AOG/i18n/i18n/qml_%1.qm").arg(lang))) {
         QCoreApplication::installTranslator(m_translator);
@@ -1390,6 +1428,7 @@ void FormGPS::on_language_changed() {
     } else {
         qDebug() << "Failed to load translation for language:" << lang;
     }
+#endif
 }
 
 void FormGPS::modules_send_238() {
