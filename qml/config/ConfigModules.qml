@@ -90,199 +90,261 @@ Rectangle{
         //pboxSendMachine.Visible = false
     }
 
-    Text {
-        id: titleText
-        text: qsTr("Machine Module")
-        font.bold: true
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top:parent.top
-        anchors.topMargin: 10 * theme.scaleHeight
-        anchors.bottomMargin: 10 * theme.scaleHeight
-        anchors.leftMargin: 10 * theme.scaleWidth
-        anchors.rightMargin: 10 * theme.scaleWidth
-    }
-    Rectangle{
-        id: hydConfig
-        anchors.left: parent.left
-        color: aogInterface.backgroundColor
-        border.color: aogInterface.blackDayWhiteNight
-        anchors.top: titleText.bottom
-        anchors.topMargin: 20 * theme.scaleHeight
-        anchors.bottom: cboxMachInvertRelays.top
-        anchors.leftMargin: 10 * theme.scaleWidth
-        width: parent.width * .66
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: 10 * theme.scaleWidth
+
+        // Заголовок
         Text {
-            id: hydText
-            anchors.top: parent.top
-            anchors.topMargin: 10 * theme.scaleHeight
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: qsTr("Hydraulic Lift Config")
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 10 * theme.scaleHeight
+            Layout.bottomMargin: 20 * theme.scaleHeight
+            text: qsTr("Machine Module")
+            font.bold: true
         }
-        GridLayout{
-            anchors.fill: parent
-            flow: Grid.LeftToRight
-            anchors.leftMargin: 10 * theme.scaleHeight
-            rows: 2
-            columns: 3
-            IconButtonColor{
-                id: cboxIsHydOn
-                height: 130 * theme.scaleHeight
-                width: 170 * theme.scaleWidth
-                icon.source: prefix + "/images/SwitchOff.png"
-                iconChecked: prefix + "/images/SwitchOn.png"
 
-                checkable: true
-                onClicked: unsaved.visible = true
-            }
-            SpinBoxCustomized{
-                id: nudRaiseTime
-                from:1
-                //boundValue: Settings.ardMac_hydRaiseTime
-                //onValueChanged: Settings.ardMac_hydRaiseTime = value
-                to: 255
-                editable: true
-                enabled: cboxIsHydOn.checked
-                text: qsTr("Raise Time(secs)")
-                onValueChanged: unsaved.visible = true
-            }
-            Image{
-                source: prefix + "/images/Config/ConMa_LiftRaiseTime.png"
-                width: 200 * theme.scaleWidth
-                height: 200 * theme.scaleHeight
-                fillMode: Image.Stretch
-            }
-            SpinBoxCustomized{
-                id: nudHydLiftLookAhead
-                from:1
-                //boundValue: Settings.vehicle_hydraulicLiftLookAhead
-                //onValueChanged: Settings.vehicle_hydraulicLiftLookAhead = value
-                to: 20
-                editable: true
-                enabled: cboxIsHydOn.checked
-                text: qsTr("Hyd Lift Look Ahead (secs)")
-                onValueChanged: unsaved.visible = true
-                decimals: 1
-            }
-            SpinBoxCustomized{
-                id: nudLowerTime
-                from:1
-                //boundValue: Settings.ardMac_hydLowerTime
-                //onValueChanged: Settings.ardMac_hydLowerTime = value
-                to: 255
-                editable: true
-                enabled: cboxIsHydOn.checked
-                text: qsTr("Lower Time(secs)")
-                onValueChanged: unsaved.visible = true
-            }
-            Image{
-                source: prefix + "/images/Config/ConMa_LiftLowerTime.png"
-                width: 200 * theme.scaleWidth
-                height: 200 * theme.scaleHeight
-                fillMode: Image.Stretch
-            }
-        }
-    }
-    IconButtonColor{
-        id: cboxMachInvertRelays
-        anchors.horizontalCenter: hydConfig.horizontalCenter
-        anchors.bottom: parent.bottom
-        text: qsTr("Invert Relays")
-        anchors.topMargin: 10 * theme.scaleHeight
-        anchors.bottomMargin: 10 * theme.scaleHeight
-        anchors.leftMargin: 10 * theme.scaleWidth
-        anchors.rightMargin: 10 * theme.scaleWidth
-        icon.source: prefix + "/images/Config/ConSt_InvertRelay.png"
-        checkable: true
-        enabled: cboxIsHydOn.checked
-        onClicked: unsaved.visible = true
-    }
+        // Основное содержимое
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 20 * theme.scaleWidth
 
-    Rectangle{
-        anchors.bottom: parent.bottom
-        anchors.left: hydConfig.right
-        anchors.right: parent.right
-        anchors.top: titleText.bottom
-        anchors.topMargin: 5 * theme.scaleHeight
-        anchors.bottomMargin: 5 * theme.scaleHeight
-        anchors.leftMargin: 5 * theme.scaleWidth
-        anchors.rightMargin: 5 * theme.scaleWidth
-        ColumnLayout{
-            anchors.top: parent.top
-            width: parent.width
-            anchors.bottom: modulesSave.top
-            anchors.bottomMargin: 20 * theme.scaleHeight
-            anchors.horizontalCenter: parent.horizontalCenter
-            SpinBoxCustomized{
-                id: nudUser1
-                from: 0
-                //boundValue: Settings.ardMac_user1
-                //onValueChanged: Settings.ardMac_user1 = value
-                to: 255
-                editable: true
-                text: qsTr("User 1")
-                onValueChanged: unsaved.visible = true
-            }
-            SpinBoxCustomized{
-                id: nudUser2
-                from: 0
-                //boundValue: Settings.ardMac_user2
-                //onValueChanged: Settings.ardMac_user2 = value
-                to: 255
-                editable: true
-                text: qsTr("User 2")
-                onValueChanged: unsaved.visible = true
-            }
-            SpinBoxCustomized{
-                id: nudUser3
-                from: 0
-                //boundValue: Settings.ardMac_user3
-                //onValueChanged: Settings.ardMac_user3 = value
-                to: 255
-                editable: true
-                text: qsTr("User 3")
-                onValueChanged: unsaved.visible = true
-            }
-            SpinBoxCustomized{
-                id: nudUser4
-                from: 0
-                //boundValue: Settings.ardMac_user4
-                //onValueChanged: Settings.ardMac_user4 = value
-                to: 255
-                editable: true
-                text: qsTr("User 4")
-                onValueChanged: unsaved.visible = true
-            }
-        }
-        IconButtonTransparent{
-            id: modulesSave
-            objectName: "btnModulesSave"
-            anchors.right: parent.right
-            anchors.topMargin: 20 * theme.scaleHeight
-            anchors.leftMargin: 20 * theme.scaleWidth
-            anchors.bottomMargin: 20 * theme.scaleHeight
-            anchors.rightMargin: 20 * theme.scaleWidth
-            anchors.bottom: parent.bottom
-            icon.source: prefix + "/images/ToolAcceptChange.png"
-            onClicked: { save_settings() ; unsaved.visible = false }
+            // Левая часть - гидравлика
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredWidth: parent.width * 0.7
 
-            Text{
-                id: modulesSaveLabel
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.right: parent.left
-                anchors.rightMargin: 5 * theme.scaleWidth
-                text: qsTr("Send + Save")
+                // Заголовок гидравлики
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.bottomMargin: 15 * theme.scaleHeight
+                    text: qsTr("Hydraulic Lift Config")
+                    font.bold: true
+                    color: aogInterface.textColor
+                }
+
+                // Grid для гидравлики (3 строки × 3 столбца)
+                GridLayout {
+                    id: hydGrid
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    columns: 3
+                    rows: 2
+                    columnSpacing: 15 * theme.scaleWidth
+                    rowSpacing: 15 * theme.scaleHeight
+
+                    // Первая строка
+                    IconButtonColor {
+                        id: cboxIsHydOn
+                        Layout.preferredWidth: 150 * theme.scaleWidth
+                        Layout.preferredHeight: 120 * theme.scaleHeight
+                        Layout.alignment: Qt.AlignCenter
+                        icon.source: prefix + "/images/SwitchOff.png"
+                        iconChecked: prefix + "/images/SwitchOn.png"
+                        checkable: true
+                        onClicked: unsaved.visible = true
+                    }
+
+                    SpinBoxCustomized {
+                        id: nudRaiseTime
+                        Layout.fillWidth: true
+                        from: 1
+                        to: 255
+                        editable: true
+                        enabled: cboxIsHydOn.checked
+                        text: qsTr("Raise Time (secs)")
+                        onValueChanged: unsaved.visible = true
+                    }
+
+                    Image {
+                        Layout.preferredWidth: 180 * theme.scaleWidth
+                        Layout.preferredHeight: 180 * theme.scaleHeight
+                        Layout.alignment: Qt.AlignCenter
+                        source: prefix + "/images/Config/ConMa_LiftRaiseTime.png"
+                        fillMode: Image.PreserveAspectFit
+                    }
+
+                    // Вторая строка
+                    SpinBoxCustomized {
+                        id: nudHydLiftLookAhead
+                        Layout.fillWidth: true
+                        from: 1
+                        to: 20
+                        editable: true
+                        enabled: cboxIsHydOn.checked
+                        text: qsTr("Look Ahead (secs)")
+                        onValueChanged: unsaved.visible = true
+                        decimals: 1
+                    }
+
+                    SpinBoxCustomized {
+                        id: nudLowerTime
+                        Layout.fillWidth: true
+                        from: 1
+                        to: 255
+                        editable: true
+                        enabled: cboxIsHydOn.checked
+                        text: qsTr("Lower Time (secs)")
+                        onValueChanged: unsaved.visible = true
+                    }
+
+                    Image {
+                        Layout.preferredWidth: 180 * theme.scaleWidth
+                        Layout.preferredHeight: 180 * theme.scaleHeight
+                        Layout.alignment: Qt.AlignCenter
+                        source: prefix + "/images/Config/ConMa_LiftLowerTime.png"
+                        fillMode: Image.PreserveAspectFit
+                    }
+
+                    // Кнопка инвертирования реле
+                    IconButtonColor {
+                        id: cboxMachInvertRelays
+                        Layout.alignment: Qt.AlignHCenter
+                        Layout.topMargin: 10 * theme.scaleHeight
+                        text: qsTr("Invert Relays")
+                        icon.source: prefix + "/images/Config/ConSt_InvertRelay.png"
+                        checkable: true
+                        enabled: cboxIsHydOn.checked
+                        onClicked: unsaved.visible = true
+                    }
+                }
+
+
             }
-        }
-        Image {
-            id: unsaved
-            width: 100 * theme.scaleWidth
-            height: 100 * theme.scaleHeight
-            anchors.right: modulesSave.left
-            anchors.rightMargin: modulesSaveLabel.width + 5
-            anchors.verticalCenter: modulesSave.verticalCenter
-            visible: false
-            source: prefix + "/images/Config/ConSt_Mandatory.png"
-            fillMode: Image.Stretch
+
+            // Разделительная линия
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.preferredWidth: 1
+                color: aogInterface.borderColor
+            }
+
+            // Правая часть - пользовательские настройки и кнопка сохранения
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredWidth: parent.width * 0.3
+                spacing: 0
+
+                // Заголовок пользовательских настроек
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.bottomMargin: 15 * theme.scaleHeight
+                    text: qsTr("User Settings")
+                    font.bold: true
+                    color: aogInterface.textColor
+                }
+
+                // Контейнер для равномерного распределения всех элементов
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    spacing: 0
+
+                    // Пользовательские настройки - каждая в своем слоте
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        SpinBoxCustomized {
+                            id: nudUser1
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width
+                            from: 0
+                            to: 255
+                            editable: true
+                            text: qsTr("User 1")
+                            onValueChanged: unsaved.visible = true
+                        }
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        SpinBoxCustomized {
+                            id: nudUser2
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width
+                            from: 0
+                            to: 255
+                            editable: true
+                            text: qsTr("User 2")
+                            onValueChanged: unsaved.visible = true
+                        }
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        SpinBoxCustomized {
+                            id: nudUser3
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width
+                            from: 0
+                            to: 255
+                            editable: true
+                            text: qsTr("User 3")
+                            onValueChanged: unsaved.visible = true
+                        }
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        SpinBoxCustomized {
+                            id: nudUser4
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width
+                            from: 0
+                            to: 255
+                            editable: true
+                            text: qsTr("User 4")
+                            onValueChanged: unsaved.visible = true
+                        }
+                    }
+
+                    // Кнопка сохранения - также в своем слоте
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        // Контейнер для кнопки и изображения
+                        RowLayout {
+                            anchors.centerIn: parent
+                            spacing: 10 * theme.scaleWidth
+
+                            // Изображение несохраненных изменений (справа от кнопки)
+                            Image {
+                                id: unsaved
+                                Layout.preferredWidth: 30 * theme.scaleWidth
+                                Layout.preferredHeight: 30 * theme.scaleHeight
+                                visible: false
+                                source: prefix + "/images/Config/ConSt_Mandatory.png"
+                                fillMode: Image.PreserveAspectFit
+                            }
+
+                            // Текст кнопки
+                            Text {
+                                id: saveButtonText
+                                text: qsTr("Send + Save")
+                                color: aogInterface.textColor
+                            }
+
+                            // Кнопка сохранения
+                            IconButtonTransparent {
+                                id: modulesSave
+                                objectName: "btnModulesSave"
+                                icon.source: prefix + "/images/ToolAcceptChange.png"
+                                onClicked: { save_settings(); unsaved.visible = false }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -85,6 +85,7 @@ Rectangle{
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             placeholderText: SettingsManager.gps_simLatitude
+            inputMethodHints: Qt.ImhDigitsOnly
         }
         Comp.TextLine{
             text: qsTr("Longitude")
@@ -104,6 +105,7 @@ Rectangle{
             anchors.bottom: parent.bottom
             anchors.right: parent.right
             placeholderText: SettingsManager.gps_simLongitude
+            inputMethodHints: Qt.ImhDigitsOnly
         }
     }
     //width: 200* theme.scaleWidth
