@@ -3212,6 +3212,8 @@ void FormGPS::onBlockageDataReady(const PGNParser::ParsedData& data)
     // PGN 244: Blockage Data
     if (data.pgnNumber == 244) {
 
+        static int iteration[4] = {0, 0, 0, 0};
+
         int i = data.blockagesection[1];
         int sectionType = data.blockagesection[0];
         int value = data.blockagesection[2];
@@ -3221,25 +3223,49 @@ void FormGPS::onBlockageDataReady(const PGNParser::ParsedData& data)
             case 0:
                 if (i < (int)(sizeof(blockage.blockageSecCount1) / sizeof(blockage.blockageSecCount1[0])))
                     blockage.blockageSecCount1[i] = value;
+                iteration[sectionType] = 0;
                 break;
             case 1:
                 if (i < (int)(sizeof(blockage.blockageSecCount2) / sizeof(blockage.blockageSecCount2[0])))
                     blockage.blockageSecCount2[i] = value;
+                iteration[sectionType] = 0;
                 break;
             case 2:
                 if (i < (int)(sizeof(blockage.blockageSecCount3) / sizeof(blockage.blockageSecCount3[0])))
                     blockage.blockageSecCount3[i] = value;
+                iteration[sectionType] = 0;
                 break;
             case 3:
                 if (i < (int)(sizeof(blockage.blockageSecCount4) / sizeof(blockage.blockageSecCount4[0])))
                     blockage.blockageSecCount4[i] = value;
+                iteration[sectionType] = 0;
                 break;
             }
         }
+
         if(QDateTime::currentMSecsSinceEpoch() - blockage_lastUpdate >= 1000){
+
             blockage_lastUpdate = QDateTime::currentMSecsSinceEpoch();
             blockage.statistics(pn.speed);
             m_blockageseccount.notify();
+            // обновляем данные каждую секунду
+
+            for (int i = 0; i < 4; i++){
+                iteration[i]++;
+            }
+            // обнуляем если данные перестали поступать
+            if (iteration[0] > 5){
+            memset(blockage.blockageSecCount1, 0, sizeof(blockage.blockageSecCount1));
+                iteration[0] = 99;}
+            if (iteration[1] > 5){
+            memset(blockage.blockageSecCount2, 0, sizeof(blockage.blockageSecCount2));
+                iteration[1] = 99;}
+            if (iteration[2] > 5){
+            memset(blockage.blockageSecCount3, 0, sizeof(blockage.blockageSecCount3));
+                iteration[2] = 99;}
+            if (iteration[3] > 5){
+            memset(blockage.blockageSecCount4, 0, sizeof(blockage.blockageSecCount4));
+                iteration[3] = 99;}
         }
     }
 }

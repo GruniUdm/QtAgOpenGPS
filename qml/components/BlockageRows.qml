@@ -37,6 +37,10 @@ Rectangle {
     property color autoTextColor: "White"
     property variant blockageRowCount: aog.blockageSecCount
 
+    // Дополнительные свойства для таймера
+    property variant lastBlockageArray: []
+    property bool timerEnabled: true  // Можно отключать таймер при необходимости
+    property int resetTimeout: 5000   // 5 секунд
 
     //methods
     function setColors() {
@@ -62,9 +66,70 @@ Rectangle {
         numRows = Number(seedBlockRow1 + seedBlockRow2 + seedBlockRow3 + seedBlockRow4)
         countMin =  Number(seedBlockCountMin)
         countMax =  Number(seedBlockCountMax)
+    }
+
+    // Функция глубокого сравнения массивов
+    function arraysEqual(arr1, arr2) {
+        if (arr1 === arr2) return true
+        if (!arr1 || !arr2) return false
+        if (arr1.length !== arr2.length) return false
+
+        for (var i = 0; i < arr1.length; i++) {
+            if (arr1[i] !== arr2[i]) return false
         }
+        return true
+    }
 
+    // Функция создания массива из 64 нулей
+    function createZeroArray() {
+        var arr = []
+        for (var i = 0; i < 64; i++) {
+            arr[i] = 0
+        }
+        return arr
+    }
 
+    // Функция проверки и обновления последнего значения
+    function checkAndUpdateArray() {
+        if (!arraysEqual(blockageRowCount, lastBlockageArray)) {
+            // Массив изменился - обновляем копию и перезапускаем таймер
+            lastBlockageArray = blockageRowCount.slice()
+            resetTimer.restart()
+            console.log("Blockage array changed, timer restarted")
+        }
+    }
+
+    // Таймер для периодической проверки изменений
+    Timer {
+        id: checkTimer
+        interval: 100  // Проверяем каждые 100мс
+        repeat: true
+        running: timerEnabled
+        onTriggered: checkAndUpdateArray()
+    }
+
+    // Таймер для сброса через 5 секунд
+    Timer {
+        id: resetTimer
+        interval: resetTimeout
+        running: timerEnabled
+        onTriggered: {
+            // Создаем массив из 64 нулей
+            var zeroArray = createZeroArray()
+
+            // Обновляем данные в aog (источнике)
+            if (typeof aog.setBlockageSecCount === 'function') {
+                aog.setBlockageSecCount(zeroArray)
+            } else if (aog.blockageSecCount !== undefined) {
+                aog.blockageSecCount = zeroArray
+            }
+
+            // Обновляем локальную копию
+            lastBlockageArray = zeroArray.slice()
+
+            console.log("Blockage array reset to zeros after", resetTimeout/1000, "seconds of inactivity")
+        }
+    }
 
     onNumRowsChanged: {
         rowModel.clear()
@@ -86,9 +151,19 @@ Rectangle {
                 rowModel.append( { rowNo: i } )
             }
         }
+
+        // Инициализируем копию массива
+        if (blockageRowCount && blockageRowCount.length) {
+            lastBlockageArray = blockageRowCount.slice()
+        } else {
+            lastBlockageArray = createZeroArray()
+        }
+
+        // Запускаем таймер сброса
+        resetTimer.restart()
     }
 
-// Qt 6.8 QProperty + BINDABLE: Functions called in existing Component.onCompleted above
+    // Qt 6.8 QProperty + BINDABLE: Functions called in existing Component.onCompleted above
 
     ListModel {
         id: rowModel
