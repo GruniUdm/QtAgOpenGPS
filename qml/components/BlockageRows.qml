@@ -17,6 +17,7 @@ Rectangle {
     color: "transparent"
 
     // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
+    property bool viewSwitch: false
     property bool isDayMode: SettingsManager.display_isDayMode
     property int seedBlockRow1: SettingsManager.seed_blockRow1
     property int seedBlockRow2: SettingsManager.seed_blockRow2
@@ -172,10 +173,11 @@ Rectangle {
     Component {
         id: rowViewDelegate
         BlockageRow {
-            width: (800 * theme.scaleWidth / numRows) < 50 ? (15 * theme.scaleWidth) : (20 * theme.scaleWidth)
+            width: (800 * theme.scaleWidth / numRows) < 50 ? (800 * theme.scaleWidth / numRows) : (20 * theme.scaleWidth)
             //height: (10 * theme.scaleWidth)
-            height: (blockageRows.blockageRowCount[model.rowNo] * 40/(aog.blockage_max+1)+20)*theme.scaleHeight<45*theme.scaleHeight?(blockageRows.blockageRowCount[model.rowNo] * 40/(aog.blockage_max+1)+20)*theme.scaleHeight:40*theme.scaleHeight
             //anchors.bottom: parent.bottom
+            height: (blockageRows.blockageRowCount[model.rowNo] * 40/(aog.blockage_max+1)+20)*theme.scaleHeight<45*theme.scaleHeight?(blockageRows.blockageRowCount[model.rowNo] * 40/(aog.blockage_max+1)+20)*theme.scaleHeight:40*theme.scaleHeight
+            useColorBasedAnchors: viewSwitch
             buttonText: (model.rowNo + 1).toFixed(0)
             // visible: (model.rowNo < numRows) ? true : false
             color: {
@@ -190,19 +192,15 @@ Rectangle {
         }
     }
 
+
     ListView {
         id: blockageRowList
         orientation: Qt.Horizontal
-        reuseItems: true
-        //width: rowViewDelegate.width
-        width: 400
+        width: contentWidth
         height: 100 * theme.scaleHeight
-        anchors.left: parent.left
-        anchors.right: parent.right
-        //anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
         model: rowModel
-        //spacing: 1
-        //boundsMovement: Flickable.StopAtBounds
         delegate: rowViewDelegate
     }
 }
