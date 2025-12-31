@@ -1666,8 +1666,8 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
     }
 
     //Checks the workswitch or steerSwitch if required
-    if (ahrs.isAutoSteerAuto || mc.isRemoteWorkSystemOn)
-        mc.CheckWorkAndSteerSwitch(ahrs,MainWindowState::instance()->isBtnAutoSteerOn());
+    ////if (ahrs.isAutoSteerAuto || mc.isRemoteWorkSystemOn)
+    ////    mc.CheckWorkAndSteerSwitch(ahrs,MainWindowState::instance()->isBtnAutoSteerOn());
 
     // check if any sections have changed status
     number = 0;
