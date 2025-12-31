@@ -6,6 +6,7 @@
 #include "btnenum.h"
 #include "glm.h"
 #include "qmlutil.h"
+#include "siminterface.h"
 #include "recordedpath.h"
 
 CRecordedPath::CRecordedPath(QObject *parent) : QObject(parent)
@@ -106,7 +107,7 @@ void CRecordedPath::UpdatePosition(const CYouTurn &yt, bool isBtnAutoSteerOn)
     if (isFollowingDubinsToPath)
     {
         //set a speed of 10 kmh
-        emit setSimStepDistance(shuttleDubinsList[C].speed / 50);
+        SimInterface::instance()->set_stepDistance(shuttleDubinsList[C].speed / 50);
         //mf.sim.stepDistance = shuttleDubinsList[C].speed / 50;
 
         pivotAxlePosRP = CVehicle::instance()->steerAxlePos;
@@ -143,7 +144,7 @@ void CRecordedPath::UpdatePosition(const CYouTurn &yt, bool isBtnAutoSteerOn)
         //if end of the line then stop
         if (!isEndOfTheRecLine)
         {
-            emit setSimStepDistance(recList[C].speed / 34.86);
+            SimInterface::instance()->set_stepDistance(recList[C].speed / 34.86);
             //mf.sim.stepDistance = recList[C].speed / 17.86;
             north = recList[C].northing;
 
@@ -173,7 +174,7 @@ void CRecordedPath::UpdatePosition(const CYouTurn &yt, bool isBtnAutoSteerOn)
             return;
         }
 
-        emit setSimStepDistance(shuttleDubinsList[C].speed / 35);
+        SimInterface::instance()->set_stepDistance(shuttleDubinsList[C].speed / 35);
         //mf.sim.stepDistance = shuttleDubinsList[C].speed / 35;
         pivotAxlePosRP = CVehicle::instance()->steerAxlePos;
 
@@ -188,7 +189,7 @@ void CRecordedPath::StopDrivingRecordedPath()
     isFollowingDubinsToPath = false;
     shuttleDubinsList.clear();
     shortestDubinsList.clear();
-    emit setSimStepDistance(0);
+    SimInterface::instance()->set_stepDistance(0);
     //mf.sim.stepDistance = 0;
     RecordedPath::instance()->set_isDrivingRecordedPath(false);
 
