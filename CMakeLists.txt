@@ -53,7 +53,8 @@ find_package(Qt6 REQUIRED COMPONENTS LinguistTools) #for i18n internationalizati
 find_package(Qt6 REQUIRED COMPONENTS Bluetooth)
 find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Positioning)
+find_package(Qt6 REQUIRED COMPONENTS Location)
 
 
 
@@ -414,7 +415,7 @@ target_include_directories(QtAgOpenGPS PRIVATE
 # Libraries to link
 target_link_libraries(QtAgOpenGPS PRIVATE
     # QtAgIO  # QML module disabled - sources integrated in Phase 4.2
-#   Qt6::Core
+    Qt6::Core
     Qt6::Widgets
     Qt6::Gui
 #   Qt6::OpenGL
@@ -423,9 +424,10 @@ target_link_libraries(QtAgOpenGPS PRIVATE
     Qt6::Network
     Qt6::Multimedia
     Qt6::SerialPort
+    Qt6::Bluetooth
+    Qt6::Positioning
+    Qt6::Location
 )
-target_link_libraries(QtAgOpenGPS PRIVATE Qt6::Core)
-target_link_libraries(QtAgOpenGPS PRIVATE Qt6::Core)
 
 # Compile defines
 target_compile_definitions(QtAgOpenGPS PRIVATE
