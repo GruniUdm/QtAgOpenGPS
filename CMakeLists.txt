@@ -25,6 +25,13 @@ if(MSVC)
     add_compile_options(/bigobj)
     message("MSVC: /bigobj flag enabled for large object files (SettingsManager)")
 
+    # Increase stack size to 8MB (default is 1MB)
+    # Required for large Qt resource initialization (qrc files with embedded resources)
+    # The qrc_QtAgOpenGPS_raw_res_0.cpp file (89MB) has global object constructors
+    # that call qRegisterResourceData() before main(), which can exhaust the stack
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:8388608")
+    message("MSVC: Stack size increased to 8MB for large resource initialization")
+
     # Optional: Enable debug symbols for profiling even in Release builds
     # Uncomment these lines when creating profiler builds:
     # set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
