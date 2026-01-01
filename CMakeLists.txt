@@ -17,6 +17,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOMOC ON)  # Required for automatic QML_ELEMENT/QML_SINGLETON registration
 
+# Cross-compilation: Set host Qt path for tools when cross-compiling
+# This allows CMake to find host tools (like Qt6WidgetsTools) on Fedora
+# while using MinGW Qt6 libraries for the Windows target
+# Check for MinGW cross-compilation by looking at the compiler
+if((CMAKE_CXX_COMPILER MATCHES "mingw" OR CMAKE_CROSSCOMPILING) AND NOT QT_HOST_PATH)
+    set(QT_HOST_PATH "/usr" CACHE PATH "Path to host Qt installation")
+    message("Cross-compiling detected: QT_HOST_PATH set to ${QT_HOST_PATH}")
+endif()
+
 # MSVC-specific compiler flags
 # /bigobj: Required for SettingsManager with 389 Q_OBJECT_BINDABLE_PROPERTY
 # Phase 6.0: Qt6 property system generates >65,536 sections (MSVC default limit)
