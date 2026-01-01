@@ -54,6 +54,7 @@ find_package(Qt6 REQUIRED COMPONENTS Bluetooth)
 find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Positioning)
+find_package(Qt6 REQUIRED COMPONENTS PositioningQuick)
 find_package(Qt6 REQUIRED COMPONENTS Location)
 
 
@@ -426,6 +427,7 @@ target_link_libraries(QtAgOpenGPS PRIVATE
     Qt6::SerialPort
     Qt6::Bluetooth
     Qt6::Positioning
+    Qt6::PositioningQuick
     Qt6::Location
 )
 
