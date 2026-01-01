@@ -35,8 +35,8 @@ public:
     double iE = 0, iN = 0;
     QVector<int> crossings;
 
-    CBoundary *bnd;
-    CHeadLine *hdl;
+    CBoundary *bnd = nullptr;
+    CHeadLine *hdl = nullptr;
 
     explicit FormHeadache(QObject *parent = nullptr);
 
