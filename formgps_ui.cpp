@@ -94,6 +94,7 @@ void FormGPS::setupGui()
     // Look for QML files relative to our current directory
     QStringList search_pathes = { "..",
                                  "../../",
+                                 "../../../",
                                  "../qtaog",
                                  "../QtAgOpenGPS",
                                  "."
@@ -103,7 +104,7 @@ void FormGPS::setupGui()
     for(QString search_path : search_pathes) {
         //look relative to current working directory
         QDir d = QDir(QDir::currentPath() + "/" + search_path + "/qml/");
-        if (d.exists("AOGInterface.qml")) {
+        if (d.exists("MainWindow.qml")) {
             QDir::addSearchPath("local",QDir::currentPath() + "/" + search_path);
             addImportPath(QDir::currentPath() + "/" + search_path + "/qml/");
             qWarning() << "QML path is " << search_path;
@@ -113,7 +114,7 @@ void FormGPS::setupGui()
 
         //look relative to the executable's directory
         d = QDir(QCoreApplication::applicationDirPath() + "/" + search_path + "/qml/");
-        if (d.exists("AOGInterface.qml")) {
+        if (d.exists("MainWindow.qml")) {
             QDir::addSearchPath("local",QCoreApplication::applicationDirPath() + "/" + search_path);
             addImportPath( QCoreApplication::applicationDirPath() + "/" + search_path + "/qml/");
             qWarning() << "QML path is " << search_path;
@@ -129,7 +130,6 @@ void FormGPS::setupGui()
         }
     });
     */
-
 
     rootContext()->setContextProperty("prefix","local:");
     load("local:/qml/MainWindow.qml");

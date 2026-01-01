@@ -103,6 +103,8 @@ qt_standard_project_setup(REQUIRES 6.8
 # Create the executable
 qt_add_executable(QtAgOpenGPS
     main.cpp
+    # Windows resource file for application icon
+    QtAgOpenGPS.rc
     # agopengps.qrc removed - resources now handled by qt_add_qml_module
     # $<$<NOT:$<BOOL:${LOCAL_QML}>>:agopengps.qrc>
     aogrenderer.h aogrenderer.cpp
@@ -193,6 +195,10 @@ if(ANDROID)
 else()
     option(LOCAL_QML "Load QML from disc instead of compiling them in.")
 endif()
+
+# Option to enable console window on Windows (useful for debugging)
+# Set to OFF to see console output (qDebug, std::cout, etc.)
+option(WIN32_EXECUTABLE "Build as Windows GUI application (no console)" ON)
 
 if(NOT LOCAL_QML AND NOT ANDROID)
     message("Local QML is off. Turn on for faster QML development")
@@ -446,7 +452,7 @@ target_compile_definitions(QtAgOpenGPS PRIVATE
 )
 
 set_target_properties(QtAgOpenGPS PROPERTIES
-    WIN32_EXECUTABLE TRUE
+    WIN32_EXECUTABLE ${WIN32_EXECUTABLE}
     MACOSX_BUNDLE TRUE
     QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
 )
