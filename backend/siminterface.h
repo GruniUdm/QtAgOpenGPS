@@ -34,11 +34,11 @@ private:
 public:
     double altitude = 300;
 
-    double latitude, longitude;
-    double headingTrue, steerangleAve = 0.0;
+    double latitude = 0, longitude = 0;
+    double headingTrue = 0.0, steerangleAve = 0.0;
     double steerAngleScrollBar = 0;
 
-    bool isAccelForward, isAccelBack;
+    bool isAccelForward = false, isAccelBack = false;
 
     static SimInterface *instance();
     static SimInterface *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
