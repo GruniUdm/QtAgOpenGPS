@@ -260,8 +260,8 @@ void FormGPS::FindLatLon(QString filename)
 
                 if (comma1 == -1 || comma2 == -1) continue;
 
-                QString lonStr = QStringView(coord).left(comma1);
-                QString latStr = QStringView(coord).mid(comma1 + 1, comma2 - comma1 - 1);
+                QString lonStr = coord.left(comma1);
+                QString latStr = coord.mid(comma1 + 1, comma2 - comma1 - 1);
 
                 bool okLon = false, okLat = false;
                 double lon = lonStr.toDouble(&okLon);
@@ -346,8 +346,8 @@ void FormGPS::LoadKMLBoundary(QString filename) {
 
                     if (comma1 == -1 || comma2 == -1) continue;
 
-                    QString lonStr = QStringView(coord).left(comma1);
-                    QString latStr = QStringView(coord).mid(comma1 + 1, comma2 - comma1 - 1);
+                    QString lonStr = coord.left(comma1);
+                    QString latStr = coord.mid(comma1 + 1, comma2 - comma1 - 1);
 
                     bool ok1 = false, ok2 = false;
                     double lonVal = lonStr.toDouble(&ok1);
