@@ -22,8 +22,8 @@ Comp.MoveablePopup {
     width: 250  * theme.scaleWidth
     onVisibleChanged: {
         if (visible) {
-            newLatPoint.text = (Number(aog.latitude).toLocaleString(Qt.locale(), 'f', 9))
-            newLonPoint.text = (Number(aog.longitude).toLocaleString(Qt.locale(), 'f', 9))
+            newLatPoint.text = (Number(Backend.fixFrame.latitude).toLocaleString(Qt.locale(), 'f', 9))
+            newLonPoint.text = (Number(Backend.fixFrame.longitude).toLocaleString(Qt.locale(), 'f', 9))
         }
     }
     property double latt: 0

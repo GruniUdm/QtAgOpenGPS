@@ -120,11 +120,11 @@ RowLayout{
         isChecked: false
         icon.source: prefix + contextFlag.icon
         onClicked: {
-            FlagsInterface.currentFlag = FlagsInterface.flag(aog.latitude,
-                                                             aog.longitude,
-                                                             aog.easting,
-                                                             aog.northing,
-                                                             aog.heading,
+            FlagsInterface.currentFlag = FlagsInterface.flag(Backend.fixFrame.latitude,
+                                                             Backend.fixFrame.longitude,
+                                                             Backend.fixFrame.easting,
+                                                             Backend.fixFrame.northing,
+                                                             Backend.fixFrame.heading,
                                                              FlagsInterface.Red,
                                                              Number(FlagsInterface.count+1).toLocaleString(Qt.locale(),'f',0))
             flags.show();

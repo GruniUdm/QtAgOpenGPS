@@ -25,20 +25,16 @@ Comp.MoveablePopup {
     function update_model() {
         //var distance = 0.0
         if (FlagsInterface.currentFlag > 0)
-            dist = Utils.distanceLatLon(aog.latitude, aog.longitude,
+            dist = Utils.distanceLatLon(Backend.fixFrame.latitude, Backend.fixFrame.longitude,
                                         FlagsInterface.currentLatitude,
                                         FlagsInterface.currentLongitude);
         else dist = 0;
     }
 
     Connections {
-        target: aog
+        target: Backend
 
-        function onLatitudeChanged() {
-            update_model()
-        }
-
-        function onLongitudeChanged() {
+        function onFixFrameChanged() {
             update_model()
         }
     }
@@ -165,14 +161,14 @@ Comp.MoveablePopup {
                 anchors.left: parent.left
                 //color: "red"
                 visible: false
-                text: Number(aog.longitude).toLocaleString(Qt.locale(), 'f', 9)
+                text: Number(Backend.fixFrame.longitude).toLocaleString(Qt.locale(), 'f', 9)
             }
             Text {
                 anchors.top: textEntry.bottom
                 anchors.right: parent.right
                 //color: "red"
                 visible: false
-                text: Number(aog.latitude).toLocaleString(Qt.locale(), 'f', 9)
+                text: Number(Backend.fixFrame.latitude).toLocaleString(Qt.locale(), 'f', 9)
             }
             Text {
                 id: distText

@@ -6,6 +6,7 @@
 #include "qmlutil.h"
 #include "classes/settingsmanager.h"
 #include <QTime>
+#include <QRandomGenerator>
 #include "mainwindowstate.h"
 #include "siminterface.h"
 
@@ -68,18 +69,16 @@ void FormGPS::onSimNewPosition(double vtgSpeed,
     pn.altitude = altitude;
     pn.satellitesTracked = satellitesTracked;
     pn.fixQuality = 8;  // Simulation mode (NMEA standard value for simulation)
-    pn.age = 0.0;       // No age in simulation (instant data generation)
+
+    //using a random number tests to make sure our Q_GADGET properties
+    //are notifying QML properly.
+    pn.age = QRandomGenerator::global()->generateDouble();
+
     this->setSentenceCounter(0);
 
     // Phase 6.0.20: Qt 6.8 BINDABLE properties - direct setter calls replace qmlItem()->setProperty()
     // BINDABLE auto-emits property changed signals for QML reactivity
     this->setSpeedKph(vtgSpeed);
-    this->setLatitude(latitude);
-    this->setLongitude(longitude);
-    this->setHeading(headingTrue);
-    this->setAltitude(altitude);
-    this->setHdop(hdop);
-    this->setSatellitesTracked(satellitesTracked);
 
     // Phase 6.0.20 Task 24 Step 5.6: Simulation mode - missing GPS properties
     // ConvertWGS84ToLocal already called above (line 48), northing/easting available in pn.fix

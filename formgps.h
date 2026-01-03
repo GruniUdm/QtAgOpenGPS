@@ -89,18 +89,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY applicationClosingChanged BINDABLE bindableApplicationClosing)
 
     // === Position GPS (6 properties) - Critical for navigation - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double latitude READ latitude WRITE setLatitude
-               NOTIFY latitudeChanged BINDABLE bindableLatitude)
-    Q_PROPERTY(double longitude READ longitude WRITE setLongitude
-               NOTIFY longitudeChanged BINDABLE bindableLongitude)
-    Q_PROPERTY(double altitude READ altitude WRITE setAltitude
-               NOTIFY altitudeChanged BINDABLE bindableAltitude)
-    Q_PROPERTY(double easting READ easting WRITE setEasting
-               NOTIFY eastingChanged BINDABLE bindableEasting)
-    Q_PROPERTY(double northing READ northing WRITE setNorthing
-               NOTIFY northingChanged BINDABLE bindableNorthing)
-    Q_PROPERTY(double heading READ heading WRITE setHeading
-               NOTIFY headingChanged BINDABLE bindableHeading)
     Q_PROPERTY(QVariantList sectionButtonState READ sectionButtonState WRITE setSectionButtonState
                NOTIFY sectionButtonStateChanged BINDABLE bindableSectionButtonState)
 
@@ -149,22 +137,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY imuAngVelChanged BINDABLE bindableImuAngVel)
     Q_PROPERTY(double yawRate READ yawRate WRITE setYawRate
                NOTIFY yawRateChanged BINDABLE bindableYawRate)
-
-    // === GPS Status (6 properties) - Important for monitoring - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double hdop READ hdop WRITE setHdop
-               NOTIFY hdopChanged BINDABLE bindableHdop)
-    Q_PROPERTY(double age READ age WRITE setAge
-               NOTIFY ageChanged BINDABLE bindableAge)
-    Q_PROPERTY(int fixQuality READ fixQuality WRITE setFixQuality
-               NOTIFY fixQualityChanged BINDABLE bindableFixQuality)
-    Q_PROPERTY(int satellitesTracked READ satellitesTracked WRITE setSatellitesTracked
-               NOTIFY satellitesTrackedChanged BINDABLE bindableSatellitesTracked)
-    Q_PROPERTY(double hz READ hz WRITE setHz
-               NOTIFY hzChanged BINDABLE bindableHz)
-    Q_PROPERTY(double rawHz READ rawHz WRITE setRawHz
-               NOTIFY rawHzChanged BINDABLE bindableRawHz)
-    Q_PROPERTY(double frameTime READ frameTime WRITE setFrameTime
-               NOTIFY frameTimeChanged BINDABLE bindableFrameTime)
 
     // === Blockage Sensors (8 properties) - Monitoring - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(double blockage_avg READ blockage_avg WRITE setBlockage_avg
@@ -298,30 +270,6 @@ public:
     QBindable<bool> bindableApplicationClosing();
 
     // Position GPS
-    double latitude() const;
-    void setLatitude(double value);
-    QBindable<double> bindableLatitude();
-
-    double longitude() const;
-    void setLongitude(double value);
-    QBindable<double> bindableLongitude();
-
-    double altitude() const;
-    void setAltitude(double value);
-    QBindable<double> bindableAltitude();
-
-    double easting() const;
-    void setEasting(double value);
-    QBindable<double> bindableEasting();
-
-    double northing() const;
-    void setNorthing(double value);
-    QBindable<double> bindableNorthing();
-
-    double heading() const;
-    void setHeading(double value);
-    QBindable<double> bindableHeading();
-
     QVariantList sectionButtonState() const;
     void setSectionButtonState(const QVariantList& value);
     QBindable<QVariantList> bindableSectionButtonState();
@@ -401,31 +349,6 @@ public:
     void setYawRate(double value);
     QBindable<double> bindableYawRate();
 
-    // GPS Status
-    double hdop() const;
-    void setHdop(double value);
-    QBindable<double> bindableHdop();
-
-    double age() const;
-    void setAge(double value);
-    QBindable<double> bindableAge();
-
-    int fixQuality() const;
-    void setFixQuality(int value);
-    QBindable<int> bindableFixQuality();
-
-    int satellitesTracked() const;
-    void setSatellitesTracked(int value);
-    QBindable<int> bindableSatellitesTracked();
-
-    double hz() const;
-    void setHz(double value);
-    QBindable<double> bindableHz();
-
-    double rawHz() const;
-    void setRawHz(double value);
-    QBindable<double> bindableRawHz();
-
     // Blockage Sensors
     double blockage_avg() const;
     void setBlockage_avg(double value);
@@ -462,10 +385,6 @@ public:
     double avgPivDistance() const;
     void setAvgPivDistance(double value);
     QBindable<double> bindableAvgPivDistance();
-
-    double frameTime() const;
-    void setFrameTime(double value);
-    QBindable<double> bindableFrameTime();
 
     // Navigation
     double distancePivotToTurnLine() const;
@@ -1004,7 +923,6 @@ public:
     double uncorrectedEastingGraph = 0;
     double correctionDistanceGraph = 0;
 
-    double frameTimeRough = 3;
     double timeSliceOfLastFix = 0;
 
     bool isMaxAngularVelocity = false;
@@ -1480,12 +1398,6 @@ signals:
     void applicationClosingChanged();  // CRITICAL: for save_everything fix
 
     // Position GPS signals
-    void latitudeChanged();
-    void longitudeChanged();
-    void altitudeChanged();
-    void eastingChanged();
-    void northingChanged();
-    void headingChanged();
     void sectionButtonStateChanged();
 
     // Vehicle State signals
@@ -1512,14 +1424,6 @@ signals:
     void imuAngVelChanged();
     void yawRateChanged();
 
-    // GPS Status signals
-    void hdopChanged();
-    void ageChanged();
-    void fixQualityChanged();
-    void satellitesTrackedChanged();
-    void hzChanged();
-    void rawHzChanged();
-
     // Blockage Sensors signals
     void blockage_avgChanged();
     void blockage_min1Changed();
@@ -1530,7 +1434,6 @@ signals:
     void blockage_max_iChanged();
     void blockage_blockedChanged();
     void avgPivDistanceChanged();
-    void frameTimeChanged();
 
     // Navigation signals
     void distancePivotToTurnLineChanged();
@@ -1604,13 +1507,6 @@ private:
     // ⚡ PHASE 6.0.3.2: QML Interface Ready State
 
     // Position GPS (6) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_latitude, &FormGPS::latitudeChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_longitude, &FormGPS::longitudeChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_altitude, &FormGPS::altitudeChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_easting, &FormGPS::eastingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_northing, &FormGPS::northingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_heading, &FormGPS::headingChanged)
-
     // Section button state - Qt 6.8 BINDABLE Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariantList, m_sectionButtonState, &FormGPS::sectionButtonStateChanged)
 
@@ -1640,16 +1536,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_imuAngVel, &FormGPS::imuAngVelChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_yawRate, &FormGPS::yawRateChanged)
 
-    // GPS Status (6) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_hdop, &FormGPS::hdopChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_age, &FormGPS::ageChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_fixQuality, &FormGPS::fixQualityChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_satellitesTracked, &FormGPS::satellitesTrackedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_hz, &FormGPS::hzChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_rawHz, &FormGPS::rawHzChanged)
-    // frameTime: use existing variable at line 242
-    // steerModuleConnectedCounter: use existing variable at line 689
-
     // Blockage Sensors (8) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_avg, &FormGPS::blockage_avgChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min1, &FormGPS::blockage_min1Changed)
@@ -1660,7 +1546,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_max_i, &FormGPS::blockage_max_iChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_blockage_blocked, &FormGPS::blockage_blockedChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_avgPivDistance, &FormGPS::avgPivDistanceChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_frameTime, &FormGPS::frameTimeChanged)
 
     // Navigation (7) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_distancePivotToTurnLine, &FormGPS::distancePivotToTurnLineChanged)

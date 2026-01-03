@@ -117,7 +117,7 @@ Item {
 //                 sectionOff.play()
 //         }
 //         function onAgeChanged(){
-//             if(aog.age > gpsAgeAlarm)
+//             if(Backend.fixFrame.age > gpsAgeAlarm)
 //                 if(isRTK)
 //                     rtkLost.play()
 //         }

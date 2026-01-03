@@ -80,11 +80,11 @@ Item{
                 icon.source: prefix + "/images/LetterABlue.png"
                 onClicked: {
                     aPlusHeading.enabled = true
-                    aPlusHeading.text = (Number(Utils.radians_to_deg(aog.heading)).toLocaleString(Qt.locale(), 'f', 4))
+                    aPlusHeading.text = (Number(Utils.radians_to_deg(Backend.fixFrame.heading)).toLocaleString(Qt.locale(), 'f', 4))
                     btnAPlusOk.enabled = true
                     TracksInterface.start_new(2)
                     TracksInterface.newRefSide = setAPRefSide.refSideRight ? 1 : -1
-                    TracksInterface.mark_start(aog.easting, aog.northing, Number(aPlusHeading.text))
+                    TracksInterface.mark_start(Backend.fixFrame.easting, Backend.fixFrame.northing, Number(aPlusHeading.text))
                     TracksInterface.newHeading = -1
                     TracksInterface.newHeading = Utils.deg_to_radians(Number(aPlusHeading.text))
                 }
@@ -170,7 +170,7 @@ Item{
                     btnB.enabled = true
                     TracksInterface.start_new(2)
                     TracksInterface.newRefSide = setABRefSide.refSideRight ? 1 : -1
-                    TracksInterface.mark_start(aog.easting, aog.northing, aog.heading)
+                    TracksInterface.mark_start(Backend.fixFrame.easting, Backend.fixFrame.northing, Backend.fixFrame.heading)
                 }
             }
             IconButtonTransparent {
@@ -180,7 +180,7 @@ Item{
                 icon.source: prefix + "/images/LetterBBlue.png"
                 onClicked: {
                     btnABOk.enabled = true
-                    TracksInterface.mark_end( setABRefSide.refSideRight ? 1 : -1, aog.easting, aog.northing)
+                    TracksInterface.mark_end( setABRefSide.refSideRight ? 1 : -1, Backend.fixFrame.easting, Backend.fixFrame.northing)
                 }
 
             }
@@ -251,7 +251,7 @@ Item{
                     btnRecord.enabled = true
                     TracksInterface.start_new(4)
                     TracksInterface.newRefSide = setABCurveRefSide.refSideRight ? 1 : -1
-                    TracksInterface.mark_start(aog.easting, aog.northing, aog.heading)
+                    TracksInterface.mark_start(Backend.fixFrame.easting, Backend.fixFrame.northing, Backend.fixFrame.heading)
                 }
             }
             IconButtonTransparent {
@@ -261,7 +261,7 @@ Item{
                 icon.source: prefix + "/images/LetterBBlue.png"
                 onClicked: {
                     setABCurve.visible = false
-                    TracksInterface.mark_end(setABCurveRefSide.refSideRight ? 1 : -1, aog.easting, aog.northing)
+                    TracksInterface.mark_end(setABCurveRefSide.refSideRight ? 1 : -1, Backend.fixFrame.easting, Backend.fixFrame.northing)
                     trackAddName.show(TracksInterface.newName)
                 }
             }
@@ -308,10 +308,10 @@ Item{
         height: 450 * theme.scaleHeight
         onVisibleChanged: {
             if (visible) {
-                latPointA.text = parseFloat((aog.latitude).toFixed(7))
-                lonPointA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
-                latPointB.text = parseFloat((aog.latitude).toFixed(7)) //aog.latitude
-                lonPointB.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+                latPointA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7))
+                lonPointA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
+                latPointB.text = parseFloat((Backend.fixFrame.latitude).toFixed(7)) //Backend.fixFrame.latitude
+                lonPointB.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
 
                 TracksInterface.start_new(2)
                 TracksInterface.newRefSide = 0; //in this mode ref line is where the tractor is
@@ -346,8 +346,8 @@ Item{
                 Layout.row: 2
                 Layout.column: 0
                 onClicked: {
-                    latPointA.text = parseFloat((aog.latitude).toFixed(7)) //aog.latitude
-                    lonPointA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+                    latPointA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7)) //Backend.fixFrame.latitude
+                    lonPointA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
                 }
             }
 
@@ -358,8 +358,8 @@ Item{
                 Layout.row: 5
                 Layout.column: 0
                 onClicked: {
-                    latPointB.text = parseFloat((aog.latitude).toFixed(7)) //aog.latitude
-                    lonPointB.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+                    latPointB.text = parseFloat((Backend.fixFrame.latitude).toFixed(7)) //Backend.fixFrame.latitude
+                    lonPointB.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
                 }
             }
             /*
@@ -487,9 +487,9 @@ Item{
         height: 450 * theme.scaleHeight
         onVisibleChanged: {
             if (visible) {
-                latPointAA.text = parseFloat((aog.latitude).toFixed(7))
-                lonPointAA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
-                latLonHeadingEntry.text = parseFloat((aog.heading).toFixed(4))
+                latPointAA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7))
+                lonPointAA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
+                latLonHeadingEntry.text = parseFloat((Backend.fixFrame.heading).toFixed(4))
                 TracksInterface.start_new(2)
                 TracksInterface.newRefSide = 0; //in this mode ref line is where the tractor is
 
@@ -520,8 +520,8 @@ Item{
                 Layout.rowSpan: 2
                 Layout.column: 0
                 onClicked: {
-                    latPointAA.text = parseFloat((aog.latitude).toFixed(7)) //aog.latitude
-                    lonPointAA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+                    latPointAA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7)) //Backend.fixFrame.latitude
+                    lonPointAA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
                 }
             }
 
@@ -616,8 +616,8 @@ Item{
         height: 450 * theme.scaleHeight
         onVisibleChanged: {
             if (visible) {
-                latPointAAA.text = parseFloat((aog.latitude).toFixed(7))
-                lonPointAAA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+                latPointAAA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7))
+                lonPointAAA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
             }
         }
         GridLayout {
@@ -635,8 +635,8 @@ Item{
                 Layout.rowSpan: 2
                 Layout.column: 0
                 onClicked: {
-                    latPointAAA.text = parseFloat((aog.latitude).toFixed(7)) //aog.latitude
-                    lonPointAAA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+                    latPointAAA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7)) //Backend.fixFrame.latitude
+                    lonPointAAA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
                 }
             }
 

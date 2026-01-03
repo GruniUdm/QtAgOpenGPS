@@ -10,14 +10,18 @@ class FixFrame
     Q_GADGET
 
     Q_PROPERTY(double age MEMBER age)
+    Q_PROPERTY(double hdop MEMBER hdop)
+    Q_PROPERTY(double satellitesTracked MEMBER satellitesTracked)
     Q_PROPERTY(double easting MEMBER easting)
     Q_PROPERTY(double northing MEMBER northing)
     Q_PROPERTY(double latitude MEMBER latitude)
     Q_PROPERTY(double longitude MEMBER longitude)
     Q_PROPERTY(double heading MEMBER heading)
+    Q_PROPERTY(double altitude MEMBER altitude)
     Q_PROPERTY(int fixQuality MEMBER fixQuality)
     Q_PROPERTY(double hz MEMBER hz)
     Q_PROPERTY(double rawHz MEMBER rawHz)
+    Q_PROPERTY(int droppedSentences MEMBER droppedSentences)
 
     Q_PROPERTY(double imuHeading MEMBER imuHeading)
     Q_PROPERTY(double imuRollDegrees MEMBER imuRollDegrees)
@@ -34,19 +38,24 @@ class FixFrame
 public:
     //GPS information
     double age = 0.0;
+    double hdop = 0.0;
+    double satellitesTracked = 0.0;
     double easting = 0.0;
     double northing = 0.0;
     double latitude = 0.0;
     double longitude = 0.0;
     double heading = 0.0;
+    double altitude = 0.0;
     int fixQuality = 0;
     double hz = 0;
     double rawHz = 0;
+    int droppedSentences = 0;
 
     //imu information
     double imuHeading = 0;
     double imuRollDegrees = 0;
     double frameTime = 0;
+    double frameTimeRough = 0;
 
     //vehicle state, maybe put in a different struct
     double speedKph = 0;
@@ -56,6 +65,14 @@ public:
     double toolHeading = 0;
     double avgPivDistance = 0;
     short int offlineDistance = 0;
+
+    inline void setFrameTime(double newFrameTime) {
+        //smooth out raw frame time
+        frameTimeRough = newFrameTime;
+        //if (frameTimeRough > 80) frameTimeRough = 80;
+
+        frameTime = frameTime * 0.90 + frameTimeRough * 0.1;
+    }
 };
 
 Q_DECLARE_METATYPE(FixFrame)

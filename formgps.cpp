@@ -151,30 +151,6 @@ void FormGPS::setApplicationClosing(bool applicationClosing) { m_applicationClos
 QBindable<bool> FormGPS::bindableApplicationClosing() { return &m_applicationClosing; }
 
 // ===== GPS Position Properties =====
-double FormGPS::latitude() const { return m_latitude; }
-void FormGPS::setLatitude(double latitude) { m_latitude = latitude; }
-QBindable<double> FormGPS::bindableLatitude() { return &m_latitude; }
-
-double FormGPS::longitude() const { return m_longitude; }
-void FormGPS::setLongitude(double longitude) { m_longitude = longitude; }
-QBindable<double> FormGPS::bindableLongitude() { return &m_longitude; }
-
-double FormGPS::altitude() const { return m_altitude; }
-void FormGPS::setAltitude(double altitude) { m_altitude = altitude; }
-QBindable<double> FormGPS::bindableAltitude() { return &m_altitude; }
-
-double FormGPS::easting() const { return m_easting; }
-void FormGPS::setEasting(double easting) { m_easting = easting; }
-QBindable<double> FormGPS::bindableEasting() { return &m_easting; }
-
-double FormGPS::northing() const { return m_northing; }
-void FormGPS::setNorthing(double northing) { m_northing = northing; }
-QBindable<double> FormGPS::bindableNorthing() { return &m_northing; }
-
-double FormGPS::heading() const { return m_heading; }
-void FormGPS::setHeading(double heading) { m_heading = heading; }
-QBindable<double> FormGPS::bindableHeading() { return &m_heading; }
-
 QVariantList FormGPS::sectionButtonState() const {
     // Read directly from tool array - single source of truth
     QVariantList state;
@@ -296,31 +272,6 @@ double FormGPS::yawRate() const { return m_yawRate; }
 void FormGPS::setYawRate(double yawRate) { m_yawRate = yawRate; }
 QBindable<double> FormGPS::bindableYawRate() { return &m_yawRate; }
 
-// ===== GPS Quality Properties =====
-double FormGPS::hdop() const { return m_hdop; }
-void FormGPS::setHdop(double hdop) { m_hdop = hdop; }
-QBindable<double> FormGPS::bindableHdop() { return &m_hdop; }
-
-double FormGPS::age() const { return m_age; }
-void FormGPS::setAge(double age) { m_age = age; }
-QBindable<double> FormGPS::bindableAge() { return &m_age; }
-
-int FormGPS::fixQuality() const { return m_fixQuality; }
-void FormGPS::setFixQuality(int fixQuality) { m_fixQuality = fixQuality; }
-QBindable<int> FormGPS::bindableFixQuality() { return &m_fixQuality; }
-
-int FormGPS::satellitesTracked() const { return m_satellitesTracked; }
-void FormGPS::setSatellitesTracked(int satellitesTracked) { m_satellitesTracked = satellitesTracked; }
-QBindable<int> FormGPS::bindableSatellitesTracked() { return &m_satellitesTracked; }
-
-double FormGPS::hz() const { return m_hz; }
-void FormGPS::setHz(double hz) { m_hz = hz; }
-QBindable<double> FormGPS::bindableHz() { return &m_hz; }
-
-double FormGPS::rawHz() const { return m_rawHz; }
-void FormGPS::setRawHz(double rawHz) { m_rawHz = rawHz; }
-QBindable<double> FormGPS::bindableRawHz() { return &m_rawHz; }
-
 // ===== Blockage Properties =====
 double FormGPS::blockage_avg() const { return m_blockage_avg; }
 void FormGPS::setBlockage_avg(double blockage_avg) { m_blockage_avg = blockage_avg; }
@@ -357,10 +308,6 @@ QBindable<bool> FormGPS::bindableBlockage_blocked() { return &m_blockage_blocked
 double FormGPS::avgPivDistance() const { return m_avgPivDistance; }
 void FormGPS::setAvgPivDistance(double avgPivDistance) { m_avgPivDistance = avgPivDistance; }
 QBindable<double> FormGPS::bindableAvgPivDistance() { return &m_avgPivDistance; }
-
-double FormGPS::frameTime() const { return m_frameTime; }
-void FormGPS::setFrameTime(double frameTime) { m_frameTime = frameTime; }
-QBindable<double> FormGPS::bindableFrameTime() { return &m_frameTime; }
 
 // ===== Turn and Navigation Properties =====
 double FormGPS::distancePivotToTurnLine() const { return m_distancePivotToTurnLine; }

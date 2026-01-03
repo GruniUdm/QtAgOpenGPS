@@ -500,7 +500,7 @@ Window {
 
             Comp.OutlineText{
                 id: ageAlarm //Lost RTK count up display
-                property int age: aog.age
+                property int age: Backend.fixFrame.age
                 visible: SettingsManager.gps_isRTK
                 anchors.top: simulatorOnText.bottom
                 anchors.topMargin: 30
@@ -928,7 +928,7 @@ Window {
             id: headingCharta
             height: 300  * theme.scaleHeight
             width: 400  * theme.scaleWidth
-            xval1: aog.heading  // Rectangle Pattern: direct property access
+            xval1: Backend.fixFrame.heading  // Rectangle Pattern: direct property access
             xval2: aog.imuHeading > 360 ? 0 : aog.imuHeading  // Show real IMU heading, 0 if invalid
             axismin: -10
             axismax: 10

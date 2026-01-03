@@ -33,13 +33,13 @@ Window {
 
         Text {
             font.pixelSize: 10
-            text: qsTr("Lat: ") + (Number(aog.latitude).toLocaleString(Qt.locale(), 'f', 7))
+            text: qsTr("Lat: ") + (Number(Backend.fixFrame.latitude).toLocaleString(Qt.locale(), 'f', 7))
 			Layout.alignment: Qt.AlignLeft
 		}
 
         Text {
             font.pixelSize: 10
-            text: qsTr("Lon: ") + (Number(aog.longitude).toLocaleString(Qt.locale(), 'f', 7))
+            text: qsTr("Lon: ") + (Number(Backend.fixFrame.longitude).toLocaleString(Qt.locale(), 'f', 7))
 			Layout.alignment: Qt.AlignLeft
 		}
 
@@ -58,7 +58,7 @@ Window {
         //HDOP
         Text {
             font.pixelSize: 10
-            text: "HDOP: " +  aog.hdop
+            text: "HDOP: " +  Backend.fixFrame.hdop
             Layout.alignment: Qt.AlignLeft
         }
         //# Sats
@@ -69,13 +69,13 @@ Window {
         }
         Text {
             font.pixelSize: 10
-            text: qsTr("Altitude: ") + (Number( aog.altitude).toLocaleString(Qt.locale(), 'f', 2))
+            text: qsTr("Altitude: ") + (Number( Backend.fixFrame.altitude).toLocaleString(Qt.locale(), 'f', 2))
 			Layout.alignment: Qt.AlignLeft
 		}
         //age
         Text {
             font.pixelSize: 10
-            text: qsTr("Age: ") + (Number( aog.age).toLocaleString(Qt.locale(), 'f', 1))
+            text: qsTr("Age: ") + (Number( Backend.fixFrame.age).toLocaleString(Qt.locale(), 'f', 1))
             Layout.alignment: Qt.AlignLeft
         }
         Text {
@@ -90,12 +90,12 @@ Window {
         Column{
             Text{
                 font.pixelSize: 10
-                text: qsTr("Hz: ") + Math.round( aog.hz * 100) / 100
+                text: qsTr("Hz: ") + Math.round( Backend.fixFrame.hz * 100) / 100
                 Layout.alignment: Qt.AlignLeft
             }
             Text{
                 font.pixelSize: 10
-                text: qsTr("Raw Hz: ") + Math.round( aog.rawHz * 100) / 100  // nowHz property removed
+                text: qsTr("Raw Hz: ") + Math.round( Backend.fixFrame.rawHz * 100) / 100  // nowHz property removed
                 Layout.alignment: Qt.AlignLeft
             }
         }

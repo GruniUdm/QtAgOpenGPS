@@ -1191,19 +1191,11 @@ void FormGPS::UpdateFixPosition()
     }
     qDebug(qpos) << "Time after painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
 
-    frameTimeRough = swFrame.elapsed();
-
-    //if (frameTimeRough > 80) frameTimeRough = 80;
-
-    // Phase 6.0.20: Qt 6.8 BINDABLE - use setter for automatic signal emission
-    setFrameTime(frameTime() * 0.90 + frameTimeRough * 0.1);
-
-    // ===== Q_PROPERTY OPTIMIZED UPDATE - OPTION A =====
-    // Direct member updates + grouped signals (305x faster than setProperty)
+    Backend::instance()->m_fixFrame.setFrameTime(swFrame.elapsed());
 
     // Variables for change tracking
     bool posChangedFlag = false, vehChangedFlag = false, steerChangedFlag = false;
-    bool imuChangedFlag = false, gpsChangedFlag = false, blockageChangedFlag = false;
+    bool imuChangedFlag = false, blockageChangedFlag = false;
     bool navChangedFlag = false, toolPosChangedFlag = false, wizardChangedFlag = false;
     bool geometryChangedFlag = false, miscChangedFlag = false;
 
@@ -1224,12 +1216,12 @@ void FormGPS::UpdateFixPosition()
     }
 
     // === Position GPS Updates (6 properties) - Qt 6.8 QProperty (Phase 6.0.9.06) ===
-    if (m_latitude != pn.latitude) { m_latitude = pn.latitude; posChangedFlag = true; }
-    if (m_longitude != pn.longitude) { m_longitude = pn.longitude; posChangedFlag = true; }
-    if (m_altitude != pn.altitude) { m_altitude = pn.altitude; posChangedFlag = true; }
-    if (m_easting != CVehicle::instance()->pivotAxlePos.easting) { m_easting = CVehicle::instance()->pivotAxlePos.easting; posChangedFlag = true; }
-    if (m_northing != CVehicle::instance()->pivotAxlePos.northing) { m_northing = CVehicle::instance()->pivotAxlePos.northing; posChangedFlag = true; }
-    if (m_heading != CVehicle::instance()->pivotAxlePos.heading) { m_heading = CVehicle::instance()->pivotAxlePos.heading; posChangedFlag = true; }
+    Backend::instance()->m_fixFrame.latitude = pn.latitude;
+    Backend::instance()->m_fixFrame.longitude = pn.longitude;
+    Backend::instance()->m_fixFrame.altitude = pn.altitude;
+    Backend::instance()->m_fixFrame.easting = CVehicle::instance()->pivotAxlePos.easting;
+    Backend::instance()->m_fixFrame.northing = CVehicle::instance()->pivotAxlePos.northing;
+    Backend::instance()->m_fixFrame.heading = CVehicle::instance()->pivotAxlePos.heading;
 
     // === Vehicle State Updates (8 properties) ===
     if (m_speedKph != CVehicle::instance()->avgSpeed) { m_speedKph = CVehicle::instance()->avgSpeed; vehChangedFlag = true; }
@@ -1262,16 +1254,18 @@ void FormGPS::UpdateFixPosition()
     if (m_imuAngVel != ahrs.angVel) { m_imuAngVel = ahrs.angVel; imuChangedFlag = true; }
 
     // === GPS Status Updates (8 properties) ===
-    if (m_hdop != pn.hdop) { m_hdop = pn.hdop; gpsChangedFlag = true; }
-    if (m_age != pn.age) { m_age = pn.age; gpsChangedFlag = true; }
-    if (m_fixQuality != (int)pn.fixQuality) { m_fixQuality = (int)pn.fixQuality; gpsChangedFlag = true; }
-    if (m_satellitesTracked != pn.satellitesTracked) { m_satellitesTracked = pn.satellitesTracked; gpsChangedFlag = true; }
-    if (m_hz != gpsHz) { m_hz = gpsHz; gpsChangedFlag = true; }
-    if (m_rawHz != nowHz) { m_rawHz = nowHz; gpsChangedFlag = true; }
+    Backend::instance()->m_fixFrame.hdop = pn.hdop;
+    Backend::instance()->m_fixFrame.age = pn.age;
+    Backend::instance()->m_fixFrame.fixQuality = (int)pn.fixQuality;
+    Backend::instance()->m_fixFrame.satellitesTracked = pn.satellitesTracked;
+    Backend::instance()->m_fixFrame.hz = gpsHz;
+    Backend::instance()->m_fixFrame.rawHz = nowHz;
     // Phase 6.0.20 Task 24 Step 5.6: droppedSentences - TODO implement real GPS frame drop counter
     // For now, set to 0 (old udpWatchCounts removed in Phase 4.6 AgIOService migration)
-    if (m_droppedSentences != 0) { m_droppedSentences = 0; gpsChangedFlag = true; }
-    // frameTime and steerModuleConnectedCounter use existing variables directly - no members needed
+    if (m_droppedSentences != 0) { m_droppedSentences = 0; }
+
+    //TODO: limit this to update qml at only 10hz
+    emit Backend::instance()->fixFrameChanged();
 
     // === Blockage Sensors Updates (8 properties) - Qt 6.8 QProperty ===
     if (m_blockage_avg != tool.blockage_avg) { m_blockage_avg = tool.blockage_avg; blockageChangedFlag = true; }
@@ -2776,25 +2770,9 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
         // Position data (10 Hz → QML)
         // ✅ Problem 14 Fix: pn.latitude/longitude now validated above (not overwritten with 0)
         // Safe to assign - will use last valid position if current data was 0
-        setLatitude(pn.latitude);
-        setLongitude(pn.longitude);
-        setAltitude(pn.altitude);
-
-        // Heading (10 Hz → QML)
-        if (data.headingDual > 0) {
-            setHeading(data.headingDual);
-        } else if (data.heading > 0) {
-            setHeading(data.heading);
-        }
 
         // Speed (10 Hz → QML)
         setSpeedKph(pn.vtgSpeed);
-
-        // GPS quality indicators (10 Hz → QML)
-        setHdop(pn.hdop);
-        setAge(pn.age);
-        setFixQuality(pn.fixQuality);
-        setSatellitesTracked(pn.satellitesTracked);
 
         // ✅ IMU data is now assigned directly at 40 Hz (see above, no throttling)
         // Simpler: no need to duplicate assignment here

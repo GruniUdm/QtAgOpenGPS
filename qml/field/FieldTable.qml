@@ -33,7 +33,7 @@ ListView {
 
         fieldsModel.clear()
         for( var i=0; i < FieldInterface.field_list.length ;i++)  {
-            distance = Utils.distanceLatLon(aog.latitude, aog.longitude, FieldInterface.field_list[i].latitude, FieldInterface.field_list[i].longitude)
+            distance = Utils.distanceLatLon(Backend.fixFrame.latitude, Backend.fixFrame.longitude, FieldInterface.field_list[i].latitude, FieldInterface.field_list[i].longitude)
             fieldsModel.append( { index: i,
                                   name: FieldInterface.field_list[i].name,
                                   distance: distance,
