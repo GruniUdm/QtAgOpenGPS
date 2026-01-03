@@ -40,7 +40,7 @@ Rectangle{
             font.pointSize: 11
             height: parent.height
             width: 65 * theme.scaleWidth
-            onClicked: steerSlider.value = 300
+            onClicked: SimInterface.steerAngle = 0;
         }
         Comp.SliderCustomized {
             id: steerSlider
@@ -50,7 +50,10 @@ Rectangle{
 			width: 200 * theme.scaleWidth
             from: 0
             to: 600
-            value: 300
+            value: SimInterface.steerAngle * 10 + 300
+            onValueChanged: {
+                SimInterface.steerAngle = (value - 300) / 10
+            }
         }
         Comp.IconButtonTransparent{
             height: parent.height
@@ -75,8 +78,8 @@ Rectangle{
             width: 65 * theme.scaleWidth
             icon.source: prefix + "/images/YouTurn80.png"
             onClicked: {
-                SimInterface.rotate() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-                MainWindowState.isBtnAutoSteerOn = false; // Qt 6.8 FIX: Use property setter, not method call
+                SimInterface.rotate()
+                MainWindowState.isBtnAutoSteerOn = false; 
             }
         }
     }
