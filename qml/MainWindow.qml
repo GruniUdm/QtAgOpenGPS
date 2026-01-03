@@ -218,8 +218,14 @@ Window {
         id: timedMessage
         objectName: "timedMessage"
 
-        //give the back end a pointer to this object for displaying messages
-        Component.onCompleted: { Backend.timedMessage = timedMessage; }
+        //Connect Backend.timedMessage to this object
+        Connections {
+            target: Backend
+
+            function onTimedMessage(timeout:int , title: string, message: string) {
+                timedMessage.addMessage(timeout, title, message);
+            }
+        }
     }
 
     SystemPalette {

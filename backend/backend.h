@@ -19,7 +19,6 @@ class Backend : public QObject
 
     Q_PROPERTY(FieldInfo currentField READ currentField NOTIFY currentFieldChanged)
     Q_PROPERTY(FixFrame fixFrame READ fixFrame NOTIFY fixFrameChanged)
-    Q_PROPERTY(QObject* timedMessage MEMBER timedMessage) //only ever written to by QML
     Q_PROPERTY(QObject* aogRenderer MEMBER aogRenderer NOTIFY aogRendererChanged) //only ever written to by QML
 public:
     enum class ButtonStates {Off = 0,Auto = 1,On = 2};
@@ -41,7 +40,6 @@ public:
     FieldInfo m_currentField;
     FixFrame m_fixFrame;
 
-    QObject *timedMessage = nullptr;
     QObject *aogRenderer = nullptr;
 
     static Backend *instance();
@@ -85,9 +83,10 @@ public:
 signals:
     //signals implicitly created by BINDABLE_PROPERTY() macro
     void currentFieldChanged();
-    void timedMessageChanged(); //may not be needed
     void aogRendererChanged();
     void fixFrameChanged();
+
+    void timedMessage(int timeout, QString s1, QString s2);
 
 private:
 };
