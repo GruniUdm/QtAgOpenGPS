@@ -387,7 +387,7 @@ QVariantList AgIOService::activeProtocols() const
         QVariantMap protocol;
         protocol["id"] = it.key();  // "$PANDA" or "PGN211"
         protocol["description"] = getProtocolDescription(it.key());
-        protocol["source"] = QString("%1:%2").arg(status.transport).arg(status.sourceID);
+        protocol["source"] = QString("%1:%2").arg(status.transport, status.sourceID);
         protocol["frequency"] = status.frequency;
 
         protocols.append(protocol);
