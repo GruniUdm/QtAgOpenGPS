@@ -450,7 +450,7 @@ void FormHeadache::clicked(int mouseX, int mouseY) {
         if (start == end)
         {
             start = 99999; end = 99999;
-            emit timedMessageBox(3000, tr("Line Error"), tr("Start Point = End Point"));
+            emit Backend::instance()->timedMessage(3000, tr("Line Error"), tr("Start Point = End Point"));
             return;
         }
 
@@ -776,7 +776,7 @@ void FormHeadache::btnBndLoop_Click() {
 
         if (nextLine == lineNum)
         {
-            emit timedMessageBox(2000, tr("Create Error"), tr("Is there maybe only one line?"));
+            emit Backend::instance()->timedMessage(2000, tr("Create Error"), tr("Is there maybe only one line?"));
             return;
         }
 
@@ -814,7 +814,7 @@ void FormHeadache::btnBndLoop_Click() {
 
     if (crossings.count() != hdl->tracksArr.count() * 2)
     {
-        emit timedMessageBox(2000, tr("Crosings Error"), tr("Make sure all ends cross only once"));
+        emit Backend::instance()->timedMessage(2000, tr("Crosings Error"), tr("Make sure all ends cross only once"));
         bnd->bndList[0].hdLine.clear();
         return;
     }
@@ -938,7 +938,7 @@ void FormHeadache::btnSlice_Click() {
 
     if (isStart < 2)
     {
-        emit timedMessageBox(2000, tr("Error"), tr("Crossings not Found"));
+        emit Backend::instance()->timedMessage(2000, tr("Error"), tr("Crossings not Found"));
         return;
     }
 

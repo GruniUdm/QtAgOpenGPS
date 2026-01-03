@@ -204,13 +204,11 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     headland_form.hdl = &hdl;
 
     connect(&headland_form, &FormHeadland::saveHeadland, this, &FormGPS::headland_save);
-    connect(&headland_form, &FormHeadland::timedMessageBox, this, &FormGPS::TimedMessageBox);
 
     headache_form.bnd = &bnd;
     headache_form.hdl = &hdl;
 
     connect(&headache_form, SIGNAL(saveHeadland()),this,SLOT(headland_save()));
-    connect(&headache_form, SIGNAL(timedMessageBox(int,QString,QString)),this,SLOT(TimedMessageBox(int,QString,QString)));
     connect(&headache_form, SIGNAL(saveHeadlines()), this,SLOT(headlines_save()));
     connect(&headache_form, SIGNAL(loadHeadlines()), this,SLOT(headlines_load()));
 
@@ -952,10 +950,7 @@ void FormGPS::TimedMessageBox(int timeout, QString s1, QString s2)
 {
     QDEBUG << "Timed message " << timeout << s1 << ", " << s2 << Qt::endl;
     //Use the pointer stoerd in Backend to access this QML item.
-    if (Backend::instance()->timedMessage)
-        QMetaObject::invokeMethod(Backend::instance()->timedMessage,
-                                  "addMessage", Q_ARG(int, timeout),
-                                  Q_ARG(QString, s1), Q_ARG(QString, s2));
+    Backend::instance()->timedMessage(timeout, s1, s2);
 }
 
 void FormGPS::turnOffBoundAlarm()

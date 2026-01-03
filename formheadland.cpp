@@ -470,7 +470,7 @@ void FormHeadland::clicked(int mouseX, int mouseY) {
     if (!bnd) return; //FormGPS is not yet fully initialized
 
     if (HeadlandInterface::instance()->lineDistance() == 0 && HeadlandInterface::instance()->curveLine()) {
-        emit timedMessageBox(3000, tr("Distance Error"), tr("Distance Set to 0, Nothing to Move"));
+        emit Backend::instance()->timedMessage(3000, tr("Distance Error"), tr("Distance Set to 0, Nothing to Move"));
         return;
     }
     sliceArr.clear();
@@ -913,7 +913,7 @@ void FormHeadland::btnSlice_Click() {
 
     if (isStart < 2)
     {
-        emit timedMessageBox(2000, tr("Error"), tr("Crossings not Found"));
+        emit Backend::instance()->timedMessage(2000, tr("Error"), tr("Crossings not Found"));
         return;
     }
 
