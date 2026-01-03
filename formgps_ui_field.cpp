@@ -205,7 +205,7 @@ void FormGPS::FindLatLon(QString filename)
     }
 
     QTextStream stream(&file);
-    QStringView line;
+    QString line;
     QString coordinates;
 
     while (!stream.atEnd()) {
@@ -221,14 +221,14 @@ void FormGPS::FindLatLon(QString filename)
                     if (startIndex == -1) {
                         coordinates += line;
                     } else {
-                        coordinates += line.mid(startIndex + 13); // Skip "<coordinates>"
+                        coordinates += QStringView(line).mid(startIndex + 13); // Skip "<coordinates>"
                     }
                 } else {
                     // Closing tag found
                     if (startIndex == -1) {
-                        coordinates += line.left(endIndex);
+                        coordinates += QStringView(line).left(endIndex);
                     } else {
-                        coordinates += line.mid(startIndex + 13, endIndex - (startIndex + 13));
+                        coordinates += QStringView(line).mid(startIndex + 13, endIndex - (startIndex + 13));
                     }
                     break;
                 }
@@ -297,7 +297,7 @@ void FormGPS::LoadKMLBoundary(QString filename) {
     }
 
     QTextStream stream(&file);
-    QStringView line;
+    QString line;
     QString coordinates;
 
     while (!stream.atEnd()) {
@@ -312,13 +312,13 @@ void FormGPS::LoadKMLBoundary(QString filename) {
                     if (startIndex == -1) {
                         coordinates += line;
                     } else {
-                        coordinates += line.mid(startIndex + 13); // Skip "<coordinates>"
+                        coordinates += QStringView(line).mid(startIndex + 13); // Skip "<coordinates>"
                     }
                 } else {
                     if (startIndex == -1) {
-                        coordinates += line.left(endIndex);
+                        coordinates += QStringView(line).left(endIndex);
                     } else {
-                        coordinates += line.mid(startIndex + 13, endIndex - (startIndex + 13));
+                        coordinates += QStringView(line).mid(startIndex + 13, endIndex - (startIndex + 13));
                     }
                     break;
                 }
