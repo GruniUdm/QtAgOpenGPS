@@ -187,7 +187,7 @@ void destroyShaders() {
 void destroyTextures() {
 
     //TODO: compiler says this code is problematic.
-    for(const QOpenGLTexture *t: texture) {
+    for(const QOpenGLTexture *t: std::as_const(texture)) {
         delete t;
     }
     texture.clear();

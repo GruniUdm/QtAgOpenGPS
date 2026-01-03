@@ -205,7 +205,7 @@ void FormGPS::FindLatLon(QString filename)
     }
 
     QTextStream stream(&file);
-    QString line;
+    QStringView line;
     QString coordinates;
 
     while (!stream.atEnd()) {
@@ -252,7 +252,7 @@ void FormGPS::FindLatLon(QString filename)
             double totalLon = 0.0;
             int validCount = 0;
 
-            for (const QString& coord : coordList) {
+            for (const QString& coord : std::as_const(coordList)) {
                 if (coord.length() < 3) continue;
 
                 int comma1 = coord.indexOf(QLatin1Char(','));
@@ -297,7 +297,7 @@ void FormGPS::LoadKMLBoundary(QString filename) {
     }
 
     QTextStream stream(&file);
-    QString line;
+    QStringView line;
     QString coordinates;
 
     while (!stream.atEnd()) {
@@ -336,7 +336,7 @@ void FormGPS::LoadKMLBoundary(QString filename) {
                 double latK = 0.0, lonK = 0.0;
                 CBoundaryList New;
 
-                for (const QString& coord : numberSets) {
+                for (const QString& coord : std::as_const(numberSets)) {
                     if (coord.length() < 3) continue;
 
                     qDebug() << coord;

@@ -2661,7 +2661,7 @@ QStringList AgIOService::getAvailableSerialPortsForModule(const QString& moduleT
     }
 
     // Filter out used ports
-    for (const QString& port : allPorts) {
+    for (const QString& port : std::as_const(allPorts)) {
         if (!usedPorts.contains(port)) {
             availablePorts.append(port);
         }

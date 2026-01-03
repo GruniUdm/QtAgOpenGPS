@@ -899,7 +899,7 @@ void FormHeadache::btnSlice_Click() {
 
     //save a backup
     backupList.clear();
-    for (const auto item: std::as_const(bnd->bndList[0].hdLine))
+    for (const auto &item: std::as_const(bnd->bndList[0].hdLine))
     {
         backupList.append(item);
     }

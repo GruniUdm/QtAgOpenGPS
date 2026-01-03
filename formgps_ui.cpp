@@ -101,7 +101,7 @@ void FormGPS::setupGui()
     };
 
     qWarning() << "Looking for QML.";
-    for(QString search_path : search_pathes) {
+    for(const QString &search_path : search_pathes) {
         //look relative to current working directory
         QDir d = QDir(QDir::currentPath() + "/" + search_path + "/qml/");
         if (d.exists("MainWindow.qml")) {

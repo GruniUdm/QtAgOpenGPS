@@ -1793,7 +1793,7 @@ void FormGPS::FileSaveSections()
     buffer.reserve(tool.patchSaveList.count() * 500);  // Pre-allocate ~500 bytes per patch
 
     //for each patch, write out the list of triangles to the buffer
-    for(QSharedPointer<QVector<QVector3D>> triList: tool.patchSaveList)
+    for(const QSharedPointer<QVector<QVector3D>> &triList: std::as_const(tool.patchSaveList))
     {
         int count2 = triList->count();
         buffer += QString::number(count2) + '\n';
