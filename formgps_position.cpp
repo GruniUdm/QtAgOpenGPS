@@ -1597,7 +1597,7 @@ void FormGPS::processSectionLookahead() {
         painter.end();
 
         //TODO adjust coordinate transformations above to eliminate this step
-        this->grnPix = this->grnPix.mirrored().convertToFormat(QImage::Format_RGBX8888);
+        this->grnPix = this->grnPix.flipped().convertToFormat(QImage::Format_RGBX8888);
 
         QImage temp = this->grnPix.copy(tool.rpXPosition, 0, tool.rpWidth, 290 /*(int)rpHeight*/);
         temp.setPixelColor(0,0,QColor::fromRgb(255,128,0));
@@ -1617,7 +1617,7 @@ void FormGPS::processSectionLookahead() {
     qDebug(qpos) << "Back processing thread is" << currentThread;
 
     if (SettingsManager::instance()->display_showBack()) {
-        grnPixelsWindow->setPixmap(QPixmap::fromImage(grnPix.mirrored()));
+        grnPixelsWindow->setPixmap(QPixmap::fromImage(grnPix.flipped()));
         //overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
     }
 
