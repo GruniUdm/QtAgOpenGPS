@@ -16,8 +16,6 @@ void FormGPS::simConnectSlots()
 {
     connect(SimInterface::instance(), &SimInterface::newPosition,
             this, &FormGPS::onSimNewPosition, Qt::UniqueConnection);
-    connect(SimInterface::instance(), &SimInterface::steerAngleActualChanged,
-            &mc, &CModuleComm::onSimSteerAngleActualChanged);
 }
 
 void FormGPS::onSimNewPosition(double vtgSpeed,
@@ -79,6 +77,8 @@ void FormGPS::onSimNewPosition(double vtgSpeed,
 
     Backend::instance()->m_fixFrame.sentenceCounter = 0;
     Backend::instance()->m_fixFrame.droppedSentences = 0;
+
+    CModuleComm::instance()->set_actualSteerAngleDegrees(SimInterface::instance()->steerAngleActual());
 
     // Phase 6.0.20: Qt 6.8 BINDABLE properties - direct setter calls replace qmlItem()->setProperty()
     // BINDABLE auto-emits property changed signals for QML reactivity
