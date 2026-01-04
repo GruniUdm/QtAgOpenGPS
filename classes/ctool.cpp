@@ -1145,7 +1145,7 @@ QImage CTool::DrawPatchesBackQP(const CTram &tram,
     painter.end();
 
     //TODO adjust coordinate transformations above to eliminate this step
-    back_image = back_image.mirrored().convertToFormat(QImage::Format_RGBX8888);
+    back_image = back_image.flipped().convertToFormat(QImage::Format_RGBX8888);
 
     QImage temp = back_image.copy(rpXPosition, 0, rpWidth, 290 /*(int)rpHeight*/);
     temp.setPixelColor(0,0,QColor::fromRgb(255,128,0));
