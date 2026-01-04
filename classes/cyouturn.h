@@ -282,11 +282,9 @@ public:
     //Duh.... What does this do....
     void DrawYouTurn(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
 signals:
-    void TimedMessage(int,QString,QString);
-    void outOfBounds();
     //void setTriggerSequence(bool);
     //void resetSequenceEventTriggers();
-    void turnOffBoundAlarm();
+    void turnOffBoundAlarm(); //TODO move to MainWindowState property
     void uTurnReset();
     //void guidanceLineDistanceOff(int);
     //void guidanceLineSteerAngle(int);

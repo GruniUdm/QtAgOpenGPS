@@ -226,12 +226,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     QDEBUG << "🎯 Connected FieldInterface signals.";
 
-    QDEBUG << "🔗 Connecting boundaryInterface signals...";
-    // ⚡ YouTurn out of bounds signal
-    connect(&yt, &CYouTurn::outOfBounds, this, [this]() {
-            BoundaryInterface::instance()->set_isOutOfBounds(true);
-    });
-
     connect(FlagsInterface::instance(), &FlagsInterface::saveFlags, this, &FormGPS::FileSaveFlags);
 
 

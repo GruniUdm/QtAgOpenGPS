@@ -2613,7 +2613,6 @@ void CYouTurn::FailCreate()
 {
     BoundaryInterface::instance()->set_isOutOfBounds(true);
     isTurnCreationTooClose = true;
-    emit outOfBounds();
     youTurnPhase = 11;
 }
 
