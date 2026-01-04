@@ -1144,8 +1144,6 @@ void FormGPS::Timer1_Tick()
     lblAV_Act.Text = mf.actAngVel.ToString("N1");
     lblAV_Set.Text = mf.setAngVel.ToString("N1");
 
-    lblPWMDisplay.Text = mc.pwmDisplay.ToString();
-
     counter++;
 
     if (toSend && counter > 4)
@@ -1182,15 +1180,6 @@ void FormGPS::Timer1_Tick()
         }
     }
 
-    if (this->sensorData() != -1)
-    {
-        if (this->sensorData() < 0 || this->sensorData() > 255) this->sensorData() = 0;
-        //CExtensionMethods.SetProgressNoAnimation(pbarSensor, this->sensorData());
-        //if (nudMaxCounts.Visible == false)
-            //lblPercentFS.Text = ((int)((double)this->sensorData() * 0.3921568627)).ToString() + "%";
-        else
-            //lblPercentFS.Text = this->sensorData().ToString();
-    }
     */
 }
 

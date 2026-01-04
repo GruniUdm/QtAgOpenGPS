@@ -49,9 +49,6 @@ public:
         swOnGr1 = 7,
         swOffGr1 = 8;
 
-    int pwmDisplay = 0;
-    int actualSteerAngleChart = 0;
-    int sensorData = -1;  // PHASE 6.0.23: Sensor value from PGN 250
 
     qint64 blockage_lastUpdate;
     double blockageseccount[64];
@@ -62,14 +59,18 @@ public:
 
 
     //for the workswitch
-    bool isWorkSwitchActiveLow, isWorkSwitchEnabled,
+    bool isWorkSwitchEnabled,
         isWorkSwitchManualSections, isSteerWorkSwitchManualSections, isSteerWorkSwitchEnabled;
 
-    bool workSwitchHigh, oldWorkSwitchHigh, steerSwitchHigh, oldSteerSwitchHigh, oldSteerSwitchRemote;
+    bool oldWorkSwitchHigh, oldSteerSwitchHigh, oldSteerSwitchRemote;
 
     void CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn);
 
     SIMPLE_BINDABLE_PROPERTY(double,  actualSteerAngleDegrees)
+    SIMPLE_BINDABLE_PROPERTY(bool, steerSwitchHigh)
+    SIMPLE_BINDABLE_PROPERTY(bool, workSwitchHigh)
+    SIMPLE_BINDABLE_PROPERTY(int, sensorData)
+    SIMPLE_BINDABLE_PROPERTY(int, pwmDisplay)
 
 signals:
     void stopAutoSteer(void);
@@ -79,6 +80,10 @@ signals:
 public slots:
 private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CModuleComm, double, m_actualSteerAngleDegrees, 0, &CModuleComm::actualSteerAngleDegreesChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CModuleComm, bool, m_steerSwitchHigh, 0, &CModuleComm::steerSwitchHighChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CModuleComm, bool, m_workSwitchHigh, 0, &CModuleComm::workSwitchHighChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CModuleComm, int, m_sensorData, -1, &CModuleComm::sensorDataChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CModuleComm, int, m_pwmDisplay, 0, &CModuleComm::pwmDisplayChanged)
 };
 
 #endif // CMODULECOMM_H

@@ -23,7 +23,6 @@
 #include "vecfix2fix.h"
 #include "vec2.h"
 #include "vec3.h"
-#include "cmodulecomm.h"
 #include "ccamera.h"
 #include "btnenum.h"
 
@@ -111,10 +110,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY avgPivDistanceChanged BINDABLE bindableAvgPivDistance)
 
     // === Steering Control (6 properties) - Critical for autosteer - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double steerAngleActual READ steerAngleActual WRITE setSteerAngleActual
-               NOTIFY steerAngleActualChanged BINDABLE bindableSteerAngleActual)
-    Q_PROPERTY(int lblPWMDisplay READ lblPWMDisplay WRITE setLblPWMDisplay
-               NOTIFY lblPWMDisplayChanged BINDABLE bindableLblPWMDisplay)
     Q_PROPERTY(double calcSteerAngleInner READ calcSteerAngleInner WRITE setCalcSteerAngleInner
                NOTIFY calcSteerAngleInnerChanged BINDABLE bindableCalcSteerAngleInner)
     Q_PROPERTY(double calcSteerAngleOuter READ calcSteerAngleOuter WRITE setCalcSteerAngleOuter
@@ -187,8 +182,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY lblCalcSteerAngleInnerChanged BINDABLE bindableLblCalcSteerAngleInner)
     Q_PROPERTY(QString lblDiameter READ lblDiameter WRITE setLblDiameter
                NOTIFY lblDiameterChanged BINDABLE bindableLblDiameter)
-    Q_PROPERTY(int sensorData READ sensorData WRITE setSensorData
-               NOTIFY sensorDataChanged BINDABLE bindableSensorData)
 
     // GPS/NMEA Coordinates - Phase 6.0.4.2
     // Phase 6.0.20 Task 24 Step 3.5: Read-only Q_PROPERTY (QML cannot modify field origin)
@@ -278,14 +271,6 @@ public:
     QBindable<double> bindableOfflineDistance();
 
     // Steering Control
-    double steerAngleActual() const;
-    void setSteerAngleActual(double value);
-    QBindable<double> bindableSteerAngleActual();
-
-    int lblPWMDisplay() const;
-    void setLblPWMDisplay(int value);
-    QBindable<int> bindableLblPWMDisplay();
-
     double calcSteerAngleInner() const;
     void setCalcSteerAngleInner(double value);
     QBindable<double> bindableCalcSteerAngleInner();
@@ -416,7 +401,6 @@ public:
     void setLblDiameter(const QString &value);
     QBindable<QString> bindableLblDiameter();
 
-    int sensorData() const;
     void setSensorData(int value);
     QBindable<int> bindableSensorData();
 
@@ -719,9 +703,6 @@ public:
 
     CVehicle* vehicle;  // Pointeur vers singleton
     CTool tool;
-
-    //module communication object
-    CModuleComm mc;
 
     //boundary instance
     CBoundary bnd;
@@ -1342,8 +1323,6 @@ signals:
     void offlineDistanceChanged();
 
     // Steering Control signals
-    void steerAngleActualChanged();
-    void lblPWMDisplayChanged();
     void calcSteerAngleInnerChanged();
     void calcSteerAngleOuterChanged();
     void diameterChanged();
@@ -1381,7 +1360,6 @@ signals:
     void imuCorrectedChanged();
     void lblCalcSteerAngleInnerChanged();
     void lblDiameterChanged();
-    void sensorDataChanged();
     void latStartChanged();
     void lonStartChanged();
     void mPerDegreeLatChanged();
@@ -1444,8 +1422,6 @@ private:
     // isReverseWithIMU: use existing variable at line 527
 
     // Steering Control (6) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_steerAngleActual, &FormGPS::steerAngleActualChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_lblPWMDisplay, &FormGPS::lblPWMDisplayChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_calcSteerAngleInner, &FormGPS::calcSteerAngleInnerChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_calcSteerAngleOuter, &FormGPS::calcSteerAngleOuterChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_diameter, &FormGPS::diameterChanged)
@@ -1489,8 +1465,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuCorrected, &FormGPS::imuCorrectedChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblCalcSteerAngleInner, &FormGPS::lblCalcSteerAngleInnerChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblDiameter, &FormGPS::lblDiameterChanged)
-
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_sensorData, &FormGPS::sensorDataChanged)
 
     // Additional AOG Properties (9) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_latStart, &FormGPS::latStartChanged)

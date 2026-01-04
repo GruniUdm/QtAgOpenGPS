@@ -8,8 +8,6 @@ bool CModuleComm::s_cpp_created = false;
 
 CModuleComm::CModuleComm(QObject *parent) : QObject(parent)
 {
-    //does a low, grounded out, mean on
-    isWorkSwitchActiveLow = true;
 }
 
 CModuleComm *CModuleComm::instance()
@@ -46,12 +44,15 @@ CModuleComm *CModuleComm::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine)
 
 void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
 {
+    //This really doesn't want to be in this class.  It's only used in FormGPS
+
     //AutoSteerAuto button enable - Ray Bear inspired code - Thx Ray!
-    if (ahrs.isAutoSteerAuto && steerSwitchHigh != oldSteerSwitchRemote)
+    if (ahrs.isAutoSteerAuto && m_steerSwitchHigh != oldSteerSwitchRemote)
     {
-        oldSteerSwitchRemote = steerSwitchHigh;
+        oldSteerSwitchRemote = m_steerSwitchHigh;
         //steerSwith is active low
-        if (steerSwitchHigh == isBtnAutoSteerOn)
+        set_steerSwitchHigh(isBtnAutoSteerOn);
+        if (m_steerSwitchHigh)
             emit stopAutoSteer();
             //mf.btnAutoSteer.PerformClick();
     }
@@ -62,7 +63,7 @@ void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
         {
             oldWorkSwitchHigh = workSwitchHigh;
 
-            if (workSwitchHigh != isWorkSwitchActiveLow)
+            if (workSwitchHigh != SettingsManager::instance()->f_isWorkSwitchActiveLow())
             {
                 if (isWorkSwitchManualSections)
                 {
@@ -85,12 +86,12 @@ void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
             }
         }
 
-        if (isSteerWorkSwitchEnabled && (oldSteerSwitchHigh != steerSwitchHigh))
+        if (isSteerWorkSwitchEnabled && (oldSteerSwitchHigh != m_steerSwitchHigh))
         {
-            oldSteerSwitchHigh = steerSwitchHigh;
+            oldSteerSwitchHigh = m_steerSwitchHigh;
 
             if ((isBtnAutoSteerOn && ahrs.isAutoSteerAuto)
-                || (!ahrs.isAutoSteerAuto && !steerSwitchHigh))
+                || (!ahrs.isAutoSteerAuto && !m_steerSwitchHigh))
             {
                 if (isSteerWorkSwitchManualSections)
                 {

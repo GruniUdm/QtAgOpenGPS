@@ -28,6 +28,7 @@
 #include "boundaryinterface.h"
 #include "recordedpath.h"
 #include "siminterface.h"
+#include "cmodulecomm.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -65,6 +66,8 @@ void FormGPS::UpdateFixPosition()
     //     if (nowHz < 3) nowHz = 3;
     // }
     // Simulation mode: No limits, show true CPU performance
+
+    double mc_actualSteerAngleDegrees = CModuleComm::instance()->actualSteerAngleDegrees();
 
     //simple comp filter
     gpsHz = 0.98 * gpsHz + 0.02 * nowHz;
@@ -357,10 +360,10 @@ void FormGPS::UpdateFixPosition()
                     // PHASE 6.0.35: Wheel angle compensation (forwardComp/reverseComp already implemented)
                     if (CVehicle::instance()->isReverse())
                         newGPSHeading -= glm::toRadians(CVehicle::instance()->antennaPivot / 1
-                                                        * mc.actualSteerAngleDegrees * ahrs.reverseComp);
+                                                        * mc_actualSteerAngleDegrees * ahrs.reverseComp);
                     else
                         newGPSHeading -= glm::toRadians(CVehicle::instance()->antennaPivot / 1
-                                                        * mc.actualSteerAngleDegrees * ahrs.forwardComp);
+                                                        * mc_actualSteerAngleDegrees * ahrs.forwardComp);
 
                     if (newGPSHeading < 0) newGPSHeading += glm::twoPI;
                     else if (newGPSHeading >= glm::twoPI) newGPSHeading -= glm::twoPI;
@@ -505,10 +508,10 @@ void FormGPS::UpdateFixPosition()
                             // PHASE 6.0.35: Wheel angle compensation (forwardComp/reverseComp already implemented)
                             if (CVehicle::instance()->isReverse())
                                 newGPSHeading -= glm::toRadians(CVehicle::instance()->antennaPivot / 1
-                                                                * mc.actualSteerAngleDegrees * ahrs.reverseComp);
+                                                                * mc_actualSteerAngleDegrees * ahrs.reverseComp);
                             else
                                 newGPSHeading -= glm::toRadians(CVehicle::instance()->antennaPivot / 1
-                                                                * mc.actualSteerAngleDegrees * ahrs.forwardComp);
+                                                                * mc_actualSteerAngleDegrees * ahrs.forwardComp);
 
                             if (newGPSHeading < 0) newGPSHeading += glm::twoPI;
                             else if (newGPSHeading >= glm::twoPI) newGPSHeading -= glm::twoPI;
@@ -532,7 +535,7 @@ void FormGPS::UpdateFixPosition()
                         // PHASE 6.0.35 FIX: Apply wheel angle compensation in forward mode too!
                         // Bug: compensation was only applied in reverse detection branch
                         newGPSHeading -= glm::toRadians(CVehicle::instance()->antennaPivot / 1
-                                                        * mc.actualSteerAngleDegrees * ahrs.forwardComp);
+                                                        * mc_actualSteerAngleDegrees * ahrs.forwardComp);
 
                         if (newGPSHeading < 0) newGPSHeading += glm::twoPI;
                         else if (newGPSHeading >= glm::twoPI) newGPSHeading -= glm::twoPI;
@@ -900,7 +903,7 @@ void FormGPS::UpdateFixPosition()
         // C# original: OpenGL.Designer.cs:1858-1876
         // Behavior: When autosteer activates, automatically center track to current tractor position
         // This is a ONE-TIME snap (not continuous tracking) controlled by isAutoSnapped flag
-        if (mc.steerSwitchHigh)
+        if (CModuleComm::instance()->steerSwitchHigh())
         {
             // Manual steer override active (switch on handlebar)
             // Reset auto-snap flag so it can snap again when autosteer re-enabled
@@ -971,7 +974,7 @@ void FormGPS::UpdateFixPosition()
         }
 
         double tanSteerAngle = tan(glm::toRadians(((double)(CVehicle::instance()->guidanceLineSteerAngle)) * 0.01));
-        double tanActSteerAngle = tan(glm::toRadians(mc.actualSteerAngleDegrees));
+        double tanActSteerAngle = tan(glm::toRadians(mc_actualSteerAngleDegrees));
 
         setAngVel = 0.277777 * CVehicle::instance()->avgSpeed * tanSteerAngle / CVehicle::instance()->wheelbase;
         actAngVel = glm::toDegrees(0.277777 * CVehicle::instance()->avgSpeed * tanActSteerAngle / CVehicle::instance()->wheelbase);
@@ -1239,8 +1242,6 @@ void FormGPS::UpdateFixPosition()
     // isReverseWithIMU now uses Q_OBJECT_BINDABLE_PROPERTY m_isReverseWithIMU
 
     // === Steering Control Updates (6 properties) ===
-    if (m_steerAngleActual != mc.actualSteerAngleDegrees) { m_steerAngleActual = mc.actualSteerAngleDegrees; steerChangedFlag = true; }
-    if (m_lblPWMDisplay != mc.pwmDisplay) { m_lblPWMDisplay = mc.pwmDisplay; steerChangedFlag = true; }
     if (m_calcSteerAngleInner != steerAngleRight) { m_calcSteerAngleInner = steerAngleRight; steerChangedFlag = true; }
     if (m_calcSteerAngleOuter != steerAngleRight) { m_calcSteerAngleOuter = steerAngleRight; steerChangedFlag = true; }
     if (m_diameter != _diameter) { m_diameter = _diameter; steerChangedFlag = true; }
@@ -1303,7 +1304,6 @@ void FormGPS::UpdateFixPosition()
     if (m_vehicle_bounding_box != newBoundingBox) { m_vehicle_bounding_box = newBoundingBox; geometryChangedFlag = true; }
 
     // === Misc Status Updates (2 properties) ===
-    if (m_steerSwitchHigh != mc.steerSwitchHigh) { m_steerSwitchHigh = mc.steerSwitchHigh; miscChangedFlag = true; }
     if (m_imuCorrected != _imuCorrected) { m_imuCorrected = _imuCorrected; miscChangedFlag = true; }
 
     // ===== QProperty + BINDABLE AUTOMATIC NOTIFICATIONS =====
@@ -1984,8 +1984,8 @@ void FormGPS::processSectionLookahead() {
     }
 
     //Checks the workswitch or steerSwitch if required
-    if (ahrs.isAutoSteerAuto || mc.isRemoteWorkSystemOn)
-        mc.CheckWorkAndSteerSwitch(ahrs,MainWindowState::instance()->isBtnAutoSteerOn());
+    if (ahrs.isAutoSteerAuto || SettingsManager::instance()->f_isRemoteWorkSystemOn())
+        CModuleComm::instance()->CheckWorkAndSteerSwitch(ahrs,MainWindowState::instance()->isBtnAutoSteerOn());
 
     // check if any sections have changed status
     number = 0;
@@ -2735,24 +2735,24 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
     if (data.hasSteerData) {
         // Steer Angle Actual (from PGN 253 byte 5-6)
         if (data.steerAngleActual != 0) {
-            mc.actualSteerAngleDegrees = data.steerAngleActual * 0.01;
+            CModuleComm::instance()->set_actualSteerAngleDegrees(data.steerAngleActual * 0.01);
         }
 
         // Switch Status (from PGN 253 byte 11)
         if (data.switchByte != 0) {
-            mc.workSwitchHigh = (data.switchByte & 0x01) == 0x01;
-            mc.steerSwitchHigh = (data.switchByte & 0x02) == 0x02;
-            mc.CheckWorkAndSteerSwitch(ahrs, MainWindowState::instance()->isBtnAutoSteerOn());
+            CModuleComm::instance()->set_workSwitchHigh((data.switchByte & 0x01) == 0x01);
+            CModuleComm::instance()->set_steerSwitchHigh((data.switchByte & 0x02) == 0x02);
+            CModuleComm::instance()->CheckWorkAndSteerSwitch(ahrs, MainWindowState::instance()->isBtnAutoSteerOn());
         }
 
         // PWM Display (from PGN 253 byte 12)
         if (data.pwmDisplay != 0) {
-            mc.pwmDisplay = data.pwmDisplay;
+            CModuleComm::instance()->set_pwmDisplay(data.pwmDisplay);
         }
 
         // Sensor Value (from PGN 250 byte 5)
         if (data.sensorValue != 0) {
-            mc.sensorData = data.sensorValue;
+            CModuleComm::instance()->set_sensorData(data.sensorValue);
         }
     }
 
@@ -2778,17 +2778,6 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
         // Simpler: no need to duplicate assignment here
 
         // AutoSteer display data (10 Hz → QML)
-        if (data.hasSteerData) {
-            if (data.steerAngleActual != 0) {
-                setSteerAngleActual(mc.actualSteerAngleDegrees);
-            }
-            if (data.switchByte != 0) {
-                setSteerSwitchHigh(mc.steerSwitchHigh);
-            }
-            if (data.pwmDisplay != 0) {
-                setLblPWMDisplay(mc.pwmDisplay);
-            }
-        }
     }
 }
 
@@ -2923,8 +2912,7 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
     // PGN 253: AutoSteer status
     if (data.pgnNumber == 253) {
         // Actual steer angle from module
-        mc.actualSteerAngleChart = data.steerAngleActual;
-        mc.actualSteerAngleDegrees = data.steerAngleActual * 0.01;
+        CModuleComm::instance()->set_actualSteerAngleDegrees(data.steerAngleActual * 0.01);
 
         // IMU data from AutoSteer module (fallback if no external IMU)
         if (data.hasIMU) {
@@ -2946,11 +2934,11 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
         }
 
         // Switch status (work switch, steer switch)
-        mc.workSwitchHigh = (data.switchByte & 0x01) != 0;
-        mc.steerSwitchHigh = (data.switchByte & 0x02) != 0;
+        CModuleComm::instance()->set_workSwitchHigh((data.switchByte & 0x01) != 0);
+        CModuleComm::instance()->set_steerSwitchHigh((data.switchByte & 0x02) != 0);
 
         // PWM display (motor drive 0-255)
-        mc.pwmDisplay = data.pwmDisplay;
+        CModuleComm::instance()->set_pwmDisplay(data.pwmDisplay);
 
         // Reset module connection timeout counter
         setSteerModuleConnectedCounter(0);
@@ -2958,7 +2946,7 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
 
     // PGN 250: Sensor data (pressure/current)
     if (data.pgnNumber == 250) {
-        mc.sensorData = data.sensorValue;
+        CModuleComm::instance()->set_sensorData(data.sensorValue);
     }
 
     // NO UpdateFixPosition() - AutoSteer feedback only

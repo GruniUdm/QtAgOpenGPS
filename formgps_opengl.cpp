@@ -28,6 +28,7 @@
 #include "mainwindowstate.h"
 #include "flagsinterface.h"
 #include "siminterface.h"
+#include "cmodulecomm.h"
 #include "cpgn.h"
 #include "rendering.h"
 
@@ -37,6 +38,9 @@
 #include <QLabel>
 
 Q_LOGGING_CATEGORY (qgl, "formgps_opengl.qtagopengps")
+
+//TODO remote this #define
+#define mc CModuleComm::instance()
 
 extern QLabel *overlapPixelsWindow;
 extern QOpenGLShaderProgram *interpColorShader; //pull from glutils.h
@@ -509,7 +513,7 @@ void FormGPS::oglMain_Paint()
 
             //TODO: this is redundant. The simulator sets mc.actualSteerangleDegrees
             if(SimInterface::instance()->isRunning()) steerangle = SimInterface::instance()->steerAngleActual();
-            else steerangle = mc.actualSteerAngleDegrees;
+            else steerangle = CModuleComm::instance()->actualSteerAngleDegrees();
 
             double markLeft, markRight;
             if (bnd.isBndBeingMade) {

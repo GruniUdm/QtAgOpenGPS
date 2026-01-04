@@ -423,7 +423,7 @@ Window{
                     width: 250 * theme.scaleWidth
                     height: 50 * theme.scaleWidth
                     visible: cboxPressureSensor.checked || cboxCurrentSensor.checked
-                    value: aog.sensorData
+                    value: ModuleComm.sensorData
                     from: 0
                     to: 255
                     Text {
@@ -431,7 +431,7 @@ Window{
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: parent.right
                         anchors.leftMargin: 5
-                        text: (aog.sensorData < 0 ? "0" : aog.sensorData) + " %"
+                        text: (ModuleComm.sensorData < 0 ? "0" : ModuleComm.sensorData) + " %"
                         font.bold: true
                     }
                 }

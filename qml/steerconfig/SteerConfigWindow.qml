@@ -484,7 +484,7 @@ Drawer {
             Text{
                 anchors.left: pwmRow.left
                 anchors.top: pwmRow.bottom
-                text: qsTr("PWM: "+ aog.lblPWMDisplay)
+                text: qsTr("PWM: "+ ModuleComm.pwmDisplay)
             }
             Text{
                 anchors.right: pwmRow.right

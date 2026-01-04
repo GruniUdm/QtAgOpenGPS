@@ -223,14 +223,6 @@ void FormGPS::setOfflineDistance(double offlineDistance) { m_offlineDistance = o
 QBindable<double> FormGPS::bindableOfflineDistance() { return &m_offlineDistance; }
 
 // ===== Steering Properties =====
-double FormGPS::steerAngleActual() const { return m_steerAngleActual; }
-void FormGPS::setSteerAngleActual(double steerAngleActual) { m_steerAngleActual = steerAngleActual; }
-QBindable<double> FormGPS::bindableSteerAngleActual() { return &m_steerAngleActual; }
-
-int FormGPS::lblPWMDisplay() const { return m_lblPWMDisplay; }
-void FormGPS::setLblPWMDisplay(int lblPWMDisplay) { m_lblPWMDisplay = lblPWMDisplay; }
-QBindable<int> FormGPS::bindableLblPWMDisplay() { return &m_lblPWMDisplay; }
-
 double FormGPS::calcSteerAngleInner() const { return m_calcSteerAngleInner; }
 void FormGPS::setCalcSteerAngleInner(double calcSteerAngleInner) { m_calcSteerAngleInner = calcSteerAngleInner; }
 QBindable<double> FormGPS::bindableCalcSteerAngleInner() { return &m_calcSteerAngleInner; }
@@ -359,10 +351,6 @@ void FormGPS::setLblDiameter(const QString &value) { m_lblDiameter = value; }
 QBindable<QString> FormGPS::bindableLblDiameter() { return &m_lblDiameter; }
 
 // ===== Button State Properties =====
-int FormGPS::sensorData() const { return m_sensorData; }
-void FormGPS::setSensorData(int sensorData) { m_sensorData = sensorData; }
-QBindable<int> FormGPS::bindableSensorData() { return &m_sensorData; }
-
 double FormGPS::latStart() const { return m_latStart.value(); }
 void FormGPS::setLatStart(double latStart) {
     qDebug() << "[GEODETIC_DEBUG] setLatStart called with value:" << latStart;
