@@ -42,6 +42,8 @@ class CVehicle: public QObject
     Q_PROPERTY(int rightTramState READ rightTramState WRITE setRightTramState NOTIFY rightTramStateChanged BINDABLE bindableRightTramState)
     Q_PROPERTY(bool isReverse READ isReverse WRITE setIsReverse NOTIFY isReverseChanged BINDABLE bindableIsReverse)
     Q_PROPERTY(QList<QVariant> vehicleList READ vehicleList WRITE setVehicleList NOTIFY vehicleListChanged BINDABLE bindableVehicleList)
+    Q_PROPERTY(bool isInFreeDriveMode READ isInFreeDriveMode WRITE setIsInFreeDriveMode NOTIFY isInFreeDriveModeChanged BINDABLE bindableIsInFreeDriveMode)
+    Q_PROPERTY(double driveFreeSteerAngle READ driveFreeSteerAngle WRITE setDriveFreeSteerAngle NOTIFY driveFreeSteerAngleChanged BINDABLE bindableDriveFreeSteerAngle)
 
 public:
     // C++ singleton access (strict singleton pattern - same as CTrack)
@@ -83,12 +85,6 @@ public:
     double stanleyIntegralDistanceAwayTriggerAB = 0.0;
     double stanleyIntegralGainAB = 0.0;
     double purePursuitIntegralGain = 0.0;
-
-    //flag for free drive window to control autosteer
-    bool isInFreeDriveMode = false;
-
-    //the trackbar angle for free drive
-    double driveFreeSteerAngle = 0;
 
     double modeXTE = 0.0;
     double modeActualXTE = 0.0;
@@ -172,7 +168,8 @@ signals:
     void leftTramStateChanged();
     void rightTramStateChanged();
     void vehicleListChanged();
-
+    void isInFreeDriveModeChanged();
+    void driveFreeSteerAngleChanged();
 
     // Thread-safe vehicle management signals (Phase 1 architecture)
     void vehicle_saveas(QString vehicle_name);
@@ -220,6 +217,14 @@ public:
     QList<QVariant> vehicleList() const; // Qt 6.8 FIX: Moved to .cpp
     void setVehicleList(const QList<QVariant>& value); // Qt 6.8 FIX: Moved to .cpp
     QBindable<QList<QVariant>> bindableVehicleList(); // Qt 6.8 FIX: Moved to .cpp
+
+    bool isInFreeDriveMode() const;
+    void setIsInFreeDriveMode(bool new_mode);
+    QBindable<bool> bindableIsInFreeDriveMode();
+
+    double driveFreeSteerAngle() const;
+    void setDriveFreeSteerAngle(double new_angle);
+    QBindable<double> bindableDriveFreeSteerAngle();
 
     // Legacy compatibility methods
     void setLeftTramIndicator(int value) { setLeftTramState(value); }
@@ -270,6 +275,9 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, int, m_leftTramState, &CVehicle::leftTramStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, int, m_rightTramState, &CVehicle::rightTramStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QList<QVariant>, m_vehicleList, &CVehicle::vehicleListChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, bool, m_isInFreeDriveMode, false, &CVehicle::isInFreeDriveModeChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_driveFreeSteerAngle, 0, &CVehicle::driveFreeSteerAngleChanged)
+
 };
 
 #endif // CVEHICLE_H

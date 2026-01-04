@@ -113,8 +113,6 @@ class FormGPS : public QQmlApplicationEngine
     // === Steering Control (6 properties) - Critical for autosteer - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(double steerAngleActual READ steerAngleActual WRITE setSteerAngleActual
                NOTIFY steerAngleActualChanged BINDABLE bindableSteerAngleActual)
-    Q_PROPERTY(double steerAngleSet READ steerAngleSet WRITE setSteerAngleSet
-               NOTIFY steerAngleSetChanged BINDABLE bindableSteerAngleSet)
     Q_PROPERTY(int lblPWMDisplay READ lblPWMDisplay WRITE setLblPWMDisplay
                NOTIFY lblPWMDisplayChanged BINDABLE bindableLblPWMDisplay)
     Q_PROPERTY(double calcSteerAngleInner READ calcSteerAngleInner WRITE setCalcSteerAngleInner
@@ -283,10 +281,6 @@ public:
     double steerAngleActual() const;
     void setSteerAngleActual(double value);
     QBindable<double> bindableSteerAngleActual();
-
-    double steerAngleSet() const;
-    void setSteerAngleSet(double value);
-    QBindable<double> bindableSteerAngleSet();
 
     int lblPWMDisplay() const;
     void setLblPWMDisplay(int value);
@@ -1018,10 +1012,6 @@ public:
     Q_INVOKABLE void modulesSend251();
     Q_INVOKABLE void modulesSend252();
     Q_INVOKABLE void blockageMonitoring();
-    Q_INVOKABLE void steerAngleUp();
-    Q_INVOKABLE void steerAngleDown();
-    Q_INVOKABLE void freeDrive();
-    Q_INVOKABLE void freeDriveZero();
     Q_INVOKABLE void startSAAction();
 
     // Batch 12 - 6 actions Wizard & Calibration - lines 325-330
@@ -1277,10 +1267,6 @@ public slots:
 
     void onDeleteAppliedArea_clicked();
 
-    void btnSteerAngleUp_clicked(); // steersetup
-    void btnSteerAngleDown_clicked();
-    void btnFreeDrive_clicked();
-    void btnFreeDriveZero_clicked();
     void btnStartSA_clicked();
 
 

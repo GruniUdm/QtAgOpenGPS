@@ -663,6 +663,14 @@ void CVehicle::setVehicleList(const QList<QVariant>& value) {
     m_vehicleList = value;
 }
 
+void CVehicle::setIsInFreeDriveMode(bool new_mode) {
+    m_isInFreeDriveMode = new_mode;
+}
+
+void CVehicle::setDriveFreeSteerAngle(double new_angle) {
+    m_driveFreeSteerAngle = new_angle;
+}
+
 // ===== Qt 6.8 Rectangle Pattern Getters =====
 bool CVehicle::isHydLiftOn() const {
     return m_isHydLiftOn;
@@ -686,6 +694,14 @@ int CVehicle::leftTramState() const {
 
 int CVehicle::rightTramState() const {
     return m_rightTramState;
+}
+
+bool CVehicle::isInFreeDriveMode() const {
+    return m_isInFreeDriveMode;
+}
+
+double CVehicle::driveFreeSteerAngle() const {
+    return m_driveFreeSteerAngle;
 }
 
 QList<QVariant> CVehicle::vehicleList() const {
@@ -721,6 +737,13 @@ QBindable<QList<QVariant>> CVehicle::bindableVehicleList() {
     return QBindable<QList<QVariant>>(&m_vehicleList);
 }
 
+QBindable<bool> CVehicle::bindableIsInFreeDriveMode() {
+    return QBindable<bool>(&m_isInFreeDriveMode);
+}
+
+QBindable<double> CVehicle::bindableDriveFreeSteerAngle() {
+    return QBindable<double>(&m_driveFreeSteerAngle);
+}
 
 // ===== Thread-Safe Vehicle Management (Phase 1 Architecture) =====
 // CVehicle emits signals that are connected to FormGPS slots thread-safely

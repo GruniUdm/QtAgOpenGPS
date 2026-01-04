@@ -470,26 +470,6 @@ void FormGPS::blockageMonitoring() {
     doBlockageMonitoring();
 }
 
-void FormGPS::steerAngleUp() {
-    // Modern implementation - same logic as btnSteerAngleUp_clicked()
-    btnSteerAngleUp_clicked();
-}
-
-void FormGPS::steerAngleDown() {
-    // Modern implementation - same logic as btnSteerAngleDown_clicked()
-    btnSteerAngleDown_clicked();
-}
-
-void FormGPS::freeDrive() {
-    // Modern implementation - same logic as btnFreeDrive_clicked()
-    btnFreeDrive_clicked();
-}
-
-void FormGPS::freeDriveZero() {
-    // Modern implementation - same logic as btnFreeDriveZero_clicked()
-    btnFreeDriveZero_clicked();
-}
-
 void FormGPS::startSAAction() {
     // Modern implementation - renamed to avoid conflict with Q_PROPERTY bool startSA()
     // Call the original btnStartSA_clicked() method
@@ -880,44 +860,6 @@ void FormGPS::onBtnManUTurn_clicked(bool right)
 void FormGPS::onBtnLateral_clicked(bool right)
 {
    yt.BuildManualYouLateral(right, track);
-}
-
-void FormGPS::btnSteerAngleUp_clicked(){
-    CVehicle::instance()->driveFreeSteerAngle++;
-    if (CVehicle::instance()->driveFreeSteerAngle > 40) CVehicle::instance()->driveFreeSteerAngle = 40;
-
-    QDEBUG<<"btnSteerAngleUp_clicked";
-}
-void FormGPS::btnSteerAngleDown_clicked(){
-    CVehicle::instance()->driveFreeSteerAngle--;
-    if (CVehicle::instance()->driveFreeSteerAngle < -40) CVehicle::instance()->driveFreeSteerAngle = -40;
-
-    QDEBUG<<"btnSteerAngleDown_clicked";
-}
-void FormGPS::btnFreeDrive_clicked(){
-
-
-    if (CVehicle::instance()->isInFreeDriveMode)
-    {
-        //turn OFF free drive mode
-        CVehicle::instance()->isInFreeDriveMode = false;
-        CVehicle::instance()->driveFreeSteerAngle = 0;
-    }
-    else
-    {
-        //turn ON free drive mode
-        CVehicle::instance()->isInFreeDriveMode = true;
-        CVehicle::instance()->driveFreeSteerAngle = 0;
-    }
-
-    QDEBUG<<"btnFreeDrive_clicked";
-}
-void FormGPS::btnFreeDriveZero_clicked(){
-    if (CVehicle::instance()->driveFreeSteerAngle == 0)
-        CVehicle::instance()->driveFreeSteerAngle = 5;
-    else CVehicle::instance()->driveFreeSteerAngle = 0;
-
-    QDEBUG<<"btnFreeDriveZero_clicked";
 }
 
 void FormGPS::btnStartSA_clicked(){

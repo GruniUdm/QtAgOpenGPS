@@ -227,10 +227,6 @@ double FormGPS::steerAngleActual() const { return m_steerAngleActual; }
 void FormGPS::setSteerAngleActual(double steerAngleActual) { m_steerAngleActual = steerAngleActual; }
 QBindable<double> FormGPS::bindableSteerAngleActual() { return &m_steerAngleActual; }
 
-double FormGPS::steerAngleSet() const { return m_steerAngleSet; }
-void FormGPS::setSteerAngleSet(double steerAngleSet) { m_steerAngleSet = steerAngleSet; }
-QBindable<double> FormGPS::bindableSteerAngleSet() { return &m_steerAngleSet; }
-
 int FormGPS::lblPWMDisplay() const { return m_lblPWMDisplay; }
 void FormGPS::setLblPWMDisplay(int lblPWMDisplay) { m_lblPWMDisplay = lblPWMDisplay; }
 QBindable<int> FormGPS::bindableLblPWMDisplay() { return &m_lblPWMDisplay; }
@@ -876,19 +872,7 @@ void FormGPS::tmrWatchdog_timeout()
         //worldGrid.checkZoomWorldGrid(pn.fix.northing, pn.fix.easting;
 
         //hide the NAv panel in 6  secs
-        /* TODO:
-        if (panelNavigation.Visible)
-        {
-            if (navPanelCounter-- < 2) panelNavigation.Visible = false;
-        }
-
-        if (panelNavigation.Visible)
-            lblHz.Text = gpsHz.ToString("N1") + " ~ " + (frameTime.ToString("N1")) + " " + FixQuality;
-
-        lblFix.Text = FixQuality + pn.age.ToString("N1";
-
-        lblTime.Text = DateTime.Now.ToString("T";
-        */
+        // TODO:
 
         //save nmea log file
         //TODO: if (isLogNMEA) FileSaveNMEA(;

@@ -875,7 +875,7 @@ void FormGPS::UpdateFixPosition()
     if (RecordedPath::instance()->isDrivingRecordedPath()) recPath.UpdatePosition(yt, MainWindowState::instance()->isBtnAutoSteerOn());
 
     // If Drive button off - normal autosteer
-    if (!CVehicle::instance()->isInFreeDriveMode)
+    if (!CVehicle::instance()->isInFreeDriveMode())
     {
         //fill up0 the appropriate arrays with new values
         p_254.pgn[p_254.speedHi] = (char)((int)(fabs(CVehicle::instance()->avgSpeed) * 10.0) >> 8);
@@ -1015,7 +1015,7 @@ void FormGPS::UpdateFixPosition()
         p_254.pgn[p_254.status] = 1;  // PHASE 6.0.29: Free Drive ON (match C# original)
 
         //send the steer angle
-        CVehicle::instance()->guidanceLineSteerAngle = (qint16)(CVehicle::instance()->driveFreeSteerAngle * 100);
+        CVehicle::instance()->guidanceLineSteerAngle = (qint16)(CVehicle::instance()->driveFreeSteerAngle() * 100);
 
         p_254.pgn[p_254.steerAngleHi] = (char)(CVehicle::instance()->guidanceLineSteerAngle >> 8);
         p_254.pgn[p_254.steerAngleLo] = (char)(CVehicle::instance()->guidanceLineSteerAngle);
