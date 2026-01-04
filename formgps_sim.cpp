@@ -16,6 +16,8 @@ void FormGPS::simConnectSlots()
 {
     connect(SimInterface::instance(), &SimInterface::newPosition,
             this, &FormGPS::onSimNewPosition, Qt::UniqueConnection);
+    connect(SimInterface::instance(), &SimInterface::steerAngleActualChanged,
+            &mc, &CModuleComm::onSimSteerAngleActualChanged);
 }
 
 void FormGPS::onSimNewPosition(double vtgSpeed,
