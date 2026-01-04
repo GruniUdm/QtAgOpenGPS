@@ -1525,7 +1525,9 @@ void FormGPS::initializeQMLInterfaces()
 
     QDEBUG << "✅ mainWindow valid, proceeding with interface initialization";
 
-    this->setSentenceCounter(0);
+    //no need to emit Backend::fixFrameChanged() here really.  it defaults
+    //to 0 anyway
+    Backend::instance()->m_fixFrame.sentenceCounter = 0;
     this->setManualBtnState((int)btnStates::Off);
     this->setAutoBtnState((int)btnStates::Off);
     this->setIsPatchesChangingColor( false);
@@ -1601,17 +1603,6 @@ QObject* FormGPS::safeQmlItem(const QString& objectName, int maxRetries)
     }
 
     return obj;
-}
-
-// ===== IMU CONFIGURATION IMPLEMENTATIONS =====
-void FormGPS::changeImuHeading(double heading) {
-    // Met à jour la propriété IMU heading
-    m_imuHeading = heading;
-}
-
-void FormGPS::changeImuRoll(double roll) {
-    // Met à jour la propriété IMU roll
-    m_imuRoll = roll;
 }
 
 // Phase 6.0.20: Qt 6.8 BINDABLE implementation moved to formgps.cpp:303-305

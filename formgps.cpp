@@ -247,31 +247,6 @@ double FormGPS::diameter() const { return m_diameter; }
 void FormGPS::setDiameter(double diameter) { m_diameter = diameter; }
 QBindable<double> FormGPS::bindableDiameter() { return &m_diameter; }
 
-// ===== IMU Properties =====
-double FormGPS::imuRoll() const { return m_imuRoll; }
-void FormGPS::setImuRoll(double imuRoll) { m_imuRoll = imuRoll; }
-QBindable<double> FormGPS::bindableImuRoll() { return &m_imuRoll; }
-
-double FormGPS::imuPitch() const { return m_imuPitch; }
-void FormGPS::setImuPitch(double imuPitch) { m_imuPitch = imuPitch; }
-QBindable<double> FormGPS::bindableImuPitch() { return &m_imuPitch; }
-
-double FormGPS::imuHeading() const { return m_imuHeading; }
-void FormGPS::setImuHeading(double imuHeading) { m_imuHeading = imuHeading; }
-QBindable<double> FormGPS::bindableImuHeading() { return &m_imuHeading; }
-
-double FormGPS::imuRollDegrees() const { return m_imuRollDegrees; }
-void FormGPS::setImuRollDegrees(double imuRollDegrees) { m_imuRollDegrees = imuRollDegrees; }
-QBindable<double> FormGPS::bindableImuRollDegrees() { return &m_imuRollDegrees; }
-
-double FormGPS::imuAngVel() const { return m_imuAngVel; }
-void FormGPS::setImuAngVel(double imuAngVel) { m_imuAngVel = imuAngVel; }
-QBindable<double> FormGPS::bindableImuAngVel() { return &m_imuAngVel; }
-
-double FormGPS::yawRate() const { return m_yawRate; }
-void FormGPS::setYawRate(double yawRate) { m_yawRate = yawRate; }
-QBindable<double> FormGPS::bindableYawRate() { return &m_yawRate; }
-
 // ===== Blockage Properties =====
 double FormGPS::blockage_avg() const { return m_blockage_avg; }
 void FormGPS::setBlockage_avg(double blockage_avg) { m_blockage_avg = blockage_avg; }
@@ -387,10 +362,6 @@ QString FormGPS::lblDiameter() const { return m_lblDiameter; }
 void FormGPS::setLblDiameter(const QString &value) { m_lblDiameter = value; }
 QBindable<QString> FormGPS::bindableLblDiameter() { return &m_lblDiameter; }
 
-int FormGPS::droppedSentences() const { return m_droppedSentences; }
-void FormGPS::setDroppedSentences(int value) { m_droppedSentences = value; }
-QBindable<int> FormGPS::bindableDroppedSentences() { return &m_droppedSentences; }
-
 // ===== Button State Properties =====
 int FormGPS::sensorData() const { return m_sensorData; }
 void FormGPS::setSensorData(int sensorData) { m_sensorData = sensorData; }
@@ -442,10 +413,6 @@ QVariantList FormGPS::convertWGS84ToLocal(double latitude, double longitude) {
     // Return [northing, easting] as QVariantList for QML
     return QVariantList() << outNorthing << outEasting;
 }
-
-uint FormGPS::sentenceCounter() const { return m_sentenceCounter; }
-void FormGPS::setSentenceCounter(uint value) { m_sentenceCounter = value; }
-QBindable<uint> FormGPS::bindableSentenceCounter() { return &m_sentenceCounter; }
 
 // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2
 double FormGPS::gpsHeading() const { return m_gpsHeading; }
@@ -638,7 +605,7 @@ void FormGPS::ResetGPSState(bool toSimMode)
     }
 
     // Reset sentence counter to prevent "No GPS" false alarm
-    setSentenceCounter(0);
+    Backend::instance()->m_fixFrame.sentenceCounter = 0;
 
     if (toSimMode) {
         // Initialize with simulation coordinates
@@ -861,15 +828,9 @@ void FormGPS::tmrWatchdog_timeout()
         SimInterface::instance()->startUp();
     }
 
-    // This is done in QML
-//    if ((uint)sentenceCounter++ > 20)
-//    {
-//        //TODO: ShowNoGPSWarning(;
-//        return;
-//    }
-    // Rectangle Pattern: Use setter to properly increment and emit signal
-    setSentenceCounter(sentenceCounter() + 1);
-
+    Backend::instance()->m_fixFrame.sentenceCounter += 1;
+    //notify QML here since UpdateFixPosition() only runs with a new fix
+    emit Backend::instance()->fixFrameChanged();
 
     if (tenSecondCounter++ >= 40)
     {

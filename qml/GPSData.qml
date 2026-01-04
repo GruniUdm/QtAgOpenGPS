@@ -28,9 +28,9 @@ Rectangle{
         Comp.TextLine{ color: "white"; text: qsTr("Frame ")+ (Number(Backend.fixFrame.frameTime).toLocaleString(Qt.locale(), 'f', 1))}
         Comp.TextLine{ color: "white"; text: qsTr("Raw Hz ", "abbreviation for Raw Hertz")+ (Number(Backend.fixFrame.rawHz).toLocaleString(Qt.locale(), 'f', 1))}
         Comp.TextLine{ color: "white"; text: qsTr("Hz ", "abbreviation for Hertz")+ (Number(Backend.fixFrame.hz).toLocaleString(Qt.locale(), 'f', 1))}
-        Comp.TextLine{ color: "white"; text: qsTr("Dropped ")+ aog.droppedSentences}
+        Comp.TextLine{ color: "white"; text: qsTr("Dropped ")+ Backend.fixFrame.droppedSentences}
         Comp.TextLine{ color: "white"; text: qsTr("Fix2Fix ")+ (Number(aog.gpsHeading * 180 / Math.PI).toLocaleString(Qt.locale(), 'f', 1))}//convert from radians
-        Comp.TextLine{ color: "white"; text: qsTr("IMU ")+ (aog.imuHeading > 360 ? "#INV" : Number(aog.imuHeading).toLocaleString(Qt.locale(), 'f', 1))}
+        Comp.TextLine{ color: "white"; text: qsTr("IMU ")+ (Backend.fixFrame.imuHeading > 360 ? "#INV" : Number(Backend.fixFrame.imuHeading).toLocaleString(Qt.locale(), 'f', 1))}
         Comp.TextLine{ color: "white"; text: qsTr("Heading ")+ (Number(aog.fusedHeading * 180 / Math.PI).toLocaleString(Qt.locale(), 'f', 1))}
         Comp.TextLine{ color: "white"; text: "<br>"}
         Comp.TextLine{ 

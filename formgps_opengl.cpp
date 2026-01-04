@@ -391,7 +391,7 @@ void FormGPS::oglMain_Paint()
     gl->glDisable(GL_DEPTH_TEST);
     //gl->glDisable(GL_TEXTURE_2D);
 
-    if(this->sentenceCounter() < 299)
+    if(Backend::instance()->m_fixFrame.sentenceCounter < 299)
     {
         if (isGPSPositionInitialized)
         {

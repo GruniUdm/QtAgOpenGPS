@@ -124,20 +124,6 @@ class FormGPS : public QQmlApplicationEngine
     Q_PROPERTY(double diameter READ diameter WRITE setDiameter
                NOTIFY diameterChanged BINDABLE bindableDiameter)
 
-    // === IMU Data (5 properties) - Important for stability - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double imuRoll READ imuRoll WRITE setImuRoll
-               NOTIFY imuRollChanged BINDABLE bindableImuRoll)
-    Q_PROPERTY(double imuPitch READ imuPitch WRITE setImuPitch
-               NOTIFY imuPitchChanged BINDABLE bindableImuPitch)
-    Q_PROPERTY(double imuHeading READ imuHeading WRITE setImuHeading
-               NOTIFY imuHeadingChanged BINDABLE bindableImuHeading)
-    Q_PROPERTY(double imuRollDegrees READ imuRollDegrees WRITE setImuRollDegrees
-               NOTIFY imuRollDegreesChanged BINDABLE bindableImuRollDegrees)
-    Q_PROPERTY(double imuAngVel READ imuAngVel WRITE setImuAngVel
-               NOTIFY imuAngVelChanged BINDABLE bindableImuAngVel)
-    Q_PROPERTY(double yawRate READ yawRate WRITE setYawRate
-               NOTIFY yawRateChanged BINDABLE bindableYawRate)
-
     // === Blockage Sensors (8 properties) - Monitoring - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(double blockage_avg READ blockage_avg WRITE setBlockage_avg
                NOTIFY blockage_avgChanged BINDABLE bindableBlockage_avg)
@@ -203,8 +189,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY lblCalcSteerAngleInnerChanged BINDABLE bindableLblCalcSteerAngleInner)
     Q_PROPERTY(QString lblDiameter READ lblDiameter WRITE setLblDiameter
                NOTIFY lblDiameterChanged BINDABLE bindableLblDiameter)
-    Q_PROPERTY(int droppedSentences READ droppedSentences WRITE setDroppedSentences
-               NOTIFY droppedSentencesChanged BINDABLE bindableDroppedSentences)
     Q_PROPERTY(int sensorData READ sensorData WRITE setSensorData
                NOTIFY sensorDataChanged BINDABLE bindableSensorData)
 
@@ -216,10 +200,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY lonStartChanged BINDABLE bindableLonStart)
 
     // mPerDegreeLat: No Q_PROPERTY needed - C++ only (CNMEA/AgIOService read via getter)
-
-    // NMEA Processing - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(uint sentenceCounter READ sentenceCounter WRITE setSentenceCounter
-               NOTIFY sentenceCounterChanged BINDABLE bindableSentenceCounter)
 
     // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2 - Qt 6.8 QProperty + BINDABLE
     Q_PROPERTY(double gpsHeading READ gpsHeading WRITE setGpsHeading
@@ -323,31 +303,6 @@ public:
     double diameter() const;
     void setDiameter(double value);
     QBindable<double> bindableDiameter();
-
-    // IMU Data
-    double imuRoll() const;
-    void setImuRoll(double value);
-    QBindable<double> bindableImuRoll();
-
-    double imuPitch() const;
-    void setImuPitch(double value);
-    QBindable<double> bindableImuPitch();
-
-    double imuHeading() const;
-    void setImuHeading(double value);
-    QBindable<double> bindableImuHeading();
-
-    double imuRollDegrees() const;
-    void setImuRollDegrees(double value);
-    QBindable<double> bindableImuRollDegrees();
-
-    double imuAngVel() const;
-    void setImuAngVel(double value);
-    QBindable<double> bindableImuAngVel();
-
-    double yawRate() const;
-    void setYawRate(double value);
-    QBindable<double> bindableYawRate();
 
     // Blockage Sensors
     double blockage_avg() const;
@@ -466,10 +421,6 @@ public:
     QString lblDiameter() const;
     void setLblDiameter(const QString &value);
     QBindable<QString> bindableLblDiameter();
-
-    int droppedSentences() const;
-    void setDroppedSentences(int value);
-    QBindable<int> bindableDroppedSentences();
 
     int sensorData() const;
     void setSensorData(int value);
@@ -1126,10 +1077,6 @@ public:
     Q_INVOKABLE void settings_revert() { settingsReload(); }
     // modules_send_252 not needed - modulesSend252() already exists as Q_INVOKABLE
 
-    // ===== Q_INVOKABLE IMU CONFIGURATION =====
-    Q_INVOKABLE void changeImuHeading(double heading);
-    Q_INVOKABLE void changeImuRoll(double roll);
-
     /******************
      * formgps_ui.cpp *
      ******************/
@@ -1410,19 +1357,10 @@ signals:
 
     // Steering Control signals
     void steerAngleActualChanged();
-    void steerAngleSetChanged();
     void lblPWMDisplayChanged();
     void calcSteerAngleInnerChanged();
     void calcSteerAngleOuterChanged();
     void diameterChanged();
-
-    // IMU Data signals
-    void imuRollChanged();
-    void imuPitchChanged();
-    void imuHeadingChanged();
-    void imuRollDegreesChanged();
-    void imuAngVelChanged();
-    void yawRateChanged();
 
     // Blockage Sensors signals
     void blockage_avgChanged();
@@ -1457,7 +1395,6 @@ signals:
     void imuCorrectedChanged();
     void lblCalcSteerAngleInnerChanged();
     void lblDiameterChanged();
-    void droppedSentencesChanged();
     void sensorDataChanged();
     void latStartChanged();
     void lonStartChanged();
@@ -1522,19 +1459,10 @@ private:
 
     // Steering Control (6) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_steerAngleActual, &FormGPS::steerAngleActualChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_steerAngleSet, &FormGPS::steerAngleSetChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_lblPWMDisplay, &FormGPS::lblPWMDisplayChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_calcSteerAngleInner, &FormGPS::calcSteerAngleInnerChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_calcSteerAngleOuter, &FormGPS::calcSteerAngleOuterChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_diameter, &FormGPS::diameterChanged)
-
-    // IMU Data (5) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuRoll, &FormGPS::imuRollChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuPitch, &FormGPS::imuPitchChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuHeading, &FormGPS::imuHeadingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuRollDegrees, &FormGPS::imuRollDegreesChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_imuAngVel, &FormGPS::imuAngVelChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_yawRate, &FormGPS::yawRateChanged)
 
     // Blockage Sensors (8) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_avg, &FormGPS::blockage_avgChanged)
@@ -1575,7 +1503,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuCorrected, &FormGPS::imuCorrectedChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblCalcSteerAngleInner, &FormGPS::lblCalcSteerAngleInnerChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblDiameter, &FormGPS::lblDiameterChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_droppedSentences, &FormGPS::droppedSentencesChanged)
 
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_sensorData, &FormGPS::sensorDataChanged)
 

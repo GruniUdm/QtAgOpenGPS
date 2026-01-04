@@ -9,6 +9,7 @@
 #include <QRandomGenerator>
 #include "mainwindowstate.h"
 #include "siminterface.h"
+#include "backend.h"
 
 /* Callback for Simulator new position */
 void FormGPS::simConnectSlots()
@@ -74,7 +75,8 @@ void FormGPS::onSimNewPosition(double vtgSpeed,
     //are notifying QML properly.
     pn.age = QRandomGenerator::global()->generateDouble();
 
-    this->setSentenceCounter(0);
+    Backend::instance()->m_fixFrame.sentenceCounter = 0;
+    Backend::instance()->m_fixFrame.droppedSentences = 0;
 
     // Phase 6.0.20: Qt 6.8 BINDABLE properties - direct setter calls replace qmlItem()->setProperty()
     // BINDABLE auto-emits property changed signals for QML reactivity
@@ -87,9 +89,6 @@ void FormGPS::onSimNewPosition(double vtgSpeed,
 
     // Fused heading in simulation = GPS heading (no IMU fusion needed)
     this->setFusedHeading(headingTrue);
-
-    // Dropped sentences = 0 in perfect simulation
-    this->setDroppedSentences(0);
 
     // GPS timing properties (frameTime, rawHz, hz) are calculated dynamically by UpdateFixPosition()
     // - formgps_position.cpp:34-47  → calculates nowHz and gpsHz from swFrame timer

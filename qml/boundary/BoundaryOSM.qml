@@ -221,7 +221,7 @@ Popup{
                 id: osmMap
                 anchors.fill: parent
                 plugin: osmSatellitePlugin
-                center:  QtPositioning.coordinate(aog.latitude, aog.longitude)
+                center:  QtPositioning.coordinate(Backend.fixFrame.latitude, Backend.fixFrame.longitude)
                 zoomLevel: 15
                 copyrightsVisible: true
 
@@ -234,7 +234,7 @@ Popup{
 
                 // Круг для текущей позиции
                 MapCircle {
-                    center: QtPositioning.coordinate(aog.latitude, aog.longitude)
+                    center: QtPositioning.coordinate(Backend.fixFrame.latitude, Backend.fixFrame.longitude)
                     radius: 10
                     color: "green"
                 }
@@ -421,7 +421,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             onClicked: {
                 if (mapLoader.item) {
-                    mapLoader.item.center = QtPositioning.coordinate(aog.latitude, aog.longitude);
+                    mapLoader.item.center = QtPositioning.coordinate(Backend.fixFrame.latitude, Backend.fixFrame.longitude);
                 }
             }
         }

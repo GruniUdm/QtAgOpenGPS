@@ -344,7 +344,7 @@ Window {
         id: noGPS
         anchors.fill: glcontrolrect
         color: "#0d0d0d"
-        visible: aog.sentenceCounter> 29
+        visible: Backend.fixFrame.sentenceCounter> 29
         onVisibleChanged: if(visible){
                               console.log("no gps now visible")
                           }
@@ -393,7 +393,7 @@ Window {
             anchors.right: rightColumn.left
             anchors.margins: 10
             visible: true
-            rollAngle: aog.imuRollDegrees
+            rollAngle: Backend.fixFrame.imuRollDegrees
             // Phase 6.0.20 Task 24 Step 3.2: Use aog.steerModuleConnectedCounter instead of aogInterface
             steerColor: (aog.steerModuleConnectedCounter > 30 ?
                              "#f0f218f0" :
@@ -929,7 +929,7 @@ Window {
             height: 300  * theme.scaleHeight
             width: 400  * theme.scaleWidth
             xval1: Backend.fixFrame.heading  // Rectangle Pattern: direct property access
-            xval2: aog.imuHeading > 360 ? 0 : aog.imuHeading  // Show real IMU heading, 0 if invalid
+            xval2: Backend.fixFrame.imuHeading > 360 ? 0 : Backend.fixFrame.imuHeading  // Show real IMU heading, 0 if invalid
             axismin: -10
             axismax: 10
             lineName1:"Fix2fix"

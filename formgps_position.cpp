@@ -1240,18 +1240,17 @@ void FormGPS::UpdateFixPosition()
 
     // === Steering Control Updates (6 properties) ===
     if (m_steerAngleActual != mc.actualSteerAngleDegrees) { m_steerAngleActual = mc.actualSteerAngleDegrees; steerChangedFlag = true; }
-    if (m_steerAngleSet != CVehicle::instance()->driveFreeSteerAngle) { m_steerAngleSet = CVehicle::instance()->driveFreeSteerAngle; steerChangedFlag = true; }
     if (m_lblPWMDisplay != mc.pwmDisplay) { m_lblPWMDisplay = mc.pwmDisplay; steerChangedFlag = true; }
     if (m_calcSteerAngleInner != steerAngleRight) { m_calcSteerAngleInner = steerAngleRight; steerChangedFlag = true; }
     if (m_calcSteerAngleOuter != steerAngleRight) { m_calcSteerAngleOuter = steerAngleRight; steerChangedFlag = true; }
     if (m_diameter != _diameter) { m_diameter = _diameter; steerChangedFlag = true; }
 
     // === IMU Data Updates (5 properties) ===
-    if (m_imuRoll != ahrs.imuRoll) { m_imuRoll = ahrs.imuRoll; imuChangedFlag = true; }
-    if (m_imuPitch != ahrs.imuPitch) { m_imuPitch = ahrs.imuPitch; imuChangedFlag = true; }
-    if (m_imuHeading != ahrs.imuHeading) { m_imuHeading = ahrs.imuHeading; imuChangedFlag = true; }
-    if (m_imuRollDegrees != ahrs.imuRoll) { m_imuRollDegrees = ahrs.imuRoll; imuChangedFlag = true; }
-    if (m_imuAngVel != ahrs.angVel) { m_imuAngVel = ahrs.angVel; imuChangedFlag = true; }
+    Backend::instance()->m_fixFrame.imuRoll = ahrs.imuRoll;
+    Backend::instance()->m_fixFrame.imuPitch = ahrs.imuPitch;
+    Backend::instance()->m_fixFrame.imuHeading = ahrs.imuHeading;
+    Backend::instance()->m_fixFrame.imuRollDegrees = ahrs.imuRoll;
+    Backend::instance()->m_fixFrame.imuAngVel = ahrs.angVel;
 
     // === GPS Status Updates (8 properties) ===
     Backend::instance()->m_fixFrame.hdop = pn.hdop;
@@ -1262,7 +1261,9 @@ void FormGPS::UpdateFixPosition()
     Backend::instance()->m_fixFrame.rawHz = nowHz;
     // Phase 6.0.20 Task 24 Step 5.6: droppedSentences - TODO implement real GPS frame drop counter
     // For now, set to 0 (old udpWatchCounts removed in Phase 4.6 AgIOService migration)
-    if (m_droppedSentences != 0) { m_droppedSentences = 0; }
+    if (Backend::instance()->m_fixFrame.droppedSentences !=0) {
+        Backend::instance()->m_fixFrame.droppedSentences = 0;
+    }
 
     //TODO: limit this to update qml at only 10hz
     emit Backend::instance()->fixFrameChanged();
@@ -2147,7 +2148,7 @@ void FormGPS::processSectionLookahead() {
     BuildMachineByte();
 
     //if a minute has elapsed save the field in case of crash and to be able to resume
-    if (minuteCounter > 30 && this->sentenceCounter() < 20)
+    if (minuteCounter > 30 && Backend::instance()->m_fixFrame.sentenceCounter < 20)
     {
         // Phase 2.4: No longer need to stop timer - saves are now fast (< 50ms)
         // tmrWatchdog->stop();  // REMOVED - buffered saves don't block GPS
@@ -2724,10 +2725,10 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
         // ✅ NO THROTTLING: Assign directly to Q_PROPERTY (40 Hz)
         // Qt optimizes: only triggers QML update if value actually changed
         // Simpler architecture: no intermediate storage, no sync bugs
-        setImuHeading(data.imuHeading);  // 0° = north (VALID)
-        setImuRoll(data.imuRoll);        // 0° = horizontal (VALID)
-        setImuPitch(data.imuPitch);      // 0° = no slope (VALID)
-        setYawRate(data.yawRate);        // 0°/s = no rotation (VALID)
+        Backend::instance()->m_fixFrame.imuHeading = data.imuHeading;  // 0° = north (VALID)
+        Backend::instance()->m_fixFrame.imuRoll = data.imuRoll;        // 0° = horizontal (VALID)
+        Backend::instance()->m_fixFrame.imuPitch = data.imuPitch;      // 0° = no slope (VALID)
+        Backend::instance()->m_fixFrame.yawRate = data.yawRate;        // 0°/s = no rotation (VALID)
     }
 
     // PHASE 6.0.23: Store AutoSteer control data if present (PGN 253/250) - 40 Hz
@@ -2755,8 +2756,7 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
         }
     }
 
-    // ✅ PHASE 6.0.21.9: Reset sentenceCounter on valid NMEA data (prevents "No GPS" false alarm)
-    this->setSentenceCounter(0);
+    Backend::instance()->m_fixFrame.sentenceCounter = 0;
 
     // Phase 6.0.24: UpdateFixPosition() moved to timerGPS callback (40 Hz fixed rate)
     // onParsedDataReady() now ONLY stores data in pn/ahrs structures
@@ -2855,17 +2855,16 @@ void FormGPS::onNmeaDataReady(const PGNParser::ParsedData& data)
         ahrs.imuYawRate = data.yawRate;
 
         // Update Q_PROPERTY (used by QML display)
-        setImuHeading(data.imuHeading);  // 0° = north (VALID)
-        setImuRoll(data.imuRoll);        // 0° = horizontal (VALID)
-        setImuPitch(data.imuPitch);      // 0° = no slope (VALID)
-        setYawRate(data.yawRate);        // 0°/s = no rotation (VALID)
+        Backend::instance()->m_fixFrame.imuHeading = data.imuHeading; // 0° = north (VALID)
+        Backend::instance()->m_fixFrame.imuRoll = data.imuRoll;        // 0° = horizontal (VALID)
+        Backend::instance()->m_fixFrame.imuPitch = data.imuPitch;      // 0° = no slope (VALID)
+        Backend::instance()->m_fixFrame.yawRate = data.yawRate;        // 0°/s = no rotation (VALID)
     }
 
-    // Phase 6.0.27 Part 3: Reset sentenceCounter on valid NMEA data (prevents "No GPS" false alarm)
     // Watchdog timer (tmrWatchdog_timeout) increments sentenceCounter every 250ms
     // MainWindow.qml shows "No GPS" warning when sentenceCounter > 29 (~7.25 seconds)
     // Must reset counter to 0 when NMEA data arrives to indicate GPS is working
-    this->setSentenceCounter(0);
+    Backend::instance()->m_fixFrame.sentenceCounter = 0;
 
     // NO UpdateFixPosition() here - called by timerGPS at 40 Hz fixed rate
 }
@@ -2884,15 +2883,15 @@ void FormGPS::onImuDataReady(const PGNParser::ParsedData& data)
 
     // PGN 212: IMU disconnect - set sentinel values
     if (data.pgnNumber == 212) {
-        setImuHeading(99999.0);  // Sentinel: IMU disconnected
-        setImuRoll(88888.0);     // Sentinel: IMU disconnected
-        setYawRate(0.0);
+        Backend::instance()->m_fixFrame.imuHeading = 99999.0;  // Sentinel: IMU disconnected
+        Backend::instance()->m_fixFrame.imuRoll = 88888.0;     // Sentinel: IMU disconnected
+        Backend::instance()->m_fixFrame.yawRate = 0.0;
         return;
     }
 
     // PGN 211: External IMU data
     if (data.hasIMU) {
-        setImuHeading(data.imuHeading);
+        Backend::instance()->m_fixFrame.imuHeading = data.imuHeading;
 
         // Roll with filtering and inversion
         double rollK = data.imuRoll;
@@ -2900,13 +2899,13 @@ void FormGPS::onImuDataReady(const PGNParser::ParsedData& data)
         rollK -= ahrs.rollZero;
 
         // Apply exponential filter
-        double currentRoll = imuRoll();
+        double currentRoll = Backend::instance()->m_fixFrame.imuRoll;
         double filteredRoll = currentRoll * ahrs.rollFilter + rollK * (1.0 - ahrs.rollFilter);
-        setImuRoll(filteredRoll);
+        Backend::instance()->m_fixFrame.imuRoll = filteredRoll;
 
         // Yaw rate
         if (data.yawRate != 0.0) {
-            setYawRate(data.yawRate);
+            Backend::instance()->m_fixFrame.yawRate = data.yawRate;
         }
     }
 
@@ -2931,7 +2930,7 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
         if (data.hasIMU) {
             // Heading from AutoSteer BNO085 (if valid)
             if (data.imuHeading != 9999.0) {
-                setImuHeading(data.imuHeading);
+                Backend::instance()->m_fixFrame.imuHeading = data.imuHeading;
             }
 
             // Roll from AutoSteer BNO085 (if valid, with filtering)
@@ -2940,9 +2939,9 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
                 if (ahrs.isRollInvert) rollK *= -1.0;
                 rollK -= ahrs.rollZero;
 
-                double currentRoll = imuRoll();
+                double currentRoll = Backend::instance()->m_fixFrame.imuRoll;
                 double filteredRoll = currentRoll * ahrs.rollFilter + rollK * (1.0 - ahrs.rollFilter);
-                setImuRoll(filteredRoll);
+                Backend::instance()->m_fixFrame.imuRoll = filteredRoll;
             }
         }
 

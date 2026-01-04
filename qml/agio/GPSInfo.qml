@@ -102,22 +102,22 @@ Window {
 
         Text {
             font.pixelSize: 10
-            text: qsTr("Heading: ") + Number(aog.imuHeading).toLocaleString(Qt.locale(), 'f', 1)
+            text: qsTr("Heading: ") + Number(Backend.fixFrame.imuHeading).toLocaleString(Qt.locale(), 'f', 1)
 			Layout.alignment: Qt.AlignLeft
 		}
         Text {
             font.pixelSize: 10
-            text: qsTr("Roll: ") + (Number(aog.imuRoll).toLocaleString(Qt.locale(), 'f', 1))
+            text: qsTr("Roll: ") + (Number(Backend.fixFrame.imuRoll).toLocaleString(Qt.locale(), 'f', 1))
 			Layout.alignment: Qt.AlignLeft
 		}
         Text {
             font.pixelSize: 10
-            text: qsTr("Pitch: ") + (Number(aog.imuPitch).toLocaleString(Qt.locale(), 'f', 1))
+            text: qsTr("Pitch: ") + (Number(Backend.fixFrame.imuPitch).toLocaleString(Qt.locale(), 'f', 1))
 			Layout.alignment: Qt.AlignLeft
 		}
         Text {
             font.pixelSize: 10
-            text: qsTr("Yaw Rate: ") + (Number(aog.yawRate).toLocaleString(Qt.locale(), 'f', 1))
+            text: qsTr("Yaw Rate: ") + (Number(Backend.fixFrame.yawRate).toLocaleString(Qt.locale(), 'f', 1))
 			Layout.alignment: Qt.AlignLeft
 		}
 	}

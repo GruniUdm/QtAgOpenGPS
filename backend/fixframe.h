@@ -18,14 +18,19 @@ class FixFrame
     Q_PROPERTY(double longitude MEMBER longitude)
     Q_PROPERTY(double heading MEMBER heading)
     Q_PROPERTY(double altitude MEMBER altitude)
+    Q_PROPERTY(double yawRate MEMBER imuAngVel)
     Q_PROPERTY(int fixQuality MEMBER fixQuality)
     Q_PROPERTY(double hz MEMBER hz)
     Q_PROPERTY(double rawHz MEMBER rawHz)
     Q_PROPERTY(int droppedSentences MEMBER droppedSentences)
+    Q_PROPERTY(int sentenceCounter MEMBER sentenceCounter)
+    Q_PROPERTY(double frameTime MEMBER frameTime)
 
     Q_PROPERTY(double imuHeading MEMBER imuHeading)
+    Q_PROPERTY(double imuRoll MEMBER imuRoll)
+    Q_PROPERTY(double imuPitch MEMBER imuPitch)
     Q_PROPERTY(double imuRollDegrees MEMBER imuRollDegrees)
-    Q_PROPERTY(double frameTime MEMBER frameTime)
+    //Q_PROPERTY(double imuAngVel MEMBER imuAngVel)
 
     Q_PROPERTY(double speedKph MEMBER speedKph)
     Q_PROPERTY(double fusedHeading MEMBER fusedHeading)
@@ -46,16 +51,25 @@ public:
     double longitude = 0.0;
     double heading = 0.0;
     double altitude = 0.0;
+    double yawRate = 0;
     int fixQuality = 0;
     double hz = 0;
     double rawHz = 0;
+
     int droppedSentences = 0;
+    int sentenceCounter = 0;
+    double frameTime = 0;
+    double frameTimeRough = 0;
 
     //imu information
     double imuHeading = 0;
+    double imuRoll = 0;
+    double imuPitch = 0;
     double imuRollDegrees = 0;
-    double frameTime = 0;
-    double frameTimeRough = 0;
+
+    //currently not exposed to QML
+    double imuAngVel = 0;
+
 
     //vehicle state, maybe put in a different struct
     double speedKph = 0;
