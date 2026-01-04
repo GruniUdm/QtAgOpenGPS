@@ -59,11 +59,11 @@ void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
 
     if (SettingsManager::instance()->f_isRemoteWorkSystemOn())
     {
-        if (isWorkSwitchEnabled && (oldWorkSwitchHigh != workSwitchHigh))
+        if (isWorkSwitchEnabled && (oldWorkSwitchHigh != workSwitchHigh()))
         {
-            oldWorkSwitchHigh = workSwitchHigh;
+            oldWorkSwitchHigh = workSwitchHigh();
 
-            if (workSwitchHigh != SettingsManager::instance()->f_isWorkSwitchActiveLow())
+            if (workSwitchHigh() != SettingsManager::instance()->f_isWorkSwitchActiveLow())
             {
                 if (isWorkSwitchManualSections)
                 {

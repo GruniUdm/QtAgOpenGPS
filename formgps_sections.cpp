@@ -7,7 +7,7 @@
 #include "common.h"
 #include "cpgn.h"
 #include "classes/settingsmanager.h"
-
+#include "cmodulecomm.h"
 
 /* SectionSetPosition(), SectionCalcWidths(), and SectionCalcMulti() are all in CTool */
 
@@ -81,6 +81,8 @@ void FormGPS::BuildMachineByte()
 void FormGPS::DoRemoteSwitches()
 {
     //MTZ8302 Feb 2020
+
+    CModuleComm &mc = *CModuleComm::instance();
 
     // Check if AgIOService is ON - if OFF, skip all hardware switch processing
     SettingsManager* settings = SettingsManager::instance();
@@ -339,7 +341,8 @@ void FormGPS::DoRemoteSwitches()
 
 void FormGPS::doBlockageMonitoring()
 {
-    // Phase 6.0.20: FormGPS context available via 'this' - no qmlItem() needed
+    CModuleComm &mc = *CModuleComm::instance();
+
     int k = 0;
     int k1 = SettingsManager::instance()->seed_blockRow1();
     int k2 = SettingsManager::instance()->seed_blockRow2();
