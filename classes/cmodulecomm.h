@@ -2,18 +2,36 @@
 #define CMODULECOMM_H
 
 #include <QObject>
+#include <QQmlEngine>
+#include <QMutex>
+#include <QPropertyBinding>
 #include <QtCore>
 #include <QString>
+#include "simpleproperty.h"
 
 class CAHRS;
 
 class CModuleComm: public QObject
 {
     Q_OBJECT
+    QML_NAMED_ELEMENT(ModuleComm)
+    QML_SINGLETON
+
+private:
+    explicit CModuleComm(QObject *parent = nullptr);
+    ~CModuleComm() override = default;
+
+    // Prevent copying
+    CModuleComm(const CModuleComm &) = delete;
+    CModuleComm &operator=(const CModuleComm &) = delete;
+
+    static CModuleComm *s_instance;
+    static QMutex s_mutex;
+    static bool s_cpp_created;
 
 public:
-    bool isOutOfBounds = true;
-
+    static CModuleComm *instance();
+    static CModuleComm *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
     // ---- Section control switches to AOG  ---------------------------------------------------------
     //PGN - 32736 - 127.249 0x7FF9
     uchar ss[9];
@@ -32,7 +50,6 @@ public:
         swOffGr1 = 8;
 
     int pwmDisplay = 0;
-    double actualSteerAngleDegrees = 0;
     int actualSteerAngleChart = 0;
     int sensorData = -1;  // PHASE 6.0.23: Sensor value from PGN 250
 
@@ -45,24 +62,23 @@ public:
 
 
     //for the workswitch
-    bool isWorkSwitchActiveLow, isRemoteWorkSystemOn, isWorkSwitchEnabled,
+    bool isWorkSwitchActiveLow, isWorkSwitchEnabled,
         isWorkSwitchManualSections, isSteerWorkSwitchManualSections, isSteerWorkSwitchEnabled;
 
     bool workSwitchHigh, oldWorkSwitchHigh, steerSwitchHigh, oldSteerSwitchHigh, oldSteerSwitchRemote;
 
-    explicit CModuleComm(QObject *parent = 0);
     void CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn);
+
+    SIMPLE_BINDABLE_PROPERTY(double,  actualSteerAngleDegrees)
+
 signals:
     void stopAutoSteer(void);
-    void turnOffManulSections(void);
+    void turnOffManualSections(void);
     void turnOffAutoSections(void);
 
 public slots:
-    void onSimSteerAngleActualChanged();
-
-    void setOutOfBounds() {
-        isOutOfBounds = true;
-    }
+private:
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CModuleComm, double, m_actualSteerAngleDegrees, 0, &CModuleComm::actualSteerAngleDegreesChanged)
 };
 
 #endif // CMODULECOMM_H

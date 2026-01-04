@@ -1,15 +1,48 @@
 #include "cmodulecomm.h"
 #include "cahrs.h"
-#include "siminterface.h"
+#include "settingsmanager.h"
+
+CModuleComm *CModuleComm::s_instance = nullptr;
+QMutex CModuleComm::s_mutex;
+bool CModuleComm::s_cpp_created = false;
 
 CModuleComm::CModuleComm(QObject *parent) : QObject(parent)
 {
-    //WorkSwitch logic
-    isRemoteWorkSystemOn = false;
-
     //does a low, grounded out, mean on
     isWorkSwitchActiveLow = true;
 }
+
+CModuleComm *CModuleComm::instance()
+{
+    QMutexLocker locker(&s_mutex);
+    if (!s_instance) {
+        s_instance = new CModuleComm();
+        s_cpp_created = true;
+        // Ensure cleanup on app exit
+        QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+                         s_instance, []() {
+                             delete s_instance;
+                             s_instance = nullptr;
+                         });
+    }
+    return s_instance;
+}
+
+CModuleComm *CModuleComm::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine)
+{
+    Q_UNUSED(jsEngine)
+
+    QMutexLocker locker(&s_mutex);
+
+    if (!s_instance) {
+        s_instance = new CModuleComm();
+    } else if (s_cpp_created) {
+        qmlEngine->setObjectOwnership(s_instance, QQmlEngine::CppOwnership);
+    }
+
+    return s_instance;
+}
+
 
 void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
 {
@@ -23,7 +56,7 @@ void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
             //mf.btnAutoSteer.PerformClick();
     }
 
-    if (isRemoteWorkSystemOn)
+    if (SettingsManager::instance()->f_isRemoteWorkSystemOn())
     {
         if (isWorkSwitchEnabled && (oldWorkSwitchHigh != workSwitchHigh))
         {
@@ -33,7 +66,7 @@ void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
             {
                 if (isWorkSwitchManualSections)
                 {
-                    emit turnOffManulSections();
+                    emit turnOffManualSections();
                     //mf.btnSectionMasterManual.PerformClick();
                 }
                 else
@@ -47,7 +80,7 @@ void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
             {
                 emit turnOffAutoSections();
                 //mf.btnSectionMasterAuto.PerformClick();
-                emit turnOffManulSections();
+                emit turnOffManualSections();
                 //mf.btnSectionMasterManual.PerformClick();
             }
         }
@@ -61,7 +94,7 @@ void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
             {
                 if (isSteerWorkSwitchManualSections)
                 {
-                    emit turnOffManulSections();
+                    emit turnOffManualSections();
                     //mf.btnSectionMasterManual.PerformClick();
                 }
                 else
@@ -75,13 +108,9 @@ void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
             {
                 emit turnOffAutoSections();
                 //mf.btnSectionMasterAuto.PerformClick();
-                emit turnOffManulSections();
+                emit turnOffManualSections();
                 //mf.btnSectionMasterManual.PerformClick();
             }
         }
     }
-}
-
-void CModuleComm::onSimSteerAngleActualChanged() {
-    this->actualSteerAngleDegrees = SimInterface::instance()->steerAngleActual();
 }
