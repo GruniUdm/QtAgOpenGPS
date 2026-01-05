@@ -4,7 +4,7 @@
 // This runs every time we get a new GPS fix, or sim position
 #include "formgps.h"
 #include "cnmea.h"
-#include "cmodulecomm.h"
+#include "modulecomm.h"
 #include "ccontour.h"
 #include "cvehicle.h"
 #include "csection.h"
@@ -28,7 +28,7 @@
 #include "boundaryinterface.h"
 #include "recordedpath.h"
 #include "siminterface.h"
-#include "cmodulecomm.h"
+#include "modulecomm.h"
 #include "cpgn.h"
 #include <QtConcurrent/QtConcurrentRun>
 
@@ -48,7 +48,7 @@ void FormGPS::UpdateFixPosition()
     // Now copies from m_rawGpsPosition member (set by onNmeaDataReady at 8 Hz)
     Vec2 rawGpsPosition;
 
-    CPGN_FE &p_254 = CModuleComm::instance()->p_254;
+    CPGN_FE &p_254 = ModuleComm::instance()->p_254;
 
     //swFrame.Stop();
     //Measure the frequency of the GPS updates
@@ -70,7 +70,7 @@ void FormGPS::UpdateFixPosition()
     // }
     // Simulation mode: No limits, show true CPU performance
 
-    double mc_actualSteerAngleDegrees = CModuleComm::instance()->actualSteerAngleDegrees();
+    double mc_actualSteerAngleDegrees = ModuleComm::instance()->actualSteerAngleDegrees();
 
     //simple comp filter
     gpsHz = 0.98 * gpsHz + 0.02 * nowHz;
@@ -906,7 +906,7 @@ void FormGPS::UpdateFixPosition()
         // C# original: OpenGL.Designer.cs:1858-1876
         // Behavior: When autosteer activates, automatically center track to current tractor position
         // This is a ONE-TIME snap (not continuous tracking) controlled by isAutoSnapped flag
-        if (CModuleComm::instance()->steerSwitchHigh())
+        if (ModuleComm::instance()->steerSwitchHigh())
         {
             // Manual steer override active (switch on handlebar)
             // Reset auto-snap flag so it can snap again when autosteer re-enabled
@@ -1613,8 +1613,8 @@ void FormGPS::processSectionLookahead() {
     oglBack_Paint();
 #endif
 
-    CPGN_EF &p_239 = CModuleComm::instance()->p_239;
-    CPGN_E5 &p_229 = CModuleComm::instance()->p_229;
+    CPGN_EF &p_239 = ModuleComm::instance()->p_239;
+    CPGN_E5 &p_229 = ModuleComm::instance()->p_229;
 
     QThread *currentThread = QThread::currentThread();
     qDebug(qpos) << "Back processing thread is" << currentThread;
@@ -1993,7 +1993,7 @@ void FormGPS::processSectionLookahead() {
 
     //Checks the workswitch or steerSwitch if required
     if (ahrs.isAutoSteerAuto || SettingsManager::instance()->f_isRemoteWorkSystemOn())
-        CModuleComm::instance()->CheckWorkAndSteerSwitch(ahrs,MainWindowState::instance()->isBtnAutoSteerOn());
+        ModuleComm::instance()->CheckWorkAndSteerSwitch(ahrs,MainWindowState::instance()->isBtnAutoSteerOn());
 
     // check if any sections have changed status
     number = 0;
@@ -2743,24 +2743,24 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
     if (data.hasSteerData) {
         // Steer Angle Actual (from PGN 253 byte 5-6)
         if (data.steerAngleActual != 0) {
-            CModuleComm::instance()->set_actualSteerAngleDegrees(data.steerAngleActual * 0.01);
+            ModuleComm::instance()->set_actualSteerAngleDegrees(data.steerAngleActual * 0.01);
         }
 
         // Switch Status (from PGN 253 byte 11)
         if (data.switchByte != 0) {
-            CModuleComm::instance()->set_workSwitchHigh((data.switchByte & 0x01) == 0x01);
-            CModuleComm::instance()->set_steerSwitchHigh((data.switchByte & 0x02) == 0x02);
-            CModuleComm::instance()->CheckWorkAndSteerSwitch(ahrs, MainWindowState::instance()->isBtnAutoSteerOn());
+            ModuleComm::instance()->set_workSwitchHigh((data.switchByte & 0x01) == 0x01);
+            ModuleComm::instance()->set_steerSwitchHigh((data.switchByte & 0x02) == 0x02);
+            ModuleComm::instance()->CheckWorkAndSteerSwitch(ahrs, MainWindowState::instance()->isBtnAutoSteerOn());
         }
 
         // PWM Display (from PGN 253 byte 12)
         if (data.pwmDisplay != 0) {
-            CModuleComm::instance()->set_pwmDisplay(data.pwmDisplay);
+            ModuleComm::instance()->set_pwmDisplay(data.pwmDisplay);
         }
 
         // Sensor Value (from PGN 250 byte 5)
         if (data.sensorValue != 0) {
-            CModuleComm::instance()->set_sensorData(data.sensorValue);
+            ModuleComm::instance()->set_sensorData(data.sensorValue);
         }
     }
 
@@ -2920,7 +2920,7 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
     // PGN 253: AutoSteer status
     if (data.pgnNumber == 253) {
         // Actual steer angle from module
-        CModuleComm::instance()->set_actualSteerAngleDegrees(data.steerAngleActual * 0.01);
+        ModuleComm::instance()->set_actualSteerAngleDegrees(data.steerAngleActual * 0.01);
 
         // IMU data from AutoSteer module (fallback if no external IMU)
         if (data.hasIMU) {
@@ -2942,11 +2942,11 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
         }
 
         // Switch status (work switch, steer switch)
-        CModuleComm::instance()->set_workSwitchHigh((data.switchByte & 0x01) != 0);
-        CModuleComm::instance()->set_steerSwitchHigh((data.switchByte & 0x02) != 0);
+        ModuleComm::instance()->set_workSwitchHigh((data.switchByte & 0x01) != 0);
+        ModuleComm::instance()->set_steerSwitchHigh((data.switchByte & 0x02) != 0);
 
         // PWM display (motor drive 0-255)
-        CModuleComm::instance()->set_pwmDisplay(data.pwmDisplay);
+        ModuleComm::instance()->set_pwmDisplay(data.pwmDisplay);
 
         // Reset module connection timeout counter
         setSteerModuleConnectedCounter(0);
@@ -2954,7 +2954,7 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
 
     // PGN 250: Sensor data (pressure/current)
     if (data.pgnNumber == 250) {
-        CModuleComm::instance()->set_sensorData(data.sensorValue);
+        ModuleComm::instance()->set_sensorData(data.sensorValue);
     }
 
     // NO UpdateFixPosition() - AutoSteer feedback only

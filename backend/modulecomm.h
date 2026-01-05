@@ -1,5 +1,5 @@
-#ifndef CMODULECOMM_H
-#define CMODULECOMM_H
+#ifndef MODULECOMM_H
+#define MODULECOMM_H
 
 #include <QObject>
 #include <QQmlEngine>
@@ -12,7 +12,7 @@
 
 class CAHRS;
 
-class CModuleComm: public QObject
+class ModuleComm: public QObject
 {
     Q_OBJECT
     QML_NAMED_ELEMENT(ModuleComm)
@@ -29,20 +29,20 @@ class CModuleComm: public QObject
     Q_PROPERTY(CPGN_F5 p_245 MEMBER p_245 NOTIFY p_245_changed)
 
 private:
-    explicit CModuleComm(QObject *parent = nullptr);
-    ~CModuleComm() override = default;
+    explicit ModuleComm(QObject *parent = nullptr);
+    ~ModuleComm() override = default;
 
     // Prevent copying
-    CModuleComm(const CModuleComm &) = delete;
-    CModuleComm &operator=(const CModuleComm &) = delete;
+    ModuleComm(const ModuleComm &) = delete;
+    ModuleComm &operator=(const ModuleComm &) = delete;
 
-    static CModuleComm *s_instance;
+    static ModuleComm *s_instance;
     static QMutex s_mutex;
     static bool s_cpp_created;
 
 public:
-    static CModuleComm *instance();
-    static CModuleComm *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
+    static ModuleComm *instance();
+    static ModuleComm *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
     // ---- Section control switches to AOG  ---------------------------------------------------------
     //PGN - 32736 - 127.249 0x7FF9
     uchar ss[9];
@@ -111,11 +111,11 @@ signals:
 
 public slots:
 private:
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CModuleComm, double, m_actualSteerAngleDegrees, 0, &CModuleComm::actualSteerAngleDegreesChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CModuleComm, bool, m_steerSwitchHigh, 0, &CModuleComm::steerSwitchHighChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CModuleComm, bool, m_workSwitchHigh, 0, &CModuleComm::workSwitchHighChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CModuleComm, int, m_sensorData, -1, &CModuleComm::sensorDataChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CModuleComm, int, m_pwmDisplay, 0, &CModuleComm::pwmDisplayChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(ModuleComm, double, m_actualSteerAngleDegrees, 0, &ModuleComm::actualSteerAngleDegreesChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(ModuleComm, bool, m_steerSwitchHigh, 0, &ModuleComm::steerSwitchHighChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(ModuleComm, bool, m_workSwitchHigh, 0, &ModuleComm::workSwitchHighChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(ModuleComm, int, m_sensorData, -1, &ModuleComm::sensorDataChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(ModuleComm, int, m_pwmDisplay, 0, &ModuleComm::pwmDisplayChanged)
 };
 
-#endif // CMODULECOMM_H
+#endif // MODULECOMM_H

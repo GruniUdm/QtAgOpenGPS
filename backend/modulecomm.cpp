@@ -1,4 +1,4 @@
-#include "cmodulecomm.h"
+#include "modulecomm.h"
 #include "cahrs.h"
 #include "settingsmanager.h"
 #include "agioservice.h"
@@ -6,19 +6,19 @@
 Q_LOGGING_CATEGORY (cmodulecomm_log, "cmodulecomm.qtagopengps")
 #define QDEBUG qDebug(cmodulecomm_log)
 
-CModuleComm *CModuleComm::s_instance = nullptr;
-QMutex CModuleComm::s_mutex;
-bool CModuleComm::s_cpp_created = false;
+ModuleComm *ModuleComm::s_instance = nullptr;
+QMutex ModuleComm::s_mutex;
+bool ModuleComm::s_cpp_created = false;
 
-CModuleComm::CModuleComm(QObject *parent) : QObject(parent)
+ModuleComm::ModuleComm(QObject *parent) : QObject(parent)
 {
 }
 
-CModuleComm *CModuleComm::instance()
+ModuleComm *ModuleComm::instance()
 {
     QMutexLocker locker(&s_mutex);
     if (!s_instance) {
-        s_instance = new CModuleComm();
+        s_instance = new ModuleComm();
         s_cpp_created = true;
         // Ensure cleanup on app exit
         QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
@@ -30,14 +30,14 @@ CModuleComm *CModuleComm::instance()
     return s_instance;
 }
 
-CModuleComm *CModuleComm::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine)
+ModuleComm *ModuleComm::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine)
 {
     Q_UNUSED(jsEngine)
 
     QMutexLocker locker(&s_mutex);
 
     if (!s_instance) {
-        s_instance = new CModuleComm();
+        s_instance = new ModuleComm();
     } else if (s_cpp_created) {
         qmlEngine->setObjectOwnership(s_instance, QQmlEngine::CppOwnership);
     }
@@ -46,7 +46,7 @@ CModuleComm *CModuleComm::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine)
 }
 
 
-void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
+void ModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
 {
     //This really doesn't want to be in this class.  It's only used in FormGPS
 
@@ -120,7 +120,7 @@ void CModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
     }
 }
 
-void CModuleComm::modulesSend238() {
+void ModuleComm::modulesSend238() {
     QDEBUG << "Sending 238 message to AgIO";
     p_238.pgn[p_238.set0] = SettingsManager::instance()->ardMac_setting0();
     p_238.pgn[p_238.raiseTime] = SettingsManager::instance()->ardMac_hydRaiseTime();
@@ -136,7 +136,7 @@ void CModuleComm::modulesSend238() {
     AgIOService::instance()->sendPgn(p_238.pgn);
 }
 
-void CModuleComm::modulesSend251() {
+void ModuleComm::modulesSend251() {
     //QDEBUG << "Sending 251 message to AgIO";
     p_251.pgn[p_251.set0] = SettingsManager::instance()->ardSteer_setting0();
     p_251.pgn[p_251.set1] = SettingsManager::instance()->ardSteer_setting1();
@@ -152,7 +152,7 @@ void CModuleComm::modulesSend251() {
     AgIOService::instance()->sendPgn(p_251.pgn);
 }
 
-void CModuleComm::modulesSend252() {
+void ModuleComm::modulesSend252() {
     //QDEBUG << "Sending 252 message to AgIO";
     p_252.pgn[p_252.gainProportional] = SettingsManager::instance()->as_Kp();
     p_252.pgn[p_252.highPWM] = SettingsManager::instance()->as_highSteerPWM();
@@ -170,7 +170,7 @@ void CModuleComm::modulesSend252() {
     AgIOService::instance()->sendPgn(p_252.pgn);
 }
 
-void CModuleComm::modulesSend245() {
+void ModuleComm::modulesSend245() {
        //qDebug() << "Sending 245 message to AgIO";
 
     // Получаем все значения строк

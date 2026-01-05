@@ -28,7 +28,7 @@
 #include "mainwindowstate.h"
 #include "flagsinterface.h"
 #include "siminterface.h"
-#include "cmodulecomm.h"
+#include "modulecomm.h"
 #include "cpgn.h"
 #include "rendering.h"
 
@@ -513,7 +513,7 @@ void FormGPS::oglMain_Paint()
 
             //TODO: this is redundant. The simulator sets mc.actualSteerangleDegrees
             if(SimInterface::instance()->isRunning()) steerangle = SimInterface::instance()->steerAngleActual();
-            else steerangle = CModuleComm::instance()->actualSteerAngleDegrees();
+            else steerangle = ModuleComm::instance()->actualSteerAngleDegrees();
 
             double markLeft, markRight;
             if (bnd.isBndBeingMade) {
@@ -559,7 +559,7 @@ void FormGPS::oglMain_Paint()
 
             //if this is on, VehicleInterface.isHydLiftOn is true
             //why is this here? Should be somewhere in UpdateFixPosition()
-            if (CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] == 2)
+            if (ModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] == 2)
             {
                 CVehicle::instance()->setHydLiftDown(false); //VehicleInterface.hydLiftDown in QML
             }

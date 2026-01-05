@@ -31,7 +31,7 @@
 #include "flagsinterface.h"
 #include "recordedpath.h"
 #include "siminterface.h"
-#include "cmodulecomm.h"
+#include "modulecomm.h"
 
 Q_LOGGING_CATEGORY (formgps_ui, "formgps_ui.qtagopengps")
 #define QDEBUG qDebug(formgps_ui)
@@ -584,8 +584,8 @@ void FormGPS::onBtnHeadland_clicked(){
     if (!MainWindowState::instance()->isHeadlandOn())
     {
         //shut off the hyd lift pgn
-        CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
-        emit CModuleComm::instance()->p_239_changed();
+        ModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
+        emit ModuleComm::instance()->p_239_changed();
         //btnHydLift.Image = Properties.Resources.HydraulicLiftOff;
     }
 }
@@ -598,14 +598,14 @@ void FormGPS::onBtnHydLift_clicked(){
         }
         else
         {
-            CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
-            emit CModuleComm::instance()->p_239_changed();
+            ModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
+            emit ModuleComm::instance()->p_239_changed();
         }
     }
     else
     {
-        CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
-        emit CModuleComm::instance()->p_239_changed();
+        ModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
+        emit ModuleComm::instance()->p_239_changed();
         CVehicle::instance()->setIsHydLiftOn(false);
     }
 }

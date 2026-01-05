@@ -149,7 +149,6 @@ qt_add_executable(QtAgOpenGPS
     classes/cguidance.h classes/cguidance.cpp
     classes/chead.cpp
     classes/cheadline.h classes/cheadline.cpp
-    classes/cmodulecomm.h classes/cmodulecomm.cpp
     classes/cnmea.h classes/cnmea.cpp
     classes/cpatches.h classes/cpatches.cpp
     classes/cpgn.h classes/cpgn.cpp
@@ -170,7 +169,6 @@ qt_add_executable(QtAgOpenGPS
     classes/vec3.h classes/vec3.cpp
     classes/vec4.h classes/vec4.cpp
     classes/vecfix2fix.h
-    classes/qmlblockage.h classes/qmlblockage.cpp
     # LICENSE
     # TODO.md
     # README.md
@@ -375,6 +373,8 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/fencelinemodel.h backend/fencelinemodel.cpp
     SOURCES backend/flagmodel.h backend/flagmodel.cpp
     SOURCES backend/fixframe.h
+    SOURCES backend/modulecomm.h backend/modulecomm.cpp
+    SOURCES backend/blockage.h backend/blockage.cpp
 )
 
 ###### End Script of Handling QML in module ######

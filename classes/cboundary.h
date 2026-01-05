@@ -17,7 +17,7 @@ class QMatrix4x4;
 class CVehicle;
 class CABLine;
 class CYouTurn;
-class CModuleComm;
+class ModuleComm;
 class CTool;
 class CPGN_EF;
 

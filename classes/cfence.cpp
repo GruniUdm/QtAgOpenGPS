@@ -3,7 +3,7 @@
 #include "glutils.h"
 #include "classes/settingsmanager.h"
 #include "cvehicle.h"
-#include "cmodulecomm.h"
+#include "modulecomm.h"
 #include "qmlutil.h"
 
 /*************/

@@ -20,7 +20,7 @@
 #include "flagsinterface.h"
 #include "siminterface.h"
 #include "recordedpath.h"
-#include "cmodulecomm.h"
+#include "modulecomm.h"
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
@@ -985,8 +985,8 @@ void FormGPS::JobClose()
     recPath.StopDrivingRecordedPath();
 
     //make sure hydraulic lift is off
-    CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
-    emit CModuleComm::instance()->p_239_changed();
+    ModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
+    emit ModuleComm::instance()->p_239_changed();
 
     CVehicle::instance()->setIsHydLiftOn(false); //this turns off the button also - Qt 6.8
 

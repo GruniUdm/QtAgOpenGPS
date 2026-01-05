@@ -44,7 +44,7 @@
 #include "cguidance.h"
 #include "cheadline.h"
 #include "ctrack.h"
-#include "qmlblockage.h"
+#include "blockage.h"
 #include "formheadland.h"
 #include "formheadache.h"
 
@@ -691,7 +691,7 @@ public:
     //QScopedPointer<CNMEA> pn;
     CNMEA pn;
 
-    qmlblockage blockage;
+    Blockage blockage;
 
     //ABLine Instance
     //QScopedPointer<CABLine> ABLine;

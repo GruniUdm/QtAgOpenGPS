@@ -1,10 +1,10 @@
-#include "qmlblockage.h"
+#include "blockage.h"
 
-qmlblockage::qmlblockage(QObject *parent)
+Blockage::Blockage(QObject *parent)
     : QObject{parent}
 {}
 
-void qmlblockage::statistics(const double speed){
+void Blockage::statistics(const double speed){
     // Phase 6.0.20: FormGPS context available via 'this' - no qmlItem() needed
     int k = 0;
     int numRows1 = SettingsManager::instance()->seed_blockRow1();

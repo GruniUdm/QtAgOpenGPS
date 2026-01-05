@@ -7,15 +7,15 @@
 #include "common.h"
 #include "cpgn.h"
 #include "classes/settingsmanager.h"
-#include "cmodulecomm.h"
+#include "modulecomm.h"
 
 /* SectionSetPosition(), SectionCalcWidths(), and SectionCalcMulti() are all in CTool */
 
 void FormGPS::BuildMachineByte()
 {
-    CPGN_FE &p_254 = CModuleComm::instance()->p_254;
-    CPGN_EF &p_239 = CModuleComm::instance()->p_239;
-    CPGN_E5 &p_229 = CModuleComm::instance()->p_229;
+    CPGN_FE &p_254 = ModuleComm::instance()->p_254;
+    CPGN_EF &p_239 = ModuleComm::instance()->p_239;
+    CPGN_E5 &p_229 = ModuleComm::instance()->p_229;
 
     if (tool.isSectionsNotZones)
     {
@@ -81,15 +81,15 @@ void FormGPS::BuildMachineByte()
     p_239.pgn[CPGN_EF::speed] = (char)(CVehicle::instance()->avgSpeed * 10);
     p_239.pgn[CPGN_EF::tram] = (char)tram.controlByte;
 
-    emit CModuleComm::instance()->p_239_changed();
-    emit CModuleComm::instance()->p_254_changed();
+    emit ModuleComm::instance()->p_239_changed();
+    emit ModuleComm::instance()->p_254_changed();
 }
 
 void FormGPS::DoRemoteSwitches()
 {
     //MTZ8302 Feb 2020
 
-    CModuleComm &mc = *CModuleComm::instance();
+    ModuleComm &mc = *ModuleComm::instance();
 
     // Check if AgIOService is ON - if OFF, skip all hardware switch processing
     SettingsManager* settings = SettingsManager::instance();

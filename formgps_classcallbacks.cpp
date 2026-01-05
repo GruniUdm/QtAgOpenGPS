@@ -3,7 +3,7 @@
 //
 //
 #include "formgps.h"
-#include "cmodulecomm.h"
+#include "modulecomm.h"
 
 /***************************************
  * callbacks for classes to connect to *
@@ -26,9 +26,9 @@ void FormGPS::connect_classes()
 
     connect(&ct, &CContour::TimedMessage, this, &FormGPS::TimedMessageBox, Qt::QueuedConnection);
 
-    connect(CModuleComm::instance(), &CModuleComm::stopAutoSteer, this, &FormGPS::onStopAutoSteer, Qt::QueuedConnection);
-    connect(CModuleComm::instance(), &CModuleComm::turnOffAutoSections, this, &FormGPS::onSectionMasterAutoOff, Qt::QueuedConnection);
-    connect(CModuleComm::instance(), &CModuleComm::turnOffManualSections, this, &FormGPS::onSectionMasterManualOff, Qt::QueuedConnection);
+    connect(ModuleComm::instance(), &ModuleComm::stopAutoSteer, this, &FormGPS::onStopAutoSteer, Qt::QueuedConnection);
+    connect(ModuleComm::instance(), &ModuleComm::turnOffAutoSections, this, &FormGPS::onSectionMasterAutoOff, Qt::QueuedConnection);
+    connect(ModuleComm::instance(), &ModuleComm::turnOffManualSections, this, &FormGPS::onSectionMasterManualOff, Qt::QueuedConnection);
 
     connect(&pn, &CNMEA::checkZoomWorldGrid, &worldGrid, &CWorldGrid::checkZoomWorldGrid, Qt::QueuedConnection);
 

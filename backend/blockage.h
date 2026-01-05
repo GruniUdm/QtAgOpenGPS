@@ -1,5 +1,5 @@
-#ifndef QMLBLOCKAGE_H
-#define QMLBLOCKAGE_H
+#ifndef BLOCKAGE_H
+#define BLOCKAGE_H
 
 #include <QObject>
 #include <QVariant>
@@ -7,7 +7,7 @@
 #include "cnmea.h"
 #include "settingsmanager.h"
 
-class qmlblockage : public QObject
+class Blockage : public QObject
 {
     Q_OBJECT
     QMutex mutex;
@@ -31,7 +31,7 @@ public:
     int blockage_max_i=0;
     int blockage_blocked=0;
 
-    explicit qmlblockage(QObject *parent = 0);
+    explicit Blockage(QObject *parent = 0);
     static inline QObject *aog_root = NULL;
     static inline void set_aog_root(QObject *aog_root_) { aog_root = aog_root_;}
 
@@ -40,4 +40,4 @@ private:
 public slots:
 void statistics(const double speed);
 };
-#endif // QMLBLOCKAGE_H
+#endif // BLOCKAGE_H
