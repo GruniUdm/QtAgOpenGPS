@@ -55,7 +55,7 @@ Blockage *Blockage::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
 }
 
 void Blockage::zeroDisplay() {
-    m_blockageModel->clear();
+    m_blockageModel->zeroCounts();
 }
 
 void Blockage::startTimeout() {

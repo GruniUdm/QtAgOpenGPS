@@ -79,6 +79,12 @@ void BlockageModel::removeRowAt(int at_index)
     }
 }
 
+void BlockageModel::zeroCounts() {
+    for (int i=0; i < rows.count(); i++) {
+        setCount(i,0);
+    }
+}
+
 void BlockageModel::clear()
 {
     beginResetModel();

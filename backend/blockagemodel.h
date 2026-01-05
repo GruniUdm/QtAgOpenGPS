@@ -36,6 +36,7 @@ public:
     void clear();
 
     void setCount(int at_index, int count);
+    void zeroCounts();
 
     // Utility
     int count() const { return rows.count(); }
