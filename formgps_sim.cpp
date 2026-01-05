@@ -10,6 +10,7 @@
 #include "mainwindowstate.h"
 #include "siminterface.h"
 #include "backend.h"
+#include "cmodulecomm.h"
 
 /* Callback for Simulator new position */
 void FormGPS::simConnectSlots()

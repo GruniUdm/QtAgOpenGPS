@@ -183,6 +183,13 @@ qt_add_executable(QtAgOpenGPS
     # android/gradlew.bat
     # android/res/values/libs.xml
     # android/res/xml/qtprovider_paths.xml
+    classes/agioservice.cpp
+    classes/pgnparser.cpp
+    classes/ctraffic.cpp
+    classes/ntripworker.cpp
+    classes/serialworker.cpp
+    classes/ctrack.cpp
+    classes/cvehicle.cpp
 )
 
 target_compile_definitions(QtAgOpenGPS PRIVATE QT_QML_DEBUG)
