@@ -20,6 +20,7 @@
 #include "flagsinterface.h"
 #include "siminterface.h"
 #include "recordedpath.h"
+#include "cmodulecomm.h"
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
@@ -70,6 +71,9 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 
     connect(m_agioService, &AgIOService::machineDataReady,
             this, &FormGPS::onMachineDataReady, Qt::DirectConnection);
+
+    connect(m_agioService, &AgIOService::blockageDataReady,
+            this, &FormGPS::onBlockageDataReady, Qt::DirectConnection);
 
     qDebug() << "Phase 6.0.25: Separated NMEA/IMU/Steer signal connections established";
 
@@ -264,9 +268,20 @@ int FormGPS::blockage_max_i() const { return m_blockage_max_i; }
 void FormGPS::setBlockage_max_i(int blockage_max_i) { m_blockage_max_i = blockage_max_i; }
 QBindable<int> FormGPS::bindableBlockage_max_i() { return &m_blockage_max_i; }
 
-bool FormGPS::blockage_blocked() const { return m_blockage_blocked; }
-void FormGPS::setBlockage_blocked(bool blockage_blocked) { m_blockage_blocked = blockage_blocked; }
-QBindable<bool> FormGPS::bindableBlockage_blocked() { return &m_blockage_blocked; }
+int FormGPS::blockage_blocked() const { return m_blockage_blocked; }
+void FormGPS::setBlockage_blocked(int blockage_blocked) { m_blockage_blocked = blockage_blocked; }
+QBindable<int> FormGPS::bindableBlockage_blocked() { return &m_blockage_blocked; }
+
+QVariantList FormGPS::blockageSecCount() const {
+
+    QVariantList state;
+    for (int i = 0; i < 65; i++) {
+        state.append(static_cast<int>(blockage.blockageseccount[i]));
+    }
+    return state;
+}
+void FormGPS::setBlockageSecCount(const QVariantList& value) { }
+QBindable<QVariantList> FormGPS::bindableBlockageSecCount() { return &m_blockageseccount; }
 
 double FormGPS::avgPivDistance() const { return m_avgPivDistance; }
 void FormGPS::setAvgPivDistance(double avgPivDistance) { m_avgPivDistance = avgPivDistance; }

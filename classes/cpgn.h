@@ -318,4 +318,29 @@ public:
 };
 Q_DECLARE_METATYPE(CPGN_EB)
 
+//Machine Config
+class CPGN_F5
+{
+    Q_GADGET
+    Q_PROPERTY(QByteArray pgn MEMBER pgn)
+public:
+    QByteArray pgn;
+
+    enum CPGN_F5_Fields {
+        module_id = 5,
+        module_rows = 6,
+        min_countLO = 7,
+        min_countHI = 8,
+        max_countLO = 9,
+        max_countHI = 10
+    };
+    Q_ENUM(CPGN_F5_Fields)
+
+    CPGN_F5();
+    inline bool operator==(const CPGN_F5 &other) const {
+        return (this->pgn == other.pgn);
+    }
+    void MakeCRC();
+};
+
 #endif // CPGN_H

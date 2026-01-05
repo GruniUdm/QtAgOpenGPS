@@ -31,6 +31,7 @@
 #include "flagsinterface.h"
 #include "recordedpath.h"
 #include "siminterface.h"
+#include "cmodulecomm.h"
 
 Q_LOGGING_CATEGORY (formgps_ui, "formgps_ui.qtagopengps")
 #define QDEBUG qDebug(formgps_ui)
@@ -185,7 +186,6 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     // ⚡ MOVED: Interface initialization moved to initializeQMLInterfaces() for proper timing
 
     // QMLSectionButtons completely removed - using direct btnStates[] array instead
-    qmlblockage::set_aog_root(qmlItem(mainWindow, "aog"));
 
     //initialize interface properties (MOVED to initializeQMLInterfaces() after PropertyWrapper init)
     MainWindowState::instance()->set_isBtnAutoSteerOn(false);
@@ -440,12 +440,6 @@ void FormGPS::snapSideways(double distance) {
 void FormGPS::snapToPivot() {
     // Modern implementation - same logic as onBtnSnapToPivot_clicked()
     onBtnSnapToPivot_clicked();
-}
-
-void FormGPS::blockageMonitoring() {
-    // Modern implementation - renamed to avoid conflict with existing doBlockageMonitoring()
-    // Call the original doBlockageMonitoring() method from formgps_sections.cpp
-    doBlockageMonitoring();
 }
 
 void FormGPS::startSAAction() {
@@ -909,6 +903,44 @@ void FormGPS::on_settings_save() {
 void FormGPS::on_language_changed() {
     QString lang = SettingsManager::instance()->menu_language();
     QDEBUG << "Changing language to:" << lang;
+
+#ifdef Q_OS_ANDROID
+    // Для Android - упрощенный подход
+    QStringList paths;
+    paths << QString("assets:/i18n/qml_%1.qm").arg(lang);
+    paths << QString(":/i18n/qml_%1.qm").arg(lang);
+
+    bool translationLoaded = false;
+
+    for (const QString &path : paths) {
+        if (m_translator->load(path)) {
+            translationLoaded = true;
+            //qDebug() << "Translation loaded from:" << path;
+            break;
+        }
+    }
+
+    if (!translationLoaded) {
+        // qDebug() << "Failed to load translation for:" << lang;
+
+        if (lang != "en") {
+            for (const QString &path : paths) {
+                if (m_translator->load(path.arg("en"))) {
+                    translationLoaded = true;
+                    //qDebug() << "Loaded English fallback from:" << path.arg("en");
+                    break;
+                }
+            }
+        }
+    }
+
+    if (translationLoaded) {
+        QCoreApplication::installTranslator(m_translator);
+        this->retranslate();
+        //qDebug() << "Language switched to:" << lang;
+    }
+
+#endif
 
     // Load translation file (note: CMake generates resources with i18n/ prefix)
     if (m_translator->load(QString(":/qt/qml/AOG/i18n/i18n/qml_%1.qm").arg(lang))) {

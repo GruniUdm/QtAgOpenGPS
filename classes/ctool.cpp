@@ -9,12 +9,12 @@
 #include "cvehicle.h"
 #include "mainwindowstate.h"
 
-
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QLabel>
 #include <QPainter>
+#include <QLoggingCategory>
 
 extern QLabel *overlapPixelsWindow;
 extern QOpenGLShaderProgram *interpColorShader;

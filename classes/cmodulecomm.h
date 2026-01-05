@@ -26,6 +26,7 @@ class CModuleComm: public QObject
     Q_PROPERTY(CPGN_EC p_236 MEMBER p_236 NOTIFY p_236_changed)
     Q_PROPERTY(CPGN_EB p_235 MEMBER p_235 NOTIFY p_235_changed)
     Q_PROPERTY(CPGN_E5 p_229 MEMBER p_229 NOTIFY p_229_changed)
+    Q_PROPERTY(CPGN_F5 p_245 MEMBER p_245 NOTIFY p_245_changed)
 
 private:
     explicit CModuleComm(QObject *parent = nullptr);
@@ -60,14 +61,6 @@ public:
         swOffGr1 = 8;
 
 
-    qint64 blockage_lastUpdate;
-    double blockageseccount[64];
-    int blockageseccount1[16];
-    int blockageseccount2[16];
-    int blockageseccount3[16];
-    int blockageseccount4[16];
-
-
     //for the workswitch
     bool isWorkSwitchEnabled,
         isWorkSwitchManualSections, isSteerWorkSwitchManualSections, isSteerWorkSwitchEnabled;
@@ -80,6 +73,7 @@ public:
     Q_INVOKABLE void modulesSend238();
     Q_INVOKABLE void modulesSend251();
     Q_INVOKABLE void modulesSend252();
+    Q_INVOKABLE void modulesSend245();
 
     /*
      * PGNs *
@@ -92,6 +86,7 @@ public:
     CPGN_EC p_236;
     CPGN_EB p_235;
     CPGN_E5 p_229;
+    CPGN_F5 p_245;
 
     SIMPLE_BINDABLE_PROPERTY(double,  actualSteerAngleDegrees)
     SIMPLE_BINDABLE_PROPERTY(bool, steerSwitchHigh)
@@ -112,6 +107,7 @@ signals:
     void p_236_changed();
     void p_235_changed();
     void p_229_changed();
+    void p_245_changed();
 
 public slots:
 private:

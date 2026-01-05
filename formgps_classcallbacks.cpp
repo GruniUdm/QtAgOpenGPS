@@ -3,6 +3,7 @@
 //
 //
 #include "formgps.h"
+#include "cmodulecomm.h"
 
 /***************************************
  * callbacks for classes to connect to *

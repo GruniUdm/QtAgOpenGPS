@@ -166,6 +166,7 @@ AgIOService::AgIOService(QObject *parent)
     m_lastTrafficTime = 0;
 
     m_localCntrMachine = 99;      // 99 = disconnected (as per CTraffic initialization)
+    m_localCntrBlockage = 99;
     m_localCntrSteer = 99;
     m_localCntrIMU = 99;
     m_localCntrUDPOut = 0;
