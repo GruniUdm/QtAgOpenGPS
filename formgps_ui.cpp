@@ -442,22 +442,6 @@ void FormGPS::snapToPivot() {
     onBtnSnapToPivot_clicked();
 }
 
-// ===== BATCH 10 - 8 ACTIONS Modules & Steering - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::modulesSend238() {
-    // Modern implementation - same logic as modules_send_238()
-    modules_send_238();
-}
-
-void FormGPS::modulesSend251() {
-    // Modern implementation - same logic as modules_send_251()
-    modules_send_251();
-}
-
-void FormGPS::modulesSend252() {
-    // Modern implementation - same logic as modules_send_252()
-    modules_send_252();
-}
-
 void FormGPS::blockageMonitoring() {
     // Modern implementation - renamed to avoid conflict with existing doBlockageMonitoring()
     // Call the original doBlockageMonitoring() method from formgps_sections.cpp
@@ -606,7 +590,8 @@ void FormGPS::onBtnHeadland_clicked(){
     if (!MainWindowState::instance()->isHeadlandOn())
     {
         //shut off the hyd lift pgn
-        p_239.pgn[p_239.hydLift] = 0;
+        CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] == 0;
+        emit CModuleComm::instance()->p_239_changed();
         //btnHydLift.Image = Properties.Resources.HydraulicLiftOff;
     }
 }
@@ -619,12 +604,14 @@ void FormGPS::onBtnHydLift_clicked(){
         }
         else
         {
-            p_239.pgn[p_239.hydLift] = 0;
+            CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] == 0;
+            emit CModuleComm::instance()->p_239_changed();
         }
     }
     else
     {
-        p_239.pgn[p_239.hydLift] = 0;
+        CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] == 0;
+        emit CModuleComm::instance()->p_239_changed();
         CVehicle::instance()->setIsHydLiftOn(false);
     }
 }
@@ -936,61 +923,6 @@ void FormGPS::on_language_changed() {
     }
 }
 
-void FormGPS::modules_send_238() {
-    QDEBUG << "Sending 238 message to AgIO";
-    p_238.pgn[p_238.set0] = SettingsManager::instance()->ardMac_setting0();
-    p_238.pgn[p_238.raiseTime] = SettingsManager::instance()->ardMac_hydRaiseTime();
-    p_238.pgn[p_238.lowerTime] = SettingsManager::instance()->ardMac_hydLowerTime();
-
-    p_238.pgn[p_238.user1] = SettingsManager::instance()->ardMac_user1();
-    p_238.pgn[p_238.user2] = SettingsManager::instance()->ardMac_user2();
-    p_238.pgn[p_238.user3] = SettingsManager::instance()->ardMac_user3();
-    p_238.pgn[p_238.user4] = SettingsManager::instance()->ardMac_user4();
-
-    QDEBUG << SettingsManager::instance()->ardMac_user1();
-    // SendPgnToLoop(p_238.pgn); // ❌ REMOVED - Phase 4.6: AgIOService Workers handle PGN
-    if (m_agioService) {
-        m_agioService->sendPgn(p_238.pgn);
-    }
-}
-void FormGPS::modules_send_251() {
-    //QDEBUG << "Sending 251 message to AgIO";
-    p_251.pgn[p_251.set0] = SettingsManager::instance()->ardSteer_setting0();
-    p_251.pgn[p_251.set1] = SettingsManager::instance()->ardSteer_setting1();
-    p_251.pgn[p_251.maxPulse] = SettingsManager::instance()->ardSteer_maxPulseCounts();
-    p_251.pgn[p_251.minSpeed] = 5; //0.5 kmh THIS IS CHANGED IN AOG FIXES
-
-    if (SettingsManager::instance()->as_isConstantContourOn())
-        p_251.pgn[p_251.angVel] = 1;
-    else p_251.pgn[p_251.angVel] = 0;
-
-    QDEBUG << p_251.pgn;
-    // SendPgnToLoop(p_251.pgn); // ❌ REMOVED - Phase 4.6: AgIOService Workers handle PGN
-    if (m_agioService) {
-        m_agioService->sendPgn(p_251.pgn);
-    }
-}
-
-void FormGPS::modules_send_252() {
-    //QDEBUG << "Sending 252 message to AgIO";
-    p_252.pgn[p_252.gainProportional] = SettingsManager::instance()->as_Kp();
-    p_252.pgn[p_252.highPWM] = SettingsManager::instance()->as_highSteerPWM();
-    p_252.pgn[p_252.lowPWM] = SettingsManager::instance()->as_lowSteerPWM();
-    p_252.pgn[p_252.minPWM] = SettingsManager::instance()->as_minSteerPWM();
-    p_252.pgn[p_252.countsPerDegree] = SettingsManager::instance()->as_countsPerDegree();
-    int wasOffset = (int)SettingsManager::instance()->as_wasOffset();
-    p_252.pgn[p_252.wasOffsetHi] = (char)(wasOffset >> 8);
-    p_252.pgn[p_252.wasOffsetLo] = (char)wasOffset;
-    p_252.pgn[p_252.ackerman] = SettingsManager::instance()->as_ackerman();
-
-
-    QDEBUG << p_252.pgn;
-    // SendPgnToLoop(p_252.pgn); // ❌ REMOVED - Phase 4.6: AgIOService Workers handle PGN
-    if (m_agioService) {
-        m_agioService->sendPgn(p_252.pgn);
-    }
-}
-
 void FormGPS::headland_save() {
     //TODO make FileHeadland() a slot so we don't have to have this
     //wrapper.
@@ -1016,7 +948,6 @@ void FormGPS::onBtnSnapSideways_clicked(double distance){
     int blah = distance;
 
 }
-
 
 void FormGPS::onDeleteAppliedArea_clicked()
 {

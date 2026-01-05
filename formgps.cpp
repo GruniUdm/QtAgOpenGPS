@@ -970,7 +970,9 @@ void FormGPS::JobClose()
     recPath.StopDrivingRecordedPath();
 
     //make sure hydraulic lift is off
-    p_239.pgn[p_239.hydLift] = 0;
+    CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] == 0;
+    emit CModuleComm::instance()->p_239_changed();
+
     CVehicle::instance()->setIsHydLiftOn(false); //this turns off the button also - Qt 6.8
 
     //oglZoom.SendToBack(;

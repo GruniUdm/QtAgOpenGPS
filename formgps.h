@@ -43,7 +43,6 @@
 #include "crecordedpath.h"
 #include "cguidance.h"
 #include "cheadline.h"
-#include "cpgn.h"
 #include "ctrack.h"
 
 #include "formheadland.h"
@@ -716,18 +715,6 @@ public:
     FormHeadland headland_form;
     FormHeadache headache_form;
 
-    /*
-     * PGNs *
-     */
-    CPGN_FE p_254;
-    CPGN_FC p_252;
-    CPGN_FB p_251;
-    CPGN_EF p_239;
-    CPGN_EE p_238;
-    CPGN_EC p_236;
-    CPGN_EB p_235;
-    CPGN_E5 p_229;
-
     /* GUI synchronization lock */
     QReadWriteLock lock;
     bool newframe = false;
@@ -989,9 +976,6 @@ public:
     Q_INVOKABLE void snapSideways(double distance);
     Q_INVOKABLE void snapToPivot();
     // Batch 10 - 8 actions Modules & Steering - lines 253-266
-    Q_INVOKABLE void modulesSend238();
-    Q_INVOKABLE void modulesSend251();
-    Q_INVOKABLE void modulesSend252();
     Q_INVOKABLE void blockageMonitoring();
     Q_INVOKABLE void startSAAction();
 
@@ -1188,9 +1172,6 @@ public slots:
     void LoadKMLBoundary(QString filename);
 
     //modules ui callback
-    void modules_send_238();
-    void modules_send_251();
-    void modules_send_252();
     // Note: modulesSend238/251/252 are Q_INVOKABLE versions for QML
 
     void doBlockageMonitoring();

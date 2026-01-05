@@ -152,7 +152,7 @@ Drawer {
                         centerTopText: qsTr("WAS Zero")
                         from: -4000
                         leftText: Utils.decimalRound(value / cpDegSlider.value, 2)
-                        //onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
+                        //onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, ModuleComm.moduleSend252()
                         onValueChanged: SettingsManager.as_wasOffset = value * cpDegSlider.value, sendUdptimer.running = true
                         to: 4000
                         value: SettingsManager.as_wasOffset / cpDegSlider.value
@@ -526,6 +526,6 @@ Drawer {
     Timer {
         id: sendUdptimer
         interval: 1000;
-        onTriggered: aog.modulesSend252() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        onTriggered: ModuleComm.modulesSend252() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
     }
 }

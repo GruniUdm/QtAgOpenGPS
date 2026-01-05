@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Fusion
 //import Settings
+import AOG
 
 import ".."
 import "../components"
@@ -73,20 +74,7 @@ Rectangle{
         SettingsManager.vehicle_hydraulicLiftLookAhead = nudHydLiftLookAhead.value
         SettingsManager.ardMac_isHydEnabled = cboxIsHydOn.checked
 
-        //set pgns
-        //signal handler will do the folling:
-        /*
-            mf.p_238.pgn[mf.p_238.set0] = property_setArdMac_setting0
-            mf.p_238.pgn[mf.p_238.raiseTime] = property_setArdMac_hydRaiseTime
-            mf.p_238.pgn[mf.p_238.lowerTime] = property_setArdMac_hydLowerTime
-
-            mf.p_238.pgn[mf.p_238.user1] = property_setArd_user1
-            mf.p_238.pgn[mf.p_238.user2] = property_setArd_user2
-            mf.p_238.pgn[mf.p_238.user3] = property_setArd_user3
-            mf.p_238.pgn[mf.p_238.user4] = property_setArd_user3
-            */
-
-        aog.modulesSend238() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        ModuleComm.modulesSend238()
         //pboxSendMachine.Visible = false
     }
 

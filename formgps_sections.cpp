@@ -13,10 +13,14 @@
 
 void FormGPS::BuildMachineByte()
 {
+    CPGN_FE &p_254 = CModuleComm::instance()->p_254;
+    CPGN_EF &p_239 = CModuleComm::instance()->p_239;
+    CPGN_E5 &p_229 = CModuleComm::instance()->p_229;
+
     if (tool.isSectionsNotZones)
     {
-        p_254.pgn[p_254.sc1to8] = 0;
-        p_254.pgn[p_254.sc9to16] = 0;
+        p_254.pgn[CPGN_FE::sc1to8] = 0;
+        p_254.pgn[CPGN_FE::sc9to16] = 0;
 
         int number = 0;
         for (int j = 0; j < 8; j++)
@@ -24,7 +28,7 @@ void FormGPS::BuildMachineByte()
             if (tool.section[j].isSectionOn)
                 number |= 1 << j;
         }
-        p_254.pgn[p_254.sc1to8] = (char)number;
+        p_254.pgn[CPGN_FE::sc1to8] = (char)number;
         number = 0;
 
         for (int j = 8; j < 16; j++)
@@ -32,15 +36,15 @@ void FormGPS::BuildMachineByte()
             if (tool.section[j].isSectionOn)
                 number |= 1 << (j-8);
         }
-        p_254.pgn[p_254.sc9to16] = (char)number;
+        p_254.pgn[CPGN_FE::sc9to16] = (char)number;
 
         //machine pgn
-        p_239.pgn[p_239.sc9to16] = p_254.pgn[p_254.sc9to16];
-        p_239.pgn[p_239.sc1to8] = p_254.pgn[p_254.sc1to8];
-        p_229.pgn[p_229.sc1to8] = p_254.pgn[p_254.sc1to8];
-        p_229.pgn[p_229.sc9to16] = p_254.pgn[p_254.sc9to16];
-        p_229.pgn[p_229.toolLSpeed] = (char)(tool.farLeftSpeed * 10);
-        p_229.pgn[p_229.toolRSpeed] = (char)(tool.farRightSpeed * 10);
+        p_239.pgn[CPGN_EF::sc9to16] = p_254.pgn[CPGN_FE::sc9to16];
+        p_239.pgn[CPGN_EF::sc1to8] = p_254.pgn[CPGN_FE::sc1to8];
+        p_229.pgn[CPGN_E5::sc1to8] = p_254.pgn[CPGN_FE::sc1to8];
+        p_229.pgn[CPGN_E5::sc9to16] = p_254.pgn[CPGN_FE::sc9to16];
+        p_229.pgn[CPGN_E5::toolLSpeed] = (char)(tool.farLeftSpeed * 10);
+        p_229.pgn[CPGN_E5::toolRSpeed] = (char)(tool.farRightSpeed * 10);
     }
     else
     {
@@ -63,19 +67,22 @@ void FormGPS::BuildMachineByte()
         }
 
         //tool speed to calc ramp
-        p_229.pgn[p_229.toolLSpeed] = (char)(tool.farLeftSpeed * 10);
-        p_229.pgn[p_229.toolRSpeed] = (char)(tool.farRightSpeed * 10);
+        p_229.pgn[CPGN_E5::toolLSpeed] = (char)(tool.farLeftSpeed * 10);
+        p_229.pgn[CPGN_E5::toolRSpeed] = (char)(tool.farRightSpeed * 10);
 
-        p_239.pgn[p_239.sc1to8] = p_229.pgn[p_229.sc1to8];
-        p_239.pgn[p_239.sc9to16] = p_229.pgn[p_229.sc9to16];
+        p_239.pgn[CPGN_EF::sc1to8] = p_229.pgn[CPGN_E5::sc1to8];
+        p_239.pgn[CPGN_EF::sc9to16] = p_229.pgn[CPGN_E5::sc9to16];
 
-        p_254.pgn[p_254.sc1to8] = p_229.pgn[p_229.sc1to8];
-        p_254.pgn[p_254.sc9to16] = p_229.pgn[p_229.sc9to16];
+        p_254.pgn[CPGN_FE::sc1to8] = p_229.pgn[CPGN_E5::sc1to8];
+        p_254.pgn[CPGN_FE::sc9to16] = p_229.pgn[CPGN_E5::sc9to16];
 
     }
 
-    p_239.pgn[p_239.speed] = (char)(CVehicle::instance()->avgSpeed * 10);
-    p_239.pgn[p_239.tram] = (char)tram.controlByte;
+    p_239.pgn[CPGN_EF::speed] = (char)(CVehicle::instance()->avgSpeed * 10);
+    p_239.pgn[CPGN_EF::tram] = (char)tram.controlByte;
+
+    emit CModuleComm::instance()->p_239_changed();
+    emit CModuleComm::instance()->p_254_changed();
 }
 
 void FormGPS::DoRemoteSwitches()

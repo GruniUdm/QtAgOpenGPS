@@ -29,6 +29,7 @@
 #include "recordedpath.h"
 #include "siminterface.h"
 #include "cmodulecomm.h"
+#include "cpgn.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -46,6 +47,8 @@ void FormGPS::UpdateFixPosition()
     // Used to separate RAW GPS positions (for heading calc) from CORRECTED positions (for display)
     // Now copies from m_rawGpsPosition member (set by onNmeaDataReady at 8 Hz)
     Vec2 rawGpsPosition;
+
+    CPGN_FE &p_254 = CModuleComm::instance()->p_254;
 
     //swFrame.Stop();
     //Measure the frequency of the GPS updates
@@ -881,8 +884,8 @@ void FormGPS::UpdateFixPosition()
     if (!CVehicle::instance()->isInFreeDriveMode())
     {
         //fill up0 the appropriate arrays with new values
-        p_254.pgn[p_254.speedHi] = (char)((int)(fabs(CVehicle::instance()->avgSpeed) * 10.0) >> 8);
-        p_254.pgn[p_254.speedLo] = (char)((int)(fabs(CVehicle::instance()->avgSpeed) * 10.0));
+        p_254.pgn[CPGN_FE::speedHi] = (char)((int)(fabs(CVehicle::instance()->avgSpeed) * 10.0) >> 8);
+        p_254.pgn[CPGN_FE::speedLo] = (char)((int)(fabs(CVehicle::instance()->avgSpeed) * 10.0));
         //mc.machineControlData[mc.cnSpeed] = mc.autoSteerData[mc.sdSpeed];
 
         //save distance for display
@@ -892,12 +895,12 @@ void FormGPS::UpdateFixPosition()
         {
             //NOTE: Is this supposed to be commented out?
             //CVehicle::instance()->guidanceLineDistanceOff = 32020;
-            p_254.pgn[p_254.status] = 0;  // PHASE 6.0.29: OFF → send 0 (match C# original)
+            p_254.pgn[CPGN_FE::status] = 0;  // PHASE 6.0.29: OFF → send 0 (match C# original)
         }
 
-        else p_254.pgn[p_254.status] = 1;  // PHASE 6.0.29: ON → send 1 (match C# original)
+        else p_254.pgn[CPGN_FE::status] = 1;  // PHASE 6.0.29: ON → send 1 (match C# original)
 
-        if (RecordedPath::instance()->isDrivingRecordedPath() || recPath.isFollowingDubinsToPath) p_254.pgn[p_254.status] = 1;  // PHASE 6.0.29: Force ON (match C# original)
+        if (RecordedPath::instance()->isDrivingRecordedPath() || recPath.isFollowingDubinsToPath) p_254.pgn[CPGN_FE::status] = 1;  // PHASE 6.0.29: Force ON (match C# original)
 
         // PHASE 6.0.42.8: Auto-snap track to pivot when autosteer turns ON
         // C# original: OpenGL.Designer.cs:1858-1876
@@ -942,7 +945,7 @@ void FormGPS::UpdateFixPosition()
             distanceX2 += 127;
         }
 
-        p_254.pgn[p_254.lineDistance] = (char)distanceX2;
+        p_254.pgn[CPGN_FE::lineDistance] = (char)distanceX2;
 
         if (!SimInterface::instance()->isRunning())
         {
@@ -995,33 +998,33 @@ void FormGPS::UpdateFixPosition()
 
         setAngVel = glm::toDegrees(setAngVel);
 
-        p_254.pgn[p_254.steerAngleHi] = (char)(CVehicle::instance()->guidanceLineSteerAngle >> 8);
-        p_254.pgn[p_254.steerAngleLo] = (char)(CVehicle::instance()->guidanceLineSteerAngle);
+        p_254.pgn[CPGN_FE::steerAngleHi] = (char)(CVehicle::instance()->guidanceLineSteerAngle >> 8);
+        p_254.pgn[CPGN_FE::steerAngleLo] = (char)(CVehicle::instance()->guidanceLineSteerAngle);
 
         if (CVehicle::instance()->isChangingDirection() && ahrs.imuHeading == 99999)
-            p_254.pgn[p_254.status] = 0;  // PHASE 6.0.29: Changing direction → OFF (match C# original)
+            p_254.pgn[CPGN_FE::status] = 0;  // PHASE 6.0.29: Changing direction → OFF (match C# original)
 
         //for now if backing up, turn off autosteer
         if (!isSteerInReverse)
         {
-            if (CVehicle::instance()->isReverse()) p_254.pgn[p_254.status] = 0;  // PHASE 6.0.29: Reverse → OFF (match C# original)
+            if (CVehicle::instance()->isReverse()) p_254.pgn[CPGN_FE::status] = 0;  // PHASE 6.0.29: Reverse → OFF (match C# original)
         }
     }
 
     else //Drive button is on
     {
         //fill up the auto steer array with free drive values
-        p_254.pgn[p_254.speedHi] = (char)((int)(80) >> 8);
-        p_254.pgn[p_254.speedLo] = (char)((int)(80));
+        p_254.pgn[CPGN_FE::speedHi] = (char)((int)(80) >> 8);
+        p_254.pgn[CPGN_FE::speedLo] = (char)((int)(80));
 
         //turn on status to operate
-        p_254.pgn[p_254.status] = 1;  // PHASE 6.0.29: Free Drive ON (match C# original)
+        p_254.pgn[CPGN_FE::status] = 1;  // PHASE 6.0.29: Free Drive ON (match C# original)
 
         //send the steer angle
         CVehicle::instance()->guidanceLineSteerAngle = (qint16)(CVehicle::instance()->driveFreeSteerAngle() * 100);
 
-        p_254.pgn[p_254.steerAngleHi] = (char)(CVehicle::instance()->guidanceLineSteerAngle >> 8);
-        p_254.pgn[p_254.steerAngleLo] = (char)(CVehicle::instance()->guidanceLineSteerAngle);
+        p_254.pgn[CPGN_FE::steerAngleHi] = (char)(CVehicle::instance()->guidanceLineSteerAngle >> 8);
+        p_254.pgn[CPGN_FE::steerAngleLo] = (char)(CVehicle::instance()->guidanceLineSteerAngle);
 
 
     }
@@ -1383,6 +1386,7 @@ void FormGPS::processSectionLookahead() {
     //qDebug(qpos) << "frame time before doing section lookahead " << swFrame.elapsed(;
     //lock.lockForWrite(;
     //qDebug(qpos) << "frame time after getting lock  " << swFrame.elapsed(;
+
 #define USE_QPAINTER_BACKBUFFER
 
     qDebug(qpos) << "Main callback thread is" << QThread::currentThread();
@@ -1607,6 +1611,9 @@ void FormGPS::processSectionLookahead() {
 #else
     oglBack_Paint();
 #endif
+
+    CPGN_EF &p_239 = CModuleComm::instance()->p_239;
+    CPGN_E5 &p_229 = CModuleComm::instance()->p_229;
 
     QThread *currentThread = QThread::currentThread();
     qDebug(qpos) << "Back processing thread is" << currentThread;
@@ -2181,7 +2188,7 @@ void FormGPS::processSectionLookahead() {
 
     if (isJobStarted())
     {
-        p_239.pgn[p_239.geoStop] = BoundaryInterface::instance()->isOutOfBounds() ? 1 : 0;
+        p_239.pgn[CPGN_EF::geoStop] = BoundaryInterface::instance()->isOutOfBounds() ? 1 : 0;
 
         // SendPgnToLoop(p_239.pgn;  // âŒ REMOVED - Phase 4.6: AgIOService Workers handle PGN
 

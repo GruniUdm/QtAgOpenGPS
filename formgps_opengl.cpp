@@ -559,7 +559,7 @@ void FormGPS::oglMain_Paint()
 
             //if this is on, VehicleInterface.isHydLiftOn is true
             //why is this here? Should be somewhere in UpdateFixPosition()
-            if (p_239.pgn[p_239.hydLift] == 2)
+            if (CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] == 2)
             {
                 CVehicle::instance()->setHydLiftDown(false); //VehicleInterface.hydLiftDown in QML
             }

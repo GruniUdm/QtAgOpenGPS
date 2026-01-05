@@ -260,19 +260,7 @@ Window{
 
             //Properties.Settings.Default.Save(); not sure what happens here?? David
 
-            //set pgns
-            //signal handler will do the following:
-            /*
-                   mf.p_251.pgn[mf.p_251.set0] = Properties.Settings.Default.setArdSteer_setting0;
-                   mf.p_251.pgn[mf.p_251.set1] = Properties.Settings.Default.setArdSteer_setting1;
-                   mf.p_251.pgn[mf.p_251.maxPulse] = Properties.Settings.Default.setArdSteer_maxPulseCounts;
-                   mf.p_251.pgn[mf.p_251.minSpeed] = 5; //0.5 kmh THIS IS CHANGED IN AOG FIXES
-
-                   if (SettingsManager.as_isConstantContourOn)
-                   mf.p_251.pgn[mf.p_251.angVel] = 1;
-                   else mf.p_251.pgn[mf.p_251.angVel] = 0;
-                   */
-            aog.modulesSend251() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+            ModuleComm.modulesSend251()
 
             unsaved.visible = false;
         }
