@@ -44,7 +44,6 @@
 #include "cguidance.h"
 #include "cheadline.h"
 #include "ctrack.h"
-#include "blockage.h"
 #include "formheadland.h"
 #include "formheadache.h"
 
@@ -115,26 +114,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY calcSteerAngleOuterChanged BINDABLE bindableCalcSteerAngleOuter)
     Q_PROPERTY(double diameter READ diameter WRITE setDiameter
                NOTIFY diameterChanged BINDABLE bindableDiameter)
-
-    // === Blockage Sensors (8 properties) - Monitoring - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double blockage_avg READ blockage_avg WRITE setBlockage_avg
-               NOTIFY blockage_avgChanged BINDABLE bindableBlockage_avg)
-    Q_PROPERTY(double blockage_min1 READ blockage_min1 WRITE setBlockage_min1
-               NOTIFY blockage_min1Changed BINDABLE bindableBlockage_min1)
-    Q_PROPERTY(double blockage_min2 READ blockage_min2 WRITE setBlockage_min2
-               NOTIFY blockage_min2Changed BINDABLE bindableBlockage_min2)
-    Q_PROPERTY(double blockage_max READ blockage_max WRITE setBlockage_max
-               NOTIFY blockage_maxChanged BINDABLE bindableBlockage_max)
-    Q_PROPERTY(int blockage_min1_i READ blockage_min1_i WRITE setBlockage_min1_i
-               NOTIFY blockage_min1_iChanged BINDABLE bindableBlockage_min1_i)
-    Q_PROPERTY(int blockage_min2_i READ blockage_min2_i WRITE setBlockage_min2_i
-               NOTIFY blockage_min2_iChanged BINDABLE bindableBlockage_min2_i)
-    Q_PROPERTY(int blockage_max_i READ blockage_max_i WRITE setBlockage_max_i
-               NOTIFY blockage_max_iChanged BINDABLE bindableBlockage_max_i)
-    Q_PROPERTY(int blockage_blocked READ blockage_blocked WRITE setBlockage_blocked
-               NOTIFY blockage_blockedChanged BINDABLE bindableBlockage_blocked)
-    Q_PROPERTY(QVariantList blockageSecCount READ blockageSecCount WRITE setBlockageSecCount
-                   NOTIFY blockageSecCountChanged BINDABLE bindableBlockageSecCount)
 
     // === Navigation (7 properties) - Important for guidance - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(double distancePivotToTurnLine READ distancePivotToTurnLine WRITE setDistancePivotToTurnLine
@@ -283,43 +262,6 @@ public:
     double diameter() const;
     void setDiameter(double value);
     QBindable<double> bindableDiameter();
-
-    // Blockage Sensors
-    double blockage_avg() const;
-    void setBlockage_avg(double value);
-    QBindable<double> bindableBlockage_avg();
-
-    double blockage_min1() const;
-    void setBlockage_min1(double value);
-    QBindable<double> bindableBlockage_min1();
-
-    double blockage_min2() const;
-    void setBlockage_min2(double value);
-    QBindable<double> bindableBlockage_min2();
-
-    double blockage_max() const;
-    void setBlockage_max(double value);
-    QBindable<double> bindableBlockage_max();
-
-    int blockage_min1_i() const;
-    void setBlockage_min1_i(int value);
-    QBindable<int> bindableBlockage_min1_i();
-
-    int blockage_min2_i() const;
-    void setBlockage_min2_i(int value);
-    QBindable<int> bindableBlockage_min2_i();
-
-    int blockage_max_i() const;
-    void setBlockage_max_i(int value);
-    QBindable<int> bindableBlockage_max_i();
-
-    int blockage_blocked() const;
-    void setBlockage_blocked(int value);
-    QBindable<int> bindableBlockage_blocked();
-
-    QVariantList blockageSecCount() const;
-    void setBlockageSecCount(const QVariantList& value);
-    QBindable<QVariantList> bindableBlockageSecCount();
 
     double avgPivDistance() const;
     void setAvgPivDistance(double value);
@@ -690,8 +632,6 @@ public:
     //Parsing object of NMEA sentences
     //QScopedPointer<CNMEA> pn;
     CNMEA pn;
-
-    Blockage blockage;
 
     //ABLine Instance
     //QScopedPointer<CABLine> ABLine;
@@ -1314,16 +1254,6 @@ signals:
     void calcSteerAngleOuterChanged();
     void diameterChanged();
 
-    // Blockage Sensors signals
-    void blockage_avgChanged();
-    void blockage_min1Changed();
-    void blockage_min2Changed();
-    void blockage_maxChanged();
-    void blockage_min1_iChanged();
-    void blockage_min2_iChanged();
-    void blockage_max_iChanged();
-    void blockage_blockedChanged();
-    void blockageSecCountChanged();
     void avgPivDistanceChanged();
 
     // Navigation signals
@@ -1415,15 +1345,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_diameter, &FormGPS::diameterChanged)
 
     // Blockage Sensors (8) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_avg, &FormGPS::blockage_avgChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min1, &FormGPS::blockage_min1Changed)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min2, &FormGPS::blockage_min2Changed)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_max, &FormGPS::blockage_maxChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min1_i, &FormGPS::blockage_min1_iChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min2_i, &FormGPS::blockage_min2_iChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_max_i, &FormGPS::blockage_max_iChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_blocked, &FormGPS::blockage_blockedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariantList, m_blockageseccount, &FormGPS::blockageSecCountChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_avgPivDistance, &FormGPS::avgPivDistanceChanged)
 
     // Navigation (7) - Qt 6.8 Rectangle Pattern
@@ -1490,7 +1411,6 @@ public:
     double ConfidenceLevel = 0;
     bool HasValidRecommendation = false;
     QDateTime LastCollectionTime;
-    qint64 blockage_lastUpdate;
 
     // Средние показатели распределения
     double Mean;

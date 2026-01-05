@@ -1,11 +1,139 @@
 #include "blockage.h"
+#include "agioservice.h"
+#include "pgnparser.h"
+
+Q_LOGGING_CATEGORY (blockage_log, "backend.qtagopengps")
+
+Blockage *Blockage::s_instance = nullptr;
+QMutex Blockage::s_mutex;
+bool Blockage::s_cpp_created = false;
 
 Blockage::Blockage(QObject *parent)
     : QObject{parent}
-{}
+{
+    //connect us to agio
+    connect(AgIOService::instance(), &AgIOService::blockageDataReady,
+            this, &Blockage::onBlockageDataReady, Qt::DirectConnection);
+
+    m_blockageModel = new BlockageModel(this);
+
+    //set up a property binding, much like you'd do with a javascript expression in QML
+    m_secCount.setBinding([&]() {
+        QVariantList state;
+        for (int i = 0; i < MAX_SECTIONS; i++) {
+            state.append(static_cast<int>(m_blockageModel->rows[i].count));
+        }
+        return state;
+    });
+}
+
+Blockage *Blockage::instance() {
+    QMutexLocker locker(&s_mutex);
+    if (!s_instance) {
+        s_instance = new Blockage();
+        qDebug(blockage_log) << "Blockage singleton created by C++ code.";
+        s_cpp_created = true;
+        // ensure cleanup on app exit
+        QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+                         s_instance, []() {
+                             delete s_instance; s_instance = nullptr;
+                         });
+    }
+    return s_instance;
+}
+
+Blockage *Blockage::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
+    Q_UNUSED(jsEngine)
+
+    QMutexLocker locker(&s_mutex);
+
+    if(!s_instance) {
+        s_instance = new Blockage();
+        qDebug(blockage_log) << "Blockage singleton created by QML engine.";
+    } else if (s_cpp_created) {
+        qmlEngine->setObjectOwnership(s_instance, QQmlEngine::CppOwnership);
+    }
+
+    return s_instance;
+}
+
+void Blockage::reset_count() {
+    m_blockageModel->clear();
+    statistics(pn.speed);
+
+    m_secCount.notify(); //recompute the bound lamdbda to update the property
+}
+
+void Blockage::onBlockageDataReady(const PGNParser::ParsedData &data)
+{
+
+    // Update data from Blockage modules
+
+    if (!data.isValid) return;
+
+    // PGN 244: Blockage Data
+    if (data.pgnNumber == 244) {
+
+        static int iteration[4] = {0, 0, 0, 0};
+
+        int i = data.blockagesection[1];
+        int sectionType = data.blockagesection[0];
+        int value = data.blockagesection[2];
+
+        if (i >= 0) {
+            switch(sectionType) {
+            case 0:
+                if (i < (int)(sizeof(blockageSecCount1) / sizeof(blockageSecCount1[0])))
+                    blockageSecCount1[i] = value;
+                iteration[sectionType] = 0;
+                break;
+            case 1:
+                if (i < (int)(sizeof(blockageSecCount2) / sizeof(blockageSecCount2[0])))
+                    blockageSecCount2[i] = value;
+                iteration[sectionType] = 0;
+                break;
+            case 2:
+                if (i < (int)(sizeof(blockageSecCount3) / sizeof(blockageSecCount3[0])))
+                    blockageSecCount3[i] = value;
+                iteration[sectionType] = 0;
+                break;
+            case 3:
+                if (i < (int)(sizeof(blockageSecCount4) / sizeof(blockageSecCount4[0])))
+                    blockageSecCount4[i] = value;
+                iteration[sectionType] = 0;
+                break;
+            }
+        }
+
+        if(QDateTime::currentMSecsSinceEpoch() - lastUpdate >= 1000){
+
+            lastUpdate = QDateTime::currentMSecsSinceEpoch();
+            statistics(pn.speed);
+            m_secCount.notify(); //recompute the lambda
+            // обновляем данные каждую секунду
+
+            for (int i = 0; i < 4; i++){
+                iteration[i]++;
+            }
+            // обнуляем если данные перестали поступать
+            if (iteration[0] > 5){
+            memset(blockageSecCount1, 0, sizeof(blockageSecCount1));
+                iteration[0] = 99;}
+            if (iteration[1] > 5){
+            memset(blockageSecCount2, 0, sizeof(blockageSecCount2));
+                iteration[1] = 99;}
+            if (iteration[2] > 5){
+            memset(blockageSecCount3, 0, sizeof(blockageSecCount3));
+                iteration[2] = 99;}
+            if (iteration[3] > 5){
+            memset(blockageSecCount4, 0, sizeof(blockageSecCount4));
+                iteration[3] = 99;}
+        }
+    }
+
+}
 
 void Blockage::statistics(const double speed){
-    // Phase 6.0.20: FormGPS context available via 'this' - no qmlItem() needed
     int k = 0;
     int numRows1 = SettingsManager::instance()->seed_blockRow1();
     int numRows2 = SettingsManager::instance()->seed_blockRow2();
@@ -15,49 +143,56 @@ void Blockage::statistics(const double speed){
     int blockCountMin = SettingsManager::instance()->seed_blockCountMin();
     double toolWidth = SettingsManager::instance()->vehicle_toolWidth();
     double rowwidth = toolWidth / numRows;
+
+    QVector<BlockageModel::Row> rowCount;
+    rowCount.reserve(MAX_SECTIONS);
+    for (int i = 0; i < numRows ; i++ ) {
+        rowCount.append( {i, 0} );
+    }
+
     //int vtgSpeed = 5;
     if (speed != 0 && rowwidth != 0) {
         for (int i = 0; i < numRows1 && i < (sizeof(blockageSecCount1) / sizeof(blockageSecCount1[0])); i++)
-            blockageseccount[k++] = floor(blockageSecCount1[i] * 7.2 / rowwidth / speed);
+            rowCount[k++].count = floor(blockageSecCount1[i] * 7.2 / rowwidth / speed);
         for (int i = 0; i < numRows2 && i < (sizeof(blockageSecCount2) / sizeof(blockageSecCount2[0])); i++)
-            blockageseccount[k++] = floor(blockageSecCount2[i] * 7.2 / rowwidth / speed);
+            rowCount[k++].count = floor(blockageSecCount2[i] * 7.2 / rowwidth / speed);
         for (int i = 0; i < numRows3 && i < (sizeof(blockageSecCount3) / sizeof(blockageSecCount3[0])); i++)
-            blockageseccount[k++] = floor(blockageSecCount3[i] * 7.2 / rowwidth / speed);
+            rowCount[k++].count = floor(blockageSecCount3[i] * 7.2 / rowwidth / speed);
         for (int i = 0; i < numRows4 && i < (sizeof(blockageSecCount4) / sizeof(blockageSecCount4[0])); i++)
-            blockageseccount[k++] = floor(blockageSecCount4[i] * 7.2 / rowwidth / speed);
+            rowCount[k++].count = floor(blockageSecCount4[i] * 7.2 / rowwidth / speed);
     //}
 
 
-        blockage_avg=0;
-        for(int i = 0; i < numRows; i++) blockage_avg += (blockageseccount[i]); // среднее значение семян на гектар
-        blockage_avg /= numRows;
-        blockage_max = 0;
-        blockage_max_i=0;
+        m_avg=0;
+        for(int i = 0; i < numRows; i++) m_avg = m_avg + (rowCount[i].count); // среднее значение семян на гектар
+        m_avg = m_avg / numRows; //bindable properties don't support /=
+        m_max = 0;
+        m_max_i=0;
         for (int i = 0; i < numRows; ++i) {
-            if (blockageseccount[i] > blockage_max) {
-                blockage_max = (blockageseccount[i]); // максимальное количество семян на гектар на сошнике
-                blockage_max_i = i; // номер сошника на ктором максимальное значение
+            if (rowCount[i].count > m_max) {
+                m_max = (rowCount[i].count); // максимальное количество семян на гектар на сошнике
+                m_max_i = i; // номер сошника на ктором максимальное значение
             }
         }
-        blockage_min1 = 65535;
-        blockage_min2 = 65535;
-        blockage_min1_i = 0;
-        blockage_min2_i = 0;
+        m_min1 = 65535;
+        m_min2 = 65535;
+        m_min1_i = 0;
+        m_min2_i = 0;
 
         for (int i = 0; i < numRows; ++i) {
-            if (blockageseccount[i] < blockage_min1) {
-                blockage_min1 = (blockageseccount[i]);
-                blockage_min1_i = i;
+            if (rowCount[i].count < m_min1) {
+                m_min1 = (rowCount[i].count);
+                m_min1_i = i;
             }
         }
         for(int i = 0; i < numRows; i++)
-            if(blockageseccount[i] < blockage_min2 && blockage_min1_i != i) // минимальные значения на гектар и номер сошника
+            if(rowCount[i].count < m_min2 && m_min1_i != i) // минимальные значения на гектар и номер сошника
             {
-                blockage_min2 =(blockageseccount[i]);
-                blockage_min2_i = i;
+                m_min2 =(rowCount[i].count);
+                m_min2_i = i;
             }
-        blockage_blocked=0;
+        m_blocked=0;
         for (int i = 0; i < numRows; i++)
-            if (blockageseccount[i] < blockCountMin) blockage_blocked++; // количество забитых сошников
+            if (rowCount[i].count < blockCountMin) m_blocked = m_blocked + 1; // количество забитых сошников
     }
 }

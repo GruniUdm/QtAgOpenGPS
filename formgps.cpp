@@ -72,9 +72,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     connect(m_agioService, &AgIOService::machineDataReady,
             this, &FormGPS::onMachineDataReady, Qt::DirectConnection);
 
-    connect(m_agioService, &AgIOService::blockageDataReady,
-            this, &FormGPS::onBlockageDataReady, Qt::DirectConnection);
-
     qDebug() << "Phase 6.0.25: Separated NMEA/IMU/Steer signal connections established";
 
     qDebug() << "ðŸŽ¯ Initializing singletons...";
@@ -238,50 +235,6 @@ QBindable<double> FormGPS::bindableCalcSteerAngleOuter() { return &m_calcSteerAn
 double FormGPS::diameter() const { return m_diameter; }
 void FormGPS::setDiameter(double diameter) { m_diameter = diameter; }
 QBindable<double> FormGPS::bindableDiameter() { return &m_diameter; }
-
-// ===== Blockage Properties =====
-double FormGPS::blockage_avg() const { return m_blockage_avg; }
-void FormGPS::setBlockage_avg(double blockage_avg) { m_blockage_avg = blockage_avg; }
-QBindable<double> FormGPS::bindableBlockage_avg() { return &m_blockage_avg; }
-
-double FormGPS::blockage_min1() const { return m_blockage_min1; }
-void FormGPS::setBlockage_min1(double blockage_min1) { m_blockage_min1 = blockage_min1; }
-QBindable<double> FormGPS::bindableBlockage_min1() { return &m_blockage_min1; }
-
-double FormGPS::blockage_min2() const { return m_blockage_min2; }
-void FormGPS::setBlockage_min2(double blockage_min2) { m_blockage_min2 = blockage_min2; }
-QBindable<double> FormGPS::bindableBlockage_min2() { return &m_blockage_min2; }
-
-double FormGPS::blockage_max() const { return m_blockage_max; }
-void FormGPS::setBlockage_max(double blockage_max) { m_blockage_max = blockage_max; }
-QBindable<double> FormGPS::bindableBlockage_max() { return &m_blockage_max; }
-
-int FormGPS::blockage_min1_i() const { return m_blockage_min1_i; }
-void FormGPS::setBlockage_min1_i(int blockage_min1_i) { m_blockage_min1_i = blockage_min1_i; }
-QBindable<int> FormGPS::bindableBlockage_min1_i() { return &m_blockage_min1_i; }
-
-int FormGPS::blockage_min2_i() const { return m_blockage_min2_i; }
-void FormGPS::setBlockage_min2_i(int blockage_min2_i) { m_blockage_min2_i = blockage_min2_i; }
-QBindable<int> FormGPS::bindableBlockage_min2_i() { return &m_blockage_min2_i; }
-
-int FormGPS::blockage_max_i() const { return m_blockage_max_i; }
-void FormGPS::setBlockage_max_i(int blockage_max_i) { m_blockage_max_i = blockage_max_i; }
-QBindable<int> FormGPS::bindableBlockage_max_i() { return &m_blockage_max_i; }
-
-int FormGPS::blockage_blocked() const { return m_blockage_blocked; }
-void FormGPS::setBlockage_blocked(int blockage_blocked) { m_blockage_blocked = blockage_blocked; }
-QBindable<int> FormGPS::bindableBlockage_blocked() { return &m_blockage_blocked; }
-
-QVariantList FormGPS::blockageSecCount() const {
-
-    QVariantList state;
-    for (int i = 0; i < 65; i++) {
-        state.append(static_cast<int>(blockage.blockageseccount[i]));
-    }
-    return state;
-}
-void FormGPS::setBlockageSecCount(const QVariantList& value) { }
-QBindable<QVariantList> FormGPS::bindableBlockageSecCount() { return &m_blockageseccount; }
 
 double FormGPS::avgPivDistance() const { return m_avgPivDistance; }
 void FormGPS::setAvgPivDistance(double avgPivDistance) { m_avgPivDistance = avgPivDistance; }

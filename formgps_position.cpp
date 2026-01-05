@@ -1201,8 +1201,7 @@ void FormGPS::UpdateFixPosition()
     Backend::instance()->m_fixFrame.setFrameTime(swFrame.elapsed());
 
     // Variables for change tracking
-    bool posChangedFlag = false, vehChangedFlag = false, steerChangedFlag = false;
-    bool imuChangedFlag = false, blockageChangedFlag = false;
+    bool vehChangedFlag = false, steerChangedFlag = false;
     bool navChangedFlag = false, toolPosChangedFlag = false, wizardChangedFlag = false;
     bool geometryChangedFlag = false, miscChangedFlag = false;
 
@@ -1272,16 +1271,6 @@ void FormGPS::UpdateFixPosition()
 
     //TODO: limit this to update qml at only 10hz
     emit Backend::instance()->fixFrameChanged();
-
-    // === Blockage Sensors Updates (8 properties) - Qt 6.8 QProperty ===
-    if (m_blockage_avg != blockage.blockage_avg) { m_blockage_avg = blockage.blockage_avg; blockageChangedFlag = true; }
-    if (m_blockage_min1 != blockage.blockage_min1) { m_blockage_min1 = blockage.blockage_min1; blockageChangedFlag = true; }
-    if (m_blockage_min2 != blockage.blockage_min2) { m_blockage_min2 = blockage.blockage_min2; blockageChangedFlag = true; }
-    if (m_blockage_max != blockage.blockage_max) { m_blockage_max = blockage.blockage_max; blockageChangedFlag = true; }
-    if (m_blockage_min1_i != blockage.blockage_min1_i) { m_blockage_min1_i = blockage.blockage_min1_i; blockageChangedFlag = true; }
-    if (m_blockage_min2_i != blockage.blockage_min2_i) { m_blockage_min2_i = blockage.blockage_min2_i; blockageChangedFlag = true; }
-    if (m_blockage_max_i != blockage.blockage_max_i) { m_blockage_max_i = blockage.blockage_max_i; blockageChangedFlag = true; }
-    if (m_blockage_blocked != blockage.blockage_blocked) { m_blockage_blocked = blockage.blockage_blocked; blockageChangedFlag = true; }
 
     // === Navigation Updates (6 properties) ===
     if (m_distancePivotToTurnLine != _distancePivotToTurnLine) { m_distancePivotToTurnLine = _distancePivotToTurnLine; navChangedFlag = true; }
@@ -2965,70 +2954,6 @@ void FormGPS::onMachineDataReady(const PGNParser::ParsedData& data)
 
 void FormGPS::onBlockageDataReady(const PGNParser::ParsedData& data)
 {
-
-    // Update data from Blockage modules
-
-    if (!data.isValid) return;
-
-    // PGN 244: Blockage Data
-    if (data.pgnNumber == 244) {
-
-        static int iteration[4] = {0, 0, 0, 0};
-
-        int i = data.blockagesection[1];
-        int sectionType = data.blockagesection[0];
-        int value = data.blockagesection[2];
-
-        if (i >= 0) {
-            switch(sectionType) {
-            case 0:
-                if (i < (int)(sizeof(blockage.blockageSecCount1) / sizeof(blockage.blockageSecCount1[0])))
-                    blockage.blockageSecCount1[i] = value;
-                iteration[sectionType] = 0;
-                break;
-            case 1:
-                if (i < (int)(sizeof(blockage.blockageSecCount2) / sizeof(blockage.blockageSecCount2[0])))
-                    blockage.blockageSecCount2[i] = value;
-                iteration[sectionType] = 0;
-                break;
-            case 2:
-                if (i < (int)(sizeof(blockage.blockageSecCount3) / sizeof(blockage.blockageSecCount3[0])))
-                    blockage.blockageSecCount3[i] = value;
-                iteration[sectionType] = 0;
-                break;
-            case 3:
-                if (i < (int)(sizeof(blockage.blockageSecCount4) / sizeof(blockage.blockageSecCount4[0])))
-                    blockage.blockageSecCount4[i] = value;
-                iteration[sectionType] = 0;
-                break;
-            }
-        }
-
-        if(QDateTime::currentMSecsSinceEpoch() - blockage_lastUpdate >= 1000){
-
-            blockage_lastUpdate = QDateTime::currentMSecsSinceEpoch();
-            blockage.statistics(pn.speed);
-            m_blockageseccount.notify();
-            // обновляем данные каждую секунду
-
-            for (int i = 0; i < 4; i++){
-                iteration[i]++;
-            }
-            // обнуляем если данные перестали поступать
-            if (iteration[0] > 5){
-            memset(blockage.blockageSecCount1, 0, sizeof(blockage.blockageSecCount1));
-                iteration[0] = 99;}
-            if (iteration[1] > 5){
-            memset(blockage.blockageSecCount2, 0, sizeof(blockage.blockageSecCount2));
-                iteration[1] = 99;}
-            if (iteration[2] > 5){
-            memset(blockage.blockageSecCount3, 0, sizeof(blockage.blockageSecCount3));
-                iteration[2] = 99;}
-            if (iteration[3] > 5){
-            memset(blockage.blockageSecCount4, 0, sizeof(blockage.blockageSecCount4));
-                iteration[3] = 99;}
-        }
-    }
 }
 // Phase 6.0.24: GPS timer callback - UpdateFixPosition() at 40 Hz fixed rate
 void FormGPS::onGPSTimerTimeout()

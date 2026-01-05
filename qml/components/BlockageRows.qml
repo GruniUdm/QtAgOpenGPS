@@ -36,7 +36,7 @@ Rectangle {
     property color onTextColor: "White"
     property color autoColor: "ForestGreen"
     property color autoTextColor: "White"
-    property variant blockageRowCount: aog.blockageSecCount
+    property variant blockageRowCount: Blockage.secCount
 
     // Дополнительные свойства для таймера
     property variant lastBlockageArray: []
@@ -118,12 +118,7 @@ Rectangle {
             // Создаем массив из 64 нулей
             var zeroArray = createZeroArray()
 
-            // Обновляем данные в aog (источнике)
-            if (typeof aog.setBlockageSecCount === 'function') {
-                aog.setBlockageSecCount(zeroArray)
-            } else if (aog.blockageSecCount !== undefined) {
-                aog.blockageSecCount = zeroArray
-            }
+            Blockage.reset_count()
 
             // Обновляем локальную копию
             lastBlockageArray = zeroArray.slice()
@@ -176,7 +171,7 @@ Rectangle {
             width: (800 * theme.scaleWidth / numRows) < 50 ? (800 * theme.scaleWidth / numRows) : (20 * theme.scaleWidth)
             //height: (10 * theme.scaleWidth)
             //anchors.bottom: parent.bottom
-            height: (blockageRows.blockageRowCount[model.rowNo] * 40/(aog.blockage_max+1)+20)*theme.scaleHeight<45*theme.scaleHeight?(blockageRows.blockageRowCount[model.rowNo] * 40/(aog.blockage_max+1)+20)*theme.scaleHeight:40*theme.scaleHeight
+            height: (blockageRows.blockageRowCount[model.rowNo] * 40/(Blockage.max+1)+20)*theme.scaleHeight<45*theme.scaleHeight?(blockageRows.blockageRowCount[model.rowNo] * 40/(Blockage.max+1)+20)*theme.scaleHeight:40*theme.scaleHeight
             useColorBasedAnchors: viewSwitch
             buttonText: (model.rowNo + 1).toFixed(0)
             // visible: (model.rowNo < numRows) ? true : false
