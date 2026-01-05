@@ -15,16 +15,13 @@ Blockage::Blockage(QObject *parent)
     connect(AgIOService::instance(), &AgIOService::blockageDataReady,
             this, &Blockage::onBlockageDataReady, Qt::DirectConnection);
 
-    m_blockageModel = new BlockageModel(this);
+    connect(&updateTimeout, &QTimer::timeout, this, &Blockage::on_timeout);
 
-    //set up a property binding, much like you'd do with a javascript expression in QML
-    m_secCount.setBinding([&]() {
-        QVariantList state;
-        for (int i = 0; i < MAX_SECTIONS; i++) {
-            state.append(static_cast<int>(m_blockageModel->rows[i].count));
-        }
-        return state;
-    });
+    lastUpdate.restart(); //zero the update timer
+    updateTimeout.setInterval(1000); //1 second timer
+    updateTimeout.start();
+
+    m_blockageModel = new BlockageModel(this);
 }
 
 Blockage *Blockage::instance() {
@@ -57,11 +54,24 @@ Blockage *Blockage::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
     return s_instance;
 }
 
-void Blockage::reset_count() {
+void Blockage::zeroDisplay() {
     m_blockageModel->clear();
-    statistics(pn.speed);
+}
 
-    m_secCount.notify(); //recompute the bound lamdbda to update the property
+void Blockage::startTimeout() {
+    updateTimeout.start();
+}
+
+void Blockage::stopTimeout(){
+    updateTimeout.stop();
+}
+
+void Blockage::on_timeout() {
+    //if more than 5 seconds of no activity, zero out the display
+    if (lastUpdate.elapsed() > m_timeout) {
+        zeroDisplay();
+        lastUpdate.restart();
+    }
 }
 
 void Blockage::onBlockageDataReady(const PGNParser::ParsedData &data)
@@ -105,35 +115,40 @@ void Blockage::onBlockageDataReady(const PGNParser::ParsedData &data)
             }
         }
 
-        if(QDateTime::currentMSecsSinceEpoch() - lastUpdate >= 1000){
+        if(lastUpdate.elapsed() >= 1000) {
+            //It's been longer than 1 second since the last update
 
-            lastUpdate = QDateTime::currentMSecsSinceEpoch();
-            statistics(pn.speed);
-            m_secCount.notify(); //recompute the lambda
+            lastUpdate.restart(); //restart the count
+
+            statistics();
             // обновляем данные каждую секунду
 
-            for (int i = 0; i < 4; i++){
+            for (int i = 0; i < 4; i++) {
                 iteration[i]++;
             }
             // обнуляем если данные перестали поступать
-            if (iteration[0] > 5){
-            memset(blockageSecCount1, 0, sizeof(blockageSecCount1));
-                iteration[0] = 99;}
-            if (iteration[1] > 5){
-            memset(blockageSecCount2, 0, sizeof(blockageSecCount2));
-                iteration[1] = 99;}
-            if (iteration[2] > 5){
-            memset(blockageSecCount3, 0, sizeof(blockageSecCount3));
-                iteration[2] = 99;}
-            if (iteration[3] > 5){
-            memset(blockageSecCount4, 0, sizeof(blockageSecCount4));
-                iteration[3] = 99;}
+            if (iteration[0] > 5) {
+                memset(blockageSecCount1, 0, sizeof(blockageSecCount1));
+                iteration[0] = 99;
+            }
+            if (iteration[1] > 5) {
+                memset(blockageSecCount2, 0, sizeof(blockageSecCount2));
+                iteration[1] = 99;
+            }
+            if (iteration[2] > 5) {
+                memset(blockageSecCount3, 0, sizeof(blockageSecCount3));
+                iteration[2] = 99;
+            }
+            if (iteration[3] > 5) {
+                memset(blockageSecCount4, 0, sizeof(blockageSecCount4));
+                iteration[3] = 99;
+            }
         }
     }
 
 }
 
-void Blockage::statistics(const double speed){
+void Blockage::statistics(){
     int k = 0;
     int numRows1 = SettingsManager::instance()->seed_blockRow1();
     int numRows2 = SettingsManager::instance()->seed_blockRow2();
@@ -146,20 +161,20 @@ void Blockage::statistics(const double speed){
 
     QVector<BlockageModel::Row> rowCount;
     rowCount.reserve(MAX_SECTIONS);
-    for (int i = 0; i < numRows ; i++ ) {
+    for (int i = 0; i < (numRows1 + numRows2 + numRows3 + numRows4) ; i++ ) {
         rowCount.append( {i, 0} );
     }
 
     //int vtgSpeed = 5;
-    if (speed != 0 && rowwidth != 0) {
+    if (current_speed != 0 && rowwidth != 0) {
         for (int i = 0; i < numRows1 && i < (sizeof(blockageSecCount1) / sizeof(blockageSecCount1[0])); i++)
-            rowCount[k++].count = floor(blockageSecCount1[i] * 7.2 / rowwidth / speed);
+            rowCount[k++].count = floor(blockageSecCount1[i] * 7.2 / rowwidth / current_speed);
         for (int i = 0; i < numRows2 && i < (sizeof(blockageSecCount2) / sizeof(blockageSecCount2[0])); i++)
-            rowCount[k++].count = floor(blockageSecCount2[i] * 7.2 / rowwidth / speed);
+            rowCount[k++].count = floor(blockageSecCount2[i] * 7.2 / rowwidth / current_speed);
         for (int i = 0; i < numRows3 && i < (sizeof(blockageSecCount3) / sizeof(blockageSecCount3[0])); i++)
-            rowCount[k++].count = floor(blockageSecCount3[i] * 7.2 / rowwidth / speed);
+            rowCount[k++].count = floor(blockageSecCount3[i] * 7.2 / rowwidth / current_speed);
         for (int i = 0; i < numRows4 && i < (sizeof(blockageSecCount4) / sizeof(blockageSecCount4[0])); i++)
-            rowCount[k++].count = floor(blockageSecCount4[i] * 7.2 / rowwidth / speed);
+            rowCount[k++].count = floor(blockageSecCount4[i] * 7.2 / rowwidth / current_speed);
     //}
 
 

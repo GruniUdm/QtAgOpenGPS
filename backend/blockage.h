@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QVariant>
 #include <QVariantList>
+#include <QTimer>
+#include <QElapsedTimer>
 #include "settingsmanager.h"
 #include "pgnparser.h"
 #include "blockagemodel.h"
@@ -37,7 +39,9 @@ public:
     static Blockage *instance();
     static Blockage *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
-    Q_INVOKABLE void reset_count();
+    Q_INVOKABLE void zeroDisplay();
+    Q_INVOKABLE void stopTimeout();
+    Q_INVOKABLE void startTimeout();
 
     int blockageSecCount1[16] = {0};
     int blockageSecCount2[16] = {0};
@@ -58,17 +62,16 @@ public:
     SIMPLE_BINDABLE_PROPERTY(int, min2_i)
     SIMPLE_BINDABLE_PROPERTY(int, max_i)
     SIMPLE_BINDABLE_PROPERTY(int, blocked)
-    //blockageSecCount will be bound in constructor to a lambda to
-    //pull out information from the above int arrays. Must call
-    //m_blockageSecCount.notify() to let the property system know
-    //the data must be recalculated.
-    SIMPLE_BINDABLE_PROPERTY(QVariantList, secCount)
+    SIMPLE_BINDABLE_PROPERTY(int, timeout) //ms until display is zeroed after no update
+
+    double current_speed; //For now filled in by formGPS.
 
 signals:
 
 public slots:
     void onBlockageDataReady(const PGNParser::ParsedData& data);
-    void statistics(const double speed);
+    void statistics();
+    void on_timeout();
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Blockage, int, m_avg, 0, &Blockage::avgChanged)
@@ -79,9 +82,10 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Blockage, int, m_min2_i, 0, &Blockage::min2_iChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Blockage, int, m_max_i, 0, &Blockage::max_iChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Blockage, int, m_blocked, 0, &Blockage::blockedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(Blockage, QVariantList, m_secCount, &Blockage::secCountChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Blockage, int, m_timeout, 5000, &Blockage::timeoutChanged)
 
-    qint64 lastUpdate;
+    QTimer updateTimeout;
+    QElapsedTimer lastUpdate;
 
 };
 #endif // BLOCKAGE_H

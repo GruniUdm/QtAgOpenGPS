@@ -30,6 +30,7 @@
 #include "siminterface.h"
 #include "modulecomm.h"
 #include "cpgn.h"
+#include "blockage.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -1228,6 +1229,8 @@ void FormGPS::UpdateFixPosition()
     Backend::instance()->m_fixFrame.easting = CVehicle::instance()->pivotAxlePos.easting;
     Backend::instance()->m_fixFrame.northing = CVehicle::instance()->pivotAxlePos.northing;
     Backend::instance()->m_fixFrame.heading = CVehicle::instance()->pivotAxlePos.heading;
+
+    Blockage::instance()->current_speed = pn.speed;
 
     // === Vehicle State Updates (8 properties) ===
     if (m_speedKph != CVehicle::instance()->avgSpeed) { m_speedKph = CVehicle::instance()->avgSpeed; vehChangedFlag = true; }
