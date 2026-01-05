@@ -97,14 +97,13 @@ ColumnLayout {
     Comp.IconButton{
         id: btnAutoTrack
         checkable: true
-        isChecked: aog.autoTrackBtnState
+        isChecked: TracksInterface.isAutoTrack
         icon.source: prefix + "/images/AutoTrackOff.png"
         iconChecked: prefix + "/images/AutoTrack.png"
         Layout.alignment: Qt.AlignCenter
         implicitWidth: theme.buttonSize
         implicitHeight: theme.buttonSize
-        onCheckedChanged: aog.autoTrackBtnState = checked ? 1 : 0 // Qt 6.8 MODERN: Q_PROPERTY assignment
-        onClicked: aog.autoTrack() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        onCheckedChanged: TracksInterface.isAutoTrack = checked
     }
 
     Comp.MainWindowBtns {

@@ -412,10 +412,6 @@ int FormGPS::manualBtnState() const { return m_manualBtnState; }
 void FormGPS::setManualBtnState(int manualBtnState) { m_manualBtnState = manualBtnState; }
 QBindable<int> FormGPS::bindableManualBtnState() { return &m_manualBtnState; }
 
-bool FormGPS::autoTrackBtnState() const { return m_autoTrackBtnState; }
-void FormGPS::setAutoTrackBtnState(bool autoTrackBtnState) { m_autoTrackBtnState = autoTrackBtnState; }
-QBindable<bool> FormGPS::bindableAutoTrackBtnState() { return &m_autoTrackBtnState; }
-
 bool FormGPS::autoYouturnBtnState() const { return m_autoYouturnBtnState; }
 void FormGPS::setAutoYouturnBtnState(bool autoYouturnBtnState) { m_autoYouturnBtnState = autoYouturnBtnState; }
 QBindable<bool> FormGPS::bindableAutoYouturnBtnState() { return &m_autoYouturnBtnState; }
@@ -423,19 +419,6 @@ QBindable<bool> FormGPS::bindableAutoYouturnBtnState() { return &m_autoYouturnBt
 bool FormGPS::isPatchesChangingColor() const { return m_isPatchesChangingColor; }
 void FormGPS::setIsPatchesChangingColor(bool isPatchesChangingColor) { m_isPatchesChangingColor = isPatchesChangingColor; }
 QBindable<bool> FormGPS::bindableIsPatchesChangingColor() { return &m_isPatchesChangingColor; }
-
-// Boundary State
-bool FormGPS::boundaryIsRecording() const { return m_boundaryIsRecording; }
-void FormGPS::setBoundaryIsRecording(bool value) { m_boundaryIsRecording = value; }
-QBindable<bool> FormGPS::bindableBoundaryIsRecording() { return &m_boundaryIsRecording; }
-
-double FormGPS::boundaryArea() const { return m_boundaryArea; }
-void FormGPS::setBoundaryArea(double value) { m_boundaryArea = value; }
-QBindable<double> FormGPS::bindableBoundaryArea() { return &m_boundaryArea; }
-
-int FormGPS::boundaryPointCount() const { return m_boundaryPointCount; }
-void FormGPS::setBoundaryPointCount(int value) { m_boundaryPointCount = value; }
-QBindable<int> FormGPS::bindableBoundaryPointCount() { return &m_boundaryPointCount; }
 
 FormGPS::~FormGPS()
 {

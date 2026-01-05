@@ -385,10 +385,6 @@ void FormGPS::resetCreatedYouTurn() {
     onBtnResetCreatedYouTurn_clicked();
 }
 
-void FormGPS::autoTrack() {
-    onBtnAutoTrack_clicked();
-}
-
 // ===== BATCH 3 - 8 ACTIONS Camera Navigation - Qt 6.8 Q_INVOKABLE Implementation =====
 void FormGPS::zoomIn() {
     onBtnZoomIn_clicked();
@@ -813,12 +809,6 @@ void FormGPS::onBtnSwapAutoYouTurnDirection_clicked()
  {
      QDEBUG<<"ResetCreatedYouTurnd";
      yt.ResetYouTurn();
- }
-
- void FormGPS::onBtnAutoTrack_clicked()
- {
-     track.setIsAutoTrack(!track.isAutoTrack());
-     QDEBUG<<"isAutoTrack";
  }
 
 void FormGPS::onBtnManUTurn_clicked(bool right)

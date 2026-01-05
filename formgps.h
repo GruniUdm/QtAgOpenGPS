@@ -187,22 +187,12 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY autoBtnStateChanged BINDABLE bindableAutoBtnState)
     Q_PROPERTY(int manualBtnState READ manualBtnState WRITE setManualBtnState
                NOTIFY manualBtnStateChanged BINDABLE bindableManualBtnState)
-    Q_PROPERTY(bool autoTrackBtnState READ autoTrackBtnState WRITE setAutoTrackBtnState
-               NOTIFY autoTrackBtnStateChanged BINDABLE bindableAutoTrackBtnState)
     Q_PROPERTY(bool autoYouturnBtnState READ autoYouturnBtnState WRITE setAutoYouturnBtnState
                NOTIFY autoYouturnBtnStateChanged BINDABLE bindableAutoYouturnBtnState)
 
     // Job Control - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
     Q_PROPERTY(bool isPatchesChangingColor READ isPatchesChangingColor WRITE setIsPatchesChangingColor
                NOTIFY isPatchesChangingColorChanged BINDABLE bindableIsPatchesChangingColor)
-
-    // Boundary State - Phase 6.0.20 - Qt 6.8 BINDABLE
-    Q_PROPERTY(bool boundaryIsRecording READ boundaryIsRecording WRITE setBoundaryIsRecording
-               NOTIFY boundaryIsRecordingChanged BINDABLE bindableBoundaryIsRecording)
-    Q_PROPERTY(double boundaryArea READ boundaryArea WRITE setBoundaryArea
-               NOTIFY boundaryAreaChanged BINDABLE bindableBoundaryArea)
-    Q_PROPERTY(int boundaryPointCount READ boundaryPointCount WRITE setBoundaryPointCount
-               NOTIFY boundaryPointCountChanged BINDABLE bindableBoundaryPointCount)
 
 public:
     explicit FormGPS(QWidget *parent = 0);
@@ -369,11 +359,6 @@ public:
     Q_INVOKABLE QVariantList convertLocalToWGS84(double northing, double easting);
     Q_INVOKABLE QVariantList convertWGS84ToLocal(double latitude, double longitude);
 
-    // NMEA Processing
-    uint sentenceCounter() const;
-    void setSentenceCounter(uint value);
-    QBindable<uint> bindableSentenceCounter();
-
     // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2
     double gpsHeading() const;
     void setGpsHeading(double value);
@@ -397,10 +382,6 @@ public:
     void setManualBtnState(int value);
     QBindable<int> bindableManualBtnState();
 
-    bool autoTrackBtnState() const;
-    void setAutoTrackBtnState(bool value);
-    QBindable<bool> bindableAutoTrackBtnState();
-
     bool autoYouturnBtnState() const;
     void setAutoYouturnBtnState(bool value);
     QBindable<bool> bindableAutoYouturnBtnState();
@@ -409,19 +390,6 @@ public:
     bool isPatchesChangingColor() const;
     void setIsPatchesChangingColor(bool value);
     QBindable<bool> bindableIsPatchesChangingColor();
-
-    // Boundary State
-    bool boundaryIsRecording() const;
-    void setBoundaryIsRecording(bool value);
-    QBindable<bool> bindableBoundaryIsRecording();
-
-    double boundaryArea() const;
-    void setBoundaryArea(double value);
-    QBindable<double> bindableBoundaryArea();
-
-    int boundaryPointCount() const;
-    void setBoundaryPointCount(int value);
-    QBindable<int> bindableBoundaryPointCount();
 
      /***********************************************
      * Qt-specific things we need to keep track of *
@@ -948,7 +916,6 @@ public:
 
     Q_INVOKABLE void swapAutoYouTurnDirection();
     Q_INVOKABLE void resetCreatedYouTurn();
-    Q_INVOKABLE void autoTrack();
     // Batch 3 - 8 actions Camera Navigation - lines 201-208
     Q_INVOKABLE void zoomIn();
     Q_INVOKABLE void zoomOut();
@@ -1143,7 +1110,6 @@ public slots:
     void onBtnContourPriority_clicked(bool isRight);
     void onBtnContourLock_clicked();
     void onBtnResetCreatedYouTurn_clicked();
-    void onBtnAutoTrack_clicked();
     //bottom row
     void onBtnResetTool_clicked();
     void onBtnHeadland_clicked();
@@ -1281,18 +1247,13 @@ signals:
     void latStartChanged();
     void lonStartChanged();
     void mPerDegreeLatChanged();
-    void sentenceCounterChanged();
     void gpsHeadingChanged();
     void isReverseWithIMUChanged();
     void steerModuleConnectedCounterChanged();
     void autoBtnStateChanged();
     void manualBtnStateChanged();
-    void autoTrackBtnStateChanged();
     void autoYouturnBtnStateChanged();
     void isPatchesChangingColorChanged();
-    void boundaryIsRecordingChanged();
-    void boundaryAreaChanged();
-    void boundaryPointCountChanged();
 
     // ===== SIGNALS CLEANED - Qt 6.8 Q_INVOKABLE Migration =====
     // All button action signals migrated to Q_INVOKABLE direct calls
@@ -1380,21 +1341,13 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_latStart, &FormGPS::latStartChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_lonStart, &FormGPS::lonStartChanged)
     double m_mPerDegreeLat = 0.0;  // Phase 6.0.20 Task 24 Step 3.5: Simple member (no BINDABLE - C++ only)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, uint, m_sentenceCounter, &FormGPS::sentenceCounterChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_gpsHeading, &FormGPS::gpsHeadingChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isReverseWithIMU, &FormGPS::isReverseWithIMUChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_steerModuleConnectedCounter, &FormGPS::steerModuleConnectedCounterChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_autoBtnState, &FormGPS::autoBtnStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_manualBtnState, &FormGPS::manualBtnStateChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_autoTrackBtnState, &FormGPS::autoTrackBtnStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_autoYouturnBtnState, &FormGPS::autoYouturnBtnStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isPatchesChangingColor, &FormGPS::isPatchesChangingColorChanged)
-
-    // Boundary State Properties - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_boundaryIsRecording, &FormGPS::boundaryIsRecordingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_boundaryArea, &FormGPS::boundaryAreaChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_boundaryPointCount, &FormGPS::boundaryPointCountChanged)
-
 
 public:
     //bool isSimulatorMode() const { return SimInterface::instance()->isRunning(); }
