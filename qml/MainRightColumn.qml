@@ -8,7 +8,7 @@ import "components" as Comp
 ColumnLayout {
     id: rightColumn //buttons
 
-    visible: aog.isJobStarted
+    visible: Backend.isJobStarted
 
 
     onHeightChanged: {
@@ -162,7 +162,7 @@ ColumnLayout {
         checkable: true
         isChecked: MainWindowState.isBtnAutoSteerOn  // ⚡ PHASE 6.0.20 FIX: Use isChecked for bidirectional binding (sync with C++ protection)
         // ⚡ PHASE 6.0.20 FIX: Require ACTIVE line (not just in memory) - currentABLine/Curve check mode === AB/Curve
-        enabled: ((aogInterface.currentABLine > -1 || aogInterface.currentABCurve > -1) || MainWindowState.isContourBtnOn) && aog.isJobStarted
+        enabled: ((aogInterface.currentABLine > -1 || aogInterface.currentABCurve > -1) || MainWindowState.isContourBtnOn) && Backend.isJobStarted
         //Is remote activation of autosteer enabled? //todo. Eliminated in 6.3.3
         // Threading Phase 1: Auto steer mode display
         buttonText: (SettingsManager.as_isAutoSteerAutoOn ? "R" : "M")
@@ -177,7 +177,7 @@ ColumnLayout {
             }
         }
 
-        //property bool isTrackOn: (currentABLine > -1 && aog.isJobStarted === true)  //
+        //property bool isTrackOn: (currentABLine > -1 && Backend.isJobStarted === true)  //
 
         // ⚡ PHASE 6.0.20: Speed-based AutoSteer deactivation MOVED to C++
         // Logic now in formgps.cpp:175 setSpeedKph() for better architecture

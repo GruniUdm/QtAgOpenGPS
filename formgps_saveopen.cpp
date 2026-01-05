@@ -1642,7 +1642,7 @@ void FormGPS::FileCreateField()
     //$Offsets
     //533172,5927719,12 - offset easting, northing, zone
 
-    if( ! isJobStarted())
+    if( ! Backend::instance()->isJobStarted())
     {
         qDebug() << "field not open";
         TimedMessageBox(3000, tr("Field Not Open"), tr("Create a new field."));

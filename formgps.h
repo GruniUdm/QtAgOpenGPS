@@ -77,14 +77,6 @@ class FormGPS : public QQmlApplicationEngine
     // ===== Q_PROPERTY MIGRATION - OPTION A =====
     // 67 properties organized in groups for 50Hz optimization
 
-    // === Core Application State (2 properties) - Critical for basic operations - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(bool isJobStarted READ isJobStarted WRITE setIsJobStarted
-               NOTIFY isJobStartedChanged BINDABLE bindableIsJobStarted)
-
-    // === CRITICAL: applicationClosing property for save_everything fix ===
-    Q_PROPERTY(bool applicationClosing READ applicationClosing WRITE setApplicationClosing
-               NOTIFY applicationClosingChanged BINDABLE bindableApplicationClosing)
-
     // === Position GPS (6 properties) - Critical for navigation - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(QVariantList sectionButtonState READ sectionButtonState WRITE setSectionButtonState
                NOTIFY sectionButtonStateChanged BINDABLE bindableSectionButtonState)
@@ -200,15 +192,6 @@ public:
 
     // ===== Q_PROPERTY GETTERS, SETTERS AND BINDABLES =====
     // Manual declarations for all Rectangle Pattern properties
-
-    // Application State
-    bool isJobStarted() const;
-    void setIsJobStarted(bool value);
-    QBindable<bool> bindableIsJobStarted();
-
-    bool applicationClosing() const;
-    void setApplicationClosing(bool value);
-    QBindable<bool> bindableApplicationClosing();
 
     // Position GPS
     QVariantList sectionButtonState() const;
@@ -461,10 +444,6 @@ public:
 
     //bool for whether or not a job is active
     bool /*setIsJobStarted(false),*/ isAreaOnRight = true /*, setIsBtnAutoSteerOn(false)*/;
-
-    //this bool actually lives in the QML aog object.
-    // ⚡ PHASE 6.3.0: Migrated to Q_PROPERTY system above
-    // InterfaceProperty<AOGInterface,bool> isJobStarted = InterfaceProperty<AOGInterface,bool>("isJobStarted");
 
     //if we are saving a file
     bool isSavingFile = false, isLogElevation = false;
@@ -1200,10 +1179,6 @@ signals:
     // ===== Q_PROPERTY SIGNALS - Qt 6.8 Rectangle Pattern NOTIFY signals =====
     // CRITICAL: All properties need NOTIFY signals for QML bindings to work properly
 
-    // Application State signals
-    void isJobStartedChanged();
-    void applicationClosingChanged();  // CRITICAL: for save_everything fix
-
     // Position GPS signals
     void sectionButtonStateChanged();
 
@@ -1279,12 +1254,6 @@ private:
 
     // ===== Q_PROPERTY MEMBER VARIABLES =====
     // 69 members for optimized properties
-
-    // Application State (3) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isJobStarted, &FormGPS::isJobStartedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_applicationClosing, &FormGPS::applicationClosingChanged)
-
-    // ⚡ PHASE 6.0.3.2: QML Interface Ready State
 
     // Position GPS (6) - Qt 6.8 Rectangle Pattern
     // Section button state - Qt 6.8 BINDABLE Pattern

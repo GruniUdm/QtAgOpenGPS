@@ -8,7 +8,7 @@ import "components" as Comp
 RowLayout{
     property bool hydLiftIsOn: btnHydLift.isOn
     id:bottomButtons
-    visible: aog.isJobStarted && leftColumn.visible
+    visible: Backend.isJobStarted && leftColumn.visible
 
     onWidthChanged: {
         theme.btnSizes[1] = width / (children.length)

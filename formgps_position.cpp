@@ -1178,7 +1178,7 @@ void FormGPS::UpdateFixPosition()
     //oglMain.MakeCurrent();
     //oglMain.Refresh();
 
-    if (isJobStarted()) {
+    if (Backend::instance()->isJobStarted()) {
         processSectionLookahead();
 
 
@@ -1325,7 +1325,7 @@ void FormGPS::TheRest()
     gridTriggerDistance = glm::DistanceSquared(pn.fix, prevGridPos);
 
     //NOTE: Michael, maybe verify this is all good
-    if ( isLogElevation && gridTriggerDistance > 2.9 && patchCounter !=0 && isJobStarted())
+    if ( isLogElevation && gridTriggerDistance > 2.9 && patchCounter !=0 && Backend::instance()->isJobStarted())
     {
         //grab fix and elevation
         sbGrid.append(
@@ -1344,14 +1344,14 @@ void FormGPS::TheRest()
     }
 
     //contour points
-    if (isJobStarted() &&(contourTriggerDistance > tool.contourWidth
+    if (Backend::instance()->isJobStarted() &&(contourTriggerDistance > tool.contourWidth
                          || contourTriggerDistance > sectionTriggerStepDistance))
     {
         AddContourPoints();
     }
 
     //section on off and points
-    if (sectionTriggerDistance > sectionTriggerStepDistance && isJobStarted())
+    if (sectionTriggerDistance > sectionTriggerStepDistance && Backend::instance()->isJobStarted())
     {
         AddSectionOrPathPoints();
     }
@@ -2154,7 +2154,7 @@ void FormGPS::processSectionLookahead() {
         // tmrWatchdog->stop();  // REMOVED - buffered saves don't block GPS
 
         //don't save if no gps
-        if (isJobStarted())
+        if (Backend::instance()->isJobStarted())
         {
             //auto save the field patches, contours accumulated so far
             FileSaveSections();  // Now < 50ms with buffering
@@ -2179,7 +2179,7 @@ void FormGPS::processSectionLookahead() {
 
     }
 
-    if (isJobStarted())
+    if (Backend::instance()->isJobStarted())
     {
         p_239.pgn[CPGN_EF::geoStop] = BoundaryInterface::instance()->isOutOfBounds() ? 1 : 0;
 
@@ -2562,7 +2562,7 @@ void FormGPS::InitializeFirstFewGPSPositions()
     {
         // PHASE 6.0.41: Force latStart/lonStart update when switching modes, even if field open
         // Prevents gray screen when GPS arrives after SIM->REAL switch with open field
-        if (!isJobStarted() || m_forceGPSReinitialization)
+        if (!Backend::instance()->isJobStarted() || m_forceGPSReinitialization)
         {
             // PHASE 6.0.42.5: Validate GPS coordinates before initialization
             // Race condition fix: Timer (40 Hz) can trigger BEFORE GPS data arrives after mode switch

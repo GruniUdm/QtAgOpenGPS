@@ -8,6 +8,7 @@
 #include "cpgn.h"
 #include "classes/settingsmanager.h"
 #include "modulecomm.h"
+#include "backend.h"
 
 /* SectionSetPosition(), SectionCalcWidths(), and SectionCalcMulti() are all in CTool */
 
@@ -99,7 +100,7 @@ void FormGPS::DoRemoteSwitches()
     }
 
     bool sectionsChanged = false; // Track if any section state changed
-    if (isJobStarted())
+    if (Backend::instance()->isJobStarted())
     {
         //MainSW was used
         if (mc.ss[mc.swMain] != mc.ssP[mc.swMain])

@@ -80,6 +80,9 @@ public:
         emit currentFieldChanged();
     }
 
+    SIMPLE_BINDABLE_PROPERTY(bool, isJobStarted)
+    SIMPLE_BINDABLE_PROPERTY(bool, applicationClosing)
+
 signals:
     //signals implicitly created by BINDABLE_PROPERTY() macro
     void currentFieldChanged();
@@ -89,6 +92,8 @@ signals:
     void timedMessage(int timeout, QString s1, QString s2);
 
 private:
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isJobStarted, false, &Backend::isJobStartedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_applicationClosing, false, &Backend::applicationClosingChanged)
 };
 
 #endif // BACKEND_H

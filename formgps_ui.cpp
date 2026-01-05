@@ -246,7 +246,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     loadSettings(); //load settings and properties
 
-    setIsJobStarted(false);
+    Backend::instance()->set_isJobStarted(false);
 
     // StartLoopbackServer(); // ❌ REMOVED - Phase 4.6: UDP FormGPS completely eliminated
     if (SettingsManager::instance()->menu_isSimulatorOn() == false) {
@@ -973,7 +973,7 @@ void FormGPS::onBtnSnapSideways_clicked(double distance){
 
 void FormGPS::onDeleteAppliedArea_clicked()
 {
-    if (isJobStarted())
+    if (Backend::instance()->isJobStarted())
     {
         /*if (autoBtnState == btnStates.Off && manualBtnState == btnStates.Off)
         {

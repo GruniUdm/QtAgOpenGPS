@@ -505,7 +505,7 @@ void FormGPS::oglMain_Paint()
                          cos(CVehicle::instance()->fixHeading) * tool.hitchLength, 0);
 
             tool.DrawTool(gl,toolmv, projection,
-                          isJobStarted(),
+                          Backend::instance()->isJobStarted(),
                           CVehicle::instance()->isHydLiftOn(),
                           camera,tram);
             double steerangle;
@@ -574,7 +574,7 @@ void FormGPS::oglMain_Paint()
             //guidance line text implemented in QML
 
             //draw the zoom window
-            if (this->isJobStarted())
+            if (Backend::instance()->isJobStarted())
             {
                 /*TODO implement floating zoom windo
                 if (threeSeconds != zoomUpdateCounter)
@@ -961,7 +961,7 @@ void FormGPS::oglZoom_Paint()
     gl->glCullFace(GL_BACK);
     gl->glClearColor(0, 0, 0, 1.0f);
 
-    if (isJobStarted())
+    if (Backend::instance()->isJobStarted())
     {
         gl->glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         projection.setToIdentity(); //Reset the view

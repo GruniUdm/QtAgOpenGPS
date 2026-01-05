@@ -26,12 +26,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
     qDebug() << "FormGPS constructor START";
 
-    // Phase 6.0.24 Problem 18: Initialize Q_OBJECT_BINDABLE_PROPERTY to default values
-    // CRITICAL: Q_OBJECT_BINDABLE_PROPERTY does NOT auto-initialize to false/0
-    // Without explicit initialization, bool members contain random memory values
-    m_isJobStarted = false;          // No job started
-    m_applicationClosing = false;    // Not closing
-
     // PHASE 6.0.33: Initialize raw GPS position (two-buffer pattern)
     m_rawGpsPosition = {0.0, 0.0};   // Will be updated when first NMEA packet arrives
 
@@ -117,8 +111,8 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     // === CRITICAL: applicationClosing connection for save_everything fix ===
     // When applicationClosing changes → automatically save with vehicle
     // Note: Using connect() instead of setBinding() to avoid recursive binding loops
-    connect(this, &FormGPS::applicationClosingChanged, this, [this]() {
-        if (applicationClosing()) {
+    connect(Backend::instance(), &Backend::applicationClosingChanged, this, [this]() {
+        if (Backend::instance()->applicationClosing()) {
             qDebug() << "🚨 applicationClosing detected - scheduling vehicle save";
             // Defer save to avoid conflicts and allow property propagation
             QTimer::singleShot(100, this, [this]() {
@@ -141,15 +135,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 // RECTANGLE PATTERN MANUAL IMPLEMENTATIONS (Qt 6.8 Required)
 // ============================================================================
 // Manual getters, setters, and bindables for Q_OBJECT_BINDABLE_PROPERTY
-
-// ===== Job and Application State Properties =====
-bool FormGPS::isJobStarted() const { return m_isJobStarted; }
-void FormGPS::setIsJobStarted(bool isJobStarted) { m_isJobStarted = isJobStarted; }
-QBindable<bool> FormGPS::bindableIsJobStarted() { return &m_isJobStarted; }
-
-bool FormGPS::applicationClosing() const { return m_applicationClosing; }
-void FormGPS::setApplicationClosing(bool applicationClosing) { m_applicationClosing = applicationClosing; }
-QBindable<bool> FormGPS::bindableApplicationClosing() { return &m_applicationClosing; }
 
 // ===== GPS Position Properties =====
 QVariantList FormGPS::sectionButtonState() const {
@@ -387,7 +372,7 @@ void FormGPS::setAutoBtnState(int autoBtnState) {
     // PHASE 6.0.36: When Master Auto button activated, set all sections to Auto mode
     // This allows automatic section activation based on boundary and coverage
     // Only changes sections currently in Off state - respects manual On state
-    if (autoBtnState == btnStates::Auto && isJobStarted()) {
+    if (autoBtnState == btnStates::Auto && Backend::instance()->isJobStarted()) {
         for (int j = 0; j < tool.numOfSections; j++) {
             if (tool.sectionButtonState[j] == btnStates::Off) {
                 tool.sectionButtonState[j] = btnStates::Auto;
@@ -397,7 +382,7 @@ void FormGPS::setAutoBtnState(int autoBtnState) {
     }
     // When Master Auto turned off, set all Auto sections back to Off
     // Respects manual On state
-    else if (autoBtnState == btnStates::Off && isJobStarted()) {
+    else if (autoBtnState == btnStates::Off && Backend::instance()->isJobStarted()) {
         for (int j = 0; j < tool.numOfSections; j++) {
             if (tool.sectionButtonState[j] == btnStates::Auto) {
                 tool.sectionButtonState[j] = btnStates::Off;
@@ -462,7 +447,7 @@ FormGPS::~FormGPS()
 
 void FormGPS::processOverlapCount()
 {
-    if (isJobStarted())
+    if (Backend::instance()->isJobStarted())
     {
         int once = 0;
         int twice = 0;
@@ -514,7 +499,7 @@ void FormGPS::ResetGPSState(bool toSimMode)
     // Field data is tied to current coordinate system (latStart/lonStart)
     // Switching modes changes coordinate reference → must save field before switch
     // Same logic as GPS jump detection (handleGPSJump)
-    if (isJobStarted()) {
+    if (Backend::instance()->isJobStarted()) {
         qDebug() << "Field open during mode switch - saving and closing";
         FileSaveEverythingBeforeClosingField(false);  // Save all field data
         JobClose();  // Close field properly
@@ -662,7 +647,7 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
     // If field is open, save and close it to prevent coordinate corruption
     // Field data is tied to specific GPS coordinates (latStart/lonStart)
     // When GPS jumps, field coordinates no longer match real-world positions
-    if (isJobStarted()) {
+    if (Backend::instance()->isJobStarted()) {
         qDebug() << "Field open during GPS jump - saving and closing";
         FileSaveEverythingBeforeClosingField(false);  // Save all field data (sections, boundary, contour, flags, tracks)
         JobClose();  // Close field properly (clears boundaries, sections, resets flags)
@@ -933,7 +918,7 @@ void FormGPS::JobClose()
     //TODO: bnd.shpList.clear(;
 
 
-    setIsJobStarted(false);
+    Backend::instance()->set_isJobStarted(false);
 
     //fix ManualOffOnAuto buttons
     this->setManualBtnState((int)btnStates::Off);
@@ -1090,7 +1075,7 @@ void FormGPS::JobNew()
     camera.SetZoom();
     fileSaveCounter = 25;
     track.setIsAutoTrack(false);
-    setIsJobStarted(true);
+    Backend::instance()->set_isJobStarted(true);
 
     // PHASE 6.0.29: Reset recorded path flags when opening field
     // Prevents steer from activating due to garbage flag values (formgps_position.cpp:800)
@@ -1110,7 +1095,7 @@ void FormGPS::FileSaveEverythingBeforeClosingField(bool saveVehicle)
 {
     qDebug() << "shutting down, saving field items.";
 
-    if (! isJobStarted()) return;
+    if (! Backend::instance()->isJobStarted()) return;
 
     qDebug() << "Test3";
     lock.lockForWrite();
@@ -1155,8 +1140,8 @@ void FormGPS::FileSaveEverythingBeforeClosingField(bool saveVehicle)
 
     // Save vehicle settings AFTER all field operations complete (conditional)
     // Include applicationClosing property in save decision (Qt 6.8 Rectangle Pattern)
-    bool shouldSaveVehicle = saveVehicle || applicationClosing();
-    qDebug() << "Before vehicle_saveas check, saveVehicle=" << saveVehicle << "applicationClosing=" << applicationClosing() << "shouldSaveVehicle=" << shouldSaveVehicle;
+    bool shouldSaveVehicle = saveVehicle || Backend::instance()->applicationClosing();
+    qDebug() << "Before vehicle_saveas check, saveVehicle=" << saveVehicle << "applicationClosing=" << Backend::instance()->applicationClosing() << "shouldSaveVehicle=" << shouldSaveVehicle;
     if(shouldSaveVehicle && SettingsManager::instance()->vehicle_vehicleName() != "Default Vehicle") {
         QString vehicleName = SettingsManager::instance()->vehicle_vehicleName();
         qDebug() << "Scheduling async vehicle_saveas():" << vehicleName;
@@ -1168,7 +1153,7 @@ void FormGPS::FileSaveEverythingBeforeClosingField(bool saveVehicle)
             qDebug() << "Async vehicle_saveas() completed";
         });
     } else {
-        qDebug() << "Skipping vehicle_saveas (saveVehicle=" << saveVehicle << "applicationClosing=" << applicationClosing() << "shouldSaveVehicle=" << shouldSaveVehicle << ")";
+        qDebug() << "Skipping vehicle_saveas (saveVehicle=" << saveVehicle << "applicationClosing=" << Backend::instance()->applicationClosing() << "shouldSaveVehicle=" << shouldSaveVehicle << ")";
     }
 
     qDebug() << "Before field cleanup";

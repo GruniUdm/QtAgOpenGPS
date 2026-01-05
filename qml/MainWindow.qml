@@ -143,7 +143,7 @@ Window {
             SettingsManager.window_size = ((mainWindow.width.toString() + ", "+  (mainWindow.height).toString()))
         }
 
-        if (aog.isJobStarted) {
+        if (Backend.isJobStarted) {
             closeDialog.visible = true
             close.accepted = false
             console.log("job is running. close it first")
@@ -658,7 +658,7 @@ Window {
             }
             Comp.SectionButtons {
                 id: sectionButtons
-                visible: aog.isJobStarted ? true : false
+                visible: Backend.isJobStarted ? true : false
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: simBarRect.top
                 anchors.bottomMargin: 8
@@ -700,7 +700,7 @@ Window {
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
                 anchors.margins: 25
-                visible: aog.isJobStarted
+                visible: Backend.isJobStarted
                 width: 45 * theme.scaleWidth
                 height: 25 * theme.scaleHeight
                 icon.source: prefix + "/images/MenuHideShow.png"
@@ -988,7 +988,7 @@ Window {
                 color3: "transparent"
                 icon.source: prefix + "/images/ExitAOG.png"
                 onClicked: {
-                    formGPS.applicationClosing = true  // Save vehicle when exiting app (Qt 6.8 binding)
+                    Backend.applicationClosing = true  // Save vehicle when exiting app (Qt 6.8 binding)
                     Qt.quit()
                 }
             }
