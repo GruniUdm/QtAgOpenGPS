@@ -48,6 +48,16 @@ if(MSVC)
     # message("MSVC: Debug symbols enabled in Release for profiling")
 endif()
 
+# Android-specific linker flags
+if(ANDROID)
+    # Increase stack size to 8MB (default is 1MB on Android)
+    # Required for large Qt resource initialization (qrc files with embedded resources)
+    # The qrc_QtAgOpenGPS_raw_res_0.cpp file (89MB) has global object constructors
+    # that call qRegisterResourceData() before main(), which can exhaust the stack
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,stack-size=8388608")
+    message("Android: Stack size increased to 8MB for large resource initialization")
+endif()
+
 # Find required libraries
 #find_package(Qt6 REQUIRED COMPONENTS Core)
  find_package(Qt6 REQUIRED COMPONENTS Widgets) #used only for opengl ?
