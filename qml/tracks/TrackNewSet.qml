@@ -489,7 +489,7 @@ Item{
             if (visible) {
                 latPointAA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7))
                 lonPointAA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
-                latLonHeadingEntry.text = parseFloat((Backend.fixFrame.heading).toFixed(4))
+                latLonHeadingEntry.text = parseFloat((Utils.radians_to_deg(Backend.fixFrame.heading)).toFixed(4))
                 TracksInterface.start_new(2)
                 TracksInterface.newRefSide = 0; //in this mode ref line is where the tractor is
 
