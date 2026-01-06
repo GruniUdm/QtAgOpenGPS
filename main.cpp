@@ -57,37 +57,6 @@ int main(int argc, char *argv[])
                 const int FLAG_KEEP_SCREEN_ON = 128;
                 window.callMethod<void>("addFlags", "(I)V", FLAG_KEEP_SCREEN_ON);
             }
-
-            // Request storage permissions for accessing Documents folder on Android
-            QJniObject permissionString = QJniObject::fromString("android.permission.READ_EXTERNAL_STORAGE");
-            jint result = activity.callMethod<jint>("checkSelfPermission", "(Ljava/lang/String;)I",
-                                                    permissionString.object<jstring>());
-
-            if (result != 0) { // PERMISSION_GRANTED == 0
-                qDebug(mainLog) << "Requesting storage permissions...";
-
-                QJniEnvironment env;
-                if (!env.jniEnv()) {
-                    qWarning() << "Failed to get JNI environment";
-                } else {
-                    jclass stringClass = env->FindClass("java/lang/String");
-                    jobjectArray permsArray = env->NewObjectArray(2, stringClass, nullptr);
-
-                    QJniObject perm1 = QJniObject::fromString("android.permission.READ_EXTERNAL_STORAGE");
-                    QJniObject perm2 = QJniObject::fromString("android.permission.WRITE_EXTERNAL_STORAGE");
-
-                    env->SetObjectArrayElement(permsArray, 0, perm1.object<jstring>());
-                    env->SetObjectArrayElement(permsArray, 1, perm2.object<jstring>());
-
-                    activity.callMethod<void>("requestPermissions", "([Ljava/lang/String;I)V",
-                                             permsArray, 1);
-
-                    env->DeleteLocalRef(permsArray);
-                    env->DeleteLocalRef(stringClass);
-                }
-            } else {
-                qDebug(mainLog) << "Storage permissions already granted";
-            }
         }
     });
 #endif
@@ -145,6 +114,39 @@ int main(int argc, char *argv[])
     qml_register_types_AOG();
 
 #ifdef Q_OS_ANDROID
+    // Request storage permissions for accessing Documents folder on Android
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    if (activity.isValid()) {
+        QJniObject permissionString = QJniObject::fromString("android.permission.READ_EXTERNAL_STORAGE");
+        jint result = activity.callMethod<jint>("checkSelfPermission", "(Ljava/lang/String;)I",
+                                                permissionString.object<jstring>());
+
+        if (result != 0) { // PERMISSION_GRANTED == 0
+            qDebug(mainLog) << "Requesting storage permissions...";
+
+            QJniEnvironment env;
+            if (!env.jniEnv()) {
+                qWarning() << "Failed to get JNI environment";
+            } else {
+                jclass stringClass = env->FindClass("java/lang/String");
+                jobjectArray permsArray = env->NewObjectArray(2, stringClass, nullptr);
+
+                QJniObject perm1 = QJniObject::fromString("android.permission.READ_EXTERNAL_STORAGE");
+                QJniObject perm2 = QJniObject::fromString("android.permission.WRITE_EXTERNAL_STORAGE");
+
+                env->SetObjectArrayElement(permsArray, 0, perm1.object<jstring>());
+                env->SetObjectArrayElement(permsArray, 1, perm2.object<jstring>());
+
+                activity.callMethod<void>("requestPermissions", "([Ljava/lang/String;I)V",
+                                         permsArray, 1);
+
+                env->DeleteLocalRef(permsArray);
+                env->DeleteLocalRef(stringClass);
+            }
+        } else {
+            qDebug(mainLog) << "Storage permissions already granted";
+        }
+    }
 #endif
 
     // Request location permissions for GPS functionality
