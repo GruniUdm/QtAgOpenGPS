@@ -22,6 +22,7 @@
 #include <QLoggingCategory>
 #include <QIcon>
 #include <QPermissions>
+#include <QTimer>
 #ifdef Q_OS_ANDROID
 #include <QJniObject>
 #include <QJniEnvironment>
@@ -115,38 +116,75 @@ int main(int argc, char *argv[])
 
 #ifdef Q_OS_ANDROID
     // Request storage permissions for accessing Documents folder on Android
-    QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    if (activity.isValid()) {
-        QJniObject permissionString = QJniObject::fromString("android.permission.READ_EXTERNAL_STORAGE");
-        jint result = activity.callMethod<jint>("checkSelfPermission", "(Ljava/lang/String;)I",
-                                                permissionString.object<jstring>());
+    // Use QTimer to defer the request slightly to ensure proper context
+    QTimer::singleShot(100, []() {
+        qDebug(mainLog) << "Checking storage permissions...";
 
-        if (result != 0) { // PERMISSION_GRANTED == 0
-            qDebug(mainLog) << "Requesting storage permissions...";
+        // Check Android version
+        jint sdkInt = QJniObject::getStaticField<jint>("android/os/Build$VERSION", "SDK_INT");
+        qDebug(mainLog) << "Android SDK version:" << sdkInt;
 
-            QJniEnvironment env;
-            if (!env.jniEnv()) {
-                qWarning() << "Failed to get JNI environment";
-            } else {
-                jclass stringClass = env->FindClass("java/lang/String");
-                jobjectArray permsArray = env->NewObjectArray(2, stringClass, nullptr);
+        bool hasPermission = false;
 
-                QJniObject perm1 = QJniObject::fromString("android.permission.READ_EXTERNAL_STORAGE");
-                QJniObject perm2 = QJniObject::fromString("android.permission.WRITE_EXTERNAL_STORAGE");
+        if (sdkInt >= 30) { // Android 11+
+            // Check for MANAGE_EXTERNAL_STORAGE permission
+            hasPermission = QJniObject::callStaticMethod<jboolean>(
+                "android/os/Environment",
+                "isExternalStorageManager",
+                "()Z");
+            qDebug(mainLog) << "MANAGE_EXTERNAL_STORAGE permission:" << hasPermission;
 
-                env->SetObjectArrayElement(permsArray, 0, perm1.object<jstring>());
-                env->SetObjectArrayElement(permsArray, 1, perm2.object<jstring>());
+            if (!hasPermission) {
+                qDebug(mainLog) << "Opening Settings to request MANAGE_EXTERNAL_STORAGE...";
 
-                activity.callMethod<void>("requestPermissions", "([Ljava/lang/String;I)V",
-                                         permsArray, 1);
+                // For Android 11+, need to open Settings for MANAGE_EXTERNAL_STORAGE
+                QJniObject activity = QJniObject::callStaticObjectMethod(
+                    "org/qtproject/qt/android/QtNative",
+                    "activity",
+                    "()Landroid/app/Activity;");
 
-                env->DeleteLocalRef(permsArray);
-                env->DeleteLocalRef(stringClass);
+                if (activity.isValid()) {
+                    QJniObject intent("android/content/Intent", "(Ljava/lang/String;)V",
+                        QJniObject::fromString("android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION").object());
+
+                    QJniObject uri = QJniObject::callStaticObjectMethod(
+                        "android/net/Uri",
+                        "parse",
+                        "(Ljava/lang/String;)Landroid/net/Uri;",
+                        QJniObject::fromString("package:org.qtagopengps.qtagopengps").object());
+
+                    intent.callObjectMethod("setData", "(Landroid/net/Uri;)Landroid/content/Intent;", uri.object());
+
+                    activity.callMethod<void>("startActivity", "(Landroid/content/Intent;)V", intent.object());
+                    qDebug(mainLog) << "Settings activity started";
+                }
             }
-        } else {
+        } else { // Android 10 and below
+            QJniObject activity = QJniObject::callStaticObjectMethod(
+                "org/qtproject/qt/android/QtNative",
+                "activity",
+                "()Landroid/app/Activity;");
+
+            if (activity.isValid()) {
+                QJniObject permissionString = QJniObject::fromString("android.permission.READ_EXTERNAL_STORAGE");
+                jint result = activity.callMethod<jint>("checkSelfPermission", "(Ljava/lang/String;)I",
+                                                        permissionString.object<jstring>());
+
+                qDebug(mainLog) << "READ_EXTERNAL_STORAGE permission check result:" << result << "(0 = granted)";
+                hasPermission = (result == 0);
+
+                if (!hasPermission) {
+                    qDebug(mainLog) << "Storage permissions not granted for Android <11";
+                    qDebug(mainLog) << "Note: Standard permission request may not work with Qt Activity";
+                    qDebug(mainLog) << "Consider granting permissions manually in Android Settings";
+                }
+            }
+        }
+
+        if (hasPermission) {
             qDebug(mainLog) << "Storage permissions already granted";
         }
-    }
+    });
 #endif
 
     // Request location permissions for GPS functionality
