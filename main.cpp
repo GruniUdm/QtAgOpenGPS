@@ -21,6 +21,7 @@
 #include <QtQml/qqmlregistration.h>
 #include <QLoggingCategory>
 #include <QIcon>
+#include <QPermissions>
 
 QLabel *grnPixelsWindow;
 QLabel *overlapPixelsWindow;
@@ -58,6 +59,9 @@ int main(int argc, char *argv[])
         "*.debug=false\n"
         "agioservice.debug=false\n"  // Change to true to enable AgIOService debug logs
         "*.qtagopengps.debug=true\n"
+        "formgps_position.qtagopengps=false\n"
+        "ctool.qtagopengps=false\n"
+        "formgps_opengl.qtagopengps=false\n"
         "qt.scenegraph.general=true\n"
         "*.warning=true\n"
         "*.critical=true\n"
@@ -101,6 +105,52 @@ int main(int argc, char *argv[])
     extern void qml_register_types_AOG();
     qml_register_types_AOG();
 
+    // Request storage permissions for accessing Documents folder
+    QReadWritePermission storagePermission;
+    storagePermission.setType(QReadWritePermission::ExternalStorage);
+
+    switch (a.checkPermission(storagePermission)) {
+    case Qt::PermissionStatus::Undetermined:
+        qDebug() << "Storage permission undetermined, requesting...";
+        a.requestPermission(storagePermission, [](const QPermission &permission) {
+            if (qApp->checkPermission(permission) == Qt::PermissionStatus::Granted) {
+                qDebug() << "Storage permission granted";
+            } else {
+                qWarning() << "Storage permission denied - app may not function properly";
+            }
+        });
+        break;
+    case Qt::PermissionStatus::Denied:
+        qWarning() << "Storage permission denied - app may not function properly";
+        break;
+    case Qt::PermissionStatus::Granted:
+        qDebug() << "Storage permission already granted";
+        break;
+    }
+
+    // Request location permissions for GPS functionality
+    QLocationPermission locationPermission;
+    locationPermission.setAccuracy(QLocationPermission::Precise);
+    locationPermission.setAvailability(QLocationPermission::WhenInUse);
+
+    switch (a.checkPermission(locationPermission)) {
+    case Qt::PermissionStatus::Undetermined:
+        qDebug() << "Location permission undetermined, requesting...";
+        a.requestPermission(locationPermission, [](const QPermission &permission) {
+            if (qApp->checkPermission(permission) == Qt::PermissionStatus::Granted) {
+                qDebug() << "Location permission granted";
+            } else {
+                qWarning() << "Location permission denied - GPS functionality will not work";
+            }
+        });
+        break;
+    case Qt::PermissionStatus::Denied:
+        qWarning() << "Location permission denied - GPS functionality will not work";
+        break;
+    case Qt::PermissionStatus::Granted:
+        qDebug() << "Location permission already granted";
+        break;
+    }
 
     FormGPS w;
     //w.show();
