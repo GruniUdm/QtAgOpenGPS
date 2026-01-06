@@ -193,7 +193,7 @@ double CVehicle::UpdateGoalPointDistance()
     double modeXTE = SettingsManager::instance()->as_modeXTE();
     double modeTime = SettingsManager::instance()->as_modeTime();
 
-    double xTE = fabs(modeActualXTE);
+    double xTE = fabs(m_modeActualXTE);
 
     //how far should goal point be away  - speed * seconds * kmph -> m/s then limit min value
     double goalPointDistance = avgSpeed * goalPointLookAhead * 0.05 * goalPointLookAheadMult;

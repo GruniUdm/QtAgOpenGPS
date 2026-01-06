@@ -916,7 +916,7 @@ Window {
             id: xteCharta
             height: 300  * theme.scaleHeight
             width: 400  * theme.scaleWidth
-            xval1: aog.lblmodeActualXTE
+            xval1: VehicleInterface.modeActualXTE
             xval2: Number(aog.dataSteerAngl)
             axismin: -100
             axismax: 100

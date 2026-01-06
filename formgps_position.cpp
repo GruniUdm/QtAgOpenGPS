@@ -1279,9 +1279,6 @@ void FormGPS::UpdateFixPosition()
     if (m_distancePivotToTurnLine != _distancePivotToTurnLine) { m_distancePivotToTurnLine = _distancePivotToTurnLine; navChangedFlag = true; }
     if (m_isYouTurnRight != yt.isYouTurnRight) { m_isYouTurnRight = yt.isYouTurnRight; navChangedFlag = true; }
     if (m_isYouTurnTriggered != yt.isYouTurnTriggered) { m_isYouTurnTriggered = yt.isYouTurnTriggered; navChangedFlag = true; }
-    if (m_current_trackNum != track.getHowManyPathsAway()) { m_current_trackNum = track.getHowManyPathsAway(); navChangedFlag = true; }
-    if (m_lblmodeActualXTE != CVehicle::instance()->modeActualXTE) { m_lblmodeActualXTE = CVehicle::instance()->modeActualXTE; navChangedFlag = true; }
-    if (m_lblmodeActualHeadingError != CVehicle::instance()->modeActualHeadingError) { m_lblmodeActualHeadingError = CVehicle::instance()->modeActualHeadingError; navChangedFlag = true; }
 
     // === Tool Position Updates (2 properties) ===
     if (m_toolLatitude != tool_lat) { m_toolLatitude = tool_lat; toolPosChangedFlag = true; }

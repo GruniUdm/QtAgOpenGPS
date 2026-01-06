@@ -173,7 +173,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         ppRadiusAB = yt.ppRadiusYT;
 
         CVehicle::instance()->modeTimeCounter = 0;
-        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+        CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
     }
 
     //Stanley
@@ -320,7 +320,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
             distanceFromCurrentLinePivot *= -1.0;
 
         //used for acquire/hold mode
-        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+        CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
         double steerHeadingError = (pivot.heading - abHeading);
         //Fix the circular error
@@ -334,7 +334,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         else if (steerHeadingError < -glm::PIBy2)
             steerHeadingError += M_PI;
 
-        CVehicle::instance()->modeActualHeadingError = glm::toDegrees(steerHeadingError);
+        CVehicle::instance()->set_modeActualHeadingError ( glm::toDegrees(steerHeadingError));
 
         //Convert to millimeters
         CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);

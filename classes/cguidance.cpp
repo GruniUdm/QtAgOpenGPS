@@ -80,7 +80,7 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
     else if (steerAngleGu > maxSteerAngle) steerAngleGu = maxSteerAngle;
 
     //used for smooth mode
-    CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+    CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
     //Convert to millimeters from meters
     CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
@@ -176,7 +176,7 @@ void CGuidance::StanleyGuidanceABLine(Vec3 curPtA, Vec3 curPtB,
     else if (steerHeadingError < -glm::PIBy2)
         steerHeadingError += M_PI;
 
-    CVehicle::instance()->modeActualHeadingError = glm::toDegrees(steerHeadingError);
+    CVehicle::instance()->set_modeActualHeadingError ( glm::toDegrees(steerHeadingError));
 
     DoSteerAngleCalc(isBtnAutoSteerOn, *CVehicle::instance(),ahrs);
 }

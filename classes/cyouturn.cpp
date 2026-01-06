@@ -3004,7 +3004,7 @@ bool CYouTurn::DistanceFromYouTurnLine( CNMEA &pn)
         }
 
         //used for smooth mode
-        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLine);
+        CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLine));
 
         //Convert to centimeters
         CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLine * 1000.0);

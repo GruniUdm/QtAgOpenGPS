@@ -382,7 +382,7 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
     if (steerAngleRP > CVehicle::instance()->maxSteerAngle) steerAngleRP = CVehicle::instance()->maxSteerAngle;
 
     //used for smooth mode
-    CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+    CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
     //Convert to centimeters
     CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);

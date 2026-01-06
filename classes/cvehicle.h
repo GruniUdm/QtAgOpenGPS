@@ -87,8 +87,6 @@ public:
     double purePursuitIntegralGain = 0.0;
 
     double modeXTE = 0.0;
-    double modeActualXTE = 0.0;
-    double modeActualHeadingError = 0.0;
     int modeTime = 0;
 
     double functionSpeedLimit = 20.0;  // Phase 6.0.24 Problem 18: Safe default speed limit
@@ -157,6 +155,8 @@ public:
     //C++ code should use Qt 6.8 QProperty setters above
     //QML bindings work automatically with BINDABLE functions
     // Legacy setters replaced by Qt 6.8 QProperty pattern
+    SIMPLE_BINDABLE_PROPERTY (double,modeActualXTE)
+    SIMPLE_BINDABLE_PROPERTY (double,modeActualHeadingError)
 
 signals:
     //void setLookAheadGoal(double);
@@ -277,6 +277,8 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QList<QVariant>, m_vehicleList, &CVehicle::vehicleListChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, bool, m_isInFreeDriveMode, false, &CVehicle::isInFreeDriveModeChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_driveFreeSteerAngle, 0, &CVehicle::driveFreeSteerAngleChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_modeActualXTE, 0, &CVehicle::modeActualXTEChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_modeActualHeadingError, 0, &CVehicle::modeActualHeadingErrorChanged)
 
 };
 

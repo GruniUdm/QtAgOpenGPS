@@ -556,7 +556,7 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
         }
 
         //used for smooth mode
-        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+        CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
         //fill in the autosteer variables
         CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);

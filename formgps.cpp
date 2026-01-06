@@ -238,22 +238,6 @@ bool FormGPS::isYouTurnTriggered() const { return m_isYouTurnTriggered; }
 void FormGPS::setIsYouTurnTriggered(bool isYouTurnTriggered) { m_isYouTurnTriggered = isYouTurnTriggered; }
 QBindable<bool> FormGPS::bindableIsYouTurnTriggered() { return &m_isYouTurnTriggered; }
 
-int FormGPS::current_trackNum() const { return m_current_trackNum; }
-void FormGPS::setCurrent_trackNum(int current_trackNum) { m_current_trackNum = current_trackNum; }
-QBindable<int> FormGPS::bindableCurrent_trackNum() { return &m_current_trackNum; }
-
-int FormGPS::track_idx() const { return m_track_idx; }
-void FormGPS::setTrack_idx(int track_idx) { m_track_idx = track_idx; }
-QBindable<int> FormGPS::bindableTrack_idx() { return &m_track_idx; }
-
-double FormGPS::lblmodeActualXTE() const { return m_lblmodeActualXTE; }
-void FormGPS::setLblmodeActualXTE(double lblmodeActualXTE) { m_lblmodeActualXTE = lblmodeActualXTE; }
-QBindable<double> FormGPS::bindableLblmodeActualXTE() { return &m_lblmodeActualXTE; }
-
-double FormGPS::lblmodeActualHeadingError() const { return m_lblmodeActualHeadingError; }
-void FormGPS::setLblmodeActualHeadingError(double lblmodeActualHeadingError) { m_lblmodeActualHeadingError = lblmodeActualHeadingError; }
-QBindable<double> FormGPS::bindableLblmodeActualHeadingError() { return &m_lblmodeActualHeadingError; }
-
 double FormGPS::toolLatitude() const { return m_toolLatitude; }
 void FormGPS::setToolLatitude(double toolLatitude) { m_toolLatitude = toolLatitude; }
 QBindable<double> FormGPS::bindableToolLatitude() { return &m_toolLatitude; }

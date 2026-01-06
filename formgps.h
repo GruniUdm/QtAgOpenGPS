@@ -114,15 +114,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY isYouTurnRightChanged BINDABLE bindableIsYouTurnRight)
     Q_PROPERTY(bool isYouTurnTriggered READ isYouTurnTriggered WRITE setIsYouTurnTriggered
                NOTIFY isYouTurnTriggeredChanged BINDABLE bindableIsYouTurnTriggered)
-    Q_PROPERTY(int current_trackNum READ current_trackNum WRITE setCurrent_trackNum
-               NOTIFY current_trackNumChanged BINDABLE bindableCurrent_trackNum)
-    Q_PROPERTY(int track_idx READ track_idx WRITE setTrack_idx
-               NOTIFY track_idxChanged BINDABLE bindableTrack_idx)
-    Q_PROPERTY(double lblmodeActualXTE READ lblmodeActualXTE WRITE setLblmodeActualXTE
-               NOTIFY lblmodeActualXTEChanged BINDABLE bindableLblmodeActualXTE)
-    Q_PROPERTY(double lblmodeActualHeadingError READ lblmodeActualHeadingError WRITE setLblmodeActualHeadingError
-               NOTIFY lblmodeActualHeadingErrorChanged BINDABLE bindableLblmodeActualHeadingError)
-
     // === Tool Position (2 properties) - Display - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(double toolLatitude READ toolLatitude WRITE setToolLatitude
                NOTIFY toolLatitudeChanged BINDABLE bindableToolLatitude)
@@ -248,22 +239,6 @@ public:
     bool isYouTurnTriggered() const;
     void setIsYouTurnTriggered(bool value);
     QBindable<bool> bindableIsYouTurnTriggered();
-
-    int current_trackNum() const;
-    void setCurrent_trackNum(int value);
-    QBindable<int> bindableCurrent_trackNum();
-
-    int track_idx() const;
-    void setTrack_idx(int value);
-    QBindable<int> bindableTrack_idx();
-
-    double lblmodeActualXTE() const;
-    void setLblmodeActualXTE(double value);
-    QBindable<double> bindableLblmodeActualXTE();
-
-    double lblmodeActualHeadingError() const;
-    void setLblmodeActualHeadingError(double value);
-    QBindable<double> bindableLblmodeActualHeadingError();
 
     // Tool Position
     double toolLatitude() const;
@@ -1189,10 +1164,6 @@ signals:
     void distancePivotToTurnLineChanged();
     void isYouTurnRightChanged();
     void isYouTurnTriggeredChanged();
-    void current_trackNumChanged();
-    void track_idxChanged();
-    void lblmodeActualXTEChanged();
-    void lblmodeActualHeadingErrorChanged();
 
     // All other property signals (continuing the pattern...)
     void toolLatitudeChanged();
@@ -1267,10 +1238,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_distancePivotToTurnLine, &FormGPS::distancePivotToTurnLineChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isYouTurnRight, &FormGPS::isYouTurnRightChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isYouTurnTriggered, &FormGPS::isYouTurnTriggeredChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_current_trackNum, &FormGPS::current_trackNumChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_track_idx, &FormGPS::track_idxChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_lblmodeActualXTE, &FormGPS::lblmodeActualXTEChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_lblmodeActualHeadingError, &FormGPS::lblmodeActualHeadingErrorChanged)
 
     // Tool Position (2) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolLatitude, &FormGPS::toolLatitudeChanged)
