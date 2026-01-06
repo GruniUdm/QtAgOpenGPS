@@ -108,7 +108,7 @@ ColumnLayout {
 
     Comp.MainWindowBtns {
         id: btnSectionManual
-        isChecked: aog.manualBtnState == 2 // Qt 6.8 MODERN: Q_PROPERTY access
+        isChecked: aog.manualBtnState === 2 // Qt 6.8 MODERN: Q_PROPERTY access
         checkable: true
         icon.source: prefix + "/images/ManualOff.png"
         iconChecked: prefix + "/images/ManualOn.png"
@@ -128,7 +128,7 @@ ColumnLayout {
 
     Comp.MainWindowBtns {
         id: btnSectionAuto
-        isChecked: aog.autoBtnState == 1 // Qt 6.8 MODERN: Q_PROPERTY access
+        isChecked: MainWindowState.autoBtnState == MainWindowState.Auto
         checkable: true
         icon.source: prefix + "/images/SectionMasterOff.png"
         iconChecked: prefix + "/images/SectionMasterOn.png"
@@ -136,11 +136,11 @@ ColumnLayout {
         onCheckedChanged: {
             if (checked) {
                 btnSectionManual.checked = false;
-                sectionButtons.setAllSectionsToState(1 /*auto*/);
-                aog.autoBtnState = 1 // Qt 6.8 MODERN: btnStates::auto
+                sectionButtons.setAllSectionsToState(MainWindowState.Auto);
+                MainWindowState.autoBtnState = MainWindowState.Auto
             } else {
-                sectionButtons.setAllSectionsToState(0 /*off*/);
-                aog.autoBtnState = 0 // Qt 6.8 MODERN: btnStates::off
+                sectionButtons.setAllSectionsToState(MainWindowState.Off);
+                MainWindowState.autoBtnState = MainWindowState.Off
             }
         }
     }

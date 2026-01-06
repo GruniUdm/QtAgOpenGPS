@@ -8,9 +8,9 @@
 #include "ctool.h"
 #include "cpgn.h"
 
-void CBoundary::SetHydPosition(btnStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle)
+void CBoundary::SetHydPosition(MainWindowState::ButtonStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle)
 {
-    if (CVehicle::instance()->isHydLiftOn() && CVehicle::instance()->avgSpeed > 0.2 && autoBtnState == btnStates::Auto)
+    if (CVehicle::instance()->isHydLiftOn() && CVehicle::instance()->avgSpeed > 0.2 && autoBtnState == MainWindowState::ButtonStates::Auto)
     {
         if (isToolInHeadland)
         {

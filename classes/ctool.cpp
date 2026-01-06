@@ -7,6 +7,7 @@
 #include "ctram.h"
 #include "cboundary.h"
 #include "cvehicle.h"
+#include "backend.h"
 #include "mainwindowstate.h"
 
 #include <QOpenGLShaderProgram>
@@ -109,8 +110,13 @@ CTool::CTool()
 {
     // Initialize all section button states to Off
     for (int i = 0; i < 65; i++) {
-        sectionButtonState[i] = btnStates::Off;
+        sectionButtonState[i] = MainWindowState::ButtonStates::Off;
     }
+
+    //get notified when the UI button changes state
+    connect(MainWindowState::instance(), &MainWindowState::autoBtnStateChanged,
+            this, &CTool::on_autoBtnChanged);
+
     loadSettings();
 }
 
@@ -269,7 +275,7 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 mv,
     for (int j = 0; j < numOfSections; j++)
     {
         //if section is on, green, if off, red color
-        if (sectionButtonState[j] == btnStates::Auto)
+        if (sectionButtonState[j] == MainWindowState::ButtonStates::Auto)
         {
             // Mode Auto: couleur dépend de si section vraiment active (dans le champ)
             if (section[j].isSectionOn)
@@ -282,7 +288,7 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 mv,
                 color.setRgbF(0.950f, 0.2f, 0.2f, 1.0f);  // Rouge si hors champ
             }
         }
-        else if (sectionButtonState[j] == btnStates::On)
+        else if (sectionButtonState[j] == MainWindowState::ButtonStates::On)
         {
             color.setRgbF(0.97, 0.97, 0, 1.0f);  // Jaune pour On (forçé)
         }
@@ -1293,7 +1299,7 @@ void CTool::sectionSetPositions()
 
 void CTool::ProcessLookAhead(bool isHeadlandOn,
                              int gpsHz,
-                             btnStates autoBtnState,
+                             MainWindowState::ButtonStates autoBtnState,
                              const CBoundary &bnd,
                              CTram &tram)
 {
@@ -1443,13 +1449,13 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
     for (int j = 0; j < numOfSections; j++)
     {
         //Off or too slow or going backwards
-        if (sectionButtonState[j] == btnStates::Off || CVehicle::instance()->avgSpeed < SettingsManager::instance()->vehicle_slowSpeedCutoff() || section[j].speedPixels < 0)
+        if (sectionButtonState[j] == MainWindowState::ButtonStates::Off || CVehicle::instance()->avgSpeed < SettingsManager::instance()->vehicle_slowSpeedCutoff() || section[j].speedPixels < 0)
         {
             section[j].sectionOnRequest = false;
             section[j].sectionOffRequest = true;
 
             // Manual on, force the section On
-            if (sectionButtonState[j] == btnStates::On)
+            if (sectionButtonState[j] == MainWindowState::ButtonStates::On)
             {
                 section[j].sectionOnRequest = true;
                 section[j].sectionOffRequest = false;
@@ -1459,7 +1465,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
         }
 
         // Manual on, force the section On
-        if (sectionButtonState[j] == btnStates::On)
+        if (sectionButtonState[j] == MainWindowState::ButtonStates::On)
         {
             section[j].sectionOnRequest = true;
             section[j].sectionOffRequest = false;
@@ -1886,4 +1892,30 @@ void CTool::WhereAreToolLookOnPoints(const CBoundary &bnd)
         }
     }
 
+}
+
+void CTool::on_autoBtnChanged() {
+    MainWindowState::ButtonStates autoBtnState = MainWindowState::instance()-> autoBtnState();
+
+    // When Master Auto button activated, set all sections to Auto mode
+    // This allows automatic section activation based on boundary and coverage
+    // Only changes sections currently in Off state - respects manual On state
+    if (autoBtnState == MainWindowState::ButtonStates::Auto && Backend::instance()->isJobStarted()) {
+        for (int j = 0; j < numOfSections; j++) {
+            if (sectionButtonState[j] == MainWindowState::ButtonStates::Off) {
+                sectionButtonState[j] = MainWindowState::ButtonStates::Auto;
+                section[j].sectionBtnState = MainWindowState::ButtonStates::Auto;
+            }
+        }
+    }
+    // When Master Auto turned off, set all Auto sections back to Off
+    // Respects manual On state
+    else if (autoBtnState == MainWindowState::ButtonStates::Off && Backend::instance()->isJobStarted()) {
+        for (int j = 0; j < numOfSections; j++) {
+            if (sectionButtonState[j] == MainWindowState::ButtonStates::Auto) {
+                sectionButtonState[j] = MainWindowState::ButtonStates::Off;
+                section[j].sectionBtnState = MainWindowState::ButtonStates::Off;
+            }
+        }
+    }
 }

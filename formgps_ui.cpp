@@ -975,72 +975,26 @@ void FormGPS::onDeleteAppliedArea_clicked()
 {
     if (Backend::instance()->isJobStarted())
     {
-        /*if (autoBtnState == btnStates.Off && manualBtnState == btnStates.Off)
+        //clear out the contour Lists
+        ct.StopContourLine(contourSaveList);
+        ct.ResetContour();
+
+        Backend::instance()->currentField_setWorkedAreaTotal(0);
+
+        //clear the section lists
+        for (int j = 0; j < tool.triStrip.count(); j++)
         {
-
-            DialogResult result3 = MessageBox.Show(gStr.gsDeleteAllContoursAndSections,
-                                                   gStr.gsDeleteForSure,
-                                                   MessageBoxButtons.YesNo,
-                                                   MessageBoxIcon.Question,
-                                                   MessageBoxDefaultButton.Button2);
-            if (result3 == DialogResult.Yes)
-            {
-                //FileCreateElevation();
-
-                if (tool.isSectionsNotZones)
-                {
-                    //Update the button colors and text
-                    AllSectionsAndButtonsToState(btnStates.Off);
-
-                    //enable disable manual buttons
-                    LineUpIndividualSectionBtns();
-                }
-                else
-                {
-                    AllZonesAndButtonsToState(btnStates.Off);
-                    LineUpAllZoneButtons();
-                }
-
-                //turn manual button off
-                manualBtnState = btnStates.Off;
-                btnSectionMasterManual.Image = Properties.Resources.ManualOff;
-
-                //turn auto button off
-                autoBtnState = btnStates.Off;
-                btnSectionMasterAuto.Image = Properties.Resources.SectionMasterOff;
-               */
-
-                //clear out the contour Lists
-                ct.StopContourLine(contourSaveList);
-                ct.ResetContour();
-
-                Backend::instance()->currentField_setWorkedAreaTotal(0);
-
-                //clear the section lists
-                for (int j = 0; j < tool.triStrip.count(); j++)
-                {
-                    //clean out the lists
-                    tool.triStrip[j].patchList.clear();
-                    tool.triStrip[j].triangleList.clear();
-                }
-
-                tool.patchesBufferDirty=true;
-                //patchSaveList.clear();
-                tool.patchSaveList.clear();
-
-                FileCreateContour();
-                FileCreateSections();
-
-            /*}
-            else
-            {
-                TimedMessageBox(1500, gStr.gsNothingDeleted, gStr.gsActionHasBeenCancelled);
-            }
+            //clean out the lists
+            tool.triStrip[j].patchList.clear();
+            tool.triStrip[j].triangleList.clear();
         }
-        else
-        {
-            TimedMessageBox(1500, "Sections are on", "Turn Auto or Manual Off First");
-        }*/
+
+        tool.patchesBufferDirty=true;
+        //patchSaveList.clear();
+        tool.patchSaveList.clear();
+
+        FileCreateContour();
+        FileCreateSections();
     }
 }
 
@@ -1407,7 +1361,6 @@ void FormGPS::initializeQMLInterfaces()
     //to 0 anyway
     Backend::instance()->m_fixFrame.sentenceCounter = 0;
     this->setManualBtnState((int)btnStates::Off);
-    this->setAutoBtnState((int)btnStates::Off);
     this->setIsPatchesChangingColor( false);
 
 

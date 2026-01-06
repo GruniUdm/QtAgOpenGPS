@@ -7,8 +7,8 @@
 #include "common.h"
 #include <QColor>
 #include <QElapsedTimer>
-#include "btnenum.h"
 #include "vec3.h"
+#include "mainwindowstate.h"
 
 class QOpenGLFunctions;
 class QMatrix4x4;
@@ -98,7 +98,7 @@ public:
 
     //moved the following from the main form to here
     CSection section[MAXSECTIONS+1];
-    btnStates sectionButtonState[65];
+    MainWindowState::ButtonStates sectionButtonState[65];
 
     //list of patches to save to disk at next opportunity
     QVector<QSharedPointer<PatchTriangleList>> patchSaveList;
@@ -144,7 +144,7 @@ public:
     QImage DrawPatchesBackQP(const CTram &tram, const CBoundary &bnd, Vec3 pivotAxlePos, bool isHeadlandOn, bool onTrack);
 
     void NewPosition();
-    void ProcessLookAhead(bool isHeadlandOn, int gpsHz, btnStates autoBtnState,
+    void ProcessLookAhead(bool isHeadlandOn, int gpsHz, MainWindowState::ButtonStates autoBtnState,
                           const CBoundary &bnd, CTram &tram);
 
     void clearPatches();
@@ -160,9 +160,11 @@ private:
     QVector<PatchBuffer> patchBuffer;
     LookAheadPixels grnPixels[150001];
     LookAheadPixels *overPixels = new LookAheadPixels[160000]; //400x400
-public:
+public slots:
+    void on_autoBtnChanged();
+
 signals:
-    void SetHydPosition(btnStates autoBtnState);
+    void SetHydPosition(MainWindowState::ButtonStates autoBtnState);
 
 };
 

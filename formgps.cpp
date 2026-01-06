@@ -150,12 +150,12 @@ void FormGPS::setSectionButtonState(const QVariantList& value) {
     qDebug() << "DEBUG FormGPS::setSectionButtonState CALLED with" << value.size() << "elements";
 
     for (int j = 0; j < qMin(value.size(), 65); j++) {
-        int buttonState = value[j].toInt();
-        tool.sectionButtonState[j] = static_cast<btnStates>(buttonState);
+        MainWindowState::ButtonStates buttonState = static_cast<MainWindowState::ButtonStates>(value[j].toInt());
+        tool.sectionButtonState[j] = buttonState;
 
         // Update section logic only for active sections
         if (j < tool.numOfSections) {
-            bool newSectionOn = (buttonState == btnStates::Auto || buttonState == btnStates::On);
+            bool newSectionOn = (buttonState == MainWindowState::ButtonStates::Auto || buttonState == MainWindowState::ButtonStates::On);
             tool.section[j].isSectionOn = newSectionOn;
             tool.section[j].sectionOnRequest = newSectionOn;
             tool.section[j].sectionOffRequest = !newSectionOn;
@@ -364,34 +364,6 @@ QBindable<bool> FormGPS::bindableIsReverseWithIMU() { return &m_isReverseWithIMU
 int FormGPS::steerModuleConnectedCounter() const { return m_steerModuleConnectedCounter; }
 void FormGPS::setSteerModuleConnectedCounter(int value) { m_steerModuleConnectedCounter = value; }
 QBindable<int> FormGPS::bindableSteerModuleConnectedCounter() { return &m_steerModuleConnectedCounter; }
-
-int FormGPS::autoBtnState() const { return m_autoBtnState; }
-void FormGPS::setAutoBtnState(int autoBtnState) {
-    m_autoBtnState = autoBtnState;
-
-    // PHASE 6.0.36: When Master Auto button activated, set all sections to Auto mode
-    // This allows automatic section activation based on boundary and coverage
-    // Only changes sections currently in Off state - respects manual On state
-    if (autoBtnState == btnStates::Auto && Backend::instance()->isJobStarted()) {
-        for (int j = 0; j < tool.numOfSections; j++) {
-            if (tool.sectionButtonState[j] == btnStates::Off) {
-                tool.sectionButtonState[j] = btnStates::Auto;
-                tool.section[j].sectionBtnState = btnStates::Auto;
-            }
-        }
-    }
-    // When Master Auto turned off, set all Auto sections back to Off
-    // Respects manual On state
-    else if (autoBtnState == btnStates::Off && Backend::instance()->isJobStarted()) {
-        for (int j = 0; j < tool.numOfSections; j++) {
-            if (tool.sectionButtonState[j] == btnStates::Auto) {
-                tool.sectionButtonState[j] = btnStates::Off;
-                tool.section[j].sectionBtnState = btnStates::Off;
-            }
-        }
-    }
-}
-QBindable<int> FormGPS::bindableAutoBtnState() { return &m_autoBtnState; }
 
 int FormGPS::manualBtnState() const { return m_manualBtnState; }
 void FormGPS::setManualBtnState(int manualBtnState) { m_manualBtnState = manualBtnState; }
@@ -924,7 +896,7 @@ void FormGPS::JobClose()
     this->setManualBtnState((int)btnStates::Off);
 
     //fix auto button
-    this->setAutoBtnState((int)btnStates::Off);
+    MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
 
     // ⚡ PHASE 6.0.20: Disable AutoSteer when job closes (safety + clean state)
     MainWindowState::instance()->set_isBtnAutoSteerOn(false);
@@ -1067,7 +1039,7 @@ void FormGPS::JobNew()
     //btnSectionMasterManual.Image = Properties.Resources.ManualOff;
 
     //btnSectionMasterAuto.Enabled = true;
-    this->setAutoBtnState((int)btnStates::Off);
+    MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
     //btnSectionMasterAuto.Image = Properties.Resources.SectionMasterOff;
 
     track.ABLine.abHeading = 0.00;

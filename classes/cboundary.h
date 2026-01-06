@@ -8,7 +8,7 @@
 #include <QSharedPointer>
 #include <QOpenGLBuffer>
 #include "cboundarylist.h"
-#include "btnenum.h"
+#include "mainwindowstate.h"
 #include <QObject>
 
 
@@ -76,7 +76,7 @@ public:
     void BuildTurnLines();
 
     //CHead.cs
-    void SetHydPosition(btnStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle); //TODO sounds, p_239
+    void SetHydPosition(MainWindowState::ButtonStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle); //TODO sounds, p_239
     bool IsPointInsideHeadArea(Vec2 pt) const;
 
     /*

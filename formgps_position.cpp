@@ -1745,10 +1745,10 @@ void FormGPS::processSectionLookahead() {
         bnd.isToolInHeadland = bnd.isToolOuterPointsInHeadland && !isHeadlandClose;
 
         //set hydraulics based on tool in headland or not
-        bnd.SetHydPosition(static_cast<btnStates>(this->autoBtnState()), p_239, *CVehicle::instance());
+        bnd.SetHydPosition(MainWindowState::instance()->autoBtnState(), p_239, *CVehicle::instance());
 
         //set hydraulics based on tool in headland or not
-        bnd.SetHydPosition(static_cast<btnStates>(this->autoBtnState()), p_239, *CVehicle::instance());
+        bnd.SetHydPosition(MainWindowState::instance()->autoBtnState(), p_239, *CVehicle::instance());
 
     }
 
@@ -1761,13 +1761,13 @@ void FormGPS::processSectionLookahead() {
     for (int j = 0; j < tool.numOfSections; j++)
     {
         //Off or too slow or going backwards
-        if (tool.sectionButtonState[j] == btnStates::Off || CVehicle::instance()->avgSpeed < CVehicle::instance()->slowSpeedCutoff || tool.section[j].speedPixels < 0)
+        if (tool.sectionButtonState[j] == MainWindowState::ButtonStates::Off || CVehicle::instance()->avgSpeed < CVehicle::instance()->slowSpeedCutoff || tool.section[j].speedPixels < 0)
         {
             tool.section[j].sectionOnRequest = false;
             tool.section[j].sectionOffRequest = true;
 
             // Manual on, force the section On
-            if (tool.sectionButtonState[j] == btnStates::On)
+            if (tool.sectionButtonState[j] == MainWindowState::ButtonStates::On)
             {
                 tool.section[j].sectionOnRequest = true;
                 tool.section[j].sectionOffRequest = false;
@@ -1777,7 +1777,7 @@ void FormGPS::processSectionLookahead() {
         }
 
         // Manual on, force the section On
-        if (tool.sectionButtonState[j] == btnStates::On)
+        if (tool.sectionButtonState[j] == MainWindowState::ButtonStates::On)
         {
             tool.section[j].sectionOnRequest = true;
             tool.section[j].sectionOffRequest = false;
@@ -2521,7 +2521,7 @@ void FormGPS::AddSectionOrPathPoints()
         //keep minimum speed of 1.0
         double speed = CVehicle::instance()->avgSpeed;
         if (CVehicle::instance()->avgSpeed < 1.0) speed = 1.0;
-        bool autoBtn = (this->autoBtnState() == btnStates::Auto);
+        bool autoBtn = (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto);
 
         recPath.recList.append(CRecPathPt(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, CVehicle::instance()->pivotAxlePos.heading, speed, autoBtn));
     }

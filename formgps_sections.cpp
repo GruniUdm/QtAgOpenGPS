@@ -9,6 +9,7 @@
 #include "classes/settingsmanager.h"
 #include "modulecomm.h"
 #include "backend.h"
+#include "mainwindowstate.h"
 
 /* SectionSetPosition(), SectionCalcWidths(), and SectionCalcMulti() are all in CTool */
 
@@ -108,13 +109,13 @@ void FormGPS::DoRemoteSwitches()
             //Main SW pressed
             if ((mc.ss[mc.swMain] & 1) == 1)
             {
-                this->setAutoBtnState(btnStates::Off);
+                MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
             } // if Main SW ON
 
             //if Main SW in Arduino is pressed OFF
             if ((mc.ss[mc.swMain] & 2) == 2)
             {
-                this->setAutoBtnState(btnStates::Auto);
+                MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Auto);
             } // if Main SW OFF
 
             mc.ssP[mc.swMain] = mc.ss[mc.swMain];
@@ -128,45 +129,45 @@ void FormGPS::DoRemoteSwitches()
                 // ON Signal from Arduino
                 if ((mc.ss[mc.swOnGr0] & 128) == 128 && tool.numOfSections > 7)
                 {
-                    tool.sectionButtonState[7] = btnStates::On;
-                    tool.section[7].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[7] = MainWindowState::ButtonStates::On;
+                    tool.section[7].sectionBtnState = MainWindowState::ButtonStates::On;
                     sectionsChanged = true;
                     //TODO: not sure why we have redundant states like that
                 }
                 if ((mc.ss[mc.swOnGr0] & 64) == 64 && tool.numOfSections > 6)
                 {
-                    tool.sectionButtonState[6] = btnStates::On;
-                    tool.section[6].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[6] = MainWindowState::ButtonStates::On;
+                    tool.section[6].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 if ((mc.ss[mc.swOnGr0] & 32) == 32 && tool.numOfSections > 5)
                 {
-                    tool.sectionButtonState[5] = btnStates::On;
-                    tool.section[5].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[5] = MainWindowState::ButtonStates::On;
+                    tool.section[5].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 if ((mc.ss[mc.swOnGr0] & 16) == 16 && tool.numOfSections > 4)
                 {
-                    tool.sectionButtonState[4] = btnStates::On;
-                    tool.section[4].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[4] = MainWindowState::ButtonStates::On;
+                    tool.section[4].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 if ((mc.ss[mc.swOnGr0] & 8) == 8 && tool.numOfSections > 3)
                 {
-                    tool.sectionButtonState[3] = btnStates::On;
-                    tool.section[3].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[3] = MainWindowState::ButtonStates::On;
+                    tool.section[3].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 if ((mc.ss[mc.swOnGr0] & 4) == 4 && tool.numOfSections > 2)
                 {
-                    tool.sectionButtonState[2] = btnStates::On;
-                    tool.section[2].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[2] = MainWindowState::ButtonStates::On;
+                    tool.section[2].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 if ((mc.ss[mc.swOnGr0] & 2) == 2 && tool.numOfSections > 1)
                 {
-                    tool.sectionButtonState[1] = btnStates::On;
-                    tool.section[1].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[1] = MainWindowState::ButtonStates::On;
+                    tool.section[1].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 if ((mc.ss[mc.swOnGr0] & 1) == 1)
                 {
-                    tool.sectionButtonState[0] = btnStates::On;
-                    tool.section[0].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[0] = MainWindowState::ButtonStates::On;
+                    tool.section[0].sectionBtnState = MainWindowState::ButtonStates::On;
                     sectionsChanged = true;
                 }
                 mc.ssP[mc.swOnGr0] = mc.ss[mc.swOnGr0];
@@ -178,44 +179,44 @@ void FormGPS::DoRemoteSwitches()
                 // sections ON signal from Arduino
                 if ((mc.ss[mc.swOnGr1] & 128) == 128 && tool.numOfSections > 15)
                 {
-                    tool.sectionButtonState[15] = btnStates::On;
-                    tool.section[15].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[15] = MainWindowState::ButtonStates::On;
+                    tool.section[15].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 if ((mc.ss[mc.swOnGr1] & 64) == 64 && tool.numOfSections > 14)
                 {
-                    tool.sectionButtonState[14] = btnStates::On;
-                    tool.section[14].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[14] = MainWindowState::ButtonStates::On;
+                    tool.section[14].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 if ((mc.ss[mc.swOnGr1] & 32) == 32 && tool.numOfSections > 13)
                 {
-                    tool.sectionButtonState[13] = btnStates::On;
-                    tool.section[13].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[13] = MainWindowState::ButtonStates::On;
+                    tool.section[13].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 if ((mc.ss[mc.swOnGr1] & 16) == 16 && tool.numOfSections > 12)
                 {
-                    tool.sectionButtonState[12] = btnStates::On;
-                    tool.section[12].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[12] = MainWindowState::ButtonStates::On;
+                    tool.section[12].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
 
                 if ((mc.ss[mc.swOnGr1] & 8) == 8 && tool.numOfSections > 11)
                 {
-                    tool.sectionButtonState[11] = btnStates::On;
-                    tool.section[11].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[11] = MainWindowState::ButtonStates::On;
+                    tool.section[11].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 if ((mc.ss[mc.swOnGr1] & 4) == 4 && tool.numOfSections > 10)
                 {
-                    tool.sectionButtonState[10] = btnStates::On;
-                    tool.section[10].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[10] = MainWindowState::ButtonStates::On;
+                    tool.section[10].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 if ((mc.ss[mc.swOnGr1] & 2) == 2 && tool.numOfSections > 9)
                 {
-                    tool.sectionButtonState[9] = btnStates::On;
-                    tool.section[9].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[9] = MainWindowState::ButtonStates::On;
+                    tool.section[9].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 if ((mc.ss[mc.swOnGr1] & 1) == 1 && tool.numOfSections > 8)
                 {
-                    tool.sectionButtonState[8] = btnStates::On;
-                    tool.section[8].sectionBtnState = btnStates::On;
+                    tool.sectionButtonState[8] = MainWindowState::ButtonStates::On;
+                    tool.section[8].sectionBtnState = MainWindowState::ButtonStates::On;
                 }
                 mc.ssP[mc.swOnGr1] = mc.ss[mc.swOnGr1];
             } //if swONHi != 0
@@ -225,14 +226,14 @@ void FormGPS::DoRemoteSwitches()
             if (mc.ss[mc.swOffGr0] != mc.ssP[mc.swOffGr0])
             {
                 //if Main = Auto then change section to Auto if Off signal from Arduino stopped
-                if (this->autoBtnState() == btnStates::Auto)
+                if (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto)
                 {
 
                     for(int s=0; s< 8; s++) {
-                        if ((mc.ssP[mc.swOffGr0] & (1 << s)) && !(mc.ss[mc.swOffGr0] & (1 << s)) && (tool.sectionButtonState[s] == btnStates::Off))
+                        if ((mc.ssP[mc.swOffGr0] & (1 << s)) && !(mc.ss[mc.swOffGr0] & (1 << s)) && (tool.sectionButtonState[s] == MainWindowState::ButtonStates::Off))
                         {
-                            tool.sectionButtonState[s] = btnStates::Auto;
-                            tool.section[s].sectionBtnState = btnStates::Auto;
+                            tool.sectionButtonState[s] = MainWindowState::ButtonStates::Auto;
+                            tool.section[s].sectionBtnState = MainWindowState::ButtonStates::Auto;
                             sectionsChanged = true;
                         }
                     }
@@ -243,13 +244,13 @@ void FormGPS::DoRemoteSwitches()
             if (mc.ss[mc.swOffGr1] != mc.ssP[mc.swOffGr1])
             {
                 //if Main = Auto then change section to Auto if Off signal from Arduino stopped
-                if (this->autoBtnState() == btnStates::Auto)
+                if (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto)
                 {
                     for(int s=8; s< 16; s++) {
-                        if ((mc.ssP[mc.swOffGr1] & (1 << s)) && !(mc.ss[mc.swOffGr1] & (1 << s)) && (tool.sectionButtonState[s+8] == btnStates::Off))
+                        if ((mc.ssP[mc.swOffGr1] & (1 << s)) && !(mc.ss[mc.swOffGr1] & (1 << s)) && (tool.sectionButtonState[s+8] == MainWindowState::ButtonStates::Off))
                         {
-                            tool.sectionButtonState[s+8] = btnStates::Auto;
-                            tool.section[s+8].sectionBtnState = btnStates::Auto;
+                            tool.sectionButtonState[s+8] = MainWindowState::ButtonStates::Auto;
+                            tool.section[s+8].sectionBtnState = MainWindowState::ButtonStates::Auto;
                             sectionsChanged = true;
                         }
                     }
@@ -262,11 +263,11 @@ void FormGPS::DoRemoteSwitches()
             {
                 //if section SW in Arduino is switched to OFF; check always, if switch is locked to off GUI should not change
                 for(int s=0; s< 8; s++) {
-                    if ((mc.ss[mc.swOffGr0] & (1 << s)) && tool.sectionButtonState[s] != btnStates::Off)
+                    if ((mc.ss[mc.swOffGr0] & (1 << s)) && tool.sectionButtonState[s] != MainWindowState::ButtonStates::Off)
                     {
                         // Hardware switch override
-                        tool.sectionButtonState[s] = btnStates::Off;
-                        tool.section[s].sectionBtnState = btnStates::Off;
+                        tool.sectionButtonState[s] = MainWindowState::ButtonStates::Off;
+                        tool.section[s].sectionBtnState = MainWindowState::ButtonStates::Off;
                         sectionsChanged = true;
                     }
                 }
@@ -275,10 +276,10 @@ void FormGPS::DoRemoteSwitches()
             {
                 //if section SW in Arduino is switched to OFF; check always, if switch is locked to off GUI should not change
                 for (int s=0; s<8; s++) {
-                    if ((mc.ss[mc.swOffGr0] & (1 << s)) && tool.sectionButtonState[s+8] != btnStates::Off)
+                    if ((mc.ss[mc.swOffGr0] & (1 << s)) && tool.sectionButtonState[s+8] != MainWindowState::ButtonStates::Off)
                     {
-                        tool.sectionButtonState[s+8] = btnStates::Off;
-                        tool.section[s+8].sectionBtnState = btnStates::Off;
+                        tool.sectionButtonState[s+8] = MainWindowState::ButtonStates::Off;
+                        tool.section[s+8].sectionBtnState = MainWindowState::ButtonStates::Off;
                         sectionsChanged = true;
                     }
                 }
@@ -296,8 +297,8 @@ void FormGPS::DoRemoteSwitches()
                     Bit = 1 << i;
                     if ((tool.zoneRanges[i + 1] > 0) && ((mc.ss[mc.swOnGr0] & Bit) == Bit))
                     {
-                        tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState = btnStates::On;
-                        tool.sectionButtonState[tool.zoneRanges[i + 1] - 1] = btnStates::On;
+                        tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState = MainWindowState::ButtonStates::On;
+                        tool.sectionButtonState[tool.zoneRanges[i + 1] - 1] = MainWindowState::ButtonStates::On;
                         sectionsChanged = true;
                     }
                 }
@@ -309,16 +310,16 @@ void FormGPS::DoRemoteSwitches()
             // zones to auto
             if (mc.ss[mc.swOffGr0] != mc.ssP[mc.swOffGr0])
             {
-                if (this->autoBtnState() == btnStates::Auto)
+                if (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto)
                 {
                     for (int i = 0; i < 8; i++)
                     {
                         Bit = 1 << i;
                         if ((tool.zoneRanges[i + 1] > 0) && ((mc.ssP[mc.swOffGr0] & Bit) == Bit)
-                            && ((mc.ss[mc.swOffGr0] & Bit) != Bit) && (tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState == btnStates::Off))
+                            && ((mc.ss[mc.swOffGr0] & Bit) != Bit) && (tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState == MainWindowState::ButtonStates::Off))
                         {
-                            tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState = btnStates::Auto;
-                            tool.sectionButtonState[tool.zoneRanges[i + 1] - 1] = btnStates::Auto;
+                            tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState = MainWindowState::ButtonStates::Auto;
+                            tool.sectionButtonState[tool.zoneRanges[i + 1] - 1] = MainWindowState::ButtonStates::Auto;
                             sectionsChanged = true;
                         }
                     }
@@ -332,10 +333,10 @@ void FormGPS::DoRemoteSwitches()
                 for (int i = 0; i < 8; i++)
                 {
                     Bit = 1 << i;
-                    if ((tool.zoneRanges[i + 1] > 0) && ((mc.ss[mc.swOffGr0] & Bit) == Bit) && (tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState != btnStates::Off))
+                    if ((tool.zoneRanges[i + 1] > 0) && ((mc.ss[mc.swOffGr0] & Bit) == Bit) && (tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState != MainWindowState::ButtonStates::Off))
                     {
-                        tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState = btnStates::Off;
-                        tool.sectionButtonState[tool.zoneRanges[i + 1] - 1] = btnStates::Off;
+                        tool.section[tool.zoneRanges[i + 1] - 1].sectionBtnState = MainWindowState::ButtonStates::Off;
+                        tool.sectionButtonState[tool.zoneRanges[i + 1] - 1] = MainWindowState::ButtonStates::Off;
                         sectionsChanged = true;
                     }
                 }
