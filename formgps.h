@@ -159,10 +159,6 @@ class FormGPS : public QQmlApplicationEngine
     Q_PROPERTY(int steerModuleConnectedCounter READ steerModuleConnectedCounter WRITE setSteerModuleConnectedCounter
                NOTIFY steerModuleConnectedCounterChanged BINDABLE bindableSteerModuleConnectedCounter)
 
-    // Button States - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(bool autoYouturnBtnState READ autoYouturnBtnState WRITE setAutoYouturnBtnState
-               NOTIFY autoYouturnBtnStateChanged BINDABLE bindableAutoYouturnBtnState)
-
     // Job Control - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
     Q_PROPERTY(bool isPatchesChangingColor READ isPatchesChangingColor WRITE setIsPatchesChangingColor
                NOTIFY isPatchesChangingColorChanged BINDABLE bindableIsPatchesChangingColor)
@@ -311,11 +307,6 @@ public:
     int steerModuleConnectedCounter() const;
     void setSteerModuleConnectedCounter(int value);
     QBindable<int> bindableSteerModuleConnectedCounter();
-
-    // Button States
-    bool autoYouturnBtnState() const;
-    void setAutoYouturnBtnState(bool value);
-    QBindable<bool> bindableAutoYouturnBtnState();
 
     // Job Control
     bool isPatchesChangingColor() const;
@@ -1167,7 +1158,6 @@ signals:
     void gpsHeadingChanged();
     void isReverseWithIMUChanged();
     void steerModuleConnectedCounterChanged();
-    void autoYouturnBtnStateChanged();
     void isPatchesChangingColorChanged();
 
     // ===== SIGNALS CLEANED - Qt 6.8 Q_INVOKABLE Migration =====
@@ -1245,7 +1235,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_gpsHeading, &FormGPS::gpsHeadingChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isReverseWithIMU, &FormGPS::isReverseWithIMUChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_steerModuleConnectedCounter, &FormGPS::steerModuleConnectedCounterChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_autoYouturnBtnState, &FormGPS::autoYouturnBtnStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isPatchesChangingColor, &FormGPS::isPatchesChangingColorChanged)
 
 public:

@@ -333,10 +333,6 @@ int FormGPS::steerModuleConnectedCounter() const { return m_steerModuleConnected
 void FormGPS::setSteerModuleConnectedCounter(int value) { m_steerModuleConnectedCounter = value; }
 QBindable<int> FormGPS::bindableSteerModuleConnectedCounter() { return &m_steerModuleConnectedCounter; }
 
-bool FormGPS::autoYouturnBtnState() const { return m_autoYouturnBtnState; }
-void FormGPS::setAutoYouturnBtnState(bool autoYouturnBtnState) { m_autoYouturnBtnState = autoYouturnBtnState; }
-QBindable<bool> FormGPS::bindableAutoYouturnBtnState() { return &m_autoYouturnBtnState; }
-
 bool FormGPS::isPatchesChangingColor() const { return m_isPatchesChangingColor; }
 void FormGPS::setIsPatchesChangingColor(bool isPatchesChangingColor) { m_isPatchesChangingColor = isPatchesChangingColor; }
 QBindable<bool> FormGPS::bindableIsPatchesChangingColor() { return &m_isPatchesChangingColor; }
