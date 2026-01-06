@@ -183,19 +183,6 @@ double FormGPS::fusedHeading() const { return m_fusedHeading; }
 void FormGPS::setFusedHeading(double fusedHeading) { m_fusedHeading = fusedHeading; }
 QBindable<double> FormGPS::bindableFusedHeading() { return &m_fusedHeading; }
 
-// ===== Tool Position Properties =====
-double FormGPS::toolEasting() const { return m_toolEasting; }
-void FormGPS::setToolEasting(double toolEasting) { m_toolEasting = toolEasting; }
-QBindable<double> FormGPS::bindableToolEasting() { return &m_toolEasting; }
-
-double FormGPS::toolNorthing() const { return m_toolNorthing; }
-void FormGPS::setToolNorthing(double toolNorthing) { m_toolNorthing = toolNorthing; }
-QBindable<double> FormGPS::bindableToolNorthing() { return &m_toolNorthing; }
-
-double FormGPS::toolHeading() const { return m_toolHeading; }
-void FormGPS::setToolHeading(double toolHeading) { m_toolHeading = toolHeading; }
-QBindable<double> FormGPS::bindableToolHeading() { return &m_toolHeading; }
-
 double FormGPS::offlineDistance() const { return m_offlineDistance; }
 void FormGPS::setOfflineDistance(double offlineDistance) { m_offlineDistance = offlineDistance; }
 QBindable<double> FormGPS::bindableOfflineDistance() { return &m_offlineDistance; }
@@ -229,14 +216,6 @@ QBindable<bool> FormGPS::bindableIsYouTurnRight() { return &m_isYouTurnRight; }
 bool FormGPS::isYouTurnTriggered() const { return m_isYouTurnTriggered; }
 void FormGPS::setIsYouTurnTriggered(bool isYouTurnTriggered) { m_isYouTurnTriggered = isYouTurnTriggered; }
 QBindable<bool> FormGPS::bindableIsYouTurnTriggered() { return &m_isYouTurnTriggered; }
-
-double FormGPS::toolLatitude() const { return m_toolLatitude; }
-void FormGPS::setToolLatitude(double toolLatitude) { m_toolLatitude = toolLatitude; }
-QBindable<double> FormGPS::bindableToolLatitude() { return &m_toolLatitude; }
-
-double FormGPS::toolLongitude() const { return m_toolLongitude; }
-void FormGPS::setToolLongitude(double toolLongitude) { m_toolLongitude = toolLongitude; }
-QBindable<double> FormGPS::bindableToolLongitude() { return &m_toolLongitude; }
 
 int FormGPS::sampleCount() const { return m_sampleCount; }
 void FormGPS::setSampleCount(int sampleCount) { m_sampleCount = sampleCount; }

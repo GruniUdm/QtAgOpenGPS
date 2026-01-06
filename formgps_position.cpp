@@ -31,6 +31,7 @@
 #include "modulecomm.h"
 #include "cpgn.h"
 #include "blockage.h"
+#include "tools.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -1235,10 +1236,7 @@ void FormGPS::UpdateFixPosition()
     // === Vehicle State Updates (8 properties) ===
     if (m_speedKph != CVehicle::instance()->avgSpeed) { m_speedKph = CVehicle::instance()->avgSpeed; vehChangedFlag = true; }
     if (m_fusedHeading != CVehicle::instance()->fixHeading) { m_fusedHeading = CVehicle::instance()->fixHeading; vehChangedFlag = true; }
-    if (m_toolEasting != tool.toolPos.easting) { m_toolEasting = tool.toolPos.easting; vehChangedFlag = true; }
-    if (m_toolNorthing != tool.toolPos.northing) { m_toolNorthing = tool.toolPos.northing; vehChangedFlag = true; }
-    if (m_toolHeading != tool.toolPos.heading) { m_toolHeading = tool.toolPos.heading; vehChangedFlag = true; }
-    if (m_offlineDistance != CVehicle::instance()->guidanceLineDistanceOff) {
+   if (m_offlineDistance != CVehicle::instance()->guidanceLineDistanceOff) {
         m_offlineDistance = CVehicle::instance()->guidanceLineDistanceOff;
         // Phase 6.0.20: Q_OBJECT_BINDABLE_PROPERTY auto-emits offlineDistanceChanged()
         // No manual qmlItem()->setProperty() needed - BINDABLE handles QML reactivity
@@ -1281,8 +1279,11 @@ void FormGPS::UpdateFixPosition()
     if (m_isYouTurnTriggered != yt.isYouTurnTriggered) { m_isYouTurnTriggered = yt.isYouTurnTriggered; navChangedFlag = true; }
 
     // === Tool Position Updates (2 properties) ===
-    if (m_toolLatitude != tool_lat) { m_toolLatitude = tool_lat; toolPosChangedFlag = true; }
-    if (m_toolLongitude != tool_lon) { m_toolLongitude = tool_lon; toolPosChangedFlag = true; }
+    Tools::instance()->m_toolsList[0].value<Tool *>()->set_easting(tool.toolPos.easting);
+    Tools::instance()->m_toolsList[0].value<Tool *>()->set_northing(tool.toolPos.northing);
+    Tools::instance()->m_toolsList[0].value<Tool *>()->set_latitude(tool_lat);
+    Tools::instance()->m_toolsList[0].value<Tool *>()->set_longitude(tool_lon);
+    Tools::instance()->m_toolsList[0].value<Tool *>()->set_heading(tool.toolPos.heading);
 
     // === Wizard/Calibration Updates (4 properties) ===
     if (m_sampleCount != SampleCount) { m_sampleCount = SampleCount; wizardChangedFlag = true; }

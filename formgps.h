@@ -88,12 +88,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY speedKphChanged BINDABLE bindableSpeedKph)
     Q_PROPERTY(double fusedHeading READ fusedHeading WRITE setFusedHeading
                NOTIFY fusedHeadingChanged BINDABLE bindableFusedHeading)
-    Q_PROPERTY(double toolEasting READ toolEasting WRITE setToolEasting
-               NOTIFY toolEastingChanged BINDABLE bindableToolEasting)
-    Q_PROPERTY(double toolNorthing READ toolNorthing WRITE setToolNorthing
-               NOTIFY toolNorthingChanged BINDABLE bindableToolNorthing)
-    Q_PROPERTY(double toolHeading READ toolHeading WRITE setToolHeading
-               NOTIFY toolHeadingChanged BINDABLE bindableToolHeading)
     Q_PROPERTY(double offlineDistance READ offlineDistance WRITE setOfflineDistance
                NOTIFY offlineDistanceChanged BINDABLE bindableOfflineDistance)
     Q_PROPERTY(double avgPivDistance READ avgPivDistance WRITE setAvgPivDistance
@@ -114,12 +108,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY isYouTurnRightChanged BINDABLE bindableIsYouTurnRight)
     Q_PROPERTY(bool isYouTurnTriggered READ isYouTurnTriggered WRITE setIsYouTurnTriggered
                NOTIFY isYouTurnTriggeredChanged BINDABLE bindableIsYouTurnTriggered)
-    // === Tool Position (2 properties) - Display - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double toolLatitude READ toolLatitude WRITE setToolLatitude
-               NOTIFY toolLatitudeChanged BINDABLE bindableToolLatitude)
-    Q_PROPERTY(double toolLongitude READ toolLongitude WRITE setToolLongitude
-               NOTIFY toolLongitudeChanged BINDABLE bindableToolLongitude)
-
     // === Wizard/Calibration (4 properties) - Special - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(int sampleCount READ sampleCount WRITE setSampleCount
                NOTIFY sampleCountChanged BINDABLE bindableSampleCount)
@@ -182,18 +170,6 @@ public:
     void setFusedHeading(double value);
     QBindable<double> bindableFusedHeading();
 
-    double toolEasting() const;
-    void setToolEasting(double value);
-    QBindable<double> bindableToolEasting();
-
-    double toolNorthing() const;
-    void setToolNorthing(double value);
-    QBindable<double> bindableToolNorthing();
-
-    double toolHeading() const;
-    void setToolHeading(double value);
-    QBindable<double> bindableToolHeading();
-
     double offlineDistance() const;
     void setOfflineDistance(double value);
     QBindable<double> bindableOfflineDistance();
@@ -227,15 +203,6 @@ public:
     bool isYouTurnTriggered() const;
     void setIsYouTurnTriggered(bool value);
     QBindable<bool> bindableIsYouTurnTriggered();
-
-    // Tool Position
-    double toolLatitude() const;
-    void setToolLatitude(double value);
-    QBindable<double> bindableToolLatitude();
-
-    double toolLongitude() const;
-    void setToolLongitude(double value);
-    QBindable<double> bindableToolLongitude();
 
     // Wizard/Calibration
     int sampleCount() const;
@@ -1185,9 +1152,6 @@ private:
     // Vehicle State (6) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_speedKph, &FormGPS::speedKphChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_fusedHeading, &FormGPS::fusedHeadingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolEasting, &FormGPS::toolEastingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolNorthing, &FormGPS::toolNorthingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolHeading, &FormGPS::toolHeadingChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, short int, m_offlineDistance, &FormGPS::offlineDistanceChanged)
     // avgPivDistance: use existing variable at line 690
     // isReverseWithIMU: use existing variable at line 527
@@ -1204,10 +1168,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_distancePivotToTurnLine, &FormGPS::distancePivotToTurnLineChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isYouTurnRight, &FormGPS::isYouTurnRightChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isYouTurnTriggered, &FormGPS::isYouTurnTriggeredChanged)
-
-    // Tool Position (2) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolLatitude, &FormGPS::toolLatitudeChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolLongitude, &FormGPS::toolLongitudeChanged)
 
     // Wizard/Calibration (4) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_sampleCount, &FormGPS::sampleCountChanged)

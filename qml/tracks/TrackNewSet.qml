@@ -785,13 +785,13 @@ Item{
                 checkable: false
                 icon.source: prefix + "/images/LetterABlue.png"
                 onClicked: {
-                    abSetter.a_easting = aog.toolEasting
-                    abSetter.a_northing = aog.toolNorthing
-                    abSetter.heading = aog.toolHeading
-                    abSetter.heading_degrees = aog.toolHeading * 180 / Math.PI
+                    abSetter.a_easting = Tools.toolsSectionsMode[0].easting
+                    abSetter.a_northing = toolsSectionsMode[0].northing
+                    abSetter.heading = toolsSectionsMode[0].heading
+                    abSetter.heading_degrees = toolsSectionsMode[0].heading * 180 / Math.PI
                     linesInterface.abLine_setA(true, abSetter.a_easting, abSetter.a_northing, abSetter.heading)
-                    a_manual_latitude.set_without_onchange(aog.toolLatitude)
-                    a_manual_longitude.set_without_onchange(aog.toolLongitude)
+                    a_manual_latitude.set_without_onchange(toolsSectionsMode[0].latitude)
+                    a_manual_longitude.set_without_onchange(toolsSectionsMode[0].longitude)
                     b_stuff.visible = true
 
                     headingSpinbox.set_without_onchange(abSetter.heading_degrees)
@@ -825,8 +825,8 @@ Item{
                             const [northing, easting] = aog.convertWGS84ToLocal(Number(a_manual_latitude.text), Number(a_manual_longitude.text))
                             abSetter.a_easting = easting
                             abSetter.a_northing = northing
-                            abSetter.heading = aog.toolHeading
-                            abSetter.heading_degrees = aog.toolHeading * 180 / Math.PI
+                            abSetter.heading = Tools.toolsList[0].toolHeading
+                            abSetter.heading_degrees = Tools.toolsList[0].toolHeading * 180 / Math.PI
                             linesInterface.abLine_setA(true, abSetter.a_easting, abSetter.a_northing, abSetter.heading)
                         }
                     }
@@ -933,11 +933,11 @@ Item{
                 icon.source: prefix + "/images/LetterBBlue.png"
 
                 onClicked: {
-                    abSetter.b_easting = aog.toolEasting
-                    abSetter.b_northing = aog.toolNorthing
+                    abSetter.b_easting = Tools.toolsList[0].easting
+                    abSetter.b_northing = Tools.toolsList[0].northing
 
-                    b_manual_latitude.set_without_onchange(aog.toolLatitude)
-                    b_manual_longitude.set_without_onchange(aog.toolLongitude)
+                    b_manual_latitude.set_without_onchange(Tools.toolsList[0].latitude)
+                    b_manual_longitude.set_without_onchange(Tools.toolsList[0].longitude)
 
                     abSetter.heading = Math.atan2(abSetter.b_easting - abSetter.a_easting,
                     abSetter.b_northing - abSetter.a_northing)
