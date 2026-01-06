@@ -22,6 +22,12 @@
 #include <QLoggingCategory>
 #include <QIcon>
 #include <QPermissions>
+#ifdef Q_OS_ANDROID
+#include <QJniObject>
+#include <QJniEnvironment>
+#endif
+
+Q_LOGGING_CATEGORY (mainLog, "main.qtagopengps")
 
 QLabel *grnPixelsWindow;
 QLabel *overlapPixelsWindow;
@@ -44,10 +50,43 @@ int main(int argc, char *argv[])
     QNativeInterface::QAndroidApplication::runOnAndroidMainThread([]() {
         QJniObject activity = QNativeInterface::QAndroidApplication::context();
         if (activity.isValid()) {
+
+            //Keep screen on while app is running
             QJniObject window = activity.callObjectMethod("getWindow", "()Landroid/view/Window;");
             if (window.isValid()) {
                 const int FLAG_KEEP_SCREEN_ON = 128;
                 window.callMethod<void>("addFlags", "(I)V", FLAG_KEEP_SCREEN_ON);
+            }
+
+            // Request storage permissions for accessing Documents folder on Android
+            QJniObject permissionString = QJniObject::fromString("android.permission.READ_EXTERNAL_STORAGE");
+            jint result = activity.callMethod<jint>("checkSelfPermission", "(Ljava/lang/String;)I",
+                                                    permissionString.object<jstring>());
+
+            if (result != 0) { // PERMISSION_GRANTED == 0
+                qDebug(mainLog) << "Requesting storage permissions...";
+
+                QJniEnvironment env;
+                if (!env.jniEnv()) {
+                    qWarning() << "Failed to get JNI environment";
+                } else {
+                    jclass stringClass = env->FindClass("java/lang/String");
+                    jobjectArray permsArray = env->NewObjectArray(2, stringClass, nullptr);
+
+                    QJniObject perm1 = QJniObject::fromString("android.permission.READ_EXTERNAL_STORAGE");
+                    QJniObject perm2 = QJniObject::fromString("android.permission.WRITE_EXTERNAL_STORAGE");
+
+                    env->SetObjectArrayElement(permsArray, 0, perm1.object<jstring>());
+                    env->SetObjectArrayElement(permsArray, 1, perm2.object<jstring>());
+
+                    activity.callMethod<void>("requestPermissions", "([Ljava/lang/String;I)V",
+                                             permsArray, 1);
+
+                    env->DeleteLocalRef(permsArray);
+                    env->DeleteLocalRef(stringClass);
+                }
+            } else {
+                qDebug(mainLog) << "Storage permissions already granted";
             }
         }
     });
@@ -105,6 +144,9 @@ int main(int argc, char *argv[])
     extern void qml_register_types_AOG();
     qml_register_types_AOG();
 
+#ifdef Q_OS_ANDROID
+#endif
+
     // Request location permissions for GPS functionality
     QLocationPermission locationPermission;
     locationPermission.setAccuracy(QLocationPermission::Precise);
@@ -112,10 +154,10 @@ int main(int argc, char *argv[])
 
     switch (a.checkPermission(locationPermission)) {
     case Qt::PermissionStatus::Undetermined:
-        qDebug() << "Location permission undetermined, requesting...";
+        qDebug(mainLog) << "Location permission undetermined, requesting...";
         a.requestPermission(locationPermission, [](const QPermission &permission) {
             if (qApp->checkPermission(permission) == Qt::PermissionStatus::Granted) {
-                qDebug() << "Location permission granted";
+                qDebug(mainLog) << "Location permission granted";
             } else {
                 qWarning() << "Location permission denied - GPS functionality will not work";
             }
@@ -125,16 +167,18 @@ int main(int argc, char *argv[])
         qWarning() << "Location permission denied - GPS functionality will not work";
         break;
     case Qt::PermissionStatus::Granted:
-        qDebug() << "Location permission already granted";
+        qDebug(mainLog) << "Location permission already granted";
         break;
     }
 
-    FormGPS w;
-    //w.show();
+    FormGPS *w = new FormGPS();
+    if (!w) {
+        qFatal(mainLog) << "Could not allocate FormGPS on the stack!";
+    }
     
     // MASSIVE MIGRATION: Validate SettingsManager accessible
-    qDebug() << "SettingsManager instance:" << SettingsManager::instance();
-    qDebug() << "SettingsManager initialization: completed";
+    qDebug(mainLog) << "SettingsManager instance:" << SettingsManager::instance();
+    qDebug(mainLog) << "SettingsManager initialization: completed";
 
     if (SettingsManager::instance()->display_showBack()) {
         grnPixelsWindow = new QLabel("Back Buffer");
@@ -147,5 +191,7 @@ int main(int argc, char *argv[])
         overlapPixelsWindow->show();
     }
 
-    return a.exec();
+    int result = a.exec();
+    delete w;
+    return result;
 }
