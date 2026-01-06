@@ -79,14 +79,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     qDebug() << "ðŸ”— Now calling connect_classes...";
     connect_classes(); //make all the inter-class connections (NOW trk is initialized!)
 
-    // âš¡ CRITICAL: Initialize vehicle properties for QML access
-    qDebug() << "ðŸš— Initializing vehicle properties for QML...";
-    // Initialize with default values - will be updated by GPS position
-    m_vehicle_xy = QVariant(QPointF(0.0, 0.0));
-    m_vehicle_bounding_box = QVariant(QRectF(0.0, 0.0, 100.0, 100.0));
-    qDebug() << "  ✅ vehicle_xy initialized to QPointF";
-    qDebug() << "  ✅ vehicle_bounding_box initialized to QRectF";
-
     // Qt 6.8: Constructor ready for QML loading
     qDebug() << "âœ… FormGPS constructor core completed - ready for QML loading";
 
@@ -261,14 +253,6 @@ QBindable<bool> FormGPS::bindableHasValidRecommendation() { return &m_hasValidRe
 bool FormGPS::startSA() const { return m_startSA; }
 void FormGPS::setStartSA(bool startSA) { m_startSA = startSA; }
 QBindable<bool> FormGPS::bindableStartSA() { return &m_startSA; }
-
-QVariant FormGPS::vehicle_xy() const { return m_vehicle_xy; }
-void FormGPS::setVehicle_xy(const QVariant& vehicle_xy) { m_vehicle_xy = vehicle_xy; }
-QBindable<QVariant> FormGPS::bindableVehicle_xy() { return &m_vehicle_xy; }
-
-QVariant FormGPS::vehicle_bounding_box() const { return m_vehicle_bounding_box; }
-void FormGPS::setVehicle_bounding_box(const QVariant& vehicle_bounding_box) { m_vehicle_bounding_box = vehicle_bounding_box; }
-QBindable<QVariant> FormGPS::bindableVehicle_bounding_box() { return &m_vehicle_bounding_box; }
 
 // ===== IMU and Switch Properties =====
 bool FormGPS::steerSwitchHigh() const { return m_steerSwitchHigh; }

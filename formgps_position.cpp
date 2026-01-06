@@ -1290,12 +1290,6 @@ void FormGPS::UpdateFixPosition()
     if (m_hasValidRecommendation != HasValidRecommendation) { m_hasValidRecommendation = HasValidRecommendation; wizardChangedFlag = true; }
     if (m_startSA != isSA) { m_startSA = isSA; wizardChangedFlag = true; }
 
-    // === Visual Geometry Updates (2 properties) ===
-    QVariant newVehicleXY = CVehicle::instance()->pivot_axle_xy;
-    QVariant newBoundingBox = CVehicle::instance()->bounding_box;
-    if (m_vehicle_xy != newVehicleXY) { m_vehicle_xy = newVehicleXY; geometryChangedFlag = true; }
-    if (m_vehicle_bounding_box != newBoundingBox) { m_vehicle_bounding_box = newBoundingBox; geometryChangedFlag = true; }
-
     // === Misc Status Updates (2 properties) ===
     if (m_imuCorrected != _imuCorrected) { m_imuCorrected = _imuCorrected; miscChangedFlag = true; }
 

@@ -136,9 +136,6 @@ public:
 
     //from Position.Designer.cs
 
-    QRect bounding_box;
-    QPoint pivot_axle_xy;
-
     void loadSettings();
     void saveSettings();
 
@@ -157,6 +154,8 @@ public:
     // Legacy setters replaced by Qt 6.8 QProperty pattern
     SIMPLE_BINDABLE_PROPERTY (double,modeActualXTE)
     SIMPLE_BINDABLE_PROPERTY (double,modeActualHeadingError)
+    SIMPLE_BINDABLE_PROPERTY (QPoint,screenCoord)
+    SIMPLE_BINDABLE_PROPERTY (QRect,screenBounding)
 
 signals:
     //void setLookAheadGoal(double);
@@ -279,6 +278,8 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_driveFreeSteerAngle, 0, &CVehicle::driveFreeSteerAngleChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_modeActualXTE, 0, &CVehicle::modeActualXTEChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_modeActualHeadingError, 0, &CVehicle::modeActualHeadingErrorChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QPoint, m_screenCoord, &CVehicle::screenCoordChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QRect, m_screenBounding, &CVehicle::screenBoundingChanged)
 
 };
 

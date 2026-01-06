@@ -273,7 +273,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
 
     s = QVector3D(0,0,0);
     p1 = s.project(modelview, projection, viewport);
-    pivot_axle_xy = QPoint(p1.x(), p1.y());
+    m_screenCoord = QPoint(p1.x(), p1.y());
 
     if (isFirstHeadingSet && !SettingsManager::instance()->tool_isToolFront())
     {
@@ -331,7 +331,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
         //vehicle for detecting when the vehicle is clicked
         s = QVector3D(0,0,0); //should be pivot axle
         p1 = s.project(modelview, projection, viewport);
-        pivot_axle_xy = QPoint(p1.x(), viewport.height() - p1.y());
+        m_screenCoord = QPoint(p1.x(), viewport.height() - p1.y());
 
         if (vehicleType == 0)
         {
@@ -373,7 +373,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
             s = QVector3D(trackWidth, -wheelbase * 0.5, 0.0); //rear right corner
             p4 = s.project(modelview, projection, viewport);
 
-            bounding_box = find_bounding_box(viewport.height(),p1, p2, p3, p4);
+            m_screenBounding = find_bounding_box(viewport.height(),p1, p2, p3, p4);
 
             //right wheel
             //push modelview... nop because savedModelView already has a copy
@@ -477,7 +477,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
             s = QVector3D(trackWidth, -wheelbase * 1.5, 0.0); //rear right corner
             p4 = s.project(modelview, projection, viewport);
 
-            bounding_box = find_bounding_box(viewport.height(),p1, p2, p3, p4);
+            m_screenBounding = find_bounding_box(viewport.height(),p1, p2, p3, p4);
         }
         else if (vehicleType == 2) //4WD tractor, articulated
         {
@@ -526,7 +526,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
             s = QVector3D(-trackWidth, wheelbase * 0.65, 0.0); //front right corner
             p2 = s.project(modelview,projection, viewport);
 
-            bounding_box = find_bounding_box(viewport.height(),p1, p2, p3, p4);
+            m_screenBounding = find_bounding_box(viewport.height(),p1, p2, p3, p4);
 
             modelview = savedModelView; //pop matrix
         }
@@ -557,7 +557,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
         s = QVector3D(1.0, 0, 0.0); //rear right corner
         p4 = s.project(modelview, projection, viewport);
 
-        bounding_box = find_bounding_box(viewport.height(), p1, p1, p3, p4);
+        m_screenBounding = find_bounding_box(viewport.height(), p1, p1, p3, p4);
     }
 
     if (camera.camSetDistance > -75 && isFirstHeadingSet)

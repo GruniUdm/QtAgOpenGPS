@@ -130,12 +130,6 @@ class FormGPS : public QQmlApplicationEngine
     Q_PROPERTY(bool startSA READ startSA WRITE setStartSA
                NOTIFY startSAChanged BINDABLE bindableStartSA)
 
-    // === Visual Geometry (2 properties) - OpenGL - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(QVariant vehicle_xy READ vehicle_xy WRITE setVehicle_xy
-               NOTIFY vehicle_xyChanged BINDABLE bindableVehicle_xy)
-    Q_PROPERTY(QVariant vehicle_bounding_box READ vehicle_bounding_box WRITE setVehicle_bounding_box
-               NOTIFY vehicle_bounding_boxChanged BINDABLE bindableVehicle_bounding_box)
-
     // === Misc Status (2 properties) - Status - Qt 6.8 QProperty + BINDABLE ===
     Q_PROPERTY(bool steerSwitchHigh READ steerSwitchHigh WRITE setSteerSwitchHigh
                NOTIFY steerSwitchHighChanged BINDABLE bindableSteerSwitchHigh)
@@ -265,15 +259,6 @@ public:
     bool startSA() const;
     void setStartSA(bool value);
     QBindable<bool> bindableStartSA();
-
-    // Visual Geometry
-    QVariant vehicle_xy() const;
-    void setVehicle_xy(const QVariant& value);
-    QBindable<QVariant> bindableVehicle_xy();
-
-    QVariant vehicle_bounding_box() const;
-    void setVehicle_bounding_box(const QVariant& value);
-    QBindable<QVariant> bindableVehicle_bounding_box();
 
     // Misc Status
     bool steerSwitchHigh() const;
@@ -1172,8 +1157,6 @@ signals:
     void confidenceLevelChanged();
     void hasValidRecommendationChanged();
     void startSAChanged();
-    void vehicle_xyChanged();
-    void vehicle_bounding_boxChanged();
     void steerSwitchHighChanged();
     void imuCorrectedChanged();
     void lblCalcSteerAngleInnerChanged();
@@ -1248,10 +1231,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_confidenceLevel, &FormGPS::confidenceLevelChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_hasValidRecommendation, &FormGPS::hasValidRecommendationChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_startSA, &FormGPS::startSAChanged)
-
-    // Visual Geometry (2) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariant, m_vehicle_xy, &FormGPS::vehicle_xyChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariant, m_vehicle_bounding_box, &FormGPS::vehicle_bounding_boxChanged)
 
     // Misc Status (2) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_steerSwitchHigh, &FormGPS::steerSwitchHighChanged)
