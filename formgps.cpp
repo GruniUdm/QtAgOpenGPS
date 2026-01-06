@@ -255,10 +255,6 @@ void FormGPS::setStartSA(bool startSA) { m_startSA = startSA; }
 QBindable<bool> FormGPS::bindableStartSA() { return &m_startSA; }
 
 // ===== IMU and Switch Properties =====
-bool FormGPS::steerSwitchHigh() const { return m_steerSwitchHigh; }
-void FormGPS::setSteerSwitchHigh(bool steerSwitchHigh) { m_steerSwitchHigh = steerSwitchHigh; }
-QBindable<bool> FormGPS::bindableSteerSwitchHigh() { return &m_steerSwitchHigh; }
-
 bool FormGPS::imuCorrected() const { return m_imuCorrected; }
 void FormGPS::setImuCorrected(bool imuCorrected) { m_imuCorrected = imuCorrected; }
 QBindable<bool> FormGPS::bindableImuCorrected() { return &m_imuCorrected; }

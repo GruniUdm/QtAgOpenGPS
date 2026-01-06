@@ -131,8 +131,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY startSAChanged BINDABLE bindableStartSA)
 
     // === Misc Status (2 properties) - Status - Qt 6.8 QProperty + BINDABLE ===
-    Q_PROPERTY(bool steerSwitchHigh READ steerSwitchHigh WRITE setSteerSwitchHigh
-               NOTIFY steerSwitchHighChanged BINDABLE bindableSteerSwitchHigh)
     Q_PROPERTY(bool imuCorrected READ imuCorrected WRITE setImuCorrected
                NOTIFY imuCorrectedChanged BINDABLE bindableImuCorrected)
     Q_PROPERTY(QString lblCalcSteerAngleInner READ lblCalcSteerAngleInner WRITE setLblCalcSteerAngleInner
@@ -257,10 +255,6 @@ public:
     QBindable<bool> bindableStartSA();
 
     // Misc Status
-    bool steerSwitchHigh() const;
-    void setSteerSwitchHigh(bool value);
-    QBindable<bool> bindableSteerSwitchHigh();
-
     bool imuCorrected() const;
     void setImuCorrected(bool value);
     QBindable<bool> bindableImuCorrected();
@@ -1148,7 +1142,6 @@ signals:
     void confidenceLevelChanged();
     void hasValidRecommendationChanged();
     void startSAChanged();
-    void steerSwitchHighChanged();
     void imuCorrectedChanged();
     void lblCalcSteerAngleInnerChanged();
     void lblDiameterChanged();
@@ -1223,7 +1216,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_startSA, &FormGPS::startSAChanged)
 
     // Misc Status (2) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_steerSwitchHigh, &FormGPS::steerSwitchHighChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuCorrected, &FormGPS::imuCorrectedChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblCalcSteerAngleInner, &FormGPS::lblCalcSteerAngleInnerChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblDiameter, &FormGPS::lblDiameterChanged)

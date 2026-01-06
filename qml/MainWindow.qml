@@ -389,7 +389,7 @@ Window {
             // Phase 6.0.20 Task 24 Step 3.2: Use aog.steerModuleConnectedCounter instead of aogInterface
             steerColor: (aog.steerModuleConnectedCounter > 30 ?
                              "#f0f218f0" :
-                             (aog.steerSwitchHigh === true ?
+                             (ModuleComm.steerSwitchHigh === true ?
                                   "#faf80007" :
                                   (MainWindowState.isBtnAutoSteerOn === true ?
                                        "#f80df807" : "#f0f2c007")))
