@@ -133,7 +133,7 @@ Window {
             console.log("some windows are open. close them first")
             return
         }
-        if (MainWindowState.autoBtnState + aog.manualBtnState  > 0) {
+        if (MainWindowState.autoBtnState + MainWindowState.manualBtnState  > 0) {
             timedMessage.addMessage(2000,qsTr("Section Control on. Shut off Section Control."))
             close.accepted = false
             console.log("Section Control on. Shut off Section Control.")

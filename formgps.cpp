@@ -365,10 +365,6 @@ int FormGPS::steerModuleConnectedCounter() const { return m_steerModuleConnected
 void FormGPS::setSteerModuleConnectedCounter(int value) { m_steerModuleConnectedCounter = value; }
 QBindable<int> FormGPS::bindableSteerModuleConnectedCounter() { return &m_steerModuleConnectedCounter; }
 
-int FormGPS::manualBtnState() const { return m_manualBtnState; }
-void FormGPS::setManualBtnState(int manualBtnState) { m_manualBtnState = manualBtnState; }
-QBindable<int> FormGPS::bindableManualBtnState() { return &m_manualBtnState; }
-
 bool FormGPS::autoYouturnBtnState() const { return m_autoYouturnBtnState; }
 void FormGPS::setAutoYouturnBtnState(bool autoYouturnBtnState) { m_autoYouturnBtnState = autoYouturnBtnState; }
 QBindable<bool> FormGPS::bindableAutoYouturnBtnState() { return &m_autoYouturnBtnState; }
@@ -893,7 +889,7 @@ void FormGPS::JobClose()
     Backend::instance()->set_isJobStarted(false);
 
     //fix ManualOffOnAuto buttons
-    this->setManualBtnState((int)btnStates::Off);
+    MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
 
     //fix auto button
     MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
@@ -1035,7 +1031,7 @@ void FormGPS::JobNew()
     startCounter = 0;
 
     //btnSectionMasterManual.Enabled = true;
-    this->setManualBtnState((int)btnStates::Off);
+    MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
     //btnSectionMasterManual.Image = Properties.Resources.ManualOff;
 
     //btnSectionMasterAuto.Enabled = true;

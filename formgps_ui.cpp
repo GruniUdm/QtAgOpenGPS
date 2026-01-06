@@ -1360,7 +1360,6 @@ void FormGPS::initializeQMLInterfaces()
     //no need to emit Backend::fixFrameChanged() here really.  it defaults
     //to 0 anyway
     Backend::instance()->m_fixFrame.sentenceCounter = 0;
-    this->setManualBtnState((int)btnStates::Off);
     this->setIsPatchesChangingColor( false);
 
 

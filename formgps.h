@@ -175,8 +175,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY steerModuleConnectedCounterChanged BINDABLE bindableSteerModuleConnectedCounter)
 
     // Button States - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(int manualBtnState READ manualBtnState WRITE setManualBtnState
-               NOTIFY manualBtnStateChanged BINDABLE bindableManualBtnState)
     Q_PROPERTY(bool autoYouturnBtnState READ autoYouturnBtnState WRITE setAutoYouturnBtnState
                NOTIFY autoYouturnBtnStateChanged BINDABLE bindableAutoYouturnBtnState)
 
@@ -355,10 +353,6 @@ public:
     QBindable<int> bindableSteerModuleConnectedCounter();
 
     // Button States
-    int manualBtnState() const;
-    void setManualBtnState(int value);
-    QBindable<int> bindableManualBtnState();
-
     bool autoYouturnBtnState() const;
     void setAutoYouturnBtnState(bool value);
     QBindable<bool> bindableAutoYouturnBtnState();
@@ -1219,7 +1213,6 @@ signals:
     void gpsHeadingChanged();
     void isReverseWithIMUChanged();
     void steerModuleConnectedCounterChanged();
-    void manualBtnStateChanged();
     void autoYouturnBtnStateChanged();
     void isPatchesChangingColorChanged();
 
@@ -1306,7 +1299,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_gpsHeading, &FormGPS::gpsHeadingChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isReverseWithIMU, &FormGPS::isReverseWithIMUChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_steerModuleConnectedCounter, &FormGPS::steerModuleConnectedCounterChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_manualBtnState, &FormGPS::manualBtnStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_autoYouturnBtnState, &FormGPS::autoYouturnBtnStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isPatchesChangingColor, &FormGPS::isPatchesChangingColorChanged)
 
