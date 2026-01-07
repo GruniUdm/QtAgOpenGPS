@@ -210,4 +210,5 @@ void Blockage::statistics(){
         for (int i = 0; i < numRows; i++)
             if (rowCount[i].count < blockCountMin) m_blocked = m_blocked + 1; // количество забитых сошников
     }
+    m_blockageModel->setRows(rowCount);
 }
