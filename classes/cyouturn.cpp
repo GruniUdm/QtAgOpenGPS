@@ -3007,7 +3007,7 @@ bool CYouTurn::DistanceFromYouTurnLine( CNMEA &pn)
         CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLine));
 
         //Convert to centimeters
-        CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLine * 1000.0);
+        CVehicle::instance()->set_guidanceLineDistanceOff ((short)glm::roundMidAwayFromZero(distanceFromCurrentLine * 1000.0));
         CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleYT * 100);
         return true;
     }

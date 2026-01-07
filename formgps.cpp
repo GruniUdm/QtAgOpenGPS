@@ -183,10 +183,6 @@ double FormGPS::fusedHeading() const { return m_fusedHeading; }
 void FormGPS::setFusedHeading(double fusedHeading) { m_fusedHeading = fusedHeading; }
 QBindable<double> FormGPS::bindableFusedHeading() { return &m_fusedHeading; }
 
-double FormGPS::offlineDistance() const { return m_offlineDistance; }
-void FormGPS::setOfflineDistance(double offlineDistance) { m_offlineDistance = offlineDistance; }
-QBindable<double> FormGPS::bindableOfflineDistance() { return &m_offlineDistance; }
-
 // ===== Steering Properties =====
 double FormGPS::calcSteerAngleInner() const { return m_calcSteerAngleInner; }
 void FormGPS::setCalcSteerAngleInner(double calcSteerAngleInner) { m_calcSteerAngleInner = calcSteerAngleInner; }
@@ -199,10 +195,6 @@ QBindable<double> FormGPS::bindableCalcSteerAngleOuter() { return &m_calcSteerAn
 double FormGPS::diameter() const { return m_diameter; }
 void FormGPS::setDiameter(double diameter) { m_diameter = diameter; }
 QBindable<double> FormGPS::bindableDiameter() { return &m_diameter; }
-
-double FormGPS::avgPivDistance() const { return m_avgPivDistance; }
-void FormGPS::setAvgPivDistance(double avgPivDistance) { m_avgPivDistance = avgPivDistance; }
-QBindable<double> FormGPS::bindableAvgPivDistance() { return &m_avgPivDistance; }
 
 // ===== Turn and Navigation Properties =====
 double FormGPS::distancePivotToTurnLine() const { return m_distancePivotToTurnLine; }
@@ -416,7 +408,7 @@ void FormGPS::ResetGPSState(bool toSimMode)
 
     // PHASE 6.0.42: Reset guidance line offset when switching modes
     // Old offset from previous mode is invalid in new coordinate system
-    CVehicle::instance()->guidanceLineDistanceOff = 32000;
+    CVehicle::instance()->set_guidanceLineDistanceOff(32000);
     CVehicle::instance()->guidanceLineSteerAngle = 0;
 
     // PHASE 6.0.42: Reset stepFixPts[] for heading calculation
@@ -596,7 +588,7 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
     // PHASE 6.0.42: Reset guidance line distance offset
     // Old offset based on previous coordinate system is now invalid
     // Set to 32000 = "no guidance active" until new guidance line is calculated
-    CVehicle::instance()->guidanceLineDistanceOff = 32000;
+    CVehicle::instance()->set_guidanceLineDistanceOff(32000);
     CVehicle::instance()->guidanceLineSteerAngle = 0;
 
     // PHASE 6.0.42: Reset stepFixPts[] for heading calculation

@@ -97,7 +97,7 @@ bool SimInterface::isRunning() {
 void SimInterface::onTimeout() {
     //qWarning() << "sim tick.";
     //sim.setSimStepDistance(stepDistance);
-    if (RecordedPath::instance()->isDrivingRecordedPath() || (MainWindowState::instance()->isBtnAutoSteerOn() && (CVehicle::instance()->guidanceLineDistanceOff !=32000)))
+    if (RecordedPath::instance()->isDrivingRecordedPath() || (MainWindowState::instance()->isBtnAutoSteerOn() && (CVehicle::instance()->guidanceLineDistanceOff() !=32000)))
     {
         m_steerAngle = CVehicle::instance()->guidanceLineSteerAngle * 0.01;
     }

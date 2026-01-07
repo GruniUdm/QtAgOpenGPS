@@ -559,14 +559,14 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
         CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
         //fill in the autosteer variables
-        CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+        CVehicle::instance()->set_guidanceLineDistanceOff ((short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
         CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleCT * 100);
     }
     else
     {
         //invalid distance so tell AS module
         distanceFromCurrentLinePivot = 32000; //???
-        CVehicle::instance()->guidanceLineDistanceOff = 32000;
+        CVehicle::instance()->set_guidanceLineDistanceOff (32000);
     }
 
 }

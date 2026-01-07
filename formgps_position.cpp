@@ -855,7 +855,7 @@ void FormGPS::UpdateFixPosition()
     //#region AutoSteer
 
     //preset the values
-    CVehicle::instance()->guidanceLineDistanceOff = 32000;
+    CVehicle::instance()->set_guidanceLineDistanceOff (32000);
 
     if (MainWindowState::instance()->isContourBtnOn())
     {
@@ -891,12 +891,12 @@ void FormGPS::UpdateFixPosition()
         //mc.machineControlData[mc.cnSpeed] = mc.autoSteerData[mc.sdSpeed];
 
         //save distance for display
-        lightbarDistance = CVehicle::instance()->guidanceLineDistanceOff;
+        lightbarDistance = CVehicle::instance()->guidanceLineDistanceOff();
 
         if (!MainWindowState::instance()->isBtnAutoSteerOn()) //32020 means auto steer is off
         {
             //NOTE: Is this supposed to be commented out?
-            //CVehicle::instance()->guidanceLineDistanceOff = 32020;
+            //CVehicle::instance()->set_guidanceLineDistanceOff (32020);
             p_254.pgn[CPGN_FE::status] = 0;  // PHASE 6.0.29: OFF → send 0 (match C# original)
         }
 
@@ -929,18 +929,18 @@ void FormGPS::UpdateFixPosition()
             track.setIsAutoSnapped(false);
         }
 
-        //mc.autoSteerData[7] = unchecked((byte)(CVehicle::instance()->guidanceLineDistanceOff >> 8));
-        //mc.autoSteerData[8] = unchecked((byte)(CVehicle::instance()->guidanceLineDistanceOff));
+        //mc.autoSteerData[7] = unchecked((byte)(CVehicle::instance()->guidanceLineDistanceOff() >> 8));
+        //mc.autoSteerData[8] = unchecked((byte)(CVehicle::instance()->guidanceLineDistanceOff()));
 
         //convert to cm from mm and divide by 2 - lightbar
         int distanceX2;
-        //if (CVehicle::instance()->guidanceLineDistanceOff == 32020 || CVehicle::instance()->guidanceLineDistanceOff == 32000)
-        if (!MainWindowState::instance()->isBtnAutoSteerOn() || CVehicle::instance()->guidanceLineDistanceOff == 32000)
+        //if (CVehicle::instance()->set_guidanceLineDistanceOff() == 32020 || CVehicle::instance()->guidanceLineDistanceOff() == 32000)
+        if (!MainWindowState::instance()->isBtnAutoSteerOn() || CVehicle::instance()->guidanceLineDistanceOff() == 32000)
             distanceX2 = 255;
 
         else
         {
-            distanceX2 = (int)(CVehicle::instance()->guidanceLineDistanceOff * 0.05);
+            distanceX2 = (int)(CVehicle::instance()->guidanceLineDistanceOff() * 0.05);
 
             if (distanceX2 < -127) distanceX2 = -127;
             else if (distanceX2 > 127) distanceX2 = 127;
@@ -1042,16 +1042,16 @@ void FormGPS::UpdateFixPosition()
     }
 
     // Smart WAS Calibration data collection
-    if (IsCollectingData && abs(CVehicle::instance()->guidanceLineDistanceOff) < 500) // Within 50cm of guidance line
+    if (IsCollectingData && abs(CVehicle::instance()->guidanceLineDistanceOff()) < 500) // Within 50cm of guidance line
     {
         // Convert guidanceLineSteerAngle from centidegrees to degrees and collect data
         AddSteerAngleSample(CVehicle::instance()->guidanceLineSteerAngle * 0.01, abs(CVehicle::instance()->avgSpeed));
     }
 
     //for average cross track error
-    if (CVehicle::instance()->guidanceLineDistanceOff < 29000)
+    if (CVehicle::instance()->guidanceLineDistanceOff() < 29000)
     {
-        crossTrackError = (int)((double)crossTrackError * 0.90 + fabs((double)CVehicle::instance()->guidanceLineDistanceOff) * 0.1);
+        crossTrackError = (int)((double)crossTrackError * 0.90 + fabs((double)CVehicle::instance()->guidanceLineDistanceOff()) * 0.1);
     }
     else
     {
@@ -1130,7 +1130,7 @@ void FormGPS::UpdateFixPosition()
                         //sounds.isBoundAlarming = false;
                     }
 
-                    //if (Backend::instance()->mainWindow->isBtnAutoSteerOn() && CVehicle::instance()->guidanceLineDistanceOff > 300 && !yt.isYouTurnTriggered)
+                    //if (Backend::instance()->mainWindow->isBtnAutoSteerOn() && CVehicle::instance()->guidanceLineDistanceOff() > 300 && !yt.isYouTurnTriggered)
                     //{
                     //    yt.ResetCreatedYouTurn();
                     //}
@@ -1204,16 +1204,15 @@ void FormGPS::UpdateFixPosition()
 
     // Variables for change tracking
     bool vehChangedFlag = false, steerChangedFlag = false;
-    bool navChangedFlag = false, toolPosChangedFlag = false, wizardChangedFlag = false;
-    bool geometryChangedFlag = false, miscChangedFlag = false;
+    bool navChangedFlag = false, wizardChangedFlag = false;
+    bool miscChangedFlag = false;
 
     // Calculate tool position once
     double tool_lat, tool_lon;
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
         pn.ConvertLocalToWGS84(CVehicle::instance()->pivotAxlePos.northing, CVehicle::instance()->pivotAxlePos.easting, tool_lat, tool_lon, this);
 
-    // Phase 6.0.20: Qt 6.8 BINDABLE - use setter for automatic signal emission
-    setAvgPivDistance(avgPivDistance() * 0.5 + CVehicle::instance()->guidanceLineDistanceOff * 0.5);
+    CVehicle::instance()->set_avgPivDistance(CVehicle::instance()->avgPivDistance() * 0.5 + CVehicle::instance()->guidanceLineDistanceOff() * 0.5);
 
     // Steer module counter logic - Phase 6.0.20 Task 24 Step 3.2
     if (!SimInterface::instance()->isRunning()) {
@@ -1236,13 +1235,6 @@ void FormGPS::UpdateFixPosition()
     // === Vehicle State Updates (8 properties) ===
     if (m_speedKph != CVehicle::instance()->avgSpeed) { m_speedKph = CVehicle::instance()->avgSpeed; vehChangedFlag = true; }
     if (m_fusedHeading != CVehicle::instance()->fixHeading) { m_fusedHeading = CVehicle::instance()->fixHeading; vehChangedFlag = true; }
-   if (m_offlineDistance != CVehicle::instance()->guidanceLineDistanceOff) {
-        m_offlineDistance = CVehicle::instance()->guidanceLineDistanceOff;
-        // Phase 6.0.20: Q_OBJECT_BINDABLE_PROPERTY auto-emits offlineDistanceChanged()
-        // No manual qmlItem()->setProperty() needed - BINDABLE handles QML reactivity
-        vehChangedFlag = true;
-    }
-    // avgPivDistance uses existing variable directly - no member needed
     // isReverseWithIMU now uses Q_OBJECT_BINDABLE_PROPERTY m_isReverseWithIMU
 
     // === Steering Control Updates (6 properties) ===

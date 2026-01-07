@@ -83,7 +83,7 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
     CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
     //Convert to millimeters from meters
-    CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+    CVehicle::instance()->set_guidanceLineDistanceOff ((short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
     CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleGu * 100);
 }
 
@@ -399,7 +399,7 @@ void CGuidance::StanleyGuidanceCurve(Vec3 pivot, Vec3 steer,
     {
         //invalid distance so tell AS module
         distanceFromCurrentLineSteer = 32000;
-        CVehicle::instance()->guidanceLineDistanceOff = 32000;
+        CVehicle::instance()->set_guidanceLineDistanceOff (2000);
     }
 }
 

@@ -337,7 +337,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         CVehicle::instance()->set_modeActualHeadingError ( glm::toDegrees(steerHeadingError));
 
         //Convert to millimeters
-        CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+        CVehicle::instance()->set_guidanceLineDistanceOff((short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
         CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleAB * 100);
     }
 

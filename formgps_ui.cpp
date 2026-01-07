@@ -1176,7 +1176,7 @@ bool FormGPS::ShouldCollectSample(double steerAngle, double speed)
     if (speed < MIN_SPEED_THRESHOLD) return false;
     if (std::abs(steerAngle) > MAX_ANGLE_THRESHOLD) return false;
     if (!MainWindowState::instance()->isBtnAutoSteerOn()) return false;
-    if (std::abs(CVehicle::instance()->guidanceLineDistanceOff) > 15000) return false;
+    if (std::abs(CVehicle::instance()->guidanceLineDistanceOff()) > 15000) return false;
 
     return true;
 }

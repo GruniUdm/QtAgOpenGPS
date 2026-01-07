@@ -88,10 +88,6 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY speedKphChanged BINDABLE bindableSpeedKph)
     Q_PROPERTY(double fusedHeading READ fusedHeading WRITE setFusedHeading
                NOTIFY fusedHeadingChanged BINDABLE bindableFusedHeading)
-    Q_PROPERTY(double offlineDistance READ offlineDistance WRITE setOfflineDistance
-               NOTIFY offlineDistanceChanged BINDABLE bindableOfflineDistance)
-    Q_PROPERTY(double avgPivDistance READ avgPivDistance WRITE setAvgPivDistance
-               NOTIFY avgPivDistanceChanged BINDABLE bindableAvgPivDistance)
 
     // === Steering Control (6 properties) - Critical for autosteer - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(double calcSteerAngleInner READ calcSteerAngleInner WRITE setCalcSteerAngleInner
@@ -166,10 +162,6 @@ public:
     void setFusedHeading(double value);
     QBindable<double> bindableFusedHeading();
 
-    double offlineDistance() const;
-    void setOfflineDistance(double value);
-    QBindable<double> bindableOfflineDistance();
-
     // Steering Control
     double calcSteerAngleInner() const;
     void setCalcSteerAngleInner(double value);
@@ -182,10 +174,6 @@ public:
     double diameter() const;
     void setDiameter(double value);
     QBindable<double> bindableDiameter();
-
-    double avgPivDistance() const;
-    void setAvgPivDistance(double value);
-    QBindable<double> bindableAvgPivDistance();
 
     // Navigation
     double distancePivotToTurnLine() const;
@@ -1078,14 +1066,11 @@ signals:
     void toolEastingChanged();
     void toolNorthingChanged();
     void toolHeadingChanged();
-    void offlineDistanceChanged();
 
     // Steering Control signals
     void calcSteerAngleInnerChanged();
     void calcSteerAngleOuterChanged();
     void diameterChanged();
-
-    void avgPivDistanceChanged();
 
     // Navigation signals
     void distancePivotToTurnLineChanged();
@@ -1141,17 +1126,11 @@ private:
     // Vehicle State (6) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_speedKph, &FormGPS::speedKphChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_fusedHeading, &FormGPS::fusedHeadingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, short int, m_offlineDistance, &FormGPS::offlineDistanceChanged)
-    // avgPivDistance: use existing variable at line 690
-    // isReverseWithIMU: use existing variable at line 527
 
     // Steering Control (6) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_calcSteerAngleInner, &FormGPS::calcSteerAngleInnerChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_calcSteerAngleOuter, &FormGPS::calcSteerAngleOuterChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_diameter, &FormGPS::diameterChanged)
-
-    // Blockage Sensors (8) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_avgPivDistance, &FormGPS::avgPivDistanceChanged)
 
     // Navigation (7) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_distancePivotToTurnLine, &FormGPS::distancePivotToTurnLineChanged)

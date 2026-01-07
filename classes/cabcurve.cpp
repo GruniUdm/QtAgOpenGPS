@@ -994,7 +994,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
             CVehicle::instance()->set_modeActualHeadingError (glm::toDegrees(steerHeadingError));
 
             //Convert to centimeters
-            CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+            CVehicle::instance()->set_guidanceLineDistanceOff ( (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
             CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleCu * 100);
         }
     }
@@ -1002,7 +1002,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
     {
         //invalid distance so tell AS module
         distanceFromCurrentLinePivot = 32000;
-        CVehicle::instance()->guidanceLineDistanceOff = 32000;
+        CVehicle::instance()->set_guidanceLineDistanceOff (32000);
     }
 }
 

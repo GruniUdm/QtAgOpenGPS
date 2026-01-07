@@ -534,8 +534,8 @@ Window {
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.margins: 5
-                dotDistance: aog.avgPivDistance / 10 //avgPivotDistance is averaged
-                visible: (aog.offlineDistance != 32000 &&
+                dotDistance: VehicleInterface.avgPivDistance / 10 //avgPivotDistance is averaged
+                visible: (VehicleInterface.guidanceLineDistanceOff !== 32000 &&
                           SettingsManager.menu_isLightBarOn) ?
                              true : false
             }

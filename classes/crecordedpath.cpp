@@ -385,7 +385,7 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
     CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
     //Convert to centimeters
-    CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+    CVehicle::instance()->set_guidanceLineDistanceOff((short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
     CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleRP * 100);
 }
 
@@ -548,7 +548,7 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
     //}
 
     //Convert to centimeters
-    CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+    CVehicle::instance()->set_guidanceLineDistanceOff ((short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
     CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleRP * 100);
 
 }

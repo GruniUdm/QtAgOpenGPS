@@ -115,8 +115,6 @@ public:
     double fixNorthing = 3.0;
 
     // autosteer variables for sending serial
-    // Phase 6.0.24 Problem 18: Initialize to prevent garbage values in PGN packets
-    short int guidanceLineDistanceOff = 0;
     short int guidanceLineSteerAngle = 0;
     short int distanceDisplay = 0;
 
@@ -156,6 +154,8 @@ public:
     SIMPLE_BINDABLE_PROPERTY (double,modeActualHeadingError)
     SIMPLE_BINDABLE_PROPERTY (QPoint,screenCoord)
     SIMPLE_BINDABLE_PROPERTY (QRect,screenBounding)
+    SIMPLE_BINDABLE_PROPERTY (short int, guidanceLineDistanceOff)
+    SIMPLE_BINDABLE_PROPERTY (double, avgPivDistance)
 
 signals:
     //void setLookAheadGoal(double);
@@ -280,6 +280,8 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_modeActualHeadingError, 0, &CVehicle::modeActualHeadingErrorChanged)
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QPoint, m_screenCoord, &CVehicle::screenCoordChanged)
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QRect, m_screenBounding, &CVehicle::screenBoundingChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, short int, m_guidanceLineDistanceOff, 0, &CVehicle::guidanceLineDistanceOffChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_avgPivDistance, 32000, &CVehicle::avgPivDistanceChanged)
 
 };
 
