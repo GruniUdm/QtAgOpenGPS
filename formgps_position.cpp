@@ -1217,10 +1217,10 @@ void FormGPS::UpdateFixPosition()
 
     // Steer module counter logic - Phase 6.0.20 Task 24 Step 3.2
     if (!SimInterface::instance()->isRunning()) {
-        int counter = steerModuleConnectedCounter();
+        int counter = ModuleComm::instance()->steerModuleConnectedCounter();
         if (counter++ > 30)
             counter = 31;
-        setSteerModuleConnectedCounter(counter);
+        ModuleComm::instance()->set_steerModuleConnectedCounter(counter);
     }
 
     // === Position GPS Updates (6 properties) - Qt 6.8 QProperty (Phase 6.0.9.06) ===
@@ -2933,7 +2933,7 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
         ModuleComm::instance()->set_pwmDisplay(data.pwmDisplay);
 
         // Reset module connection timeout counter
-        setSteerModuleConnectedCounter(0);
+        ModuleComm::instance()->set_steerModuleConnectedCounter(0);
     }
 
     // PGN 250: Sensor data (pressure/current)

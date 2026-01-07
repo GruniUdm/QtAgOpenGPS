@@ -386,8 +386,7 @@ Window {
             anchors.margins: 10
             visible: true
             rollAngle: Backend.fixFrame.imuRollDegrees
-            // Phase 6.0.20 Task 24 Step 3.2: Use aog.steerModuleConnectedCounter instead of aogInterface
-            steerColor: (aog.steerModuleConnectedCounter > 30 ?
+            steerColor: (ModuleComm.steerModuleConnectedCounter > 30 ?
                              "#f0f218f0" :
                              (ModuleComm.steerSwitchHigh === true ?
                                   "#faf80007" :

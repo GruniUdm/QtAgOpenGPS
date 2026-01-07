@@ -93,6 +93,7 @@ public:
     SIMPLE_BINDABLE_PROPERTY(bool, workSwitchHigh)
     SIMPLE_BINDABLE_PROPERTY(int, sensorData)
     SIMPLE_BINDABLE_PROPERTY(int, pwmDisplay)
+    SIMPLE_BINDABLE_PROPERTY(int, steerModuleConnectedCounter)
 
 signals:
     void stopAutoSteer(void);
@@ -116,6 +117,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(ModuleComm, bool, m_workSwitchHigh, 0, &ModuleComm::workSwitchHighChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(ModuleComm, int, m_sensorData, -1, &ModuleComm::sensorDataChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(ModuleComm, int, m_pwmDisplay, 0, &ModuleComm::pwmDisplayChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(ModuleComm, int, m_steerModuleConnectedCounter, 0, &ModuleComm::steerModuleConnectedCounterChanged)
 };
 
 #endif // MODULECOMM_H

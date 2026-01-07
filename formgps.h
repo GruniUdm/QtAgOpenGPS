@@ -141,10 +141,6 @@ class FormGPS : public QQmlApplicationEngine
     Q_PROPERTY(bool isReverseWithIMU READ isReverseWithIMU WRITE setIsReverseWithIMU
                NOTIFY isReverseWithIMUChanged BINDABLE bindableIsReverseWithIMU)
 
-    // Module Connection - Phase 6.0.20 Task 24 Step 3.2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(int steerModuleConnectedCounter READ steerModuleConnectedCounter WRITE setSteerModuleConnectedCounter
-               NOTIFY steerModuleConnectedCounterChanged BINDABLE bindableSteerModuleConnectedCounter)
-
     // Job Control - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
     Q_PROPERTY(bool isPatchesChangingColor READ isPatchesChangingColor WRITE setIsPatchesChangingColor
                NOTIFY isPatchesChangingColorChanged BINDABLE bindableIsPatchesChangingColor)
@@ -263,11 +259,6 @@ public:
     bool isReverseWithIMU() const;
     void setIsReverseWithIMU(bool value);
     QBindable<bool> bindableIsReverseWithIMU();
-
-    // Module Connection - Phase 6.0.20 Task 24 Step 3.2
-    int steerModuleConnectedCounter() const;
-    void setSteerModuleConnectedCounter(int value);
-    QBindable<int> bindableSteerModuleConnectedCounter();
 
     // Job Control
     bool isPatchesChangingColor() const;
@@ -836,7 +827,6 @@ public:
 
     bool isHeadlandClose = false;
 
-    // steerModuleConnectedCounter moved to Q_OBJECT_BINDABLE_PROPERTY m_steerModuleConnectedCounter (line 1860)
     double lightbarDistance=0;
     QString strHeading;
     int lenth = 4;
@@ -1117,7 +1107,6 @@ signals:
     void mPerDegreeLatChanged();
     void gpsHeadingChanged();
     void isReverseWithIMUChanged();
-    void steerModuleConnectedCounterChanged();
     void isPatchesChangingColorChanged();
 
     // ===== SIGNALS CLEANED - Qt 6.8 Q_INVOKABLE Migration =====
@@ -1186,7 +1175,6 @@ private:
     double m_mPerDegreeLat = 0.0;  // Phase 6.0.20 Task 24 Step 3.5: Simple member (no BINDABLE - C++ only)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_gpsHeading, &FormGPS::gpsHeadingChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isReverseWithIMU, &FormGPS::isReverseWithIMUChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_steerModuleConnectedCounter, &FormGPS::steerModuleConnectedCounterChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isPatchesChangingColor, &FormGPS::isPatchesChangingColorChanged)
 
 public:

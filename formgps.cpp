@@ -303,11 +303,6 @@ bool FormGPS::isReverseWithIMU() const { return m_isReverseWithIMU; }
 void FormGPS::setIsReverseWithIMU(bool value) { m_isReverseWithIMU = value; }
 QBindable<bool> FormGPS::bindableIsReverseWithIMU() { return &m_isReverseWithIMU; }
 
-// Module Connection - Phase 6.0.20 Task 24 Step 3.2
-int FormGPS::steerModuleConnectedCounter() const { return m_steerModuleConnectedCounter; }
-void FormGPS::setSteerModuleConnectedCounter(int value) { m_steerModuleConnectedCounter = value; }
-QBindable<int> FormGPS::bindableSteerModuleConnectedCounter() { return &m_steerModuleConnectedCounter; }
-
 bool FormGPS::isPatchesChangingColor() const { return m_isPatchesChangingColor; }
 void FormGPS::setIsPatchesChangingColor(bool isPatchesChangingColor) { m_isPatchesChangingColor = isPatchesChangingColor; }
 QBindable<bool> FormGPS::bindableIsPatchesChangingColor() { return &m_isPatchesChangingColor; }
