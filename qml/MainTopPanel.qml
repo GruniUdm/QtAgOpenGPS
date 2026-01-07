@@ -107,7 +107,7 @@ import "components" as Comp
                             .arg(Utils.area_to_unit_string(Backend.currentField.workedAreaTotal, 2))
                             .arg(Utils.area_to_unit_string(Backend.currentField.actualAreaCovered, 2))
                             .arg(percentLeft)
-                            .arg(Utils.workRateString(aog.speedKph))
+                            .arg(Utils.workRateString(VehicleInterface.avgSpeed))
                 }
                 else {
                     if (TracksInterface.idx > -1) {
@@ -194,7 +194,7 @@ import "components" as Comp
                 anchors.verticalCenter: parent.verticalCenter
                 width: 75 * theme.scaleWidth
                 height:parent.height
-                text: Utils.speed_to_unit_string(aog.speedKph, 1)
+                text: Utils.speed_to_unit_string(VehicleInterface.avgSpeed, 1)
                 font.bold: true
                 font.pixelSize: 35
                 horizontalAlignment: Text.AlignHCenter

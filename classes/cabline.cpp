@@ -219,7 +219,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
 
             if (isBtnAutoSteerOn
                 && fabs(pivotDerivative) < (0.1)
-                && CVehicle::instance()->avgSpeed > 2.5
+                && CVehicle::instance()->avgSpeed() > 2.5
                 && !yt.isYouTurnTriggered)
             //&& fabs(pivotDistanceError) < 0.2)
 

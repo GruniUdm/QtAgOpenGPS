@@ -84,8 +84,6 @@ class FormGPS : public QQmlApplicationEngine
     // Qt 6.8: Removed complex property binding - using objectCreated signal instead
 
     // === Vehicle State (6 properties) - Critical for guidance - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double speedKph READ speedKph WRITE setSpeedKph
-               NOTIFY speedKphChanged BINDABLE bindableSpeedKph)
     Q_PROPERTY(double fusedHeading READ fusedHeading WRITE setFusedHeading
                NOTIFY fusedHeadingChanged BINDABLE bindableFusedHeading)
 
@@ -154,10 +152,6 @@ public:
     QBindable<QVariantList> bindableSectionButtonState();
 
     // Vehicle State
-    double speedKph() const;
-    void setSpeedKph(double value);
-    QBindable<double> bindableSpeedKph();
-
     double fusedHeading() const;
     void setFusedHeading(double value);
     QBindable<double> bindableFusedHeading();
@@ -871,9 +865,6 @@ private:
      * FormGPS.cs *
      **************/
 public:
-    QString speedMPH();
-    QString speedKPH();
-
     void JobNew();
     void JobClose();
 
@@ -1045,7 +1036,6 @@ public slots:
     void FileSaveTracks();
 
     /* formgps_classcallbacks.cpp */
-    void onStopAutoSteer(); //cancel autosteer and ensure button state
     void onSectionMasterAutoOff();
     void onSectionMasterManualOff();
     void onStoppedDriving();
@@ -1061,7 +1051,6 @@ signals:
     void sectionButtonStateChanged();
 
     // Vehicle State signals
-    void speedKphChanged();
     void fusedHeadingChanged();
     void toolEastingChanged();
     void toolNorthingChanged();
@@ -1124,7 +1113,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariantList, m_sectionButtonState, &FormGPS::sectionButtonStateChanged)
 
     // Vehicle State (6) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_speedKph, &FormGPS::speedKphChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_fusedHeading, &FormGPS::fusedHeadingChanged)
 
     // Steering Control (6) - Qt 6.8 Rectangle Pattern

@@ -162,23 +162,6 @@ void FormGPS::setSectionButtonState(const QVariantList& value) {
 
 QBindable<QVariantList> FormGPS::bindableSectionButtonState() { return &m_sectionButtonState; }
 
-double FormGPS::speedKph() const { return m_speedKph; }
-void FormGPS::setSpeedKph(double speedKph) {
-    m_speedKph = speedKph;
-
-    // ⚡ PHASE 6.0.20 AutoSteer Protection: Automatic speed-based deactivation
-    // Covers both simulation and real GPS modes (single entry point)
-    if (MainWindowState::instance()->isBtnAutoSteerOn()) {
-        auto* settings = SettingsManager::instance();
-        if (speedKph < settings->as_minSteerSpeed() ||
-            speedKph > settings->as_maxSteerSpeed()) {
-            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
-        }
-    }
-}
-
-QBindable<double> FormGPS::bindableSpeedKph() { return &m_speedKph; }
-
 double FormGPS::fusedHeading() const { return m_fusedHeading; }
 void FormGPS::setFusedHeading(double fusedHeading) { m_fusedHeading = fusedHeading; }
 QBindable<double> FormGPS::bindableFusedHeading() { return &m_fusedHeading; }
@@ -728,10 +711,12 @@ void FormGPS::tmrWatchdog_timeout()
         worldGrid.isRateTrigger = true;
 
         //Make sure it is off when it should
-        if ((!MainWindowState::instance()->isContourBtnOn() &&
-             track.idx() == -1 &&
-             MainWindowState::instance()->isBtnAutoSteerOn()) ) {
-            onStopAutoSteer();
+        if (!MainWindowState::instance()->isContourBtnOn() &&
+            track.idx() == -1 &&
+            MainWindowState::instance()->isBtnAutoSteerOn() )
+        {
+
+            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
         }
 
     } //end every 1/2 second
@@ -745,24 +730,6 @@ void FormGPS::tmrWatchdog_timeout()
 
         secondsSinceStart = stopwatch.elapsed() / 1000.0;
     }
-}
-
-QString FormGPS::speedKPH() {
-    double spd = CVehicle::instance()->avgSpeed;
-
-    //convert to kph
-    spd *= 0.1;
-
-    return locale.toString(spd,'f',1);
-}
-
-QString FormGPS::speedMPH() {
-    double spd = CVehicle::instance()->avgSpeed;
-
-    //convert to mph
-    spd *= 0.0621371;
-
-    return locale.toString(spd,'f',1);
 }
 
 void FormGPS::SwapDirection() {

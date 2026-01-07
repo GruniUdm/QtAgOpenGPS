@@ -19,8 +19,8 @@ Grid{
         icon.source: prefix + "/images/qtSpecific/z_TurnManualL.png"
         onClicked: {
             // Threading Phase 1: Check speed limit for manual operations
-            if (SettingsManager.as_functionSpeedLimit > aog.speedKph) {
-                console.debug("limit ", SettingsManager.as_functionSpeedLimit, " speed ", aog.speedKph)
+            if (SettingsManager.as_functionSpeedLimit > VehicleInterface.avgSpeed) {
+                console.debug("limit ", SettingsManager.as_functionSpeedLimit, " speed ", VehicleInterface.avgSpeed)
                 aog.manualUTurn(false) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             } else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
@@ -37,7 +37,7 @@ Grid{
         visible: SettingsManager.feature_isYouTurnOn
         icon.source: prefix + "/images/qtSpecific/z_TurnManualR.png"
         onClicked: {
-            if (SettingsManager.as_functionSpeedLimit > aog.speedKph) // Threading Phase 1: Function speed limit check
+            if (SettingsManager.as_functionSpeedLimit > VehicleInterface.avgSpeed) // Threading Phase 1: Function speed limit check
                 aog.manualUTurn(true) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
@@ -52,7 +52,7 @@ Grid{
         // Threading Phase 1: Lateral turn feature visibility
         visible: SettingsManager.feature_isLateralOn
         onClicked: {
-            if (SettingsManager.as_functionSpeedLimit > aog.speedKph) // Threading Phase 1: Function speed limit check
+            if (SettingsManager.as_functionSpeedLimit > VehicleInterface.avgSpeed) // Threading Phase 1: Function speed limit check
                 aog.lateral(false) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
@@ -67,7 +67,7 @@ Grid{
         visible: SettingsManager.feature_isLateralOn
         icon.source: prefix + "/images/qtSpecific/z_LateralManualR.png"
         onClicked: {
-            if (SettingsManager.as_functionSpeedLimit > aog.speedKph) // Threading Phase 1: Function speed limit check
+            if (SettingsManager.as_functionSpeedLimit > VehicleInterface.avgSpeed) // Threading Phase 1: Function speed limit check
                 aog.lateral(true) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +

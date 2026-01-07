@@ -81,24 +81,8 @@ void FormGPS::onSimNewPosition(double vtgSpeed,
 
     ModuleComm::instance()->set_actualSteerAngleDegrees(SimInterface::instance()->steerAngleActual());
 
-    // Phase 6.0.20: Qt 6.8 BINDABLE properties - direct setter calls replace qmlItem()->setProperty()
-    // BINDABLE auto-emits property changed signals for QML reactivity
-    this->setSpeedKph(vtgSpeed);
-
-    // Phase 6.0.20 Task 24 Step 5.6: Simulation mode - missing GPS properties
-    // ConvertWGS84ToLocal already called above (line 48), northing/easting available in pn.fix
-   // this->setNorthing(pn.fix.northing);
-   // this->setEasting(pn.fix.easting);
-
     // Fused heading in simulation = GPS heading (no IMU fusion needed)
     this->setFusedHeading(headingTrue);
 
-    // GPS timing properties (frameTime, rawHz, hz) are calculated dynamically by UpdateFixPosition()
-    // - formgps_position.cpp:34-47  → calculates nowHz and gpsHz from swFrame timer
-    // - formgps_position.cpp:1216   → calculates frameTime with exponential filter
-    // - formgps_position.cpp:1286-1287 → assigns m_hz and m_rawHz
-    // No need to hardcode values here - UpdateFixPosition() provides accurate real-time measurements
-
-    //qWarning() << "Acted on new position.";
     UpdateFixPosition();
 }

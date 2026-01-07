@@ -377,7 +377,7 @@ Window {
             anchors.margins: 10
             visible: SettingsManager.menu_isSpeedoOn
 
-            speed: Utils.speed_to_unit(aog.speedKph)
+            speed: Utils.speed_to_unit(VehicleInterface.avgSpeed)
         }
 
         SteerCircle { //the IMU indicator on the bottom right -- Called the "SteerCircle" in AOG

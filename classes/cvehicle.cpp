@@ -196,14 +196,14 @@ double CVehicle::UpdateGoalPointDistance()
     double xTE = fabs(m_modeActualXTE);
 
     //how far should goal point be away  - speed * seconds * kmph -> m/s then limit min value
-    double goalPointDistance = avgSpeed * goalPointLookAhead * 0.05 * goalPointLookAheadMult;
+    double goalPointDistance = m_avgSpeed * goalPointLookAhead * 0.05 * goalPointLookAheadMult;
     goalPointDistance += goalPointLookAhead;
 
     if (xTE < modeXTE)
     {
         if (modeTimeCounter > modeTime * 10)
         {
-            goalPointDistance = avgSpeed * goalPointLookAheadHold * 0.05 * goalPointLookAheadMult;
+            goalPointDistance = m_avgSpeed * goalPointLookAheadHold * 0.05 * goalPointLookAheadMult;
             goalPointDistance += goalPointLookAheadHold;
         }
         else
@@ -630,7 +630,7 @@ void CVehicle::AverageTheSpeed(double newSpeed) {
     // Phase 6.0.34: Fixed formula to match C# original (CNMEA.cs:50)
     // C#: mf.avgSpeed = (mf.avgSpeed * 0.75) + (speed * 0.25);
     // BEFORE (WRONG): avgSpeed = newSpeed * 0.75 + avgSpeed * 0.25;  // Inverted weights!
-    avgSpeed = avgSpeed * 0.75 + newSpeed * 0.25;  // ✅ CORRECTED: 75% old + 25% new
+    m_avgSpeed = m_avgSpeed * 0.75 + newSpeed * 0.25;  // ✅ CORRECTED: 75% old + 25% new
 }
 
 // ===== Qt 6.8 QProperty Migration =====

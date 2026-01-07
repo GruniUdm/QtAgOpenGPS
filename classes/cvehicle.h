@@ -93,8 +93,6 @@ public:
 
 
     //from pn or main form:
-    // Phase 6.0.24 Problem 18: Initialize avgSpeed to prevent exponential averaging from preserving garbage values
-    double avgSpeed = 0.0;  // Average speed - MUST be 0.0 at startup to avoid infinity decay when first NMEA arrives
     int ringCounter = 0;
 
 
@@ -156,6 +154,7 @@ public:
     SIMPLE_BINDABLE_PROPERTY (QRect,screenBounding)
     SIMPLE_BINDABLE_PROPERTY (short int, guidanceLineDistanceOff)
     SIMPLE_BINDABLE_PROPERTY (double, avgPivDistance)
+    SIMPLE_BINDABLE_PROPERTY (double, avgSpeed)
 
 signals:
     //void setLookAheadGoal(double);
@@ -248,7 +247,6 @@ private:
         // Phase 6.0.24 Problem 18: Initialize avgSpeed as defense-in-depth
         // Critical: Without this, exponential averaging preserves random memory values
         // Formula: avgSpeed = newSpeed*0.75 + avgSpeed*0.25 means 25% of old value persists
-        avgSpeed = 0.0;
     }
 
     ~CVehicle() override=default;
@@ -282,6 +280,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QRect, m_screenBounding, &CVehicle::screenBoundingChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, short int, m_guidanceLineDistanceOff, 0, &CVehicle::guidanceLineDistanceOffChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_avgPivDistance, 32000, &CVehicle::avgPivDistanceChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_avgSpeed, 0, &CVehicle::avgSpeedChanged)
 
 };
 

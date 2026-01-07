@@ -96,7 +96,6 @@ public:
     SIMPLE_BINDABLE_PROPERTY(int, steerModuleConnectedCounter)
 
 signals:
-    void stopAutoSteer(void);
     void turnOffManualSections(void);
     void turnOffAutoSections(void);
 

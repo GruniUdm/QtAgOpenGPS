@@ -393,7 +393,7 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             if (abFixHeadingDelta < -0.74) abFixHeadingDelta = -0.74;
 
             steerAngleCT = atan((distanceFromCurrentLinePivot * stanleyDistanceErrorGain)
-                                     / ((fabs(CVehicle::instance()->avgSpeed) * 0.277777) + 1));
+                                     / ((fabs(CVehicle::instance()->avgSpeed()) * 0.277777) + 1));
 
             if (steerAngleCT > 0.74) steerAngleCT = 0.74;
             if (steerAngleCT < -0.74) steerAngleCT = -0.74;
@@ -472,7 +472,7 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
 
                 if (isBtnAutoSteerOn
                     && fabs(pivotDerivative) < (0.1)
-                    && CVehicle::instance()->avgSpeed > 2.5
+                    && CVehicle::instance()->avgSpeed() > 2.5
                     && !yt.isYouTurnTriggered)
                 {
                     //if over the line heading wrong way, rapidly decrease integral

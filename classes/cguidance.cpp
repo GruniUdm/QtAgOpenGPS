@@ -24,7 +24,7 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
     //Overshoot setting on Stanley tab
     steerHeadingError *= stanleyHeadingErrorGain;
 
-    double sped = fabs(CVehicle::instance()->avgSpeed);
+    double sped = fabs(CVehicle::instance()->avgSpeed());
     if (sped > 1) sped = 1 + 0.277 * (sped - 1);
     else sped = 1;
     double XTEc = atan((distanceFromCurrentLineSteer * stanleyDistanceErrorGain)
@@ -51,7 +51,7 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
     //pivotDistanceError = atan((distanceFromCurrentLinePivot) / (sped)) * 0.2;
     //pivotErrorTotal = pivotDistanceError + pivotDerivative;
 
-    if (CVehicle::instance()->avgSpeed > 1
+    if (CVehicle::instance()->avgSpeed() > 1
         && isBtnAutoSteerOn
         && fabs(derivativeDistError) < 1
         && fabs(pivotDistanceError) < 0.25)

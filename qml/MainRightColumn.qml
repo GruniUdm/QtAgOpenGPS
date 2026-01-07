@@ -144,6 +144,7 @@ ColumnLayout {
             }
         }
     }
+
     Comp.MainWindowBtns {
         id: btnAutoYouTurn
         isChecked: MainWindowState.isYouTurnBtnOn // Qt 6.8 MODERN: Q_PROPERTY access
@@ -155,6 +156,8 @@ ColumnLayout {
         //enabled: aog.isBtnAutoSteerOn
         onClicked: aog.autoYouTurn() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
     }
+
+
     Comp.MainWindowBtns {
         id: btnAutoSteer
         icon.source: prefix + "/images/AutoSteerOff.png"
@@ -169,42 +172,14 @@ ColumnLayout {
 
         onClicked: {
             // ⚡ PHASE 6.0.20 FIX: Check ACTIVE line (not just in memory)
-            if ((aogInterface.currentABLine > -1 || aogInterface.currentABCurve > -1) || btnContour.isChecked) {
+            if (((aogInterface.currentABLine > -1 || aogInterface.currentABCurve > -1) || btnContour.isChecked) &&
+                    (VehicleInterface.avgSpeed >= SettingsManager.as_minSteerSpeed &&
+                     VehicleInterface.avgSpeed <= SettingsManager.as_maxSteerSpeed) ) {
                 MainWindowState.isBtnAutoSteerOn = !MainWindowState.isBtnAutoSteerOn; // Qt 6.8 MODERN: Q_PROPERTY assignment
             } else {
                 // No active line or contour: don't allow AutoSteer
                 MainWindowState.isBtnAutoSteerOn = false; // Qt 6.8 MODERN: Q_PROPERTY assignment
             }
         }
-
-        //property bool isTrackOn: (currentABLine > -1 && Backend.isJobStarted === true)  //
-
-        // ⚡ PHASE 6.0.20: Speed-based AutoSteer deactivation MOVED to C++
-        // Logic now in formgps.cpp:175 setSpeedKph() for better architecture
-        // Automatic protection in both simulation and real GPS modes
-        /*
-        Connections {
-            target: aogInterface
-            // function onIsBtnAutoSteerOnChanged() {
-            //     //TODO: use track interface in trk
-            //     if (aog.isBtnAutoSteerOn) {
-            //         btnAutoSteer.checked = true
-            //     } else {
-            //         //default to turning everything off
-            //         btnAutoSteer.checked = false
-            //     }
-            // }
-            function onSpeedKphChanged() {
-                if (btnAutoSteer.checked) {
-                    if (aog.speedKph < SettingsManager.as_minSteerSpeed) { // Qt 6.8 MODERN: Q_PROPERTY access
-                        aog.isBtnAutoSteerOn = false
-                    } else if (aog.speedKph > SettingsManager.as_maxSteerSpeed) { // Qt 6.8 MODERN: Q_PROPERTY access
-                        //timedMessage
-                        aog.isBtnAutoSteerOn = false
-                    }
-                }
-            }
-        }
-        */
     }
 }

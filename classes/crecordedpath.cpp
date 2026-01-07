@@ -306,7 +306,7 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
 
         if (isFollowingRecPath
             && fabs(pivotDerivative) < (0.1)
-            && CVehicle::instance()->avgSpeed > 2.5)
+            && CVehicle::instance()->avgSpeed() > 2.5)
         //&& fabs(pivotDistanceError) < 0.2)
 
         {
@@ -453,7 +453,7 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
 
         if (isBtnAutoSteerOn
             && fabs(pivotDerivative) < (0.1)
-            && CVehicle::instance()->avgSpeed > 2.5
+            && CVehicle::instance()->avgSpeed() > 2.5
             && !yt.isYouTurnTriggered)
 
         {

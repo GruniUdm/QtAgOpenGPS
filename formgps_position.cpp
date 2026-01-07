@@ -118,7 +118,7 @@ void FormGPS::UpdateFixPosition()
 
         prevDistFix = pn.fix;
 
-        if (fabs(CVehicle::instance()->avgSpeed) < 1.5 && !isFirstHeadingSet)
+        if (fabs(CVehicle::instance()->avgSpeed()) < 1.5 && !isFirstHeadingSet)
             goto byPass;
 
         if (!isFirstHeadingSet) //set in steer settings, Stanley
@@ -642,7 +642,7 @@ void FormGPS::UpdateFixPosition()
     } else if (headingFromSource == "VTG")
     {
         isFirstHeadingSet = true;
-        if (CVehicle::instance()->avgSpeed > 1)
+        if (CVehicle::instance()->avgSpeed() > 1)
         {
             //use NMEA headings for camera and tractor graphic
             CVehicle::instance()->fixHeading = glm::toRadians(pn.headingTrue);
@@ -886,8 +886,8 @@ void FormGPS::UpdateFixPosition()
     if (!CVehicle::instance()->isInFreeDriveMode())
     {
         //fill up0 the appropriate arrays with new values
-        p_254.pgn[CPGN_FE::speedHi] = (char)((int)(fabs(CVehicle::instance()->avgSpeed) * 10.0) >> 8);
-        p_254.pgn[CPGN_FE::speedLo] = (char)((int)(fabs(CVehicle::instance()->avgSpeed) * 10.0));
+        p_254.pgn[CPGN_FE::speedHi] = (char)((int)(fabs(CVehicle::instance()->avgSpeed()) * 10.0) >> 8);
+        p_254.pgn[CPGN_FE::speedLo] = (char)((int)(fabs(CVehicle::instance()->avgSpeed()) * 10.0));
         //mc.machineControlData[mc.cnSpeed] = mc.autoSteerData[mc.sdSpeed];
 
         //save distance for display
@@ -951,21 +951,21 @@ void FormGPS::UpdateFixPosition()
 
         if (!SimInterface::instance()->isRunning())
         {
-            if (MainWindowState::instance()->isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed > CVehicle::instance()->maxSteerSpeed)
+            if (MainWindowState::instance()->isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed() > SettingsManager::instance()->as_maxSteerSpeed())
             {
-                onStopAutoSteer();
+                MainWindowState::instance()->set_isBtnAutoSteerOn(false);
                 if (isMetric)
                     TimedMessageBox(3000, tr("AutoSteer Disabled"), tr("Above Maximum Safe Steering Speed: ") + locale.toString(CVehicle::instance()->maxSteerSpeed, 'g', 1) + tr(" Kmh"));
                 else
                     TimedMessageBox(3000, tr("AutoSteer Disabled"), tr("Above Maximum Safe Steering Speed: ") + locale.toString(CVehicle::instance()->maxSteerSpeed * 0.621371, 'g', 1) + tr(" MPH"));
             }
 
-            if (MainWindowState::instance()->isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed < CVehicle::instance()->minSteerSpeed)
+            if (MainWindowState::instance()->isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed() < SettingsManager::instance()->as_minSteerSpeed())
             {
                 minSteerSpeedTimer++;
                 if (minSteerSpeedTimer > 80)
                 {
-                    onStopAutoSteer();
+                    MainWindowState::instance()->set_isBtnAutoSteerOn(false);
                     if (isMetric)
                         TimedMessageBox(3000, tr("AutoSteer Disabled"), tr("Below Minimum Safe Steering Speed: ") + locale.toString(CVehicle::instance()->minSteerSpeed, 'g', 1) + tr(" Kmh"));
                     else
@@ -981,8 +981,8 @@ void FormGPS::UpdateFixPosition()
         double tanSteerAngle = tan(glm::toRadians(((double)(CVehicle::instance()->guidanceLineSteerAngle)) * 0.01));
         double tanActSteerAngle = tan(glm::toRadians(mc_actualSteerAngleDegrees));
 
-        setAngVel = 0.277777 * CVehicle::instance()->avgSpeed * tanSteerAngle / CVehicle::instance()->wheelbase;
-        actAngVel = glm::toDegrees(0.277777 * CVehicle::instance()->avgSpeed * tanActSteerAngle / CVehicle::instance()->wheelbase);
+        setAngVel = 0.277777 * CVehicle::instance()->avgSpeed() * tanSteerAngle / CVehicle::instance()->wheelbase;
+        actAngVel = glm::toDegrees(0.277777 * CVehicle::instance()->avgSpeed() * tanActSteerAngle / CVehicle::instance()->wheelbase);
 
 
         isMaxAngularVelocity = false;
@@ -990,7 +990,7 @@ void FormGPS::UpdateFixPosition()
         if (fabs(setAngVel) > CVehicle::instance()->maxAngularVelocity)
         {
             setAngVel = CVehicle::instance()->maxAngularVelocity;
-            tanSteerAngle = 3.6 * setAngVel * CVehicle::instance()->wheelbase / CVehicle::instance()->avgSpeed;
+            tanSteerAngle = 3.6 * setAngVel * CVehicle::instance()->wheelbase / CVehicle::instance()->avgSpeed();
             if (CVehicle::instance()->guidanceLineSteerAngle < 0)
                 CVehicle::instance()->guidanceLineSteerAngle = (short)(glm::toDegrees(atan(tanSteerAngle)) * -100);
             else
@@ -1045,7 +1045,7 @@ void FormGPS::UpdateFixPosition()
     if (IsCollectingData && abs(CVehicle::instance()->guidanceLineDistanceOff()) < 500) // Within 50cm of guidance line
     {
         // Convert guidanceLineSteerAngle from centidegrees to degrees and collect data
-        AddSteerAngleSample(CVehicle::instance()->guidanceLineSteerAngle * 0.01, abs(CVehicle::instance()->avgSpeed));
+        AddSteerAngleSample(CVehicle::instance()->guidanceLineSteerAngle * 0.01, abs(CVehicle::instance()->avgSpeed()));
     }
 
     //for average cross track error
@@ -1232,9 +1232,6 @@ void FormGPS::UpdateFixPosition()
 
     Blockage::instance()->current_speed = pn.speed;
 
-    // === Vehicle State Updates (8 properties) ===
-    if (m_speedKph != CVehicle::instance()->avgSpeed) { m_speedKph = CVehicle::instance()->avgSpeed; vehChangedFlag = true; }
-    if (m_fusedHeading != CVehicle::instance()->fixHeading) { m_fusedHeading = CVehicle::instance()->fixHeading; vehChangedFlag = true; }
     // isReverseWithIMU now uses Q_OBJECT_BINDABLE_PROPERTY m_isReverseWithIMU
 
     // === Steering Control Updates (6 properties) ===
@@ -1351,12 +1348,13 @@ void FormGPS::TheRest()
     //distance = glm::distance(pn.fix, prevFix);
     //if (CVehicle::instance()->avgSpeed > 1)
 
-    if ((CVehicle::instance()->avgSpeed - previousSpeed  ) < -CVehicle::instance()->panicStopSpeed && CVehicle::instance()->panicStopSpeed != 0)
+    if ((CVehicle::instance()->avgSpeed() - previousSpeed  ) < -CVehicle::instance()->panicStopSpeed && CVehicle::instance()->panicStopSpeed != 0)
     {
-        if (MainWindowState::instance()->isBtnAutoSteerOn()) onStopAutoSteer();
+        if (MainWindowState::instance()->isBtnAutoSteerOn())
+            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
     }
 
-    previousSpeed = CVehicle::instance()->avgSpeed;
+    previousSpeed = CVehicle::instance()->avgSpeed();
 }
 
 void FormGPS::processSectionLookahead() {
@@ -1745,7 +1743,7 @@ void FormGPS::processSectionLookahead() {
     for (int j = 0; j < tool.numOfSections; j++)
     {
         //Off or too slow or going backwards
-        if (tool.sectionButtonState[j] == MainWindowState::ButtonStates::Off || CVehicle::instance()->avgSpeed < CVehicle::instance()->slowSpeedCutoff || tool.section[j].speedPixels < 0)
+        if (tool.sectionButtonState[j] == MainWindowState::ButtonStates::Off || CVehicle::instance()->avgSpeed() < CVehicle::instance()->slowSpeedCutoff || tool.section[j].speedPixels < 0)
         {
             tool.section[j].sectionOnRequest = false;
             tool.section[j].sectionOffRequest = true;
@@ -2231,7 +2229,7 @@ void FormGPS::CalculatePositionHeading()
 
     if (!track.ABLine.isLateralTriggered && !track.curve.isLateralTriggered)
     {
-        double guidanceLookDist = (std::max(tool.width * 0.5, CVehicle::instance()->avgSpeed * 0.277777 * guidanceLookAheadTime));
+        double guidanceLookDist = (std::max(tool.width * 0.5, CVehicle::instance()->avgSpeed() * 0.277777 * guidanceLookAheadTime));
         CVehicle::instance()->guidanceLookPos.easting = CVehicle::instance()->pivotAxlePos.easting + (sin(CVehicle::instance()->fixHeading) * guidanceLookDist);
         CVehicle::instance()->guidanceLookPos.northing = CVehicle::instance()->pivotAxlePos.northing + (cos(CVehicle::instance()->fixHeading) * guidanceLookDist);
     }
@@ -2365,7 +2363,7 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
     double leftSpeed = 0, rightSpeed = 0;
 
     //speed max for section kmh*0.277 to m/s * 10 cm per pixel * 1.7 max speed
-    double meterPerSecPerPixel = fabs(CVehicle::instance()->avgSpeed) * 4.5;
+    double meterPerSecPerPixel = fabs(CVehicle::instance()->avgSpeed()) * 4.5;
     //qDebug(qpos) << pn.speed << ", m/s per pixel is " << meterPerSecPerPixel;
 
     //now loop all the section rights and the one extreme left
@@ -2445,7 +2443,7 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
             sped = (leftSpeed * 0.1);
             if (sped < 0.1) sped = 0.1;
             tool.farLeftSpeed = tool.farLeftSpeed * 0.7 + sped * 0.3;
-            //qWarning() << sped << tool.farLeftSpeed << CVehicle::instance()->avgSpeed;
+            //qWarning() << sped << tool.farLeftSpeed << CVehicle::instance()->avgSpeed();
         }
 
         if (j == tool.numOfSections - 1)
@@ -2503,8 +2501,8 @@ void FormGPS::AddSectionOrPathPoints()
     if (recPath.isRecordOn)
     {
         //keep minimum speed of 1.0
-        double speed = CVehicle::instance()->avgSpeed;
-        if (CVehicle::instance()->avgSpeed < 1.0) speed = 1.0;
+        double speed = CVehicle::instance()->avgSpeed();
+        if (CVehicle::instance()->avgSpeed() < 1.0) speed = 1.0;
         bool autoBtn = (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto);
 
         recPath.recList.append(CRecPathPt(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, CVehicle::instance()->pivotAxlePos.heading, speed, autoBtn));
@@ -2756,8 +2754,6 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
         // Safe to assign - will use last valid position if current data was 0
 
         // Speed (10 Hz → QML)
-        setSpeedKph(pn.vtgSpeed);
-
         // ✅ IMU data is now assigned directly at 40 Hz (see above, no throttling)
         // Simpler: no need to duplicate assignment here
 

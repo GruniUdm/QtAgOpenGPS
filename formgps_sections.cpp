@@ -80,7 +80,7 @@ void FormGPS::BuildMachineByte()
 
     }
 
-    p_239.pgn[CPGN_EF::speed] = (char)(CVehicle::instance()->avgSpeed * 10);
+    p_239.pgn[CPGN_EF::speed] = (char)(CVehicle::instance()->avgSpeed() * 10);
     p_239.pgn[CPGN_EF::tram] = (char)tram.controlByte;
 
     emit ModuleComm::instance()->p_239_changed();

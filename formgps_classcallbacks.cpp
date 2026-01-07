@@ -21,12 +21,10 @@ void FormGPS::connect_classes()
     // Timer will be started when GPS data starts arriving (not in simulation mode)
     timerGPS.start(100);  // 100ms = 10 Hz (synchronized with NMEA data rate)
 
-    connect(&track.curve, &CABCurve::stopAutoSteer, this, &FormGPS::onStopAutoSteer, Qt::QueuedConnection);
     connect(&track.curve, &CABCurve::TimedMessage, this, &FormGPS::TimedMessageBox, Qt::QueuedConnection);
 
     connect(&ct, &CContour::TimedMessage, this, &FormGPS::TimedMessageBox, Qt::QueuedConnection);
 
-    connect(ModuleComm::instance(), &ModuleComm::stopAutoSteer, this, &FormGPS::onStopAutoSteer, Qt::QueuedConnection);
     connect(ModuleComm::instance(), &ModuleComm::turnOffAutoSections, this, &FormGPS::onSectionMasterAutoOff, Qt::QueuedConnection);
     connect(ModuleComm::instance(), &ModuleComm::turnOffManualSections, this, &FormGPS::onSectionMasterManualOff, Qt::QueuedConnection);
 
@@ -43,13 +41,6 @@ void FormGPS::connect_classes()
 
     connect(&track, &CTrack::resetCreatedYouTurn, &yt, &CYouTurn::ResetCreatedYouTurn, Qt::QueuedConnection);
     connect(&track, &CTrack::saveTracks, this, &FormGPS::FileSaveTracks, Qt::QueuedConnection);
-}
-
-void FormGPS::onStopAutoSteer()
-{
-    //TODO
-    //turn off auto steer
-    //reset gui buttons
 }
 
 void FormGPS::onSectionMasterAutoOff()

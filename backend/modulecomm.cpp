@@ -1,6 +1,7 @@
 #include "modulecomm.h"
 #include "cahrs.h"
 #include "settingsmanager.h"
+#include "mainwindowstate.h"
 #include "agioservice.h"
 
 Q_LOGGING_CATEGORY (cmodulecomm_log, "cmodulecomm.qtagopengps")
@@ -57,8 +58,7 @@ void ModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
         //steerSwith is active low
         set_steerSwitchHigh(isBtnAutoSteerOn);
         if (m_steerSwitchHigh)
-            emit stopAutoSteer();
-            //mf.btnAutoSteer.PerformClick();
+            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
     }
 
     if (SettingsManager::instance()->f_isRemoteWorkSystemOn())

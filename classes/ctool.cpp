@@ -1449,7 +1449,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
     for (int j = 0; j < numOfSections; j++)
     {
         //Off or too slow or going backwards
-        if (sectionButtonState[j] == MainWindowState::ButtonStates::Off || CVehicle::instance()->avgSpeed < SettingsManager::instance()->vehicle_slowSpeedCutoff() || section[j].speedPixels < 0)
+        if (sectionButtonState[j] == MainWindowState::ButtonStates::Off || CVehicle::instance()->avgSpeed() < SettingsManager::instance()->vehicle_slowSpeedCutoff() || section[j].speedPixels < 0)
         {
             section[j].sectionOnRequest = false;
             section[j].sectionOffRequest = true;

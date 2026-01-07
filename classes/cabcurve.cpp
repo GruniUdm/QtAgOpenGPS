@@ -869,7 +869,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
 
                 //pivotErrorTotal = pivotDistanceError + pivotDerivative;
 
-                if (isBtnAutoSteerOn && CVehicle::instance()->avgSpeed > 2.5 && fabs(pivotDerivative) < 0.1)
+                if (isBtnAutoSteerOn && CVehicle::instance()->avgSpeed() > 2.5 && fabs(pivotDerivative) < 0.1)
                 {
                     //if over the line heading wrong way, rapidly decrease integral
                     if ((inty < 0 && distanceFromCurrentLinePivot < 0) || (inty > 0 && distanceFromCurrentLinePivot > 0))
@@ -938,7 +938,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                         if (glm::Distance(goalPointCu, curList[(curList.count() - 1)]) < 0.5)
                         {
                             emit TimedMessage(2000,tr("Guidance Stopped"), tr("Past end of curve"));
-                            emit stopAutoSteer();
+                            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
                         }
                     }
                     else
@@ -946,7 +946,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                         if (glm::Distance(goalPointCu, curList[0]) < 0.5)
                         {
                             emit TimedMessage(2000,tr("Guidance Stopped"), tr("Past end of curve"));
-                            emit stopAutoSteer();
+                            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
                         }
                     }
                 }
