@@ -1449,7 +1449,7 @@ void FormGPS::processSectionLookahead() {
                 {
                     isDraw = false;
                     QSharedPointer<PatchTriangleList> triList = tool.triStrip[j].patchList[k];
-                    QSharedPointer<PatchBoundingBox> bb = tool.triStrip[j].patchBoundingBoxList[k];
+                    //QSharedPointer<PatchBoundingBox> bb = tool.triStrip[j].patchBoundingBoxList[k];
 
                     /*
                     QPolygonF patchBox({{ (*bb).minx, (*bb).miny }, {(*bb).maxx, (*bb).miny},

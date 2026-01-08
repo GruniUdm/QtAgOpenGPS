@@ -501,10 +501,19 @@ void FormGPS::fieldNewFrom(const QString& fieldName, const QString& sourceField,
     field_new_from(fieldName, sourceField, fieldType);
 }
 
-void FormGPS::fieldNewFromKML(const QString& fieldName, const QString& kmlPath) {
-    // Modern implementation - same logic as field_new_from_KML(QString,QString)
-    QDEBUG << fieldName << " " << kmlPath;
-    field_new_from_KML(fieldName, kmlPath);
+void FormGPS::fieldNewFromKML(const QString& fieldName, const QString& filePath) {
+    QFileInfo fi(filePath);
+    QString ext = fi.suffix().toUpper();
+
+    if (ext == "KML") {
+        field_new_from_KML(fieldName, filePath);
+    }
+    else if (ext == "GEOJSON") {
+        field_new_from_GeoJSON(fieldName, filePath);
+    }
+    else {
+        qDebug() << "Unsupported format:" << ext;
+    }
 }
 
 void FormGPS::fieldDelete(const QString& fieldName) {

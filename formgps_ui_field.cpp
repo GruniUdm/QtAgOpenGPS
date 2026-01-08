@@ -18,7 +18,7 @@
 #include "cboundarylist.h"
 #include "fieldinterface.h"
 #include "siminterface.h"
-
+#include "ctrack.h"
 
 void FormGPS::field_update_list() {
 
@@ -518,4 +518,528 @@ void FormGPS::field_load_json(QString field_name) {
     } else {
         qDebug() << "Field JSON profile not found, using traditional .txt system:" << jsonFilename;
     }
+}
+void FormGPS::FindLatLonGeoJSON(QString filename)
+{
+    qDebug() << "Finding average Lat/Lon from GeoJSON file:" << filename;
+
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Error opening GeoJSON file:" << file.errorString();
+        return;
+    }
+
+    QByteArray fileData = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(fileData);
+    if (doc.isNull()) {
+        qWarning() << "Invalid GeoJSON file";
+        return;
+    }
+
+    QJsonObject root = doc.object();
+
+    // Check if it's a FeatureCollection or single Feature
+    QJsonArray features;
+    if (root.contains("type") && root["type"].toString() == "FeatureCollection") {
+        features = root["features"].toArray();
+    } else if (root.contains("type") && root["type"].toString() == "Feature") {
+        features = QJsonArray{root};
+    } else {
+        // Assume it's a Geometry object
+        features = QJsonArray{root};
+    }
+
+    double totalLat = 0.0;
+    double totalLon = 0.0;
+    int validCount = 0;
+
+    // Recursive function to extract coordinates from geometry
+    std::function<void(const QJsonValue&)> extractCoordinates;
+    extractCoordinates = [&](const QJsonValue& geometryValue) {
+        if (geometryValue.isObject()) {
+            QJsonObject geomObj = geometryValue.toObject();
+            QString type = geomObj["type"].toString();
+
+            if (type == "Point") {
+                QJsonArray coords = geomObj["coordinates"].toArray();
+                if (coords.size() >= 2) {
+                    double lon = coords[0].toDouble();
+                    double lat = coords[1].toDouble();
+                    totalLon += lon;
+                    totalLat += lat;
+                    validCount++;
+                }
+            }
+            else if (type == "LineString" || type == "MultiPoint") {
+                QJsonArray coords = geomObj["coordinates"].toArray();
+                for (const QJsonValue& coord : coords) {
+                    QJsonArray point = coord.toArray();
+                    if (point.size() >= 2) {
+                        double lon = point[0].toDouble();
+                        double lat = point[1].toDouble();
+                        totalLon += lon;
+                        totalLat += lat;
+                        validCount++;
+                    }
+                }
+            }
+            else if (type == "Polygon" || type == "MultiPolygon") {
+                QJsonArray polygons;
+                if (type == "Polygon") {
+                    polygons = QJsonArray{geomObj["coordinates"].toArray()};
+                } else {
+                    polygons = geomObj["coordinates"].toArray();
+                }
+
+                for (const QJsonValue& polygon : polygons) {
+                    QJsonArray rings = polygon.toArray();
+                    if (!rings.isEmpty()) {
+                        QJsonArray outerRing = rings[0].toArray(); // First ring is outer boundary
+                        for (const QJsonValue& coord : outerRing) {
+                            QJsonArray point = coord.toArray();
+                            if (point.size() >= 2) {
+                                double lon = point[0].toDouble();
+                                double lat = point[1].toDouble();
+                                totalLon += lon;
+                                totalLat += lat;
+                                validCount++;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (type == "MultiLineString") {
+                QJsonArray lines = geomObj["coordinates"].toArray();
+                for (const QJsonValue& line : lines) {
+                    QJsonArray coords = line.toArray();
+                    for (const QJsonValue& coord : coords) {
+                        QJsonArray point = coord.toArray();
+                        if (point.size() >= 2) {
+                            double lon = point[0].toDouble();
+                            double lat = point[1].toDouble();
+                            totalLon += lon;
+                            totalLat += lat;
+                            validCount++;
+                        }
+                    }
+                }
+            }
+            else if (type == "GeometryCollection") {
+                QJsonArray geometries = geomObj["geometries"].toArray();
+                for (const QJsonValue& geom : geometries) {
+                    extractCoordinates(geom);
+                }
+            }
+        }
+    };
+
+    // Process all features
+    for (const QJsonValue& featureValue : features) {
+        QJsonObject feature = featureValue.toObject();
+
+        if (feature.contains("geometry") && !feature["geometry"].isNull()) {
+            extractCoordinates(feature["geometry"]);
+        } else if (feature.contains("coordinates")) {
+            // Direct geometry
+            extractCoordinates(feature);
+        }
+    }
+
+    if (validCount > 0) {
+        lonK = totalLon / validCount;
+        latK = totalLat / validCount;
+        qDebug() << "Average Lat:" << static_cast<double>(latK) << "Lon:" << static_cast<double>(lonK) << "from" << validCount << "points";
+    } else {
+        qWarning() << "No valid coordinates found in GeoJSON.";
+        latK = static_cast<double>(pn.latitude);
+        lonK = static_cast<double>(pn.longitude);
+    }
+}
+
+QVector3D FormGPS::getColorByRate(double rate) { // need UI
+    if (rate < 0.1) {
+        return QVector3D(1.0f, 0.0f, 0.0f); // Красный
+    } else if (rate < 0.2) {
+        return QVector3D(1.0f, 0.5f, 0.0f); // Оранжевый
+    } else if (rate < 0.35) {
+        return QVector3D(1.0f, 1.0f, 0.0f); // Желтый
+    } else if (rate < 0.5) {
+        return QVector3D(0.1f, 0.8f, 0.1f); // Светло-зеленый
+    } else {
+        return QVector3D(0.0f, 0.5f, 0.0f); // Темно-зеленый
+    }
+}
+
+void FormGPS::LoadGeoJSONBoundary(QString filename) {
+    qDebug() << "Opening GeoJSON file:" << filename;
+
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Error opening GeoJSON file:" << file.errorString();
+        return;
+    }
+
+    QByteArray fileData = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(fileData);
+    if (doc.isNull()) {
+        qWarning() << "Invalid GeoJSON file";
+        return;
+    }
+
+    QJsonObject root = doc.object();
+
+    // Check if it's a FeatureCollection or single Feature
+    QJsonArray features;
+    if (root.contains("type") && root["type"].toString() == "FeatureCollection") {
+        features = root["features"].toArray();
+    } else if (root.contains("type") && root["type"].toString() == "Feature") {
+        features = QJsonArray{root};
+    } else {
+        features = QJsonArray{root};
+    }
+
+    // Clear existing patches
+    tool.triStrip[0].patchList.clear();
+    tool.patchSaveList.clear();
+
+    // Process all features
+    for (const QJsonValue& featureValue : features) {
+        QJsonObject feature = featureValue.toObject();
+        QJsonValue geometryValue;
+
+        if (feature.contains("geometry") && !feature["geometry"].isNull()) {
+            geometryValue = feature["geometry"];
+        } else if (feature.contains("coordinates")) {
+            geometryValue = feature;
+        } else {
+            continue;
+        }
+
+        if (geometryValue.isObject()) {
+            QJsonObject geometry = geometryValue.toObject();
+            QString type = geometry["type"].toString();
+
+            // Handle MultiPolygon as boundary
+            if (type == "MultiPolygon") {
+                QJsonArray polygons = geometry["coordinates"].toArray();
+
+                // Process each polygon in MultiPolygon as separate boundary
+                for (const QJsonValue& polygonValue : polygons) {
+                    CBoundaryList New;
+                    QJsonArray rings = polygonValue.toArray();
+
+                    // Take only the outer ring (first ring) for boundary
+                    if (!rings.isEmpty()) {
+                        QJsonArray outerRing = rings[0].toArray();
+                        for (const QJsonValue& coord : outerRing) {
+                            QJsonArray point = coord.toArray();
+                            if (point.size() >= 2) {
+                                double lon = point[0].toDouble();
+                                double lat = point[1].toDouble();
+
+                                double easting = 0.0, northing = 0.0;
+                                pn.ConvertWGS84ToLocal(lat, lon, northing, easting, this);
+                                Vec3 temp(easting, northing, 0);
+                                New.fenceLine.append(temp);
+                            }
+                        }
+
+                        if (!New.fenceLine.isEmpty()) {
+                            // Build the boundary
+                            New.CalculateFenceArea(bnd.bndList.count());
+                            New.FixFenceLine(bnd.bndList.count());
+                            bnd.bndList.append(New);
+                            qDebug() << "Added boundary from GeoJSON MultiPolygon with" << New.fenceLine.count() << "points";
+                        }
+                    }
+                }
+            }
+            // Handle Polygon as colored patches based on RATE
+            else if (type == "Polygon") {
+                // Extract RATE from feature properties
+                double rate = 0.0;
+                if (feature.contains("properties")) {
+                    QJsonObject properties = feature["properties"].toObject();
+                    if (properties.contains("RATE")) {
+                        rate = properties["RATE"].toDouble();
+                        qDebug() << "Found RATE:" << rate;
+                    }
+                }
+
+                // Get color based on RATE
+                QVector3D color = getColorByRate(rate);
+
+                QJsonArray rings = geometry["coordinates"].toArray();
+                if (rings.isEmpty()) continue;
+
+                QJsonArray outerRing = rings[0].toArray();
+
+                // Convert all points to local coordinates
+                QVector<QVector3D> points;
+                for (const QJsonValue& coord : outerRing) {
+                    QJsonArray point = coord.toArray();
+                    if (point.size() >= 2) {
+                        double lon = point[0].toDouble();
+                        double lat = point[1].toDouble();
+
+                        double easting = 0.0, northing = 0.0;
+                        pn.ConvertWGS84ToLocal(lat, lon, northing, easting, this);
+                        points.append(QVector3D(easting, northing, 0.0f));
+                    }
+                }
+
+                // Skip if not enough points
+                if (points.size() < 3) {
+                    qDebug() << "Skipping polygon with less than 3 points";
+                    return;
+                }
+
+                // Check if polygon is closed and remove last point if needed
+                if (points.size() >= 2) {
+                    QVector3D first = points.first();
+                    QVector3D last = points.last();
+                    double distance = sqrt(pow(first.x() - last.x(), 2) + pow(first.y() - last.y(), 2));
+                    if (distance < 0.1) {
+                        points.removeLast();
+                        qDebug() << "Removed duplicate closing point";
+                    }
+                }
+
+                if (points.size() < 3) {
+                    qDebug() << "Skipping polygon with less than 3 points after closing check";
+                    return;
+                }
+
+                // Create triangle strip from polygon using fan triangulation
+                QVector3D center = points[0]; // Use first point as center for fan
+
+                for (int i = 1; i < points.size() - 1; i++) {
+                    // Create a separate patch for each triangle
+                    QSharedPointer<PatchTriangleList> singleTriangle = QSharedPointer<PatchTriangleList>(new PatchTriangleList);
+
+                    // Use the color based on RATE
+                    singleTriangle->append(color);
+
+                    // Add triangle vertices: center, current point, next point
+                    singleTriangle->append(center);
+                    singleTriangle->append(points[i]);
+                    singleTriangle->append(points[i + 1]);
+
+                    // Add to patch lists
+                    tool.triStrip[0].patchList.append(singleTriangle);
+                    tool.patchSaveList.append(singleTriangle);
+                }
+
+                qDebug() << "Added Polygon with RATE" << rate << "as" << (points.size() - 2) << "colored triangle patches";
+            }
+            // Handle LineString as AB Line
+            else if (type == "LineString") {
+                qDebug() << "Processing LineString as AB Line";
+
+                QJsonArray coords = geometry["coordinates"].toArray();
+                if (coords.size() < 2) {
+                    qDebug() << "LineString has less than 2 points, skipping";
+                    return;
+                }
+
+                // Extract line properties
+                QString lineName = "GeoJSON Line";
+                bool isVisible = true;
+                double nudgeDistance = 0.0;
+
+                if (feature.contains("properties")) {
+                    QJsonObject properties = feature["properties"].toObject();
+                    if (properties.contains("name")) {
+                        lineName = properties["name"].toString();
+                    }
+                }
+
+                // Convert coordinates to local system
+                QVector<Vec3> linePoints;
+                for (const QJsonValue& coord : coords) {
+                    QJsonArray point = coord.toArray();
+                    if (point.size() >= 2) {
+                        double lon = point[0].toDouble();
+                        double lat = point[1].toDouble();
+
+                        double easting = 0.0, northing = 0.0;
+                        pn.ConvertWGS84ToLocal(lat, lon, northing, easting, this);
+                        linePoints.append(Vec3(easting, northing, 0));
+                    }
+                }
+
+                if (linePoints.size() < 2) {
+                    qDebug() << "Failed to convert LineString coordinates";
+                    return;
+                }
+
+                // Create AB Line from first and last points
+                CTrk newTrack;
+                newTrack.mode = (int)TrackMode::AB;
+                newTrack.name = lineName;
+                newTrack.isVisible = isVisible;
+                newTrack.nudgeDistance = nudgeDistance;
+                newTrack.ptA = Vec2(linePoints.first().easting, linePoints.first().northing);
+                newTrack.ptB = Vec2(linePoints.last().easting, linePoints.last().northing);
+
+                // Calculate heading from A to B
+                newTrack.heading = atan2(newTrack.ptB.easting - newTrack.ptA.easting,
+                                         newTrack.ptB.northing - newTrack.ptA.northing);
+                if (newTrack.heading < 0) newTrack.heading += glm::twoPI;
+
+                // Calculate end points (extended line)
+                newTrack.endPtA.easting = newTrack.ptA.easting - (sin(newTrack.heading) * 1000);
+                newTrack.endPtA.northing = newTrack.ptA.northing - (cos(newTrack.heading) * 1000);
+                newTrack.endPtB.easting = newTrack.ptB.easting + (sin(newTrack.heading) * 1000);
+                newTrack.endPtB.northing = newTrack.ptB.northing + (cos(newTrack.heading) * 1000);
+
+                // Add to tracks
+                track.gArr.append(newTrack);
+                track.reloadModel();
+
+                qDebug() << "Added AB Line from GeoJSON:" << lineName
+                         << "with" << linePoints.size() << "points, heading:"
+                         << glm::toDegrees(newTrack.heading) << "degrees";
+            }
+
+            // Handle MultiLineString as Curve
+            else if (type == "MultiLineString") {
+                qDebug() << "Processing MultiLineString as Curve";
+
+                QJsonArray linePoints = geometry["coordinates"].toArray();
+                if (linePoints.isEmpty()) {
+                    qDebug() << "MultiLineString has no lines, skipping";
+                    return;
+                }
+
+                // Extract curve properties
+                QString curveName = "GeoJSON Curve";
+                bool isVisible = true;
+                double nudgeDistance = 0.0;
+
+                if (feature.contains("properties")) {
+                    QJsonObject properties = feature["properties"].toObject();
+                    if (properties.contains("name")) {
+                        curveName = properties["name"].toString();
+                    }
+                }
+
+                // Собираем ВСЕ точки из ВСЕХ линий в один массив
+                QVector<Vec3> allCurvePoints;
+
+                // Process all lines in MultiLineString
+                for (const QJsonValue& lineValue : linePoints) {
+                    QJsonArray coords = lineValue.toArray();
+                    if (coords.size() < 2) {
+                        qDebug() << "Line in MultiLineString has less than 2 points, skipping this line";
+                        return;
+                    }
+
+                    // Добавляем все точки из этой линии в общий массив
+                    for (const QJsonValue& coord : coords) {
+                        QJsonArray point = coord.toArray();
+                        if (point.size() >= 2) {
+                            double lon = point[0].toDouble();
+                            double lat = point[1].toDouble();
+
+                            double easting = 0.0, northing = 0.0;
+                            pn.ConvertWGS84ToLocal(lat, lon, northing, easting, this);
+                            allCurvePoints.append(Vec3(easting, northing, 0));
+                        }
+                    }
+                }
+
+                if (allCurvePoints.size() > 3) {
+
+                CTrk newTrack;
+                newTrack.mode = (int)TrackMode::Curve;
+                newTrack.name = curveName;
+                newTrack.isVisible = isVisible;
+                newTrack.nudgeDistance = nudgeDistance;
+
+                track.curve.MakePointMinimumSpacing(allCurvePoints, 1.6);
+                track.curve.CalculateHeadings(allCurvePoints);
+
+                // Set A and B points as first and last points
+                newTrack.ptA = Vec2(allCurvePoints.first().easting, allCurvePoints.first().northing);
+                newTrack.ptB = Vec2(allCurvePoints.last().easting, allCurvePoints.last().northing);
+
+                // Calculate average heading
+                double x = 0, y = 0;
+                for (int i = 0; i < allCurvePoints.size() - 1; i++) {
+                    double heading = atan2(allCurvePoints[i+1].easting - allCurvePoints[i].easting,
+                                           allCurvePoints[i+1].northing - allCurvePoints[i].northing);
+                    if (heading < 0) heading += glm::twoPI;
+                    x += cos(heading);
+                    y += sin(heading);
+                }
+                x /= (allCurvePoints.size() - 1);
+                y /= (allCurvePoints.size() - 1);
+                newTrack.heading = atan2(y, x);
+                if (newTrack.heading < 0) newTrack.heading += glm::twoPI;
+
+                track.curve.AddFirstLastPoints(allCurvePoints);
+
+                //write out the Curve Points
+                for (Vec3 &item : allCurvePoints)
+                {
+                    newTrack.curvePts.append(item);
+                }
+
+                // Add to tracks
+                track.gArr.append(newTrack);
+                track.reloadModel();
+                }
+            }
+        }
+    }
+
+    // Auto-select first track if any were loaded
+    if (!track.gArr.isEmpty()) {
+        track.select(0);
+    }
+}
+
+void FormGPS::field_new_from_GeoJSON(QString field_name, QString file_name) {
+    qDebug() << "GeoJSON open " << field_name << " " << file_name;
+
+    lock.lockForWrite();
+    FileSaveEverythingBeforeClosingField();
+    currentFieldDirectory = field_name.trimmed();
+    SettingsManager::instance()->setF_currentDir(currentFieldDirectory);
+    JobNew();
+
+    QUrl fileUrl(file_name);
+    QString localPath = fileUrl.toLocalFile();
+
+    FindLatLonGeoJSON(localPath);
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLatStart(latK);
+    // Phase 6.3.1: Use PropertyWrapper for safe property access
+    this->setLonStart(lonK);
+
+    if (SimInterface::instance()->isRunning()){
+        pn.latitude = this->latStart();
+        pn.longitude = this->lonStart();
+
+    SettingsManager::instance()->setGps_simLatitude(this->latStart());
+    SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+    }
+
+    pn.SetLocalMetersPerDegree(this);
+    FileCreateField();
+    FileCreateSections();
+    FileCreateRecPath();
+    FileCreateContour();
+    FileCreateElevation();
+    FileSaveFlags();
+    FileCreateBoundary();
+    FileSaveTram();
+    LoadGeoJSONBoundary(localPath);
+   // boundary_stop();
+    lock.unlock();
 }

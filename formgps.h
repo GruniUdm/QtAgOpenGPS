@@ -933,6 +933,10 @@ public slots:
     void field_load_json(QString field_name);
     void FindLatLon(QString filename);
     void LoadKMLBoundary(QString filename);
+    void LoadGeoJSONBoundary(QString filename);
+    void field_new_from_GeoJSON(QString field_name, QString file_name);
+    void FindLatLonGeoJSON(QString filename);
+    QVector3D getColorByRate(double rate);
 
     //modules ui callback
     // Note: modulesSend238/251/252 are Q_INVOKABLE versions for QML
