@@ -95,7 +95,7 @@ bool CYouTurn::BuildABLineDubinsYouTurn(bool isTurnLeft,
     bool autoSteerOn = MainWindowState::instance()->isBtnAutoSteerOn();
 
     if (!autoSteerOn) trk.ABLine.isHeadingSameWay
-            = M_PI - fabs(fabs(CVehicle::instance()->fixHeading - trk.ABLine.abHeading) - M_PI) < glm::PIBy2;
+            = M_PI - fabs(fabs(CVehicle::instance()->fixHeading() - trk.ABLine.abHeading) - M_PI) < glm::PIBy2;
 
     double turnOffset = (tool_toolWidth - tool_toolOverlap) * rowSkipsWidth
                         + (isYouTurnRight ? -tool_toolOffset * 2.0 : tool_toolOffset * 2.0);
@@ -893,7 +893,7 @@ bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
     bool autoSteerOn2 = MainWindowState::instance()->isBtnAutoSteerOn();
 
     if (!autoSteerOn2) trk.ABLine.isHeadingSameWay
-            = M_PI - fabs(fabs(CVehicle::instance()->fixHeading - trk.ABLine.abHeading) - M_PI) < glm::PIBy2;
+            = M_PI - fabs(fabs(CVehicle::instance()->fixHeading() - trk.ABLine.abHeading) - M_PI) < glm::PIBy2;
 
     double head = trk.ABLine.abHeading;
     if (!trk.ABLine.isHeadingSameWay) head += M_PI;
@@ -2981,7 +2981,7 @@ bool CYouTurn::DistanceFromYouTurnLine( CNMEA &pn)
             double goalPointDistanceSquared = glm::DistanceSquared(goalPointYT.northing, goalPointYT.easting, pivot.northing, pivot.easting);
 
             //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
-            double localHeading = glm::twoPI - CVehicle::instance()->fixHeading;
+            double localHeading = glm::twoPI - CVehicle::instance()->fixHeading();
             ppRadiusYT = goalPointDistanceSquared / (2 * (((goalPointYT.easting - pivot.easting) * cos(localHeading)) + ((goalPointYT.northing - pivot.northing) * sin(localHeading))));
 
             steerAngleYT = glm::toDegrees(atan(2 * (((goalPointYT.easting - pivot.easting) * cos(localHeading))

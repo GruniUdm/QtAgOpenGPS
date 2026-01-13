@@ -241,14 +241,14 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     bool display_isSvennArrowOn = SettingsManager::instance()->display_isSvennArrowOn();
     display_lineWidth = SettingsManager::instance()->display_lineWidth();
 
-    if (!std::isfinite(fixHeading) || fabs(fixHeading) > 1000.0) {
-        qWarning() << "DrawVehicle skipped: invalid fixHeading =" << fixHeading
+    if (!std::isfinite(m_fixHeading) || fabs(m_fixHeading) > 1000.0) {
+        qWarning() << "DrawVehicle skipped: invalid fixHeading =" << m_fixHeading
                    << "(garbage not yet replaced by valid GPS/IMU data)";
         return;
     }
 
     //draw vehicle
-    modelview.rotate(glm::toDegrees(-fixHeading), 0.0, 0.0, 1.0);
+    modelview.rotate(glm::toDegrees(-m_fixHeading), 0.0, 0.0, 1.0);
 
     GLHelperColors glcolors;
     GLHelperOneColor gldraw;

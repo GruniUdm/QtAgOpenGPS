@@ -81,8 +81,5 @@ void FormGPS::onSimNewPosition(double vtgSpeed,
 
     ModuleComm::instance()->set_actualSteerAngleDegrees(SimInterface::instance()->steerAngleActual());
 
-    // Fused heading in simulation = GPS heading (no IMU fusion needed)
-    this->setFusedHeading(headingTrue);
-
     UpdateFixPosition();
 }

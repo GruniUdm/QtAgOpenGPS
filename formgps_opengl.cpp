@@ -141,10 +141,10 @@ QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
     //camera does translations and rotations
     camera.SetWorldCam(modelview, CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, camera.camHeading);
     modelview.translate(CVehicle::instance()->hitchPos.easting, CVehicle::instance()->hitchPos.northing, 0);
-    //modelview.translate(sin(CVehicle::instance()->fixHeading) * tool.hitchLength,
-    //                        cos(CVehicle::instance()->fixHeading) * tool.hitchLength, 0);
+    //modelview.translate(sin(CVehicle::instance()->fixHeading()) * tool.hitchLength,
+    //                        cos(CVehicle::instance()->fixHeading()) * tool.hitchLength, 0);
     if (camera.camFollowing)
-        modelview.rotate(glm::toDegrees(-CVehicle::instance()->fixHeading), 0.0, 0.0, 1.0);
+        modelview.rotate(glm::toDegrees(-CVehicle::instance()->fixHeading()), 0.0, 0.0, 1.0);
 
     float x,y;
     x = mouseX;
@@ -163,7 +163,7 @@ QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
     mouseNorthing = worldpoint_near.y() + lambda * direction.y();
 
     QMatrix4x4 m;
-    m.rotate(-CVehicle::instance()->fixHeading, 0,0,1);
+    m.rotate(-CVehicle::instance()->fixHeading(), 0,0,1);
 
     QVector3D relative = QVector3D( { (float)mouseEasting, (float)mouseNorthing, 0 } );
     return relative;
@@ -197,10 +197,10 @@ QVector3D FormGPS::mouseClickToField(int mouseX, int mouseY)
     //camera does translations and rotations
     camera.SetWorldCam(modelview, CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, camera.camHeading);
     //modelview.translate(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, 0);
-    //modelview.translate(sin(CVehicle::instance()->fixHeading) * tool.hitchLength,
-    //                        cos(CVehicle::instance()->fixHeading) * tool.hitchLength, 0);
+    //modelview.translate(sin(CVehicle::instance()->fixHeading()) * tool.hitchLength,
+    //                        cos(CVehicle::instance()->fixHeading()) * tool.hitchLength, 0);
     //if (camera.camFollowing)
-    //    modelview.rotate(glm::toDegrees(-CVehicle::instance()->fixHeading), 0.0, 0.0, 1.0);
+    //    modelview.rotate(glm::toDegrees(-CVehicle::instance()->fixHeading()), 0.0, 0.0, 1.0);
 
     float x,y;
     x = mouseX;
@@ -219,7 +219,7 @@ QVector3D FormGPS::mouseClickToField(int mouseX, int mouseY)
     mouseNorthing = worldpoint_near.y() + lambda * direction.y();
 
     QMatrix4x4 m;
-    m.rotate(-CVehicle::instance()->fixHeading, 0,0,1);
+    m.rotate(-CVehicle::instance()->fixHeading(), 0,0,1);
 
     QVector3D fieldCoord = QVector3D( { (float)mouseEasting, (float)mouseNorthing, 0 } );
     return fieldCoord;
@@ -501,8 +501,8 @@ void FormGPS::oglMain_Paint()
             //setup for tool rendering
             QMatrix4x4 toolmv = vehiclemv;
             //translate down to the hitch pin
-            toolmv.translate(sin(CVehicle::instance()->fixHeading) * tool.hitchLength,
-                         cos(CVehicle::instance()->fixHeading) * tool.hitchLength, 0);
+            toolmv.translate(sin(CVehicle::instance()->fixHeading()) * tool.hitchLength,
+                         cos(CVehicle::instance()->fixHeading()) * tool.hitchLength, 0);
 
             tool.DrawTool(gl,toolmv, projection,
                           Backend::instance()->isJobStarted(),

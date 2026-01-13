@@ -244,7 +244,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         else inty = 0;
 
         //Subtract the two headings, if > 1.57 its going the opposite heading as refAB
-        abFixHeadingDelta = (fabs(CVehicle::instance()->fixHeading - abHeading));
+        abFixHeadingDelta = (fabs(CVehicle::instance()->fixHeading() - abHeading));
         if (abFixHeadingDelta >= M_PI) abFixHeadingDelta = fabs(abFixHeadingDelta - glm::twoPI);
 
         // ** Pure pursuit ** - calc point on ABLine closest to current position
@@ -277,8 +277,8 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         //calculate the the new x in local coordinates and steering angle degrees based on wheelbase
         double localHeading;
 
-        if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
-        else localHeading = glm::twoPI - CVehicle::instance()->fixHeading - inty;
+        if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
+        else localHeading = glm::twoPI - CVehicle::instance()->fixHeading() - inty;
 
         ppRadiusAB = goalPointDistanceDSquared / (2 * (((goalPointAB.easting - pivot.easting) * cos(localHeading))
                                                        + ((goalPointAB.northing - pivot.northing) * sin(localHeading))));

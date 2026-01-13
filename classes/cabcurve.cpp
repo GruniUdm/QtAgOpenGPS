@@ -959,8 +959,8 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
             //double localHeading = glm::twoPI - mf.fixHeading;
 
             double localHeading;
-            if (ReverseHeading) localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
-            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading - inty;
+            if (ReverseHeading) localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
+            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading() - inty;
 
             ppRadiusCu = goalPointDistanceSquared / (2 * (((goalPointCu.easting - pivot.easting) * cos(localHeading)) + ((goalPointCu.northing - pivot.northing) * sin(localHeading))));
 

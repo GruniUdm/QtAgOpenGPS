@@ -705,7 +705,7 @@ Window {
                 id: compass
                 anchors.top: parent.top
                 anchors.right: zoomBtns.left
-                heading: -Utils.radians_to_deg(aog.fusedHeading)
+                heading: -Utils.radians_to_deg(VehicleInterface.fixHeading)
                 visible: SettingsManager.menu_isCompassOn
             }
             Column{

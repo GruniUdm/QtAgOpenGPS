@@ -81,12 +81,6 @@ class FormGPS : public QQmlApplicationEngine
     Q_PROPERTY(QVariantList sectionButtonState READ sectionButtonState WRITE setSectionButtonState
                NOTIFY sectionButtonStateChanged BINDABLE bindableSectionButtonState)
 
-    // Qt 6.8: Removed complex property binding - using objectCreated signal instead
-
-    // === Vehicle State (6 properties) - Critical for guidance - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double fusedHeading READ fusedHeading WRITE setFusedHeading
-               NOTIFY fusedHeadingChanged BINDABLE bindableFusedHeading)
-
     // === Steering Control (6 properties) - Critical for autosteer - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(double calcSteerAngleInner READ calcSteerAngleInner WRITE setCalcSteerAngleInner
                NOTIFY calcSteerAngleInnerChanged BINDABLE bindableCalcSteerAngleInner)
@@ -150,11 +144,6 @@ public:
     QVariantList sectionButtonState() const;
     void setSectionButtonState(const QVariantList& value);
     QBindable<QVariantList> bindableSectionButtonState();
-
-    // Vehicle State
-    double fusedHeading() const;
-    void setFusedHeading(double value);
-    QBindable<double> bindableFusedHeading();
 
     // Steering Control
     double calcSteerAngleInner() const;
@@ -1051,7 +1040,6 @@ signals:
     void sectionButtonStateChanged();
 
     // Vehicle State signals
-    void fusedHeadingChanged();
     void toolEastingChanged();
     void toolNorthingChanged();
     void toolHeadingChanged();
@@ -1111,9 +1099,6 @@ private:
     // Position GPS (6) - Qt 6.8 Rectangle Pattern
     // Section button state - Qt 6.8 BINDABLE Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariantList, m_sectionButtonState, &FormGPS::sectionButtonStateChanged)
-
-    // Vehicle State (6) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_fusedHeading, &FormGPS::fusedHeadingChanged)
 
     // Steering Control (6) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_calcSteerAngleInner, &FormGPS::calcSteerAngleInnerChanged)

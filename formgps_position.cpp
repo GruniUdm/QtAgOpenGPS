@@ -160,7 +160,7 @@ void FormGPS::UpdateFixPosition()
                 if (gpsHeading() < 0) setGpsHeading(gpsHeading() + glm::twoPI);
                 else if (gpsHeading() > glm::twoPI) setGpsHeading(gpsHeading() - glm::twoPI);
 
-                CVehicle::instance()->fixHeading = gpsHeading();
+                CVehicle::instance()->set_fixHeading ( gpsHeading() );
 
                 //set the imu to gps heading offset
                 if (ahrs.imuHeading != 99999)
@@ -199,7 +199,7 @@ void FormGPS::UpdateFixPosition()
 
                     // Phase 6.0.24 Problem 18: Validate _imuCorrected before assigning to fixHeading
                     if (std::isfinite(_imuCorrected) && fabs(_imuCorrected) < 100.0) {
-                        CVehicle::instance()->fixHeading = _imuCorrected;
+                        CVehicle::instance()->set_fixHeading ( _imuCorrected );
                     } else {
                         qWarning() << "Invalid _imuCorrected value:" << _imuCorrected << "- not assigned to fixHeading";
                     }
@@ -435,7 +435,7 @@ void FormGPS::UpdateFixPosition()
             //use imu as heading when going slow
             // Phase 6.0.24 Problem 18: Validate _imuCorrected before assigning to fixHeading
             if (std::isfinite(_imuCorrected) && fabs(_imuCorrected) < 100.0) {
-                CVehicle::instance()->fixHeading = _imuCorrected;
+                CVehicle::instance()->set_fixHeading ( _imuCorrected );
             } else {
                 qWarning() << "Invalid _imuCorrected value:" << _imuCorrected << "- not assigned to fixHeading";
             }
@@ -523,7 +523,7 @@ void FormGPS::UpdateFixPosition()
 
                             //set the headings
                             setGpsHeading(newGPSHeading);
-                            CVehicle::instance()->fixHeading = gpsHeading();
+                            CVehicle::instance()->set_fixHeading ( gpsHeading() );
 
                             // PHASE 6.0.35 FIX: Update stepFixPts when heading recalculated (No IMU reverse path)
                             for (int i = totalFixSteps - 1; i > 0; i--) stepFixPts[i] = stepFixPts[i - 1];
@@ -547,7 +547,7 @@ void FormGPS::UpdateFixPosition()
 
                         //set the headings
                         setGpsHeading(newGPSHeading);
-                        CVehicle::instance()->fixHeading = gpsHeading();
+                        CVehicle::instance()->set_fixHeading ( gpsHeading() );
 
                         // PHASE 6.0.35 FIX: Update stepFixPts when heading recalculated (No IMU forward path)
                         for (int i = totalFixSteps - 1; i > 0; i--) stepFixPts[i] = stepFixPts[i - 1];
@@ -568,7 +568,7 @@ void FormGPS::UpdateFixPosition()
 
         //#region Camera
 
-        camDelta = CVehicle::instance()->fixHeading - smoothCamHeading;
+        camDelta = CVehicle::instance()->fixHeading() - smoothCamHeading;
 
         if (camDelta < 0) camDelta += glm::twoPI;
         else if (camDelta > glm::twoPI) camDelta -= glm::twoPI;
@@ -609,13 +609,13 @@ void FormGPS::UpdateFixPosition()
             //use imu as heading when going slow
             // Phase 6.0.24 Problem 18: Validate _imuCorrected before assigning to fixHeading
             if (std::isfinite(_imuCorrected) && fabs(_imuCorrected) < 100.0) {
-                CVehicle::instance()->fixHeading = _imuCorrected;
+                CVehicle::instance()->set_fixHeading ( _imuCorrected );
             } else {
                 qWarning() << "Invalid _imuCorrected value:" << _imuCorrected << "- not assigned to fixHeading";
             }
         }
 
-        camDelta = CVehicle::instance()->fixHeading - smoothCamHeading;
+        camDelta = CVehicle::instance()->fixHeading() - smoothCamHeading;
 
         if (camDelta < 0) camDelta += glm::twoPI;
         else if (camDelta > glm::twoPI) camDelta -= glm::twoPI;
@@ -645,9 +645,9 @@ void FormGPS::UpdateFixPosition()
         if (CVehicle::instance()->avgSpeed() > 1)
         {
             //use NMEA headings for camera and tractor graphic
-            CVehicle::instance()->fixHeading = glm::toRadians(pn.headingTrue);
+            CVehicle::instance()->set_fixHeading ( glm::toRadians(pn.headingTrue) );
             camera.camHeading = pn.headingTrue;
-            setGpsHeading(CVehicle::instance()->fixHeading);
+            setGpsHeading(CVehicle::instance()->fixHeading());
         }
 
         //grab the most current fix to last fix distance
@@ -657,8 +657,8 @@ void FormGPS::UpdateFixPosition()
 
         if (CVehicle::instance()->antennaOffset != 0)
         {
-            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading) * CVehicle::instance()->antennaOffset) + pn.fix.easting;
-            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading) * CVehicle::instance()->antennaOffset) + pn.fix.northing;
+            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading()) * CVehicle::instance()->antennaOffset) + pn.fix.easting;
+            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading()) * CVehicle::instance()->antennaOffset) + pn.fix.northing;
         }
         //#endregion
 
@@ -707,12 +707,12 @@ void FormGPS::UpdateFixPosition()
 
             // Phase 6.0.24 Problem 18: Validate _imuCorrected before assigning to fixHeading
             if (std::isfinite(_imuCorrected) && fabs(_imuCorrected) < 100.0) {
-                CVehicle::instance()->fixHeading = _imuCorrected;
+                CVehicle::instance()->set_fixHeading ( _imuCorrected);
             } else {
                 qWarning() << "Invalid _imuCorrected value:" << _imuCorrected << "- not assigned to fixHeading";
             }
 
-            camera.camHeading = CVehicle::instance()->fixHeading;
+            camera.camHeading = CVehicle::instance()->fixHeading();
             if (camera.camHeading > glm::twoPI) camera.camHeading -= glm::twoPI;
             camera.camHeading = glm::toDegrees(camera.camHeading);
         }
@@ -728,8 +728,8 @@ void FormGPS::UpdateFixPosition()
 
             // roll to left is positive  **** important!!
             // not any more - April 30, 2019 - roll to right is positive Now! Still Important
-            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading) * rollCorrectionDistance) + pn.fix.easting;
-            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading) * rollCorrectionDistance) + pn.fix.northing;
+            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading()) * rollCorrectionDistance) + pn.fix.easting;
+            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading()) * rollCorrectionDistance) + pn.fix.northing;
         }
 
         //#endregion Roll
@@ -743,15 +743,15 @@ void FormGPS::UpdateFixPosition()
     {
         isFirstHeadingSet = true;
         //use Dual Antenna heading for camera and tractor graphic
-        CVehicle::instance()->fixHeading = glm::toRadians(pn.headingTrueDual);
-        setGpsHeading(CVehicle::instance()->fixHeading);
+        CVehicle::instance()->set_fixHeading ( glm::toRadians(pn.headingTrueDual) );
+        setGpsHeading(CVehicle::instance()->fixHeading());
 
         uncorrectedEastingGraph = pn.fix.easting;
 
         if (CVehicle::instance()->antennaOffset != 0)
         {
-            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading) * CVehicle::instance()->antennaOffset) + pn.fix.easting;
-            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading) * CVehicle::instance()->antennaOffset) + pn.fix.northing;
+            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading()) * CVehicle::instance()->antennaOffset) + pn.fix.easting;
+            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading()) * CVehicle::instance()->antennaOffset) + pn.fix.northing;
         }
 
         if (ahrs.imuRoll != 88888 && CVehicle::instance()->antennaHeight != 0)
@@ -762,8 +762,8 @@ void FormGPS::UpdateFixPosition()
             correctionDistanceGraph = rollCorrectionDistance;
 
             // PHASE 6.0.35 FIX: Use fixHeading (not gpsHeading) for geometric consistency
-            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading) * rollCorrectionDistance) + pn.fix.easting;
-            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading) * rollCorrectionDistance) + pn.fix.northing;
+            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading()) * rollCorrectionDistance) + pn.fix.easting;
+            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading()) * rollCorrectionDistance) + pn.fix.northing;
         }
 
         //grab the most current fix and save the distance from the last fix
@@ -787,7 +787,7 @@ void FormGPS::UpdateFixPosition()
 
 
             //what is angle between the last reverse heading and current dual heading
-            double delta = fabs(M_PI - fabs(fabs(newHeading - CVehicle::instance()->fixHeading) - M_PI));
+            double delta = fabs(M_PI - fabs(fabs(newHeading - CVehicle::instance()->fixHeading()) - M_PI));
 
             //are we going backwards
             CVehicle::instance()->setIsReverse(delta > 2 ? true : false);
@@ -796,7 +796,7 @@ void FormGPS::UpdateFixPosition()
             lastReverseFix = pn.fix;
         }
 
-        double camDelta = CVehicle::instance()->fixHeading - smoothCamHeading;
+        double camDelta = CVehicle::instance()->fixHeading() - smoothCamHeading;
 
         if (camDelta < 0) camDelta += glm::twoPI;
         else if (camDelta > glm::twoPI) camDelta -= glm::twoPI;
@@ -823,8 +823,8 @@ void FormGPS::UpdateFixPosition()
     //else {
     //}
 
-    if (CVehicle::instance()->fixHeading >= glm::twoPI)
-        CVehicle::instance()->fixHeading-= glm::twoPI;
+    if (CVehicle::instance()->fixHeading() >= glm::twoPI)
+        CVehicle::instance()->set_fixHeading( CVehicle::instance()->fixHeading()  - glm::twoPI );
 
     //#endregion
 //
@@ -1389,7 +1389,7 @@ void FormGPS::processSectionLookahead() {
         modelview.translate(0, 0, -500);
 
         //rotate camera so heading matched fix heading in the world
-        //gl->glRotated(toDegrees(CVehicle::instance()->fixHeadingSection), 0, 0, 1);
+        //gl->glRotated(toDegrees(CVehicle::instance()->fixHeading()), 0, 0, 1);
         modelview.rotate(glm::toDegrees(tool.toolPos.heading), 0, 0, 1);
 
         modelview.translate(-tool.toolPos.easting - sin(tool.toolPos.heading) * 15,
@@ -2193,13 +2193,13 @@ void FormGPS::CalculatePositionHeading()
 
     //translate from pivot position to steer axle and pivot axle position
     //translate world to the pivot axle
-    CVehicle::instance()->pivotAxlePos.easting = pn.fix.easting - (sin(CVehicle::instance()->fixHeading) * CVehicle::instance()->antennaPivot);
-    CVehicle::instance()->pivotAxlePos.northing = pn.fix.northing - (cos(CVehicle::instance()->fixHeading) * CVehicle::instance()->antennaPivot);
-    CVehicle::instance()->pivotAxlePos.heading = CVehicle::instance()->fixHeading;
+    CVehicle::instance()->pivotAxlePos.easting = pn.fix.easting - (sin(CVehicle::instance()->fixHeading()) * CVehicle::instance()->antennaPivot);
+    CVehicle::instance()->pivotAxlePos.northing = pn.fix.northing - (cos(CVehicle::instance()->fixHeading()) * CVehicle::instance()->antennaPivot);
+    CVehicle::instance()->pivotAxlePos.heading = CVehicle::instance()->fixHeading();
 
-    CVehicle::instance()->steerAxlePos.easting = CVehicle::instance()->pivotAxlePos.easting + (sin(CVehicle::instance()->fixHeading) * CVehicle::instance()->wheelbase);
-    CVehicle::instance()->steerAxlePos.northing = CVehicle::instance()->pivotAxlePos.northing + (cos(CVehicle::instance()->fixHeading) * CVehicle::instance()->wheelbase);
-    CVehicle::instance()->steerAxlePos.heading = CVehicle::instance()->fixHeading;
+    CVehicle::instance()->steerAxlePos.easting = CVehicle::instance()->pivotAxlePos.easting + (sin(CVehicle::instance()->fixHeading()) * CVehicle::instance()->wheelbase);
+    CVehicle::instance()->steerAxlePos.northing = CVehicle::instance()->pivotAxlePos.northing + (cos(CVehicle::instance()->fixHeading()) * CVehicle::instance()->wheelbase);
+    CVehicle::instance()->steerAxlePos.heading = CVehicle::instance()->fixHeading();
     
     // PHASE 4.3: Measure execution latency for vehicle position update
     // This measures the TIME BETWEEN calls (which gives us frequency)
@@ -2230,13 +2230,13 @@ void FormGPS::CalculatePositionHeading()
     if (!track.ABLine.isLateralTriggered && !track.curve.isLateralTriggered)
     {
         double guidanceLookDist = (std::max(tool.width * 0.5, CVehicle::instance()->avgSpeed() * 0.277777 * guidanceLookAheadTime));
-        CVehicle::instance()->guidanceLookPos.easting = CVehicle::instance()->pivotAxlePos.easting + (sin(CVehicle::instance()->fixHeading) * guidanceLookDist);
-        CVehicle::instance()->guidanceLookPos.northing = CVehicle::instance()->pivotAxlePos.northing + (cos(CVehicle::instance()->fixHeading) * guidanceLookDist);
+        CVehicle::instance()->guidanceLookPos.easting = CVehicle::instance()->pivotAxlePos.easting + (sin(CVehicle::instance()->fixHeading()) * guidanceLookDist);
+        CVehicle::instance()->guidanceLookPos.northing = CVehicle::instance()->pivotAxlePos.northing + (cos(CVehicle::instance()->fixHeading()) * guidanceLookDist);
     }
 
     //determine where the rigid vehicle hitch ends
-    CVehicle::instance()->hitchPos.easting = pn.fix.easting + (sin(CVehicle::instance()->fixHeading) * (tool.hitchLength - CVehicle::instance()->antennaPivot));
-    CVehicle::instance()->hitchPos.northing = pn.fix.northing + (cos(CVehicle::instance()->fixHeading) * (tool.hitchLength - CVehicle::instance()->antennaPivot));
+    CVehicle::instance()->hitchPos.easting = pn.fix.easting + (sin(CVehicle::instance()->fixHeading()) * (tool.hitchLength - CVehicle::instance()->antennaPivot));
+    CVehicle::instance()->hitchPos.northing = pn.fix.northing + (cos(CVehicle::instance()->fixHeading()) * (tool.hitchLength - CVehicle::instance()->antennaPivot));
 
     //tool attached via a trailing hitch
     if (tool.isToolTrailing)
@@ -2252,7 +2252,7 @@ void FormGPS::CalculatePositionHeading()
             }
 
             ////the tool is seriously jacknifed or just starting out so just spring it back.
-            over = fabs(M_PI - fabs(fabs(tool.tankPos.heading - CVehicle::instance()->fixHeading) - M_PI));
+            over = fabs(M_PI - fabs(fabs(tool.tankPos.heading - CVehicle::instance()->fixHeading()) - M_PI));
 
             if ((over < 2.0) && (startCounter > 50))
             {
@@ -2263,7 +2263,7 @@ void FormGPS::CalculatePositionHeading()
             //criteria for a forced reset to put tool directly behind vehicle
             if (over > 2.0 || startCounter < 51 )
             {
-                tool.tankPos.heading = CVehicle::instance()->fixHeading;
+                tool.tankPos.heading = CVehicle::instance()->fixHeading();
                 tool.tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
                 tool.tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
             }
@@ -2272,7 +2272,7 @@ void FormGPS::CalculatePositionHeading()
 
         else
         {
-            tool.tankPos.heading = CVehicle::instance()->fixHeading;
+            tool.tankPos.heading = CVehicle::instance()->fixHeading();
             tool.tankPos.easting = CVehicle::instance()->hitchPos.easting;
             tool.tankPos.northing = CVehicle::instance()->hitchPos.northing;
         }
@@ -2312,11 +2312,11 @@ void FormGPS::CalculatePositionHeading()
     //rigidly connected to vehicle
     else
     {
-        tool.toolPivotPos.heading = CVehicle::instance()->fixHeading;
+        tool.toolPivotPos.heading = CVehicle::instance()->fixHeading();
         tool.toolPivotPos.easting = CVehicle::instance()->hitchPos.easting;
         tool.toolPivotPos.northing = CVehicle::instance()->hitchPos.northing;
 
-        tool.toolPos.heading = CVehicle::instance()->fixHeading;
+        tool.toolPos.heading = CVehicle::instance()->fixHeading();
         tool.toolPos.easting = CVehicle::instance()->hitchPos.easting;
         tool.toolPos.northing = CVehicle::instance()->hitchPos.northing;
     }
@@ -2602,8 +2602,8 @@ void FormGPS::InitializeFirstFewGPSPositions()
         }
 
         //in radians
-        CVehicle::instance()->fixHeading = 0;
-        tool.toolPos.heading = CVehicle::instance()->fixHeading;
+        CVehicle::instance()->set_fixHeading( 0 );
+        tool.toolPos.heading = CVehicle::instance()->fixHeading();
 
         //send out initial zero settings
         if (isGPSPositionInitialized)

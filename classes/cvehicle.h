@@ -98,9 +98,6 @@ public:
 
     //tram indicator vars
 
-    //headings
-    double fixHeading = 0.0;
-
     //storage for the cos and sin of heading
     double cosSectionHeading = 1.0, sinSectionHeading = 0.0;
     Vec3 pivotAxlePos;
@@ -155,6 +152,7 @@ public:
     SIMPLE_BINDABLE_PROPERTY (short int, guidanceLineDistanceOff)
     SIMPLE_BINDABLE_PROPERTY (double, avgPivDistance)
     SIMPLE_BINDABLE_PROPERTY (double, avgSpeed)
+    SIMPLE_BINDABLE_PROPERTY (double, fixHeading)
 
 signals:
     //void setLookAheadGoal(double);
@@ -281,6 +279,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, short int, m_guidanceLineDistanceOff, 0, &CVehicle::guidanceLineDistanceOffChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_avgPivDistance, 32000, &CVehicle::avgPivDistanceChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_avgSpeed, 0, &CVehicle::avgSpeedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_fixHeading, 0, &CVehicle::fixHeadingChanged)
 
 };
 

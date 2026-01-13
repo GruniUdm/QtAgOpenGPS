@@ -194,7 +194,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
     else return;
 
     //are we going same direction as stripList was created?
-    bool isSameWay = M_PI - fabs(fabs(CVehicle::instance()->fixHeading - (*stripList[stripNum])[pt].heading) - M_PI) < 1.57;
+    bool isSameWay = M_PI - fabs(fabs(CVehicle::instance()->fixHeading() - (*stripList[stripNum])[pt].heading) - M_PI) < 1.57;
 
     double RefDist = (distanceFromRefLine + (isSameWay ? tool_toolOffset : -tool_toolOffset))
                      / (tool_toolWidth - tool_toolOverlap);
@@ -541,8 +541,8 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
             double localHeading;// = glm::twoPI - mf.fixHeading;
 
-            if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
-            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading - inty;
+            if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
+            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading() - inty;
 
             steerAngleCT = glm::toDegrees(atan(2 * (((goalPointCT.easting - pivot.easting) * cos(localHeading))
                                                         + ((goalPointCT.northing - pivot.northing) * sin(localHeading))) * wheelbase / goalPointDistanceSquared));

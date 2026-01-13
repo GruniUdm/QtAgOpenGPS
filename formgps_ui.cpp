@@ -313,7 +313,7 @@ void FormGPS::onBtnAgIO_clicked(){
 }
 void FormGPS::onBtnResetTool_clicked(){
     //probably should be a method of tool somehow.
-   tool.tankPos.heading = CVehicle::instance()->fixHeading;
+   tool.tankPos.heading = CVehicle::instance()->fixHeading();
    tool.tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
    tool.tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
 

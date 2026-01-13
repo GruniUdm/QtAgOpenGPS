@@ -162,10 +162,6 @@ void FormGPS::setSectionButtonState(const QVariantList& value) {
 
 QBindable<QVariantList> FormGPS::bindableSectionButtonState() { return &m_sectionButtonState; }
 
-double FormGPS::fusedHeading() const { return m_fusedHeading; }
-void FormGPS::setFusedHeading(double fusedHeading) { m_fusedHeading = fusedHeading; }
-QBindable<double> FormGPS::bindableFusedHeading() { return &m_fusedHeading; }
-
 // ===== Steering Properties =====
 double FormGPS::calcSteerAngleInner() const { return m_calcSteerAngleInner; }
 void FormGPS::setCalcSteerAngleInner(double calcSteerAngleInner) { m_calcSteerAngleInner = calcSteerAngleInner; }

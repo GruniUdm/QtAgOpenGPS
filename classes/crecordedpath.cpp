@@ -371,7 +371,7 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
     double goalPointDistanceSquared = glm::DistanceSquared(goalPointRP.northing, goalPointRP.easting, pivotAxlePosRP.northing, pivotAxlePosRP.easting);
 
     //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
-    double localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
+    double localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
 
     ppRadiusRP = goalPointDistanceSquared / (2 * (((goalPointRP.easting - pivotAxlePosRP.easting) * cos(localHeading)) + ((goalPointRP.northing - pivotAxlePosRP.northing) * sin(localHeading))));
 
@@ -518,9 +518,9 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
     double goalPointDistanceSquared = glm::DistanceSquared(goalPointRP.northing, goalPointRP.easting, pivotAxlePosRP.northing, pivotAxlePosRP.easting);
 
     //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
-    //double localHeading = glm::twoPI - CVehicle::instance()->fixHeading;
+    //double localHeading = glm::twoPI - CVehicle::instance()->fixHeading();
 
-    double localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
+    double localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
 
     ppRadiusRP = goalPointDistanceSquared / (2 * (((goalPointRP.easting - pivotAxlePosRP.easting) * cos(localHeading)) + ((goalPointRP.northing - pivotAxlePosRP.northing) * sin(localHeading))));
 

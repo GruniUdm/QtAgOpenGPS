@@ -31,7 +31,7 @@ Rectangle{
         Comp.TextLine{ color: "white"; text: qsTr("Dropped ")+ Backend.fixFrame.droppedSentences}
         Comp.TextLine{ color: "white"; text: qsTr("Fix2Fix ")+ (Number(aog.gpsHeading * 180 / Math.PI).toLocaleString(Qt.locale(), 'f', 1))}//convert from radians
         Comp.TextLine{ color: "white"; text: qsTr("IMU ")+ (Backend.fixFrame.imuHeading > 360 ? "#INV" : Number(Backend.fixFrame.imuHeading).toLocaleString(Qt.locale(), 'f', 1))}
-        Comp.TextLine{ color: "white"; text: qsTr("Heading ")+ (Number(aog.fusedHeading * 180 / Math.PI).toLocaleString(Qt.locale(), 'f', 1))}
+        Comp.TextLine{ color: "white"; text: qsTr("Heading ")+ (Number(VehicleInterface.fixHeading * 180 / Math.PI).toLocaleString(Qt.locale(), 'f', 1))}
         Comp.TextLine{ color: "white"; text: "<br>"}
         Comp.TextLine{ 
             visible: Backend.fixFrame.fixQuality === 4 || Backend.fixFrame.fixQuality === 8  //should reference a setting if rtk is turned on
