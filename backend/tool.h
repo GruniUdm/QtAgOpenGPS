@@ -14,12 +14,12 @@ class Tool : public QObject
     Q_OBJECT
     QML_ELEMENT
 
-    Q_PROPERTY(SectionButtonsModel* sectionButtons READ sectionButtons CONSTANT)
+    Q_PROPERTY(SectionButtonsModel* sectionButtonsModel READ sectionButtonsModel CONSTANT)
 
 public:
     explicit Tool(QObject *parent = nullptr);
 
-    SectionButtonsModel* sectionButtons() const { return m_sectionButtons; }
+    SectionButtonsModel* sectionButtonsModel() const { return m_sectionButtons; }
 
     SIMPLE_BINDABLE_PROPERTY(double, easting)
     SIMPLE_BINDABLE_PROPERTY(double, northing)

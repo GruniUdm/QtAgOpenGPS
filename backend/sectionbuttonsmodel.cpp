@@ -66,7 +66,7 @@ Qt::ItemFlags SectionButtonsModel::flags(const QModelIndex &index) const
 QHash<int, QByteArray> SectionButtonsModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
-    roles[IndexRole] = "secNumber";
+    roles[IndexRole] = "buttonNumber";
     roles[StateRole] = "state";
     return roles;
 }

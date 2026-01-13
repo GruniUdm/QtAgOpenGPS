@@ -13,7 +13,7 @@ bool Tools::s_cpp_created = false;
 
 Tools::Tools(QObject *parent)
     : QObject{parent}
-    , m_toolsSectionsModel(new ToolsSectionsModel(this))
+    , m_toolsSectionsModel(new ToolsSectionsButtonsModel(this))
 {
     //put in a default tool to keep QML happy
     generateToolFromSettings();
@@ -76,7 +76,7 @@ void Tools::addTool(Tool *tool)
     });
 
     // Add the tool's sections model to the ToolsSectionsModel
-    m_toolsSectionsModel->addSectionsModel(tool->sectionButtons());
+    m_toolsSectionsModel->addSectionsModel(tool->sectionButtonsModel());
 
     emit toolsListChanged();
 
@@ -120,14 +120,14 @@ Tool* Tools::toolAt(int index) const
 
 void Tools::setSectionButtonState(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state)
 {
-    if ( toolIndex >= m_toolsList.count()) {
+    if ( toolIndex < m_toolsList.count()) {
         m_toolsList[toolIndex].value<Tool *>()->setSectionButtonState(sectionButtonNo, new_state);
     }
 }
 
 void Tools::setAllSectionButtonsToState(int toolIndex, SectionButtonsModel::State new_state)
 {
-    if ( toolIndex >= m_toolsList.count()) {
+    if ( toolIndex < m_toolsList.count()) {
         m_toolsList[toolIndex].value<Tool *>()->setAllSectionButtonsToState(new_state);
     }
 }
@@ -154,7 +154,7 @@ void Tools::generateToolFromSettings() {
 
     //Set up the QML buttons
     for (int i=0; i  < numSections; i++) {
-        m_toolsList[0].value<Tool *>()->sectionButtons()->addSectionState( {i, SectionButtonsModel::Off} );
+        m_toolsList[0].value<Tool *>()->sectionButtonsModel()->addSectionState( {i, SectionButtonsModel::Off} );
     }
 
 }

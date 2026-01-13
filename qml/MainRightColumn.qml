@@ -116,11 +116,11 @@ ColumnLayout {
         onCheckedChanged: {
             if (checked) {
                 btnSectionAuto.checked = false;
-                sectionButtons.setAllSectionsToState(MainWindowState.On);
+                Tools.setAllSectionButtonsToState(0, MainWindowState.On);
                 MainWindowState.manualBtnState = MainWindowState.On
 
             } else {
-                sectionButtons.setAllSectionsToState(MainWindowState.Off);
+                Tools.setAllSectionButtonsToState(0, MainWindowState.Off);
                 MainWindowState.manualBtnState = MainWindowState.Off
             }
         }
@@ -136,10 +136,10 @@ ColumnLayout {
         onCheckedChanged: {
             if (checked) {
                 btnSectionManual.checked = false;
-                sectionButtons.setAllSectionsToState(MainWindowState.Auto);
+                Tools.setAllSectionButtonsToState(0,MainWindowState.Auto);
                 MainWindowState.autoBtnState = MainWindowState.Auto
             } else {
-                sectionButtons.setAllSectionsToState(MainWindowState.Off);
+                Tools.setAllSectionButtonsToState(0,MainWindowState.Off);
                 MainWindowState.autoBtnState = MainWindowState.Off
             }
         }

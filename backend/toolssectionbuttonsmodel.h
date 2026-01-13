@@ -1,14 +1,14 @@
 // Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
-#ifndef TOOLSSECTIONSMODEL_H
-#define TOOLSSECTIONSMODEL_H
+#ifndef TOOLSSECTIONBUTTONSMODEL_H
+#define TOOLSSECTIONBUTTONSMODEL_H
 
 #include <QAbstractListModel>
 #include <QVector>
 #include <QPointer>
 #include "sectionbuttonsmodel.h"
 
-class ToolsSectionsModel : public QAbstractListModel
+class ToolsSectionsButtonsModel : public QAbstractListModel
 {
     Q_OBJECT
 
@@ -19,12 +19,12 @@ public:
     };
     Q_ENUM(Roles)
 
-    struct ToolSections {
+    struct ToolSectionsButtons {
         int index;
         QPointer<SectionButtonsModel> sectionsModel;
     };
 
-    explicit ToolsSectionsModel(QObject *parent = nullptr);
+    explicit ToolsSectionsButtonsModel(QObject *parent = nullptr);
 
     // QAbstractListModel interface
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -32,20 +32,20 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     // Data management
-    void setToolsSections(const QVector<ToolSections> &new_toolsSections);
-    void addToolSections(const ToolSections &tool);
+    void setToolsSections(const QVector<ToolSectionsButtons> &new_toolsSections);
+    void addToolSections(const ToolSectionsButtons &tool);
     void addSectionsModel(SectionButtonsModel *model);
     void removeRowAt(int at_index);
     void clear();
 
     // Utility
-    int count() const { return tools.count(); }
-    ToolSections toolAt(int at_index) const;
+    int count() const { return toolsSectionsButtons.count(); }
+    ToolSectionsButtons toolAt(int at_index) const;
     SectionButtonsModel* sectionsModelAt(int at_index) const;
 
-    QVector<ToolSections> tools;
+    QVector<ToolSectionsButtons> toolsSectionsButtons;
 
 private:
 };
 
-#endif // TOOLSSECTIONSMODEL_H
+#endif // TOOLSSECTIONBUTTONSMODEL_H

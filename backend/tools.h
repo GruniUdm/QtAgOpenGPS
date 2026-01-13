@@ -8,7 +8,7 @@
 #include <QMutex>
 #include <QVariantList>
 #include "tool.h"
-#include "toolssectionsmodel.h"
+#include "toolssectionbuttonsmodel.h"
 
 class Tools : public QObject
 {
@@ -17,7 +17,7 @@ class Tools : public QObject
     QML_ELEMENT
 
     Q_PROPERTY(QVariantList toolsList READ toolsList NOTIFY toolsListChanged)
-    Q_PROPERTY(ToolsSectionsModel* toolsSectionsModel READ toolsSectionsModel CONSTANT)
+    Q_PROPERTY(ToolsSectionsButtonsModel* toolsSectionsModel READ toolsSectionsModel CONSTANT)
 
 private:
     explicit Tools(QObject *parent = nullptr);
@@ -39,7 +39,7 @@ public:
 
     // Getters
     QVariantList toolsList() const { return m_toolsList; }
-    ToolsSectionsModel* toolsSectionsModel() const { return m_toolsSectionsModel; }
+    ToolsSectionsButtonsModel* toolsSectionsModel() const { return m_toolsSectionsModel; }
 
     // Tool management
     Q_INVOKABLE void addTool(Tool *tool);
@@ -60,7 +60,7 @@ signals:
     void toolsListChanged();
 
 private:
-    ToolsSectionsModel *m_toolsSectionsModel;
+    ToolsSectionsButtonsModel *m_toolsSectionsModel;
 };
 
 #endif // TOOLS_H
