@@ -9,6 +9,7 @@
 #include "cvehicle.h"
 #include "backend.h"
 #include "mainwindowstate.h"
+#include "tools.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
@@ -20,7 +21,7 @@
 extern QLabel *overlapPixelsWindow;
 extern QOpenGLShaderProgram *interpColorShader;
 
-Q_LOGGING_CATEGORY (ctool, "ctool.qtagopengps")
+Q_LOGGING_CATEGORY (ctool_log, "ctool.qtagopengps")
 
 struct PatchBuffer {
     QOpenGLBuffer patchBuffer;
@@ -96,7 +97,7 @@ void CTool::loadSettings()
     if (zoneRanges.size() > 0) {
         zones = zoneRanges[0];
     } else {
-        qDebug() << "ERROR: tool_zones is empty! Size:" << zoneRanges.size();
+        qWarning(ctool_log) << "ERROR: tool_zones is empty! Size:" << zoneRanges.size();
         zones = 2; // valeur par défaut
     }
     //zoneRanges.removeAt(0); //remove first element since it was a count
@@ -116,6 +117,39 @@ CTool::CTool()
     //get notified when the UI button changes state
     connect(MainWindowState::instance(), &MainWindowState::autoBtnStateChanged,
             this, &CTool::on_autoBtnChanged);
+
+    connect(Tools::instance(), &Tools::sectionButtonStateChanged,
+            [this](int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state){
+        //TODO: move this to a normal SLOT.
+        if (toolIndex != 0) return ; //we can only deal with a single tool
+
+        if (SettingsManager::instance()->tool_isSectionsNotZones()) {
+            //1:1 correlationb etween buttons and sections
+            sectionButtonState[sectionButtonNo] = static_cast<MainWindowState::ButtonStates>(new_state);
+        } else {
+            //Zones mode -- one button controls multiple sections
+            if (sectionButtonNo >= zones ) {
+                qWarning(ctool_log) << "ERROR! section button changed but it was out size of the number of zones defined";
+            }
+
+            int zone_left = (sectionButtonNo == 0 ? 0 : zoneRanges[sectionButtonNo]);
+            int zone_right = (sectionButtonNo + 1 < zones ? zoneRanges[sectionButtonNo + 1] : numOfSections);
+
+            //update all sections in the zone
+            if (zone_left >=0 && zone_right > zone_left && zone_right <= numOfSections) {
+                for (int j = zone_left ; j < zone_right; j++) {
+                    sectionButtonState[j] = static_cast<MainWindowState::ButtonStates>(new_state);
+                    bool newSectionOn = (new_state == SectionButtonsModel::On || new_state == SectionButtonsModel::Auto);
+                    section[j].isSectionOn = newSectionOn;
+                    section[j].sectionOnRequest = newSectionOn;
+                    section[j].sectionOffRequest = !newSectionOn;
+                }
+            } else {
+                qWarning(ctool_log) << "Something is wrong with zones.  Zone" << sectionButtonNo << " start and end section numbers not sane.";
+            }
+        }
+
+    });
 
     loadSettings();
 }
@@ -444,7 +478,7 @@ void CTool::DrawPatches(QOpenGLFunctions *gl,
     if (camera.camSetDistance < -5000) mipmap = 16;
 
     if (mipmap > 1)
-        qDebug(ctool) << "mipmap is" << mipmap;
+        qDebug(ctool_log) << "mipmap is" << mipmap;
 
     //QVector<GLuint> indices;
     //indices.reserve(PATCHBUFFER_LENGTH / 28 * 3);  //enough to index 16 MB worth of vertices
@@ -552,7 +586,7 @@ void CTool::DrawPatches(QOpenGLFunctions *gl,
                     patchesInBuffer[j][k].offset = patchBuffer[currentPatchBuffer].length / VERTEX_SIZE;
                     patchesInBuffer[j][k].length = count2 - 1;
                     patchBuffer[currentPatchBuffer].length += (count2 - 1) * VERTEX_SIZE;
-                    qDebug(ctool) << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
+                    qDebug(ctool_log) << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
                     patchBuffer[currentPatchBuffer].patchBuffer.release();
                 }
                 //generate list of indices for this patch
@@ -618,7 +652,7 @@ void CTool::DrawPatches(QOpenGLFunctions *gl,
             }
         }
 
-        qDebug(ctool) << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
+        qDebug(ctool_log) << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
 
         if (enough_indices) {
             interpColorShader->bind();
@@ -860,13 +894,13 @@ void CTool::DrawPatchesTriangles(QOpenGLFunctions *gl,
                     patchesInBuffer[j][k].offset = patchBuffer[currentPatchBuffer].length / VERTEX_SIZE;
                     patchesInBuffer[j][k].length = count2 - 1;
                     patchBuffer[currentPatchBuffer].length += (count2 - 1) * 3 * VERTEX_SIZE;
-                    qDebug() << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
+                    qDebug(ctool_log) << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
                     patchBuffer[currentPatchBuffer].patchBuffer.release();
                 }
             }
         }
 
-        qDebug(ctool) << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
+        qDebug(ctool_log) << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
 
         if (patchBuffer.size() && patchBuffer[0].length) {
             interpColorShader->bind();

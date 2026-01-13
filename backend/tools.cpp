@@ -71,8 +71,8 @@ void Tools::addTool(Tool *tool)
 
     //pass on the signals from this tool
     connect(tool, &Tool::sectionButtonStateChanged,
-            [this](int sectionButtonNo) {
-                emit sectionButtonStateChanged(m_toolsList.count()-1, sectionButtonNo);
+            [this](int sectionButtonNo, SectionButtonsModel::State new_state) {
+                emit sectionButtonStateChanged(m_toolsList.count()-1, sectionButtonNo, new_state);
     });
 
     // Add the tool's sections model to the ToolsSectionsModel

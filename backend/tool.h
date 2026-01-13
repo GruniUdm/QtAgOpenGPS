@@ -31,7 +31,7 @@ public:
     Q_INVOKABLE void setAllSectionButtonsToState(SectionButtonsModel::State new_state);
 
 signals:
-    void sectionButtonStateChanged(int sectionButtonNo);
+    void sectionButtonStateChanged(int sectionButtonNo, SectionButtonsModel::State new_state);
 
 private:
     SectionButtonsModel *m_sectionButtons;

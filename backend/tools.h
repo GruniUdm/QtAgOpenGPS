@@ -56,7 +56,7 @@ public slots:
     void generateToolFromSettings();
 
 signals:
-    void sectionButtonStateChanged(int toolIndex, int sectionButtonNo);
+    void sectionButtonStateChanged(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state);
     void toolsListChanged();
 
 private:
