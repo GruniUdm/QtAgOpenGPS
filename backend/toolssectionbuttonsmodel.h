@@ -15,13 +15,13 @@ class ToolsSectionsButtonsModel : public QAbstractListModel
 public:
     enum Roles {
         IndexRole = Qt::UserRole + 1,
-        SectionsModelRole
+        SectionButtonsModelRole
     };
     Q_ENUM(Roles)
 
     struct ToolSectionsButtons {
         int index;
-        QPointer<SectionButtonsModel> sectionsModel;
+        QPointer<SectionButtonsModel> sectionButtonsModel;
     };
 
     explicit ToolsSectionsButtonsModel(QObject *parent = nullptr);

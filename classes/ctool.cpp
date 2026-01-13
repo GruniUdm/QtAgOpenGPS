@@ -119,37 +119,7 @@ CTool::CTool()
             this, &CTool::on_autoBtnChanged);
 
     connect(Tools::instance(), &Tools::sectionButtonStateChanged,
-            [this](int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state){
-        //TODO: move this to a normal SLOT.
-        if (toolIndex != 0) return ; //we can only deal with a single tool
-
-        if (SettingsManager::instance()->tool_isSectionsNotZones()) {
-            //1:1 correlationb etween buttons and sections
-            sectionButtonState[sectionButtonNo] = static_cast<MainWindowState::ButtonStates>(new_state);
-        } else {
-            //Zones mode -- one button controls multiple sections
-            if (sectionButtonNo >= zones ) {
-                qWarning(ctool_log) << "ERROR! section button changed but it was out size of the number of zones defined";
-            }
-
-            int zone_left = (sectionButtonNo == 0 ? 0 : zoneRanges[sectionButtonNo]);
-            int zone_right = (sectionButtonNo + 1 < zones ? zoneRanges[sectionButtonNo + 1] : numOfSections);
-
-            //update all sections in the zone
-            if (zone_left >=0 && zone_right > zone_left && zone_right <= numOfSections) {
-                for (int j = zone_left ; j < zone_right; j++) {
-                    sectionButtonState[j] = static_cast<MainWindowState::ButtonStates>(new_state);
-                    bool newSectionOn = (new_state == SectionButtonsModel::On || new_state == SectionButtonsModel::Auto);
-                    section[j].isSectionOn = newSectionOn;
-                    section[j].sectionOnRequest = newSectionOn;
-                    section[j].sectionOffRequest = !newSectionOn;
-                }
-            } else {
-                qWarning(ctool_log) << "Something is wrong with zones.  Zone" << sectionButtonNo << " start and end section numbers not sane.";
-            }
-        }
-
-    });
+            this, &CTool::onSectionButtonStatechanged);
 
     loadSettings();
 }
@@ -1950,6 +1920,36 @@ void CTool::on_autoBtnChanged() {
                 sectionButtonState[j] = MainWindowState::ButtonStates::Off;
                 section[j].sectionBtnState = MainWindowState::ButtonStates::Off;
             }
+        }
+    }
+}
+
+void CTool::onSectionButtonStatechanged(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state) {
+    if (toolIndex != 0) return ; //we can only deal with a single tool
+
+    if (SettingsManager::instance()->tool_isSectionsNotZones()) {
+        //1:1 correlationb etween buttons and sections
+        sectionButtonState[sectionButtonNo] = static_cast<MainWindowState::ButtonStates>(new_state);
+    } else {
+        //Zones mode -- one button controls multiple sections
+        if (sectionButtonNo >= zones ) {
+            qWarning(ctool_log) << "ERROR! section button changed but it was out size of the number of zones defined";
+        }
+
+        int zone_left = (sectionButtonNo == 0 ? 0 : zoneRanges[sectionButtonNo]);
+        int zone_right = (sectionButtonNo + 1 < zones ? zoneRanges[sectionButtonNo + 1] : numOfSections);
+
+        //update all sections in the zone
+        if (zone_left >=0 && zone_right > zone_left && zone_right <= numOfSections) {
+            for (int j = zone_left ; j < zone_right; j++) {
+                sectionButtonState[j] = static_cast<MainWindowState::ButtonStates>(new_state);
+                bool newSectionOn = (new_state == SectionButtonsModel::On || new_state == SectionButtonsModel::Auto);
+                section[j].isSectionOn = newSectionOn;
+                section[j].sectionOnRequest = newSectionOn;
+                section[j].sectionOffRequest = !newSectionOn;
+            }
+        } else {
+            qWarning(ctool_log) << "Something is wrong with zones.  Zone" << sectionButtonNo << " start and end section numbers not sane.";
         }
     }
 }

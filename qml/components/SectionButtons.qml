@@ -56,12 +56,6 @@ Rectangle {
         }
     }
 
-    onVisibleChanged: {
-        console.debug(qmlLog, "visibility changed to ", visible);
-        console.debug(qmlLog, "Tools model information:");
-        console.debug(qmlLog, Tools.toolsList[0].sectionButtonsModel.rowCount());
-    }
-
     Component {
         id: sectionViewDelegate
         SectionButton {
@@ -95,12 +89,6 @@ Rectangle {
         anchors.top: parent.top
 
         model: Tools.toolsList[0].sectionButtonsModel
-
-        Component.onCompleted:  {
-            console.debug(qmlLog, "Tools model information:");
-            console.debug(qmlLog, Tools.toolsList[0].sectionButtonsModel.rowCount());
-
-        }
 
         boundsMovement: Flickable.StopAtBounds
 

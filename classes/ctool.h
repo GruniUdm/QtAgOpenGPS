@@ -9,6 +9,7 @@
 #include <QElapsedTimer>
 #include "vec3.h"
 #include "mainwindowstate.h"
+#include "sectionbuttonsmodel.h"
 
 class QOpenGLFunctions;
 class QMatrix4x4;
@@ -162,6 +163,7 @@ private:
     LookAheadPixels *overPixels = new LookAheadPixels[160000]; //400x400
 public slots:
     void on_autoBtnChanged();
+    void onSectionButtonStatechanged(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state);
 
 signals:
     void SetHydPosition(MainWindowState::ButtonStates autoBtnState);

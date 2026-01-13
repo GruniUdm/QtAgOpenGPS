@@ -17,6 +17,11 @@ class Tools : public QObject
     QML_ELEMENT
 
     Q_PROPERTY(QVariantList toolsList READ toolsList NOTIFY toolsListChanged)
+
+    //This property is a model of models. Would be used if we had more than one tool.
+    //We would have a nested QML ListView where the outer ListView would refer to this
+    //property as the model, and the inner ListView would refer to model.sectionButtonsModel.
+    //Currently the back end only supports one toolbar, so this is not used.
     Q_PROPERTY(ToolsSectionsButtonsModel* toolsSectionsModel READ toolsSectionsModel CONSTANT)
 
 private:

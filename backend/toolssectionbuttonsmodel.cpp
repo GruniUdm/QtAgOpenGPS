@@ -24,9 +24,9 @@ QVariant ToolsSectionsButtonsModel::data(const QModelIndex &index, int role) con
     switch (role) {
     case IndexRole:
         return row.index;
-    case SectionsModelRole:
+    case SectionButtonsModelRole:
         // Return the QObject pointer for QML
-        return QVariant::fromValue(row.sectionsModel.data());
+        return QVariant::fromValue(row.sectionButtonsModel.data());
     default:
         return QVariant();
     }
@@ -36,7 +36,7 @@ QHash<int, QByteArray> ToolsSectionsButtonsModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
     roles[IndexRole] = "toolIndex";
-    roles[SectionsModelRole] = "sectionsModel";
+    roles[SectionButtonsModelRole] = "sectionButtonsModel";
     return roles;
 }
 
@@ -68,7 +68,7 @@ void ToolsSectionsButtonsModel::addSectionsModel(SectionButtonsModel *model)
 {
     ToolSectionsButtons tool;
     tool.index = toolsSectionsButtons.count();
-    tool.sectionsModel = model;
+    tool.sectionButtonsModel = model;
     addToolSections(tool);
 }
 
@@ -108,6 +108,6 @@ ToolsSectionsButtonsModel::ToolSectionsButtons ToolsSectionsButtonsModel::toolAt
 SectionButtonsModel* ToolsSectionsButtonsModel::sectionsModelAt(int at_index) const
 {
     if (at_index >= 0 && at_index < toolsSectionsButtons.count())
-        return toolsSectionsButtons[at_index].sectionsModel.data();
+        return toolsSectionsButtons[at_index].sectionButtonsModel.data();
     return nullptr;
 }
