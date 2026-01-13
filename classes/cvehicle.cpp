@@ -241,7 +241,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     bool display_isSvennArrowOn = SettingsManager::instance()->display_isSvennArrowOn();
     display_lineWidth = SettingsManager::instance()->display_lineWidth();
 
-    if (!std::isfinite(m_fixHeading) || fabs(m_fixHeading) > 1000.0) {
+    if (!std::isfinite<double>(m_fixHeading) || fabs(m_fixHeading) > 1000.0) {
         qWarning() << "DrawVehicle skipped: invalid fixHeading =" << m_fixHeading
                    << "(garbage not yet replaced by valid GPS/IMU data)";
         return;
