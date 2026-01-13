@@ -266,10 +266,6 @@ QVariantList FormGPS::convertWGS84ToLocal(double latitude, double longitude) {
 }
 
 // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2
-double FormGPS::gpsHeading() const { return m_gpsHeading; }
-void FormGPS::setGpsHeading(double value) { m_gpsHeading = value; }
-QBindable<double> FormGPS::bindableGpsHeading() { return &m_gpsHeading; }
-
 bool FormGPS::isReverseWithIMU() const { return m_isReverseWithIMU; }
 void FormGPS::setIsReverseWithIMU(bool value) { m_isReverseWithIMU = value; }
 QBindable<bool> FormGPS::bindableIsReverseWithIMU() { return &m_isReverseWithIMU; }

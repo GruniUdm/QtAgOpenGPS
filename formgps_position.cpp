@@ -154,13 +154,13 @@ void FormGPS::UpdateFixPosition()
                 stepFixPts[0].northing = pn.fix.northing;
                 stepFixPts[0].isSet = 1;
 
-                setGpsHeading(atan2(pn.fix.easting - stepFixPts[2].easting,
-                                    pn.fix.northing - stepFixPts[2].northing));
+                Backend::instance()->m_fixFrame.gpsHeading = atan2(pn.fix.easting - stepFixPts[2].easting,
+                                    pn.fix.northing - stepFixPts[2].northing);
 
-                if (gpsHeading() < 0) setGpsHeading(gpsHeading() + glm::twoPI);
-                else if (gpsHeading() > glm::twoPI) setGpsHeading(gpsHeading() - glm::twoPI);
+                if (Backend::instance()->m_fixFrame.gpsHeading < 0) Backend::instance()->m_fixFrame.gpsHeading = Backend::instance()->m_fixFrame.gpsHeading + glm::twoPI;
+                else if (Backend::instance()->m_fixFrame.gpsHeading > glm::twoPI) Backend::instance()->m_fixFrame.gpsHeading = Backend::instance()->m_fixFrame.gpsHeading - glm::twoPI;
 
-                CVehicle::instance()->set_fixHeading ( gpsHeading() );
+                CVehicle::instance()->set_fixHeading ( Backend::instance()->m_fixFrame.gpsHeading );
 
                 //set the imu to gps heading offset
                 if (ahrs.imuHeading != 99999)
@@ -169,7 +169,7 @@ void FormGPS::UpdateFixPosition()
                     imuGPS_Offset = 0;
 
                     //Difference between the IMU heading and the GPS heading
-                    double gyroDelta = (imuHeading + imuGPS_Offset) - gpsHeading();
+                    double gyroDelta = (imuHeading + imuGPS_Offset) - Backend::instance()->m_fixFrame.gpsHeading;
 
                     if (gyroDelta < 0) gyroDelta += glm::twoPI;
                     else if (gyroDelta > glm::twoPI) gyroDelta -= glm::twoPI;
@@ -206,15 +206,15 @@ void FormGPS::UpdateFixPosition()
                 }
 
                 //set the camera
-                camera.camHeading = glm::toDegrees(gpsHeading());
+                camera.camHeading = glm::toDegrees(Backend::instance()->m_fixFrame.gpsHeading);
 
                 //now we have a heading, fix the first 3
                 if (CVehicle::instance()->antennaOffset != 0)
                 {
                     for (int i = 0; i < 3; i++)
                     {
-                        stepFixPts[i].easting = (cos(-gpsHeading()) * CVehicle::instance()->antennaOffset) + stepFixPts[i].easting;
-                        stepFixPts[i].northing = (sin(-gpsHeading()) * CVehicle::instance()->antennaOffset) + stepFixPts[i].northing;
+                        stepFixPts[i].easting = (cos(-Backend::instance()->m_fixFrame.gpsHeading) * CVehicle::instance()->antennaOffset) + stepFixPts[i].easting;
+                        stepFixPts[i].northing = (sin(-Backend::instance()->m_fixFrame.gpsHeading) * CVehicle::instance()->antennaOffset) + stepFixPts[i].northing;
                     }
                 }
 
@@ -229,8 +229,8 @@ void FormGPS::UpdateFixPosition()
                     // not any more - April 30, 2019 - roll to right is positive Now! Still Important
                     for (int i = 0; i < 3; i++)
                     {
-                        stepFixPts[i].easting = (cos(-gpsHeading()) * rollCorrectionDistance) + stepFixPts[i].easting;
-                        stepFixPts[i].northing = (sin(-gpsHeading()) * rollCorrectionDistance) + stepFixPts[i].northing;
+                        stepFixPts[i].easting = (cos(-Backend::instance()->m_fixFrame.gpsHeading) * rollCorrectionDistance) + stepFixPts[i].easting;
+                        stepFixPts[i].northing = (sin(-Backend::instance()->m_fixFrame.gpsHeading) * rollCorrectionDistance) + stepFixPts[i].northing;
                     }
                 }
 
@@ -268,8 +268,8 @@ void FormGPS::UpdateFixPosition()
         // Apply antenna offset correction
         if (CVehicle::instance()->antennaOffset != 0)
         {
-            pn.fix.easting = (cos(-gpsHeading()) * CVehicle::instance()->antennaOffset) + pn.fix.easting;
-            pn.fix.northing = (sin(-gpsHeading()) * CVehicle::instance()->antennaOffset) + pn.fix.northing;
+            pn.fix.easting = (cos(-Backend::instance()->m_fixFrame.gpsHeading) * CVehicle::instance()->antennaOffset) + pn.fix.easting;
+            pn.fix.northing = (sin(-Backend::instance()->m_fixFrame.gpsHeading) * CVehicle::instance()->antennaOffset) + pn.fix.northing;
         }
 
         uncorrectedEastingGraph = pn.fix.easting;
@@ -281,8 +281,8 @@ void FormGPS::UpdateFixPosition()
             rollCorrectionDistance = sin(glm::toRadians((ahrs.imuRoll))) * -CVehicle::instance()->antennaHeight;
             correctionDistanceGraph = rollCorrectionDistance;
 
-            pn.fix.easting = (cos(-gpsHeading()) * rollCorrectionDistance) + pn.fix.easting;
-            pn.fix.northing = (sin(-gpsHeading()) * rollCorrectionDistance) + pn.fix.northing;
+            pn.fix.easting = (cos(-Backend::instance()->m_fixFrame.gpsHeading) * rollCorrectionDistance) + pn.fix.easting;
+            pn.fix.northing = (sin(-Backend::instance()->m_fixFrame.gpsHeading) * rollCorrectionDistance) + pn.fix.northing;
         }
 
         //#endregion
@@ -373,7 +373,7 @@ void FormGPS::UpdateFixPosition()
                     if (newGPSHeading < 0) newGPSHeading += glm::twoPI;
                     else if (newGPSHeading >= glm::twoPI) newGPSHeading -= glm::twoPI;
 
-                    setGpsHeading(newGPSHeading);
+                    Backend::instance()->m_fixFrame.gpsHeading = newGPSHeading;
 
                     // PHASE 6.0.35 FIX: Update stepFixPts ONLY when GPS heading recalculated
                     // This ensures stepFixPts[0] and pn.fix remain spaced apart (critical for low speed)
@@ -390,7 +390,7 @@ void FormGPS::UpdateFixPosition()
                     gyroDelta = 0;
 
                     //if (!isReverseWithIMU)
-                    gyroDelta = (imuHeading + imuGPS_Offset) - gpsHeading();
+                    gyroDelta = (imuHeading + imuGPS_Offset) - Backend::instance()->m_fixFrame.gpsHeading;
                     //else
                     //{
                     //    gyroDelta = 0;
@@ -478,7 +478,7 @@ void FormGPS::UpdateFixPosition()
                     {
 
                         ////what is angle between the last valid heading before stopping and one just now
-                        delta = fabs(M_PI - fabs(fabs(newGPSHeading - gpsHeading()) - M_PI));
+                        delta = fabs(M_PI - fabs(fabs(newGPSHeading - Backend::instance()->m_fixFrame.gpsHeading) - M_PI));
 
                         filteredDelta = delta * 0.2 + filteredDelta * 0.8;
 
@@ -522,8 +522,8 @@ void FormGPS::UpdateFixPosition()
                             else if (newGPSHeading >= glm::twoPI) newGPSHeading -= glm::twoPI;
 
                             //set the headings
-                            setGpsHeading(newGPSHeading);
-                            CVehicle::instance()->set_fixHeading ( gpsHeading() );
+                            Backend::instance()->m_fixFrame.gpsHeading = newGPSHeading;
+                            CVehicle::instance()->set_fixHeading ( Backend::instance()->m_fixFrame.gpsHeading );
 
                             // PHASE 6.0.35 FIX: Update stepFixPts when heading recalculated (No IMU reverse path)
                             for (int i = totalFixSteps - 1; i > 0; i--) stepFixPts[i] = stepFixPts[i - 1];
@@ -546,8 +546,8 @@ void FormGPS::UpdateFixPosition()
                         else if (newGPSHeading >= glm::twoPI) newGPSHeading -= glm::twoPI;
 
                         //set the headings
-                        setGpsHeading(newGPSHeading);
-                        CVehicle::instance()->set_fixHeading ( gpsHeading() );
+                        Backend::instance()->m_fixFrame.gpsHeading = newGPSHeading;
+                        CVehicle::instance()->set_fixHeading ( Backend::instance()->m_fixFrame.gpsHeading );
 
                         // PHASE 6.0.35 FIX: Update stepFixPts when heading recalculated (No IMU forward path)
                         for (int i = totalFixSteps - 1; i > 0; i--) stepFixPts[i] = stepFixPts[i - 1];
@@ -647,7 +647,7 @@ void FormGPS::UpdateFixPosition()
             //use NMEA headings for camera and tractor graphic
             CVehicle::instance()->set_fixHeading ( glm::toRadians(pn.headingTrue) );
             camera.camHeading = pn.headingTrue;
-            setGpsHeading(CVehicle::instance()->fixHeading());
+            Backend::instance()->m_fixFrame.gpsHeading = CVehicle::instance()->fixHeading();
         }
 
         //grab the most current fix to last fix distance
@@ -671,7 +671,7 @@ void FormGPS::UpdateFixPosition()
             double correctionHeading = (glm::toRadians(ahrs.imuHeading));
 
             //Difference between the IMU heading and the GPS heading
-            double gyroDelta = (correctionHeading + imuGPS_Offset) - gpsHeading();
+            double gyroDelta = (correctionHeading + imuGPS_Offset) - Backend::instance()->m_fixFrame.gpsHeading;
             if (gyroDelta < 0) gyroDelta += glm::twoPI;
 
             //calculate delta based on circular data problem 0 to 360 to 0, clamp to +- 2 Pi
@@ -744,7 +744,7 @@ void FormGPS::UpdateFixPosition()
         isFirstHeadingSet = true;
         //use Dual Antenna heading for camera and tractor graphic
         CVehicle::instance()->set_fixHeading ( glm::toRadians(pn.headingTrueDual) );
-        setGpsHeading(CVehicle::instance()->fixHeading());
+        Backend::instance()->m_fixFrame.gpsHeading = CVehicle::instance()->fixHeading();
 
         uncorrectedEastingGraph = pn.fix.easting;
 

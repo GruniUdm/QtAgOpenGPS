@@ -124,8 +124,6 @@ class FormGPS : public QQmlApplicationEngine
     // mPerDegreeLat: No Q_PROPERTY needed - C++ only (CNMEA/AgIOService read via getter)
 
     // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(double gpsHeading READ gpsHeading WRITE setGpsHeading
-               NOTIFY gpsHeadingChanged BINDABLE bindableGpsHeading)
     Q_PROPERTY(bool isReverseWithIMU READ isReverseWithIMU WRITE setIsReverseWithIMU
                NOTIFY isReverseWithIMUChanged BINDABLE bindableIsReverseWithIMU)
 
@@ -223,10 +221,6 @@ public:
     Q_INVOKABLE QVariantList convertWGS84ToLocal(double latitude, double longitude);
 
     // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2
-    double gpsHeading() const;
-    void setGpsHeading(double value);
-    QBindable<double> bindableGpsHeading();
-
     bool isReverseWithIMU() const;
     void setIsReverseWithIMU(bool value);
     QBindable<bool> bindableIsReverseWithIMU();
@@ -534,7 +528,6 @@ public:
 
     //headings
     double smoothCamHeading = 0, prevGPSHeading = 0.0;
-    // gpsHeading moved to Q_OBJECT_BINDABLE_PROPERTY m_gpsHeading (line 1847)
 
     //storage for the cos and sin of heading
     //moved to vehicle
@@ -1067,7 +1060,6 @@ signals:
     void latStartChanged();
     void lonStartChanged();
     void mPerDegreeLatChanged();
-    void gpsHeadingChanged();
     void isReverseWithIMUChanged();
     void isPatchesChangingColorChanged();
 
@@ -1125,7 +1117,6 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_latStart, &FormGPS::latStartChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_lonStart, &FormGPS::lonStartChanged)
     double m_mPerDegreeLat = 0.0;  // Phase 6.0.20 Task 24 Step 3.5: Simple member (no BINDABLE - C++ only)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_gpsHeading, &FormGPS::gpsHeadingChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isReverseWithIMU, &FormGPS::isReverseWithIMUChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isPatchesChangingColor, &FormGPS::isPatchesChangingColorChanged)
 
