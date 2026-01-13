@@ -890,7 +890,7 @@ Window {
             id: steerCharta
             height: 300  * theme.scaleHeight
             width: 400  * theme.scaleWidth
-            xval1: aog.steerAngleActual
+            xval1: ModuleComm.actualSteerAngleDegrees
             xval2: VehicleInterface.driveFreeSteerAngle
             axismin: -10
             axismax: 10
