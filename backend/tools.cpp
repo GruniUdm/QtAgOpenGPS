@@ -3,6 +3,7 @@
 #include "tools.h"
 #include <QCoreApplication>
 #include <QLoggingCategory>
+#include "settingsmanager.h"
 
 Q_LOGGING_CATEGORY(toolsLog, "tools.qtagopengps")
 
@@ -15,7 +16,16 @@ Tools::Tools(QObject *parent)
     , m_toolsSectionsModel(new ToolsSectionsModel(this))
 {
     //put in a default tool to keep QML happy
-    addTool(new Tool(this));
+    generateToolFromSettings();
+    //addTool(new Tool(this));
+    //temporary until multiple toolbar support is added:
+    connect(SettingsManager::instance(), &SettingsManager::tool_isSectionsNotZonesChanged,
+            this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::vehicle_numSectionsChanged,
+            this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::tool_zonesChanged,
+            this, &Tools::generateToolFromSettings);
+
 }
 
 Tools *Tools::instance() {
@@ -59,8 +69,14 @@ void Tools::addTool(Tool *tool)
     // Add to the tools list
     m_toolsList.append(QVariant::fromValue(tool));
 
+    //pass on the signals from this tool
+    connect(tool, &Tool::sectionButtonStateChanged,
+            [this](int sectionButtonNo) {
+                emit sectionButtonStateChanged(m_toolsList.count()-1, sectionButtonNo);
+    });
+
     // Add the tool's sections model to the ToolsSectionsModel
-    m_toolsSectionsModel->addSectionsModel(tool->sections());
+    m_toolsSectionsModel->addSectionsModel(tool->sectionButtons());
 
     emit toolsListChanged();
 
@@ -100,4 +116,45 @@ Tool* Tools::toolAt(int index) const
     }
 
     return m_toolsList.at(index).value<Tool*>();
+}
+
+void Tools::setSectionButtonState(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state)
+{
+    if ( toolIndex >= m_toolsList.count()) {
+        m_toolsList[toolIndex].value<Tool *>()->setSectionButtonState(sectionButtonNo, new_state);
+    }
+}
+
+void Tools::setAllSectionButtonsToState(int toolIndex, SectionButtonsModel::State new_state)
+{
+    if ( toolIndex >= m_toolsList.count()) {
+        m_toolsList[toolIndex].value<Tool *>()->setAllSectionButtonsToState(new_state);
+    }
+}
+
+void Tools::generateToolFromSettings() {
+    int numSections;
+
+    if (SettingsManager::instance()->tool_isSectionsNotZones()) {
+        numSections = SettingsManager::instance()->vehicle_numSections();
+    } else {
+        QVector<int> zoneRanges;
+        zoneRanges = SettingsManager::instance()->tool_zones();
+        if (zoneRanges.size() > 0) {
+            numSections = zoneRanges[0];
+        } else {
+            qWarning() << "Zones used, not sections, but the number of zones is zero!";
+            numSections = 0;
+        }
+    }
+
+    //we will have only one tool.
+    m_toolsList.clear();
+    addTool(new Tool(this));
+
+    //Set up the QML buttons
+    for (int i=0; i  < numSections; i++) {
+        m_toolsList[0].value<Tool *>()->sectionButtons()->addSectionState( {i, SectionButtonsModel::Off} );
+    }
+
 }

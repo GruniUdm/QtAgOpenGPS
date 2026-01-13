@@ -1,12 +1,12 @@
 // Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
-#ifndef SECTIONSMODEL_H
-#define SECTIONSMODEL_H
+#ifndef SECTIONBUTTONSMODEL_H
+#define SECTIONBUTTONSMODEL_H
 
 #include <QAbstractListModel>
 #include <QVector>
 
-class SectionsModel : public QAbstractListModel
+class SectionButtonsModel : public QAbstractListModel
 {
     Q_OBJECT
 
@@ -26,10 +26,10 @@ public:
 
     struct SectionState {
         int index;
-        int state;
+        State state;
     };
 
-    explicit SectionsModel(QObject *parent = nullptr);
+    explicit SectionButtonsModel(QObject *parent = nullptr);
 
     // QAbstractListModel interface
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -39,19 +39,19 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     // Data management
-    void setSectionStates(const QVector<SectionState> &new_sectionstates);
+    void setButtonStates(const QVector<SectionState> &new_sectionstates);
     void addSectionState(const SectionState &sectionState);
     void removeRowAt(int at_index);
     void clear();
 
-    void setState(int at_index, int state);
-    void zeroStates();
+    void setState(int at_index, State state);
+    void setAllState(State state);
 
     // Utility
-    int count() const { return sectionStates.count(); }
+    int count() const { return buttonStates.count(); }
     SectionState rowAt(int at_index) const;
 
-    QVector<SectionState> sectionStates;
+    QVector<SectionState> buttonStates;
 
 signals:
     void stateChanged(int index, int state);
@@ -59,4 +59,4 @@ signals:
 private:
 };
 
-#endif // SECTIONSMODEL_H
+#endif // SECTIONBUTTONSMODEL_H

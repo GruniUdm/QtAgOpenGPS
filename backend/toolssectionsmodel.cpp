@@ -64,7 +64,7 @@ void ToolsSectionsModel::addToolSections(const ToolSections &toolSections)
     endInsertRows();
 }
 
-void ToolsSectionsModel::addSectionsModel(SectionsModel *model)
+void ToolsSectionsModel::addSectionsModel(SectionButtonsModel *model)
 {
     ToolSections tool;
     tool.index = tools.count();
@@ -105,7 +105,7 @@ ToolsSectionsModel::ToolSections ToolsSectionsModel::toolAt(int at_index) const
     return ToolSections();
 }
 
-SectionsModel* ToolsSectionsModel::sectionsModelAt(int at_index) const
+SectionButtonsModel* ToolsSectionsModel::sectionsModelAt(int at_index) const
 {
     if (at_index >= 0 && at_index < tools.count())
         return tools[at_index].sectionsModel.data();

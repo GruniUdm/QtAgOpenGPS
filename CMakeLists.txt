@@ -383,7 +383,7 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/fencelinemodel.h backend/fencelinemodel.cpp
     SOURCES backend/flagmodel.h backend/flagmodel.cpp
     SOURCES backend/blockagemodel.h backend/blockagemodel.cpp
-    SOURCES backend/sectionsmodel.h backend/sectionsmodel.cpp
+    SOURCES backend/sectionbuttonsmodel.h backend/sectionbuttonsmodel.cpp
     SOURCES backend/tool.h backend/tool.cpp
     SOURCES backend/toolssectionsmodel.h backend/toolssectionsmodel.cpp
     SOURCES backend/tools.h backend/tools.cpp

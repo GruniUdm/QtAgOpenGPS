@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QtQml/qqml.h>
 #include <QObjectBindableProperty>
-#include "sectionsmodel.h"
+#include "sectionbuttonsmodel.h"
 #include "simpleproperty.h"
 
 class Tool : public QObject
@@ -14,12 +14,12 @@ class Tool : public QObject
     Q_OBJECT
     QML_ELEMENT
 
-    Q_PROPERTY(SectionsModel* sections READ sections CONSTANT)
+    Q_PROPERTY(SectionButtonsModel* sectionButtons READ sectionButtons CONSTANT)
 
 public:
     explicit Tool(QObject *parent = nullptr);
 
-    SectionsModel* sections() const { return m_sections; }
+    SectionButtonsModel* sectionButtons() const { return m_sectionButtons; }
 
     SIMPLE_BINDABLE_PROPERTY(double, easting)
     SIMPLE_BINDABLE_PROPERTY(double, northing)
@@ -27,8 +27,14 @@ public:
     SIMPLE_BINDABLE_PROPERTY(double, longitude)
     SIMPLE_BINDABLE_PROPERTY(double, heading)
 
+    Q_INVOKABLE void setSectionButtonState(int sectionButtonNo, SectionButtonsModel::State new_state);
+    Q_INVOKABLE void setAllSectionButtonsToState(SectionButtonsModel::State new_state);
+
+signals:
+    void sectionButtonStateChanged(int sectionButtonNo);
+
 private:
-    SectionsModel *m_sections;
+    SectionButtonsModel *m_sectionButtons;
 
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_easting, 0, &Tool::eastingChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_northing, 0, &Tool::northingChanged)

@@ -6,7 +6,7 @@
 #include <QAbstractListModel>
 #include <QVector>
 #include <QPointer>
-#include "sectionsmodel.h"
+#include "sectionbuttonsmodel.h"
 
 class ToolsSectionsModel : public QAbstractListModel
 {
@@ -21,7 +21,7 @@ public:
 
     struct ToolSections {
         int index;
-        QPointer<SectionsModel> sectionsModel;
+        QPointer<SectionButtonsModel> sectionsModel;
     };
 
     explicit ToolsSectionsModel(QObject *parent = nullptr);
@@ -34,14 +34,14 @@ public:
     // Data management
     void setToolsSections(const QVector<ToolSections> &new_toolsSections);
     void addToolSections(const ToolSections &tool);
-    void addSectionsModel(SectionsModel *model);
+    void addSectionsModel(SectionButtonsModel *model);
     void removeRowAt(int at_index);
     void clear();
 
     // Utility
     int count() const { return tools.count(); }
     ToolSections toolAt(int at_index) const;
-    SectionsModel* sectionsModelAt(int at_index) const;
+    SectionButtonsModel* sectionsModelAt(int at_index) const;
 
     QVector<ToolSections> tools;
 

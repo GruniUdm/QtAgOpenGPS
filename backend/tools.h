@@ -47,7 +47,16 @@ public:
     Q_INVOKABLE void clearTools();
     Q_INVOKABLE Tool* toolAt(int index) const;
 
+    Q_INVOKABLE void setSectionButtonState(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state);
+    Q_INVOKABLE void setAllSectionButtonsToState(int toolIndex, SectionButtonsModel::State new_state);
+
+public slots:
+    //generate a single tool from settings, which is all QtAOG supports
+    //for now.  tool index will always be 1 until multiple tools are supported
+    void generateToolFromSettings();
+
 signals:
+    void sectionButtonStateChanged(int toolIndex, int sectionButtonNo);
     void toolsListChanged();
 
 private:
