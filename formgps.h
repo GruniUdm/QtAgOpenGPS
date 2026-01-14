@@ -77,10 +77,6 @@ class FormGPS : public QQmlApplicationEngine
     // ===== Q_PROPERTY MIGRATION - OPTION A =====
     // 67 properties organized in groups for 50Hz optimization
 
-    // === Position GPS (6 properties) - Critical for navigation - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(QVariantList sectionButtonState READ sectionButtonState WRITE setSectionButtonState
-               NOTIFY sectionButtonStateChanged BINDABLE bindableSectionButtonState)
-
     // === Steering Control (6 properties) - Critical for autosteer - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(double calcSteerAngleInner READ calcSteerAngleInner WRITE setCalcSteerAngleInner
                NOTIFY calcSteerAngleInnerChanged BINDABLE bindableCalcSteerAngleInner)
@@ -137,11 +133,6 @@ public:
 
     // ===== Q_PROPERTY GETTERS, SETTERS AND BINDABLES =====
     // Manual declarations for all Rectangle Pattern properties
-
-    // Position GPS
-    QVariantList sectionButtonState() const;
-    void setSectionButtonState(const QVariantList& value);
-    QBindable<QVariantList> bindableSectionButtonState();
 
     // Steering Control
     double calcSteerAngleInner() const;
@@ -1029,9 +1020,6 @@ signals:
     // ===== Q_PROPERTY SIGNALS - Qt 6.8 Rectangle Pattern NOTIFY signals =====
     // CRITICAL: All properties need NOTIFY signals for QML bindings to work properly
 
-    // Position GPS signals
-    void sectionButtonStateChanged();
-
     // Vehicle State signals
     void toolEastingChanged();
     void toolNorthingChanged();
@@ -1087,10 +1075,6 @@ private:
 
     // ===== Q_PROPERTY MEMBER VARIABLES =====
     // 69 members for optimized properties
-
-    // Position GPS (6) - Qt 6.8 Rectangle Pattern
-    // Section button state - Qt 6.8 BINDABLE Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariantList, m_sectionButtonState, &FormGPS::sectionButtonStateChanged)
 
     // Steering Control (6) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_calcSteerAngleInner, &FormGPS::calcSteerAngleInnerChanged)

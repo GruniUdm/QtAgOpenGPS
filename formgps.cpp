@@ -127,41 +127,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 // RECTANGLE PATTERN MANUAL IMPLEMENTATIONS (Qt 6.8 Required)
 // ============================================================================
 // Manual getters, setters, and bindables for Q_OBJECT_BINDABLE_PROPERTY
-
-// ===== GPS Position Properties =====
-QVariantList FormGPS::sectionButtonState() const {
-    // Read directly from tool array - single source of truth
-    QVariantList state;
-    for (int i = 0; i < 65; i++) {
-        state.append(static_cast<int>(tool.sectionButtonState[i]));
-    }
-    return state;
-}
-void FormGPS::setSectionButtonState(const QVariantList& value) {
-    // Simple setter - update tool array and section logic directly
-    qDebug() << "DEBUG FormGPS::setSectionButtonState CALLED with" << value.size() << "elements";
-
-    for (int j = 0; j < qMin(value.size(), 65); j++) {
-        MainWindowState::ButtonStates buttonState = static_cast<MainWindowState::ButtonStates>(value[j].toInt());
-        tool.sectionButtonState[j] = buttonState;
-
-        // Update section logic only for active sections
-        if (j < tool.numOfSections) {
-            bool newSectionOn = (buttonState == MainWindowState::ButtonStates::Auto || buttonState == MainWindowState::ButtonStates::On);
-            tool.section[j].isSectionOn = newSectionOn;
-            tool.section[j].sectionOnRequest = newSectionOn;
-            tool.section[j].sectionOffRequest = !newSectionOn;
-        }
-    }
-
-    // Simple BINDABLE notification - no recursive calls possible
-    m_sectionButtonState = value;
-}
-
-// syncSectionButtonStateToQML() REMOVED - Qt BINDABLE handles automatic synchronization
-
-QBindable<QVariantList> FormGPS::bindableSectionButtonState() { return &m_sectionButtonState; }
-
 // ===== Steering Properties =====
 double FormGPS::calcSteerAngleInner() const { return m_calcSteerAngleInner; }
 void FormGPS::setCalcSteerAngleInner(double calcSteerAngleInner) { m_calcSteerAngleInner = calcSteerAngleInner; }
