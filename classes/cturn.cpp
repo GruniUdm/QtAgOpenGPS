@@ -2,7 +2,6 @@
 #include "glm.h"
 #include "classes/settingsmanager.h"
 #include "cabline.h"
-#include "formgps.h"
 
 /************/
 /* CTurn.cs *
