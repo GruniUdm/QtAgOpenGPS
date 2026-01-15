@@ -8,8 +8,9 @@
 
 #include "fieldinfo.h"
 #include "fixframe.h"
-
+#include "vec2.h"
 #include "simpleproperty.h"
+#include "cnmea.h"
 
 class Backend : public QObject
 {
@@ -20,6 +21,9 @@ class Backend : public QObject
     Q_PROPERTY(FieldInfo currentField READ currentField NOTIFY currentFieldChanged)
     Q_PROPERTY(FixFrame fixFrame READ fixFrame NOTIFY fixFrameChanged)
     Q_PROPERTY(QObject* aogRenderer MEMBER aogRenderer NOTIFY aogRendererChanged) //only ever written to by QML
+
+    Q_PROPERTY(CNMEA *pn READ pn CONSTANT)
+
 public:
     enum class ButtonStates {Off = 0,Auto = 1,On = 2};
 
@@ -39,6 +43,7 @@ public:
     //allow direct access from C++
     FieldInfo m_currentField;
     FixFrame m_fixFrame;
+    CNMEA *m_pn;
 
     QObject *aogRenderer = nullptr;
 
@@ -48,6 +53,7 @@ public:
     //const getter for QML
     FieldInfo currentField() const { return m_currentField; }
     FixFrame fixFrame() const { return m_fixFrame; }
+    CNMEA *pn() const { return m_pn; }
 
     //mutation methods for currentField
     Q_INVOKABLE void currentField_setDistanceUser(double newdist) {
@@ -92,6 +98,7 @@ signals:
     void timedMessage(int timeout, QString s1, QString s2);
 
 private:
+
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isJobStarted, false, &Backend::isJobStartedChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_applicationClosing, false, &Backend::applicationClosingChanged)
 };
