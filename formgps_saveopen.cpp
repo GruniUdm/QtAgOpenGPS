@@ -881,6 +881,8 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
 
 bool FormGPS::FileOpenField(QString fieldDir, int flags)
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + fieldDir;
 #else
@@ -959,8 +961,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         int comma = line.indexOf(',');
         if (comma != -1) {
             // Phase 6.3.1: Use PropertyWrapper for safe property access
-            this->setLatStart(QStringView(line).left(comma).toDouble());
-            this->setLonStart(QStringView(line).mid(comma + 1).toDouble());
+            pn.setLatStart(QStringView(line).left(comma).toDouble());
+            pn.setLonStart(QStringView(line).mid(comma + 1).toDouble());
         }
 
         // Qt 6.8 TRACK RESTORATION: Load active track index if present
@@ -991,17 +993,17 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         if (SimInterface::instance()->isRunning())
         {
             // Phase 6.3.1: Use PropertyWrapper for safe property access
-            pn.latitude = this->latStart();
-            pn.longitude = this->lonStart();
+            pn.latitude = pn.latStart();
+            pn.longitude = pn.lonStart();
 
-            SettingsManager::instance()->setGps_simLatitude(this->latStart());
-            SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+            SettingsManager::instance()->setGps_simLatitude(pn.latStart());
+            SettingsManager::instance()->setGps_simLongitude(pn.lonStart());
             SimInterface::instance()->reset();
 
-            pn.SetLocalMetersPerDegree(this);
+            pn.SetLocalMetersPerDegree();
         } else {
             // Phase 6.0.4: Use Q_PROPERTY direct access instead of qmlItem
-            pn.SetLocalMetersPerDegree(this);
+            pn.SetLocalMetersPerDegree();
         }
     }
 
@@ -1642,6 +1644,8 @@ void FormGPS::FileCreateField()
     //$Offsets
     //533172,5927719,12 - offset easting, northing, zone
 
+    CNMEA &pn = *Backend::instance()->pn();
+
     if( ! Backend::instance()->isJobStarted())
     {
         qDebug() << "field not open";
@@ -1699,7 +1703,7 @@ void FormGPS::FileCreateField()
     writer << "StartFix" << Qt::endl;
     writer << pn.latitude << "," << pn.longitude << Qt::endl;
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.SetLocalMetersPerDegree(this);
+    pn.SetLocalMetersPerDegree();
 
     // Qt 6.8 TRACK RESTORATION: Save active track index for restoration when reopening field
     writer << "$ActiveTrackIndex" << Qt::endl;
@@ -1715,6 +1719,8 @@ void FormGPS::FileCreateElevation()
     //Bob_Feb11
     //$Offsets
     //533172,5927719,12 - offset easting, northing, zone
+
+    CNMEA &pn = *Backend::instance()->pn();
 
     QString myFilename;
 
@@ -2447,6 +2453,8 @@ void FormGPS::FileSaveFlags()
 
 void FormGPS::FileSaveNMEA()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -2484,6 +2492,8 @@ void FormGPS::FileSaveNMEA()
 
 void FormGPS::FileSaveElevation()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -2521,6 +2531,8 @@ void FormGPS::FileSaveElevation()
 
 void FormGPS::FileSaveSingleFlagKML2(int flagNumber)
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -2559,7 +2571,7 @@ void FormGPS::FileSaveSingleFlagKML2(int flagNumber)
     FlagModel::Flag flag;
     flag = FlagsInterface::instance()->flagModel()->flagAt(flagNumber);
 
-    pn.ConvertLocalToWGS84(flag.northing, flag.easting, lat, lon, this);
+    pn.ConvertLocalToWGS84(flag.northing, flag.easting, lat, lon);
 
     writer << "<Document>" << Qt::endl;
 
@@ -2705,7 +2717,7 @@ QString FormGPS::GetBoundaryPointsLatLon(int bndNum)
     for (int i = 0; i < bnd.bndList[bndNum].fenceLine.count(); i++)
     {
         // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.ConvertLocalToWGS84(bnd.bndList[bndNum].fenceLine[i].northing, bnd.bndList[bndNum].fenceLine[i].easting, lat, lon, this);
+    Backend::instance()->pn()->ConvertLocalToWGS84(bnd.bndList[bndNum].fenceLine[i].northing, bnd.bndList[bndNum].fenceLine[i].easting, lat, lon);
         sb_writer << qSetRealNumberPrecision(7)
                   << lon << ','
                   << lat << ",0 "

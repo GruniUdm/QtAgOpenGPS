@@ -4,6 +4,7 @@
 //
 #include "formgps.h"
 #include "modulecomm.h"
+#include "backend.h"
 
 /***************************************
  * callbacks for classes to connect to *
@@ -28,7 +29,7 @@ void FormGPS::connect_classes()
     connect(ModuleComm::instance(), &ModuleComm::turnOffAutoSections, this, &FormGPS::onSectionMasterAutoOff, Qt::QueuedConnection);
     connect(ModuleComm::instance(), &ModuleComm::turnOffManualSections, this, &FormGPS::onSectionMasterManualOff, Qt::QueuedConnection);
 
-    connect(&pn, &CNMEA::checkZoomWorldGrid, &worldGrid, &CWorldGrid::checkZoomWorldGrid, Qt::QueuedConnection);
+    connect(Backend::instance()->pn(), &CNMEA::checkZoomWorldGrid, &worldGrid, &CWorldGrid::checkZoomWorldGrid, Qt::QueuedConnection);
 
     connect(&recPath, &CRecordedPath::turnOffSectionMasterAuto, this, &FormGPS::onSectionMasterAutoOff, Qt::QueuedConnection);
     connect(&recPath, &CRecordedPath::stoppedDriving, this, &FormGPS::onStoppedDriving, Qt::QueuedConnection);

@@ -26,6 +26,8 @@ void FormGPS::onSimNewPosition(double vtgSpeed,
                      double altitude,
                      double satellitesTracked)
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
     // ✅ PHASE 6.0.21.13: Ignore simulation data when simulation is OFF
     // Prevents conflict: simulation timer still running briefly after disabling simulation
     // Symmetric to Phase 6.0.21.12 which blocks UDP when simulation ON
@@ -53,7 +55,7 @@ void FormGPS::onSimNewPosition(double vtgSpeed,
     if (ahrs.imuHeading >= 360) ahrs.imuHeading -= 360;
 
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.ConvertWGS84ToLocal(latitude,longitude,pn.fix.northing,pn.fix.easting, this);
+    pn.ConvertWGS84ToLocal(latitude,longitude,pn.fix.northing,pn.fix.easting);
     pn.latitude = latitude;
     pn.longitude = longitude;
 

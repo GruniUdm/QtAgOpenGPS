@@ -189,8 +189,8 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     //initialize interface properties (MOVED to initializeQMLInterfaces() after PropertyWrapper init)
     MainWindowState::instance()->set_isBtnAutoSteerOn(false);
-    this->setLatStart(0.0);
-    this->setLonStart(0.0);
+    Backend::instance()->pn()->setLatStart(0.0);
+    Backend::instance()->pn()->setLonStart(0.0);
 
     connect(SettingsManager::instance(), &SettingsManager::menu_languageChanged, this, &FormGPS::on_language_changed);
 

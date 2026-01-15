@@ -321,9 +321,9 @@ Item{
         }
 
         function update_ab() {
-            var pta = aog.convertWGS84ToLocal(Number(latPointA.text),
+            var pta = Backend.pn.convertWGS84ToLocal(Number(latPointA.text),
                                               Number(lonPointA.text))
-            var ptb = aog.convertWGS84ToLocal(Number(latPointB.text),
+            var ptb = Backend.pn.convertWGS84ToLocal(Number(latPointB.text),
                                               Number(lonPointB.text))
 
             TracksInterface.mark_start(pta[1], pta[0], 0)
@@ -498,7 +498,7 @@ Item{
         }
 
         function update_a_heading() {
-            var pta = aog.convertWGS84ToLocal(Number(latPointAA.text),
+            var pta = Backend.pn.convertWGS84ToLocal(Number(latPointAA.text),
                                               Number(lonPointAA.text))
 
             TracksInterface.mark_start(pta[1], pta[0], 0)
@@ -822,7 +822,7 @@ Item{
 
                     onEditingFinished: {
                         if (a_manual_longitude.text != "") {
-                            const [northing, easting] = aog.convertWGS84ToLocal(Number(a_manual_latitude.text), Number(a_manual_longitude.text))
+                            const [northing, easting] = Backend.pn.convertWGS84ToLocal(Number(a_manual_latitude.text), Number(a_manual_longitude.text))
                             abSetter.a_easting = easting
                             abSetter.a_northing = northing
                             abSetter.heading = Tools.toolsList[0].toolHeading
@@ -845,7 +845,7 @@ Item{
                     }
                     onEditingFinished: {
                         if (a_manual_latitude.text != "") {
-                            const [northing, easting] = aog.convertWGS84ToLocal(Number(a_manual_latitude.text), Number(a_manual_longitude.text))
+                            const [northing, easting] = Backend.pn.convertWGS84ToLocal(Number(a_manual_latitude.text), Number(a_manual_longitude.text))
                             abSetter.a_easting = easting
                             abSetter.a_northing = northing
                             linesInterface.abLine_setA(true, abSetter.a_easting, abSetter.a_northing, abSetter.heading)
@@ -908,7 +908,7 @@ Item{
                         abSetter.b_easting = Math.cos(abSetter.heading) * 100 + abSetter.a_easting
                         abSetter.b_northing = Math.sin(abSetter.heading) * 100 + abSetter.a_northing
 
-                        const [latitude, longitude] = aog.convertLocalToWGS84(abSetter.b_northing, abSetter.b_easting)
+                        const [latitude, longitude] = Backend.pn.convertLocalToWGS84(abSetter.b_northing, abSetter.b_easting)
                         b_manual_latitude.set_without_onchange(latitude)
                         b_manual_longitude.set_without_onchange(longitude)
                     }
@@ -966,7 +966,7 @@ Item{
                     placeholderText: qsTr("Latitude")
                     onEditingFinished: {
                         if (b_manual_longitude.text != "") {
-                            const [northing, easting] = aog.convertWGS84ToLocal(Number(b_manual_latitude.text), Number(b_manual_longitude.text))
+                            const [northing, easting] = Backend.pn.convertWGS84ToLocal(Number(b_manual_latitude.text), Number(b_manual_longitude.text))
                             abSetter.b_easting = easting
                             abSetter.b_northing = northing
 
@@ -991,7 +991,7 @@ Item{
                     placeholderText: qsTr("Latitude")
                     onEditingFinished: {
                         if (b_manual_latitude.text != "") {
-                            const [northing, easting] = aog.convertWGS84ToLocal(Number(b_manual_latitude.text), Number(b_manual_longitude.text))
+                            const [northing, easting] = Backend.pn.convertWGS84ToLocal(Number(b_manual_latitude.text), Number(b_manual_longitude.text))
                             abSetter.b_easting = easting
                             abSetter.b_northing = northing
                             if (abSetter.heading < 0) abSetter.heading += 2 * Math.PI

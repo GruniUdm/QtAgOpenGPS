@@ -183,53 +183,6 @@ void FormGPS::setLblDiameter(const QString &value) { m_lblDiameter = value; }
 QBindable<QString> FormGPS::bindableLblDiameter() { return &m_lblDiameter; }
 
 // ===== Button State Properties =====
-double FormGPS::latStart() const { return m_latStart.value(); }
-void FormGPS::setLatStart(double latStart) {
-    qDebug() << "[GEODETIC_DEBUG] setLatStart called with value:" << latStart;
-    m_latStart = latStart;  // ✅ Qt 6.8 Official Doc - Direct assignment emits signal
-    updateMPerDegreeLat();
-    qDebug() << "[GEODETIC_DEBUG] After set - m_latStart:" << m_latStart.value() << "mPerDegreeLat:" << m_mPerDegreeLat;
-}
-QBindable<double> FormGPS::bindableLatStart() { return &m_latStart; }
-
-double FormGPS::lonStart() const { return m_lonStart.value(); }
-void FormGPS::setLonStart(double lonStart) {
-    qDebug() << "[GEODETIC_DEBUG] setLonStart called with value:" << lonStart;
-    m_lonStart = lonStart;  // ✅ Qt 6.8 Official Doc - Direct assignment emits signal
-}
-QBindable<double> FormGPS::bindableLonStart() { return &m_lonStart; }
-
-// Geodetic Conversion - Phase 6.0.20 Task 24 Step 3.5
-// mPerDegreeLat getter is inline in .h (simple member variable, no BINDABLE overhead)
-
-void FormGPS::updateMPerDegreeLat() {
-    // WGS84 geodetic formula for meters per degree latitude
-    // Based on latStart (fixed reference point for the field)
-    double latStart = m_latStart.value();
-    m_mPerDegreeLat = 111132.92 - 559.82 * cos(2.0 * latStart * 0.01745329251994329576923690766743)
-                    + 1.175 * cos(4.0 * latStart * 0.01745329251994329576923690766743)
-                    - 0.0023 * cos(6.0 * latStart * 0.01745329251994329576923690766743);
-    // Direct assignment - no signal emission (C++ only, not exposed to QML)
-}
-
-// Geodetic Conversion Functions - Phase 6.0.20 Task 24 Step 3.5
-// Wrappers for QML - delegate to CNMEA for actual conversion logic
-QVariantList FormGPS::convertLocalToWGS84(double northing, double easting) {
-    double outLat, outLon;
-    // Call CNMEA conversion function (single source of truth)
-    pn.ConvertLocalToWGS84(northing, easting, outLat, outLon, this);
-    // Return [latitude, longitude] as QVariantList for QML
-    return QVariantList() << outLat << outLon;
-}
-
-QVariantList FormGPS::convertWGS84ToLocal(double latitude, double longitude) {
-    double outNorthing, outEasting;
-    // Call CNMEA conversion function (single source of truth)
-    pn.ConvertWGS84ToLocal(latitude, longitude, outNorthing, outEasting, this);
-    // Return [northing, easting] as QVariantList for QML
-    return QVariantList() << outNorthing << outEasting;
-}
-
 // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2
 bool FormGPS::isReverseWithIMU() const { return m_isReverseWithIMU; }
 void FormGPS::setIsReverseWithIMU(bool value) { m_isReverseWithIMU = value; }
@@ -329,6 +282,7 @@ void FormGPS::processOverlapCount()
 // Prevents gray screen bug when toggling between simulation and real GPS
 void FormGPS::ResetGPSState(bool toSimMode)
 {
+    CNMEA &pn = *Backend::instance()->pn();
     // PHASE 6.0.42.7: Save and close field before mode switch
     // Field data is tied to current coordinate system (latStart/lonStart)
     // Switching modes changes coordinate reference → must save field before switch
@@ -369,12 +323,12 @@ void FormGPS::ResetGPSState(bool toSimMode)
 
         // CRITICAL: Initialize latStart/lonStart for sim mode
         // Without this, ConvertWGS84ToLocal uses wrong reference point
-        setLatStart(pn.latitude);
-        setLonStart(pn.longitude);
-        pn.SetLocalMetersPerDegree(this);
+        pn.setLatStart(pn.latitude);
+        pn.setLonStart(pn.longitude);
+        pn.SetLocalMetersPerDegree();
 
         // Convert sim position to local coords
-        pn.ConvertWGS84ToLocal(SimInterface::instance()->latitude, SimInterface::instance()->longitude, pn.fix.northing, pn.fix.easting, this);
+        pn.ConvertWGS84ToLocal(SimInterface::instance()->latitude, SimInterface::instance()->longitude, pn.fix.northing, pn.fix.easting);
 
         // Initialize raw GPS position for sim (used for heading calculation)
         {
@@ -474,6 +428,8 @@ bool FormGPS::detectGPSJump(double newLat, double newLon)
 // 4. Update last known position for future jump detection
 void FormGPS::handleGPSJump(double newLat, double newLon)
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
     qDebug() << "GPS JUMP DETECTED - regenerating OpenGL center";
     qDebug() << "Old position: lat=" << m_lastKnownLatitude << "lon=" << m_lastKnownLongitude;
     qDebug() << "New position: lat=" << newLat << "lon=" << newLon;
@@ -491,9 +447,9 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
     // Update latStart/lonStart with new GPS position
     // These are the reference coordinates for WGS84->Local conversion
     // OpenGL rendering uses local meters (northing/easting) calculated from these
-    setLatStart(newLat);
-    setLonStart(newLon);
-    pn.SetLocalMetersPerDegree(this);  // Recalculate meters per degree for new latitude
+    pn.setLatStart(newLat);
+    pn.setLonStart(newLon);
+    pn.SetLocalMetersPerDegree();  // Recalculate meters per degree for new latitude
 
     // PHASE 6.0.42.1: Reset GPS initialization for reinitialization cycle
     // BUT set isFirstFixPositionSet = true because we just initialized latStart/lonStart above
@@ -510,7 +466,7 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
 
     // CRITICAL: Convert new GPS position to local coordinates using new reference point
     // This ensures pn.fix.northing/easting are valid for the first UpdateFixPosition() call
-    pn.ConvertWGS84ToLocal(newLat, newLon, pn.fix.northing, pn.fix.easting, this);
+    pn.ConvertWGS84ToLocal(newLat, newLon, pn.fix.northing, pn.fix.easting);
 
     // PHASE 6.0.42.1: Initialize raw GPS position for heading calculation
     // Symmetric to simulation mode initialization (formgps_sim.cpp:82-85)
@@ -545,6 +501,8 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
 
 void FormGPS::tmrWatchdog_timeout()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
     //TODO: replace all this with individual timers for cleaner
 
     // PHASE 6.0.40: Detect mode change and reset GPS state
@@ -574,9 +532,9 @@ void FormGPS::tmrWatchdog_timeout()
         // Problem: onSimNewPosition() calls ConvertWGS84ToLocal() BEFORE UpdateFixPosition() initializes latStart/lonStart
         // Solution: Initialize latStart/lonStart here when simulation starts (similar to real GPS mode)
         // This ensures ConvertWGS84ToLocal() uses correct reference point from first conversion
-        this->setLatStart(pn.latitude);
-        this->setLonStart(pn.longitude);
-        pn.SetLocalMetersPerDegree(this);
+        pn.setLatStart(pn.latitude);
+        pn.setLonStart(pn.longitude);
+        pn.SetLocalMetersPerDegree();
 
         gpsHz = 10;
         SimInterface::instance()->startUp();
@@ -711,11 +669,8 @@ void FormGPS::JobClose()
     sbGrid.clear();
 
     //reset field offsets
-    //if (!isKeepOffsetsOn)
-    //{
-        pn.fixOffset.easting = 0;
-        pn.fixOffset.northing = 0;
-    //}
+
+    Backend::instance()->pn()->set_fixOffset(Vec2(0,0));
 
     //turn off headland
     MainWindowState::instance()->set_isHeadlandOn(false); //this turns off the button

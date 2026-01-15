@@ -87,11 +87,11 @@ Window {
         console.log(qmlLog, "=== END FACTORY FUNCTION DEBUG ===")
 
         // Phase 6.0.20 Task 24 Step 3.5 - Test geodetic conversion functions
-        console.log(qmlLog, "[GEODETIC_TEST] latStart:", aog.latStart, "lonStart:", aog.lonStart )
-        if (aog.latStart !== 0 && aog.lonStart !== 0) {
-            var local = aog.convertWGS84ToLocal(aog.latStart, aog.lonStart)
+        console.log(qmlLog, "[GEODETIC_TEST] latStart:", Backend.pn.latStart, "lonStart:", Backend.pn.lonStart )
+        if (Backend.pn.latStart !== 0 && Backend.pn.lonStart !== 0) {
+            var local = Backend.pn.convertWGS84ToLocal(Backend.pn.latStart, Backend.pn.lonStart)
             console.log(qmlLog, "[GEODETIC_TEST] WGS84->Local origin conversion: northing=", local[0], "easting=", local[1])
-            var wgs84 = aog.convertLocalToWGS84(local[0], local[1])
+            var wgs84 = Backend.pn.convertLocalToWGS84(local[0], local[1])
             console.log(qmlLog, "[GEODETIC_TEST] Local->WGS84 round-trip: lat=", wgs84[0], "lon=", wgs84[1])
         } else {
             console.log(qmlLog, "[GEODETIC_TEST] Field origin not set - skipping conversion test")
@@ -106,11 +106,11 @@ Window {
     Connections {
         target: aog
         function onLatStartChanged() {
-            if (aog.latStart !== 0 && aog.lonStart !== 0) {
-                console.log(qmlLog, "[GEODETIC_TEST] Field loaded - latStart:", aog.latStart, "lonStart:", aog.lonStart, "mPerDegreeLat:", aog.mPerDegreeLat)
-                var local = aog.convertWGS84ToLocal(aog.latStart, aog.lonStart)
+            if (Backend.pn.latStart !== 0 && Backend.pn.lonStart !== 0) {
+                console.log(qmlLog, "[GEODETIC_TEST] Field loaded - latStart:", Backend.pn.latStart, "lonStart:", Backend.pn.lonStart, "mPerDegreeLat:", Backend.pn.mPerDegreeLat)
+                var local = Backend.pn.convertWGS84ToLocal(Backend.pn.latStart, Backend.pn.lonStart)
                 console.log(qmlLog, "[GEODETIC_TEST] WGS84->Local origin: northing=", local[0], "easting=", local[1])
-                var wgs84 = aog.convertLocalToWGS84(local[0], local[1])
+                var wgs84 = Backend.pn.convertLocalToWGS84(local[0], local[1])
                 console.log(qmlLog, "[GEODETIC_TEST] Local->WGS84 round-trip: lat=", wgs84[0], "lon=", wgs84[1])
             }
         }

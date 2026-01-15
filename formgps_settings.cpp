@@ -4,9 +4,12 @@
 // This loads the setting (or some of them) into variables, that we can access later
 #include "formgps.h"
 #include "classes/settingsmanager.h"
+#include "backend.h"
 
 void FormGPS::loadSettings()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
     isMetric = SettingsManager::instance()->menu_isMetric();
 
     isUTurnOn = SettingsManager::instance()->feature_isUTurnOn();

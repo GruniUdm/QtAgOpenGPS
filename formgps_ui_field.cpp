@@ -18,6 +18,7 @@
 #include "cboundarylist.h"
 #include "fieldinterface.h"
 #include "siminterface.h"
+#include "backend.h"
 
 
 void FormGPS::field_update_list() {
@@ -93,7 +94,7 @@ void FormGPS::field_open(QString field_name) {
 }
 
 void FormGPS::field_new(QString field_name) {
-    // Phase 6.0.4: PropertyWrapper completely removed - using Qt 6.8 Q_PROPERTY native architecture
+    CNMEA &pn = *Backend::instance()->pn();
 
     //assume the GUI will vet the name a little bit
     lock.lockForWrite();
@@ -111,11 +112,11 @@ void FormGPS::field_new(QString field_name) {
     JobNew();
 
     // Phase 6.3.1: Use PropertyWrapper for safe property access
-    this->setLatStart(pn.latitude);
+    pn.setLatStart(pn.latitude);
     // Phase 6.3.1: Use PropertyWrapper for safe property access
-    this->setLonStart(pn.longitude);
+    pn.setLonStart(pn.longitude);
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.SetLocalMetersPerDegree(this);
+    pn.SetLocalMetersPerDegree();
 
     FileCreateField();
     FileCreateSections();
@@ -290,6 +291,8 @@ void FormGPS::FindLatLon(QString filename)
 }
 
 void FormGPS::LoadKMLBoundary(QString filename) {
+    CNMEA &pn = *Backend::instance()->pn();
+
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "Error opening file:" << file.errorString();
@@ -359,7 +362,7 @@ void FormGPS::LoadKMLBoundary(QString filename) {
                     lonK = lonVal;
 
                     double easting = 0.0, northing = 0.0;
-                    pn.ConvertWGS84ToLocal(latK, lonK, northing, easting, this);
+                    pn.ConvertWGS84ToLocal(latK, lonK, northing, easting);
                     Vec3 temp(easting, northing, 0);
                     New.fenceLine.append(temp);
                 }
@@ -383,9 +386,9 @@ void FormGPS::LoadKMLBoundary(QString filename) {
 }
 
 void FormGPS::field_new_from_KML(QString field_name, QString file_name) {
-    qDebug() << field_name << " " << file_name;
+    CNMEA &pn = *Backend::instance()->pn();
 
-    // Phase 6.0.4: PropertyWrapper completely removed - using Qt 6.8 Q_PROPERTY native architecture
+    qDebug() << field_name << " " << file_name;
 
     //assume the GUI will vet the name a little bit
     field_close();
@@ -409,20 +412,20 @@ void FormGPS::field_new_from_KML(QString field_name, QString file_name) {
     FindLatLon(file_name);
 
     // Phase 6.3.1: Use PropertyWrapper for safe property access
-    this->setLatStart(latK);
+    pn.setLatStart(latK);
     // Phase 6.3.1: Use PropertyWrapper for safe property access
-    this->setLonStart(lonK);
+    pn.setLonStart(lonK);
     if (SimInterface::instance()->isRunning())
         {
-            pn.latitude = this->latStart();
-            pn.longitude = this->lonStart();
+            pn.latitude = pn.latStart();
+            pn.longitude = pn.lonStart();
 
-            SettingsManager::instance()->setGps_simLatitude(this->latStart());
-            SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+            SettingsManager::instance()->setGps_simLatitude(pn.latStart());
+            SettingsManager::instance()->setGps_simLongitude(pn.lonStart());
             SimInterface::instance()->reset();
         }
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.SetLocalMetersPerDegree(this);
+    pn.SetLocalMetersPerDegree();
 
 
     FileCreateField();

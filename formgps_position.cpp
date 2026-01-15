@@ -45,6 +45,8 @@ void FormGPS::UpdateFixPosition()
 {
     QLocale locale;
 
+    CNMEA &pn = *Backend::instance()->pn();
+
     // PHASE 6.0.33: Declare rawGpsPosition at function start (before goto labels)
     // Used to separate RAW GPS positions (for heading calc) from CORRECTED positions (for display)
     // Now copies from m_rawGpsPosition member (set by onNmeaDataReady at 8 Hz)
@@ -834,7 +836,7 @@ void FormGPS::UpdateFixPosition()
     double rollCorrectedLat;
     double rollCorrectedLon;
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-        pn.ConvertLocalToWGS84(pn.fix.northing, pn.fix.easting, rollCorrectedLat, rollCorrectedLon, this);
+    pn.ConvertLocalToWGS84(pn.fix.northing, pn.fix.easting, rollCorrectedLat, rollCorrectedLon);
 
     QByteArray pgnRollCorrectedLatLon(22, 0);
 
@@ -1210,7 +1212,7 @@ void FormGPS::UpdateFixPosition()
     // Calculate tool position once
     double tool_lat, tool_lon;
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-        pn.ConvertLocalToWGS84(CVehicle::instance()->pivotAxlePos.northing, CVehicle::instance()->pivotAxlePos.easting, tool_lat, tool_lon, this);
+    pn.ConvertLocalToWGS84(CVehicle::instance()->pivotAxlePos.northing, CVehicle::instance()->pivotAxlePos.easting, tool_lat, tool_lon);
 
     CVehicle::instance()->set_avgPivDistance(CVehicle::instance()->avgPivDistance() * 0.5 + CVehicle::instance()->guidanceLineDistanceOff() * 0.5);
 
@@ -1294,6 +1296,8 @@ void FormGPS::UpdateFixPosition()
 
 void FormGPS::TheRest()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
     //positions and headings
     CalculatePositionHeading();
 
@@ -2188,6 +2192,7 @@ void FormGPS::processSectionLookahead() {
 
 void FormGPS::CalculatePositionHeading()
 {
+    CNMEA &pn = *Backend::instance()->pn();
     // #region pivot hitch trail
     //Probably move this into CVehicle
 
@@ -2498,6 +2503,7 @@ void FormGPS::AddContourPoints()
 //add the points for section, contour line points, Area Calc feature
 void FormGPS::AddSectionOrPathPoints()
 {
+    CNMEA &pn = *Backend::instance()->pn();
     if (recPath.isRecordOn)
     {
         //keep minimum speed of 1.0
@@ -2540,6 +2546,8 @@ void FormGPS::AddSectionOrPathPoints()
 //the start of first few frames to initialize entire program
 void FormGPS::InitializeFirstFewGPSPositions()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
     if (!isFirstFixPositionSet)
     {
         // PHASE 6.0.41: Force latStart/lonStart update when switching modes, even if field open
@@ -2559,12 +2567,9 @@ void FormGPS::InitializeFirstFewGPSPositions()
             }
 
             // Valid coordinates → initialize normally
-            // Phase 6.3.1: Use PropertyWrapper for safe property access
-            this->setLatStart(pn.latitude);
-            // Phase 6.3.1: Use PropertyWrapper for safe property access
-            this->setLonStart(pn.longitude);
-            // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-            pn.SetLocalMetersPerDegree(this);
+            pn.setLatStart(pn.latitude);
+            pn.setLonStart(pn.longitude);
+            pn.SetLocalMetersPerDegree();
 
             // PHASE 6.0.41: Clear flag after successful reinitialization
             if (m_forceGPSReinitialization) {
@@ -2573,7 +2578,7 @@ void FormGPS::InitializeFirstFewGPSPositions()
         }
 
         // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-        pn.ConvertWGS84ToLocal(pn.latitude, pn.longitude, pn.fix.northing, pn.fix.easting, this);
+        pn.ConvertWGS84ToLocal(pn.latitude, pn.longitude, pn.fix.northing, pn.fix.easting);
 
         //Draw a grid once we know where in the world we are.
         isFirstFixPositionSet = true;
@@ -2620,6 +2625,7 @@ void FormGPS::InitializeFirstFewGPSPositions()
 // Phase 6.0.21: Receive parsed data from AgIOService broadcast signal
 void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
 {
+    CNMEA &pn = *Backend::instance()->pn();
     if (!data.isValid) return;
 
     // Phase 6.0.21.12: Ignore UDP GPS data when simulation is ON
@@ -2692,7 +2698,7 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
     // → Roll corrections applied to stale northing/easting → tracteur pivote!
     // Simulation does this correctly (formgps_sim.cpp:55) - real mode must match
     if (validGpsFix) {
-        pn.ConvertWGS84ToLocal(pn.latitude, pn.longitude, pn.fix.northing, pn.fix.easting, this);
+        pn.ConvertWGS84ToLocal(pn.latitude, pn.longitude, pn.fix.northing, pn.fix.easting);
     }
 
     // ✅ Problem 14 Fix (Final): Store IMU data in ahrs structure (40 Hz)
@@ -2765,6 +2771,7 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
 
 void FormGPS::onNmeaDataReady(const PGNParser::ParsedData& data)
 {
+    CNMEA &pn = *Backend::instance()->pn();
     // NMEA GPS data handler (~8 Hz)
     // Updates internal structures only - UpdateFixPosition() called by timerGPS at 40 Hz
 
@@ -2786,7 +2793,7 @@ void FormGPS::onNmeaDataReady(const PGNParser::ParsedData& data)
         if (data.latitude != 0.0 && data.longitude != 0.0) {
             pn.latitude = data.latitude;
             pn.longitude = data.longitude;
-            pn.ConvertWGS84ToLocal(pn.latitude, pn.longitude, pn.fix.northing, pn.fix.easting, this);
+            pn.ConvertWGS84ToLocal(pn.latitude, pn.longitude, pn.fix.northing, pn.fix.easting);
 
             // PHASE 6.0.33: Store RAW GPS position (8 Hz updates, immutable)
             // This position is NEVER modified by corrections (antenna offset, roll)

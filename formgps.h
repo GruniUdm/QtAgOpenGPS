@@ -110,15 +110,6 @@ class FormGPS : public QQmlApplicationEngine
     Q_PROPERTY(QString lblDiameter READ lblDiameter WRITE setLblDiameter
                NOTIFY lblDiameterChanged BINDABLE bindableLblDiameter)
 
-    // GPS/NMEA Coordinates - Phase 6.0.4.2
-    // Phase 6.0.20 Task 24 Step 3.5: Read-only Q_PROPERTY (QML cannot modify field origin)
-    Q_PROPERTY(double latStart READ latStart
-               NOTIFY latStartChanged BINDABLE bindableLatStart)
-    Q_PROPERTY(double lonStart READ lonStart
-               NOTIFY lonStartChanged BINDABLE bindableLonStart)
-
-    // mPerDegreeLat: No Q_PROPERTY needed - C++ only (CNMEA/AgIOService read via getter)
-
     // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2 - Qt 6.8 QProperty + BINDABLE
     Q_PROPERTY(bool isReverseWithIMU READ isReverseWithIMU WRITE setIsReverseWithIMU
                NOTIFY isReverseWithIMUChanged BINDABLE bindableIsReverseWithIMU)
@@ -192,24 +183,6 @@ public:
 
     void setSensorData(int value);
     QBindable<int> bindableSensorData();
-
-    // GPS/NMEA Coordinates
-    double latStart() const;
-    void setLatStart(double value);
-    QBindable<double> bindableLatStart();
-
-    double lonStart() const;
-    void setLonStart(double value);
-    QBindable<double> bindableLonStart();
-
-    // Geodetic Conversion - Phase 6.0.20 Task 24 Step 3.5
-    // Simple getter - no Q_PROPERTY (C++ only, not exposed to QML)
-    double mPerDegreeLat() const { return m_mPerDegreeLat; }
-
-    // Geodetic Conversion Functions - Phase 6.0.20 Task 24 Step 3.5
-    // Exposed to QML for coordinate transformations
-    Q_INVOKABLE QVariantList convertLocalToWGS84(double northing, double easting);
-    Q_INVOKABLE QVariantList convertWGS84ToLocal(double latitude, double longitude);
 
     // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2
     bool isReverseWithIMU() const;
@@ -422,10 +395,6 @@ public:
     //create world grid
     //QScopedPointer <CWorldGrid> worldGrid;
     CWorldGrid worldGrid;
-
-    //Parsing object of NMEA sentences
-    //QScopedPointer<CNMEA> pn;
-    CNMEA pn;
 
     //ABLine Instance
     //QScopedPointer<CABLine> ABLine;
@@ -1047,7 +1016,6 @@ signals:
     void lblDiameterChanged();
     void latStartChanged();
     void lonStartChanged();
-    void mPerDegreeLatChanged();
     void isReverseWithIMUChanged();
     void isPatchesChangingColorChanged();
 
@@ -1100,7 +1068,6 @@ private:
     // Additional AOG Properties (9) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_latStart, &FormGPS::latStartChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_lonStart, &FormGPS::lonStartChanged)
-    double m_mPerDegreeLat = 0.0;  // Phase 6.0.20 Task 24 Step 3.5: Simple member (no BINDABLE - C++ only)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isReverseWithIMU, &FormGPS::isReverseWithIMUChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isPatchesChangingColor, &FormGPS::isPatchesChangingColorChanged)
 

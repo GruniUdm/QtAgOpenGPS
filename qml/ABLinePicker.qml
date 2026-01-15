@@ -288,14 +288,14 @@ Dialog {
                         placeholderText: qsTr("Latitude")
 
                         onManualTextChanged: {
-                            if (a_manual_longitude.text != "") {
+                            if (a_manual_longitude.text !== "") {
                                 b_stuff.visible = true
                             }
                         }
 
                         onEditingFinished: {
-                            if (a_manual_longitude.text != "") {
-                                const [northing, easting] = aog.convertWGS84ToLocal(Number(a_manual_latitude.text), Number(a_manual_longitude.text))
+                            if (a_manual_longitude.text !== "") {
+                                const [northing, easting] = Backend.pn.convertWGS84ToLocal(Number(a_manual_latitude.text), Number(a_manual_longitude.text))
                                 abSetter.a_easting = easting
                                 abSetter.a_northing = northing
                                 abSetter.heading = Tools.toolsList[0].heading
@@ -314,13 +314,13 @@ Dialog {
                         Layout.fillWidth: true
                         placeholderText: qsTr("Longitude")
                         onManualTextChanged: {
-                             if (a_manual_latitude.text != "") {
+                             if (a_manual_latitude.text !== "") {
                                 b_stuff.visible = true;
                              }
                         }
                         onEditingFinished: {
-                             if (a_manual_latitude.text != "") {
-                                const [northing, easting] = aog.convertWGS84ToLocal(Number(a_manual_latitude.text), Number(a_manual_longitude.text))
+                             if (a_manual_latitude.text !== "") {
+                                const [northing, easting] = Backend.pn.convertWGS84ToLocal(Number(a_manual_latitude.text), Number(a_manual_longitude.text))
                                 abSetter.a_easting = easting
                                 abSetter.a_northing = northing
                                 // Qt 6.8 FIXED: Use TracksInterface workflow instead of missing aog.setABLinePointA
@@ -387,7 +387,7 @@ Dialog {
                             abSetter.b_easting = Math.cos(abSetter.heading) * 100 + abSetter.a_easting
                             abSetter.b_northing = Math.sin(abSetter.heading) * 100 + abSetter.a_northing
 
-                            const [latitude, longitude] = aog.convertLocalToWGS84(abSetter.b_northing, abSetter.b_easting)
+                            const [latitude, longitude] = Backend.pn.convertLocalToWGS84(abSetter.b_northing, abSetter.b_easting)
                             b_manual_latitude.set_without_onchange(latitude)
                             b_manual_longitude.set_without_onchange(longitude)
                         }
@@ -444,8 +444,8 @@ Dialog {
                         Layout.fillWidth: true
                         placeholderText: qsTr("Latitude")
                         onEditingFinished: {
-                            if (b_manual_longitude.text != "") {
-                                const [northing, easting] = aog.convertWGS84ToLocal(Number(b_manual_latitude.text), Number(b_manual_longitude.text))
+                            if (b_manual_longitude.text !== "") {
+                                const [northing, easting] = Backend.pn.convertWGS84ToLocal(Number(b_manual_latitude.text), Number(b_manual_longitude.text))
                                 abSetter.b_easting = easting
                                 abSetter.b_northing = northing
 
@@ -469,8 +469,8 @@ Dialog {
                         Layout.fillWidth: true
                         placeholderText: qsTr("Latitude")
                         onEditingFinished: {
-                            if (b_manual_latitude.text != "") {
-                                const [northing, easting] = aog.convertWGS84ToLocal(Number(b_manual_latitude.text), Number(b_manual_longitude.text))
+                            if (b_manual_latitude.text !== "") {
+                                const [northing, easting] = Backend.pn.convertWGS84ToLocal(Number(b_manual_latitude.text), Number(b_manual_longitude.text))
                                 abSetter.b_easting = easting
                                 abSetter.b_northing = northing
                                 if (abSetter.heading < 0) abSetter.heading += 2 * Math.PI
