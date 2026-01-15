@@ -166,6 +166,7 @@ AgIOService::AgIOService(QObject *parent)
     m_lastTrafficTime = 0;
 
     m_localCntrMachine = 99;      // 99 = disconnected (as per CTraffic initialization)
+    m_localCntrBlockage = 99;
     m_localCntrSteer = 99;
     m_localCntrIMU = 99;
     m_localCntrUDPOut = 0;
@@ -387,7 +388,7 @@ QVariantList AgIOService::activeProtocols() const
         QVariantMap protocol;
         protocol["id"] = it.key();  // "$PANDA" or "PGN211"
         protocol["description"] = getProtocolDescription(it.key());
-        protocol["source"] = QString("%1:%2").arg(status.transport).arg(status.sourceID);
+        protocol["source"] = QString("%1:%2").arg(status.transport, status.sourceID);
         protocol["frequency"] = status.frequency;
 
         protocols.append(protocol);
@@ -2661,7 +2662,7 @@ QStringList AgIOService::getAvailableSerialPortsForModule(const QString& moduleT
     }
 
     // Filter out used ports
-    for (const QString& port : allPorts) {
+    for (const QString& port : std::as_const(allPorts)) {
         if (!usedPorts.contains(port)) {
             availablePorts.append(port);
         }

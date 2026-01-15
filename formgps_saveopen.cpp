@@ -8,6 +8,11 @@
 #include "classes/settingsmanager.h"
 #include "qmlutil.h"
 #include <QString>
+#include "backend.h"
+#include "mainwindowstate.h"
+#include "boundaryinterface.h"
+#include "flagsinterface.h"
+#include "siminterface.h"
 
 enum OPEN_FLAGS {
     LOAD_MAPPING = 1,
@@ -876,6 +881,8 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
 
 bool FormGPS::FileOpenField(QString fieldDir, int flags)
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + fieldDir;
 #else
@@ -954,8 +961,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         int comma = line.indexOf(',');
         if (comma != -1) {
             // Phase 6.3.1: Use PropertyWrapper for safe property access
-            this->setLatStart(QStringView(line).left(comma).toDouble());
-            this->setLonStart(QStringView(line).mid(comma + 1).toDouble());
+            pn.setLatStart(QStringView(line).left(comma).toDouble());
+            pn.setLonStart(QStringView(line).mid(comma + 1).toDouble());
         }
 
         // Qt 6.8 TRACK RESTORATION: Load active track index if present
@@ -983,21 +990,20 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
             track.setIdx(-1);
         }
 
-        if (timerSim.isActive())
+        if (SimInterface::instance()->isRunning())
         {
             // Phase 6.3.1: Use PropertyWrapper for safe property access
-            pn.latitude = this->latStart();
-            pn.longitude = this->lonStart();
+            pn.latitude = pn.latStart();
+            pn.longitude = pn.lonStart();
 
-            sim.latitude = this->latStart();
-            SettingsManager::instance()->setGps_simLatitude(this->latStart());
-            sim.longitude = this->lonStart();
-            SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+            SettingsManager::instance()->setGps_simLatitude(pn.latStart());
+            SettingsManager::instance()->setGps_simLongitude(pn.lonStart());
+            SimInterface::instance()->reset();
 
-            pn.SetLocalMetersPerDegree(this);
+            pn.SetLocalMetersPerDegree();
         } else {
             // Phase 6.0.4: Use Q_PROPERTY direct access instead of qmlItem
-            pn.SetLocalMetersPerDegree(this);
+            pn.SetLocalMetersPerDegree();
         }
     }
 
@@ -1111,12 +1117,12 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
             // Phase 1.3: Lock only for final assignment (< 50ms)
             lock.lockForWrite();
-            this->setDistanceUser(0.0);
-            triStrip[0].triangleList = localTriangleList.isEmpty() ? QSharedPointer<PatchTriangleList>(new PatchTriangleList) : localTriangleList.last();
-            triStrip[0].patchList = localPatchList;
-            triStrip[0].patchBoundingBoxList = localPatchBoundingBoxList;
-            patchesBufferDirty = true;
-            m_workedAreaTotal = m_workedAreaTotal + localWorkedArea;
+            Backend::instance()->currentField_setDistanceUser(0.0);
+            tool.triStrip[0].triangleList = localTriangleList.isEmpty() ? QSharedPointer<PatchTriangleList>(new PatchTriangleList) : localTriangleList.last();
+            tool.triStrip[0].patchList = localPatchList;
+            tool.triStrip[0].patchBoundingBoxList = localPatchBoundingBoxList;
+            tool.patchesBufferDirty = true;
+            Backend::instance()->currentField_addWorkedAreaTotal(localWorkedArea);
             lock.unlock();
         }
     }
@@ -1190,7 +1196,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
             reader.setDevice(&flagsFile);
 
-            flagPts.clear();
+            FlagsInterface::instance()->flagModel()->clear();
+
             //read header
             line = reader.readLine();
 
@@ -1200,8 +1207,6 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
             if (points > 0)
             {
-                flagPts.reserve(points);  // Phase 1.1: Pre-allocate memory
-
                 double lat;
                 double longi;
                 double east;
@@ -1210,7 +1215,6 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                 int color, ID;
                 QString notes;
 
-                lock.lockForWrite();
 
                 for (int v = 0; v < points; v++)
                 {
@@ -1248,11 +1252,16 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
                         notes = "";
                     }
 
-                    CFlag flagPt(lat, longi, east, nort, head, color, ID, notes);
-                    flagPts.append(flagPt);
+                    lock.lockForWrite();
+                    FlagModel::Flag flagPt ( {ID, color, lat, longi, head, east, nort, notes} );
+                    FlagsInterface::instance()->flagModel()->addFlag(flagPt);
+                    lock.unlock();
                 }
-                lock.unlock();
             }
+
+            //a bit hackish but sync FlagsInterface count with
+            //the model count, in case any properties are bound to it
+            FlagsInterface::instance()->syncCount();
             flagsFile.close();
 
         }
@@ -1355,7 +1364,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         lock.lockForWrite();
         bnd.bndList = localBndList;
         calculateMinMax();
-        bnd.BuildTurnLines(fd, mainWindow, this);
+        bnd.BuildTurnLines();
 
         if(bnd.bndList.count() > 0)
         {
@@ -1429,21 +1438,11 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
         if (bnd.bndList.count() > 0 && bnd.bndList[0].hdLine.count() > 0)
         {
-            this->setIsHeadlandOn(true);
-            //TODO: tell GUI to enable headlands
-            //btnHeadlandOnOff.Image = Properties.Resources.HeadlandOn;
-            //btnHeadlandOnOff.Visible = true;
-            //btnHydLift.Visible = true;
-            //btnHydLift.Image = Properties.Resources.HydraulicLiftOff;
-
+            MainWindowState::instance()->set_isHeadlandOn(true);
         }
         else
         {
-            this->setIsHeadlandOn(false);
-            //TODO: tell GUI
-            //btnHeadlandOnOff.Image = Properties.Resources.HeadlandOff;
-            //btnHeadlandOnOff.Visible = false;
-            //btnHydLift.Visible = false;
+            MainWindowState::instance()->set_isHeadlandOn(false);
         }
     }
 
@@ -1633,10 +1632,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
     }
 
     //update boundary list count in qml
-    if (boundaryInterface) {
-        boundaryInterface->setProperty("count", bnd.bndList.count());
-    }
-
+    BoundaryInterface::instance()->set_count(bnd.bndList.count());
     return true;
 }
 
@@ -1648,7 +1644,9 @@ void FormGPS::FileCreateField()
     //$Offsets
     //533172,5927719,12 - offset easting, northing, zone
 
-    if( ! isJobStarted())
+    CNMEA &pn = *Backend::instance()->pn();
+
+    if( ! Backend::instance()->isJobStarted())
     {
         qDebug() << "field not open";
         TimedMessageBox(3000, tr("Field Not Open"), tr("Create a new field."));
@@ -1705,7 +1703,7 @@ void FormGPS::FileCreateField()
     writer << "StartFix" << Qt::endl;
     writer << pn.latitude << "," << pn.longitude << Qt::endl;
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.SetLocalMetersPerDegree(this);
+    pn.SetLocalMetersPerDegree();
 
     // Qt 6.8 TRACK RESTORATION: Save active track index for restoration when reopening field
     writer << "$ActiveTrackIndex" << Qt::endl;
@@ -1721,6 +1719,8 @@ void FormGPS::FileCreateElevation()
     //Bob_Feb11
     //$Offsets
     //533172,5927719,12 - offset easting, northing, zone
+
+    CNMEA &pn = *Backend::instance()->pn();
 
     QString myFilename;
 
@@ -1799,7 +1799,7 @@ void FormGPS::FileSaveSections()
     buffer.reserve(tool.patchSaveList.count() * 500);  // Pre-allocate ~500 bytes per patch
 
     //for each patch, write out the list of triangles to the buffer
-    for(QSharedPointer<QVector<QVector3D>> triList: tool.patchSaveList)
+    for(const QSharedPointer<QVector<QVector3D>> &triList: std::as_const(tool.patchSaveList))
     {
         int count2 = triList->count();
         buffer += QString::number(count2) + '\n';
@@ -2430,19 +2430,21 @@ void FormGPS::FileSaveFlags()
 
     writer << "$Flags" << Qt::endl;
 
-    int count2 = flagPts.count();
+    int count2 = FlagsInterface::instance()->flagModel()->count();
     writer << count2 << Qt::endl;
 
+    FlagModel::Flag flag;
     for (int i = 0; i < count2; i++)
     {
-        writer << flagPts[i].latitude << ","
-               << flagPts[i].longitude << ","
-               << flagPts[i].easting << ","
-               << flagPts[i].northing << ","
-               << flagPts[i].heading << ","
-               << flagPts[i].color << ","
-               << flagPts[i].ID << ","
-               << flagPts[i].notes << Qt::endl;
+        flag = FlagsInterface::instance()->flagModel()->flagAt(i+1);
+        writer << flag.latitude << ","
+               << flag.longitude << ","
+               << flag.easting << ","
+               << flag.northing << ","
+               << flag.heading << ","
+               << flag.color << ","
+               << flag.id << ","
+               << flag.notes << Qt::endl;
     }
 
     flagsfile.close();
@@ -2451,6 +2453,8 @@ void FormGPS::FileSaveFlags()
 
 void FormGPS::FileSaveNMEA()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -2488,6 +2492,8 @@ void FormGPS::FileSaveNMEA()
 
 void FormGPS::FileSaveElevation()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -2525,6 +2531,8 @@ void FormGPS::FileSaveElevation()
 
 void FormGPS::FileSaveSingleFlagKML2(int flagNumber)
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -2558,21 +2566,22 @@ void FormGPS::FileSaveSingleFlagKML2(int flagNumber)
     writer << "<?xml version=""1.0"" encoding=""UTF-8""?" << Qt::endl;
     writer << "<kml xmlns=""http://www.opengis.net/kml/2.2""> " << Qt::endl;
 
-    //int count2 = flagPts.count();
     double lat, lon;
 
-    // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.ConvertLocalToWGS84(flagPts[flagNumber - 1].northing, flagPts[flagNumber - 1].easting, lat, lon, this);
+    FlagModel::Flag flag;
+    flag = FlagsInterface::instance()->flagModel()->flagAt(flagNumber);
+
+    pn.ConvertLocalToWGS84(flag.northing, flag.easting, lat, lon);
 
     writer << "<Document>" << Qt::endl;
 
     writer << "<Placemark>"  << Qt::endl;;
     writer << "<Style><IconStyle>" << Qt::endl;
-    if (flagPts[flagNumber - 1].color == 0)  //red - xbgr
+    if (flag.color == 0)  //red - xbgr
         writer << "<color>ff4400ff</color>" << Qt::endl;
-    if (flagPts[flagNumber - 1].color == 1)  //grn - xbgr
+    if (flag.color == 1)  //grn - xbgr
         writer << "<color>ff44ff00</color>" << Qt::endl;
-    if (flagPts[flagNumber - 1].color == 2)  //yel - xbgr
+    if (flag.color == 2)  //yel - xbgr
         writer << "<color>ff44ffff</color>" << Qt::endl;
     writer << "</IconStyle></Style>" << Qt::endl;
     writer << "<name>" << flagNumber << "</name>" << Qt::endl;
@@ -2618,23 +2627,24 @@ void FormGPS::FileSaveSingleFlagKML(int flagNumber)
     writer << "<?xml version=""1.0"" encoding=""UTF-8""?" << Qt::endl;
     writer << "<kml xmlns=""http://www.opengis.net/kml/2.2""> " << Qt::endl;
 
-    //int count2 = flagPts.count();
+    FlagModel::Flag flag;
+    flag = FlagsInterface::instance()->flagModel()->flagAt(flagNumber);
 
     writer << "<Document>" << Qt::endl;
 
     writer << "<Placemark>"  << Qt::endl;;
     writer << "<Style><IconStyle>" << Qt::endl;
-    if (flagPts[flagNumber - 1].color == 0)  //red - xbgr
+    if (flag.color == 0)  //red - xbgr
         writer << "<color>ff4400ff</color>" << Qt::endl;
-    if (flagPts[flagNumber - 1].color == 1)  //grn - xbgr
+    if (flag.color == 1)  //grn - xbgr
         writer << "<color>ff44ff00</color>" << Qt::endl;
-    if (flagPts[flagNumber - 1].color == 2)  //yel - xbgr
+    if (flag.color == 2)  //yel - xbgr
         writer << "<color>ff44ffff</color>" << Qt::endl;
     writer << "</IconStyle></Style>" << Qt::endl;
     writer << "<name>" << flagNumber << "</name>" << Qt::endl;
     writer << "<Point><coordinates>"
-           << flagPts[flagNumber-1].longitude << ","
-           << flagPts[flagNumber-1].latitude << ",0"
+           << flag.longitude << ","
+           << flag.latitude << ",0"
            << "</coordinates></Point>" << Qt::endl;
     writer << "</Placemark>" << Qt::endl;
     writer << "</Document>" << Qt::endl;
@@ -2707,7 +2717,7 @@ QString FormGPS::GetBoundaryPointsLatLon(int bndNum)
     for (int i = 0; i < bnd.bndList[bndNum].fenceLine.count(); i++)
     {
         // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.ConvertLocalToWGS84(bnd.bndList[bndNum].fenceLine[i].northing, bnd.bndList[bndNum].fenceLine[i].easting, lat, lon, this);
+    Backend::instance()->pn()->ConvertLocalToWGS84(bnd.bndList[bndNum].fenceLine[i].northing, bnd.bndList[bndNum].fenceLine[i].easting, lat, lon);
         sb_writer << qSetRealNumberPrecision(7)
                   << lon << ','
                   << lat << ",0 "

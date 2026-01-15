@@ -24,7 +24,7 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
     //Overshoot setting on Stanley tab
     steerHeadingError *= stanleyHeadingErrorGain;
 
-    double sped = fabs(CVehicle::instance()->avgSpeed);
+    double sped = fabs(CVehicle::instance()->avgSpeed());
     if (sped > 1) sped = 1 + 0.277 * (sped - 1);
     else sped = 1;
     double XTEc = atan((distanceFromCurrentLineSteer * stanleyDistanceErrorGain)
@@ -51,7 +51,7 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
     //pivotDistanceError = atan((distanceFromCurrentLinePivot) / (sped)) * 0.2;
     //pivotErrorTotal = pivotDistanceError + pivotDerivative;
 
-    if (CVehicle::instance()->avgSpeed > 1
+    if (CVehicle::instance()->avgSpeed() > 1
         && isBtnAutoSteerOn
         && fabs(derivativeDistError) < 1
         && fabs(pivotDistanceError) < 0.25)
@@ -80,10 +80,10 @@ void CGuidance::DoSteerAngleCalc(bool isBtnAutoSteerOn,
     else if (steerAngleGu > maxSteerAngle) steerAngleGu = maxSteerAngle;
 
     //used for smooth mode
-    CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+    CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
     //Convert to millimeters from meters
-    CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+    CVehicle::instance()->set_guidanceLineDistanceOff ((short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
     CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleGu * 100);
 }
 
@@ -176,7 +176,7 @@ void CGuidance::StanleyGuidanceABLine(Vec3 curPtA, Vec3 curPtB,
     else if (steerHeadingError < -glm::PIBy2)
         steerHeadingError += M_PI;
 
-    CVehicle::instance()->modeActualHeadingError = glm::toDegrees(steerHeadingError);
+    CVehicle::instance()->set_modeActualHeadingError ( glm::toDegrees(steerHeadingError));
 
     DoSteerAngleCalc(isBtnAutoSteerOn, *CVehicle::instance(),ahrs);
 }
@@ -399,7 +399,7 @@ void CGuidance::StanleyGuidanceCurve(Vec3 pivot, Vec3 steer,
     {
         //invalid distance so tell AS module
         distanceFromCurrentLineSteer = 32000;
-        CVehicle::instance()->guidanceLineDistanceOff = 32000;
+        CVehicle::instance()->set_guidanceLineDistanceOff (2000);
     }
 }
 

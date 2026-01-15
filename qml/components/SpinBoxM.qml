@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 import QtQuick
 import QtQuick.Controls
+import "../" //to pick up Utils
 //import Settings
 import AOG
 

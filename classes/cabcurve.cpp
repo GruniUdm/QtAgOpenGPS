@@ -709,7 +709,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
 
     if (curList.count() > 0)
     {
-        if (yt.isYouTurnTriggered && yt.DistanceFromYouTurnLine(*CVehicle::instance(),pn))//do the pure pursuit from youTurn
+        if (yt.isYouTurnTriggered && yt.DistanceFromYouTurnLine(pn))//do the pure pursuit from youTurn
         {
             //now substitute what it thinks are AB line values with auto turn values
             steerAngleCu = yt.steerAngleYT;
@@ -719,7 +719,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
             radiusPointCu.easting = yt.radiusPointYT.easting;
             radiusPointCu.northing = yt.radiusPointYT.northing;
             ppRadiusCu = yt.ppRadiusYT;
-            CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+            CVehicle::instance()->set_modeActualXTE((distanceFromCurrentLinePivot));
         }
         else if (vehicle_isStanleyUsed)//Stanley
         {
@@ -869,7 +869,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
 
                 //pivotErrorTotal = pivotDistanceError + pivotDerivative;
 
-                if (isBtnAutoSteerOn && CVehicle::instance()->avgSpeed > 2.5 && fabs(pivotDerivative) < 0.1)
+                if (isBtnAutoSteerOn && CVehicle::instance()->avgSpeed() > 2.5 && fabs(pivotDerivative) < 0.1)
                 {
                     //if over the line heading wrong way, rapidly decrease integral
                     if ((inty < 0 && distanceFromCurrentLinePivot < 0) || (inty > 0 && distanceFromCurrentLinePivot > 0))
@@ -938,7 +938,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                         if (glm::Distance(goalPointCu, curList[(curList.count() - 1)]) < 0.5)
                         {
                             emit TimedMessage(2000,tr("Guidance Stopped"), tr("Past end of curve"));
-                            emit stopAutoSteer();
+                            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
                         }
                     }
                     else
@@ -946,7 +946,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                         if (glm::Distance(goalPointCu, curList[0]) < 0.5)
                         {
                             emit TimedMessage(2000,tr("Guidance Stopped"), tr("Past end of curve"));
-                            emit stopAutoSteer();
+                            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
                         }
                     }
                 }
@@ -959,8 +959,8 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
             //double localHeading = glm::twoPI - mf.fixHeading;
 
             double localHeading;
-            if (ReverseHeading) localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
-            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading - inty;
+            if (ReverseHeading) localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
+            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading() - inty;
 
             ppRadiusCu = goalPointDistanceSquared / (2 * (((goalPointCu.easting - pivot.easting) * cos(localHeading)) + ((goalPointCu.northing - pivot.northing) * sin(localHeading))));
 
@@ -977,7 +977,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                 distanceFromCurrentLinePivot *= -1.0;
 
             //used for acquire/hold mode
-            CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+            CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot)) ;
 
             double steerHeadingError = (pivot.heading - curList[A].heading);
             //Fix the circular error
@@ -991,10 +991,10 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
             else if (steerHeadingError < -glm::PIBy2)
                 steerHeadingError += M_PI;
 
-            CVehicle::instance()->modeActualHeadingError = glm::toDegrees(steerHeadingError);
+            CVehicle::instance()->set_modeActualHeadingError (glm::toDegrees(steerHeadingError));
 
             //Convert to centimeters
-            CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+            CVehicle::instance()->set_guidanceLineDistanceOff ( (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
             CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleCu * 100);
         }
     }
@@ -1002,7 +1002,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
     {
         //invalid distance so tell AS module
         distanceFromCurrentLinePivot = 32000;
-        CVehicle::instance()->guidanceLineDistanceOff = 32000;
+        CVehicle::instance()->set_guidanceLineDistanceOff (32000);
     }
 }
 

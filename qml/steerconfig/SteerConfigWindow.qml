@@ -21,7 +21,7 @@ Drawer {
 
     // Local computed properties for steering angle display
     readonly property double steerAngleActualRounded: Math.round(aog.steerAngleActual*100)/100
-    readonly property double steerAngleSetRounded: Math.round(aog.steerAngleSet*100)/100
+    readonly property double steerAngleSetRounded: Math.round(VehicleInterface.driveFreeSteerAngle*100)/100
 
     function show (){
         steerConfigWindow.visible = true
@@ -152,7 +152,7 @@ Drawer {
                         centerTopText: qsTr("WAS Zero")
                         from: -4000
                         leftText: Utils.decimalRound(value / cpDegSlider.value, 2)
-                        //onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, aog.modules_send_252()
+                        //onValueChanged: Settings.as_wasOffset = value * cpDegSlider.value, ModuleComm.moduleSend252()
                         onValueChanged: SettingsManager.as_wasOffset = value * cpDegSlider.value, sendUdptimer.running = true
                         to: 4000
                         value: SettingsManager.as_wasOffset / cpDegSlider.value
@@ -377,7 +377,7 @@ Drawer {
 
                     Text {
                         text: qsTr("Set: " + steerConfigWindow.steerAngleSetRounded)
-                        //text: qsTr("Set: " + aog.steerAngleSet)
+                        //text: qsTr("Set: " + VehicleInterface.driveFreeSteerAngle
                         Layout.alignment: Qt.AlignCenter
                     }
                     Text {
@@ -434,7 +434,10 @@ Drawer {
                     implicitWidth:  parent.width /4 - 4
                     isChecked: false
                     checkable: true
-                    onClicked: aog.freeDrive() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    onClicked: {
+                        VehicleInterface.isInFreeDriveMode = ! VehicleInterface.isInFreeDriveMode;
+                        VehicleInterface.driveFreeSteerAngle = 0;
+                    }
                 }
                 IconButton{
                     //id: btnSteerAngleDown
@@ -443,7 +446,10 @@ Drawer {
                     icon.source: prefix + "/images/SnapLeft.png"
                     implicitHeight: parent.height
                     implicitWidth:  parent.width /4 - 5 * theme.scaleWidth
-                    onClicked: aog.steerAngleDown() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    onClicked: {
+                        if ( --VehicleInterface.driveFreeSteerAngle < -40)
+                            VehicleInterface.driveFreeSteerAngle = -40;
+                    }
                     enabled: btnFreeDrive.checked
                 }
                 IconButton{
@@ -453,7 +459,10 @@ Drawer {
                     icon.source: prefix + "/images/SnapRight.png"
                     implicitHeight: parent.height
                     implicitWidth:  parent.width /4 - 5 * theme.scaleWidth
-                    onClicked: aog.steerAngleUp() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    onClicked: {
+                        if ( ++VehicleInterface.driveFreeSteerAngle > 40)
+                            VehicleInterface.driveFreeSteerAngle = 40;
+                    }
                     enabled: btnFreeDrive.checked
                 }
                 IconButton{
@@ -463,13 +472,19 @@ Drawer {
                     icon.source: prefix + "/images/SteerZeroSmall.png"
                     implicitHeight: parent.height
                     implicitWidth:  parent.width /4 - 5 * theme.scaleWidth
-                    onClicked: aog.freeDriveZero() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    onClicked: {
+                        if (VehicleInterface.driveFreeSteerAngle === 0) {
+                            VehicleInterface.driveFreeSteerAngle = 5;
+                        } else {
+                            VehicleInterface.driveFreeSteerAngle = 0;
+                        }
+                    }
                 }
             }
             Text{
                 anchors.left: pwmRow.left
                 anchors.top: pwmRow.bottom
-                text: qsTr("PWM: "+ aog.lblPWMDisplay)
+                text: qsTr("PWM: "+ ModuleComm.pwmDisplay)
             }
             Text{
                 anchors.right: pwmRow.right
@@ -511,6 +526,6 @@ Drawer {
     Timer {
         id: sendUdptimer
         interval: 1000;
-        onTriggered: aog.modulesSend252() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        onTriggered: ModuleComm.modulesSend252() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
     }
 }

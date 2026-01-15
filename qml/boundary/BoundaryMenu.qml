@@ -7,6 +7,7 @@ import QtQuick.Layouts
 import Qt.labs.folderlistmodel
 import QtQuick.Controls.Fusion
 import QtQuick.Controls.Material
+import AOG
 
 import ".."
 import "../components"
@@ -17,7 +18,7 @@ Item {
     width: parent.width
     height: parent.height
     function show() {
-        aog.boundaryUpdateList() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        BoundaryInterface.updateList() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         boundaryMenuPopup.visible = true
     }
 
@@ -59,7 +60,7 @@ Item {
                 }
 
                 onChangeDriveThrough: {
-                    aog.boundarySetDriveThrough(index, drive_through) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    BoundaryInterface.setDriveThrough(index, drive_through) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 }
 
             }
@@ -73,10 +74,10 @@ Item {
                 IconButtonTransparent{
                     objectName: "btnBoundaryDeleteCurrent"
                     enabled: (boundaryList.currentIndex === 0 &&
-                              boundaryInterface.boundary_list.length === 1) ||
+                              BoundaryInterface.list.length === 1) ||
                              (boundaryList.currentIndex > 0)
                     icon.source: prefix + "/images/BoundaryDelete.png"
-                    onClicked: aog.boundaryDeleteBoundary(boundaryList.currentIndex) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    onClicked: BoundaryInterface.deleteBoundary(boundaryList.currentIndex) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 }
                 IconButtonTransparent{
                     objectName: "btnBoundaryDeleteAll"
@@ -124,7 +125,7 @@ Item {
         modal: true
 
         onAccepted: {
-            aog.boundaryDeleteAll() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+            BoundaryInterface.deleteAll() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         }
 
         Text {

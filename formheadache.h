@@ -4,34 +4,14 @@
 #include <QObject>
 #include <QVector>
 #include "vec3.h"
-#include "classes/headachedesigner.h"
 
 class CBoundary;
 class CHeadLine;
-class CTool;
-class CVehicle;
-class QOpenGLFunctions;
-
-
-class FormGPS; // Forward declaration
 
 class FormHeadache : public QObject
 {
     Q_OBJECT
 protected:
-    FormGPS* formGPS = nullptr; // Reference to parent FormGPS
-    //InterfaceProperty<HeadacheDesigner,double> maxFieldDistance = InterfaceProperty<HeadacheDesigner,double>("maxFieldDistance");
-    //InterfaceProperty<HeadacheDesigner,double> fieldCenterX = InterfaceProperty<HeadacheDesigner,double>("fieldCenterX");
-    //InterfaceProperty<HeadacheDesigner,double> fieldCenterY = InterfaceProperty<HeadacheDesigner,double>("fieldCenterY");
-
-    double maxFieldDistance = 0;
-    double fieldCenterX = 0;
-    double fieldCenterY = 0;
-
-
-    // ⚡ PHASE 6.3.0: DUPLICATION REMOVED - isYouTurnBtnOn only exists in cyouturn.h (main version)
-    // Access via: formGPS->isYouTurnBtnOn
-
     int fixX, fixY;
     //InterfaceProperty<HeadacheDesigner,bool> isA = InterfaceProperty<HeadacheDesigner,bool>("isA");
     bool isA = true;
@@ -55,27 +35,13 @@ public:
     double iE = 0, iN = 0;
     QVector<int> crossings;
 
-    CBoundary *bnd;
-    CHeadLine *hdl;
-    CTool *tool;
-    QObject *headache_designer_instance;
-    QObject *mainWindow;
-
-    // Phase 6.0.4.3 - Native Q_PROPERTY designer
-    HeadacheDesigner *designer;
+    CBoundary *bnd = nullptr;
+    CHeadLine *hdl = nullptr;
 
     explicit FormHeadache(QObject *parent = nullptr);
-    void setFormGPS(FormGPS* gps) { formGPS = gps; }
 
-    //this class is pretty closely coupled to the QML file
-    //of necessity
-    void connect_ui(QObject *headache_designer_instance);
 
 public slots:
-    void setFieldInfo(double maxFieldDistance,
-                      double fieldCenterX,
-                      double fieldCenterY);
-
     void load_headline();
     void update_lines(); //update the boundary lines in GUI
     void update_headland(); //update headland line

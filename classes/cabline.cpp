@@ -161,7 +161,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
     double as_sideHillCompensation = SettingsManager::instance()->as_sideHillCompensation();
 
     //Check uturn first
-    if (yt.isYouTurnTriggered && yt.DistanceFromYouTurnLine(*CVehicle::instance(),pn))//do the pure pursuit from youTurn
+    if (yt.isYouTurnTriggered && yt.DistanceFromYouTurnLine(pn))//do the pure pursuit from youTurn
     {
         //now substitute what it thinks are AB line values with auto turn values
         steerAngleAB = yt.steerAngleYT;
@@ -173,7 +173,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         ppRadiusAB = yt.ppRadiusYT;
 
         CVehicle::instance()->modeTimeCounter = 0;
-        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+        CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
     }
 
     //Stanley
@@ -219,7 +219,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
 
             if (isBtnAutoSteerOn
                 && fabs(pivotDerivative) < (0.1)
-                && CVehicle::instance()->avgSpeed > 2.5
+                && CVehicle::instance()->avgSpeed() > 2.5
                 && !yt.isYouTurnTriggered)
             //&& fabs(pivotDistanceError) < 0.2)
 
@@ -244,7 +244,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         else inty = 0;
 
         //Subtract the two headings, if > 1.57 its going the opposite heading as refAB
-        abFixHeadingDelta = (fabs(CVehicle::instance()->fixHeading - abHeading));
+        abFixHeadingDelta = (fabs(CVehicle::instance()->fixHeading() - abHeading));
         if (abFixHeadingDelta >= M_PI) abFixHeadingDelta = fabs(abFixHeadingDelta - glm::twoPI);
 
         // ** Pure pursuit ** - calc point on ABLine closest to current position
@@ -277,8 +277,8 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         //calculate the the new x in local coordinates and steering angle degrees based on wheelbase
         double localHeading;
 
-        if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
-        else localHeading = glm::twoPI - CVehicle::instance()->fixHeading - inty;
+        if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
+        else localHeading = glm::twoPI - CVehicle::instance()->fixHeading() - inty;
 
         ppRadiusAB = goalPointDistanceDSquared / (2 * (((goalPointAB.easting - pivot.easting) * cos(localHeading))
                                                        + ((goalPointAB.northing - pivot.northing) * sin(localHeading))));
@@ -320,7 +320,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
             distanceFromCurrentLinePivot *= -1.0;
 
         //used for acquire/hold mode
-        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+        CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
         double steerHeadingError = (pivot.heading - abHeading);
         //Fix the circular error
@@ -334,10 +334,10 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         else if (steerHeadingError < -glm::PIBy2)
             steerHeadingError += M_PI;
 
-        CVehicle::instance()->modeActualHeadingError = glm::toDegrees(steerHeadingError);
+        CVehicle::instance()->set_modeActualHeadingError ( glm::toDegrees(steerHeadingError));
 
         //Convert to millimeters
-        CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+        CVehicle::instance()->set_guidanceLineDistanceOff((short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
         CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleAB * 100);
     }
 

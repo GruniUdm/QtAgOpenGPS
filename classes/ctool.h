@@ -6,17 +6,26 @@
 #include "cpatches.h"
 #include "common.h"
 #include <QColor>
-#include "qmlblockage.h"
-#include "btnenum.h"
+#include <QElapsedTimer>
+#include "vec3.h"
+#include "mainwindowstate.h"
+#include "sectionbuttonsmodel.h"
 
 class QOpenGLFunctions;
 class QMatrix4x4;
 class CVehicle;
 class CCamera;
 class CTram;
+class CBoundary;
 
-class CTool
+
+struct PatchBuffer;
+struct PatchInBuffer;
+
+
+class CTool: public QObject
 {
+    Q_OBJECT
 public:
     ///---- in settings
     double width;
@@ -62,6 +71,10 @@ public:
     bool areAllSectionBtnsOn = true;
 
     bool isLeftSideInHeadland = true, isRightSideInHeadland = true, isSectionsNotZones;
+    bool isHeadlandClose = false;
+    bool isToolInHeadland, isToolOuterPointsInHeadland=false, isSectionControlledByHeadland;
+
+    ulong number = 0, lastNumber = 0;
 
     //read pixel values
     int rpXPosition;
@@ -77,21 +90,25 @@ public:
 
     bool isDisplayTramControl;
 
+    double hydLiftLookAheadDistanceLeft = 0.0;
+    double hydLiftLookAheadDistanceRight = 0.0;
+
+    Vec3 toolPivotPos;
+    Vec3 toolPos;
+    Vec3 tankPos;
+
     //moved the following from the main form to here
     CSection section[MAXSECTIONS+1];
-    btnStates sectionButtonState[65];
-    qmlblockage blockageRowState;
-    int blockage_avg;
-    int blockage_min1;
-    int blockage_min2;
-    int blockage_max;
-    int blockage_min1_i;
-    int blockage_min2_i;
-    int blockage_max_i;
-    int blockage_blocked;
+    MainWindowState::ButtonStates sectionButtonState[65];
 
-    //list of the list of patch data individual triangles for field sections
+    //list of patches to save to disk at next opportunity
     QVector<QSharedPointer<PatchTriangleList>> patchSaveList;
+
+    //list of patches, one per section.  each one has a list of
+    //individual patches.
+    QVector<CPatches> triStrip = QVector<CPatches>( { CPatches() } );
+
+    bool patchesBufferDirty = true;
 
     void sectionCalcWidths();
     void sectionCalcMulti();
@@ -102,9 +119,55 @@ public:
     CTool();
     //this class needs modelview and projection as separate matrices because some
     //additiona transformations need to be done.
-    void DrawTool(QOpenGLFunctions *gl, QMatrix4x4 &modelview, QMatrix4x4 projection,
-                  bool isJobStarted,
-                  CVehicle &v, CCamera &camera, CTram &tram);
+    void DrawTool(QOpenGLFunctions *gl,
+                  QMatrix4x4 modelview,
+                  QMatrix4x4 projection,
+                  bool isJobStarted, bool isHydLiftOn,
+                  CCamera &camera, CTram &tram);
+
+    void DrawPatches(QOpenGLFunctions *gl,
+                     QMatrix4x4 mvp,
+                     int patchCounter,
+                     const CCamera &camera,
+                     QElapsedTimer &swFrame
+                     );
+
+    void DrawPatchesTriangles(QOpenGLFunctions *gl,
+                     QMatrix4x4 mvp,
+                     int patchCounter,
+                     const CCamera &camera,
+                     QElapsedTimer &swFrame
+                     );
+
+    void DrawPatchesBack(QOpenGLFunctions *gl,
+                               QMatrix4x4 mvp);
+
+    QImage DrawPatchesBackQP(const CTram &tram, const CBoundary &bnd, Vec3 pivotAxlePos, bool isHeadlandOn, bool onTrack);
+
+    void NewPosition();
+    void ProcessLookAhead(bool isHeadlandOn, int gpsHz, MainWindowState::ButtonStates autoBtnState,
+                          const CBoundary &bnd, CTram &tram);
+
+    void clearPatches();
+    void loadPatches();
+
+    void WhereAreToolCorners(const CBoundary &bnd);
+    void WhereAreToolLookOnPoints(const CBoundary &bnd);
+
+
+private:
+
+    QVector<QVector<PatchInBuffer>> patchesInBuffer;
+    QVector<PatchBuffer> patchBuffer;
+    LookAheadPixels grnPixels[150001];
+    LookAheadPixels *overPixels = new LookAheadPixels[160000]; //400x400
+public slots:
+    void on_autoBtnChanged();
+    void onSectionButtonStatechanged(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state);
+
+signals:
+    void SetHydPosition(MainWindowState::ButtonStates autoBtnState);
+
 };
 
 #endif // CTOOL_H

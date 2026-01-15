@@ -17,6 +17,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOMOC ON)  # Required for automatic QML_ELEMENT/QML_SINGLETON registration
 
+# Cross-compilation: Set host Qt path for tools when cross-compiling
+# This allows CMake to find host tools (like Qt6WidgetsTools) on Fedora
+# while using MinGW Qt6 libraries for the Windows target
+# Check for MinGW cross-compilation by looking at the compiler
+if((CMAKE_CXX_COMPILER MATCHES "mingw" OR CMAKE_CROSSCOMPILING) AND NOT QT_HOST_PATH)
+    set(QT_HOST_PATH "/usr" CACHE PATH "Path to host Qt installation")
+    message("Cross-compiling detected: QT_HOST_PATH set to ${QT_HOST_PATH}")
+endif()
+
 # MSVC-specific compiler flags
 # /bigobj: Required for SettingsManager with 389 Q_OBJECT_BINDABLE_PROPERTY
 # Phase 6.0: Qt6 property system generates >65,536 sections (MSVC default limit)
@@ -25,11 +34,28 @@ if(MSVC)
     add_compile_options(/bigobj)
     message("MSVC: /bigobj flag enabled for large object files (SettingsManager)")
 
+    # Increase stack size to 8MB (default is 1MB)
+    # Required for large Qt resource initialization (qrc files with embedded resources)
+    # The qrc_QtAgOpenGPS_raw_res_0.cpp file (89MB) has global object constructors
+    # that call qRegisterResourceData() before main(), which can exhaust the stack
+    #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:8388608")
+    #message("MSVC: Stack size increased to 8MB for large resource initialization")
+
     # Optional: Enable debug symbols for profiling even in Release builds
     # Uncomment these lines when creating profiler builds:
     # set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
     # set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
     # message("MSVC: Debug symbols enabled in Release for profiling")
+endif()
+
+# Android-specific linker flags
+if(ANDROID)
+    # Increase stack size to 8MB (default is 1MB on Android)
+    # Required for large Qt resource initialization (qrc files with embedded resources)
+    # The qrc_QtAgOpenGPS_raw_res_0.cpp file (89MB) has global object constructors
+    # that call qRegisterResourceData() before main(), which can exhaust the stack
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,stack-size=8388608")
+    message("Android: Stack size increased to 8MB for large resource initialization")
 endif()
 
 # Find required libraries
@@ -45,6 +71,10 @@ find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools) #for i18n internationalization support
 find_package(Qt6 REQUIRED COMPONENTS Bluetooth)
 find_package(Qt6 REQUIRED COMPONENTS Network)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Positioning)
+find_package(Qt6 REQUIRED COMPONENTS PositioningQuick)
+find_package(Qt6 REQUIRED COMPONENTS Location)
 
 
 
@@ -83,6 +113,8 @@ qt_standard_project_setup(REQUIRES 6.8
 # Create the executable
 qt_add_executable(QtAgOpenGPS
     main.cpp
+    # Windows resource file for application icon
+    QtAgOpenGPS.rc
     # agopengps.qrc removed - resources now handled by qt_add_qml_module
     # $<$<NOT:$<BOOL:${LOCAL_QML}>>:agopengps.qrc>
     aogrenderer.h aogrenderer.cpp
@@ -102,7 +134,7 @@ qt_add_executable(QtAgOpenGPS
     formgps_sections.cpp
     formgps_settings.cpp
     formgps_sim.cpp
-    formgps_udpcomm.cpp
+
     formgps_ui.cpp
     formgps_ui_boundary.cpp
     formgps_ui_field.cpp
@@ -127,15 +159,13 @@ qt_add_executable(QtAgOpenGPS
     classes/cguidance.h classes/cguidance.cpp
     classes/chead.cpp
     classes/cheadline.h classes/cheadline.cpp
-    classes/cmodulecomm.h classes/cmodulecomm.cpp
     classes/cnmea.h classes/cnmea.cpp
     classes/cpatches.h classes/cpatches.cpp
     classes/cpgn.h classes/cpgn.cpp
     classes/headachedesigner.h classes/headachedesigner.cpp
-    classes/headlanddesigner.h classes/headlanddesigner.cpp
     classes/crecordedpath.h classes/crecordedpath.cpp
     classes/csection.h classes/csection.cpp
-    classes/csim.h classes/csim.cpp
+
     classes/ctool.h classes/ctool.cpp
     # classes/ctrack.h classes/ctrack.cpp      # MOVED to qt_add_qml_module (QML_ELEMENT)
     classes/ctram.h classes/ctram.cpp
@@ -149,7 +179,6 @@ qt_add_executable(QtAgOpenGPS
     classes/vec3.h classes/vec3.cpp
     classes/vec4.h classes/vec4.cpp
     classes/vecfix2fix.h
-    classes/qmlblockage.h classes/qmlblockage.cpp
     # LICENSE
     # TODO.md
     # README.md
@@ -162,6 +191,13 @@ qt_add_executable(QtAgOpenGPS
     # android/gradlew.bat
     # android/res/values/libs.xml
     # android/res/xml/qtprovider_paths.xml
+    classes/agioservice.cpp
+    classes/pgnparser.cpp
+    classes/ctraffic.cpp
+    classes/ntripworker.cpp
+    classes/serialworker.cpp
+    classes/ctrack.cpp
+    classes/cvehicle.cpp
 )
 
 target_compile_definitions(QtAgOpenGPS PRIVATE QT_QML_DEBUG)
@@ -174,6 +210,10 @@ if(ANDROID)
 else()
     option(LOCAL_QML "Load QML from disc instead of compiling them in.")
 endif()
+
+# Option to enable console window on Windows (useful for debugging)
+# Set to OFF to see console output (qDebug, std::cout, etc.)
+option(WIN32_EXECUTABLE "Build as Windows GUI application (no console)" ON)
 
 if(NOT LOCAL_QML AND NOT ANDROID)
     message("Local QML is off. Turn on for faster QML development")
@@ -270,67 +310,88 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         ${SINGLETONS_REL_PATHS} # adding singletons relative paths
     )
 
+
     # message(WARNING "All relative paths: ${ALL_REL_PATHS}")
 
     #add singletons (singletons/ path)
     set_source_files_properties(${SINGLETONS_REL_PATHS}
         PROPERTIES QT_QML_SINGLETON_TYPE TRUE
     )
-
-    # Qt 6.8 PURE OFFICIAL convention
-    qt_add_qml_module(QtAgOpenGPS
-        URI AOG
-        VERSION 1.0
-        RESOURCE_PREFIX "/"
-        QML_FILES
-        ${ALL_REL_PATHS} #all qml files
-        SOURCES
-        aogrenderer.cpp
-        aogrenderer.h
-        classes/settingsmanager.cpp
-        classes/settingsmanager.h
-        classes/settingsmanager_macros.h
-        classes/settingsmanager_properties.h
-        classes/settingsmanager_members.h
-        # NOTE: settingsmanager_implementations.cpp is INCLUDED, not compiled separately
-        classes/ctrack.cpp
-        classes/ctrack.h
-        classes/cvehicle.cpp
-        classes/cvehicle.h
-        classes/agioservice.cpp
-        classes/agioservice.h
-        # Phase 6.0.21: GPSWorker removed (useless thread - no I/O)
-        classes/pgnparser.cpp
-        classes/pgnparser.h
-        classes/ctraffic.cpp
-        classes/ctraffic.h
-        classes/ntripworker.cpp
-        classes/ntripworker.h
-        # Phase 6.0.24: udpworker removed (event-driven QUdpSocket in main thread)
-        # classes/udpworker.cpp
-        # classes/udpworker.h
-        classes/serialworker.cpp
-        classes/serialworker.h
-
-        RESOURCES
-        ${IMAGE_REL_PATHS}
-        ${SHADER_REL_PATHS}
-        ${SOUND_REL_PATHS}
-        RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
-        SOURCES rendering.h
-        SOURCES backend.h backend.cpp
-        SOURCES simpleproperty.h
-
-    )  
-
 else() #LOCAL_QML ON
+    file(GLOB_RECURSE qml_files "qml/*")
+    add_custom_target(AOGQML SOURCES ${qml_files})
     message("Local QML is ON!")
     add_compile_definitions(LOCAL_QML)
 
-    # Display the qrc file in the project tree without compiling it
-    add_custom_target(AOGQML SOURCES agopengps.qrc)
-
 endif()
+
+# Qt 6.8 PURE OFFICIAL convention
+qt_add_qml_module(QtAgOpenGPS
+    URI AOG
+    VERSION 1.0
+    RESOURCE_PREFIX "/"
+    QML_FILES
+    ${ALL_REL_PATHS} #all qml files
+    SOURCES
+    aogrenderer.cpp
+    aogrenderer.h
+    classes/settingsmanager.cpp
+    classes/settingsmanager.h
+    classes/settingsmanager_macros.h
+    classes/settingsmanager_properties.h
+    classes/settingsmanager_members.h
+    # NOTE: settingsmanager_implementations.cpp is INCLUDED, not compiled separately
+    classes/ctrack.cpp
+    classes/ctrack.h
+    classes/cvehicle.cpp
+    classes/cvehicle.h
+    classes/agioservice.cpp
+    classes/agioservice.h
+    # Phase 6.0.21: GPSWorker removed (useless thread - no I/O)
+    classes/pgnparser.cpp
+    classes/pgnparser.h
+    classes/ctraffic.cpp
+    classes/ctraffic.h
+    classes/ntripworker.cpp
+    classes/ntripworker.h
+    # Phase 6.0.24: udpworker removed (event-driven QUdpSocket in main thread)
+    # classes/udpworker.cpp
+    # classes/udpworker.h
+    classes/serialworker.cpp
+    classes/serialworker.h
+
+    RESOURCES
+    ${IMAGE_REL_PATHS}
+    ${SHADER_REL_PATHS}
+    ${SOUND_REL_PATHS}
+    RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
+    SOURCES rendering.h
+    SOURCES backend/backend.h backend/backend.cpp
+    SOURCES simpleproperty.h
+    #SOURCES globals.h globals.cpp
+
+    SOURCES backend/mainwindowstate.h backend/mainwindowstate.cpp
+    SOURCES backend/boundaryinterface.h backend/boundaryinterface.cpp
+    SOURCES backend/fieldinterface.h backend/fieldinterface.cpp
+    SOURCES backend/fieldinfo.h backend/fieldinfo.cpp
+    SOURCES backend/headlandinterface.h backend/headlandinterface.cpp
+    SOURCES backend/headacheinterface.h backend/headacheinterface.cpp
+    SOURCES backend/flagsinterface.h backend/flagsinterface.cpp
+    SOURCES backend/recordedpathmodel.h backend/recordedpathmodel.cpp
+    SOURCES backend/recordedpath.h backend/recordedpath.cpp
+    SOURCES backend/siminterface.h backend/siminterface.cpp
+    SOURCES backend/fencelinemodel.h backend/fencelinemodel.cpp
+    SOURCES backend/flagmodel.h backend/flagmodel.cpp
+    SOURCES backend/blockagemodel.h backend/blockagemodel.cpp
+    SOURCES backend/sectionbuttonsmodel.h backend/sectionbuttonsmodel.cpp
+    SOURCES backend/tool.h backend/tool.cpp
+    SOURCES backend/toolssectionbuttonsmodel.h backend/toolssectionbuttonsmodel.cpp
+    SOURCES backend/tools.h backend/tools.cpp
+    SOURCES backend/fixframe.h
+    SOURCES backend/modulecomm.h backend/modulecomm.cpp
+    SOURCES backend/blockage.h backend/blockage.cpp
+)
+
 ###### End Script of Handling QML in module ######
 
 ###### Script for Translation ######
@@ -368,10 +429,23 @@ set(qml_mockup_files
 
 add_custom_target(MockQML SOURCES ${qml_mockup_files})
 
+# Show documentation files in claudedocs/ in the project tree without compiling them
+file(GLOB_RECURSE claudedocs_files "claudedocs/*.md" "claudedocs/*.txt")
+file(GLOB_RECURSE docs_files "docs/*")
+add_custom_target(Documentation SOURCES
+    ${claudedocs_files}
+    ${docs_files}
+    TODO.md
+    README.md
+    README_TRANSLATIONS.md
+)
+
+
 # Where to look for header files
 target_include_directories(QtAgOpenGPS PRIVATE
     .
     classes
+    backend
 )
 
 # QtAgIO QML module disabled - migrated to qml/agio/ in Phase 4.2
@@ -379,7 +453,7 @@ target_include_directories(QtAgOpenGPS PRIVATE
 # Libraries to link
 target_link_libraries(QtAgOpenGPS PRIVATE
     # QtAgIO  # QML module disabled - sources integrated in Phase 4.2
-#   Qt6::Core
+    Qt6::Core
     Qt6::Widgets
     Qt6::Gui
 #   Qt6::OpenGL
@@ -388,6 +462,10 @@ target_link_libraries(QtAgOpenGPS PRIVATE
     Qt6::Network
     Qt6::Multimedia
     Qt6::SerialPort
+    Qt6::Bluetooth
+    Qt6::Positioning
+    Qt6::PositioningQuick
+    Qt6::Location
 )
 
 # Compile defines
@@ -396,7 +474,7 @@ target_compile_definitions(QtAgOpenGPS PRIVATE
 )
 
 set_target_properties(QtAgOpenGPS PROPERTIES
-    WIN32_EXECUTABLE TRUE
+    WIN32_EXECUTABLE ${WIN32_EXECUTABLE}
     MACOSX_BUNDLE TRUE
     QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
 )

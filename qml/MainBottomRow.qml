@@ -8,7 +8,7 @@ import "components" as Comp
 RowLayout{
     property bool hydLiftIsOn: btnHydLift.isOn
     id:bottomButtons
-    visible: aog.isJobStarted && leftColumn.visible
+    visible: Backend.isJobStarted && leftColumn.visible
 
     onWidthChanged: {
         theme.btnSizes[1] = width / (children.length)
@@ -107,7 +107,7 @@ RowLayout{
     }
     Comp.MainWindowBtns {
         id: btnHeadland
-        isChecked: aog.isHeadlandOn
+        isChecked: MainWindowState.isHeadlandOn
         checkable: true
         icon.source: prefix + "/images/HeadlandOff.png"
         iconChecked: prefix + "/images/HeadlandOn.png"
@@ -120,8 +120,14 @@ RowLayout{
         isChecked: false
         icon.source: prefix + contextFlag.icon
         onClicked: {
+            FlagsInterface.currentFlag = FlagsInterface.flag(Backend.fixFrame.latitude,
+                                                             Backend.fixFrame.longitude,
+                                                             Backend.fixFrame.easting,
+                                                             Backend.fixFrame.northing,
+                                                             Backend.fixFrame.heading,
+                                                             FlagsInterface.Red,
+                                                             Number(FlagsInterface.count+1).toLocaleString(Qt.locale(),'f',0))
             flags.show();
-            aog.flag(); // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         }
         onPressAndHold: {
             if (contextFlag.visible) {

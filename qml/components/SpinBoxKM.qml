@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //import Settings
 import QtQuick
+import "../" //to pick up Utils
 import AOG
 
 //This is a spinbox for displaying dimensions that are either

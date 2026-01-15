@@ -4,6 +4,7 @@
 // Menu displayed when the "Field Tools" button is clicked
 import QtQuick
 import QtQuick.Controls.Fusion
+import AOG
 //import Settings
 
 import ".."
@@ -55,7 +56,7 @@ Drawer {
                 visible: featureIsHeadlandOn
                 onClicked: {
                     fieldToolsMenu.visible = false
-                    if (boundaryInterface.count > 0) {
+                    if (BoundaryInterface.count > 0) {
                         headlandDesigner.show()
                     }else{
                         timedMessage.addMessage(2000, qsTr("No Boundaries"), qsTr("Create A Boundary First"))
@@ -70,7 +71,7 @@ Drawer {
                 //width: 300
                 onClicked: {
                     fieldToolsMenu.visible = false
-                    if (boundaryInterface.count > 0) {
+                    if (BoundaryInterface.count > 0) {
                         headacheDesigner.show()
                     }else{
                         timedMessage.addMessage(2000, qsTr("No Boundaries"), qsTr("Create A Boundary First"))

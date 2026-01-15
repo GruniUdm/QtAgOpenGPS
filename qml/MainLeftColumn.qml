@@ -21,8 +21,8 @@ ColumnLayout {
         implicitHeight: theme.buttonSize
         Layout.alignment: Qt.AlignCenter
         onClicked: {
-            aog.distanceUser = parseFloat("0")
-            aog.workedAreaTotalUser = parseFloat("0")
+            Backend.currentFieldSetDistanceUser(0)
+            Backend.currentFieldSetWorkedAreaTotalUser(0)
         }
 
         background: Rectangle{
@@ -35,7 +35,7 @@ ColumnLayout {
                 anchors.margins: 5
                 width: parent.width
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: Utils.m_to_unit_string(aog.distanceUser, 2)
+                text: Utils.m_to_unit_string(Backend.currentField.distanceUser, 2)
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -47,7 +47,7 @@ ColumnLayout {
                 anchors.margins: 5
                 width: parent.width
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: Utils.area_to_unit_string(aog.workedAreaTotalUser, 2)
+                text: Utils.area_to_unit_string(Backend.currentField.workedAreaTotalUser, 2)
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -84,7 +84,7 @@ ColumnLayout {
         buttonText: qsTr("Field Tools")
         icon.source: prefix + "/images/FieldTools.png"
         onClicked: fieldTools.visible = true
-        enabled: aog.isJobStarted ? true : false
+        enabled: Backend.isJobStarted ? true : false
     }
 
     Comp.MainWindowBtns {

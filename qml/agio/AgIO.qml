@@ -143,7 +143,7 @@ Drawer {
         Comp.ScrollViewExpandableColumn{
             id: mainWindowAgIOColumn
             anchors.fill: parent
-            IconButtonTextBeside{
+            Comp.IconButtonTextBeside{
                 //objectName: bluetooth
                 text: qsTr("Bluetooth")
                 icon.source: "../images/BlueTooth.png"
@@ -194,7 +194,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("Blockage")
                 icon.source: "../images/B_Blockage.png"
-               // color:  AgIOService.blockageConnected ? "green" : "red"
+                color:  AgIOService.blockageConnected ? "green" : "red"
                 // Threading Phase 1: Blockage visibility configuration
                 visible: SettingsManager.seed_blockageIsOn
                 onClicked: blockageConfig.visible = !blockageConfig.visible

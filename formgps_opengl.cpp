@@ -23,6 +23,12 @@
 #include "qmlutil.h"
 #include "classes/agioservice.h"  // For zero-latency GPS access
 #include "classes/settingsmanager.h"
+#include "backend.h"
+#include "boundaryinterface.h"
+#include "mainwindowstate.h"
+#include "flagsinterface.h"
+#include "siminterface.h"
+#include "modulecomm.h"
 #include "cpgn.h"
 #include "rendering.h"
 
@@ -32,6 +38,9 @@
 #include <QLabel>
 
 Q_LOGGING_CATEGORY (qgl, "formgps_opengl.qtagopengps")
+
+//TODO remote this #define
+#define mc CModuleComm::instance()
 
 extern QLabel *overlapPixelsWindow;
 extern QOpenGLShaderProgram *interpColorShader; //pull from glutils.h
@@ -67,8 +76,7 @@ QOpenGLContext *getGLContext(QQuickWindow *window) {
 
 OpenGLViewport getOpenGLViewport(QObject* mainWindow) {
     OpenGLViewport viewport;
-    QObject *openglControl = qmlItem(mainWindow, "openglcontrol");
-
+    QObject *openglControl = Backend::instance()->aogRenderer;
 
     if (openglControl) {
         viewport.width = openglControl->property("width").toReal();
@@ -133,10 +141,10 @@ QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
     //camera does translations and rotations
     camera.SetWorldCam(modelview, CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, camera.camHeading);
     modelview.translate(CVehicle::instance()->hitchPos.easting, CVehicle::instance()->hitchPos.northing, 0);
-    //modelview.translate(sin(CVehicle::instance()->fixHeading) * tool.hitchLength,
-    //                        cos(CVehicle::instance()->fixHeading) * tool.hitchLength, 0);
+    //modelview.translate(sin(CVehicle::instance()->fixHeading()) * tool.hitchLength,
+    //                        cos(CVehicle::instance()->fixHeading()) * tool.hitchLength, 0);
     if (camera.camFollowing)
-        modelview.rotate(glm::toDegrees(-CVehicle::instance()->fixHeading), 0.0, 0.0, 1.0);
+        modelview.rotate(glm::toDegrees(-CVehicle::instance()->fixHeading()), 0.0, 0.0, 1.0);
 
     float x,y;
     x = mouseX;
@@ -155,7 +163,7 @@ QVector3D FormGPS::mouseClickToPan(int mouseX, int mouseY)
     mouseNorthing = worldpoint_near.y() + lambda * direction.y();
 
     QMatrix4x4 m;
-    m.rotate(-CVehicle::instance()->fixHeading, 0,0,1);
+    m.rotate(-CVehicle::instance()->fixHeading(), 0,0,1);
 
     QVector3D relative = QVector3D( { (float)mouseEasting, (float)mouseNorthing, 0 } );
     return relative;
@@ -189,10 +197,10 @@ QVector3D FormGPS::mouseClickToField(int mouseX, int mouseY)
     //camera does translations and rotations
     camera.SetWorldCam(modelview, CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, camera.camHeading);
     //modelview.translate(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, 0);
-    //modelview.translate(sin(CVehicle::instance()->fixHeading) * tool.hitchLength,
-    //                        cos(CVehicle::instance()->fixHeading) * tool.hitchLength, 0);
+    //modelview.translate(sin(CVehicle::instance()->fixHeading()) * tool.hitchLength,
+    //                        cos(CVehicle::instance()->fixHeading()) * tool.hitchLength, 0);
     //if (camera.camFollowing)
-    //    modelview.rotate(glm::toDegrees(-CVehicle::instance()->fixHeading), 0.0, 0.0, 1.0);
+    //    modelview.rotate(glm::toDegrees(-CVehicle::instance()->fixHeading()), 0.0, 0.0, 1.0);
 
     float x,y;
     x = mouseX;
@@ -211,7 +219,7 @@ QVector3D FormGPS::mouseClickToField(int mouseX, int mouseY)
     mouseNorthing = worldpoint_near.y() + lambda * direction.y();
 
     QMatrix4x4 m;
-    m.rotate(-CVehicle::instance()->fixHeading, 0,0,1);
+    m.rotate(-CVehicle::instance()->fixHeading(), 0,0,1);
 
     QVector3D fieldCoord = QVector3D( { (float)mouseEasting, (float)mouseNorthing, 0 } );
     return fieldCoord;
@@ -387,9 +395,7 @@ void FormGPS::oglMain_Paint()
     gl->glDisable(GL_DEPTH_TEST);
     //gl->glDisable(GL_TEXTURE_2D);
 
-    int currentPatchBuffer = 0;
-
-    if(this->sentenceCounter() < 299)
+    if(Backend::instance()->m_fixFrame.sentenceCounter < 299)
     {
         if (isGPSPositionInitialized)
         {
@@ -426,317 +432,20 @@ void FormGPS::oglMain_Paint()
             //if (isDrawPolygons) gl->glPolygonMode(GL_FRONT, GL_LINE);
 
             gl->glEnable(GL_BLEND);
+
             //draw patches of sections
-
-            if (patchesBufferDirty) {
-                //destroy all GPU patches buffers
-                patchBuffer.clear();
-                patchesInBuffer.clear();
-
-                for (int j = 0; j < triStrip.count(); j++) {
-                    patchesInBuffer.append(QVector<PatchInBuffer>());
-                    for (int k=0; k < triStrip[j].patchList.size()-1 ; k++) {
-                        patchesInBuffer[j].append({ -1, -1, -1});
-                    }
-                }
-
-                patchBuffer.append( { QOpenGLBuffer(), 0} );
-                patchBuffer[0].patchBuffer.create();
-                patchBuffer[0].patchBuffer.bind();
-                patchBuffer[0].patchBuffer.allocate(PATCHBUFFER_LENGTH); //16 MB
-                patchBuffer[0].patchBuffer.release();
-                if (!patchesInBuffer.count()) {
-                    patchesInBuffer.append(QVector<PatchInBuffer>());
-                    patchesInBuffer[0].append({ -1, -1, -1});
-                }
-                currentPatchBuffer = 0;
-
-                patchesBufferDirty = false;
-            } else {
-                currentPatchBuffer = patchBuffer.count() - 1;
-            }
-
-            bool draw_patch = false;
-            //int total_vertices = 0;
-
-            //initialize the steps for mipmap of triangles (skipping detail while zooming out)
-            int mipmap = 0;
-            if (camera.camSetDistance < -800) mipmap = 2;
-            if (camera.camSetDistance < -1500) mipmap = 4;
-            if (camera.camSetDistance < -2400) mipmap = 8;
-            if (camera.camSetDistance < -5000) mipmap = 16;
-
-            if (mipmap > 1)
-                qDebug(qgl) << "mipmap is" << mipmap;
-
-            //QVector<GLuint> indices;
-            //indices.reserve(PATCHBUFFER_LENGTH / 28 * 3);  //enough to index 16 MB worth of vertices
-            QVector<QVector<GLuint>> indices2;
-            for (int i=0; i < patchBuffer.size(); i++) {
-                indices2.append(QVector<GLuint>());
-                indices2[i].reserve(PATCHBUFFER_LENGTH / 28 * 3);
-            }
-
-            bool enough_indices = false;
-
-            //draw patches j= # of sections
-            for (int j = 0; j < triStrip.count(); j++)
-            {
-                //every time the section turns off and on is a new patch
-                int patchCount = triStrip[j].patchList.size();
-
-                for (int k=0; k < patchCount; k++) {
-                    QSharedPointer<PatchTriangleList> triList = triStrip[j].patchList[k];
-                    QVector3D *triListRaw = triList->data();
-                    int count2 = triList->size();
-                    //total_vertices += count2;
-                    draw_patch = false;
-
-                    draw_patch = false;
-                    for (int i = 1; i < count2; i += 3) //first vertice is color
-                    {
-                        //determine if point is in frustum or not, if < 0, its outside so abort, z always is 0
-                        //x is easting, y is northing
-                        if (frustum[0] * triListRaw[i].x() + frustum[1] * triListRaw[i].y() + frustum[3] <= 0)
-                            continue;//right
-                        if (frustum[4] * triListRaw[i].x() + frustum[5] * triListRaw[i].y() + frustum[7] <= 0)
-                            continue;//left
-                        if (frustum[16] * triListRaw[i].x() + frustum[17] * triListRaw[i].y() + frustum[19] <= 0)
-                            continue;//bottom
-                        if (frustum[20] * triListRaw[i].x() + frustum[21] * triListRaw[i].y() + frustum[23] <= 0)
-                            continue;//top
-                        if (frustum[8] * triListRaw[i].x() + frustum[9] * triListRaw[i].y() + frustum[11] <= 0)
-                            continue;//far
-                        if (frustum[12] * triListRaw[i].x() + frustum[13] * triListRaw[i].y() + frustum[15] <= 0)
-                            continue;//near
-
-                        //point is in frustum so draw the entire patch. The downside of triangle strips.
-                        draw_patch = true;
-                        break;
-                    }
-
-                    if (!draw_patch) continue;
-                    color.setRgbF((*triList)[0].x(), (*triList)[0].y(), (*triList)[0].z(), 0.596 );
-
-                    if (k == patchCount - 1) {
-                        //If this is the last patch in the list, it's currently being worked on
-                        //so we don't save this one.
-                        QOpenGLBuffer triBuffer;
-
-                        triBuffer.create();
-                        triBuffer.bind();
-
-                        //triangle lists are now using QVector3D, so we can allocate buffers
-                        //directly from list data.
-
-                        //first vertice is color, so we should skip it
-                        triBuffer.allocate(triList->data() + 1, (count2-1) * sizeof(QVector3D));
-                        //triBuffer.allocate(triList->data(), count2 * sizeof(QVector3D));
-                        triBuffer.release();
-
-                        //draw the triangles in each triangle strip
-                        glDrawArraysColor(gl,projection*modelview,
-                                          GL_TRIANGLE_STRIP, color,
-                                          triBuffer,GL_FLOAT,count2-1);
-
-                        triBuffer.destroy();
-                        //qDebug(qgl) << "Last patch, not cached.";
-                        continue;
-                    } else {
-                        while (j >= patchesInBuffer.size())
-                            patchesInBuffer.append(QVector<PatchInBuffer>());
-                        while (k >= patchesInBuffer[j].size())
-                            patchesInBuffer[j].append({ -1, -1, -1});
-
-                        if (patchesInBuffer[j][k].which == -1) {
-                            //patch is not in one of the big buffers yet, so allocate it.
-                            if ((patchBuffer[currentPatchBuffer].length + (count2-1) * VERTEX_SIZE) >= PATCHBUFFER_LENGTH ) {
-                                //add a new buffer because the current one is full.
-                                currentPatchBuffer ++;
-                                patchBuffer.append( { QOpenGLBuffer(), 0 });
-                                patchBuffer[currentPatchBuffer].patchBuffer.create();
-                                patchBuffer[currentPatchBuffer].patchBuffer.bind();
-                                patchBuffer[currentPatchBuffer].patchBuffer.allocate(PATCHBUFFER_LENGTH); //4MB
-                                patchBuffer[currentPatchBuffer].patchBuffer.release();
-                                indices2.append(QVector<GLuint>());
-                                indices2[currentPatchBuffer].reserve(PATCHBUFFER_LENGTH / 28 * 3);
-                            }
-
-                            //there's room for it in the current patch buffer
-                            patchBuffer[currentPatchBuffer].patchBuffer.bind();
-                            QVector<ColorVertex> temp_patch;
-                            temp_patch.reserve(count2-1);
-                            for (int i=1; i < count2; i++) {
-                                temp_patch.append( { triListRaw[i], QVector4D(triListRaw[0], 0.596) } );
-                            }
-                            patchBuffer[currentPatchBuffer].patchBuffer.write(patchBuffer[currentPatchBuffer].length,
-                                                                              temp_patch.data(),
-                                                                              (count2-1) * VERTEX_SIZE);
-                            patchesInBuffer[j][k].which = currentPatchBuffer;
-                            patchesInBuffer[j][k].offset = patchBuffer[currentPatchBuffer].length / VERTEX_SIZE;
-                            patchesInBuffer[j][k].length = count2 - 1;
-                            patchBuffer[currentPatchBuffer].length += (count2 - 1) * VERTEX_SIZE;
-                            qDebug(qgl) << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
-                            patchBuffer[currentPatchBuffer].patchBuffer.release();
-                        }
-                        //generate list of indices for this patch
-                        int index_offset = patchesInBuffer[j][k].offset;
-                        int which_buffer = patchesInBuffer[j][k].which;
-
-                        int step = mipmap;
-                        if (count2 - 1 < mipmap + 2) {
-                            for (int i = 1; i < count2 - 2 ; i ++)
-                            {
-                                if (i % 2) {  //preserve winding order
-                                    indices2[which_buffer].append(i-1 + index_offset);
-                                    indices2[which_buffer].append(i   + index_offset);
-                                    indices2[which_buffer].append(i+1 + index_offset);
-                                } else {
-                                    indices2[which_buffer].append(i-1 + index_offset);
-                                    indices2[which_buffer].append(i+1   + index_offset);
-                                    indices2[which_buffer].append(i + index_offset);
-                                }
-
-                            }
-                        } else {
-                            //use mipmap to make fewer triangles
-                            int last_index2 = indices2[which_buffer].count();
-
-                            int vertex_count = 0;
-                            for (int i=1; i < count2; i += step) {
-                                //convert triangle strip to triangles
-                                if (vertex_count > 2 ) { //even, normal winding
-                                    indices2[which_buffer].append(indices2[which_buffer][last_index2 - 1]);
-                                    indices2[which_buffer].append(indices2[which_buffer][last_index2 - 2]);
-                                    last_index2+=3;
-                                } else {
-                                    last_index2 ++;
-                                }
-                                indices2[which_buffer].append(i-1 + index_offset);
-
-                                i++;
-                                vertex_count++;
-
-                                if (vertex_count > 2) { //odd, reverse winding
-                                    indices2[which_buffer].append(indices2[which_buffer][last_index2 - 2]);
-                                }
-                                indices2[which_buffer].append(i-1 + index_offset);
-
-                                if (vertex_count > 2) {
-                                    indices2[which_buffer].append(indices2[which_buffer][last_index2 - 1 ]);
-                                    last_index2 += 3;
-                                } else {
-                                    last_index2 ++;
-                                }
-                                i++;
-                                vertex_count++;
-
-                                if (count2 - i <= (mipmap + 2))
-                                    //too small to mipmap, so add each one
-                                    //individually.
-                                    step = 0;
-                            }
-                        }
-                        if (indices2[which_buffer].count() > 2)
-                            enough_indices = true;
-                    }
-                }
-
-                qDebug(qgl) << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
-
-                if (enough_indices) {
-                    interpColorShader->bind();
-                    interpColorShader->setUniformValue("mvpMatrix", projection*modelview);
-                    interpColorShader->setUniformValue("pointSize", 0.0f);
-
-                    //glDrawElements needs a vertex array object to hold state
-                    QOpenGLVertexArrayObject vao;
-                    vao.create();
-                    vao.bind();
-
-                    //create ibo
-                    QOpenGLBuffer ibo{QOpenGLBuffer::IndexBuffer};
-                    ibo.create();
-
-                    for (int i=0; i < indices2.count(); i++) {
-                        if (indices2[i].count() > 2) {
-                            patchBuffer[i].patchBuffer.bind();
-
-                            //set up vertex positions in buffer for the shader
-                            gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), nullptr); //3D vector
-                            gl->glEnableVertexAttribArray(0);
-
-                            gl->glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float))); //color
-                            gl->glEnableVertexAttribArray(1);
-
-
-                            ibo.bind();
-                            ibo.allocate(indices2[i].data(), indices2[i].size() * sizeof(GLuint));
-
-                            gl->glDrawElements(GL_TRIANGLES, indices2[i].count(), GL_UNSIGNED_INT, nullptr);
-                            patchBuffer[i].patchBuffer.release();
-
-                            ibo.release();
-                        }
-                    }
-                    ibo.destroy();
-                    vao.release();
-                    vao.destroy();
-                    interpColorShader->release();
-                }
-            }
-
-            // the follow up to sections patches
-            int patchCount = 0;
-
-            if (patchCounter > 0)
-            {
-                color = sectionColorDay;
-                if (isDay) color.setAlpha(152);
-                else color.setAlpha(76);
-
-                for (int j = 0; j < triStrip.count(); j++)
-                {
-                    if (triStrip[j].isDrawing)
-                    {
-                        if (tool.isMultiColoredSections)
-                        {
-                            color = tool.secColors[j];
-                            color.setAlpha(152);
-                        }
-                        patchCount = triStrip[j].patchList.count();
-
-                       //draw the triangle in each triangle strip
-                        gldraw1.clear();
-
-                        //left side of triangle
-                        QVector3D pt((CVehicle::instance()->cosSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + CVehicle::instance()->toolPos.easting,
-                                (CVehicle::instance()->sinSectionHeading * tool.section[triStrip[j].currentStartSectionNum].positionLeft) + CVehicle::instance()->toolPos.northing, 0);
-                        gldraw1.append(pt);
-
-                        //Right side of triangle
-                        pt = QVector3D((CVehicle::instance()->cosSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + CVehicle::instance()->toolPos.easting,
-                           (CVehicle::instance()->sinSectionHeading * tool.section[triStrip[j].currentEndSectionNum].positionRight) + CVehicle::instance()->toolPos.northing, 0);
-                        gldraw1.append(pt);
-
-                        int last = triStrip[j].patchList[patchCount -1]->count();
-                        //antenna
-                        gldraw1.append(QVector3D((*triStrip[j].patchList[patchCount-1])[last-2].x(), (*triStrip[j].patchList[patchCount-1])[last-2].y(),0));
-                        gldraw1.append(QVector3D((*triStrip[j].patchList[patchCount-1])[last-1].x(), (*triStrip[j].patchList[patchCount-1])[last-1].y(),0));
-
-                        gldraw1.draw(gl, projection*modelview, color, GL_TRIANGLE_STRIP, 1.0f);
-                    }
-                }
-            }
-
-            //qDebug(qgl) << "total vertices is "<< total_vertices;
+#ifndef Q_OS_ANDROID
+            tool.DrawPatchesTriangles(gl, projection*modelview, patchCounter,camera, swFrame);
+#else
+            tool.DrawPatches(gl,projection*modelview,patchCounter,camera,swFrame);
+#endif
 
             qDebug(qgl) << "time after painting patches " << (float)swFrame.nsecsElapsed() / 1000000;
 
             if (tram.displayMode != 0) tram.DrawTram(gl,projection*modelview,camera);
 
             //draw contour line if button on
-            if (this->isContourBtnOn())
+            if (MainWindowState::instance()->isContourBtnOn())
             {
                 ct.DrawContourLine(gl, projection*modelview, mainWindow, swFrame);
             }
@@ -756,12 +465,12 @@ void FormGPS::oglMain_Paint()
             if (bnd.bndList.count() > 0 || bnd.isBndBeingMade == true)
             {
                 //draw Boundaries
-                bnd.DrawFenceLines(*CVehicle::instance(), mc, gl, projection*modelview, mainWindow);
+                bnd.DrawFenceLines(CVehicle::instance()->pivotAxlePos, gl, projection*modelview, mainWindow);
 
                 //draw the turnLines
-                if (this->isYouTurnBtnOn() && ! this->isContourBtnOn())
+                if (MainWindowState::instance()->isYouTurnBtnOn() && ! MainWindowState::instance()->isContourBtnOn())
                 {
-                    bnd.DrawFenceLines(*CVehicle::instance(),mc,gl,projection*modelview, mainWindow);
+                    bnd.DrawFenceLines(CVehicle::instance()->pivotAxlePos, gl,projection*modelview, mainWindow);
 
                     color.setRgbF(0.3555f, 0.6232f, 0.20f); //TODO: not sure what color turnLines should actually be
 
@@ -772,41 +481,60 @@ void FormGPS::oglMain_Paint()
                 }
 
                 //Draw headland
-                if (this->isHeadlandOn())
+                if (MainWindowState::instance()->isHeadlandOn())
                 {
                     color.setRgbF(0.960f, 0.96232f, 0.30f);
                     DrawPolygon(gl,projection*modelview,bnd.bndList[0].hdLine,lineWidth,color);
                 }
             }
-            if (flagPts.count()>0) DrawFlags(gl, projection*modelview);
-            //Direct line to flag if flag selected
-            if (flagNumberPicked > 0)
-            {
-                if (flagPts.count() > flagNumberPicked) {
-                    gldraw1.clear();
-                    gl->glLineWidth(2);
-                    //TODO: implement with shader: GL.LineStipple(1, 0x0707);
-                    gldraw1.append(QVector3D(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, 0));
-                    gldraw1.append(QVector3D(flagPts[flagNumberPicked-1].easting, flagPts[flagNumberPicked-1].northing, 0));
-                    gldraw1.draw(gl, projection*modelview,
-                                QColor::fromRgbF(0.930f, 0.72f, 0.32f),
-                                GL_LINES, lineWidth);
-                    gl->glLineWidth(1);
-                } else {
-                    flagNumberPicked = 0;//reset
-                }
-            }
+
+            DrawFlags(gl, projection*modelview);
 
             //draw the vehicle/implement
             QMatrix4x4 mv = modelview; //push matrix
             // ✅ PHASE 6.3.0: InterfaceProperty guaranteed to be initialized before rendering
-            tool.DrawTool(gl,modelview, projection,isJobStarted(),*CVehicle::instance(), camera,tram);
+
+            QMatrix4x4 vehiclemv = modelview;
+            vehiclemv.translate(CVehicle::instance()->pivotAxlePos.easting,
+                                CVehicle::instance()->pivotAxlePos.northing, 0);
+
+            //setup for tool rendering
+            QMatrix4x4 toolmv = vehiclemv;
+            //translate down to the hitch pin
+            toolmv.translate(sin(CVehicle::instance()->fixHeading()) * tool.hitchLength,
+                         cos(CVehicle::instance()->fixHeading()) * tool.hitchLength, 0);
+
+            tool.DrawTool(gl,toolmv, projection,
+                          Backend::instance()->isJobStarted(),
+                          CVehicle::instance()->isHydLiftOn(),
+                          camera,tram);
             double steerangle;
-            if(timerSim.isActive()) steerangle = sim.steerangleAve;
-            else steerangle = mc.actualSteerAngleDegrees;
-            CVehicle::instance()->DrawVehicle(gl, modelview, projection, steerangle, isFirstHeadingSet,
-                                QRect(0,0,width,height),camera,tool,bnd,mainWindow);
-            modelview = mv; //pop matrix
+
+
+            //TODO: this is redundant. The simulator sets mc.actualSteerangleDegrees
+            if(SimInterface::instance()->isRunning()) steerangle = SimInterface::instance()->steerAngleActual();
+            else steerangle = ModuleComm::instance()->actualSteerAngleDegrees();
+
+            double markLeft, markRight;
+            if (bnd.isBndBeingMade) {
+                if (BoundaryInterface::instance()->isDrawRightSide()) {
+                    markLeft = 0;
+                    markRight = BoundaryInterface::instance()->createBndOffset();
+                } else {
+                    markLeft = BoundaryInterface::instance()->createBndOffset();
+                    markRight = 0;
+                }
+            } else {
+                markLeft = 0;
+                markRight = 0;
+            }
+
+            CVehicle::instance()->DrawVehicle(gl, vehiclemv,
+                                              projection, steerangle,
+                                              isFirstHeadingSet,
+                                              markLeft, markRight,
+                                              QRect(0,0,width,height),
+                                              camera);
 
             if (camera.camSetDistance > -150)
             {
@@ -830,7 +558,8 @@ void FormGPS::oglMain_Paint()
             if (tool.isDisplayTramControl && tram.displayMode != 0) { DrawTramMarkers(); }
 
             //if this is on, VehicleInterface.isHydLiftOn is true
-            if (p_239.pgn[p_239.hydLift] == 2)
+            //why is this here? Should be somewhere in UpdateFixPosition()
+            if (ModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] == 2)
             {
                 CVehicle::instance()->setHydLiftDown(false); //VehicleInterface.hydLiftDown in QML
             }
@@ -845,16 +574,7 @@ void FormGPS::oglMain_Paint()
             //guidance line text implemented in QML
 
             //draw the zoom window
-            // ⚡ PHASE 6.3.0 SAFETY: Verify InterfaceProperty before OpenGL access
-            bool jobStartedSafe = false;
-            try {
-                jobStartedSafe = this->isJobStarted();
-            } catch (...) {
-                // InterfaceProperty not ready, skip this rendering cycle
-                jobStartedSafe = false;
-            }
-
-            if (jobStartedSafe)
+            if (Backend::instance()->isJobStarted())
             {
                 /*TODO implement floating zoom windo
                 if (threeSeconds != zoomUpdateCounter)
@@ -864,6 +584,7 @@ void FormGPS::oglMain_Paint()
                 }
                 */
             }
+            //this probably can be in an event handler from QML land
             if (leftMouseDownOnOpenGL) MakeFlagMark(gl); //TODO: not working, fix!
         }
         else
@@ -880,18 +601,6 @@ void FormGPS::oglMain_Paint()
         //modelview.rotate(-60, 1.0, 0.0, 0.0);
         modelview.rotate(deadCam, 0.0, 1.0, 0.0);
         deadCam += 5;
-
-        //TODO: replace with QML widget
-
-        //draw with NoGPS texture 21
-       /* color.setRgbF(1.25f, 1.25f, 1.275f, 0.75);
-        gldrawtex.append( { QVector3D(2.5, 2.5, 0), QVector2D(1,0) } ); //Top Right
-        gldrawtex.append( { QVector3D(-2.5, 2.5, 0), QVector2D(0,0) } ); //Top Left
-        gldrawtex.append( { QVector3D(2.5, -2.5, 0), QVector2D(1,1) } ); //Bottom Right
-        gldrawtex.append( { QVector3D(-2.5, -2.5, 0), QVector2D(0,1) } ); //Bottom Left
-
-        gldrawtex.draw(gl, projection * modelview, Textures::NOGPS, GL_TRIANGLE_STRIP, true,color);
-*/
 
         // 2D Ortho ---------------------------------------////////-------------------------------------------------
 
@@ -1029,10 +738,10 @@ void FormGPS::oglBack_Paint()
 
     //rotate camera so heading matched fix heading in the world
     //gl->glRotated(toDegrees(CVehicle::instance()->fixHeadingSection), 0, 0, 1);
-    modelview.rotate(glm::toDegrees(CVehicle::instance()->toolPos.heading), 0, 0, 1);
+    modelview.rotate(glm::toDegrees(tool.toolPos.heading), 0, 0, 1);
 
-    modelview.translate(-CVehicle::instance()->toolPos.easting - sin(CVehicle::instance()->toolPos.heading) * 15,
-                        -CVehicle::instance()->toolPos.northing - cos(CVehicle::instance()->toolPos.heading) * 15,
+    modelview.translate(-tool.toolPos.easting - sin(tool.toolPos.heading) * 15,
+                        -tool.toolPos.northing - cos(tool.toolPos.heading) * 15,
                         0);
 
     //patch color
@@ -1047,15 +756,15 @@ void FormGPS::oglBack_Paint()
     double pivNminus = CVehicle::instance()->pivotAxlePos.northing - 50;
 
     //draw patches j= # of sections
-    for (int j = 0; j < triStrip.count(); j++)
+    for (int j = 0; j < tool.triStrip.count(); j++)
     {
         //every time the section turns off and on is a new patch
-        int patchCount = triStrip[j].patchList.size();
+        int patchCount = tool.triStrip[j].patchList.size();
 
         if (patchCount > 0)
         {
             //for every new chunk of patch
-            for (QSharedPointer<QVector<QVector3D>> &triList: triStrip[j].patchList)
+            for (QSharedPointer<QVector<QVector3D>> &triList: tool.triStrip[j].patchList)
             {
                 isDraw = false;
                 int count2 = triList->size();
@@ -1145,7 +854,7 @@ void FormGPS::oglBack_Paint()
 
 
         //draw 250 green for the headland
-        if (this->isHeadlandOn() && bnd.isSectionControlledByHeadland)
+        if (MainWindowState::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
         {
             DrawPolygonBack(gl,projection*modelview,bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
         }
@@ -1158,7 +867,7 @@ void FormGPS::oglBack_Paint()
 
     //read the whole block of pixels up to max lookahead, one read only
     //we'll use Qt's QImage function to grab it.
-    grnPix = backFBO->toImage().mirrored().convertToFormat(QImage::Format_RGBX8888);
+    grnPix = backFBO->toImage().flipped().convertToFormat(QImage::Format_RGBX8888);
     qDebug(qgl) << "Time after glReadPixels: " << swFrame.elapsed();
     //qDebug(qgl) << grnPix.size();
     //QImage temp = grnPix.copy(tool.rpXPosition, 250, tool.rpWidth, 290 /*(int)rpHeight*/);
@@ -1252,7 +961,7 @@ void FormGPS::oglZoom_Paint()
     gl->glCullFace(GL_BACK);
     gl->glClearColor(0, 0, 0, 1.0f);
 
-    if (isJobStarted())
+    if (Backend::instance()->isJobStarted())
     {
         gl->glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         projection.setToIdentity(); //Reset the view
@@ -1262,23 +971,23 @@ void FormGPS::oglZoom_Paint()
         calculateMinMax();
         //back the camera up
 
-        modelview.translate(0, 0, -maxFieldDistance);
+        modelview.translate(0, 0, -Backend::instance()->m_currentField.maxDistance);
 
         //translate to that spot in the world
-        modelview.translate(-fieldCenterX, -fieldCenterY, 0);
+        modelview.translate(-Backend::instance()->m_currentField.centerX, -Backend::instance()->m_currentField.centerY, 0);
 
         //draw patches
         int count2;
 
-        for (int j = 0; j < triStrip.count(); j++)
+        for (int j = 0; j < tool.triStrip.count(); j++)
         {
             //every time the section turns off and on is a new patch
-            int patchCount = triStrip[j].patchList.count();
+            int patchCount = tool.triStrip[j].patchList.count();
 
             if (patchCount > 0)
             {
                 //for every new chunk of patch
-                for (auto &triList: triStrip[j].patchList)
+                for (auto &triList: tool.triStrip[j].patchList)
                 {
                     //draw the triangle in each triangle strip
                     gldraw.clear();
@@ -1316,7 +1025,7 @@ void FormGPS::oglZoom_Paint()
         //oglZoom.SwapBuffers();
 
         //QImage overPix;
-        overPix = zoomFBO->toImage().mirrored().convertToFormat(QImage::Format_RGBX8888);
+        overPix = zoomFBO->toImage().flipped().convertToFormat(QImage::Format_RGBX8888);
         memcpy(overPixels, overPix.constBits(), overPix.size().width() * overPix.size().height() * 4);
     }
 
@@ -1329,36 +1038,15 @@ void FormGPS::oglZoom_Paint()
 void FormGPS::MakeFlagMark(QOpenGLFunctions *gl)
 {
     leftMouseDownOnOpenGL = false;
-    uchar data1[768];
-    memset(data1,0,768);
 
     qDebug(qgl) << "mouse down at " << mouseX << ", " << mouseY;
-    //scan the center of click and a set of square points around
-    gl->glReadPixels(mouseX - 8, mouseY - 8, 16, 16, GL_RGB, GL_UNSIGNED_BYTE, data1);
 
-    //made it here so no flag found
-    flagNumberPicked = 0;
+    //figure out what the screen coordinates of all the flags are
+    //check for clicks within a bounding box.
+    //select it.  popup box to edit name or allow delete?
 
-    for (int ctr = 0; ctr < 768; ctr += 3)
-    {
-        if ((data1[ctr] == 255) || (data1[ctr + 1] == 255))
-        {
-            int candidateFlag = data1[ctr + 2];
-            // Validate flag number is within bounds
-            if (candidateFlag > 0 && candidateFlag <= flagPts.size()) {
-                flagNumberPicked = candidateFlag;
-                qDebug(qgl) << "Valid flag picked:" << flagNumberPicked;
-            } else {
-                flagNumberPicked = 0; // Invalid flag, reset to no selection
-                qDebug(qgl) << "Invalid flag number" << candidateFlag << "- flagPts.size():" << flagPts.size();
-            }
-            break;
-        }
-    }
-
-    /*TODO: popup flag menu*/
-    //have to set a flag for the main loop
-
+    //if no flag is clicked on, deselect flag. Maybe do this in
+    //qml and javascript?
 }
 
 //DrawTramMarkers moved to QML
@@ -1398,46 +1086,55 @@ void FormGPS::DrawFlags(QOpenGLFunctions *gl, QMatrix4x4 mvp)
 {
     GLHelperOneColor gldraw;
 
-    int flagCnt = flagPts.count();
+    int flagCnt = FlagsInterface::instance()->count();
     for (int f = 0; f < flagCnt; f++)
     {
         QColor color;
         QString flagColor = "&";
+        FlagModel::Flag flag = FlagsInterface::instance()->flagModel()->flagAt(f+1);
 
-        if (flagPts[f].color == 0) {
-            color = QColor::fromRgb(255, 0, flagPts[f].ID);
+        if (flag.color == 0) {
+            color = QColor::fromRgb(255, 0, flag.id);
         }
-        if (flagPts[f].color == 1) {
-            color = QColor::fromRgb(0, 255, flagPts[f].ID);
+        if (flag.color == 1) {
+            color = QColor::fromRgb(0, 255, flag.id);
             flagColor = "|";
         }
-        if (flagPts[f].color == 2) {
-            color = QColor::fromRgb(255, 255, flagPts[f].ID);
+        if (flag.color == 2) {
+            color = QColor::fromRgb(255, 255, flag.id);
             flagColor = "~";
         }
 
-        gldraw.append(QVector3D(flagPts[f].easting, flagPts[f].northing, 0));
+        gldraw.append(QVector3D(flag.easting, flag.northing, 0));
         gldraw.draw(gl, mvp, color, GL_POINTS, 8.0f);
-        flagColor += flagPts[f].notes;
+        flagColor += flag.notes;
 
-        drawText3D(camera, gl, mvp, flagPts[f].easting, flagPts[f].northing, flagColor,1,true,color);
-    }
+        drawText3D(camera, gl, mvp, flag.easting, flag.northing, flagColor,1,true,color);
 
-    if (flagNumberPicked != 0)
-    {
-        ////draw the box around flag
-        gldraw.clear();
+        if (FlagsInterface::instance()->currentFlag() == (f + 1)) {
+            ////draw the box around flag
+            gldraw.clear();
 
-        double offSet = (camera.zoomValue * camera.zoomValue * 0.01);
-        gl->glLineWidth(4);
-        gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting, flagPts[flagNumberPicked - 1].northing + offSet, 0));
-        gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting - offSet, flagPts[flagNumberPicked - 1].northing, 0));
-        gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting, flagPts[flagNumberPicked - 1].northing - offSet, 0));
-        gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting + offSet, flagPts[flagNumberPicked - 1].northing, 0));
-        gldraw.append(QVector3D(flagPts[flagNumberPicked - 1].easting, flagPts[flagNumberPicked - 1].northing + offSet, 0));
-        gldraw.draw(gl, mvp, QColor::fromRgbF(0.980f, 0.0f, 0.980f),
-                    GL_LINE_STRIP, 4.0);
-        gl->glLineWidth(1);
+            double offSet = (camera.zoomValue * camera.zoomValue * 0.01);
+            gldraw.append(QVector3D(flag.easting, flag.northing + offSet, 0));
+            gldraw.append(QVector3D(flag.easting - offSet, flag.northing, 0));
+            gldraw.append(QVector3D(flag.easting, flag.northing - offSet, 0));
+            gldraw.append(QVector3D(flag.easting + offSet, flag.northing, 0));
+            gldraw.append(QVector3D(flag.easting, flag.northing + offSet, 0));
+            gldraw.draw(gl, mvp, QColor::fromRgbF(0.980f, 0.0f, 0.980f),
+                        GL_LINE_STRIP, 4.0);
+
+            //draw line to vehicle
+            gldraw.clear();
+            gl->glLineWidth(2);
+            //TODO: implement with shader: GL.LineStipple(1, 0x0707);
+            gldraw.append(QVector3D(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, 0));
+            gldraw.append(QVector3D(flag.easting, flag.northing, 0));
+            gldraw.draw(gl, mvp,
+                        QColor::fromRgbF(0.930f, 0.72f, 0.32f),
+                        GL_LINES, 1.0);
+
+        }
     }
 }
 
@@ -1510,40 +1207,19 @@ void FormGPS::CalcFrustum(const QMatrix4x4 &mvp)
 void FormGPS::calculateMinMax()
 {
 
-    minFieldX = 9999999; minFieldY = 9999999;
-    maxFieldX = -9999999; maxFieldY = -9999999;
-
-
-    //min max of the boundary
-    //min max of the boundary
-    if (bnd.bndList.count() > 0)
-    {
-        int bndCnt = bnd.bndList[0].fenceLine.count();
-        for (int i = 0; i < bndCnt; i++)
-        {
-            double x = bnd.bndList[0].fenceLine[i].easting;
-            double y = bnd.bndList[0].fenceLine[i].northing;
-
-            //also tally the max/min of field x and z
-            if (minFieldX > x) minFieldX = x;
-            if (maxFieldX < x) maxFieldX = x;
-            if (minFieldY > y) minFieldY = y;
-            if (maxFieldY < y) maxFieldY = y;
-        }
-
-    }
-    else
-    {
+    //calculate field extents from boundary
+    if (! bnd.CalculateMinMax() ) {
+        //otherwise calculate from coverage
         //draw patches j= # of sections
-        for (int j = 0; j < triStrip.count(); j++)
+        for (int j = 0; j < tool.triStrip.count(); j++)
         {
             //every time the section turns off and on is a new patch
-            int patchCount = triStrip[j].patchList.count();
+            int patchCount = tool.triStrip[j].patchList.count();
 
             if (patchCount > 0)
             {
                 //for every new chunk of patch
-                for (QSharedPointer<PatchTriangleList> &triList: triStrip[j].patchList)
+                for (QSharedPointer<PatchTriangleList> &triList: tool.triStrip[j].patchList)
                 {
                     int count2 = triList->count();
                     for (int i = 0; i < count2; i += 3)
@@ -1552,38 +1228,43 @@ void FormGPS::calculateMinMax()
                         double y = (*triList)[i].y();
 
                         //also tally the max/min of field x and z
-                        if (minFieldX > x) minFieldX = x;
-                        if (maxFieldX < x) maxFieldX = x;
-                        if (minFieldY > y) minFieldY = y;
-                        if (maxFieldY < y) maxFieldY = y;
+                        if (Backend::instance()->m_currentField.minX > x) Backend::instance()->m_currentField.minX = x;
+                        if (Backend::instance()->m_currentField.maxX < x) Backend::instance()->m_currentField.maxX = x;
+                        if (Backend::instance()->m_currentField.minY > y) Backend::instance()->m_currentField.minY = y;
+                        if (Backend::instance()->m_currentField.maxY < y) Backend::instance()->m_currentField.maxY = y;
                     }
                 }
             }
         }
     }
 
-
-    if (maxFieldX == -9999999 || minFieldX == 9999999 || maxFieldY == -9999999 || minFieldY == 9999999)
+    if (Backend::instance()->m_currentField.minX == -9999999 ||
+        Backend::instance()->m_currentField.maxX ==  9999999 ||
+        Backend::instance()->m_currentField.minY == -9999999 ||
+        Backend::instance()->m_currentField.maxY ==  9999999 )
     {
-        maxFieldX = 0; minFieldX = 0; maxFieldY = 0; minFieldY = 0;
+        //there was no boundary and no coverage
+        Backend::instance()->m_currentField.minX = 0;
+        Backend::instance()->m_currentField.minY = 0;
+        Backend::instance()->m_currentField.maxX = 0;
+        Backend::instance()->m_currentField.maxY = 0;
     }
     else
     {
+        double maxFieldDistance;
         //the largest distancew across field
-        double dist = fabs(minFieldX - maxFieldX);
-        double dist2 = fabs(minFieldY - maxFieldY);
+        double dist = fabs(Backend::instance()->m_currentField.minX - Backend::instance()->m_currentField.maxX);
+        double dist2 = fabs(Backend::instance()->m_currentField.minY - Backend::instance()->m_currentField.maxY);
 
         if (dist > dist2) maxFieldDistance = (dist);
         else maxFieldDistance = (dist2);
 
         if (maxFieldDistance < 100) maxFieldDistance = 100;
         if (maxFieldDistance > 19900) maxFieldDistance = 19900;
-        //lblMax.Text = ((int)maxFieldDistance).ToString();
 
-        fieldCenterX = (maxFieldX + minFieldX) / 2.0;
-        fieldCenterY = (maxFieldY + minFieldY) / 2.0;
+        Backend::instance()->m_currentField.calcCenter();
+        Backend::instance()->m_currentField.maxDistance = maxFieldDistance;
     }
 
-    headland_form.setFieldInfo(maxFieldDistance,fieldCenterX,fieldCenterY);
-    headache_form.setFieldInfo(maxFieldDistance,fieldCenterX,fieldCenterY);
+    Backend::instance()->currentFieldChanged();
 }

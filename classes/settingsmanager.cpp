@@ -99,7 +99,7 @@ QJsonObject SettingsManager::toJsonUnsafe()
     QString json_value;
     QJsonObject blah;
 
-    for (const auto &key : keys) {
+    for (const auto &key : std::as_const(keys)) {
         b = m_qsettings->value(key);
         type = b.typeName();
 
@@ -202,7 +202,7 @@ bool SettingsManager::loadJson(QString filename)
                 QString payload = new_value.mid(6);
                 QStringList list = payload.split(",");
                 QVariantList varList;
-                for (const QString& item : list) {
+                for (const QString& item : std::as_const(list)) {
                     varList.append(item.toInt());
                 }
                 m_qsettings->setValue(key, varList);
@@ -447,7 +447,7 @@ void SettingsManager::syncPropertiesFromQSettings()
             // Handle QStringList to QVector<int> conversion for tool_zones
             QStringList list = value.toStringList();
             QVector<int> vector;
-            for (const QString& str : list) {
+            for (const QString& str : std::as_const(list)) {
                 bool ok;
                 int val = str.toInt(&ok);
                 if (ok) vector.append(val);

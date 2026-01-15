@@ -28,6 +28,12 @@ Window {
     // ⚡ Qt 6.8 Modern Pattern: Simple initialization notification
     // No complex property bindings or signal handlers needed
 
+    LoggingCategory {
+        id: qmlLog
+
+        name: "qml.qtagopengps"
+    }
+
     AOGTheme {
         id: theme
         objectName: "theme"
@@ -48,65 +54,51 @@ Window {
                       }
 
     Component.onCompleted: {
-        // Debug factory function singletons
-        console.log("=== FACTORY FUNCTION DEBUG ===")
-        console.log("Settings available:", typeof Settings !== 'undefined')
-        console.log("TracksInterface available:", typeof TracksInterface !== 'undefined')
-        console.log("VehicleInterface available:", typeof VehicleInterface !== 'undefined')
-        // AgIOSettings replaced by AgIOService in Phase 4.2
-        console.log("AgIOService available:", typeof AgIOService !== 'undefined')
+        // Singletons created on first access. No need to check if they
+        // exist.
+        console.log(qmlLog, "=== FACTORY FUNCTION DEBUG ===")
+        console.log(qmlLog, "Settings available:", typeof SettingsManager !== 'undefined')
+        console.log(qmlLog, "TracksInterface available:", typeof TracksInterface !== 'undefined')
+        console.log(qmlLog, "VehicleInterface available:", typeof VehicleInterface !== 'undefined')
+        console.log(qmlLog, "AgIOService available:", typeof AgIOService !== 'undefined')
 
-        if (typeof Settings !== 'undefined') {
-            console.log("Settings.display_isStartFullscreen:", SettingsManager.display_isStartFullscreen)
-        }
+        console.log(qmlLog, "Settings.display_isStartFullscreen:", SettingsManager.display_isStartFullscreen)
 
-        // Force AgIOService factory function call first
-        if (typeof AgIOService !== 'undefined') {
-            // Force singleton creation via factory function
-            var service = AgIOService;  // This should trigger factory function
+        console.log(qmlLog, "=== AGIO SERVICE TEST ===")
+        console.log(qmlLog, "GPS Connected:", AgIOService.gpsConnected)
+        console.log(qmlLog, "Latitude:", Backend.fixFrame.latitude)
+        console.log(qmlLog, "Longitude:", Backend.fixFrame.longitude)
+        console.log(qmlLog, "Vehicle XY:", VehicleInterface.screenCoord)
+        console.log(qmlLog, "Thread test:")
+        AgIOService.testThreadCommunication()
+        console.log(qmlLog, "=== END AGIO TEST ===")
 
-            console.log("=== AGIO SERVICE TEST ===")
-            console.log("GPS Connected:", service.gpsConnected)
-            console.log("Latitude:", service.latitude)
-            console.log("Longitude:", service.longitude)
-            console.log("Vehicle XY:", service.vehicle_xy)
-            console.log("Thread test:")
-            service.testThreadCommunication()
-            console.log("=== END AGIO TEST ===")
-        } else {
-            console.log("❌ AgIOService NOT available!")
-        }
+        console.log(qmlLog, "TracksInterface.idx:", TracksInterface.idx)
+        console.log(qmlLog, "TracksInterface.count:", TracksInterface.count)
+        console.log(qmlLog, "TracksInterface.model:", TracksInterface.model)
+        console.log(qmlLog, "TracksInterface identity:", TracksInterface)
 
-        if (typeof TracksInterface !== 'undefined') {
-            console.log("TracksInterface.idx:", TracksInterface.idx)
-            console.log("TracksInterface.count:", TracksInterface.count)
-            console.log("TracksInterface.model:", TracksInterface.model)
-            console.log("TracksInterface identity:", TracksInterface)
-        }
-
-        if (typeof VehicleInterface !== 'undefined') {
-            console.log("VehicleInterface.isReverse:", VehicleInterface.isReverse)
-            console.log("VehicleInterface.vehicleList length:", VehicleInterface.vehicleList ? VehicleInterface.vehicleList.length : "undefined")
-            console.log("VehicleInterface identity:", VehicleInterface)
-        }
+        console.log(qmlLog, "VehicleInterface.isReverse:", VehicleInterface.isReverse)
+        console.log(qmlLog, "VehicleInterface.vehicleList length:", VehicleInterface.vehicleList ? VehicleInterface.vehicleList.length : "undefined")
+        console.log(qmlLog, "VehicleInterface identity:", VehicleInterface)
 
         // AgIOSettings debug removed - replaced by AgIOService in Phase 4.2
 
-        console.log("=== END FACTORY FUNCTION DEBUG ===")
+        console.log(qmlLog, "=== END FACTORY FUNCTION DEBUG ===")
 
         // Phase 6.0.20 Task 24 Step 3.5 - Test geodetic conversion functions
-        console.log("[GEODETIC_TEST] latStart:", aog.latStart, "lonStart:", aog.lonStart )
-        if (aog.latStart !== 0 && aog.lonStart !== 0) {
-            var local = aog.convertWGS84ToLocal(aog.latStart, aog.lonStart)
-            console.log("[GEODETIC_TEST] WGS84->Local origin conversion: northing=", local[0], "easting=", local[1])
-            var wgs84 = aog.convertLocalToWGS84(local[0], local[1])
-            console.log("[GEODETIC_TEST] Local->WGS84 round-trip: lat=", wgs84[0], "lon=", wgs84[1])
+        console.log(qmlLog, "[GEODETIC_TEST] latStart:", Backend.pn.latStart, "lonStart:", Backend.pn.lonStart )
+        if (Backend.pn.latStart !== 0 && Backend.pn.lonStart !== 0) {
+            var local = Backend.pn.convertWGS84ToLocal(Backend.pn.latStart, Backend.pn.lonStart)
+            console.log(qmlLog, "[GEODETIC_TEST] WGS84->Local origin conversion: northing=", local[0], "easting=", local[1])
+            var wgs84 = Backend.pn.convertLocalToWGS84(local[0], local[1])
+            console.log(qmlLog, "[GEODETIC_TEST] Local->WGS84 round-trip: lat=", wgs84[0], "lon=", wgs84[1])
         } else {
-            console.log("[GEODETIC_TEST] Field origin not set - skipping conversion test")
+            console.log(qmlLog, "[GEODETIC_TEST] Field origin not set - skipping conversion test")
         }
 
         // ⚡ Qt 6.8 Pattern: Component is ready
-        console.log("✅ QML MainWindow Component.onCompleted")
+        console.log(qmlLog, "✅ QML MainWindow Component.onCompleted")
         // C++ will be notified via objectCreated signal automatically
     }
 
@@ -114,12 +106,12 @@ Window {
     Connections {
         target: aog
         function onLatStartChanged() {
-            if (aog.latStart !== 0 && aog.lonStart !== 0) {
-                console.log("[GEODETIC_TEST] Field loaded - latStart:", aog.latStart, "lonStart:", aog.lonStart, "mPerDegreeLat:", aog.mPerDegreeLat)
-                var local = aog.convertWGS84ToLocal(aog.latStart, aog.lonStart)
-                console.log("[GEODETIC_TEST] WGS84->Local origin: northing=", local[0], "easting=", local[1])
-                var wgs84 = aog.convertLocalToWGS84(local[0], local[1])
-                console.log("[GEODETIC_TEST] Local->WGS84 round-trip: lat=", wgs84[0], "lon=", wgs84[1])
+            if (Backend.pn.latStart !== 0 && Backend.pn.lonStart !== 0) {
+                console.log(qmlLog, "[GEODETIC_TEST] Field loaded - latStart:", Backend.pn.latStart, "lonStart:", Backend.pn.lonStart, "mPerDegreeLat:", Backend.pn.mPerDegreeLat)
+                var local = Backend.pn.convertWGS84ToLocal(Backend.pn.latStart, Backend.pn.lonStart)
+                console.log(qmlLog, "[GEODETIC_TEST] WGS84->Local origin: northing=", local[0], "easting=", local[1])
+                var wgs84 = Backend.pn.convertLocalToWGS84(local[0], local[1])
+                console.log(qmlLog, "[GEODETIC_TEST] Local->WGS84 round-trip: lat=", wgs84[0], "lon=", wgs84[1])
             }
         }
     }
@@ -130,59 +122,59 @@ Window {
     function close() {
         if (areWindowsOpen()) {
             timedMessage.addMessage(2000,qsTr("Some windows are open. Close them first."))
-            console.log("some windows are open. close them first")
+            console.log(qmlLog, "some windows are open. close them first")
             return
         }
-        if (aog.autoBtnState + aog.manualBtnState  > 0) {
+        if (MainWindowState.autoBtnState + MainWindowState.manualBtnState  > 0) {
             timedMessage.addMessage(2000,qsTr("Section Control on. Shut off Section Control."))
             close.accepted = false
-            console.log("Section Control on. Shut off Section Control.")
+            console.log(qmlLog, "Section Control on. Shut off Section Control.")
             return
         }
         if (mainWindow.visibility !== (Window.FullScreen) && mainWindow.visibility !== (Window.Maximized)){
             SettingsManager.window_size = ((mainWindow.width.toString() + ", "+  (mainWindow.height).toString()))
         }
 
-        if (aog.isJobStarted) {
+        if (Backend.isJobStarted) {
             closeDialog.visible = true
             close.accepted = false
-            console.log("job is running. close it first")
+            console.log(qmlLog, "job is running. close it first")
             return
         }
         Qt.quit()
     }
     function areWindowsOpen() {
         if (config.visible === true) {
-            console.log("config visible")
+            console.log(qmlLog, "config visible")
             return true
         }
         else if (headlandDesigner.visible === true) {
-            console.log("headlandDesigner visible")
+            console.log(qmlLog, "headlandDesigner visible")
             return true
         }
         else if (headacheDesigner.visible === true) {
-            console.log("headacheDesigner visible")
+            console.log(qmlLog, "headacheDesigner visible")
             return true
         }
         else if (steerConfigWindow.visible === true) {
-            console.log("steerConfigWindow visible")
+            console.log(qmlLog, "steerConfigWindow visible")
             return true
         }
         /*
         else if (abCurvePicker.visible === true) {
-            console.log("abCurvePicker visible")
+            console.log(qmlLog, "abCurvePicker visible")
             return true
         }
         else if (abLinePicker.visible === true) {
-            console.log("abLinePicker visible")
+            console.log(qmlLog, "abLinePicker visible")
             return true
         }*/
         else if (tramLinesEditor.visible === true) {
-            console.log("tramLinesEditor visible")
+            console.log(qmlLog, "tramLinesEditor visible")
             return true
         }
         else if (lineEditor.visible === true) {
-            console.log("lineEditor visible")
+            console.log(qmlLog, "lineEditor visible")
             return true
         }
         //if (boundaryMenu.visible == true) return false
@@ -190,33 +182,22 @@ Window {
         //if (lineNudge.acive) return false
         //if (refNudge.acive) return false
         else if (setSimCoords.visible === true) {
-            console.log("setSimCoords visible")
+            console.log(qmlLog, "setSimCoords visible")
             return true
         }
         /* Must implement the new track dialog
         else if (trackNew.visible === true) {
-            console.log("trackNew visible")
+            console.log(qmlLog, "trackNew visible")
             return true
         }*/
         else if (fieldNew.visible === true) {
-            console.log("FieldNew visible")
+            console.log(qmlLog, "FieldNew visible")
             return true
         }
         //if (fieldFromKML.visible) return false
         else if (fieldOpen.visible === true) return true
         //if (contextFlag.visible == true) return false
         else return false
-    }
-
-
-    Interfaces.FieldInterface {
-        id: fieldInterface
-        objectName: "fieldInterface"
-    }
-
-    Interfaces.BoundaryInterface {
-        id: boundaryInterface
-        objectName: "boundaryInterface"
     }
 
     Interfaces.RecordedPathInterface {
@@ -228,6 +209,15 @@ Window {
         //This is a popup message that dismisses itself after a timeout
         id: timedMessage
         objectName: "timedMessage"
+
+        //Connect Backend.timedMessage to this object
+        Connections {
+            target: Backend
+
+            function onTimedMessage(timeout:int , title: string, message: string) {
+                timedMessage.addMessage(timeout, title, message);
+            }
+        }
     }
 
     SystemPalette {
@@ -252,6 +242,12 @@ Window {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         //z: -1
+
+        Component.onCompleted: {
+            //Let the backend have access to this item to
+            //set properties and render callbacks
+            Backend.aogRenderer = glcontrolrect;
+        }
 
         //for moving the center of the view around
         // ✅ PHASE 6.3.0: shiftX/shiftY are now Q_PROPERTY in C++ AOGRendererInSG class
@@ -300,8 +296,8 @@ Window {
 
             Image {
                 id: reverseArrow
-                x: aog.vehicle_xy.x - 150
-                y: aog.vehicle_xy.y - height
+                x: VehicleInterface.screenCoord.x - 150
+                y: VehicleInterface.screenCoord.y - height
                 width: 70 * theme.scaleWidth
                 height: 70 * theme.scaleHeight
                 source: prefix + "/images/Images/z_ReverseArrow.png"
@@ -312,16 +308,16 @@ Window {
                 id: resetDirection
                 onClicked: {
                     aog.resetDirection() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-                    console.log("reset direction")
+                    console.log(qmlLog, "reset direction")
                 }
                 propagateComposedEvents: true
-                x: aog.vehicle_bounding_box.x
-                y: aog.vehicle_bounding_box.y
-                width: aog.vehicle_bounding_box.width
-                height: aog.vehicle_bounding_box.height
+                x: VehicleInterface.screenBounding.x
+                y: VehicleInterface.screenBounding.y
+                width: VehicleInterface.screenBounding.width
+                height: VehicleInterface.screenBounding.height
                 onPressed: (mouse)=>{
                                aog.resetDirection() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-                               console.log("pressed")
+                               console.log(qmlLog, "pressed")
                                mouse.accepted = false
 
                            }
@@ -340,9 +336,9 @@ Window {
         id: noGPS
         anchors.fill: glcontrolrect
         color: "#0d0d0d"
-        visible: aog.sentenceCounter> 29
+        visible: Backend.fixFrame.sentenceCounter> 29
         onVisibleChanged: if(visible){
-                              console.log("no gps now visible")
+                              console.log(qmlLog, "no gps now visible")
                           }
 
         Image {
@@ -381,7 +377,7 @@ Window {
             anchors.margins: 10
             visible: SettingsManager.menu_isSpeedoOn
 
-            speed: Utils.speed_to_unit(aog.speedKph)
+            speed: Utils.speed_to_unit(VehicleInterface.avgSpeed)
         }
 
         SteerCircle { //the IMU indicator on the bottom right -- Called the "SteerCircle" in AOG
@@ -389,13 +385,12 @@ Window {
             anchors.right: rightColumn.left
             anchors.margins: 10
             visible: true
-            rollAngle: aog.imuRollDegrees
-            // Phase 6.0.20 Task 24 Step 3.2: Use aog.steerModuleConnectedCounter instead of aogInterface
-            steerColor: (aog.steerModuleConnectedCounter > 30 ?
+            rollAngle: Backend.fixFrame.imuRollDegrees
+            steerColor: (ModuleComm.steerModuleConnectedCounter > 30 ?
                              "#f0f218f0" :
-                             (aog.steerSwitchHigh === true ?
+                             (ModuleComm.steerSwitchHigh === true ?
                                   "#faf80007" :
-                                  (aog.isBtnAutoSteerOn === true ?
+                                  (MainWindowState.isBtnAutoSteerOn === true ?
                                        "#f80df807" : "#f0f2c007")))
 
         }
@@ -496,7 +491,7 @@ Window {
 
             Comp.OutlineText{
                 id: ageAlarm //Lost RTK count up display
-                property int age: aog.age
+                property int age: Backend.fixFrame.age
                 visible: SettingsManager.gps_isRTK
                 anchors.top: simulatorOnText.bottom
                 anchors.topMargin: 30
@@ -513,7 +508,7 @@ Window {
                         text = "Lost RTK"
                 }
                 onTextChanged: if (ageAlarm.text.length > 0)
-                                   console.log("rtk alarm sound")
+                                   console.log(qmlLog, "rtk alarm sound")
 
             }
 
@@ -539,8 +534,8 @@ Window {
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.margins: 5
-                dotDistance: aog.avgPivDistance / 10 //avgPivotDistance is averaged
-                visible: (aog.offlineDistance != 32000 &&
+                dotDistance: VehicleInterface.avgPivDistance / 10 //avgPivotDistance is averaged
+                visible: (VehicleInterface.guidanceLineDistanceOff !== 32000 &&
                           SettingsManager.menu_isLightBarOn) ?
                              true : false
             }
@@ -598,9 +593,15 @@ Window {
             }
             BlockageData{ //window that displays GPS data
                 id: blockageData
+                z: 2
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 visible: AgIOService.blockageConnected && SettingsManager.seed_blockageIsOn
+                MouseArea {
+                    id: blockageViewSwitch
+                    anchors.fill: parent
+                    onClicked: blockageRows.viewSwitch = !blockageRows.viewSwitch
+                    }
             }
 
             SimController{
@@ -648,7 +649,7 @@ Window {
             }
             Comp.SectionButtons {
                 id: sectionButtons
-                visible: aog.isJobStarted ? true : false
+                visible: Backend.isJobStarted ? true : false
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: simBarRect.top
                 anchors.bottomMargin: 8
@@ -658,13 +659,12 @@ Window {
             }
             Comp.BlockageRows {
                 id: blockageRows
-                visible: AgIOService.blockageConnected && SettingsManager.seed_blockageIsOn
+                visible:  AgIOService.blockageConnected && SettingsManager.seed_blockageIsOn
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 8
                 height: 120 * theme.scaleHeight
-                //width: 800  * theme.scaleWidth
-
+                width: 800  * theme.scaleWidth
             }
             DisplayButtons{ // window that shows the buttons to change display. Rotate up/down, day/night, zoom in/out etc. See DisplayButtons.qml
                 id: displayButtons
@@ -691,7 +691,7 @@ Window {
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
                 anchors.margins: 25
-                visible: aog.isJobStarted
+                visible: Backend.isJobStarted
                 width: 45 * theme.scaleWidth
                 height: 25 * theme.scaleHeight
                 icon.source: prefix + "/images/MenuHideShow.png"
@@ -705,7 +705,7 @@ Window {
                 id: compass
                 anchors.top: parent.top
                 anchors.right: zoomBtns.left
-                heading: -Utils.radians_to_deg(aog.fusedHeading)
+                heading: -Utils.radians_to_deg(VehicleInterface.fixHeading)
                 visible: SettingsManager.menu_isCompassOn
             }
             Column{
@@ -814,17 +814,6 @@ Window {
             id: steerConfigSettings
             visible: false
         }
-        /*
-        ABCurvePicker{
-            id: abCurvePicker
-            objectName: "abCurvePicker"
-            visible: false
-        }
-        ABLinePicker{
-            id: abLinePicker
-            objectName: "abLinePicker"
-            visible: false
-        }*/
         TramLinesEditor{
             id: tramLinesEditor
             anchors.right: parent.right
@@ -890,8 +879,8 @@ Window {
             id: steerCharta
             height: 300  * theme.scaleHeight
             width: 400  * theme.scaleWidth
-            xval1: aog.steerAngleActual
-            xval2: aog.steerAngleSet
+            xval1: ModuleComm.actualSteerAngleDegrees
+            xval2: VehicleInterface.driveFreeSteerAngle
             axismin: -10
             axismax: 10
             lineName1:"Actual"
@@ -907,7 +896,7 @@ Window {
             id: xteCharta
             height: 300  * theme.scaleHeight
             width: 400  * theme.scaleWidth
-            xval1: aog.lblmodeActualXTE
+            xval1: VehicleInterface.modeActualXTE
             xval2: Number(aog.dataSteerAngl)
             axismin: -100
             axismax: 100
@@ -924,8 +913,8 @@ Window {
             id: headingCharta
             height: 300  * theme.scaleHeight
             width: 400  * theme.scaleWidth
-            xval1: aog.heading  // Rectangle Pattern: direct property access
-            xval2: aog.imuHeading > 360 ? 0 : aog.imuHeading  // Show real IMU heading, 0 if invalid
+            xval1: Backend.fixFrame.heading  // Rectangle Pattern: direct property access
+            xval2: Backend.fixFrame.imuHeading > 360 ? 0 : Backend.fixFrame.imuHeading  // Show real IMU heading, 0 if invalid
             axismin: -10
             axismax: 10
             lineName1:"Fix2fix"
@@ -979,7 +968,7 @@ Window {
                 color3: "transparent"
                 icon.source: prefix + "/images/ExitAOG.png"
                 onClicked: {
-                    formGPS.applicationClosing = true  // Save vehicle when exiting app (Qt 6.8 binding)
+                    Backend.applicationClosing = true  // Save vehicle when exiting app (Qt 6.8 binding)
                     Qt.quit()
                 }
             }

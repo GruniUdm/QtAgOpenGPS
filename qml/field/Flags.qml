@@ -24,11 +24,34 @@ Comp.MoveablePopup {
 
     function update_model() {
         //var distance = 0.0
-        if (contextFlag.ptlat>0) dist = Utils.distanceLatLon(aog.latitude, aog.longitude, contextFlag.ptlat, contextFlag.ptlon);
+        if (FlagsInterface.currentFlag > 0)
+            dist = Utils.distanceLatLon(Backend.fixFrame.latitude, Backend.fixFrame.longitude,
+                                        FlagsInterface.currentLatitude,
+                                        FlagsInterface.currentLongitude);
         else dist = 0;
+    }
+
+    Connections {
+        target: Backend
+
+        function onFixFrameChanged() {
+            update_model()
+        }
+    }
+
+    Connections {
+        target: FlagsInterface
+
+        function onCurrentLatitudeChanged() {
+            update_model()
         }
 
-        Comp.TitleFrame{
+        function onCurrentLongitudeChanged() {
+            update_model()
+        }
+    }
+
+    Comp.TitleFrame{
         color: "#f2f2f2"
         border.color: "black"
         border.width: 2
@@ -48,8 +71,10 @@ Comp.MoveablePopup {
                 implicitWidth: parent.width /4 - 5 * theme.scaleWidth
                 implicitHeight: theme.buttonSize
                 color: "#ffffff"
-                onClicked:{ aog.nextFlag() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-                update_model()}
+                onClicked: {
+                    FlagsInterface.nextFlag() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    update_model()
+                }
             }
             Comp.IconButtonColor{
                 id: down
@@ -57,8 +82,10 @@ Comp.MoveablePopup {
                 implicitWidth: parent.width /4 - 5 * theme.scaleWidth
                 implicitHeight: theme.buttonSize
                 color: "#ffffff"
-                onClicked: {aog.prevFlag() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-                update_model()}
+                onClicked: {
+                    FlagsInterface.prevFlag() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    update_model()
+                }
             }
             Comp.IconButtonColor{
                 id: deleteflag
@@ -66,7 +93,7 @@ Comp.MoveablePopup {
                 implicitWidth: parent.width /4 - 5 * theme.scaleWidth
                 implicitHeight: theme.buttonSize
                 color: "#ffffff"
-                onClicked: aog.deleteFlag() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                onClicked: FlagsInterface.deleteCurrentFlag() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
             Comp.IconButtonColor{
                 id: cancel
@@ -75,87 +102,90 @@ Comp.MoveablePopup {
                 implicitHeight: theme.buttonSize
                 color: "#ffffff"
                 onClicked: {flags.visible = false;
-                    aog.cancelFlag()} // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    FlagsInterface.cancelCurrentFlag()} // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             }
         }
-            Rectangle{
-                id: textEntry
-                width:parent.width*0.75
-                height: 50  * theme.scaleHeight
-                anchors.top:parent.top
-                anchors.topMargin: 20 * theme.scaleHeight
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: aogInterface.backgroundColor
-                border.color: "darkgray"
-                border.width: 1
-                TextField{
-                    id: newField
-                    anchors.fill: parent
-                    selectByMouse: true
-                    placeholderText: focus || text ? "" : contextFlag.ptText
-                    font.pixelSize: 15
+        Rectangle{
+            id: textEntry
+            width:parent.width*0.75
+            height: 50  * theme.scaleHeight
+            anchors.top:parent.top
+            anchors.topMargin: 20 * theme.scaleHeight
+            anchors.horizontalCenter: parent.horizontalCenter
+            color: aogInterface.backgroundColor
+            border.color: "darkgray"
+            border.width: 1
+            TextField{
+                id: newField
+                anchors.fill: parent
+                selectByMouse: true
+                text: FlagsInterface.currentNotes
+                onTextEdited: {
+                    FlagsInterface.currentNotes = text
                 }
-                Text {
-                    id: idText
-                    anchors.top: textEntry.bottom
-                    anchors.left: parent.left
-                    //color: "red"
-                    visible: true
-                    text: qsTr("ID: ") + contextFlag.ptId
-                    font.pixelSize: 15
-                }
-                Text {
-                    id: latText
-                    anchors.top: idText.bottom
-                    anchors.left: parent.left
-                    //color: "red"
-                    visible: true
-                    text: qsTr("Lat: ") + (Number(contextFlag.ptlat).toLocaleString(Qt.locale(), 'f', 9))
-                    onTextChanged: update_model()
-                    font.pixelSize: 15
-                }
-                Text {
-                    id: lonText
-                    anchors.top: latText.bottom
-                    anchors.left: parent.left
-                    //color: "red"
-                    visible: true
-                    text: qsTr("Lon: ") + (Number(contextFlag.ptlon).toLocaleString(Qt.locale(), 'f', 9))
-                    onTextChanged: update_model()
-                    font.pixelSize: 15
-                }
-                Text {
-                    anchors.top: textEntry.bottom
-                    anchors.left: parent.left
-                    //color: "red"
-                    visible: false
-                    text: aog.longitude
-                    onTextChanged: update_model()
-                }
-                Text {
-                    anchors.top: textEntry.bottom
-                    anchors.right: parent.right
-                    //color: "red"
-                    visible: false
-                    text: aog.latitude
-                    onTextChanged: update_model()
-                }
-                Text {
-                    id: distText
-                    anchors.top: lonText.bottom
-                    anchors.left: parent.left
-                    //color: "red"
-                    visible: true
-                    text: qsTr("Dist: ") + Math.round(dist*100)/100 +" " + Utils.m_unit_abbrev()
-                }
-                Text {
-                    id: errorMessage
-                    anchors.top: newField.bottom
-                    anchors.left: newField.left
-                    color: "red"
-                    visible: false
-                    text: qsTr("This flag exists already; please choose another name.")
-                }
+                font.pixelSize: 15
+            }
+            Text {
+                id: idText
+                anchors.top: textEntry.bottom
+                anchors.left: parent.left
+                //color: "red"
+                visible: true
+                text: qsTr("ID: ") + (FlagsInterface.currentFlag > 0 ? FlagsInterface.currentFlag : 0)
+                font.pixelSize: 15
+            }
+            Text {
+                id: latText
+                anchors.top: idText.bottom
+                anchors.left: parent.left
+                //color: "red"
+                visible: true
+                text: qsTr("Lat: ") + (FlagsInterface.currentFlag > 0
+                                       ? Number(FlagsInterface.currentLatitude).toLocaleString(Qt.locale(), 'f', 9)
+                                       : "")
+                font.pixelSize: 15
+            }
+            Text {
+                id: lonText
+                anchors.top: latText.bottom
+                anchors.left: parent.left
+                //color: "red"
+                visible: true
+                text: qsTr("Lon: ") + (FlagsInterface.currentFlag > 0
+                                       ? Number(FlagsInterface.currentLongitude).toLocaleString(Qt.locale(), 'f', 9)
+                                       : "")
+                font.pixelSize: 15
+            }
+            Text {
+                anchors.top: textEntry.bottom
+                anchors.left: parent.left
+                //color: "red"
+                visible: false
+                text: Number(Backend.fixFrame.longitude).toLocaleString(Qt.locale(), 'f', 9)
+            }
+            Text {
+                anchors.top: textEntry.bottom
+                anchors.right: parent.right
+                //color: "red"
+                visible: false
+                text: Number(Backend.fixFrame.latitude).toLocaleString(Qt.locale(), 'f', 9)
+            }
+            Text {
+                id: distText
+                anchors.top: lonText.bottom
+                anchors.left: parent.left
+                //color: "red"
+                visible: true
+                text: qsTr("Dist: ") + Math.round(dist*100)/100 +" " + Utils.m_unit_abbrev()
+            }
+            Text {
+                id: errorMessage
+                anchors.top: newField.bottom
+                anchors.left: newField.left
+                color: "red"
+                visible: false
+                text: qsTr("This flag exists already; please choose another name.")
             }
         }
     }
+}

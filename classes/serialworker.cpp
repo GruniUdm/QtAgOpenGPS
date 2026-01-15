@@ -418,7 +418,7 @@ void SerialWorker::processGPSBuffer()
     // Extract complete NMEA sentences from buffer
     QStringList sentences = extractNMEASentences(m_gpsBuffer);
 
-    for (const QString& sentence : sentences) {
+    for (const QString& sentence : std::as_const(sentences)) {
         if (isValidNMEASentence(sentence)) {
             emit gpsDataReceived(sentence);
 
@@ -968,7 +968,7 @@ void SerialWorker::processPortBuffer(const QString& portType)
     if (portType == PORT_GPS2) {
         // GPS2 uses NMEA like GPS
         QStringList sentences = extractNMEASentences(buffer);
-        for (const QString& sentence : sentences) {
+        for (const QString& sentence : std::as_const(sentences)) {
             if (isValidNMEASentence(sentence)) {
                 emit gps2DataReceived(sentence);
                 emit portDataReceived(portType, sentence.toUtf8());

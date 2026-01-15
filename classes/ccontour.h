@@ -69,7 +69,7 @@ public:
 
 
     explicit CContour(QObject *parent = 0);
-    void SetLockToLine(class FormGPS *formGPS);
+    void SetLockToLine();
     void BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehicle, Vec3 pivot, QObject *mainWindow);
     void DistanceFromContourLine(bool isBtnAutoSteerOn, CVehicle &vehicle, CYouTurn &yt, CAHRS &ahrs,  CNMEA &pn, Vec3 pivot, Vec3 steer, QObject *mainWindow);
     void StartContourLine();

@@ -5,6 +5,7 @@ import QtQuick.Layouts
 // 
 import "../components"
 import "interfaces"
+import AOG
 
 Window {
 	title: "Module and GPS Info"
@@ -32,13 +33,13 @@ Window {
 
         Text {
             font.pixelSize: 10
-            text: qsTr("Lat: ") + (Number(aog.latitude).toLocaleString(Qt.locale(), 'f', 7))
+            text: qsTr("Lat: ") + (Number(Backend.fixFrame.latitude).toLocaleString(Qt.locale(), 'f', 7))
 			Layout.alignment: Qt.AlignLeft
 		}
 
         Text {
             font.pixelSize: 10
-            text: qsTr("Lon: ") + (Number(aog.longitude).toLocaleString(Qt.locale(), 'f', 7))
+            text: qsTr("Lon: ") + (Number(Backend.fixFrame.longitude).toLocaleString(Qt.locale(), 'f', 7))
 			Layout.alignment: Qt.AlignLeft
 		}
 
@@ -57,7 +58,7 @@ Window {
         //HDOP
         Text {
             font.pixelSize: 10
-            text: "HDOP: " +  aog.hdop
+            text: "HDOP: " +  Backend.fixFrame.hdop
             Layout.alignment: Qt.AlignLeft
         }
         //# Sats
@@ -68,13 +69,13 @@ Window {
         }
         Text {
             font.pixelSize: 10
-            text: qsTr("Altitude: ") + (Number( aog.altitude).toLocaleString(Qt.locale(), 'f', 2))
+            text: qsTr("Altitude: ") + (Number( Backend.fixFrame.altitude).toLocaleString(Qt.locale(), 'f', 2))
 			Layout.alignment: Qt.AlignLeft
 		}
         //age
         Text {
             font.pixelSize: 10
-            text: qsTr("Age: ") + (Number( aog.age).toLocaleString(Qt.locale(), 'f', 1))
+            text: qsTr("Age: ") + (Number( Backend.fixFrame.age).toLocaleString(Qt.locale(), 'f', 1))
             Layout.alignment: Qt.AlignLeft
         }
         Text {
@@ -89,34 +90,34 @@ Window {
         Column{
             Text{
                 font.pixelSize: 10
-                text: qsTr("Hz: ") + Math.round( aog.hz * 100) / 100
+                text: qsTr("Hz: ") + Math.round( Backend.fixFrame.hz * 100) / 100
                 Layout.alignment: Qt.AlignLeft
             }
             Text{
                 font.pixelSize: 10
-                text: qsTr("Raw Hz: ") + Math.round( aog.rawHz * 100) / 100  // nowHz property removed
+                text: qsTr("Raw Hz: ") + Math.round( Backend.fixFrame.rawHz * 100) / 100  // nowHz property removed
                 Layout.alignment: Qt.AlignLeft
             }
         }
 
         Text {
             font.pixelSize: 10
-            text: qsTr("Heading: ") + Number(aog.imuHeading).toLocaleString(Qt.locale(), 'f', 1)
+            text: qsTr("Heading: ") + Number(Backend.fixFrame.imuHeading).toLocaleString(Qt.locale(), 'f', 1)
 			Layout.alignment: Qt.AlignLeft
 		}
         Text {
             font.pixelSize: 10
-            text: qsTr("Roll: ") + (Number(aog.imuRoll).toLocaleString(Qt.locale(), 'f', 1))
+            text: qsTr("Roll: ") + (Number(Backend.fixFrame.imuRoll).toLocaleString(Qt.locale(), 'f', 1))
 			Layout.alignment: Qt.AlignLeft
 		}
         Text {
             font.pixelSize: 10
-            text: qsTr("Pitch: ") + (Number(aog.imuPitch).toLocaleString(Qt.locale(), 'f', 1))
+            text: qsTr("Pitch: ") + (Number(Backend.fixFrame.imuPitch).toLocaleString(Qt.locale(), 'f', 1))
 			Layout.alignment: Qt.AlignLeft
 		}
         Text {
             font.pixelSize: 10
-            text: qsTr("Yaw Rate: ") + (Number(aog.yawRate).toLocaleString(Qt.locale(), 'f', 1))
+            text: qsTr("Yaw Rate: ") + (Number(Backend.fixFrame.yawRate).toLocaleString(Qt.locale(), 'f', 1))
 			Layout.alignment: Qt.AlignLeft
 		}
 	}

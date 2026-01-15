@@ -100,10 +100,10 @@ void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp
 void DrawPolygon(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec2> &polygon, float size, QColor color);
 void DrawPolygon(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec3> &polygon, float size, QColor color);
 
-void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec2> &polygon, float size, QColor color);
-void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, QVector<Vec3> &polygon, float size, QColor color);
-void DrawPolygonBack(QPainter &painter, QVector<Vec2> &polygon, float size, QColor color);
-void DrawPolygonBack(QPainter &painter, QVector<Vec3> &polygon, float size, QColor color);
+void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, const QVector<Vec2> &polygon, float size, QColor color);
+void DrawPolygonBack(QOpenGLFunctions *gl, QMatrix4x4 mvp, const QVector<Vec3> &polygon, float size, QColor color);
+void DrawPolygonBack(QPainter &painter, const QVector<Vec2> &polygon, float size, QColor color);
+void DrawPolygonBack(QPainter &painter, const QVector<Vec3> &polygon, float size, QColor color);
 
 class GLHelperOneColorBack: public QVector<QVector3D>
 {

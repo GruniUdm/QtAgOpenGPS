@@ -5,6 +5,7 @@
 #include <QVector>
 #include <QVector3D>
 #include <QObject>
+#include "vec2.h"
 
 typedef QVector<QVector3D> PatchTriangleList;
 
@@ -14,9 +15,6 @@ struct PatchBoundingBox {
     float maxx;
     float maxy;
 };
-
-class CFieldData;
-class CTool;
 
 class CPatches
 {
@@ -44,17 +42,15 @@ public:
 
     CPatches();
 
-    void TurnMappingOn(CTool &tool,
-                       int j);
-    void TurnMappingOff(CTool &tool,
-                        CFieldData &fd,
-                        QObject *mainWindow,
-                        class FormGPS *formGPS);
-    void AddMappingPoint(CTool &tool,
-                         CFieldData &fd,
-                         int j,
-                         QObject *mainWindow,
-                         class FormGPS *formGPS);
+    void TurnMappingOn(QColor section_color,
+                       Vec2 rightPoint, Vec2 leftPoint);
+    void TurnMappingOff(QColor section_color,
+                        Vec2 leftPoint,
+                        Vec2 rightPoint,
+                        QVector<QSharedPointer<PatchTriangleList> > &patchSaveList);
+    void AddMappingPoint(QColor section_color,
+                         Vec2 rightPoint, Vec2 leftPoint,
+                         QVector<QSharedPointer<PatchTriangleList> > &patchSaveList);
 
 
 

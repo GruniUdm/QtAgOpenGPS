@@ -4,6 +4,7 @@ import QtLocation
 import QtPositioning
 import QtQuick.Controls 2.15
 import QtQuick.Layouts
+import AOG
 import ".."
 import "../components"
 
@@ -22,7 +23,7 @@ Popup{
         name: "osm"
         parameters: [
             PluginParameter {
-                name: "osm.mapping.custom.host"
+                name: "osm.mapping.host"
                 //value: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/%z/%y/%x"
                 //value: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                 //value: "https://tiles.arcgis.com/tiles/nGt4QxSblgDfeJn9/arcgis/rest/services/WorldImagery/MapServer/tile/%z/%y/%x"
@@ -107,31 +108,6 @@ Popup{
         }
     }
 
-    // Функция обновления ComboBox
-    function updateComboBox() {
-        if (!mapLoader.item) return;
-
-        let mapLayers = [];
-        for(var i = 0; i < mapLoader.item.supportedMapTypes.length; i++) {
-            mapLayers.push({
-                               "name": mapLoader.item.supportedMapTypes[i].name,
-                               "value": mapLoader.item.supportedMapTypes[i]
-                           });
-        }
-
-        _comboBox.model = mapLayers;
-
-        // Устанавливаем текущий активный слой в ComboBox
-        if (mapLoader.item.activeMapType) {
-            for (var j = 0; j < mapLayers.length; j++) {
-                if (mapLayers[j].value === mapLoader.item.activeMapType) {
-                    _comboBox.currentIndex = j;
-                    break;
-                }
-            }
-        }
-    }
-
     property real perimeter: 0 // Периметр в метрах
 
     // Функция для расчета периметра
@@ -204,12 +180,6 @@ Popup{
         Loader {
             id: mapLoader
             anchors.fill: parent
-
-            onLoaded: {
-                // Обновляем ComboBox после загрузки
-                item.supportedMapTypesChanged.connect(updateComboBox);
-                updateComboBox();
-            }
         }
 
         // Компонент карты OSM
@@ -220,20 +190,14 @@ Popup{
                 id: osmMap
                 anchors.fill: parent
                 plugin: osmSatellitePlugin
-                center:  QtPositioning.coordinate(aog.latitude, aog.longitude)
+                center:  QtPositioning.coordinate(Backend.fixFrame.latitude, Backend.fixFrame.longitude)
                 zoomLevel: 15
                 copyrightsVisible: true
-
-                Component.onCompleted: {
-                    // Автоматически устанавливаем Custom URL Map для ESRI спутника
-                    if (supportedMapTypes.length > 6) {
-                        activeMapType = supportedMapTypes[7];
-                    }
-                }
+                activeMapType: supportedMapTypes[supportedMapTypes.length - 1]
 
                 // Круг для текущей позиции
                 MapCircle {
-                    center: QtPositioning.coordinate(aog.latitude, aog.longitude)
+                    center: QtPositioning.coordinate(Backend.fixFrame.latitude, Backend.fixFrame.longitude)
                     radius: 10
                     color: "green"
                 }
@@ -332,7 +296,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             onClicked: {
                 pointsModel.clear();
-                aog.boundary_restart();
+                BoundaryInterface.reset();
                 currentPointsCount = 0;
 
                 // Обновляем линию маршрута в текущей карте
@@ -349,7 +313,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             enabled: addBoundary.checked
             onClicked: {
-                aog.boundary_stop();
+                BoundaryInterface.stop();
                 pointsModel.clear();
                 currentPointsCount = 0;
 
@@ -376,7 +340,7 @@ Popup{
             onClicked: {
                 if (pointsModel.count > 0) {
                     pointsModel.remove(pointsModel.count - 1);
-                    aog.boundary_delete_last_point();
+                    BoundaryInterface.delete_last_point();
                     currentPointsCount = pointsModel.count;
 
                     if (mapLoader.item) {
@@ -392,7 +356,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             font.bold: true
             font.pixelSize: 15
-            text: qsTr("Площадь: \n") + " " + Utils.area_to_unit_string(aog.area,1) + " " + Utils.area_unit() + qsTr("\nПериметр: \n") + " " + formatDistance(perimeter)
+            text: qsTr("Площадь: \n") + " " + Utils.area_to_unit_string(BoundaryInterface.area,1) + " " + Utils.area_unit() + qsTr("\nПериметр: \n") + " " + formatDistance(perimeter)
         }
 
         IconButtonTransparent{
@@ -420,7 +384,7 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             onClicked: {
                 if (mapLoader.item) {
-                    mapLoader.item.center = QtPositioning.coordinate(aog.latitude, aog.longitude);
+                    mapLoader.item.center = QtPositioning.coordinate(Backend.fixFrame.latitude, Backend.fixFrame.longitude);
                 }
             }
         }
@@ -430,28 +394,13 @@ Popup{
             Layout.alignment: Qt.AlignCenter
             onClicked: {
                 pointsModel.clear();
-                aog.boundary_restart()
+                BoundaryInterface.reset()
                 boundaryOSM.visible = false;
                 unloadMap()
             }
         }
     }
 
-    // ComboBox для выбора слоев карты
-    ComboBox {
-        id: _comboBox
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.margins: 10
-        width: 200* theme.scaleWidth
-        textRole: "name"
-        valueRole: "value"
-        onCurrentValueChanged: {
-            if (mapLoader.item && currentValue) {
-                mapLoader.item.activeMapType = currentValue;
-            }
-        }
-    }
 
     ListModel {
         id: pointsModel
