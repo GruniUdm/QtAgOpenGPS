@@ -163,11 +163,11 @@ import "components" as Comp
                     blockageData.visible = false
                 }
                 Connections{
-                    target: aog
-                    function onFixQualityChanged() {
-                        if(Backend.fixFrame.fixQuality == 4) rtkStatus.color = "green"
-                        else if(Backend.fixFrame.fixQuality == 5) rtkStatus.color = "orange"
-                        else if(Backend.fixFrame.fixQuality == 2) rtkStatus.color = "yellow"
+                    target: Backend.fixFrame
+                    function onFixFrameChanged() {
+                        if(Backend.fixFrame.fixQuality === 4) rtkStatus.color = "green"
+                        else if(Backend.fixFrame.fixQuality === 5) rtkStatus.color = "orange"
+                        else if(Backend.fixFrame.fixQuality === 2) rtkStatus.color = "yellow"
                         else rtkStatus.color = "red"
                     }
                 }
