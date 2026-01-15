@@ -814,17 +814,6 @@ Window {
             id: steerConfigSettings
             visible: false
         }
-        /*
-        ABCurvePicker{
-            id: abCurvePicker
-            objectName: "abCurvePicker"
-            visible: false
-        }
-        ABLinePicker{
-            id: abLinePicker
-            objectName: "abLinePicker"
-            visible: false
-        }*/
         TramLinesEditor{
             id: tramLinesEditor
             anchors.right: parent.right

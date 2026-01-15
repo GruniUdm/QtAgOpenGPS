@@ -266,13 +266,6 @@ Item {
 
     property double currentABLine_heading: 0 //TODO delete or move to interfaces/LinesInterface.qml.  seems to be unused
 
-    // AB Lines and Curves lists - restored for QML compatibility
-    property var abLinesList: []
-    property var abCurvesList: []
-
-    property int current_trackNum: 0
-    property int current_trackIdx: -1  // 🎯 ACTIVE TRACK - Access to CTrack.idx via FormGPS for YouTurn line switching
-
     //property int sensorData: -1
 
     // ⚡ PHASE 6.3.0: Q_PROPERTY CONVERSIONS - Missing AOGInterface properties
