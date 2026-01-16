@@ -77,13 +77,6 @@ class FormGPS : public QQmlApplicationEngine
     // ===== Q_PROPERTY MIGRATION - OPTION A =====
     // 67 properties organized in groups for 50Hz optimization
 
-    // === Navigation (7 properties) - Important for guidance - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double distancePivotToTurnLine READ distancePivotToTurnLine WRITE setDistancePivotToTurnLine
-               NOTIFY distancePivotToTurnLineChanged BINDABLE bindableDistancePivotToTurnLine)
-    Q_PROPERTY(bool isYouTurnRight READ isYouTurnRight WRITE setIsYouTurnRight
-               NOTIFY isYouTurnRightChanged BINDABLE bindableIsYouTurnRight)
-    Q_PROPERTY(bool isYouTurnTriggered READ isYouTurnTriggered WRITE setIsYouTurnTriggered
-               NOTIFY isYouTurnTriggeredChanged BINDABLE bindableIsYouTurnTriggered)
     // === Misc Status (2 properties) - Status - Qt 6.8 QProperty + BINDABLE ===
     Q_PROPERTY(bool imuCorrected READ imuCorrected WRITE setImuCorrected
                NOTIFY imuCorrectedChanged BINDABLE bindableImuCorrected)
@@ -102,19 +95,6 @@ public:
 
     // ===== Q_PROPERTY GETTERS, SETTERS AND BINDABLES =====
     // Manual declarations for all Rectangle Pattern properties
-
-    // Navigation
-    double distancePivotToTurnLine() const;
-    void setDistancePivotToTurnLine(double value);
-    QBindable<double> bindableDistancePivotToTurnLine();
-
-    bool isYouTurnRight() const;
-    void setIsYouTurnRight(bool value);
-    QBindable<bool> bindableIsYouTurnRight();
-
-    bool isYouTurnTriggered() const;
-    void setIsYouTurnTriggered(bool value);
-    QBindable<bool> bindableIsYouTurnTriggered();
 
     // Misc Status
     bool imuCorrected() const;
@@ -908,11 +888,6 @@ signals:
     void toolNorthingChanged();
     void toolHeadingChanged();
 
-    // Navigation signals
-    void distancePivotToTurnLineChanged();
-    void isYouTurnRightChanged();
-    void isYouTurnTriggeredChanged();
-
     // All other property signals (continuing the pattern...)
     void toolLatitudeChanged();
     void toolLongitudeChanged();
@@ -944,11 +919,6 @@ private:
 
     // ===== Q_PROPERTY MEMBER VARIABLES =====
     // 69 members for optimized properties
-
-    // Navigation (7) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_distancePivotToTurnLine, &FormGPS::distancePivotToTurnLineChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isYouTurnRight, &FormGPS::isYouTurnRightChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isYouTurnTriggered, &FormGPS::isYouTurnTriggeredChanged)
 
     // Misc Status (2) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuCorrected, &FormGPS::imuCorrectedChanged)

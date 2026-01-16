@@ -88,6 +88,10 @@ public:
 
     SIMPLE_BINDABLE_PROPERTY(bool, isJobStarted)
     SIMPLE_BINDABLE_PROPERTY(bool, applicationClosing)
+    SIMPLE_BINDABLE_PROPERTY(double, distancePivotToTurnLine)
+    SIMPLE_BINDABLE_PROPERTY(bool, isYouTurnRight)
+    SIMPLE_BINDABLE_PROPERTY(bool, isYouTurnTriggered)
+
 
 signals:
     //signals implicitly created by BINDABLE_PROPERTY() macro
@@ -101,6 +105,9 @@ private:
 
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isJobStarted, false, &Backend::isJobStartedChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_applicationClosing, false, &Backend::applicationClosingChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, double, m_distancePivotToTurnLine, 0, &Backend::distancePivotToTurnLineChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isYouTurnRight, false, &Backend::isYouTurnRightChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isYouTurnTriggered, false, &Backend::isYouTurnTriggeredChanged)
 };
 
 #endif // BACKEND_H

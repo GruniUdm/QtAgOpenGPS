@@ -127,19 +127,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 // RECTANGLE PATTERN MANUAL IMPLEMENTATIONS (Qt 6.8 Required)
 // ============================================================================
 // Manual getters, setters, and bindables for Q_OBJECT_BINDABLE_PROPERTY
-// ===== Turn and Navigation Properties =====
-double FormGPS::distancePivotToTurnLine() const { return m_distancePivotToTurnLine; }
-void FormGPS::setDistancePivotToTurnLine(double distancePivotToTurnLine) { m_distancePivotToTurnLine = distancePivotToTurnLine; }
-QBindable<double> FormGPS::bindableDistancePivotToTurnLine() { return &m_distancePivotToTurnLine; }
-
-bool FormGPS::isYouTurnRight() const { return m_isYouTurnRight; }
-void FormGPS::setIsYouTurnRight(bool isYouTurnRight) { m_isYouTurnRight = isYouTurnRight; }
-QBindable<bool> FormGPS::bindableIsYouTurnRight() { return &m_isYouTurnRight; }
-
-bool FormGPS::isYouTurnTriggered() const { return m_isYouTurnTriggered; }
-void FormGPS::setIsYouTurnTriggered(bool isYouTurnTriggered) { m_isYouTurnTriggered = isYouTurnTriggered; }
-QBindable<bool> FormGPS::bindableIsYouTurnTriggered() { return &m_isYouTurnTriggered; }
-
 // ===== IMU and Switch Properties =====
 bool FormGPS::imuCorrected() const { return m_imuCorrected; }
 void FormGPS::setImuCorrected(bool imuCorrected) { m_imuCorrected = imuCorrected; }

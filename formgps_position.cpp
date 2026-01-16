@@ -1206,8 +1206,6 @@ void FormGPS::UpdateFixPosition()
     Backend::instance()->m_fixFrame.setFrameTime(swFrame.elapsed());
 
     // Variables for change tracking
-    bool vehChangedFlag = false, steerChangedFlag = false;
-    bool navChangedFlag = false, wizardChangedFlag = false;
     bool miscChangedFlag = false;
 
     // Calculate tool position once
@@ -1259,9 +1257,9 @@ void FormGPS::UpdateFixPosition()
     emit Backend::instance()->fixFrameChanged();
 
     // === Navigation Updates (6 properties) ===
-    if (m_distancePivotToTurnLine != _distancePivotToTurnLine) { m_distancePivotToTurnLine = _distancePivotToTurnLine; navChangedFlag = true; }
-    if (m_isYouTurnRight != yt.isYouTurnRight) { m_isYouTurnRight = yt.isYouTurnRight; navChangedFlag = true; }
-    if (m_isYouTurnTriggered != yt.isYouTurnTriggered) { m_isYouTurnTriggered = yt.isYouTurnTriggered; navChangedFlag = true; }
+    Backend::instance()->set_distancePivotToTurnLine(_distancePivotToTurnLine);
+    Backend::instance()->set_isYouTurnRight (yt.isYouTurnRight);
+    Backend::instance()->set_isYouTurnTriggered ( yt.isYouTurnTriggered);
 
     // === Tool Position Updates (2 properties) ===
     Tools::instance()->m_toolsList[0].value<Tool *>()->set_easting(tool.toolPos.easting);

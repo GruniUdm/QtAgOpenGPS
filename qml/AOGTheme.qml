@@ -122,7 +122,7 @@ Item {
 //                     rtkLost.play()
 //         }
 //         function onDistancePivotToTurnLineChanged(){
-//             if(aog.distancePivotToTurnLine == 20)
+//             if(Backend.distancePivotToTurnLine == 20)
 //                 if(soundUturnOn)
 //                     approachingYouTurn.play()
 //         }
