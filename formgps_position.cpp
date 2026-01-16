@@ -352,12 +352,12 @@ void FormGPS::UpdateFixPosition()
                             newGPSHeading += M_PI;
                             if (newGPSHeading < 0) newGPSHeading += glm::twoPI;
                             else if (newGPSHeading >= glm::twoPI) newGPSHeading -= glm::twoPI;
-                            setIsReverseWithIMU(true);
+                            Backend::instance()->set_isReverseWithIMU(true);
                         }
                         else
                         {
                             CVehicle::instance()->setIsReverse(false);
-                            setIsReverseWithIMU(false);
+                            Backend::instance()->set_isReverseWithIMU(false);
                         }
                     }
                     else
@@ -392,7 +392,7 @@ void FormGPS::UpdateFixPosition()
                     //Difference between the IMU heading and the GPS heading
                     gyroDelta = 0;
 
-                    //if (!isReverseWithIMU)
+                    //if (!Backend::instance()->isReverseWithIMU)
                     gyroDelta = (imuHeading + imuGPS_Offset) - Backend::instance()->m_fixFrame.gpsHeading;
                     //else
                     //{
@@ -413,7 +413,7 @@ void FormGPS::UpdateFixPosition()
                     else if (gyroDelta < -glm::twoPI) gyroDelta += glm::twoPI;
 
                     //move the offset to line up imu with gps
-                    if(!isReverseWithIMU())
+                    if(!Backend::instance()->isReverseWithIMU())
                         imuGPS_Offset += (gyroDelta * (ahrs.fusionWeight));
                     else
                         imuGPS_Offset += (gyroDelta * (0.02));
@@ -1260,6 +1260,7 @@ void FormGPS::UpdateFixPosition()
     Backend::instance()->set_distancePivotToTurnLine(_distancePivotToTurnLine);
     Backend::instance()->set_isYouTurnRight (yt.isYouTurnRight);
     Backend::instance()->set_isYouTurnTriggered ( yt.isYouTurnTriggered);
+    Backend::instance()->set_imuCorrected( _imuCorrected);
 
     // === Tool Position Updates (2 properties) ===
     Tools::instance()->m_toolsList[0].value<Tool *>()->set_easting(tool.toolPos.easting);
@@ -1268,8 +1269,8 @@ void FormGPS::UpdateFixPosition()
     Tools::instance()->m_toolsList[0].value<Tool *>()->set_longitude(tool_lon);
     Tools::instance()->m_toolsList[0].value<Tool *>()->set_heading(tool.toolPos.heading);
 
-    // === Misc Status Updates (2 properties) ===
-    if (m_imuCorrected != _imuCorrected) { m_imuCorrected = _imuCorrected; miscChangedFlag = true; }
+
+
 
     // ===== QProperty + BINDABLE AUTOMATIC NOTIFICATIONS =====
     // Qt 6.8 QProperty system automatically handles change notifications
@@ -2514,10 +2515,10 @@ void FormGPS::AddSectionOrPathPoints()
     {
         if (tool.triStrip[j].isDrawing)
         {
-            if (this->isPatchesChangingColor())
+            if (Backend::instance()->isPatchesChangingColor())
             {
                 tool.triStrip[j].numTriangles = 64;
-                this->setIsPatchesChangingColor(false);
+                Backend::instance()->set_isPatchesChangingColor(false);
             }
 
             tool.triStrip[j].AddMappingPoint(tool.secColors[j],

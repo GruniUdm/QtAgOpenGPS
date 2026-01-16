@@ -123,25 +123,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 
 }
 
-// ============================================================================
-// RECTANGLE PATTERN MANUAL IMPLEMENTATIONS (Qt 6.8 Required)
-// ============================================================================
-// Manual getters, setters, and bindables for Q_OBJECT_BINDABLE_PROPERTY
-// ===== IMU and Switch Properties =====
-bool FormGPS::imuCorrected() const { return m_imuCorrected; }
-void FormGPS::setImuCorrected(bool imuCorrected) { m_imuCorrected = imuCorrected; }
-QBindable<bool> FormGPS::bindableImuCorrected() { return &m_imuCorrected; }
-
-// ===== Button State Properties =====
-// GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2
-bool FormGPS::isReverseWithIMU() const { return m_isReverseWithIMU; }
-void FormGPS::setIsReverseWithIMU(bool value) { m_isReverseWithIMU = value; }
-QBindable<bool> FormGPS::bindableIsReverseWithIMU() { return &m_isReverseWithIMU; }
-
-bool FormGPS::isPatchesChangingColor() const { return m_isPatchesChangingColor; }
-void FormGPS::setIsPatchesChangingColor(bool isPatchesChangingColor) { m_isPatchesChangingColor = isPatchesChangingColor; }
-QBindable<bool> FormGPS::bindableIsPatchesChangingColor() { return &m_isPatchesChangingColor; }
-
 FormGPS::~FormGPS()
 {
     qDebug() << "FormGPS destructor START - cleaning up resources";

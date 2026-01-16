@@ -92,6 +92,13 @@ public:
     SIMPLE_BINDABLE_PROPERTY(bool, isYouTurnRight)
     SIMPLE_BINDABLE_PROPERTY(bool, isYouTurnTriggered)
 
+    //These don't seem to be used outside of FormGPS. When FormGPS
+    //becomes CoreGPS singleton, consider moving them to CoreGPS
+    SIMPLE_BINDABLE_PROPERTY(bool, imuCorrected)
+    SIMPLE_BINDABLE_PROPERTY(bool, isReverseWithIMU)
+    //Consider moving this to Tool
+    SIMPLE_BINDABLE_PROPERTY(bool, isPatchesChangingColor)
+
 
 signals:
     //signals implicitly created by BINDABLE_PROPERTY() macro
@@ -108,6 +115,10 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, double, m_distancePivotToTurnLine, 0, &Backend::distancePivotToTurnLineChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isYouTurnRight, false, &Backend::isYouTurnRightChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isYouTurnTriggered, false, &Backend::isYouTurnTriggeredChanged)
+
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_imuCorrected, false, &Backend::imuCorrectedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isReverseWithIMU, false, &Backend::isReverseWithIMUChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isPatchesChangingColor, false, &Backend::isPatchesChangingColorChanged)
 };
 
 #endif // BACKEND_H

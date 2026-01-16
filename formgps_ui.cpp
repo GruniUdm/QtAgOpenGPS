@@ -949,7 +949,7 @@ void FormGPS::initializeQMLInterfaces()
     //no need to emit Backend::fixFrameChanged() here really.  it defaults
     //to 0 anyway
     Backend::instance()->m_fixFrame.sentenceCounter = 0;
-    this->setIsPatchesChangingColor( false);
+    Backend::instance()->set_isPatchesChangingColor( false);
 
 
     auto setup_gl_callbacks = [this]() {

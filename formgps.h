@@ -74,21 +74,6 @@ class FormGPS : public QQmlApplicationEngine
 {
     Q_OBJECT
 
-    // ===== Q_PROPERTY MIGRATION - OPTION A =====
-    // 67 properties organized in groups for 50Hz optimization
-
-    // === Misc Status (2 properties) - Status - Qt 6.8 QProperty + BINDABLE ===
-    Q_PROPERTY(bool imuCorrected READ imuCorrected WRITE setImuCorrected
-               NOTIFY imuCorrectedChanged BINDABLE bindableImuCorrected)
-
-    // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(bool isReverseWithIMU READ isReverseWithIMU WRITE setIsReverseWithIMU
-               NOTIFY isReverseWithIMUChanged BINDABLE bindableIsReverseWithIMU)
-
-    // Job Control - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(bool isPatchesChangingColor READ isPatchesChangingColor WRITE setIsPatchesChangingColor
-               NOTIFY isPatchesChangingColorChanged BINDABLE bindableIsPatchesChangingColor)
-
 public:
     explicit FormGPS(QWidget *parent = 0);
     ~FormGPS();
@@ -97,10 +82,6 @@ public:
     // Manual declarations for all Rectangle Pattern properties
 
     // Misc Status
-    bool imuCorrected() const;
-    void setImuCorrected(bool value);
-    QBindable<bool> bindableImuCorrected();
-
     void setSensorData(int value);
     QBindable<int> bindableSensorData();
 
@@ -440,8 +421,6 @@ public:
 
     //IMU
     double rollCorrectionDistance = 0;
-    // Phase 6.0.24 Problem 18: Initialize IMU variables to prevent garbage values causing crash
-    // If uninitialized, _imuCorrected garbage gets copied to CVehicle::fixHeading → modelview.rotate(garbage) → nan → crash
     double imuGPS_Offset = 0.0;
     double _imuCorrected = 0.0;  // Renamed to avoid Q_PROPERTY conflict
 
@@ -880,34 +859,6 @@ signals:
     void do_processSectionLookahead();
     void do_processOverlapCount();
 
-    // ===== Q_PROPERTY SIGNALS - Qt 6.8 Rectangle Pattern NOTIFY signals =====
-    // CRITICAL: All properties need NOTIFY signals for QML bindings to work properly
-
-    // Vehicle State signals
-    void toolEastingChanged();
-    void toolNorthingChanged();
-    void toolHeadingChanged();
-
-    // All other property signals (continuing the pattern...)
-    void toolLatitudeChanged();
-    void toolLongitudeChanged();
-    void imuCorrectedChanged();
-    void isReverseWithIMUChanged();
-    void isPatchesChangingColorChanged();
-
-    // ===== SIGNALS CLEANED - Qt 6.8 Q_INVOKABLE Migration =====
-    // All button action signals migrated to Q_INVOKABLE direct calls
-    // See Q_INVOKABLE section above for modern implementations
-signals:
-    // Only non-button signals remain - no duplicates with Q_INVOKABLE
-
-public:
-
-    /*******************
-     * Tranlation function*
-     * formgps_ui.cpp *
-     *******************/
-
 private:
     // OLD translator removed - now using m_translator
 
@@ -919,22 +870,6 @@ private:
 
     // ===== Q_PROPERTY MEMBER VARIABLES =====
     // 69 members for optimized properties
-
-    // Misc Status (2) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuCorrected, &FormGPS::imuCorrectedChanged)
-
-    // Additional AOG Properties (9) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isReverseWithIMU, &FormGPS::isReverseWithIMUChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isPatchesChangingColor, &FormGPS::isPatchesChangingColorChanged)
-
-public:
-    //bool isSimulatorMode() const { return SimInterface::instance()->isRunning(); }
-    //bool isAgIOActive() const { return m_agioService != nullptr; }
-    //bool isRealMode() const { return !isSimulatorMode() && isAgIOActive(); }
-    //bool isMixedMode() const { return isSimulatorMode() && isAgIOActive(); }
-
-    // Operational mode for NTRIP compatibility
-    //bool isNTRIPCompatible() const { return isRealMode() || isMixedMode(); }
 
 };
 
