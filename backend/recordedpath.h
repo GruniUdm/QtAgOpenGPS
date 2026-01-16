@@ -5,7 +5,7 @@
 #include <QQmlEngine>
 #include <QProperty>
 #include <QMutex>
-#include "backend/recordedpathmodel.h"
+#include "recordedpathmodel.h"
 #include "simpleproperty.h"
 
 class RecordedPath : public QObject

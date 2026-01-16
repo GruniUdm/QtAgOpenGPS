@@ -377,20 +377,20 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/headlandinterface.h backend/headlandinterface.cpp
     SOURCES backend/headacheinterface.h backend/headacheinterface.cpp
     SOURCES backend/flagsinterface.h backend/flagsinterface.cpp
-    SOURCES backend/recordedpathmodel.h backend/recordedpathmodel.cpp
     SOURCES backend/recordedpath.h backend/recordedpath.cpp
     SOURCES backend/siminterface.h backend/siminterface.cpp
-    SOURCES backend/fencelinemodel.h backend/fencelinemodel.cpp
-    SOURCES backend/flagmodel.h backend/flagmodel.cpp
-    SOURCES backend/blockagemodel.h backend/blockagemodel.cpp
-    SOURCES backend/sectionbuttonsmodel.h backend/sectionbuttonsmodel.cpp
     SOURCES backend/tool.h backend/tool.cpp
-    SOURCES backend/toolssectionbuttonsmodel.h backend/toolssectionbuttonsmodel.cpp
     SOURCES backend/tools.h backend/tools.cpp
     SOURCES backend/fixframe.h
     SOURCES backend/modulecomm.h backend/modulecomm.cpp
     SOURCES backend/blockage.h backend/blockage.cpp
     SOURCES backend/steerconfig.h backend/steerconfig.cpp
+    SOURCES models/recordedpathmodel.h models/recordedpathmodel.cpp
+    SOURCES models/fencelinemodel.h models/fencelinemodel.cpp
+    SOURCES models/flagmodel.h models/flagmodel.cpp
+    SOURCES models/blockagemodel.h models/blockagemodel.cpp
+    SOURCES models/sectionbuttonsmodel.h models/sectionbuttonsmodel.cpp
+    SOURCES models/toolssectionbuttonsmodel.h models/toolssectionbuttonsmodel.cpp
 )
 
 ###### End Script of Handling QML in module ######
@@ -447,6 +447,7 @@ target_include_directories(QtAgOpenGPS PRIVATE
     .
     classes
     backend
+    models
 )
 
 # QtAgIO QML module disabled - migrated to qml/agio/ in Phase 4.2
