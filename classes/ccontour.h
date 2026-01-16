@@ -79,10 +79,6 @@ public:
     void DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, QObject *mainWindow, QElapsedTimer &swFrame);
     void ResetContour();
 signals:
-    //void guidanceLineDistanceOff(int);
-    //void distanceDisplay(int);
-    //void guidanceLineSteerAngle(int);
-    void TimedMessage(int,QString,QString);
 };
 
 #endif // CCONTOUR_H

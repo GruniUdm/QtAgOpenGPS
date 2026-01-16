@@ -199,7 +199,6 @@ public:
     }
 
 signals:
-    void TimedMessage(int timeout, QString title, QString message);
 
 public slots:
 };

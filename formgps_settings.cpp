@@ -77,7 +77,7 @@ void FormGPS::loadSettings()
     isConstantContourOn = SettingsManager::instance()->as_isConstantContourOn();
     isSteerInReverse = SettingsManager::instance()->as_isSteerInReverse();
 
-    guidanceLookAheadTime = SettingsManager::instance()->as_guidanceLookAheadTime();
+    Backend::instance()->set_guidanceLookAheadTime(SettingsManager::instance()->as_guidanceLookAheadTime());
 
     //gyd pulls directly from settings
     //gyd.sideHillCompFactor = property_setAS_sideHillComp;

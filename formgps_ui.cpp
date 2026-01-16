@@ -236,7 +236,24 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     tmrWatchdog->start(250); //fire every 50ms.
 
     //SIM
-    connect_classes();
+    connect(SimInterface::instance(), &SimInterface::newPosition,
+            this, &FormGPS::onSimNewPosition, Qt::UniqueConnection);
+
+    // Phase 6.0.33: GPS timer for real GPS mode (50 Hz fixed rate)
+    // 50 Hz = 20ms interval for smooth rendering and PGN 254 AutoSteer commands
+    connect(&timerGPS, &QTimer::timeout, this, &FormGPS::onGPSTimerTimeout, Qt::UniqueConnection);
+    // Timer will be started when GPS data starts arriving (not in simulation mode)
+    timerGPS.start(100);  // 100ms = 10 Hz (synchronized with NMEA data rate)
+
+    connect(Backend::instance()->pn(), &CNMEA::checkZoomWorldGrid, &worldGrid, &CWorldGrid::checkZoomWorldGrid, Qt::QueuedConnection);
+    connect(Backend::instance(), &Backend::resetTool, &tool, &CTool::resetTool);
+
+    connect(&recPath, &CRecordedPath::stoppedDriving, this, &FormGPS::onStoppedDriving, Qt::QueuedConnection);
+
+    connect(&bnd, &CBoundary::saveBoundaryRequested, this, &FormGPS::FileSaveBoundary, Qt::DirectConnection);
+
+    connect(&track, &CTrack::resetCreatedYouTurn, &yt, &CYouTurn::ResetCreatedYouTurn, Qt::QueuedConnection);
+    connect(&track, &CTrack::saveTracks, this, &FormGPS::FileSaveTracks, Qt::QueuedConnection);
 
     loadSettings(); //load settings and properties
 
@@ -305,27 +322,6 @@ void FormGPS::onGLControl_clicked(const QVariant &event)
 void FormGPS::onBtnAgIO_clicked(){
     QDEBUG<<"AgIO";
 }
-void FormGPS::onBtnResetTool_clicked(){
-    //probably should be a method of tool somehow.
-   tool.tankPos.heading = CVehicle::instance()->fixHeading();
-   tool.tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
-   tool.tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
-
-   tool.toolPivotPos.heading = tool.tankPos.heading;
-   tool.toolPivotPos.easting = tool.tankPos.easting + (sin(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
-   tool.toolPivotPos.northing = tool.tankPos.northing + (cos(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
-}
-
-// ===== Q_INVOKABLE MODERN ACTIONS - Qt 6.8 Implementation =====
-void FormGPS::resetTool() {
-    // Modern implementation - same logic as onBtnResetTool_clicked()
-    onBtnResetTool_clicked();
-}
-
-void FormGPS::contour() {
-    // Modern implementation - same logic as onBtnContour_clicked()
-    onBtnContour_clicked();
-}
 
 void FormGPS::contourLock() {
     // Modern implementation - same logic as onBtnContourLock_clicked()
@@ -338,10 +334,6 @@ void FormGPS::contourPriority(bool isRight) {
 }
 
 // ===== BATCH 7 ACTIONS - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::headland() {
-    onBtnHeadland_clicked();
-}
-
 void FormGPS::youSkip() {
     onBtnYouSkip_clicked();
 }
@@ -522,46 +514,6 @@ void FormGPS::recordedPathClear() {
 }
 */
 
-void FormGPS::onBtnHeadland_clicked(){
-    //TODO: this should all be done in QML; we need a way to toggle the PGN though,
-    //probably through the property setter?
-    QDEBUG<<"Headland";
-
-    //toggle the property
-    MainWindowState::instance()->set_isHeadlandOn(! MainWindowState::instance()->isHeadlandOn());
-
-
-    if (CVehicle::instance()->isHydLiftOn() && !MainWindowState::instance()->isHeadlandOn())
-        CVehicle::instance()->setIsHydLiftOn(false);
-
-    if (!MainWindowState::instance()->isHeadlandOn())
-    {
-        //shut off the hyd lift pgn
-        ModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
-        emit ModuleComm::instance()->p_239_changed();
-        //btnHydLift.Image = Properties.Resources.HydraulicLiftOff;
-    }
-}
-void FormGPS::onBtnHydLift_clicked(){
-    if (MainWindowState::instance()->isHeadlandOn())
-    {
-        CVehicle::instance()->setIsHydLiftOn(!CVehicle::instance()->isHydLiftOn());
-        if (CVehicle::instance()->isHydLiftOn())
-        {
-        }
-        else
-        {
-            ModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
-            emit ModuleComm::instance()->p_239_changed();
-        }
-    }
-    else
-    {
-        ModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
-        emit ModuleComm::instance()->p_239_changed();
-        CVehicle::instance()->setIsHydLiftOn(false);
-    }
-}
 void FormGPS::onBtnTramlines_clicked(){
     QDEBUG<<"tramline";
 }
@@ -598,24 +550,6 @@ void FormGPS::onBtnResetDirection_clicked(){
     //TODO: most of this should be done in QML
     CVehicle::instance()->setIsReverse(false);
     TimedMessageBox(2000, "Reset Direction", "Drive Forward > 1.5 kmh");
-}
-
-void FormGPS::onBtnContour_clicked(){
-    //TODO: make guidanceLookAheadTime a property in a gadget in Backend and
-    //do all this logic in QML
-    //toggle state here.
-    MainWindowState::instance()->set_isContourBtnOn(
-        ! MainWindowState::instance()->isContourBtnOn());
-
-    if (MainWindowState::instance()->isContourBtnOn()) {
-        guidanceLookAheadTime = 0.5;
-    }else{
-        //if (ABLine.isBtnABLineOn | curve.isBtnCurveOn){
-        //    ABLine.isABValid = false;
-        //    curve.isCurveValid = false;
-        //}
-        guidanceLookAheadTime = SettingsManager::instance()->as_guidanceLookAheadTime();
-    }
 }
 
 void FormGPS::onBtnContourPriority_clicked(bool isRight){

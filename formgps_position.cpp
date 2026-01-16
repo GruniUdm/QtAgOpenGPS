@@ -2221,7 +2221,7 @@ void FormGPS::CalculatePositionHeading()
 
     if (!track.ABLine.isLateralTriggered && !track.curve.isLateralTriggered)
     {
-        double guidanceLookDist = (std::max(tool.width * 0.5, CVehicle::instance()->avgSpeed() * 0.277777 * guidanceLookAheadTime));
+        double guidanceLookDist = (std::max(tool.width * 0.5, CVehicle::instance()->avgSpeed() * 0.277777 * Backend::instance()->guidanceLookAheadTime()));
         CVehicle::instance()->guidanceLookPos.easting = CVehicle::instance()->pivotAxlePos.easting + (sin(CVehicle::instance()->fixHeading()) * guidanceLookDist);
         CVehicle::instance()->guidanceLookPos.northing = CVehicle::instance()->pivotAxlePos.northing + (cos(CVehicle::instance()->fixHeading()) * guidanceLookDist);
     }

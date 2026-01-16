@@ -150,12 +150,8 @@ void CRecordedPath::UpdatePosition(const CYouTurn &yt, bool isBtnAutoSteerOn)
 
             pathCount = recList.size() - C;
 
-            //section control - only if different click the button
-            //torriem: turn off sectionMasterAuto if on
-            emit turnOffSectionMasterAuto();
-            //bool autoBtn = (mf.autoBtnState == btnStates::Auto);
-            //trig = autoBtn;
-            //if (autoBtn != recList[C].autoBtnState) emit btnSectionOffAutoOnClicked();
+            //Turn off automatic sections is on
+            MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
         }
         else
         {

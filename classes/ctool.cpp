@@ -1898,6 +1898,16 @@ void CTool::WhereAreToolLookOnPoints(const CBoundary &bnd)
 
 }
 
+void CTool::resetTool() {
+   tankPos.heading = CVehicle::instance()->fixHeading();
+   tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(tankPos.heading) * (tankTrailingHitchLength));
+   tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(tankPos.heading) * (tankTrailingHitchLength));
+
+   toolPivotPos.heading = tankPos.heading;
+   toolPivotPos.easting = tankPos.easting + (sin(toolPivotPos.heading) * (trailingHitchLength));
+   toolPivotPos.northing = tankPos.northing + (cos(toolPivotPos.heading) * (trailingHitchLength));
+}
+
 void CTool::on_autoBtnChanged() {
     MainWindowState::ButtonStates autoBtnState = MainWindowState::instance()-> autoBtnState();
 

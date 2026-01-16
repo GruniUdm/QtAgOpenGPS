@@ -20,6 +20,7 @@
 #include "cguidance.h"
 #include "ctrack.h"
 #include "classes/settingsmanager.h"
+#include "backend.h"
 
 CABCurve::CABCurve(QObject *parent) : QObject(parent)
 {
@@ -937,7 +938,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                     {
                         if (glm::Distance(goalPointCu, curList[(curList.count() - 1)]) < 0.5)
                         {
-                            emit TimedMessage(2000,tr("Guidance Stopped"), tr("Past end of curve"));
+                            emit Backend::instance()->timedMessage(2000,tr("Guidance Stopped"), tr("Past end of curve"));
                             MainWindowState::instance()->set_isBtnAutoSteerOn(false);
                         }
                     }
@@ -945,7 +946,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                     {
                         if (glm::Distance(goalPointCu, curList[0]) < 0.5)
                         {
-                            emit TimedMessage(2000,tr("Guidance Stopped"), tr("Past end of curve"));
+                            emit Backend::instance()->timedMessage(2000,tr("Guidance Stopped"), tr("Past end of curve"));
                             MainWindowState::instance()->set_isBtnAutoSteerOn(false);
                         }
                     }

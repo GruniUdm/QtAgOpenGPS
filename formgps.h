@@ -367,9 +367,6 @@ public:
     double actAngVel = 0.0;  // Phase 6.0.24 Problem 18
     bool isConstantContourOn;
 
-    //guidance line look ahead
-    double guidanceLookAheadTime = 2;
-
     //for heading or Atan2 as camera
     QString headingFromSource, headingFromSourceBak;
 
@@ -565,12 +562,9 @@ private:
 public:
     // ===== Q_INVOKABLE MODERN ACTIONS - Qt 6.8 Direct QML Calls =====
     // Phase 6.0.20: Modernization of button actions - replace signal/slot with direct calls
-    Q_INVOKABLE void resetTool();
-    Q_INVOKABLE void contour();
     Q_INVOKABLE void contourLock();
     Q_INVOKABLE void contourPriority(bool isRight);
     // Batch 7 actions - lines 215-222
-    Q_INVOKABLE void headland();
     Q_INVOKABLE void youSkip();
     Q_INVOKABLE void resetDirection();
     Q_INVOKABLE void centerOgl();
@@ -687,12 +681,6 @@ public:
     void JobNew();
     void JobClose();
 
-    /******************************
-     * formgps_classcallbacks.cpp *
-     ******************************/
-    void connect_classes();
-
-
     /****************
      * form_sim.cpp *
      ****************/
@@ -771,16 +759,12 @@ public slots:
     //left column
     void onBtnAgIO_clicked();
     //right column
-    void onBtnContour_clicked();
     void onBtnAutoYouTurn_clicked();
     void onBtnSwapAutoYouTurnDirection_clicked();
     void onBtnContourPriority_clicked(bool isRight);
     void onBtnContourLock_clicked();
     void onBtnResetCreatedYouTurn_clicked();
     //bottom row
-    void onBtnResetTool_clicked();
-    void onBtnHeadland_clicked();
-    void onBtnHydLift_clicked();
     void onBtnTramlines_clicked();
     void onBtnSnapSideways_clicked(double distance);
     void onBtnSnapToPivot_clicked();
@@ -851,8 +835,6 @@ public slots:
     void FileSaveTracks();
 
     /* formgps_classcallbacks.cpp */
-    void onSectionMasterAutoOff();
-    void onSectionMasterManualOff();
     void onStoppedDriving();
 
 signals:

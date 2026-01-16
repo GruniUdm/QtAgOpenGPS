@@ -57,9 +57,7 @@ ColumnLayout {
         icon.source: prefix + "/images/ContourOff.png"
         iconChecked: prefix + "/images/ContourOn.png"
         buttonText: qsTr("Contour")
-        onClicked: {
-            aog.contour() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-        }
+        onClicked: Backend.toggleContour()
         onCheckedChanged: { //gui logic
             btnTrackCycle.visible = !checked
             btnTrackCycleBk.visible = !checked

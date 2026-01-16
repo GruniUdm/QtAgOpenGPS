@@ -74,6 +74,7 @@ public:
     Q_INVOKABLE void modulesSend251();
     Q_INVOKABLE void modulesSend252();
     Q_INVOKABLE void modulesSend245();
+    Q_INVOKABLE void setHydLiftPGN(int);
 
     /*
      * PGNs *
@@ -96,9 +97,6 @@ public:
     SIMPLE_BINDABLE_PROPERTY(int, steerModuleConnectedCounter)
 
 signals:
-    void turnOffManualSections(void);
-    void turnOffAutoSections(void);
-
     void p_254_changed();
     void p_252_changed();
     void p_251_changed();

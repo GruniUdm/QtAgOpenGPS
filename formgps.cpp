@@ -77,7 +77,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     qDebug() << "  âœ… CVehicle singleton created:" << vehicle;
 
     qDebug() << "ðŸ”— Now calling connect_classes...";
-    connect_classes(); //make all the inter-class connections (NOW trk is initialized!)
 
     // Qt 6.8: Constructor ready for QML loading
     qDebug() << "âœ… FormGPS constructor core completed - ready for QML loading";

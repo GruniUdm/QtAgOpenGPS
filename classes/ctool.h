@@ -164,6 +164,7 @@ private:
 public slots:
     void on_autoBtnChanged();
     void onSectionButtonStatechanged(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state);
+    void resetTool();
 
 signals:
     void SetHydPosition(MainWindowState::ButtonStates autoBtnState);

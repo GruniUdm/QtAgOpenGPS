@@ -1,6 +1,10 @@
 #include "backend.h"
 #include <QCoreApplication>
 #include <QLoggingCategory>
+#include "mainwindowstate.h"
+#include "cvehicle.h"
+#include "modulecomm.h"
+#include "settingsmanager.h"
 
 Q_LOGGING_CATEGORY (backend_log, "backend.qtagopengps")
 
@@ -62,6 +66,49 @@ void Backend::setWorkedAreaTotalUser(const QString& value) {
 }
 */
 
+void Backend::toggleHeadlandOn() {
+    //This can all be done in Javascript. Should it be there or here?
+
+    //toggle the property
+    MainWindowState::instance()->set_isHeadlandOn(! MainWindowState::instance()->isHeadlandOn());
 
 
+    if (CVehicle::instance()->isHydLiftOn() && !MainWindowState::instance()->isHeadlandOn())
+        CVehicle::instance()->setIsHydLiftOn(false);
 
+    if (!MainWindowState::instance()->isHeadlandOn())
+    {
+        //shut off the hyd lift pgn
+        ModuleComm::instance()->setHydLiftPGN(0);
+    }
+}
+
+void Backend::toggleHydLift() {
+    if (MainWindowState::instance()->isHeadlandOn())
+    {
+        CVehicle::instance()->setIsHydLiftOn(!CVehicle::instance()->isHydLiftOn());
+        if (CVehicle::instance()->isHydLiftOn())
+        {
+        }
+        else
+        {
+            ModuleComm::instance()->setHydLiftPGN(0);
+        }
+    }
+    else
+    {
+        ModuleComm::instance()->setHydLiftPGN(0);
+        CVehicle::instance()->setIsHydLiftOn(false);
+    }
+}
+
+void Backend::toggleContour() {
+     MainWindowState::instance()->set_isContourBtnOn(
+        ! MainWindowState::instance()->isContourBtnOn());
+
+    if (MainWindowState::instance()->isContourBtnOn()) {
+        m_guidanceLookAheadTime = 0.5;
+    }else{
+        m_guidanceLookAheadTime = SettingsManager::instance()->as_guidanceLookAheadTime();
+    }
+}

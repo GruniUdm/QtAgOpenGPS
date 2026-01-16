@@ -86,11 +86,17 @@ public:
         emit currentFieldChanged();
     }
 
+    Q_INVOKABLE void toggleHeadlandOn();
+    Q_INVOKABLE void toggleHydLift();
+
+    Q_INVOKABLE void toggleContour();
+
     SIMPLE_BINDABLE_PROPERTY(bool, isJobStarted)
     SIMPLE_BINDABLE_PROPERTY(bool, applicationClosing)
     SIMPLE_BINDABLE_PROPERTY(double, distancePivotToTurnLine)
     SIMPLE_BINDABLE_PROPERTY(bool, isYouTurnRight)
     SIMPLE_BINDABLE_PROPERTY(bool, isYouTurnTriggered)
+    SIMPLE_BINDABLE_PROPERTY(double, guidanceLookAheadTime)
 
     //These don't seem to be used outside of FormGPS. When FormGPS
     //becomes CoreGPS singleton, consider moving them to CoreGPS
@@ -108,6 +114,8 @@ signals:
 
     void timedMessage(int timeout, QString s1, QString s2);
 
+    void resetTool();
+
 private:
 
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isJobStarted, false, &Backend::isJobStartedChanged)
@@ -115,6 +123,8 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, double, m_distancePivotToTurnLine, 0, &Backend::distancePivotToTurnLineChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isYouTurnRight, false, &Backend::isYouTurnRightChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isYouTurnTriggered, false, &Backend::isYouTurnTriggeredChanged)
+
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, double, m_guidanceLookAheadTime, 2, &Backend::guidanceLookAheadTimeChanged)
 
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_imuCorrected, false, &Backend::imuCorrectedChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Backend, bool, m_isReverseWithIMU, false, &Backend::isReverseWithIMUChanged)

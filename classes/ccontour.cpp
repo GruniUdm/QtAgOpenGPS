@@ -14,6 +14,7 @@
 #include "cnmea.h"
 #include "qmlutil.h"
 #include "mainwindowstate.h"
+#include "backend.h"
 #include <QElapsedTimer>
 
 CContour::CContour(QObject *parent)
@@ -634,13 +635,13 @@ void CContour::BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCo
     spacingInt *= 0.01;
     if (bnd.bndList.count() == 0)
     {
-        emit TimedMessage(1500, tr("Boundary Contour Error"), tr("No Boundaries Made"));
+        emit Backend::instance()->timedMessage(1500, tr("Boundary Contour Error"), tr("No Boundaries Made"));
         return;
     }
 
     if (patchCounter != 0)
     {
-        emit TimedMessage(1500, tr("Section Control On"), tr("Turn Off Section Control"));
+        emit Backend::instance()->timedMessage(1500, tr("Section Control On"), tr("Turn Off Section Control"));
         return;
     }
 
@@ -674,7 +675,7 @@ void CContour::BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCo
         }
     }
 
-    emit TimedMessage(1500, tr("Boundary Contour"), tr("Contour Path Created"));
+    emit Backend::instance()->timedMessage(1500, tr("Boundary Contour"), tr("Contour Path Created"));
 }
 
 //draw the red follow me line

@@ -15,8 +15,6 @@
 /* Callback for Simulator new position */
 void FormGPS::simConnectSlots()
 {
-    connect(SimInterface::instance(), &SimInterface::newPosition,
-            this, &FormGPS::onSimNewPosition, Qt::UniqueConnection);
 }
 
 void FormGPS::onSimNewPosition(double vtgSpeed,

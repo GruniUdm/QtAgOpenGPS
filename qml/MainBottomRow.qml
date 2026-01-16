@@ -73,7 +73,7 @@ RowLayout{
         id: btnResetTool
         icon.source: prefix + "/images/ResetTool.png"
         buttonText: qsTr("Reset Tool")
-        onClicked: aog.resetTool() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        onClicked: Backend.resetTool() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         visible: SettingsManager.tool_isToolTrailing //hide if front or rear 3 pt
     }
     Comp.MainWindowBtns {
@@ -91,7 +91,6 @@ RowLayout{
         visible: SettingsManager.feature_isTramOn
     }
     Comp.MainWindowBtns {
-        property bool isOn: false
         id: btnHydLift
         isChecked: isOn
         checkable: true
@@ -100,10 +99,7 @@ RowLayout{
         icon.source: prefix + "/images/HydraulicLiftOff.png"
         iconChecked: prefix + "/images/HydraulicLiftOn.png"
         buttonText: qsTr("HydLift")
-        onClicked: {
-            isOn = !isOn
-            VehicleInterface.isHydLiftOn = isOn // Qt 6.8 MODERN: Q_PROPERTY assignment
-        }
+        onClicked: Backend.toggleHydLift();
     }
     Comp.MainWindowBtns {
         id: btnHeadland
@@ -112,7 +108,7 @@ RowLayout{
         icon.source: prefix + "/images/HeadlandOff.png"
         iconChecked: prefix + "/images/HeadlandOn.png"
         buttonText: qsTr("Headland")
-        onClicked: aog.headland() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        onClicked: Backend.toggleHeadlandOn();
     }
     Comp.MainWindowBtns {
         id: btnFlag

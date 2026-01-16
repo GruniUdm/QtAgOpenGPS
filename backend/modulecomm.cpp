@@ -71,22 +71,18 @@ void ModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
             {
                 if (isWorkSwitchManualSections)
                 {
-                    emit turnOffManualSections();
-                    //mf.btnSectionMasterManual.PerformClick();
+                    MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
                 }
                 else
                 {
-                    emit turnOffAutoSections();
-                    //mf.btnSectionMasterAuto.PerformClick();
+                    MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
                 }
             }
 
             else//Checks both on-screen buttons, performs click if button is not off
             {
-                emit turnOffAutoSections();
-                //mf.btnSectionMasterAuto.PerformClick();
-                emit turnOffManualSections();
-                //mf.btnSectionMasterManual.PerformClick();
+                MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
+                MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
             }
         }
 
@@ -99,22 +95,18 @@ void ModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
             {
                 if (isSteerWorkSwitchManualSections)
                 {
-                    emit turnOffManualSections();
-                    //mf.btnSectionMasterManual.PerformClick();
+                    MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
                 }
                 else
                 {
-                    emit turnOffAutoSections();
-                    //mf.btnSectionMasterAuto.PerformClick();
+                    MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
                 }
             }
 
             else//Checks both on-screen buttons, performs click if button is not off
             {
-                emit turnOffAutoSections();
-                //mf.btnSectionMasterAuto.PerformClick();
-                emit turnOffManualSections();
-                //mf.btnSectionMasterManual.PerformClick();
+                MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
+                MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
             }
         }
     }
@@ -201,4 +193,9 @@ void ModuleComm::modulesSend245() {
 
         AgIOService::instance()->sendPgn(p_245.pgn);
     }
+}
+
+void ModuleComm::setHydLiftPGN(int value) {
+    p_239.pgn[CPGN_EF::hydLift] = value;
+    emit p_239_changed();
 }
