@@ -163,7 +163,7 @@ import "components" as Comp
                     blockageData.visible = false
                 }
                 Connections{
-                    target: Backend.fixFrame
+                    target: Backend
                     function onFixFrameChanged() {
                         if(Backend.fixFrame.fixQuality === 4) rtkStatus.color = "green"
                         else if(Backend.fixFrame.fixQuality === 5) rtkStatus.color = "orange"

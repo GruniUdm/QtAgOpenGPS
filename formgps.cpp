@@ -127,19 +127,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 // RECTANGLE PATTERN MANUAL IMPLEMENTATIONS (Qt 6.8 Required)
 // ============================================================================
 // Manual getters, setters, and bindables for Q_OBJECT_BINDABLE_PROPERTY
-// ===== Steering Properties =====
-double FormGPS::calcSteerAngleInner() const { return m_calcSteerAngleInner; }
-void FormGPS::setCalcSteerAngleInner(double calcSteerAngleInner) { m_calcSteerAngleInner = calcSteerAngleInner; }
-QBindable<double> FormGPS::bindableCalcSteerAngleInner() { return &m_calcSteerAngleInner; }
-
-double FormGPS::calcSteerAngleOuter() const { return m_calcSteerAngleOuter; }
-void FormGPS::setCalcSteerAngleOuter(double calcSteerAngleOuter) { m_calcSteerAngleOuter = calcSteerAngleOuter; }
-QBindable<double> FormGPS::bindableCalcSteerAngleOuter() { return &m_calcSteerAngleOuter; }
-
-double FormGPS::diameter() const { return m_diameter; }
-void FormGPS::setDiameter(double diameter) { m_diameter = diameter; }
-QBindable<double> FormGPS::bindableDiameter() { return &m_diameter; }
-
 // ===== Turn and Navigation Properties =====
 double FormGPS::distancePivotToTurnLine() const { return m_distancePivotToTurnLine; }
 void FormGPS::setDistancePivotToTurnLine(double distancePivotToTurnLine) { m_distancePivotToTurnLine = distancePivotToTurnLine; }
@@ -153,34 +140,10 @@ bool FormGPS::isYouTurnTriggered() const { return m_isYouTurnTriggered; }
 void FormGPS::setIsYouTurnTriggered(bool isYouTurnTriggered) { m_isYouTurnTriggered = isYouTurnTriggered; }
 QBindable<bool> FormGPS::bindableIsYouTurnTriggered() { return &m_isYouTurnTriggered; }
 
-int FormGPS::sampleCount() const { return m_sampleCount; }
-void FormGPS::setSampleCount(int sampleCount) { m_sampleCount = sampleCount; }
-QBindable<int> FormGPS::bindableSampleCount() { return &m_sampleCount; }
-
-double FormGPS::confidenceLevel() const { return m_confidenceLevel; }
-void FormGPS::setConfidenceLevel(double confidenceLevel) { m_confidenceLevel = confidenceLevel; }
-QBindable<double> FormGPS::bindableConfidenceLevel() { return &m_confidenceLevel; }
-
-bool FormGPS::hasValidRecommendation() const { return m_hasValidRecommendation; }
-void FormGPS::setHasValidRecommendation(bool hasValidRecommendation) { m_hasValidRecommendation = hasValidRecommendation; }
-QBindable<bool> FormGPS::bindableHasValidRecommendation() { return &m_hasValidRecommendation; }
-
-bool FormGPS::startSA() const { return m_startSA; }
-void FormGPS::setStartSA(bool startSA) { m_startSA = startSA; }
-QBindable<bool> FormGPS::bindableStartSA() { return &m_startSA; }
-
 // ===== IMU and Switch Properties =====
 bool FormGPS::imuCorrected() const { return m_imuCorrected; }
 void FormGPS::setImuCorrected(bool imuCorrected) { m_imuCorrected = imuCorrected; }
 QBindable<bool> FormGPS::bindableImuCorrected() { return &m_imuCorrected; }
-
-QString FormGPS::lblCalcSteerAngleInner() const { return m_lblCalcSteerAngleInner; }
-void FormGPS::setLblCalcSteerAngleInner(const QString &value) { m_lblCalcSteerAngleInner = value; }
-QBindable<QString> FormGPS::bindableLblCalcSteerAngleInner() { return &m_lblCalcSteerAngleInner; }
-
-QString FormGPS::lblDiameter() const { return m_lblDiameter; }
-void FormGPS::setLblDiameter(const QString &value) { m_lblDiameter = value; }
-QBindable<QString> FormGPS::bindableLblDiameter() { return &m_lblDiameter; }
 
 // ===== Button State Properties =====
 // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2

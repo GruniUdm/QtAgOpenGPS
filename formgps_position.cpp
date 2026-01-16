@@ -32,6 +32,7 @@
 #include "cpgn.h"
 #include "blockage.h"
 #include "tools.h"
+#include "steerconfig.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -1044,10 +1045,10 @@ void FormGPS::UpdateFixPosition()
     }
 
     // Smart WAS Calibration data collection
-    if (IsCollectingData && abs(CVehicle::instance()->guidanceLineDistanceOff()) < 500) // Within 50cm of guidance line
+    if (SteerConfig::instance()->isCollectingData && abs(CVehicle::instance()->guidanceLineDistanceOff()) < 500) // Within 50cm of guidance line
     {
         // Convert guidanceLineSteerAngle from centidegrees to degrees and collect data
-        AddSteerAngleSample(CVehicle::instance()->guidanceLineSteerAngle * 0.01, abs(CVehicle::instance()->avgSpeed()));
+        SteerConfig::instance()->AddSteerAngleSample(CVehicle::instance()->guidanceLineSteerAngle * 0.01, abs(CVehicle::instance()->avgSpeed()));
     }
 
     //for average cross track error
@@ -1234,13 +1235,6 @@ void FormGPS::UpdateFixPosition()
 
     Blockage::instance()->current_speed = pn.speed;
 
-    // isReverseWithIMU now uses Q_OBJECT_BINDABLE_PROPERTY m_isReverseWithIMU
-
-    // === Steering Control Updates (6 properties) ===
-    if (m_calcSteerAngleInner != steerAngleRight) { m_calcSteerAngleInner = steerAngleRight; steerChangedFlag = true; }
-    if (m_calcSteerAngleOuter != steerAngleRight) { m_calcSteerAngleOuter = steerAngleRight; steerChangedFlag = true; }
-    if (m_diameter != _diameter) { m_diameter = _diameter; steerChangedFlag = true; }
-
     // === IMU Data Updates (5 properties) ===
     Backend::instance()->m_fixFrame.imuRoll = ahrs.imuRoll;
     Backend::instance()->m_fixFrame.imuPitch = ahrs.imuPitch;
@@ -1275,12 +1269,6 @@ void FormGPS::UpdateFixPosition()
     Tools::instance()->m_toolsList[0].value<Tool *>()->set_latitude(tool_lat);
     Tools::instance()->m_toolsList[0].value<Tool *>()->set_longitude(tool_lon);
     Tools::instance()->m_toolsList[0].value<Tool *>()->set_heading(tool.toolPos.heading);
-
-    // === Wizard/Calibration Updates (4 properties) ===
-    if (m_sampleCount != SampleCount) { m_sampleCount = SampleCount; wizardChangedFlag = true; }
-    if (m_confidenceLevel != ConfidenceLevel) { m_confidenceLevel = ConfidenceLevel; wizardChangedFlag = true; }
-    if (m_hasValidRecommendation != HasValidRecommendation) { m_hasValidRecommendation = HasValidRecommendation; wizardChangedFlag = true; }
-    if (m_startSA != isSA) { m_startSA = isSA; wizardChangedFlag = true; }
 
     // === Misc Status Updates (2 properties) ===
     if (m_imuCorrected != _imuCorrected) { m_imuCorrected = _imuCorrected; miscChangedFlag = true; }

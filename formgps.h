@@ -77,14 +77,6 @@ class FormGPS : public QQmlApplicationEngine
     // ===== Q_PROPERTY MIGRATION - OPTION A =====
     // 67 properties organized in groups for 50Hz optimization
 
-    // === Steering Control (6 properties) - Critical for autosteer - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double calcSteerAngleInner READ calcSteerAngleInner WRITE setCalcSteerAngleInner
-               NOTIFY calcSteerAngleInnerChanged BINDABLE bindableCalcSteerAngleInner)
-    Q_PROPERTY(double calcSteerAngleOuter READ calcSteerAngleOuter WRITE setCalcSteerAngleOuter
-               NOTIFY calcSteerAngleOuterChanged BINDABLE bindableCalcSteerAngleOuter)
-    Q_PROPERTY(double diameter READ diameter WRITE setDiameter
-               NOTIFY diameterChanged BINDABLE bindableDiameter)
-
     // === Navigation (7 properties) - Important for guidance - Qt 6.8 Rectangle Pattern ===
     Q_PROPERTY(double distancePivotToTurnLine READ distancePivotToTurnLine WRITE setDistancePivotToTurnLine
                NOTIFY distancePivotToTurnLineChanged BINDABLE bindableDistancePivotToTurnLine)
@@ -92,23 +84,9 @@ class FormGPS : public QQmlApplicationEngine
                NOTIFY isYouTurnRightChanged BINDABLE bindableIsYouTurnRight)
     Q_PROPERTY(bool isYouTurnTriggered READ isYouTurnTriggered WRITE setIsYouTurnTriggered
                NOTIFY isYouTurnTriggeredChanged BINDABLE bindableIsYouTurnTriggered)
-    // === Wizard/Calibration (4 properties) - Special - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(int sampleCount READ sampleCount WRITE setSampleCount
-               NOTIFY sampleCountChanged BINDABLE bindableSampleCount)
-    Q_PROPERTY(double confidenceLevel READ confidenceLevel WRITE setConfidenceLevel
-               NOTIFY confidenceLevelChanged BINDABLE bindableConfidenceLevel)
-    Q_PROPERTY(bool hasValidRecommendation READ hasValidRecommendation WRITE setHasValidRecommendation
-               NOTIFY hasValidRecommendationChanged BINDABLE bindableHasValidRecommendation)
-    Q_PROPERTY(bool startSA READ startSA WRITE setStartSA
-               NOTIFY startSAChanged BINDABLE bindableStartSA)
-
     // === Misc Status (2 properties) - Status - Qt 6.8 QProperty + BINDABLE ===
     Q_PROPERTY(bool imuCorrected READ imuCorrected WRITE setImuCorrected
                NOTIFY imuCorrectedChanged BINDABLE bindableImuCorrected)
-    Q_PROPERTY(QString lblCalcSteerAngleInner READ lblCalcSteerAngleInner WRITE setLblCalcSteerAngleInner
-               NOTIFY lblCalcSteerAngleInnerChanged BINDABLE bindableLblCalcSteerAngleInner)
-    Q_PROPERTY(QString lblDiameter READ lblDiameter WRITE setLblDiameter
-               NOTIFY lblDiameterChanged BINDABLE bindableLblDiameter)
 
     // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2 - Qt 6.8 QProperty + BINDABLE
     Q_PROPERTY(bool isReverseWithIMU READ isReverseWithIMU WRITE setIsReverseWithIMU
@@ -125,19 +103,6 @@ public:
     // ===== Q_PROPERTY GETTERS, SETTERS AND BINDABLES =====
     // Manual declarations for all Rectangle Pattern properties
 
-    // Steering Control
-    double calcSteerAngleInner() const;
-    void setCalcSteerAngleInner(double value);
-    QBindable<double> bindableCalcSteerAngleInner();
-
-    double calcSteerAngleOuter() const;
-    void setCalcSteerAngleOuter(double value);
-    QBindable<double> bindableCalcSteerAngleOuter();
-
-    double diameter() const;
-    void setDiameter(double value);
-    QBindable<double> bindableDiameter();
-
     // Navigation
     double distancePivotToTurnLine() const;
     void setDistancePivotToTurnLine(double value);
@@ -151,35 +116,10 @@ public:
     void setIsYouTurnTriggered(bool value);
     QBindable<bool> bindableIsYouTurnTriggered();
 
-    // Wizard/Calibration
-    int sampleCount() const;
-    void setSampleCount(int value);
-    QBindable<int> bindableSampleCount();
-
-    double confidenceLevel() const;
-    void setConfidenceLevel(double value);
-    QBindable<double> bindableConfidenceLevel();
-
-    bool hasValidRecommendation() const;
-    void setHasValidRecommendation(bool value);
-    QBindable<bool> bindableHasValidRecommendation();
-
-    bool startSA() const;
-    void setStartSA(bool value);
-    QBindable<bool> bindableStartSA();
-
     // Misc Status
     bool imuCorrected() const;
     void setImuCorrected(bool value);
     QBindable<bool> bindableImuCorrected();
-
-    QString lblCalcSteerAngleInner() const;
-    void setLblCalcSteerAngleInner(const QString &value);
-    QBindable<QString> bindableLblCalcSteerAngleInner();
-
-    QString lblDiameter() const;
-    void setLblDiameter(const QString &value);
-    QBindable<QString> bindableLblDiameter();
 
     void setSensorData(int value);
     QBindable<int> bindableSensorData();
@@ -202,7 +142,6 @@ public:
     QSignalMapper *sectionButtonsSignalMapper;
     QTimer *tmrWatchdog;
     QTimer timerGPS;  // Phase 6.0.24: Fixed 40 Hz timer for real GPS mode (like timerSim for simulation)
-    QTimer *timer_tick;
 
     /***************************
      * Qt and QML GUI elements *
@@ -685,15 +624,6 @@ public:
     Q_INVOKABLE void snapSideways(double distance);
     Q_INVOKABLE void snapToPivot();
     // Batch 10 - 8 actions Modules & Steering - lines 253-266
-    Q_INVOKABLE void startSAAction();
-
-    // Batch 12 - 6 actions Wizard & Calibration - lines 325-330
-    Q_INVOKABLE void stopDataCollection();
-    Q_INVOKABLE void startDataCollection();
-    Q_INVOKABLE void resetData();
-    Q_INVOKABLE void applyOffsetToCollectedData(double offset);
-    Q_INVOKABLE void smartCalLabelClick();
-    Q_INVOKABLE void smartZeroWAS();
 
     // Batch 13 - 7 actions Field Management - lines 1826-1832
     Q_INVOKABLE void fieldUpdateList();
@@ -765,21 +695,9 @@ public:
     QVector3D mouseClickToPan(int mouseX, int mouseY);
 
     void loadGLTextures();
-    void Timer1_Tick();
 
 private:
     bool toSend = false, isSA = false;
-    int counter = 0, secondCntr = 0, cntr = 0;  // Phase 6.0.24 Problem 18
-    Vec3 startFix;
-    // Phase 6.0.24 Problem 18: Initialize steer wizard variables
-    double _diameter = 0.0;  // Renamed to avoid Q_PROPERTY conflict
-    double steerAngleRight = 0.0;
-    double dist = 0.0;
-    // DEAD CODE from C# original - lblCalcSteerAngleOuter never displayed in UI (FormSteerWiz.Designer.cs has no widget)
-    // C# FormSteer.cs lines 335, 848, 854: all assignments commented out
-    // Qt QtAgOpenGPS formgps_position.cpp:1253: setProperty() was dead code
-    // TODO Phase 7: Remove all dead code comments
-    QString lblCalcSteerAngleOuter;  // lblCalcSteerAngleInner and lblDiameter migrated to Q_PROPERTY BINDABLE
 
     // Language translation system
     QTranslator* m_translator;
@@ -931,10 +849,6 @@ public slots:
 
     void onDeleteAppliedArea_clicked();
 
-    void btnStartSA_clicked();
-
-
-
     /***************************
      * from OpenGL.Designer.cs *
      ***************************/
@@ -994,11 +908,6 @@ signals:
     void toolNorthingChanged();
     void toolHeadingChanged();
 
-    // Steering Control signals
-    void calcSteerAngleInnerChanged();
-    void calcSteerAngleOuterChanged();
-    void diameterChanged();
-
     // Navigation signals
     void distancePivotToTurnLineChanged();
     void isYouTurnRightChanged();
@@ -1007,15 +916,7 @@ signals:
     // All other property signals (continuing the pattern...)
     void toolLatitudeChanged();
     void toolLongitudeChanged();
-    void sampleCountChanged();
-    void confidenceLevelChanged();
-    void hasValidRecommendationChanged();
-    void startSAChanged();
     void imuCorrectedChanged();
-    void lblCalcSteerAngleInnerChanged();
-    void lblDiameterChanged();
-    void latStartChanged();
-    void lonStartChanged();
     void isReverseWithIMUChanged();
     void isPatchesChangingColorChanged();
 
@@ -1044,30 +945,15 @@ private:
     // ===== Q_PROPERTY MEMBER VARIABLES =====
     // 69 members for optimized properties
 
-    // Steering Control (6) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_calcSteerAngleInner, &FormGPS::calcSteerAngleInnerChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_calcSteerAngleOuter, &FormGPS::calcSteerAngleOuterChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_diameter, &FormGPS::diameterChanged)
-
     // Navigation (7) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_distancePivotToTurnLine, &FormGPS::distancePivotToTurnLineChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isYouTurnRight, &FormGPS::isYouTurnRightChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isYouTurnTriggered, &FormGPS::isYouTurnTriggeredChanged)
 
-    // Wizard/Calibration (4) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_sampleCount, &FormGPS::sampleCountChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_confidenceLevel, &FormGPS::confidenceLevelChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_hasValidRecommendation, &FormGPS::hasValidRecommendationChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_startSA, &FormGPS::startSAChanged)
-
     // Misc Status (2) - Qt 6.8 Rectangle Pattern
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuCorrected, &FormGPS::imuCorrectedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblCalcSteerAngleInner, &FormGPS::lblCalcSteerAngleInnerChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblDiameter, &FormGPS::lblDiameterChanged)
 
     // Additional AOG Properties (9) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_latStart, &FormGPS::latStartChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_lonStart, &FormGPS::lonStartChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isReverseWithIMU, &FormGPS::isReverseWithIMUChanged)
     Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isPatchesChangingColor, &FormGPS::isPatchesChangingColorChanged)
 
@@ -1079,50 +965,6 @@ public:
 
     // Operational mode for NTRIP compatibility
     //bool isNTRIPCompatible() const { return isRealMode() || isMixedMode(); }
-    // Публичные свойства was wizard
-    bool IsCollectingData = false;
-    int SampleCount = 0;
-    double RecommendedWASZero = 0;
-    double ConfidenceLevel = 0;
-    bool HasValidRecommendation = false;
-    QDateTime LastCollectionTime;
-
-    // Средние показатели распределения
-    double Mean;
-    double StandardDeviation;
-    double Median;
-
-    // Методы для работы с данными
-
-    int GetRecommendedWASOffsetAdjustment(int currentCPD);
-
-protected:
-    // Вектор для хранения истории углов
-    QVector<double> steerAngleHistory;
-
-    // Критерии проверки собираемых данных
-    static constexpr int MAX_SAMPLES = 2000;          // Максимальное число хранимых образцов
-    static constexpr int MIN_SAMPLES_FOR_ANALYSIS = 200; // Минимальное число образцов для анализа
-    static constexpr double MIN_SPEED_THRESHOLD = 2.0;  // км/ч — минимальная скорость для начала записи
-    static constexpr double MAX_ANGLE_THRESHOLD = 25.0; // Градусы — максимальный угол для включения записи
-
-    // Личные вспомогательные методы
-    bool ShouldCollectSample(double steerAngle, double speed);
-    void PerformStatisticalAnalysis();
-    double CalculateMedian(QVector<double> sortedData);
-    double CalculateStandardDeviation(QVector<double> data, double mean);
-    void CalculateConfidenceLevel(QVector<double> sortedData);
-    void AddSteerAngleSample(double guidanceSteerAngle, double currentSpeed);
-
-public slots:
-    void StartDataCollection();
-    void StopDataCollection();
-    void ResetData();
-    void ApplyOffsetToCollectedData(double appliedOffsetDegrees);
-    void SmartCalLabelClick();
-    void on_btnSmartZeroWAS_clicked();
-
-
 
 };
 
