@@ -89,6 +89,9 @@ public:
     void AddCurrentPoint(double min_dist);
     void UpdateFieldBoundaryGUIAreas();
     bool CalculateMinMax();
+    bool loadBoundary(const QString &field_path);
+    static double getSavedFieldArea(const QString &boundarytxt_path);
+
 
 public slots:
     // methods to be used by GUI.

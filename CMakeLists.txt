@@ -391,6 +391,7 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES models/blockagemodel.h models/blockagemodel.cpp
     SOURCES models/sectionbuttonsmodel.h models/sectionbuttonsmodel.cpp
     SOURCES models/toolssectionbuttonsmodel.h models/toolssectionbuttonsmodel.cpp
+    SOURCES models/fieldsmodel.h models/fieldsmodel.cpp
 )
 
 ###### End Script of Handling QML in module ######

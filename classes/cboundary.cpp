@@ -1,9 +1,14 @@
 #include "cboundary.h"
+#include <QDir>
+#include <QString>
 #include "classes/settingsmanager.h"
 #include "boundaryinterface.h"
 #include "backend.h"
 #include "glm.h"
 #include "cvehicle.h"
+
+//this is defined in formgps_saveopen.cpp currently.
+QString caseInsensitiveFilename(const QString &directory, const QString &filename);
 
 CBoundary::CBoundary(QObject *parent) : QObject(parent)
 {
@@ -149,6 +154,182 @@ void CBoundary::calculateArea() {
     if (ptCount >= 3) {
         BoundaryInterface::instance()->set_pointCount(ptCount);
     }
+}
+
+bool CBoundary::loadBoundary(const QString &field_path) {
+    QString filename = QDir(field_path).filePath(caseInsensitiveFilename(field_path, "Boundary.txt"));
+
+
+    QFile boundariesFile(filename);
+    QTextStream reader(&boundariesFile);
+    QString line;
+
+    if (!boundariesFile.open(QIODevice::ReadOnly))
+    {
+        Backend::instance()->timedMessage(1500, tr("Field Warning"), (tr("Couldn't open boundaries ") + filename + tr(" for reading!")));
+        return false;
+    } else
+    {
+        reader.setDevice(&boundariesFile);
+        //read header
+        line = reader.readLine();//Boundary
+
+        QVector<CBoundaryList> localBndList;
+
+        for (int k = 0; true; k++)
+        {
+            if (reader.atEnd()) break;
+            CBoundaryList New;
+
+            //True or False OR points from older boundary files
+            line = reader.readLine();
+
+            //Check for older boundary files, then above line string is num of points
+            if (line == "True")
+            {
+                New.isDriveThru = true;
+                line = reader.readLine();
+            } else if (line == "False")
+            {
+                New.isDriveThru = false;
+                line = reader.readLine(); //number of points
+            }
+
+            //Check for latest boundary files, then above line string is num of points
+            if (line == "True" || line == "False")
+            {
+                line = reader.readLine(); //number of points
+            }
+
+            int numPoints = line.toInt();
+
+            if (numPoints > 0)
+            {
+                New.fenceLine.reserve(numPoints);  // Phase 1.1: Pre-allocate memory
+
+                //load the line
+                for (int i = 0; i < numPoints; i++)
+                {
+                    line = reader.readLine();
+                    // Phase 1.2: Parse without QStringList allocation (60,000+ iterations!)
+                    int comma1 = line.indexOf(',');
+                    int comma2 = line.indexOf(',', comma1 + 1);
+                    Vec3 vecPt( QStringView(line).left(comma1).toDouble(),
+                               QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
+                               QStringView(line).mid(comma2 + 1).toDouble() );
+
+                    //if (turnheading)
+                    //{
+                    //    vecPt.heading = vecPt.heading + Math.PI;
+                    //}
+                    New.fenceLine.append(vecPt);
+                }
+
+                New.CalculateFenceArea(k);
+
+                double delta = 0;
+                New.fenceLineEar.clear();
+                New.fenceLineEar.reserve(New.fenceLine.count());  // Phase 1.1: Pre-allocate worst-case size
+
+                for (int i = 0; i < New.fenceLine.count(); i++)
+                {
+                    if (i == 0)
+                    {
+                        New.fenceLineEar.append(Vec2(New.fenceLine[i].easting, New.fenceLine[i].northing));
+                        continue;
+                    }
+                    delta += (New.fenceLine[i - 1].heading - New.fenceLine[i].heading);
+                    if (fabs(delta) > 0.005)
+                    {
+                        New.fenceLineEar.append(Vec2(New.fenceLine[i].easting, New.fenceLine[i].northing));
+                        delta = 0;
+                    }
+                }
+                localBndList.append(New);
+            }
+        }
+
+        boundariesFile.close();
+
+        bndList = localBndList;
+        BoundaryInterface::instance()->set_count(bndList.count());
+        updateList();
+        //calculateMinMax();
+        BuildTurnLines();
+    }
+    return true;
+}
+
+double CBoundary::getSavedFieldArea(const QString &boundarytxt_path){
+    QFile boundariesFile(boundarytxt_path);
+    QTextStream reader(&boundariesFile);
+    QString line;
+
+    if (boundariesFile.open(QIODevice::ReadOnly))
+    {
+        reader.setDevice(&boundariesFile);
+        //read header
+        line = reader.readLine();//Boundary
+
+        //only look at first boundary
+        if (!reader.atEnd()) {
+            //True or False OR points from older boundary files
+            line = reader.readLine();
+
+            //Check for older boundary files, then above line string is num of points
+            if (line == "True")
+            {
+                line = reader.readLine();
+            } else if (line == "False")
+            {
+                line = reader.readLine(); //number of points
+            }
+
+            //Check for latest boundary files, then above line string is num of points
+            if (line == "True" || line == "False")
+            {
+                line = reader.readLine(); //number of points
+            }
+
+            int numPoints = line.toInt();
+
+            if (numPoints > 0)
+            {
+                QVector<Vec3> pointList;
+                pointList.reserve(numPoints);  // Phase 1.1: Pre-allocate
+                //load the line
+                for (int i = 0; i < numPoints; i++)
+                {
+                    line = reader.readLine();
+                    // Phase 1.2: Parse without QStringList allocation
+                    int comma1 = line.indexOf(',');
+                    int comma2 = line.indexOf(',', comma1 + 1);
+                    Vec3 vecPt( QStringView(line).left(comma1).toDouble(),
+                               QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
+                               QStringView(line).mid(comma2 + 1).toDouble() );
+                    pointList.append(vecPt);
+                }
+
+                if (pointList.count() > 4) {
+                    double area = 0;
+
+                    //the last vertex is the 'previous' one to the first
+                    int j = pointList.count() - 1;
+
+                    for (int i = 0; i < pointList.count() ; j = i++) {
+                        //pretend they are square; we'll divide by 2 later
+                        area += (pointList[j].easting + pointList[i].easting) *
+                                (pointList[j].northing - pointList[i].northing);
+                    }
+
+                    return fabs(area) / 2;
+                }
+            }
+        }
+
+    }
+
+    return -10; //indicate no boundary present
 }
 
 void CBoundary::updateList() {

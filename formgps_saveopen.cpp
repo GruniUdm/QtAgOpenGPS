@@ -21,7 +21,7 @@ enum OPEN_FLAGS {
     LOAD_FLAGS = 8
 };
 
-QString caseInsensitiveFilename(QString directory, QString filename)
+QString caseInsensitiveFilename(const QString &directory, const QString &filename)
 {
     //A bit of a hack to work with files from AOG that might not have
     //the exact case we are expecting. For example, Boundaries.Txt and
@@ -804,77 +804,17 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
     fieldFile.close();
 
     //Boundaries
-    //Either exit or update running save
-    filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Boundary.txt");
+    filename = QDir(directoryName).filePath(caseInsensitiveFilename(directoryName, "Boundary.txt"));
 
-    QFile boundariesFile(filename);
-    field_info["hasBoundary"] = false;
-    field_info["boundaryArea"] = (double)-10;
+    double area = CBoundary::getSavedFieldArea(filename);
 
-    if (boundariesFile.open(QIODevice::ReadOnly)) {
-        reader.setDevice(&boundariesFile);
-        //read header
-        line = reader.readLine();//Boundary
-
-        //only look at first boundary
-        if (!reader.atEnd()) {
-            //True or False OR points from older boundary files
-            line = reader.readLine();
-
-            //Check for older boundary files, then above line string is num of points
-            if (line == "True")
-            {
-                line = reader.readLine();
-            } else if (line == "False")
-            {
-                line = reader.readLine(); //number of points
-            }
-
-            //Check for latest boundary files, then above line string is num of points
-            if (line == "True" || line == "False")
-            {
-                line = reader.readLine(); //number of points
-            }
-
-            int numPoints = line.toInt();
-
-            if (numPoints > 0)
-            {
-                QVector<Vec3> pointList;
-                pointList.reserve(numPoints);  // Phase 1.1: Pre-allocate
-                //load the line
-                for (int i = 0; i < numPoints; i++)
-                {
-                    line = reader.readLine();
-                    // Phase 1.2: Parse without QStringList allocation
-                    int comma1 = line.indexOf(',');
-                    int comma2 = line.indexOf(',', comma1 + 1);
-                    Vec3 vecPt( QStringView(line).left(comma1).toDouble(),
-                               QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
-                               QStringView(line).mid(comma2 + 1).toDouble() );
-                    pointList.append(vecPt);
-                }
-
-                if (pointList.count() > 4) {
-                    double area = 0;
-
-                    //the last vertex is the 'previous' one to the first
-                    int j = pointList.count() - 1;
-
-                    for (int i = 0; i < pointList.count() ; j = i++) {
-                        //pretend they are square; we'll divide by 2 later
-                        area += (pointList[j].easting + pointList[i].easting) *
-                                (pointList[j].northing - pointList[i].northing);
-                    }
-
-                    field_info["hasBoundary"] = true;
-                    field_info["boundaryArea"] = fabs(area)/2;
-                }
-            }
-        }
+    if (area>0) {
+        field_info["hasBoundary"] = true;
+        field_info["boundaryArea"] = area;
+    } else {
+        field_info["hasBoundary"] = false;
+        field_info["boundaryArea"] = (double)-10;
     }
-
-    boundariesFile.close();
 
     return field_info;
 }
@@ -1366,10 +1306,9 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         calculateMinMax();
         bnd.BuildTurnLines();
 
-        if(bnd.bndList.count() > 0)
-        {
-            //TODO: inform GUI btnABDraw can be seen
-        }
+        //let GUI know it can show btnABDraw
+        BoundaryInterface::instance()->set_count(bnd.bndList.count());
+
         lock.unlock();
     }
     // Headland  -------------------------------------------------------------------------------------------------
