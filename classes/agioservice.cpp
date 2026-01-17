@@ -167,6 +167,7 @@ AgIOService::AgIOService(QObject *parent)
 
     m_localCntrMachine = 99;      // 99 = disconnected (as per CTraffic initialization)
     m_localCntrBlockage = 99;
+    m_localCntrRateControl = 99;
     m_localCntrSteer = 99;
     m_localCntrIMU = 99;
     m_localCntrUDPOut = 0;
@@ -341,6 +342,10 @@ bool AgIOService::blockageConnected() const { return m_blockageConnected.value()
 void AgIOService::setBlockageConnected(bool blockageConnected) { m_blockageConnected.setValue(blockageConnected); }
 QBindable<bool> AgIOService::bindableBlockageConnected() { return &m_blockageConnected; }
 
+bool AgIOService::rateControlConnected() const { return m_rateControlConnected.value(); }
+void AgIOService::setRateControlConnected(bool rateControlConnected) { m_rateControlConnected.setValue(rateControlConnected); }
+QBindable<bool> AgIOService::bindableRateControlConnected() { return &m_rateControlConnected; }
+
 // PHASE 6.0.22.3: Module source and frequency property implementations
 QString AgIOService::gpsSource() const { return m_gpsSource.value(); }
 void AgIOService::setGpsSource(const QString& gpsSource) { m_gpsSource.setValue(gpsSource); }
@@ -429,6 +434,7 @@ QString AgIOService::getProtocolDescription(const QString& protocolId) const
         {"PGN229", "64 Sections IN"},
         {"PGN123", "Hello Machine OUT"},
         {"PGN244", "Blockage Data IN"},
+        {"PGN240", "RateControl Data IN"},
 
         // PGN Messages - IMU Module
         {"PGN211", "IMU Data OUT"},

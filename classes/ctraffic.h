@@ -29,6 +29,7 @@ class CTraffic : public QObject {
     // Phase 6.0.21.7: Renamed GPS → UDP (these properties track ALL UDP traffic, not just GPS)
     Q_PROPERTY(quint32 helloFromMachine READ helloFromMachine WRITE setHelloFromMachine NOTIFY helloFromMachineChanged BINDABLE bindableHelloFromMachine)
     Q_PROPERTY(quint32 helloFromBlockage READ helloFromBlockage WRITE setHelloFromBlockage NOTIFY helloFromBlockageChanged BINDABLE bindableHelloFromBlockage)
+    Q_PROPERTY(quint32 helloFromRateControl READ helloFromRateControl WRITE setHelloFromRateControl NOTIFY helloFromRateControlChanged BINDABLE bindableHelloFromRateControl)
     Q_PROPERTY(quint32 helloFromAutoSteer READ helloFromAutoSteer WRITE setHelloFromAutoSteer NOTIFY helloFromAutoSteerChanged BINDABLE bindableHelloFromAutoSteer)
     Q_PROPERTY(quint32 helloFromIMU READ helloFromIMU WRITE setHelloFromIMU NOTIFY helloFromIMUChanged BINDABLE bindableHelloFromIMU)
     Q_PROPERTY(quint32 cntrUDPOut READ cntrUDPOut WRITE setCntrUDPOut NOTIFY cntrUDPOutChanged BINDABLE bindableCntrUDPOut)
@@ -46,6 +47,7 @@ public:
         : QObject(parent)
         , m_helloFromMachine(99)
         , m_helloFromBlockage(99)
+        , m_helloFromRateControl(99)
         , m_helloFromAutoSteer(99)
         , m_helloFromIMU(99)
         , m_cntrUDPOut(0)
@@ -62,6 +64,7 @@ public:
     // Qt 6.8 READ accessors
     quint32 helloFromMachine() const;
     quint32 helloFromBlockage() const;
+    quint32 helloFromRateControl() const;
     quint32 helloFromAutoSteer() const;
     quint32 helloFromIMU() const;
     quint32 cntrUDPOut() const;
@@ -75,6 +78,7 @@ public:
     // Qt 6.8 WRITE mutators
     void setHelloFromMachine(quint32 value);
     void setHelloFromBlockage(quint32 value);
+    void setHelloFromRateControl(quint32 value);
     void setHelloFromAutoSteer(quint32 value);
     void setHelloFromIMU(quint32 value);
     void setCntrUDPOut(quint32 value);
@@ -88,6 +92,7 @@ public:
     // Qt 6.8 BINDABLE functions
     QBindable<quint32> bindableHelloFromMachine();
     QBindable<quint32> bindableHelloFromBlockage();
+    QBindable<quint32> bindableHelloFromRateControl();
     QBindable<quint32> bindableHelloFromAutoSteer();
     QBindable<quint32> bindableHelloFromIMU();
     QBindable<quint32> bindableCntrUDPOut();
@@ -102,6 +107,7 @@ signals:
     // Qt 6.8 QProperty NOTIFY signals for Q_OBJECT_BINDABLE_PROPERTY migration
     void helloFromMachineChanged();
     void helloFromBlockageChanged();
+    void helloFromRateControlChanged();
     void helloFromAutoSteerChanged();
     void helloFromIMUChanged();
     void cntrUDPOutChanged();
@@ -116,6 +122,7 @@ private:
     // Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY Private Members
     Q_OBJECT_BINDABLE_PROPERTY(CTraffic, quint32, m_helloFromMachine, &CTraffic::helloFromMachineChanged)
     Q_OBJECT_BINDABLE_PROPERTY(CTraffic, quint32, m_helloFromBlockage, &CTraffic::helloFromBlockageChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(CTraffic, quint32, m_helloFromRateControl, &CTraffic::helloFromRateControlChanged)
     Q_OBJECT_BINDABLE_PROPERTY(CTraffic, quint32, m_helloFromAutoSteer, &CTraffic::helloFromAutoSteerChanged)
     Q_OBJECT_BINDABLE_PROPERTY(CTraffic, quint32, m_helloFromIMU, &CTraffic::helloFromIMUChanged)
     Q_OBJECT_BINDABLE_PROPERTY(CTraffic, quint32, m_cntrUDPOut, &CTraffic::cntrUDPOutChanged)
