@@ -21,6 +21,15 @@ Backend::Backend(QObject *parent)
     m_track = new CTrack(this);
     m_yt = new CYouTurn(this);
 
+    //connect signals through to yt, although this is kind of redundant
+    //since qml can access Backend.yt.slot directly
+    connect(this, &Backend::manualUTurn, m_yt, &CYouTurn::manualUTurn);
+    connect(this, &Backend::lateral, m_yt, &CYouTurn::lateral);
+    connect(this, &Backend::swapAutoYouTurnDirection, m_yt, &CYouTurn::swapAutoYouTurnDirection);
+    connect(this, &Backend::resetCreatedYouTurn, m_yt, &CYouTurn::ResetCreatedYouTurn);
+    connect(this, &Backend::toggleYouSkip, m_yt, &CYouTurn::toggleYouSkip);
+
+    connect(m_track, &CTrack::resetCreatedYouTurn, m_yt, &CYouTurn::ResetCreatedYouTurn, Qt::QueuedConnection);
 }
 
 Backend *Backend::instance() {

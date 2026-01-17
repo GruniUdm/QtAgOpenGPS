@@ -252,19 +252,15 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     timerGPS.start(100);  // 100ms = 10 Hz (synchronized with NMEA data rate)
 
     connect(Backend::instance()->pn(), &CNMEA::checkZoomWorldGrid, &worldGrid, &CWorldGrid::checkZoomWorldGrid, Qt::QueuedConnection);
+
     connect(Backend::instance(), &Backend::resetTool, &tool, &CTool::resetTool);
     connect(Backend::instance(), &Backend::resetDirection, this, &FormGPS::resetDirection);
-    connect(Backend::instance(), &Backend::manualUTurn, this, &FormGPS::manualUTurn);
-    connect(Backend::instance(), &Backend::lateral, this, &FormGPS::lateral);
-    connect(Backend::instance(), &Backend::resetCreatedYouTurn, &yt, &CYouTurn::ResetCreatedYouTurn);
-    connect(Backend::instance(), &Backend::swapAutoYouTurnDirection, &yt, &CYouTurn::swapAutoYouTurnDirection);
 
 
     connect(&recPath, &CRecordedPath::stoppedDriving, this, &FormGPS::onStoppedDriving, Qt::QueuedConnection);
 
     connect(&bnd, &CBoundary::saveBoundaryRequested, this, &FormGPS::FileSaveBoundary, Qt::DirectConnection);
 
-    connect(&track, &CTrack::resetCreatedYouTurn, &yt, &CYouTurn::ResetCreatedYouTurn, Qt::QueuedConnection);
     connect(&track, &CTrack::saveTracks, this, &FormGPS::FileSaveTracks, Qt::QueuedConnection);
 
     loadSettings(); //load settings and properties
@@ -345,18 +341,8 @@ void FormGPS::contourPriority(bool isRight) {
     onBtnContourPriority_clicked(isRight);
 }
 
-// ===== BATCH 7 ACTIONS - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::youSkip() {
-    onBtnYouSkip_clicked();
-}
-
 void FormGPS::centerOgl() {
     onBtnCenterOgl_clicked();
-}
-
-// ===== BATCH 2 - 7 ACTIONS You-Turn Navigation - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::autoYouTurn() {
-    onBtnAutoYouTurn_clicked();
 }
 
 // ===== BATCH 3 - 8 ACTIONS Camera Navigation - Qt 6.8 Q_INVOKABLE Implementation =====
@@ -505,30 +491,6 @@ void FormGPS::recordedPathClear() {
 void FormGPS::onBtnTramlines_clicked(){
     QDEBUG<<"tramline";
 }
-void FormGPS::onBtnYouSkip_clicked(){
-    BACKEND_YT(yt);
-
-    QDEBUG<<"you skip clicked";
-    yt.alternateSkips = yt.alternateSkips+1;
-    if (yt.alternateSkips > 3) yt.alternateSkips = 0;
-    QDEBUG<<"you skip clicked"<<yt.alternateSkips;
-    if (yt.alternateSkips > 0)
-    {
-        //btnYouSkipEnable.Image = Resources.YouSkipOn;
-        //make sure at least 1
-        if (yt.rowSkipsWidth < 2)
-        {
-            yt.rowSkipsWidth = 2;
-            //cboxpRowWidth.Text = "1";
-        }
-        yt.Set_Alternate_skips();
-        yt.ResetCreatedYouTurn();
-
-        //if (!MainWindowState::instance()->isYouTurnBtnOn()) btnAutoYouTurn.PerformClick();
-    }
-
-}
-
 
 void FormGPS::resetDirection(){
     QDEBUG<<"reset Direction";
@@ -631,73 +593,6 @@ void FormGPS::onBtnZoomOut_clicked(){
     }
 }
 
-void FormGPS::onBtnAutoYouTurn_clicked(){
-    BACKEND_YT(yt);
-
-    QDEBUG<<"activate youturn";
-
-
-    //TODO: expose properties to QML, and expose methods to QML
-    //from the CYouTurn class as a singleton?
-    yt.loadSettings();
-    yt.isTurnCreationTooClose = false;
-
-//     if (bnd.bndArr.Count == 0)    this needs to be moved to qml
-//     {
-//         TimedMessageBox(2000, gStr.gsNoBoundary, gStr.gsCreateABoundaryFirst);
-//         return;
-//     }
-
-     if (!MainWindowState::instance()->isYouTurnBtnOn())
-     {
-         //new direction so reset where to put turn diagnostic
-         yt.ResetCreatedYouTurn();
-
-         if (!MainWindowState::instance()->isBtnAutoSteerOn()) return;
-         MainWindowState::instance()->set_isYouTurnBtnOn(true);
-         yt.isTurnCreationTooClose = false;
-         yt.isTurnCreationNotCrossingError = false;
-         yt.ResetYouTurn();
-         //mc.autoSteerData[mc.sdX] = 0;
-//         mc.machineControlData[mc.cnYouTurn] = 0;
-//         btnAutoYouTurn.Image = Properties.Resources.Youturn80;
-     }
-     else
-     {
-         MainWindowState::instance()->set_isYouTurnBtnOn(false);
-//         yt.rowSkipsWidth = Properties.Vehicle.Default.set_youSkipWidth;
-//         btnAutoYouTurn.Image = Properties.Resources.YouTurnNo;
-         yt.ResetYouTurn();
-
-         //new direction so reset where to put turn diagnostic
-         yt.ResetCreatedYouTurn();
-
-         //mc.autoSteerData[mc.sdX] = 0;commented in aog
-//         mc.machineControlData[mc.cnYouTurn] = 0;
-     }
-}
-
- void FormGPS::manualUTurn(bool right)
-{
-    BACKEND_TRACK(track);
-    BACKEND_YT(yt);
-
-    if (yt.isYouTurnTriggered) {
-        yt.ResetYouTurn();
-    }else {
-        yt.loadSettings();
-        yt.isYouTurnTriggered = true;
-        yt.BuildManualYouTurn(right, true, track);
-   }
-}
-
-void FormGPS::lateral(bool right)
-{
-    BACKEND_TRACK(track);
-    BACKEND_YT(yt);
-
-    yt.BuildManualYouLateral(right, track);
-}
 
 void FormGPS::TimedMessageBox(int timeout, QString s1, QString s2)
 {

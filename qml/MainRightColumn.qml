@@ -151,8 +151,7 @@ ColumnLayout {
         iconChecked: prefix + "/images/YouTurn80.png"
         buttonText: qsTr("AutoUturn")
         visible: TracksInterface.idx > -1
-        //enabled: aog.isBtnAutoSteerOn
-        onClicked: aog.autoYouTurn() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        onClicked: Backend.yt.toggleAutoYouTurn()
     }
 
 

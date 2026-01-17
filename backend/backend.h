@@ -125,13 +125,17 @@ signals:
 
     void resetTool();
     void resetDirection();
+
+    //these can be accessed directly via Backend.yt.manualUTurn() etc
+    //or we can use them and make a connection through to yt
     void manualUTurn(bool right);
     void lateral(bool right);
-
-    void deleteAppliedArea();
-
     void swapAutoYouTurnDirection();
     void resetCreatedYouTurn();
+    void toggleAutoYouTurn();
+    void toggleYouSkip();
+
+    void deleteAppliedArea();
 
 private:
 

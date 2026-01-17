@@ -565,10 +565,7 @@ public:
     Q_INVOKABLE void contourLock();
     Q_INVOKABLE void contourPriority(bool isRight);
     // Batch 7 actions - lines 215-222
-    Q_INVOKABLE void youSkip();
     Q_INVOKABLE void centerOgl();
-    // Batch 2 - 7 actions You-Turn and Navigation - lines 220-226
-    Q_INVOKABLE void autoYouTurn();
     // Batch 9 - 2 actions Snap Track - lines 237-238
     Q_INVOKABLE void snapSideways(double distance);
     Q_INVOKABLE void snapToPivot();
@@ -753,7 +750,6 @@ public slots:
     //left column
     void onBtnAgIO_clicked();
     //right column
-    void onBtnAutoYouTurn_clicked();
     void onBtnContourPriority_clicked(bool isRight);
     void onBtnContourLock_clicked();
     //bottom row
@@ -761,7 +757,6 @@ public slots:
     void onBtnSnapSideways_clicked(double distance);
     void onBtnSnapToPivot_clicked();
     //don't need ablineedit
-    void onBtnYouSkip_clicked();
 
 
     //displaybuttons.qml
@@ -778,8 +773,6 @@ public slots:
     void SwapDirection();
     void turnOffBoundAlarm();
 
-    void manualUTurn(bool right);
-    void lateral(bool right);
     void onBtnCenterOgl_clicked();
 
     void deleteAppliedArea();
