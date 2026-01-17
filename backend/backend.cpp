@@ -23,13 +23,13 @@ Backend::Backend(QObject *parent)
 
     //connect signals through to yt, although this is kind of redundant
     //since qml can access Backend.yt.slot directly
-    connect(this, &Backend::manualUTurn, m_yt, &CYouTurn::manualUTurn);
-    connect(this, &Backend::lateral, m_yt, &CYouTurn::lateral);
-    connect(this, &Backend::swapAutoYouTurnDirection, m_yt, &CYouTurn::swapAutoYouTurnDirection);
-    connect(this, &Backend::resetCreatedYouTurn, m_yt, &CYouTurn::ResetCreatedYouTurn);
-    connect(this, &Backend::toggleYouSkip, m_yt, &CYouTurn::toggleYouSkip);
+    connect(this, &Backend::manualUTurn, qobject_cast<CYouTurn *>(m_yt), &CYouTurn::manualUTurn);
+    connect(this, &Backend::lateral, qobject_cast<CYouTurn *>(m_yt), &CYouTurn::lateral);
+    connect(this, &Backend::swapAutoYouTurnDirection, qobject_cast<CYouTurn *>(m_yt), &CYouTurn::swapAutoYouTurnDirection);
+    connect(this, &Backend::resetCreatedYouTurn, qobject_cast<CYouTurn *>(m_yt), &CYouTurn::ResetCreatedYouTurn);
+    connect(this, &Backend::toggleYouSkip, qobject_cast<CYouTurn *>(m_yt), &CYouTurn::toggleYouSkip);
 
-    connect(m_track, &CTrack::resetCreatedYouTurn, m_yt, &CYouTurn::ResetCreatedYouTurn, Qt::QueuedConnection);
+    connect(qobject_cast<CTrack *>(m_track), &CTrack::resetCreatedYouTurn, qobject_cast<CYouTurn *>(m_yt), &CYouTurn::ResetCreatedYouTurn, Qt::QueuedConnection);
 }
 
 Backend *Backend::instance() {

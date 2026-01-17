@@ -121,6 +121,7 @@ signals:
     void aogRendererChanged();
     void fixFrameChanged();
 
+    //These are essentially commands coming from QML
     void timedMessage(int timeout, QString s1, QString s2);
 
     void resetTool();
@@ -136,6 +137,9 @@ signals:
     void toggleYouSkip();
 
     void deleteAppliedArea();
+
+    void centerOgl();
+
 
 private:
 
