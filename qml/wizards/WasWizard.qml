@@ -23,6 +23,7 @@ MoveablePopup {
     TopLine{
         id: topLine
         titleText: qsTr("Was Wizard")
+        onBtnCloseClicked:  smartWasWizard.close()
     }
 
     Rectangle{
@@ -81,6 +82,13 @@ MoveablePopup {
                 icon.source: prefix + "/images/SteerZeroSmall.png"
                 enabled: SteerConfig.hasValidRecommendation
                 onClicked: SteerConfig.zeroWAS() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Layout.fillWidth: true
+            }
+            IconButtonTransparent{
+                onClicked: {
+                    smartWasWizard.visible = false
+                }
+                icon.source: prefix + "/images/Cancel64.png"
                 Layout.fillWidth: true
             }
         }
