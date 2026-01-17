@@ -5,6 +5,8 @@
 #include "cvehicle.h"
 #include "modulecomm.h"
 #include "settingsmanager.h"
+#include "cyouturn.h"
+#include "ctrack.h"
 
 Q_LOGGING_CATEGORY (backend_log, "backend.qtagopengps")
 
@@ -15,6 +17,10 @@ bool Backend::s_cpp_created = false;
 Backend::Backend(QObject *parent)
     : QObject{parent}{
     m_pn = new CNMEA(this);
+
+    m_track = new CTrack(this);
+    m_yt = new CYouTurn(this);
+
 }
 
 Backend *Backend::instance() {

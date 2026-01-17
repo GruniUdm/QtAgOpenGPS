@@ -33,6 +33,7 @@
 #include "blockage.h"
 #include "tools.h"
 #include "steerconfig.h"
+#include "backendaccess.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -47,6 +48,8 @@ void FormGPS::UpdateFixPosition()
     QLocale locale;
 
     CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_TRACK(track);  //bring in a reference "track"
+    BACKEND_YT(yt); //bring in a reference "yt"
 
     // PHASE 6.0.33: Declare rawGpsPosition at function start (before goto labels)
     // Used to separate RAW GPS positions (for heading calc) from CORRECTED positions (for display)
@@ -1352,6 +1355,7 @@ void FormGPS::processSectionLookahead() {
     //qDebug(qpos) << "frame time before doing section lookahead " << swFrame.elapsed(;
     //lock.lockForWrite(;
     //qDebug(qpos) << "frame time after getting lock  " << swFrame.elapsed(;
+    BACKEND_TRACK(track); //bring in a reference "track"
 
 #define USE_QPAINTER_BACKBUFFER
 
@@ -1359,6 +1363,7 @@ void FormGPS::processSectionLookahead() {
 
 #ifdef USE_QPAINTER_BACKBUFFER
     auto result = QtConcurrent::run( [this]() {
+        BACKEND_TRACK(track);
         QMatrix4x4 projection;
         QMatrix4x4 modelview;
 
@@ -1508,34 +1513,34 @@ void FormGPS::processSectionLookahead() {
         painter.setPen(pen);
         painter.setBrush(Qt::NoBrush);
 
-        if (this->tram.displayMode !=0 && this->tram.displayMode !=0 && (this->track.idx() > -1))
+        if (tram.displayMode !=0 && tram.displayMode !=0 && (track.idx() > -1))
         {
-            if ((this->tram.displayMode == 1 || this->tram.displayMode == 2))
+            if ((tram.displayMode == 1 || tram.displayMode == 2))
             {
 
-                for (int i = 0; i < this->tram.tramList.count(); i++)
+                for (int i = 0; i < tram.tramList.count(); i++)
                 {
                     lines.clear();
-                    for (int h = 1; h < this->tram.tramList[i]->count(); h++) {
-                        lines.append(QLineF(vec2point((*this->tram.tramList[i])[h-1]),
-                                            vec2point((*this->tram.tramList[i])[h])));
+                    for (int h = 1; h < tram.tramList[i]->count(); h++) {
+                        lines.append(QLineF(vec2point((*tram.tramList[i])[h-1]),
+                                            vec2point((*tram.tramList[i])[h])));
                     }
 
                     painter.drawLines(lines);
                 }
             }
 
-            if (this->tram.displayMode == 1 || this->tram.displayMode == 3)
+            if (tram.displayMode == 1 || tram.displayMode == 3)
             {
                 lines.clear();
-                for (int h = 0; h < this->tram.tramBndOuterArr.count(); h++) {
-                    lines.append(QLineF(vec2point(this->tram.tramBndOuterArr[h-1]),
-                                        vec2point(this->tram.tramBndOuterArr[h])));
+                for (int h = 0; h < tram.tramBndOuterArr.count(); h++) {
+                    lines.append(QLineF(vec2point(tram.tramBndOuterArr[h-1]),
+                                        vec2point(tram.tramBndOuterArr[h])));
                 }
 
-                for (int h = 0; h < this->tram.tramBndInnerArr.count(); h++) {
-                    lines.append(QLineF(vec2point(this->tram.tramBndInnerArr[h-1]),
-                                        vec2point(this->tram.tramBndInnerArr[h])));
+                for (int h = 0; h < tram.tramBndInnerArr.count(); h++) {
+                    lines.append(QLineF(vec2point(tram.tramBndInnerArr[h-1]),
+                                        vec2point(tram.tramBndInnerArr[h])));
                 }
 
                 painter.drawLines(lines);
@@ -2180,6 +2185,7 @@ void FormGPS::processSectionLookahead() {
 void FormGPS::CalculatePositionHeading()
 {
     CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_TRACK(track);
     // #region pivot hitch trail
     //Probably move this into CVehicle
 
@@ -2491,6 +2497,8 @@ void FormGPS::AddContourPoints()
 void FormGPS::AddSectionOrPathPoints()
 {
     CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_TRACK(track);
+
     if (recPath.isRecordOn)
     {
         //keep minimum speed of 1.0

@@ -20,6 +20,7 @@
 #include "flagsinterface.h"
 #include "siminterface.h"
 #include "recordedpath.h"
+#include "backendaccess.h"
 #include "modulecomm.h"
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
@@ -432,6 +433,8 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
 void FormGPS::tmrWatchdog_timeout()
 {
     CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_TRACK(track);
+    BACKEND_YT(yt);
 
     //TODO: replace all this with individual timers for cleaner
 
@@ -578,6 +581,8 @@ void FormGPS::tmrWatchdog_timeout()
 }
 
 void FormGPS::SwapDirection() {
+    BACKEND_YT(yt);
+
     if (!yt.isYouTurnTriggered)
     {
         yt.isYouTurnRight = ! yt.isYouTurnRight;
@@ -592,6 +597,9 @@ void FormGPS::SwapDirection() {
 
 void FormGPS::JobClose()
 {
+    BACKEND_TRACK(track);
+    BACKEND_YT(yt);
+
     lock.lockForWrite();
     recPath.resumeState = 0;
     recPath.currentPositonIndex = 0;
@@ -763,6 +771,7 @@ void FormGPS::JobClose()
 
 void FormGPS::JobNew()
 {
+    BACKEND_TRACK(track);
     startCounter = 0;
 
     //btnSectionMasterManual.Enabled = true;

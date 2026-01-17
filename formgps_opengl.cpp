@@ -24,6 +24,7 @@
 #include "classes/agioservice.h"  // For zero-latency GPS access
 #include "classes/settingsmanager.h"
 #include "backend.h"
+#include "backendaccess.h"
 #include "boundaryinterface.h"
 #include "mainwindowstate.h"
 #include "flagsinterface.h"
@@ -294,6 +295,8 @@ void FormGPS::render_main_fbo()
 void FormGPS::oglMain_Paint()
 {
     OpenGLViewport viewport = getOpenGLViewport(mainWindow);
+    BACKEND_TRACK(track);
+    BACKEND_YT(yt);
 
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
@@ -672,6 +675,7 @@ void FormGPS::openGLControl_Shutdown()
 //back buffer openGL draw function
 void FormGPS::oglBack_Paint()
 {
+    BACKEND_TRACK(track);
 
     //QOpenGLContext *glContext = QOpenGLContext::currentContext();
     QMatrix4x4 projection;

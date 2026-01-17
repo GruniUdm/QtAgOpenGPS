@@ -9,6 +9,7 @@
 #include "qmlutil.h"
 #include <QString>
 #include "backend.h"
+#include "backendaccess.h"
 #include "mainwindowstate.h"
 #include "boundaryinterface.h"
 #include "flagsinterface.h"
@@ -227,6 +228,8 @@ void FormGPS::FileLoadHeadLines()
 
 void FormGPS::FileSaveTracks()
 {
+    BACKEND_TRACK(track);
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -312,6 +315,8 @@ void FormGPS::FileSaveTracks()
 
 void FormGPS::FileLoadTracks()
 {
+    BACKEND_TRACK(track);
+
     track.gArr.clear();
 
     //current field directory should already exist
@@ -441,6 +446,8 @@ void FormGPS::FileLoadTracks()
 
 void FormGPS::FileSaveCurveLines()
 {
+    BACKEND_TRACK(track);
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -502,6 +509,8 @@ void FormGPS::FileSaveCurveLines()
 
 void FormGPS::FileLoadCurveLines()
 {
+    BACKEND_TRACK(track);
+
     //This method is only used if there is no TrackLines.txt and we are importing the old
     //CurveLines.txtfile
 
@@ -615,6 +624,8 @@ void FormGPS::FileLoadCurveLines()
 
 void FormGPS::FileSaveABLines()
 {
+    BACKEND_TRACK(track);
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -671,6 +682,8 @@ void FormGPS::FileLoadABLines()
     //run before FileLoadCurveLines().
 
     //current field directory should already exist
+    BACKEND_TRACK(track);
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -822,6 +835,8 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
 bool FormGPS::FileOpenField(QString fieldDir, int flags)
 {
     CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_TRACK(track);
+
 
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + fieldDir;
@@ -1584,6 +1599,8 @@ void FormGPS::FileCreateField()
     //533172,5927719,12 - offset easting, northing, zone
 
     CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_TRACK(track);
+
 
     if( ! Backend::instance()->isJobStarted())
     {

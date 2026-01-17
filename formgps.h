@@ -300,7 +300,7 @@ public:
     //QScopedPointer<CABLine> ABLine;
 
     // Track management - restored from original architecture (was CTrack trk)
-    CTrack track;
+    //CTrack track;
 
     CGuidance gyd;
 
@@ -309,7 +309,7 @@ public:
     //Contour mode Instance
     //QScopedPointer<CContour> ct;
     CContour ct;
-    CYouTurn yt;
+    //CYouTurn yt;
 
     CVehicle* vehicle;  // Pointeur vers singleton
     CTool tool;

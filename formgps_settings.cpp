@@ -5,10 +5,12 @@
 #include "formgps.h"
 #include "classes/settingsmanager.h"
 #include "backend.h"
+#include "backendaccess.h"
 
 void FormGPS::loadSettings()
 {
     CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_YT(yt);
 
     isMetric = SettingsManager::instance()->menu_isMetric();
 

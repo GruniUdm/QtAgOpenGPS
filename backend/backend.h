@@ -24,6 +24,11 @@ class Backend : public QObject
 
     Q_PROPERTY(CNMEA *pn READ pn CONSTANT)
 
+    //experimental host some of the core backend objects that FormGPS held
+    //use QObject * for faster compiling and less dependencies
+    Q_PROPERTY(QObject *track READ track CONSTANT)
+    Q_PROPERTY(QObject *yt READ yt CONSTANT)
+
 public:
     enum class ButtonStates {Off = 0,Auto = 1,On = 2};
 
@@ -44,6 +49,8 @@ public:
     FieldInfo m_currentField;
     FixFrame m_fixFrame;
     CNMEA *m_pn;
+    QObject *m_track;
+    QObject *m_yt;
 
     QObject *aogRenderer = nullptr;
 
@@ -54,6 +61,8 @@ public:
     FieldInfo currentField() const { return m_currentField; }
     FixFrame fixFrame() const { return m_fixFrame; }
     CNMEA *pn() const { return m_pn; }
+    QObject *track() const { return m_track; }
+    QObject *yt() const { return m_yt; }
 
     //mutation methods for currentField
     Q_INVOKABLE void currentField_setDistanceUser(double newdist) {

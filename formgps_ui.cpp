@@ -25,6 +25,7 @@
 #include <algorithm>
 #include "rendering.h"
 #include "backend.h"
+#include "backendaccess.h"
 #include "boundaryinterface.h"
 #include "fieldinterface.h"
 #include "mainwindowstate.h"
@@ -42,6 +43,8 @@ QString caseInsensitiveFilename(QString directory, QString filename);
 
 void FormGPS::setupGui()
 {
+    BACKEND_TRACK(track);
+
     // Phase 4.5: AgIOService will be created by QML factory automatically
     QDEBUG << "🚀 AgIOService will be initialized by QML factory on first access";
 
@@ -160,6 +163,9 @@ void FormGPS::setupGui()
 
 void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 {
+    BACKEND_TRACK(track);
+    BACKEND_YT(yt);
+
     QDEBUG << "object is now created. " << url.toString();
     //get pointer to root QML object, which is the OpenGLControl,
     //store in a member variable for future use.
@@ -500,6 +506,8 @@ void FormGPS::onBtnTramlines_clicked(){
     QDEBUG<<"tramline";
 }
 void FormGPS::onBtnYouSkip_clicked(){
+    BACKEND_YT(yt);
+
     QDEBUG<<"you skip clicked";
     yt.alternateSkips = yt.alternateSkips+1;
     if (yt.alternateSkips > 3) yt.alternateSkips = 0;
@@ -624,6 +632,8 @@ void FormGPS::onBtnZoomOut_clicked(){
 }
 
 void FormGPS::onBtnAutoYouTurn_clicked(){
+    BACKEND_YT(yt);
+
     QDEBUG<<"activate youturn";
 
 
@@ -669,6 +679,9 @@ void FormGPS::onBtnAutoYouTurn_clicked(){
 
  void FormGPS::manualUTurn(bool right)
 {
+    BACKEND_TRACK(track);
+    BACKEND_YT(yt);
+
     if (yt.isYouTurnTriggered) {
         yt.ResetYouTurn();
     }else {
@@ -680,7 +693,10 @@ void FormGPS::onBtnAutoYouTurn_clicked(){
 
 void FormGPS::lateral(bool right)
 {
-   yt.BuildManualYouLateral(right, track);
+    BACKEND_TRACK(track);
+    BACKEND_YT(yt);
+
+    yt.BuildManualYouLateral(right, track);
 }
 
 void FormGPS::TimedMessageBox(int timeout, QString s1, QString s2)
@@ -944,6 +960,8 @@ void FormGPS::setCurrentABCurve(int index) {
 // ===== AB Lines Methods - Phase 6.0.20 =====
 
 void FormGPS::swapABLineHeading(int index) {
+    BACKEND_TRACK(track);
+
     if (index >= 0 && index < track.count()) {
         track.swapAB(index);
         updateABLines();
@@ -951,6 +969,8 @@ void FormGPS::swapABLineHeading(int index) {
 }
 
 void FormGPS::deleteABLine(int index) {
+    BACKEND_TRACK(track);
+
     if (index >= 0 && index < track.count()) {
         track.delete_track(index);
         updateABLines();
@@ -966,6 +986,8 @@ void FormGPS::addABLine(const QString& name) {
 }
 
 void FormGPS::changeABLineName(int index, const QString& newName) {
+    BACKEND_TRACK(track);
+
     if (index >= 0 && index < track.count()) {
         track.changeName(index, newName);
         updateABLines();
