@@ -274,13 +274,13 @@ Window {
                 parent.clicked(mouse)
             }
 
-            onPressed: if(aogInterface.panMode){
+            onPressed: if(panButton.checked){
                            //save a copy of the coordinates
                            fromX = mouseX
                            fromY = mouseY
                        }
 
-            onPositionChanged: if(aogInterface.panMode){
+            onPositionChanged: if(panButton.checked){
                                    parent.dragged(fromX, fromY, mouseX, mouseY)
                                    fromX = mouseX
                                    fromY = mouseY
@@ -441,6 +441,7 @@ Window {
             anchors.bottom: bottomButtons.top
             visible: !noGPS.visible
             Comp.IconButtonTransparent{ //button to pan around main GL
+                id: panButton
                 implicitWidth: 50
                 implicitHeight: 50 * theme.scaleHeight
                 checkable: true
@@ -449,7 +450,12 @@ Window {
                 anchors.margins: 30
                 icon.source: prefix + "/images/Pan.png"
                 iconChecked: prefix + "/images/SwitchOff.png"
-                onClicked: aogInterface.setPanMode(!aogInterface.panMode) // Qt 6.8: Local AOGInterface property
+                onClicked: {
+                    if (!checked) {
+                        Backend.centerOgl()
+                    }
+
+                }
             }
             Image{
                 id: hydLiftIndicator

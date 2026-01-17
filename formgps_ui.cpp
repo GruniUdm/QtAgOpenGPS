@@ -256,6 +256,7 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(Backend::instance(), &Backend::resetTool, &tool, &CTool::resetTool);
     connect(Backend::instance(), &Backend::resetDirection, this, &FormGPS::resetDirection);
 
+    connect(Backend::instance(), &Backend::centerOgl, this, &FormGPS::centerOgl);
 
     connect(&recPath, &CRecordedPath::stoppedDriving, this, &FormGPS::onStoppedDriving, Qt::QueuedConnection);
 
@@ -297,7 +298,8 @@ void FormGPS::onGLControl_dragged(int pressX, int pressY, int mouseX, int mouseY
         QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
     }
 }
-void FormGPS::onBtnCenterOgl_clicked(){
+
+void FormGPS::centerOgl() {
     QDEBUG<<"center ogl";
     camera.panX = 0;
     camera.panY = 0;
@@ -341,9 +343,7 @@ void FormGPS::contourPriority(bool isRight) {
     onBtnContourPriority_clicked(isRight);
 }
 
-void FormGPS::centerOgl() {
-    onBtnCenterOgl_clicked();
-}
+
 
 // ===== BATCH 3 - 8 ACTIONS Camera Navigation - Qt 6.8 Q_INVOKABLE Implementation =====
 void FormGPS::zoomIn() {

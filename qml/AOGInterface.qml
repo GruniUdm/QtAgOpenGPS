@@ -18,17 +18,6 @@ Item {
     property color borderColor: theme.borderColor
     property color blackDayWhiteNight: theme.blackDayWhiteNight
     property color whiteDayBlackNight: theme.whiteDayBlackNight
-    // 📊 INTERFACE
-    function setPanMode(value) {
-        panMode = value
-        // panMode is local property, no aog equivalent needed
-    }
-
-    property bool panMode: false
-    onPanModeChanged: if(panMode == false)
-                          centerOgl()
-
-
     property string timeTilFinished: ""
     property string workRate: "value"
     property string percentOverlap: "value"

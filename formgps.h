@@ -564,8 +564,6 @@ public:
     // Phase 6.0.20: Modernization of button actions - replace signal/slot with direct calls
     Q_INVOKABLE void contourLock();
     Q_INVOKABLE void contourPriority(bool isRight);
-    // Batch 7 actions - lines 215-222
-    Q_INVOKABLE void centerOgl();
     // Batch 9 - 2 actions Snap Track - lines 237-238
     Q_INVOKABLE void snapSideways(double distance);
     Q_INVOKABLE void snapToPivot();
@@ -773,7 +771,7 @@ public slots:
     void SwapDirection();
     void turnOffBoundAlarm();
 
-    void onBtnCenterOgl_clicked();
+    void centerOgl();
 
     void deleteAppliedArea();
 
