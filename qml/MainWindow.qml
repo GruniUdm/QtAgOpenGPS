@@ -104,7 +104,7 @@ Window {
 
     // Phase 6.0.20 Task 24 Step 3.5 - Test when field is loaded
     Connections {
-        target: aog
+        target: Backend.pn
         function onLatStartChanged() {
             if (Backend.pn.latStart !== 0 && Backend.pn.lonStart !== 0) {
                 console.log(qmlLog, "[GEODETIC_TEST] Field loaded - latStart:", Backend.pn.latStart, "lonStart:", Backend.pn.lonStart, "mPerDegreeLat:", Backend.pn.mPerDegreeLat)

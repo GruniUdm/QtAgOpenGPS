@@ -6,7 +6,7 @@ import AOG
 import "components" as Comp
 
 RowLayout{
-    property bool hydLiftIsOn: btnHydLift.isOn
+    property bool hydLiftIsOn: VehicleInterface.isHydLiftOn
     id:bottomButtons
     visible: Backend.isJobStarted && leftColumn.visible
 
@@ -92,7 +92,7 @@ RowLayout{
     }
     Comp.MainWindowBtns {
         id: btnHydLift
-        isChecked: isOn
+        isChecked: VehicleInterface.isHydLiftOn
         checkable: true
         disabled: btnHeadland.checked
         visible: SettingsManager.ardMac_isHydEnabled && btnHeadland.visible
