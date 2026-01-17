@@ -2591,7 +2591,6 @@ void CYouTurn::ResetYouTurn()
     makeUTurnCounter = 0;
     ytList.clear();
     ResetCreatedYouTurn();
-    //mf.isBoundAlarming = false;
     emit turnOffBoundAlarm();
     isTurnCreationTooClose = false;
     isTurnCreationNotCrossingError = false;
@@ -2607,6 +2606,14 @@ void CYouTurn::ResetCreatedYouTurn()
     emit uTurnReset(); //ask receiver to cancel pgn 239 uturn byte
     isOutSameCurve = false;
     isGoingStraightThrough = false;
+}
+
+void CYouTurn::swapAutoYouTurnDirection() {
+     if (!isYouTurnTriggered)
+     {
+         isYouTurnRight = !isYouTurnRight;
+         ResetCreatedYouTurn();
+     }
 }
 
 void CYouTurn::FailCreate()

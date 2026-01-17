@@ -101,7 +101,7 @@ Drawer {
                 id: delAppliedArea
                 icon.source: prefix + "/images/TrashApplied.png"
                 text: qsTr("Delete Applied Area")
-                onClicked: {aog.deleteAppliedArea() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                onClicked: {Backend.deleteAppliedArea() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 fieldToolsMenu.visible = false}
             }
             IconButtonTextBeside {

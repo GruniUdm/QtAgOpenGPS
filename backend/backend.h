@@ -115,6 +115,14 @@ signals:
     void timedMessage(int timeout, QString s1, QString s2);
 
     void resetTool();
+    void resetDirection();
+    void manualUTurn(bool right);
+    void lateral(bool right);
+
+    void deleteAppliedArea();
+
+    void swapAutoYouTurnDirection();
+    void resetCreatedYouTurn();
 
 private:
 

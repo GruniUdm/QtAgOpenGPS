@@ -566,12 +566,8 @@ public:
     Q_INVOKABLE void contourPriority(bool isRight);
     // Batch 7 actions - lines 215-222
     Q_INVOKABLE void youSkip();
-    Q_INVOKABLE void resetDirection();
     Q_INVOKABLE void centerOgl();
-    Q_INVOKABLE void deleteAppliedArea();
     // Batch 2 - 7 actions You-Turn and Navigation - lines 220-226
-    Q_INVOKABLE void manualUTurn(bool isRight);
-    Q_INVOKABLE void lateral(bool isRight);
     Q_INVOKABLE void autoYouTurn();
     // Batch 9 - 2 actions Snap Track - lines 237-238
     Q_INVOKABLE void snapSideways(double distance);
@@ -591,8 +587,6 @@ public:
     Q_INVOKABLE void loadBoundaryFromKML(QString filename);
     Q_INVOKABLE void addBoundaryOSMPoint(double latitude, double longitude);
 
-    Q_INVOKABLE void swapAutoYouTurnDirection();
-    Q_INVOKABLE void resetCreatedYouTurn();
     // Batch 3 - 8 actions Camera Navigation - lines 201-208
     Q_INVOKABLE void zoomIn();
     Q_INVOKABLE void zoomOut();
@@ -755,15 +749,13 @@ public slots:
 
     //headland creation
 
-    void onBtnResetDirection_clicked();
+    void resetDirection();
     //left column
     void onBtnAgIO_clicked();
     //right column
     void onBtnAutoYouTurn_clicked();
-    void onBtnSwapAutoYouTurnDirection_clicked();
     void onBtnContourPriority_clicked(bool isRight);
     void onBtnContourLock_clicked();
-    void onBtnResetCreatedYouTurn_clicked();
     //bottom row
     void onBtnTramlines_clicked();
     void onBtnSnapSideways_clicked(double distance);
@@ -786,11 +778,11 @@ public slots:
     void SwapDirection();
     void turnOffBoundAlarm();
 
-    void onBtnManUTurn_clicked(bool right); //TODO add the skip number as a parameter
-    void onBtnLateral_clicked(bool right); //TODO add the skip number as a parameter
+    void manualUTurn(bool right);
+    void lateral(bool right);
     void onBtnCenterOgl_clicked();
 
-    void onDeleteAppliedArea_clicked();
+    void deleteAppliedArea();
 
     /***************************
      * from OpenGL.Designer.cs *

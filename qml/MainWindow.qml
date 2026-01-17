@@ -307,8 +307,9 @@ Window {
                 //button that catches any clicks on the vehicle in the GL Display
                 id: resetDirection
                 onClicked: {
-                    aog.resetDirection() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-                    console.log(qmlLog, "reset direction")
+                    //isn't this redundant with the onPressed?
+                    Backend.resetDirection()
+                    console.log(qmlLog, "reset direction clicked")
                 }
                 propagateComposedEvents: true
                 x: VehicleInterface.screenBounding.x
@@ -316,8 +317,8 @@ Window {
                 width: VehicleInterface.screenBounding.width
                 height: VehicleInterface.screenBounding.height
                 onPressed: (mouse)=>{
-                               aog.resetDirection() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-                               console.log(qmlLog, "pressed")
+                               Backend.resetDirection()
+                               console.log(qmlLog, "reset direction pressed")
                                mouse.accepted = false
 
                            }

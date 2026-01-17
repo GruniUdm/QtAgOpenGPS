@@ -247,6 +247,12 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     connect(Backend::instance()->pn(), &CNMEA::checkZoomWorldGrid, &worldGrid, &CWorldGrid::checkZoomWorldGrid, Qt::QueuedConnection);
     connect(Backend::instance(), &Backend::resetTool, &tool, &CTool::resetTool);
+    connect(Backend::instance(), &Backend::resetDirection, this, &FormGPS::resetDirection);
+    connect(Backend::instance(), &Backend::manualUTurn, this, &FormGPS::manualUTurn);
+    connect(Backend::instance(), &Backend::lateral, this, &FormGPS::lateral);
+    connect(Backend::instance(), &Backend::resetCreatedYouTurn, &yt, &CYouTurn::ResetCreatedYouTurn);
+    connect(Backend::instance(), &Backend::swapAutoYouTurnDirection, &yt, &CYouTurn::swapAutoYouTurnDirection);
+
 
     connect(&recPath, &CRecordedPath::stoppedDriving, this, &FormGPS::onStoppedDriving, Qt::QueuedConnection);
 
@@ -338,37 +344,13 @@ void FormGPS::youSkip() {
     onBtnYouSkip_clicked();
 }
 
-void FormGPS::resetDirection() {
-    onBtnResetDirection_clicked();
-}
-
 void FormGPS::centerOgl() {
     onBtnCenterOgl_clicked();
 }
 
-void FormGPS::deleteAppliedArea() {
-    onDeleteAppliedArea_clicked();
-}
-
 // ===== BATCH 2 - 7 ACTIONS You-Turn Navigation - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::manualUTurn(bool isRight) {
-    onBtnManUTurn_clicked(isRight);
-}
-
-void FormGPS::lateral(bool isRight) {
-    onBtnLateral_clicked(isRight);
-}
-
 void FormGPS::autoYouTurn() {
     onBtnAutoYouTurn_clicked();
-}
-
-void FormGPS::swapAutoYouTurnDirection() {
-    onBtnSwapAutoYouTurnDirection_clicked();
-}
-
-void FormGPS::resetCreatedYouTurn() {
-    onBtnResetCreatedYouTurn_clicked();
 }
 
 // ===== BATCH 3 - 8 ACTIONS Camera Navigation - Qt 6.8 Q_INVOKABLE Implementation =====
@@ -540,14 +522,13 @@ void FormGPS::onBtnYouSkip_clicked(){
 }
 
 
-void FormGPS::onBtnResetDirection_clicked(){
+void FormGPS::resetDirection(){
     QDEBUG<<"reset Direction";
     // c#Array.Clear(stepFixPts, 0, stepFixPts.Length);
 
     std::memset(stepFixPts, 0, sizeof(stepFixPts));
     isFirstHeadingSet = false;
 
-    //TODO: most of this should be done in QML
     CVehicle::instance()->setIsReverse(false);
     TimedMessageBox(2000, "Reset Direction", "Drive Forward > 1.5 kmh");
 }
@@ -685,35 +666,19 @@ void FormGPS::onBtnAutoYouTurn_clicked(){
 //         mc.machineControlData[mc.cnYouTurn] = 0;
      }
 }
-void FormGPS::onBtnSwapAutoYouTurnDirection_clicked()
- {
-     if (!yt.isYouTurnTriggered)
-     {
-         yt.isYouTurnRight = !yt.isYouTurnRight;
-         yt.ResetCreatedYouTurn();
-     }
-     //else if (MainWindowState::instance()->isYouTurnBtnOn())
-         //btnAutoYouTurn.PerformClick();
- }
 
- void FormGPS::onBtnResetCreatedYouTurn_clicked()
- {
-     QDEBUG<<"ResetCreatedYouTurnd";
-     yt.ResetYouTurn();
- }
-
-void FormGPS::onBtnManUTurn_clicked(bool right)
+ void FormGPS::manualUTurn(bool right)
 {
     if (yt.isYouTurnTriggered) {
         yt.ResetYouTurn();
     }else {
-        yt.loadSettings(); // PHASE6-0-20: Sync rowSkipsWidth with SettingsManager before manual U-turn
+        yt.loadSettings();
         yt.isYouTurnTriggered = true;
         yt.BuildManualYouTurn(right, true, track);
    }
 }
 
-void FormGPS::onBtnLateral_clicked(bool right)
+void FormGPS::lateral(bool right)
 {
    yt.BuildManualYouLateral(right, track);
 }
@@ -836,8 +801,7 @@ void FormGPS::onBtnSnapSideways_clicked(double distance){
 
 }
 
-void FormGPS::onDeleteAppliedArea_clicked()
-{
+void FormGPS::deleteAppliedArea() {
     if (Backend::instance()->isJobStarted())
     {
         //clear out the contour Lists

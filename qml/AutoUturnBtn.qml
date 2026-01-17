@@ -40,7 +40,7 @@ Item{
         colorization: 1.0
         MouseArea{
             anchors.fill: parent
-            onClicked: Backend.isYouTurnTriggered?aog.resetCreatedYouTurn():aog.swapAutoYouTurnDirection() // Qt 6.8 MODERN: Direct Q_INVOKABLE calls
+            onClicked: Backend.isYouTurnTriggered?Backend.resetCreatedYouTurn():Backend.swapAutoYouTurnDirection() // Qt 6.8 MODERN: Direct Q_INVOKABLE calls
 
         }
         Text{

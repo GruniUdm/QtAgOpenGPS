@@ -21,7 +21,7 @@ Grid{
             // Threading Phase 1: Check speed limit for manual operations
             if (SettingsManager.as_functionSpeedLimit > VehicleInterface.avgSpeed) {
                 console.debug("limit ", SettingsManager.as_functionSpeedLimit, " speed ", VehicleInterface.avgSpeed)
-                aog.manualUTurn(false) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Backend.manualUTurn(false) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             } else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
                                         Utils.speed_to_unit_string(SettingsManager.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
@@ -38,7 +38,7 @@ Grid{
         icon.source: prefix + "/images/qtSpecific/z_TurnManualR.png"
         onClicked: {
             if (SettingsManager.as_functionSpeedLimit > VehicleInterface.avgSpeed) // Threading Phase 1: Function speed limit check
-                aog.manualUTurn(true) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Backend.manualUTurn(true) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
                                         Utils.speed_to_unit_string(SettingsManager.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
@@ -53,7 +53,7 @@ Grid{
         visible: SettingsManager.feature_isLateralOn
         onClicked: {
             if (SettingsManager.as_functionSpeedLimit > VehicleInterface.avgSpeed) // Threading Phase 1: Function speed limit check
-                aog.lateral(false) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Backend.lateral(false) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
                                         Utils.speed_to_unit_string(SettingsManager.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
@@ -68,7 +68,7 @@ Grid{
         icon.source: prefix + "/images/qtSpecific/z_LateralManualR.png"
         onClicked: {
             if (SettingsManager.as_functionSpeedLimit > VehicleInterface.avgSpeed) // Threading Phase 1: Function speed limit check
-                aog.lateral(true) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Backend.lateral(true) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             else
                 timedMessage.addMessage(2000,qsTr("Too Fast"), qsTr("Slow down below") + " " +
                                         Utils.speed_to_unit_string(SettingsManager.as_functionSpeedLimit,1) + " " + Utils.speed_unit())
