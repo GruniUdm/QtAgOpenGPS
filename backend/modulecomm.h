@@ -27,6 +27,8 @@ class ModuleComm: public QObject
     Q_PROPERTY(CPGN_EB p_235 MEMBER p_235 NOTIFY p_235_changed)
     Q_PROPERTY(CPGN_E5 p_229 MEMBER p_229 NOTIFY p_229_changed)
     Q_PROPERTY(CPGN_F5 p_245 MEMBER p_245 NOTIFY p_245_changed)
+    Q_PROPERTY(CPGN_F1 p_241 MEMBER p_241 NOTIFY p_241_changed)
+    Q_PROPERTY(CPGN_F2 p_242 MEMBER p_242 NOTIFY p_242_changed)
 
 private:
     explicit ModuleComm(QObject *parent = nullptr);
@@ -73,6 +75,7 @@ public:
     Q_INVOKABLE void modulesSend238();
     Q_INVOKABLE void modulesSend251();
     Q_INVOKABLE void modulesSend252();
+    Q_INVOKABLE void modulesSend242();
     Q_INVOKABLE void modulesSend245();
     Q_INVOKABLE void setHydLiftPGN(int);
 
@@ -88,6 +91,8 @@ public:
     CPGN_EB p_235;
     CPGN_E5 p_229;
     CPGN_F5 p_245;
+    CPGN_F1 p_241;
+    CPGN_F2 p_242;
 
     SIMPLE_BINDABLE_PROPERTY(double,  actualSteerAngleDegrees)
     SIMPLE_BINDABLE_PROPERTY(bool, steerSwitchHigh)
@@ -105,6 +110,8 @@ signals:
     void p_236_changed();
     void p_235_changed();
     void p_229_changed();
+    void p_241_changed();
+    void p_242_changed();
     void p_245_changed();
 
 public slots:

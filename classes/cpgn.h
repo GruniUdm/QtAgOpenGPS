@@ -342,8 +342,9 @@ public:
     }
     void MakeCRC();
 };
+Q_DECLARE_METATYPE(CPGN_F5)
 
-//Machine Config
+//RateControl Config
 class CPGN_F2
 {
     Q_GADGET
@@ -369,6 +370,7 @@ public:
     }
     void MakeCRC();
 };
+Q_DECLARE_METATYPE(CPGN_F2)
 
 //Data to RateControl
 class CPGN_F1
@@ -394,5 +396,6 @@ public:
     }
     void MakeCRC();
 };
+Q_DECLARE_METATYPE(CPGN_F1)
 
 #endif // CPGN_H

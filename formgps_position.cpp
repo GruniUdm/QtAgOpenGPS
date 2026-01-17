@@ -2940,6 +2940,10 @@ void FormGPS::onMachineDataReady(const PGNParser::ParsedData& data)
 void FormGPS::onBlockageDataReady(const PGNParser::ParsedData& data)
 {
 }
+
+void FormGPS::onRateControlDataReady(const PGNParser::ParsedData& data)
+{
+}
 // Phase 6.0.24: GPS timer callback - UpdateFixPosition() at 40 Hz fixed rate
 void FormGPS::onGPSTimerTimeout()
 {

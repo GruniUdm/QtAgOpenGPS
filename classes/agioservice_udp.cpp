@@ -433,6 +433,9 @@ void AgIOService::onUdpDataReady()
                 if (parsedData.pgnNumber == 211) {
                     if (!imuConnected()) setImuConnected(true);
                 }
+                if (parsedData.pgnNumber == 122) {
+                    if (!rateControlConnected()) setRateControlConnected(true);
+                }
                 if (parsedData.pgnNumber == 123) {
                     if (!machineConnected()) setMachineConnected(true);
                 }
@@ -492,6 +495,10 @@ void AgIOService::onUdpDataReady()
                     break;
                 case 244:  // Blockage Data
                     emit blockageDataReady(parsedData);
+                    break;
+
+                case 240:  // RateControl Data
+                    emit rateControlDataReady(parsedData);
                     break;
 
                 case 212:  // IMU disconnect sentinel
@@ -1466,6 +1473,7 @@ void AgIOService::doTraffic()
         if (m_traffic) {
             m_traffic->setHelloFromMachine(99);
             m_traffic->setHelloFromBlockage(99);
+            m_traffic->setHelloFromRateControl(99);
             m_traffic->setHelloFromAutoSteer(99);
             m_traffic->setHelloFromIMU(99);
             m_traffic->setCntrUDPOut(0);
@@ -1481,6 +1489,7 @@ void AgIOService::doTraffic()
 
     m_localCntrMachine++;
     m_localCntrBlockage++;
+    m_localCntrRateControl++;
     m_localCntrSteer++;
     m_localCntrIMU++;
 
@@ -1520,6 +1529,7 @@ void AgIOService::doTraffic()
     if (m_traffic) {
         m_traffic->setHelloFromMachine(m_localCntrMachine);
         m_traffic->setHelloFromBlockage(m_localCntrBlockage);
+        m_traffic->setHelloFromRateControl(m_localCntrRateControl);
         m_traffic->setHelloFromAutoSteer(m_localCntrSteer);
         m_traffic->setHelloFromIMU(m_localCntrIMU);
         m_traffic->setCntrUDPOut(m_localCntrUDPOut);
@@ -1535,11 +1545,13 @@ void AgIOService::doTraffic()
 
     bool machineConnected = (m_localCntrMachine < 3);
     bool blockageConnected = (m_localCntrBlockage < 10);
+    bool rateControlConnected = (m_localCntrRateControl < 10);
     bool steerConnected = (m_localCntrSteer < 3);
     bool imuConnected = (m_localCntrIMU < 3);
 
     static bool lastMachineConnected = false;
     static bool lastBlockageConnected = false;
+    static bool lastRateControlConnected = false;
     static bool lastSteerConnected = false;
     static bool lastIMUConnected = false;
 
@@ -1554,6 +1566,12 @@ void AgIOService::doTraffic()
         setBlockageConnected(blockageConnected);
         lastBlockageConnected = blockageConnected;
         qCDebug(agioservice) << "Blockage module:" << (blockageConnected ? "CONNECTED" : "DISCONNECTED");
+    }
+    if (rateControlConnected != lastRateControlConnected) {
+        //emit moduleMachineStatusChanged(machineConnected);
+        setRateControlConnected(rateControlConnected);
+        lastRateControlConnected = rateControlConnected;
+        qCDebug(agioservice) << "RateControl module:" << (rateControlConnected ? "CONNECTED" : "DISCONNECTED");
     }
     if (steerConnected != lastSteerConnected) {
         emit moduleSteerStatusChanged(steerConnected);
@@ -1613,6 +1631,13 @@ void AgIOService::processHelloMessage(const QByteArray& data)
             }
             break;
 
+        case 122:
+            if (m_localCntrRateControl != 0) {
+                m_localCntrRateControl = 0;
+                qCDebug(agioservice) << "RC scan reply - counter reset";
+            }
+            break;
+
         default:
             return;
         }
@@ -1627,6 +1652,13 @@ void AgIOService::processHelloMessage(const QByteArray& data)
             if (m_localCntrMachine != 0) {
                 m_localCntrMachine = 0;
                 qDebug() << "Machine hello received - counter reset";
+            }
+            break;
+
+        case 122:
+            if (m_localCntrRateControl != 0) {
+                m_localCntrRateControl = 0;
+                qDebug() << "RateControl hello received - counter reset";
             }
             break;
 

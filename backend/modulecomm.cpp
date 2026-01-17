@@ -195,6 +195,35 @@ void ModuleComm::modulesSend245() {
     }
 }
 
+void ModuleComm::modulesSend242() {
+    //qDebug() << "Sending 242 message to AgIO";
+    // values from settings
+    int set_prod1[8] = {0,10,0,0,100,255,0,0};
+    int set_prod2[8] = {1,10,0,0,100,255,0,0};
+    int set_prod3[8] = {3,10,0,0,100,255,0,0};
+    int set_prod4[8] = {3,10,0,0,100,255,0,0};
+
+    // Массив указателей на массивы
+    int* set_prods[4] = {set_prod1, set_prod2, set_prod3, set_prod4};
+
+    for (int module_index = 0; module_index < 4; module_index++) {
+        int* module_data = set_prods[module_index];
+
+        p_242.pgn[p_242.ID] = module_data[0];
+        p_242.pgn[p_242.KP] = module_data[1];
+        p_242.pgn[p_242.KI] = module_data[2];
+        p_242.pgn[p_242.KD] = module_data[3];
+        p_242.pgn[p_242.MinPWM] = module_data[4];
+        p_242.pgn[p_242.MaxPWM] = module_data[5];
+        p_242.pgn[p_242.PIDScale] = module_data[6];
+        p_242.pgn[p_242.Command] = module_data[7];
+
+        //qDebug() << "RC Module " << module_index << ": " << p_242.pgn;
+
+        AgIOService::instance()->sendPgn(p_242.pgn);
+    }
+}
+
 void ModuleComm::setHydLiftPGN(int value) {
     p_239.pgn[CPGN_EF::hydLift] = value;
     emit p_239_changed();
