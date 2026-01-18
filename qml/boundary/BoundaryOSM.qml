@@ -82,7 +82,7 @@ Popup{
         var coord = mapItem.toCoordinate(Qt.point(mouseX, mouseY));
         if (!coord || !isFinite(coord.latitude) || !isFinite(coord.longitude)) return;
 
-        aog.addBoundaryOSMPoint(Number(coord.latitude), Number(coord.longitude));
+        BoundaryInterface.addBoundaryOSMPoint(Number(coord.latitude), Number(coord.longitude));
         pointsModel.append({
                                latitude: coord.latitude,
                                longitude: coord.longitude
