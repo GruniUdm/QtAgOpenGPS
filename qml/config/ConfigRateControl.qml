@@ -24,26 +24,26 @@ Rectangle{
     property var products: [
         {
             id: 0,
-            settings: Settings.rate_Product0,
-            name: Settings.rate_ProductName[0],
+            settings: SettingsManager.rate_confProduct0,
+            name: SettingsManager.rate_productName0,
             pwm: aog.actualRatePWM0
         },
         {
             id: 1,
-            settings: Settings.rate_Product1,
-            name: Settings.rate_ProductName[1],
+            settings: SettingsManager.rate_confProduct1,
+            name: SettingsManager.rate_productName1,
             pwm: aog.actualRatePWM1
         },
         {
             id: 2,
-            settings: Settings.rate_Product2,
-            name: Settings.rate_ProductName[2],
+            settings: SettingsManager.rate_confProduct2,
+            name: SettingsManager.rate_productName2,
             pwm: aog.actualRatePWM2
         },
         {
             id: 3,
-            settings: Settings.rate_Product3,
-            name: Settings.rate_ProductName[3],
+            settings: SettingsManager.rate_confProduct3,
+            name: SettingsManager.rate_productName3,
             pwm: aog.actualRatePWM3
         }
     ]
@@ -97,7 +97,7 @@ Rectangle{
         }
 
         mandatory.visible = false;
-        aog.modules_send_PGN32502();
+        ModuleComm.modulesSend242()
     }
 
     function getCurrentPWM() {
