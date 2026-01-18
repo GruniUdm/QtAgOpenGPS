@@ -288,9 +288,9 @@ Window {
 
             onWheel:(wheel)=>{
                         if (wheel.angleDelta.y > 0) {
-                            aog.zoomIn() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                            Backend.zoomIn() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                         } else if (wheel.angleDelta.y <0 ) {
-                            aog.zoomOut() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                            Backend.zoomOut() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                         }
                     }
 
@@ -417,7 +417,7 @@ Window {
             visible: false
             icon.source: prefix + "/images/ContourPriorityLeft.png"
             iconChecked: prefix + "/images/ContourPriorityRight.png"
-            onClicked: aog.contourPriority(checked) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+            onClicked: Backend.contourPriority(checked) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         }
 
         MainBottomRow{
@@ -640,7 +640,7 @@ Window {
                     id: timer
                     interval: 1000
                     repeat: true
-                    running: aog.rawHz>10?
+                    running: Backend.fixFrame.rawHz>10?
                     onTriggered: timeText.text = Qt.formatTime(new Date(), "HH:mm:ss")
                 }
 
@@ -727,14 +727,14 @@ Window {
                     implicitHeight: 30 * theme.scaleHeight
                     radius: 0
                     icon.source: prefix + "/images/ZoomIn48.png"
-                    onClicked: aog.zoomIn() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    onClicked: Backend.zoomIn() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 }
                 Comp.IconButton{
                     implicitWidth: 30 * theme.scaleWidth
                     implicitHeight: 30 * theme.scaleHeight
                     radius: 0
                     icon.source: prefix + "/images/ZoomOut48.png"
-                    onClicked: aog.zoomOut() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    onClicked: Backend.zoomOut() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 }
             }
         }

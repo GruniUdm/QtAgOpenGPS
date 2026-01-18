@@ -30,7 +30,7 @@ ColumnLayout {
         iconChecked: prefix + "/images/ColorLocked.png"
         buttonText: qsTr("Lock")
         onClicked: {
-            aog.contourLock() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+            Backend.contourLock() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             if (MainWindowState.btnIsContourLocked)
                 isContourLockedByUser = true
         }
@@ -44,7 +44,7 @@ ColumnLayout {
         //     // function onIsBtnAutoSteerOnChanged() {
         //     //     if (!btnContourLock.isContourLockedByUser && btnContour.checked === true){
         //     //         if(btnContourLock.checked !== aog.isBtnAutoSteerOn){
-        //     //             aog.contourLock() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        //     //             Backend.contourLock() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         //     //         }
         //     //     }
         //     // }

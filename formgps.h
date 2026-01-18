@@ -562,11 +562,7 @@ private:
 public:
     // ===== Q_INVOKABLE MODERN ACTIONS - Qt 6.8 Direct QML Calls =====
     // Phase 6.0.20: Modernization of button actions - replace signal/slot with direct calls
-    Q_INVOKABLE void contourLock();
-    Q_INVOKABLE void contourPriority(bool isRight);
     // Batch 9 - 2 actions Snap Track - lines 237-238
-    Q_INVOKABLE void snapSideways(double distance);
-    Q_INVOKABLE void snapToPivot();
     // Batch 10 - 8 actions Modules & Steering - lines 253-266
 
     // Batch 13 - 7 actions Field Management - lines 1826-1832
@@ -583,14 +579,6 @@ public:
     Q_INVOKABLE void addBoundaryOSMPoint(double latitude, double longitude);
 
     // Batch 3 - 8 actions Camera Navigation - lines 201-208
-    Q_INVOKABLE void zoomIn();
-    Q_INVOKABLE void zoomOut();
-    Q_INVOKABLE void tiltDown();
-    Q_INVOKABLE void tiltUp();
-    Q_INVOKABLE void view2D();
-    Q_INVOKABLE void view3D();
-    Q_INVOKABLE void normal2D();
-    Q_INVOKABLE void normal3D();
     // Batch 4 - 2 actions Settings - lines 227-228
     Q_INVOKABLE void settingsReload();
     Q_INVOKABLE void settingsSave();
@@ -745,28 +733,23 @@ public slots:
     //headland creation
 
     void resetDirection();
-    //left column
-    void onBtnAgIO_clicked();
     //right column
-    void onBtnContourPriority_clicked(bool isRight);
-    void onBtnContourLock_clicked();
+    void contourPriority(bool isRight);
     //bottom row
     void onBtnTramlines_clicked();
-    void onBtnSnapSideways_clicked(double distance);
-    void onBtnSnapToPivot_clicked();
-    //don't need ablineedit
 
+    void snapSideways(double distance);
+    void snapToPivot();
 
     //displaybuttons.qml
-    void onBtnTiltDown_clicked();
-    void onBtnTiltUp_clicked();
-    void onBtn2D_clicked();
-    void onBtn3D_clicked();
-    void onBtnN2D_clicked();
-    void onBtnN3D_clicked();
-
-    void onBtnZoomIn_clicked();
-    void onBtnZoomOut_clicked();
+    void zoomIn();
+    void zoomOut();
+    void tiltDown();
+    void tiltUp();
+    void view2D();
+    void view3D();
+    void normal2D();
+    void normal3D();
 
     void SwapDirection();
     void turnOffBoundAlarm();

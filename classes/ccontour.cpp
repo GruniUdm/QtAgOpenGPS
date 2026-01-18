@@ -23,7 +23,7 @@ CContour::CContour(QObject *parent)
     ptList = QSharedPointer<QVector<Vec3>>(new QVector<Vec3>());
 }
 
-void CContour::SetLockToLine()
+void CContour::setLockToLine()
 {
     if (ctList.count() > 5) {
         bool currentLocked = MainWindowState::instance()->btnIsContourLocked();
