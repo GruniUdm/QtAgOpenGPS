@@ -384,6 +384,7 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/fixframe.h
     SOURCES backend/modulecomm.h backend/modulecomm.cpp
     SOURCES backend/blockage.h backend/blockage.cpp
+    SOURCES backend/ratecontrol.h backend/ratecontrol.cpp
     SOURCES backend/steerconfig.h backend/steerconfig.cpp
     SOURCES models/recordedpathmodel.h models/recordedpathmodel.cpp
     SOURCES models/fencelinemodel.h models/fencelinemodel.cpp

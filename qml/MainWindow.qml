@@ -604,6 +604,12 @@ Window {
                     onClicked: blockageRows.viewSwitch = !blockageRows.viewSwitch
                     }
             }
+            RateData{ //window that displays Machine data
+                id: rateData
+                //anchors.left: parent.left
+                //anchors.verticalCenter: parent.verticalCenter
+                visible: true//(aog.product0stat && Settings.rate_Product0[2]>0) ? true : false
+            }
 
             SimController{
                 id: simBarRect
