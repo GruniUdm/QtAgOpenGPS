@@ -6,10 +6,10 @@
 #include "settingsmanager.h"
 
 // Generated implementations with Qt6 + QSettings persistence
-// Total implementations: 387
+// Total implementations: 395
 
 
-// QString Implementations (46 properties)
+// QString Implementations (50 properties)
 SETTINGS_PROPERTY_STRING_IMPL(menu_language, "menu/language", "en", setMenu_language)
 SETTINGS_PROPERTY_STRING_IMPL(brand_HBrand, "brand/HBrand", "AgOpenGPS", setBrand_HBrand)
 SETTINGS_PROPERTY_STRING_IMPL(brand_TBrand, "brand/TBrand", "AGOpenGPS", setBrand_TBrand)
@@ -56,6 +56,10 @@ SETTINGS_PROPERTY_STRING_IMPL(port_portNameRadio, "agio/portNameRadio", "", setP
 SETTINGS_PROPERTY_STRING_IMPL(port_portNameRtcm, "agio/portNameRtcm", "", setPort_portNameRtcm)
 SETTINGS_PROPERTY_STRING_IMPL(port_portNameTool, "agio/portNameTool", "", setPort_portNameTool)
 SETTINGS_PROPERTY_STRING_IMPL(ip_localAOG, "agio/localAOGIP", "127.0.0.1", setIp_localAOG)
+SETTINGS_PROPERTY_STRING_IMPL(rate_productName0, "rate/productName0", "0", setRate_productName0)
+SETTINGS_PROPERTY_STRING_IMPL(rate_productName1, "rate/productName1", "1", setRate_productName1)
+SETTINGS_PROPERTY_STRING_IMPL(rate_productName2, "rate/productName2", "2", setRate_productName2)
+SETTINGS_PROPERTY_STRING_IMPL(rate_productName3, "rate/productName3", "3", setRate_productName3)
 
 
 // bool Implementations (131 properties)
@@ -84,7 +88,7 @@ SETTINGS_PROPERTY_IMPL(bool, display_isTermsAccepted, "display/isTermsAccepted",
 SETTINGS_PROPERTY_IMPL(bool, display_isTextureOn, "display/isTextureOn", true, setDisplay_isTextureOn)
 SETTINGS_PROPERTY_IMPL(bool, display_isVehicleImage, "display/isVehicleImage", true, setDisplay_isVehicleImage)
 SETTINGS_PROPERTY_IMPL(bool, display_showBack, "display/showBack", false, setDisplay_showBack)
-SETTINGS_PROPERTY_IMPL(bool, display_topTrackNum, "display/topTrackNum", false, setDisplay_topTrackNum)
+SETTINGS_PROPERTY_IMPL(bool, display_topTrackNum, "display/topTrackNum", true, setDisplay_topTrackNum)
 SETTINGS_PROPERTY_IMPL(bool, display_useTrackZero, "display/useTrackZero", false, setDisplay_useTrackZero)
 SETTINGS_PROPERTY_IMPL(bool, f_isRemoteWorkSystemOn, "f/isRemoteWorkSystemOn", false, setF_isRemoteWorkSystemOn)
 SETTINGS_PROPERTY_IMPL(bool, f_isSteerWorkSwitchEnabled, "f/isSteerWorkSwitchEnabled", false, setF_isSteerWorkSwitchEnabled)
@@ -414,7 +418,7 @@ SETTINGS_PROPERTY_RECT_IMPL(window_bingMapSize, "window/bingMapSize", QRect(0, 0
 SETTINGS_PROPERTY_RECT_IMPL(window_formNudgeLocation, "window/formNudgeLocation", QRect(0, 0, 200, 200), setWindow_formNudgeLocation)
 
 
-// QVector<int> Implementations (2 properties)
+// QVector<int> Implementations (6 properties)
 QVector<int> SettingsManager::relay_pinConfig() const {
     return m_relay_pinConfig.value();
 }
@@ -436,6 +440,50 @@ void SettingsManager::setTool_zones(const QVector<int>& value) {
 }
 QBindable<QVector<int>> SettingsManager::bindabletool_zones() {
     return &m_tool_zones;
+}
+QVector<int> SettingsManager::rate_confProduct0() const {
+    return m_rate_confProduct0.value();
+}
+void SettingsManager::setRate_confProduct0(const QVector<int>& value) {
+    m_rate_confProduct0.setValue(value);
+    m_qsettings->setValue("rate/confProduct0", QVariant::fromValue(value));
+    m_qsettings->sync();
+}
+QBindable<QVector<int>> SettingsManager::bindablerate_confProduct0() {
+    return &m_rate_confProduct0;
+}
+QVector<int> SettingsManager::rate_confProduct1() const {
+    return m_rate_confProduct1.value();
+}
+void SettingsManager::setRate_confProduct1(const QVector<int>& value) {
+    m_rate_confProduct1.setValue(value);
+    m_qsettings->setValue("rate/confProduct1", QVariant::fromValue(value));
+    m_qsettings->sync();
+}
+QBindable<QVector<int>> SettingsManager::bindablerate_confProduct1() {
+    return &m_rate_confProduct1;
+}
+QVector<int> SettingsManager::rate_confProduct2() const {
+    return m_rate_confProduct2.value();
+}
+void SettingsManager::setRate_confProduct2(const QVector<int>& value) {
+    m_rate_confProduct2.setValue(value);
+    m_qsettings->setValue("rate/confProduct2", QVariant::fromValue(value));
+    m_qsettings->sync();
+}
+QBindable<QVector<int>> SettingsManager::bindablerate_confProduct2() {
+    return &m_rate_confProduct2;
+}
+QVector<int> SettingsManager::rate_confProduct3() const {
+    return m_rate_confProduct3.value();
+}
+void SettingsManager::setRate_confProduct3(const QVector<int>& value) {
+    m_rate_confProduct3.setValue(value);
+    m_qsettings->setValue("rate/confProduct3", QVariant::fromValue(value));
+    m_qsettings->sync();
+}
+QBindable<QVector<int>> SettingsManager::bindablerate_confProduct3() {
+    return &m_rate_confProduct3;
 }
 
 
