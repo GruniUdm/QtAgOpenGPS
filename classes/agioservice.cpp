@@ -432,6 +432,7 @@ QString AgIOService::getProtocolDescription(const QString& protocolId) const
         {"PGN235", "Section Dimensions IN"},
         {"PGN237", "Machine Status OUT"},
         {"PGN229", "64 Sections IN"},
+        {"PGN122", "Hello RateControl OUT"},
         {"PGN123", "Hello Machine OUT"},
         {"PGN244", "Blockage Data IN"},
         {"PGN240", "RateControl Data IN"},

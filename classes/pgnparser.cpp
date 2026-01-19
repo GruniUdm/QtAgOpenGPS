@@ -1221,7 +1221,7 @@ PGNParser::ParsedData PGNParser::parsePGN122(const QByteArray& data) {
     }
 
     // Validate source and PGN
-    if ((unsigned char)data[2] != 0x79 || (unsigned char)data[3] != 0x7A) {
+    if ((unsigned char)data[2] != 0x7B || (unsigned char)data[3] != 0x7A) {
         return result;
     }
 

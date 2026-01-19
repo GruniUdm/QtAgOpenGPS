@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 // Rate control source code used from https://github.com/SK21/AOG_RC
-#include "RateControl.h"
+#include "ratecontrol.h"
 #include <QDebug>
 #include "agioservice.h"
 #include "pgnparser.h"

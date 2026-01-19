@@ -193,7 +193,7 @@ import "components" as Comp
                 Layout.alignment: Qt.AlignCenter
                 implicitWidth: theme.buttonSize
                 height:parent.height
-                visible: true//(aog.product0stat && Settings.rate_Product0[2]>0)
+                visible: AgIOService.rateControlConnected
                 onClicked: {
                     rateData.visible = !rateData.visible
                     //gpsData.visible = false
