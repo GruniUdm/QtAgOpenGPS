@@ -121,17 +121,39 @@ signals:
     void aogRendererChanged();
     void fixFrameChanged();
 
+    //These are essentially commands coming from QML
     void timedMessage(int timeout, QString s1, QString s2);
 
     void resetTool();
     void resetDirection();
+
+    //these can be accessed directly via Backend.yt.manualUTurn() etc
+    //or we can use them and make a connection through to yt
     void manualUTurn(bool right);
     void lateral(bool right);
+    void swapAutoYouTurnDirection();
+    void resetCreatedYouTurn();
+    void toggleAutoYouTurn();
+    void toggleYouSkip();
 
     void deleteAppliedArea();
 
-    void swapAutoYouTurnDirection();
-    void resetCreatedYouTurn();
+    void centerOgl();
+
+    void contourLock();
+    void contourPriority(bool isRight);
+
+    void snapToPivot();
+    void snapSideways(double distance);
+
+    void zoomIn();
+    void zoomOut();
+    void tiltDown();
+    void tiltUp();
+    void view2D();
+    void view3D();
+    void normal2D();
+    void normal3D();
 
 private:
 

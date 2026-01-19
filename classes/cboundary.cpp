@@ -6,6 +6,12 @@
 #include "backend.h"
 #include "glm.h"
 #include "cvehicle.h"
+#include "siminterface.h"
+#include "QLoggingCategory"
+
+Q_LOGGING_CATEGORY (cboundary_log, "cboundary.qtagopengps")
+#define QDEBUG qDebug(cboundary_log)
+
 
 //this is defined in formgps_saveopen.cpp currently.
 QString caseInsensitiveFilename(const QString &directory, const QString &filename);
@@ -27,6 +33,7 @@ CBoundary::CBoundary(QObject *parent) : QObject(parent)
     connect(BoundaryInterface::instance(), &BoundaryInterface::deleteBoundary, this, &CBoundary::deleteBoundary);
     connect(BoundaryInterface::instance(), &BoundaryInterface::setDriveThrough, this, &CBoundary::setDriveThrough);
     connect(BoundaryInterface::instance(), &BoundaryInterface::deleteAll, this, &CBoundary::deleteAll);
+    connect(BoundaryInterface::instance(), &BoundaryInterface::loadBoundaryFromKML, this, &CBoundary::loadBoundaryFromKML);
 }
 
 void CBoundary::loadSettings() {
@@ -457,4 +464,145 @@ void CBoundary::deleteAll() {
     BoundaryInterface::instance()->set_count(0);
     updateList();
 
+}
+
+void CBoundary::loadBoundaryFromKML(QString filename) {
+    CNMEA &pn = *Backend::instance()->pn();
+
+    qDebug(cboundary_log) << "Opening KML file:" << filename;
+    QUrl fileUrl(filename);
+    QString localPath = fileUrl.toLocalFile();
+
+    double totalLon = 0;
+    double totalLat = 0;
+
+    QFile file(localPath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Error opening file:" << file.errorString();
+        return;
+    }
+
+    QTextStream stream(&file);
+    QString line;
+    QString coordinates;
+
+    while (!stream.atEnd()) {
+        line = stream.readLine().trimmed();
+
+        int startIndex = line.indexOf(QLatin1String("<coordinates>"));
+        if (startIndex != -1) {
+            // Found opening tag
+            while (true) {
+                int endIndex = line.indexOf(QLatin1String("</coordinates>"));
+                if (endIndex == -1) {
+                    if (startIndex == -1) {
+                        coordinates += line;
+                    } else {
+                        coordinates += QStringView(line).mid(startIndex + 13); // Skip "<coordinates>"
+                    }
+                } else {
+                    if (startIndex == -1) {
+                        coordinates += QStringView(line).left(endIndex);
+                    } else {
+                        coordinates += QStringView(line).mid(startIndex + 13, endIndex - (startIndex + 13));
+                    }
+                    break;
+                }
+
+                if (stream.atEnd()) break;
+                line = stream.readLine().trimmed();
+                startIndex = -1; // reset for subsequent lines
+            }
+
+            // Split coordinates by whitespace
+            QStringList numberSets = coordinates.split(QRegularExpression(QStringLiteral("\\s+")),
+                                                       Qt::SkipEmptyParts);
+
+            if (numberSets.size() > 2) {
+                double latK = 0.0, lonK = 0.0;
+
+                CBoundaryList New;
+
+                for (const QString& coord : std::as_const(numberSets)) {
+                    if (coord.length() < 3) continue;
+
+                    qDebug(cboundary_log) << coord;
+
+                    int comma1 = coord.indexOf(QLatin1Char(','));
+                    int comma2 = coord.indexOf(QLatin1Char(','), comma1 + 1);
+
+                    if (comma1 == -1 || comma2 == -1) continue;
+
+                    QString lonStr = coord.left(comma1);
+                    QString latStr = coord.mid(comma1 + 1, comma2 - comma1 - 1);
+
+                    bool ok1 = false, ok2 = false;
+                    double lonVal = lonStr.toDouble(&ok1);
+                    double latVal = latStr.toDouble(&ok2);
+
+                    if (!ok1 || !ok2) continue;
+
+                    latK = latVal;
+                    lonK = lonVal;
+                    totalLon += lonVal;
+                    totalLat += latVal;
+
+
+                    double easting = 0.0, northing = 0.0;
+                    pn.ConvertWGS84ToLocal(latK, lonK, northing, easting);
+                    Vec3 temp(easting, northing, 0);
+                    New.fenceLine.append(temp);
+                }
+
+                totalLon /= numberSets.size();
+                totalLat /= numberSets.size();
+
+                // Build the boundary: clockwise for outer, counter-clockwise for inner
+                New.CalculateFenceArea(bndList.count());
+                New.FixFenceLine(bndList.count());
+                bndList.append(New);
+
+            } else {
+                qWarning() << "Error reading KML: Too few coordinate points.";
+                file.close();
+                return;
+            }
+
+            break; // Process only the first <coordinates> block
+        }
+    }
+
+    file.close();
+
+    if (bndList.count() < 2) {
+        //If we just added an outer boundary, reset latStart and lonStart,
+        //and also the simulator to where this boundary is located
+
+        pn.setLatStart(totalLat);
+        pn.setLonStart(totalLon);
+
+        if (SimInterface::instance()->isRunning())
+        {
+            pn.latitude = pn.latStart();
+            pn.longitude = pn.lonStart();
+
+            SettingsManager::instance()->setGps_simLatitude(pn.latStart());
+            SettingsManager::instance()->setGps_simLongitude(pn.lonStart());
+            SimInterface::instance()->reset();
+        }
+        // Phase 6.3.1: Use PropertyWrapper for safe QObject access
+        pn.SetLocalMetersPerDegree();
+        stop();
+    }
+}
+
+void CBoundary::addBoundaryOSMPoint(double latitude, double longitude) {
+    qDebug(cboundary_log)<<"point.easting";
+    double northing;
+    double easting;
+    Backend::instance()->pn()->ConvertWGS84ToLocal(latitude, longitude, northing, easting);
+    //save the north & east as previous
+    Vec3 point(easting,northing,0);
+    bndBeingMadePts.append(point);
+    calculateArea();
 }

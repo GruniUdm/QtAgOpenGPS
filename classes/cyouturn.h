@@ -294,6 +294,12 @@ public slots:
     void ResetCreatedYouTurn();
     void swapAutoYouTurnDirection();
 
+    void manualUTurn(bool right);
+    void lateral(bool right);
+
+    void toggleAutoYouTurn();
+    void toggleYouSkip();
+
 };
 
 #endif // YOUTURN_H

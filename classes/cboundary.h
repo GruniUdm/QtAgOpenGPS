@@ -108,6 +108,10 @@ public slots:
     void setDriveThrough(int which_boundary, bool drive_thru);
     void deleteAll();
 
+    void loadBoundaryFromKML(QString filename);
+    void addBoundaryOSMPoint(double latitude, double longitude);
+
+
 signals:
     void TimedMessage(int timeout, QString title, QString message);
     void soundHydLiftChange(bool);

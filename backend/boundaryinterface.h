@@ -55,6 +55,10 @@ signals:
     void setDriveThrough(int id, bool drive_thru);
     void deleteAll();
 
+    void loadBoundaryFromKML(QString filename);
+    void addBoundaryOSMPoint(double latitude, double longitude);
+
+
 private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(BoundaryInterface, bool, m_isOutOfBounds, false, &BoundaryInterface::isOutOfBoundsChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(BoundaryInterface, double, m_createBndOffset, 0, &BoundaryInterface::createBndOffsetChanged)

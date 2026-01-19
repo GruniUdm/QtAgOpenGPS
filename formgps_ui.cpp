@@ -252,19 +252,32 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     timerGPS.start(100);  // 100ms = 10 Hz (synchronized with NMEA data rate)
 
     connect(Backend::instance()->pn(), &CNMEA::checkZoomWorldGrid, &worldGrid, &CWorldGrid::checkZoomWorldGrid, Qt::QueuedConnection);
+
     connect(Backend::instance(), &Backend::resetTool, &tool, &CTool::resetTool);
     connect(Backend::instance(), &Backend::resetDirection, this, &FormGPS::resetDirection);
-    connect(Backend::instance(), &Backend::manualUTurn, this, &FormGPS::manualUTurn);
-    connect(Backend::instance(), &Backend::lateral, this, &FormGPS::lateral);
-    connect(Backend::instance(), &Backend::resetCreatedYouTurn, &yt, &CYouTurn::ResetCreatedYouTurn);
-    connect(Backend::instance(), &Backend::swapAutoYouTurnDirection, &yt, &CYouTurn::swapAutoYouTurnDirection);
+
+    connect(Backend::instance(), &Backend::centerOgl, this, &FormGPS::centerOgl);
+
+    connect(Backend::instance(), &Backend::contourLock, &ct, &CContour::setLockToLine);
+    connect(Backend::instance(), &Backend::contourPriority, this, &FormGPS::contourPriority);
+
+    connect(Backend::instance(), &Backend::snapToPivot, this, &FormGPS::snapToPivot);
+    connect(Backend::instance(), &Backend::snapSideways, this, &FormGPS::snapSideways);
+
+    connect(Backend::instance(), &Backend::zoomIn, this, &FormGPS::zoomIn);
+    connect(Backend::instance(), &Backend::zoomOut, this, &FormGPS::zoomOut);
+    connect(Backend::instance(), &Backend::tiltDown, this, &FormGPS::tiltDown);
+    connect(Backend::instance(), &Backend::tiltUp, this, &FormGPS::tiltUp);
+    connect(Backend::instance(), &Backend::view2D, this, &FormGPS::view2D);
+    connect(Backend::instance(), &Backend::view3D, this, &FormGPS::view3D);
+    connect(Backend::instance(), &Backend::normal2D, this, &FormGPS::normal2D);
+    connect(Backend::instance(), &Backend::normal3D, this, &FormGPS::normal3D);
 
 
     connect(&recPath, &CRecordedPath::stoppedDriving, this, &FormGPS::onStoppedDriving, Qt::QueuedConnection);
 
     connect(&bnd, &CBoundary::saveBoundaryRequested, this, &FormGPS::FileSaveBoundary, Qt::DirectConnection);
 
-    connect(&track, &CTrack::resetCreatedYouTurn, &yt, &CYouTurn::ResetCreatedYouTurn, Qt::QueuedConnection);
     connect(&track, &CTrack::saveTracks, this, &FormGPS::FileSaveTracks, Qt::QueuedConnection);
 
     loadSettings(); //load settings and properties
@@ -301,7 +314,8 @@ void FormGPS::onGLControl_dragged(int pressX, int pressY, int mouseX, int mouseY
         QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
     }
 }
-void FormGPS::onBtnCenterOgl_clicked(){
+
+void FormGPS::centerOgl() {
     QDEBUG<<"center ogl";
     camera.panX = 0;
     camera.panY = 0;
@@ -331,67 +345,9 @@ void FormGPS::onGLControl_clicked(const QVariant &event)
     }
 }
 
-void FormGPS::onBtnAgIO_clicked(){
-    QDEBUG<<"AgIO";
-}
 
-void FormGPS::contourLock() {
-    // Modern implementation - same logic as onBtnContourLock_clicked()
-    onBtnContourLock_clicked();
-}
-
-void FormGPS::contourPriority(bool isRight) {
-    // Modern implementation - same logic as onBtnContourPriority_clicked(bool)
-    onBtnContourPriority_clicked(isRight);
-}
-
-// ===== BATCH 7 ACTIONS - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::youSkip() {
-    onBtnYouSkip_clicked();
-}
-
-void FormGPS::centerOgl() {
-    onBtnCenterOgl_clicked();
-}
-
-// ===== BATCH 2 - 7 ACTIONS You-Turn Navigation - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::autoYouTurn() {
-    onBtnAutoYouTurn_clicked();
-}
 
 // ===== BATCH 3 - 8 ACTIONS Camera Navigation - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::zoomIn() {
-    onBtnZoomIn_clicked();
-}
-
-void FormGPS::zoomOut() {
-    onBtnZoomOut_clicked();
-}
-
-void FormGPS::tiltDown() {
-    onBtnTiltDown_clicked();
-}
-
-void FormGPS::tiltUp() {
-    onBtnTiltUp_clicked();
-}
-
-void FormGPS::view2D() {
-    onBtn2D_clicked();
-}
-
-void FormGPS::view3D() {
-    onBtn3D_clicked();
-}
-
-void FormGPS::normal2D() {
-    onBtnN2D_clicked();
-}
-
-void FormGPS::normal3D() {
-    onBtnN3D_clicked();
-}
-
 // ===== BATCH 4 - 2 ACTIONS Settings - Qt 6.8 Q_INVOKABLE Implementation =====
 void FormGPS::settingsReload() {
     on_settings_reload();
@@ -402,16 +358,6 @@ void FormGPS::settingsSave() {
 }
 
 // ===== BATCH 9 - 2 ACTIONS Snap Track - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::snapSideways(double distance) {
-    // Modern implementation - same logic as onBtnSnapSideways_clicked(double)
-    onBtnSnapSideways_clicked(distance);
-}
-
-void FormGPS::snapToPivot() {
-    // Modern implementation - same logic as onBtnSnapToPivot_clicked()
-    onBtnSnapToPivot_clicked();
-}
-
 // ===== BATCH 13 - 7 ACTIONS Field Management - Qt 6.8 Q_INVOKABLE Implementation =====
 void FormGPS::fieldUpdateList() {
     // Modern implementation - same logic as field_update_list()
@@ -505,30 +451,6 @@ void FormGPS::recordedPathClear() {
 void FormGPS::onBtnTramlines_clicked(){
     QDEBUG<<"tramline";
 }
-void FormGPS::onBtnYouSkip_clicked(){
-    BACKEND_YT(yt);
-
-    QDEBUG<<"you skip clicked";
-    yt.alternateSkips = yt.alternateSkips+1;
-    if (yt.alternateSkips > 3) yt.alternateSkips = 0;
-    QDEBUG<<"you skip clicked"<<yt.alternateSkips;
-    if (yt.alternateSkips > 0)
-    {
-        //btnYouSkipEnable.Image = Resources.YouSkipOn;
-        //make sure at least 1
-        if (yt.rowSkipsWidth < 2)
-        {
-            yt.rowSkipsWidth = 2;
-            //cboxpRowWidth.Text = "1";
-        }
-        yt.Set_Alternate_skips();
-        yt.ResetCreatedYouTurn();
-
-        //if (!MainWindowState::instance()->isYouTurnBtnOn()) btnAutoYouTurn.PerformClick();
-    }
-
-}
-
 
 void FormGPS::resetDirection(){
     QDEBUG<<"reset Direction";
@@ -541,31 +463,25 @@ void FormGPS::resetDirection(){
     TimedMessageBox(2000, "Reset Direction", "Drive Forward > 1.5 kmh");
 }
 
-void FormGPS::onBtnContourPriority_clicked(bool isRight){
-
-    ct.isRightPriority = isRight;
+void FormGPS::contourPriority(bool isRight) {
+#warning ct.isRightPriority is never used anywhere.  bug?
+    ct.set_isRightPriority (isRight);
     QDEBUG << "Contour isRight: " << isRight;
 }
 
-void FormGPS::onBtnContourLock_clicked(){
-    ct.SetLockToLine();
-}
-
-void FormGPS::onBtnTiltDown_clicked(){
-
+void FormGPS::tiltDown() {
     if (camera.camPitch > -59) camera.camPitch = -60;
     camera.camPitch += ((camera.camPitch * 0.012) - 1);
     if (camera.camPitch < -76) camera.camPitch = -76;
 
     lastHeight = -1; //redraw the sky
     SettingsManager::instance()->setDisplay_camPitch(camera.camPitch);
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
     if (openGLControl) {
         QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
     }
 }
 
-void FormGPS::onBtnTiltUp_clicked(){
+void FormGPS::tiltUp() {
     double camPitch = SettingsManager::instance()->display_camPitch();
 
     lastHeight = -1; //redraw the sky
@@ -579,28 +495,31 @@ void FormGPS::onBtnTiltUp_clicked(){
     }
 }
 
-void FormGPS::onBtn2D_clicked(){
+void FormGPS::view2D() {
     camera.camFollowing = true;
     camera.camPitch = 0;
     navPanelCounter = 0;
 }
 
-void FormGPS::onBtn3D_clicked(){
+void FormGPS::view3D() {
     camera.camFollowing = true;
     camera.camPitch = -65;
     navPanelCounter = 0;
 }
-void FormGPS::onBtnN2D_clicked(){
+
+void FormGPS::normal2D() {
     camera.camFollowing = false;
     camera.camPitch = 0;
     navPanelCounter = 0;
 }
-void FormGPS::onBtnN3D_clicked(){
+
+void FormGPS::normal3D() {
     camera.camPitch = -65;
     camera.camFollowing = false;
     navPanelCounter = 0;
 }
-void FormGPS::onBtnZoomIn_clicked(){
+
+void FormGPS::zoomIn() {
     if (camera.zoomValue <= 20) {
         if ((camera.zoomValue -= camera.zoomValue * 0.1) < 3.0)
             camera.zoomValue = 3.0;
@@ -611,13 +530,12 @@ void FormGPS::onBtnZoomIn_clicked(){
     camera.camSetDistance = camera.zoomValue * camera.zoomValue * -1;
     camera.SetZoom();
     //TODO save zoom to properties
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
     if (openGLControl) {
         QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
     }
 }
 
-void FormGPS::onBtnZoomOut_clicked(){
+void FormGPS::zoomOut() {
     if (camera.zoomValue <= 20) camera.zoomValue += camera.zoomValue * 0.1;
     else camera.zoomValue += camera.zoomValue * 0.05;
     if (camera.zoomValue > 220) camera.zoomValue = 220;
@@ -625,79 +543,11 @@ void FormGPS::onBtnZoomOut_clicked(){
     camera.SetZoom();
 
     //todo save to properties
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
     if (openGLControl) {
         QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
     }
 }
 
-void FormGPS::onBtnAutoYouTurn_clicked(){
-    BACKEND_YT(yt);
-
-    QDEBUG<<"activate youturn";
-
-
-    //TODO: expose properties to QML, and expose methods to QML
-    //from the CYouTurn class as a singleton?
-    yt.loadSettings();
-    yt.isTurnCreationTooClose = false;
-
-//     if (bnd.bndArr.Count == 0)    this needs to be moved to qml
-//     {
-//         TimedMessageBox(2000, gStr.gsNoBoundary, gStr.gsCreateABoundaryFirst);
-//         return;
-//     }
-
-     if (!MainWindowState::instance()->isYouTurnBtnOn())
-     {
-         //new direction so reset where to put turn diagnostic
-         yt.ResetCreatedYouTurn();
-
-         if (!MainWindowState::instance()->isBtnAutoSteerOn()) return;
-         MainWindowState::instance()->set_isYouTurnBtnOn(true);
-         yt.isTurnCreationTooClose = false;
-         yt.isTurnCreationNotCrossingError = false;
-         yt.ResetYouTurn();
-         //mc.autoSteerData[mc.sdX] = 0;
-//         mc.machineControlData[mc.cnYouTurn] = 0;
-//         btnAutoYouTurn.Image = Properties.Resources.Youturn80;
-     }
-     else
-     {
-         MainWindowState::instance()->set_isYouTurnBtnOn(false);
-//         yt.rowSkipsWidth = Properties.Vehicle.Default.set_youSkipWidth;
-//         btnAutoYouTurn.Image = Properties.Resources.YouTurnNo;
-         yt.ResetYouTurn();
-
-         //new direction so reset where to put turn diagnostic
-         yt.ResetCreatedYouTurn();
-
-         //mc.autoSteerData[mc.sdX] = 0;commented in aog
-//         mc.machineControlData[mc.cnYouTurn] = 0;
-     }
-}
-
- void FormGPS::manualUTurn(bool right)
-{
-    BACKEND_TRACK(track);
-    BACKEND_YT(yt);
-
-    if (yt.isYouTurnTriggered) {
-        yt.ResetYouTurn();
-    }else {
-        yt.loadSettings();
-        yt.isYouTurnTriggered = true;
-        yt.BuildManualYouTurn(right, true, track);
-   }
-}
-
-void FormGPS::lateral(bool right)
-{
-    BACKEND_TRACK(track);
-    BACKEND_YT(yt);
-
-    yt.BuildManualYouLateral(right, track);
-}
 
 void FormGPS::TimedMessageBox(int timeout, QString s1, QString s2)
 {
@@ -808,13 +658,15 @@ void FormGPS::headlines_save() {
 }
 
 //Track Snap buttons
-void FormGPS::onBtnSnapToPivot_clicked(){
+void FormGPS::snapToPivot() {
+#warning snapToPivot not yet implemented
+    //TODO
     QDEBUG<<"snap to pivot";
 }
 
-void FormGPS::onBtnSnapSideways_clicked(double distance){
-    int blah = distance;
-
+void FormGPS::snapSideways(double distance) {
+#warning snapSideways not yet implemented
+    //TODO
 }
 
 void FormGPS::deleteAppliedArea() {

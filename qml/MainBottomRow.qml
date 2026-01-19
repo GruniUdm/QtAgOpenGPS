@@ -66,7 +66,7 @@ RowLayout{
         onClicked:
          {
             //isOn = !isOn
-            aog.youSkip() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+            Backend.yt.toggleYouSkip() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         }
     }
     Comp.MainWindowBtns { //reset trailing tool to straight back
