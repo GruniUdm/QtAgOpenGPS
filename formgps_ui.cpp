@@ -400,11 +400,6 @@ void FormGPS::loadBoundaryFromKML(QString filename) {
     boundary_new_from_KML(filename);
 }
 
-void FormGPS::addBoundaryOSMPoint(double latitude, double longitude) {
-    // Modern implementation
-    addboundaryOSMPoint(latitude, longitude);
-}
-
 /*
  * put as methods in CRecPath
 void FormGPS::recordedPathDelete(const QString& pathName) {

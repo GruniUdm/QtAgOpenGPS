@@ -32,13 +32,3 @@ void FormGPS::boundary_new_from_KML(QString filename) {
     LoadKMLBoundary(localPath);
     bnd.stop();
 }
-void FormGPS::addboundaryOSMPoint(double latitude, double longitude)
-{   qDebug()<<"point.easting";
-    double northing;
-    double easting;
-    Backend::instance()->pn()->ConvertWGS84ToLocal(latitude, longitude, northing, easting);
-    //save the north & east as previous
-    Vec3 point(easting,northing,0);
-    bnd.bndBeingMadePts.append(point);
-    bnd.calculateArea();
-}

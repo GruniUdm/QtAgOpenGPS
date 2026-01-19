@@ -576,7 +576,6 @@ public:
 
     // Batch 14 - 11 actions Boundary Management - lines 1843-1854
     Q_INVOKABLE void loadBoundaryFromKML(QString filename);
-    Q_INVOKABLE void addBoundaryOSMPoint(double latitude, double longitude);
 
     // Batch 3 - 8 actions Camera Navigation - lines 201-208
     // Batch 4 - 2 actions Settings - lines 227-228
@@ -723,8 +722,6 @@ public slots:
 
     //boundary UI for recording new boundary
     void boundary_new_from_KML(QString filename);
-    void addboundaryOSMPoint(double latitude, double longitude);
-
 
     void headland_save();
     void headlines_save();
