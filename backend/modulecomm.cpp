@@ -1,5 +1,4 @@
 #include "modulecomm.h"
-#include "cahrs.h"
 #include "settingsmanager.h"
 #include "mainwindowstate.h"
 #include "agioservice.h"
@@ -47,12 +46,12 @@ ModuleComm *ModuleComm::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine)
 }
 
 
-void ModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
+void ModuleComm::CheckWorkAndSteerSwitch(bool isBtnAutoSteerOn)
 {
     //This really doesn't want to be in this class.  It's only used in FormGPS
 
     //AutoSteerAuto button enable - Ray Bear inspired code - Thx Ray!
-    if (ahrs.isAutoSteerAuto && m_steerSwitchHigh != oldSteerSwitchRemote)
+    if (SettingsManager::instance()->f_isRemoteWorkSystemOn() && m_steerSwitchHigh != oldSteerSwitchRemote)
     {
         oldSteerSwitchRemote = m_steerSwitchHigh;
         //steerSwith is active low
@@ -90,8 +89,8 @@ void ModuleComm::CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn)
         {
             oldSteerSwitchHigh = m_steerSwitchHigh;
 
-            if ((isBtnAutoSteerOn && ahrs.isAutoSteerAuto)
-                || (!ahrs.isAutoSteerAuto && !m_steerSwitchHigh))
+            if ((isBtnAutoSteerOn && SettingsManager::instance()->as_isAutoSteerAutoOn())
+                || (!SettingsManager::instance()->as_isAutoSteerAutoOn() && !m_steerSwitchHigh))
             {
                 if (isSteerWorkSwitchManualSections)
                 {

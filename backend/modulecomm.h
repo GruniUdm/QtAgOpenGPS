@@ -67,7 +67,7 @@ public:
 
     bool oldWorkSwitchHigh, oldSteerSwitchHigh, oldSteerSwitchRemote;
 
-    void CheckWorkAndSteerSwitch(CAHRS &ahrs, bool isBtnAutoSteerOn);
+    void CheckWorkAndSteerSwitch(bool isBtnAutoSteerOn);
 
 
     Q_INVOKABLE void modulesSend238();

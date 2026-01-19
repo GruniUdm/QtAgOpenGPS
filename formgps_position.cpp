@@ -1963,7 +1963,7 @@ void FormGPS::processSectionLookahead() {
 
     //Checks the workswitch or steerSwitch if required
     if (ahrs.isAutoSteerAuto || SettingsManager::instance()->f_isRemoteWorkSystemOn())
-        ModuleComm::instance()->CheckWorkAndSteerSwitch(ahrs,MainWindowState::instance()->isBtnAutoSteerOn());
+        ModuleComm::instance()->CheckWorkAndSteerSwitch(MainWindowState::instance()->isBtnAutoSteerOn());
 
     // check if any sections have changed status
     number = 0;
@@ -2725,7 +2725,7 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
         if (data.switchByte != 0) {
             ModuleComm::instance()->set_workSwitchHigh((data.switchByte & 0x01) == 0x01);
             ModuleComm::instance()->set_steerSwitchHigh((data.switchByte & 0x02) == 0x02);
-            ModuleComm::instance()->CheckWorkAndSteerSwitch(ahrs, MainWindowState::instance()->isBtnAutoSteerOn());
+            ModuleComm::instance()->CheckWorkAndSteerSwitch(MainWindowState::instance()->isBtnAutoSteerOn());
         }
 
         // PWM Display (from PGN 253 byte 12)
