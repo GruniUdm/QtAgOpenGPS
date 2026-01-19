@@ -1384,7 +1384,12 @@ void AgIOService::sendModuleHello()
 
     // Phase 6.0.24: Direct call in main thread (implementation in agioservice_udp.cpp)
     // Send PGN 200 hello to broadcast address (modules listening on port 8888)
-    sendHelloMessage("");  // Empty string = use broadcast address
+    auto* settings = SettingsManager::instance();
+    QString ipStr = QString("%1.%2.%3")
+                        .arg(settings->ethernet_ipOne())
+                        .arg(settings->ethernet_ipTwo())
+                        .arg(settings->ethernet_ipThree());
+    sendHelloMessage(ipStr);  // Empty string = use broadcast address ???
 }
 
 QString AgIOService::detectModuleType(const PGNParser::ParsedData& data)
