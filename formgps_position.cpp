@@ -31,6 +31,7 @@
 #include "modulecomm.h"
 #include "cpgn.h"
 #include "blockage.h"
+#include "ratecontrol.h"
 #include "tools.h"
 #include "steerconfig.h"
 #include "backendaccess.h"
@@ -1235,6 +1236,10 @@ void FormGPS::UpdateFixPosition()
     Backend::instance()->m_fixFrame.heading = CVehicle::instance()->pivotAxlePos.heading;
 
     Blockage::instance()->current_speed = pn.speed;
+
+    RateControl::instance()->current_speed = pn.speed;
+    RateControl::instance()->width = tool.applyWidth;
+    RateControl::instance()->swidth = SettingsManager::instance()->vehicle_toolWidth();
 
     // === IMU Data Updates (5 properties) ===
     Backend::instance()->m_fixFrame.imuRoll = ahrs.imuRoll;

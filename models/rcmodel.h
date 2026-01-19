@@ -42,8 +42,8 @@ public:
     void clear();
 
     // Methods to change rates
-    Q_INVOKABLE void increaseSetRate(int id, double step = 10);
-    Q_INVOKABLE void decreaseSetRate(int id, double step = 10);
+    void increaseSetRate(int id, double step = 10);
+    void decreaseSetRate(int id, double step = 10);
 
     // Update methods
     void updateSmoothRate(int id, double newRate);

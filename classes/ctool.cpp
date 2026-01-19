@@ -1175,6 +1175,7 @@ void CTool::sectionCalcWidths()
             section[j].sectionWidth = (section[j].positionRight - section[j].positionLeft);
             section[j].rpSectionPosition = 250 + (int)(glm::roundMidAwayFromZero(section[j].positionLeft * 10));
             section[j].rpSectionWidth = (int)(glm::roundMidAwayFromZero(section[j].sectionWidth * 10));
+            if (section[j].isSectionOn) applyWidth += section[j].sectionWidth;
         }
 
         //calculate tool width based on extreme right and left values

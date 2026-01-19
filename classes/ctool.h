@@ -29,6 +29,7 @@ class CTool: public QObject
 public:
     ///---- in settings
     double width;
+    double applyWidth;
     ///----
     double halfWidth, contourWidth;
     double farLeftPosition = 0;

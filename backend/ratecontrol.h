@@ -1,12 +1,46 @@
-#ifndef RATECONTROL_H
-#define RATECONTROL_H
+#ifndef RateControl_H
+#define RateControl_H
 
 #include <QObject>
-#include <QVector>
+#include <QVariant>
+#include <QVariantList>
+#include <QTimer>
+#include <QElapsedTimer>
+#include "settingsmanager.h"
+#include "pgnparser.h"
+#include "rcmodel.h"
+#include "simpleproperty.h"
 
-class ratecontrol : public QObject {
+
+class PGNParser;
+
+class RateControl : public QObject {
     Q_OBJECT
+    QML_ELEMENT
+    QML_SINGLETON
+    QMutex mutex;
+
+protected:
+    explicit RateControl(QObject *parent = nullptr);
+    ~RateControl() override=default;
+
+    //prevent copying
+    RateControl(const RateControl &) = delete;
+    RateControl &operator=(const RateControl &) = delete;
+
+    static RateControl *s_instance;
+    static QMutex s_mutex;
+    static bool s_cpp_created;
+
 public:
+    static RateControl *instance();
+    static RateControl *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
+    Q_PROPERTY(RCModel *rcModel READ rcModel CONSTANT)
+    RCModel *rcModel() const { return m_rcModel; }
+    RCModel *m_rcModel;
+
+    Q_INVOKABLE void rate_bump(bool up, int ID);
+
     int ModID;
     double ManualPWM[4];
     double cUPM;
@@ -34,7 +68,9 @@ public:
     double cTargetUPM[4];
     double cMinUPMSpeed[4];
     double cMinUPM[4];
-    explicit ratecontrol(QObject *parent = nullptr);
+    double current_speed; //For now filled in by formGPS.
+    double width; // tool width section control
+    double swidth; // tool width fot constant upm
 
 private:
     bool ProductOn(int ID);
@@ -51,8 +87,7 @@ private:
     int CoverageUnits[4];
     int AppMode[4];
     double appRate[4];
-    double width; // tool width section control
-    double swidth; // tool width fot constant upm
+
     double speed;
     double minSpeed[4];
     double minUPM[4];
@@ -62,7 +97,8 @@ private:
 signals:
 public slots:
     void rate_auto(int ID);
-    void rate_bump(bool up, int ID);
+
+    void onRateControlDataReady(const PGNParser::ParsedData& data);
 };
 
-#endif // RATECONTROL_H
+#endif // RateControl_H

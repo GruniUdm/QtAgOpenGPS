@@ -2,11 +2,19 @@
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 // Rate control source code used from https://github.com/SK21/AOG_RC
-#include "ratecontrol.h"
+#include "RateControl.h"
 #include <QDebug>
+#include "agioservice.h"
+#include "pgnparser.h"
+
+Q_LOGGING_CATEGORY (rc_log, "backend.qtagopengps")
+
+RateControl *RateControl::s_instance = nullptr;
+QMutex RateControl::s_mutex;
+bool RateControl::s_cpp_created = false;
 
 // ИСПРАВЛЕНО: Добавлена полная инициализация всех членов класса
-ratecontrol::ratecontrol(QObject *parent)
+RateControl::RateControl(QObject *parent)
     : QObject{parent},
     ModID(0),
     cUPM(0),
@@ -25,6 +33,9 @@ ratecontrol::ratecontrol(QObject *parent)
     maxpwm(0),
     rateSensor(0)
 {
+    //connect us to agio
+    connect(AgIOService::instance(), &AgIOService::rateControlDataReady,
+            this, &RateControl::onRateControlDataReady, Qt::DirectConnection);
     // Инициализация всех массивов
     for (int i = 0; i < 4; i++) {
         ManualPWM[i] = 0;
@@ -51,7 +62,37 @@ ratecontrol::ratecontrol(QObject *parent)
     }
 }
 
-void ratecontrol::rate_bump(bool up, int ID)
+RateControl *RateControl::instance() {
+    QMutexLocker locker(&s_mutex);
+    if (!s_instance) {
+        s_instance = new RateControl();
+        qDebug(rc_log) << "RateControl singleton created by C++ code.";
+        s_cpp_created = true;
+        // ensure cleanup on app exit
+        QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+                         s_instance, []() {
+                             delete s_instance; s_instance = nullptr;
+                         });
+    }
+    return s_instance;
+}
+
+RateControl *RateControl::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
+    Q_UNUSED(jsEngine)
+
+    QMutexLocker locker(&s_mutex);
+
+    if(!s_instance) {
+        s_instance = new RateControl();
+        qDebug(rc_log) << "RateControl singleton created by QML engine.";
+    } else if (s_cpp_created) {
+        qmlEngine->setObjectOwnership(s_instance, QQmlEngine::CppOwnership);
+    }
+
+    return s_instance;
+}
+
+void RateControl::rate_bump(bool up, int ID)
 {
     // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return;
@@ -65,14 +106,14 @@ void ratecontrol::rate_bump(bool up, int ID)
     }
 }
 
-void ratecontrol::rate_auto(int ID)
+void RateControl::rate_auto(int ID)
 {
     // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return;
     ManualPWM[ID] = 0;
 }
 
-void ratecontrol::aogset(int aBttnState, int mBttnState, double setwidth, double toolwidth, double aogspeed)
+void RateControl::aogset(int aBttnState, int mBttnState, double setwidth, double toolwidth, double aogspeed)
 {
     aBtnState = aBttnState;
     mBtnState = mBttnState;
@@ -81,7 +122,7 @@ void ratecontrol::aogset(int aBttnState, int mBttnState, double setwidth, double
     speed = aogspeed;
 }
 
-int ratecontrol::Command(int ID)
+int RateControl::Command(int ID)
 {
     // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return 0;
@@ -99,7 +140,7 @@ int ratecontrol::Command(int ID)
     return Result;
 }
 
-bool ratecontrol::ProductOn(int ID)
+bool RateControl::ProductOn(int ID)
 {
     // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return false;
@@ -113,7 +154,7 @@ bool ratecontrol::ProductOn(int ID)
     return Result;
 }
 
-double ratecontrol::SmoothRate(int ID)
+double RateControl::SmoothRate(int ID)
 {
     // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return 0;
@@ -138,7 +179,7 @@ double ratecontrol::SmoothRate(int ID)
     return Result;
 }
 
-double ratecontrol::CurrentRate(int ID)
+double RateControl::CurrentRate(int ID)
 {
     // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return 0;
@@ -152,7 +193,7 @@ double ratecontrol::CurrentRate(int ID)
     }
 }
 
-double ratecontrol::TargetUPM(int ID)
+double RateControl::TargetUPM(int ID)
 {
     // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return 0;
@@ -201,7 +242,7 @@ double ratecontrol::TargetUPM(int ID)
     return Result;
 }
 
-double ratecontrol::RateApplied(int ID)
+double RateControl::RateApplied(int ID)
 {
     // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return 0;
@@ -264,7 +305,7 @@ double ratecontrol::RateApplied(int ID)
     return Result;
 }
 
-double ratecontrol::MinUPMSpeed(int ID)
+double RateControl::MinUPMSpeed(int ID)
 {
     // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return 0;
@@ -275,7 +316,7 @@ double ratecontrol::MinUPMSpeed(int ID)
         return speed;
 }
 
-double ratecontrol::MinUPM(int ID)
+double RateControl::MinUPM(int ID)
 {
     // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return 0;
@@ -286,7 +327,7 @@ double ratecontrol::MinUPM(int ID)
         return cTargetUPM[ID];
 }
 
-void ratecontrol::dataformodule(QVector<int> set_data, QByteArray pgn_data)
+void RateControl::dataformodule(QVector<int> set_data, QByteArray pgn_data)
 {
     if (set_data.isEmpty() || pgn_data.size() < 15) return;
 
@@ -327,4 +368,8 @@ void ratecontrol::dataformodule(QVector<int> set_data, QByteArray pgn_data)
     qDebug() << "appRate[ModID]:" << cRateApplied[ModID];
     qDebug() << "TargetRate[ModID]:" << TargetRate[ModID];
     qDebug() << "SmoothRate:" << cSmoothRate[ModID];
+}
+void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
+{
+
 }

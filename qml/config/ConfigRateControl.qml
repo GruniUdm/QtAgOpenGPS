@@ -472,7 +472,7 @@ Rectangle{
         anchors.rightMargin: 20 * theme.scaleHeight
         anchors.leftMargin: 20 * theme.scaleHeight
         icon.source: prefix + "/images/UpArrow64.png"
-        onClicked: aog.rate_bump_pwm(true, moduleID.value)
+        onClicked: RateControl.rate_bump(true, moduleID.value)
         enabled: cboxIsRateControlOn.checked
 
         Label{
@@ -493,7 +493,7 @@ Rectangle{
         anchors.rightMargin: 20 * theme.scaleHeight
         anchors.leftMargin: 20 * theme.scaleHeight
         icon.source: prefix + "/images/DnArrow64.png"
-        onClicked: aog.rate_bump_pwm(false, moduleID.value)
+        onClicked: RateControl.rate_bump(false, moduleID.value)
         enabled: cboxIsRateControlOn.checked
     }
 
