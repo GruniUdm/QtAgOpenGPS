@@ -49,7 +49,7 @@ public:
 
     uchar ssP[9];
 
-    int
+    enum ss_bytes {
         swHeader = 0,
         swMain = 1,
         swReserve = 2,
@@ -58,7 +58,8 @@ public:
         swOnGr0 = 5,
         swOffGr0 = 6,
         swOnGr1 = 7,
-        swOffGr1 = 8;
+        swOffGr1 = 8
+    };
 
 
     //for the workswitch

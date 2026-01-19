@@ -1355,7 +1355,6 @@ void FormGPS::processSectionLookahead() {
     //qDebug(qpos) << "frame time before doing section lookahead " << swFrame.elapsed(;
     //lock.lockForWrite(;
     //qDebug(qpos) << "frame time after getting lock  " << swFrame.elapsed(;
-    BACKEND_TRACK(track); //bring in a reference "track"
 
 #define USE_QPAINTER_BACKBUFFER
 
@@ -2123,7 +2122,7 @@ void FormGPS::processSectionLookahead() {
     }
 
     //send the byte out to section machines
-    BuildMachineByte();
+    tool.BuildMachineByte(tram);
 
     //if a minute has elapsed save the field in case of crash and to be able to resume
     if (minuteCounter > 30 && Backend::instance()->m_fixFrame.sentenceCounter < 20)

@@ -162,7 +162,7 @@ void CTool::saveSettings()
     SettingsManager::instance()->setTool_isDisplayTramControl(isDisplayTramControl);
 }
 
-void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 mv,
+void CTool::DrawToolGL(QOpenGLFunctions *gl, QMatrix4x4 mv,
                      QMatrix4x4 projection,
                      bool isJobStarted,
                      bool isHydLiftOn,
@@ -394,7 +394,7 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 mv,
     }
 }
 
-void CTool::DrawPatches(QOpenGLFunctions *gl,
+void CTool::DrawPatchesGL(QOpenGLFunctions *gl,
                         QMatrix4x4 mvp,
                         int patchCounter,
                         const CCamera &camera,
@@ -714,7 +714,7 @@ void CTool::DrawPatches(QOpenGLFunctions *gl,
 
 }
 
-void CTool::DrawPatchesTriangles(QOpenGLFunctions *gl,
+void CTool::DrawPatchesTrianglesGL(QOpenGLFunctions *gl,
                                  QMatrix4x4 mvp,
                                  int patchCounter,
                                  const CCamera &camera,
@@ -1147,7 +1147,7 @@ QImage CTool::DrawPatchesBackQP(const CTram &tram,
 
 
         //draw 250 green for the headland
-        if (isHeadlandOn && bnd.isSectionControlledByHeadland)
+        if (MainWindowState::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
         {
             DrawPolygonBack(painter, bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
         }
@@ -1302,14 +1302,13 @@ void CTool::sectionSetPositions()
     section[15].positionRight = section_position17 + vehicle_toolOffset;
 }
 
-void CTool::ProcessLookAhead(bool isHeadlandOn,
-                             int gpsHz,
+void CTool::ProcessLookAhead(int gpsHz,
                              MainWindowState::ButtonStates autoBtnState,
                              const CBoundary &bnd,
                              CTram &tram)
 {
       //determine where the tool is wrt to headland
-    if (isHeadlandOn) WhereAreToolCorners(bnd);
+    if (MainWindowState::instance()->isHeadlandOn()) WhereAreToolCorners(bnd);
 
     //set the look ahead for hyd Lift in pixels per second
     hydLiftLookAheadDistanceLeft = farLeftSpeed * SettingsManager::instance()->vehicle_hydraulicLiftLookAhead() * 10;
@@ -1377,7 +1376,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
     //10 % min is required for overlap, otherwise it never would be on.
     int pixLimit = (int)((double)(section[0].rpSectionWidth * rpOnHeight) / (double)(5.0));
     //bnd.isSectionControlledByHeadland = true;
-    if ((rpOnHeight < rpToolHeight && isHeadlandOn && bnd.isSectionControlledByHeadland)) rpHeight = rpToolHeight + 2;
+    if ((rpOnHeight < rpToolHeight && MainWindowState::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)) rpHeight = rpToolHeight + 2;
     else rpHeight = rpOnHeight + 2;
     //qDebug(qpos) << bnd.isSectionControlledByHeadland << "headland sections";
 
@@ -1412,7 +1411,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
     else tram.controlByte = 0;
 
     //determine if in or out of headland, do hydraulics if on
-    if (isHeadlandOn)
+    if (MainWindowState::instance()->isHeadlandOn())
     {
         //calculate the slope
         double m = (hydLiftLookAheadDistanceRight - hydLiftLookAheadDistanceLeft) / rpWidth;
@@ -1448,7 +1447,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
 
     int endHeight = 1, startHeight = 1;
 
-    if (isHeadlandOn && bnd.isSectionControlledByHeadland)
+    if (MainWindowState::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
         WhereAreToolLookOnPoints(bnd);
 
     for (int j = 0; j < numOfSections; j++)
@@ -1525,7 +1524,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
             else
             {
                 //is headland coming up
-                if (isHeadlandOn && isSectionControlledByHeadland)
+                if (MainWindowState::instance()->isHeadlandOn() && isSectionControlledByHeadland)
                 {
                     bool isHeadlandInLookOn = false;
 
@@ -1835,6 +1834,336 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
 
 
         lastNumber = number;
+    }
+}
+
+void CTool::BuildMachineByte(CTram &tram) {
+    CPGN_FE &p_254 = ModuleComm::instance()->p_254;
+    CPGN_EF &p_239 = ModuleComm::instance()->p_239;
+    CPGN_E5 &p_229 = ModuleComm::instance()->p_229;
+
+    if (isSectionsNotZones)
+    {
+        p_254.pgn[CPGN_FE::sc1to8] = 0;
+        p_254.pgn[CPGN_FE::sc9to16] = 0;
+
+        int number = 0;
+        for (int j = 0; j < 8; j++)
+        {
+            if (section[j].isSectionOn)
+                number |= 1 << j;
+        }
+        p_254.pgn[CPGN_FE::sc1to8] = (char)number;
+        number = 0;
+
+        for (int j = 8; j < 16; j++)
+        {
+            if (section[j].isSectionOn)
+                number |= 1 << (j-8);
+        }
+        p_254.pgn[CPGN_FE::sc9to16] = (char)number;
+
+        //machine pgn
+        p_239.pgn[CPGN_EF::sc9to16] = p_254.pgn[CPGN_FE::sc9to16];
+        p_239.pgn[CPGN_EF::sc1to8] = p_254.pgn[CPGN_FE::sc1to8];
+        p_229.pgn[CPGN_E5::sc1to8] = p_254.pgn[CPGN_FE::sc1to8];
+        p_229.pgn[CPGN_E5::sc9to16] = p_254.pgn[CPGN_FE::sc9to16];
+        p_229.pgn[CPGN_E5::toolLSpeed] = (char)(farLeftSpeed * 10);
+        p_229.pgn[CPGN_E5::toolRSpeed] = (char)(farRightSpeed * 10);
+    }
+    else
+    {
+        //zero all the bytes - set only if on
+        for (int i = 5; i < 13; i++)
+        {
+            p_229.pgn[i] = 0;
+        }
+
+        int number = 0;
+        for (int k = 0; k < 8; k++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (section[j + k * 8].isSectionOn)
+                    number |= 1 << j;
+            }
+            p_229.pgn[5 + k] = (char)number;
+            number = 0;
+        }
+
+        //tool speed to calc ramp
+        p_229.pgn[CPGN_E5::toolLSpeed] = (char)(farLeftSpeed * 10);
+        p_229.pgn[CPGN_E5::toolRSpeed] = (char)(farRightSpeed * 10);
+
+        p_239.pgn[CPGN_EF::sc1to8] = p_229.pgn[CPGN_E5::sc1to8];
+        p_239.pgn[CPGN_EF::sc9to16] = p_229.pgn[CPGN_E5::sc9to16];
+
+        p_254.pgn[CPGN_FE::sc1to8] = p_229.pgn[CPGN_E5::sc1to8];
+        p_254.pgn[CPGN_FE::sc9to16] = p_229.pgn[CPGN_E5::sc9to16];
+
+    }
+
+    p_239.pgn[CPGN_EF::speed] = (char)(CVehicle::instance()->avgSpeed() * 10);
+    p_239.pgn[CPGN_EF::tram] = (char)tram.controlByte;
+
+    emit ModuleComm::instance()->p_239_changed();
+    emit ModuleComm::instance()->p_254_changed();
+
+}
+
+void CTool::DoRemoteSwitches() {
+#warning This method is not called anywhere. Check AgOpenGPS or Twol to find out what we missed.
+    ModuleComm &mc = *ModuleComm::instance();
+
+    // Check if AgIOService is ON - if OFF, skip all hardware switch processing
+    SettingsManager* settings = SettingsManager::instance();
+    if (!settings->feature_isAgIOOn()) {
+        // AgIOService is OFF - manual QML controls have priority
+        return;
+    }
+
+    bool sectionsChanged = false; // Track if any section state changed
+    if (Backend::instance()->isJobStarted())
+    {
+        //MainSW was used
+        if (mc.ss[ModuleComm::swMain] != mc.ssP[ModuleComm::swMain])
+        {
+            //Main SW pressed
+            if ((mc.ss[ModuleComm::swMain] & 1) == 1)
+            {
+                MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
+            } // if Main SW ON
+
+            //if Main SW in Arduino is pressed OFF
+            if ((mc.ss[ModuleComm::swMain] & 2) == 2)
+            {
+                MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Auto);
+            } // if Main SW OFF
+
+            mc.ssP[ModuleComm::swMain] = mc.ss[ModuleComm::swMain];
+        }  //Main or Rate SW
+
+
+        if (isSectionsNotZones)
+        {
+            if (mc.ss[ModuleComm::swOnGr0] != 0)
+            {
+                // ON Signal from Arduino
+                if ((mc.ss[ModuleComm::swOnGr0] & 128) == 128 && numOfSections > 7)
+                {
+                    sectionButtonState[7] = MainWindowState::ButtonStates::On;
+                    section[7].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionsChanged = true;
+                    //TODO: not sure why we have redundant states like that
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 64) == 64 && numOfSections > 6)
+                {
+                    sectionButtonState[6] = MainWindowState::ButtonStates::On;
+                    section[6].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 32) == 32 && numOfSections > 5)
+                {
+                    sectionButtonState[5] = MainWindowState::ButtonStates::On;
+                    section[5].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 16) == 16 && numOfSections > 4)
+                {
+                    sectionButtonState[4] = MainWindowState::ButtonStates::On;
+                    section[4].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 8) == 8 && numOfSections > 3)
+                {
+                    sectionButtonState[3] = MainWindowState::ButtonStates::On;
+                    section[3].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 4) == 4 && numOfSections > 2)
+                {
+                    sectionButtonState[2] = MainWindowState::ButtonStates::On;
+                    section[2].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 2) == 2 && numOfSections > 1)
+                {
+                    sectionButtonState[1] = MainWindowState::ButtonStates::On;
+                    section[1].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 1) == 1)
+                {
+                    sectionButtonState[0] = MainWindowState::ButtonStates::On;
+                    section[0].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionsChanged = true;
+                }
+                mc.ssP[ModuleComm::swOnGr0] = mc.ss[ModuleComm::swOnGr0];
+            } //if swONLo != 0
+            else { if (mc.ssP[ModuleComm::swOnGr0] != 0) { mc.ssP[ModuleComm::swOnGr0] = 0; } }
+
+            if (mc.ss[ModuleComm::swOnGr1] != 0)
+            {
+                // sections ON signal from Arduino
+                if ((mc.ss[ModuleComm::swOnGr1] & 128) == 128 && numOfSections > 15)
+                {
+                    sectionButtonState[15] = MainWindowState::ButtonStates::On;
+                    section[15].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr1] & 64) == 64 && numOfSections > 14)
+                {
+                    sectionButtonState[14] = MainWindowState::ButtonStates::On;
+                    section[14].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr1] & 32) == 32 && numOfSections > 13)
+                {
+                    sectionButtonState[13] = MainWindowState::ButtonStates::On;
+                    section[13].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr1] & 16) == 16 && numOfSections > 12)
+                {
+                    sectionButtonState[12] = MainWindowState::ButtonStates::On;
+                    section[12].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+
+                if ((mc.ss[ModuleComm::swOnGr1] & 8) == 8 && numOfSections > 11)
+                {
+                    sectionButtonState[11] = MainWindowState::ButtonStates::On;
+                    section[11].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr1] & 4) == 4 && numOfSections > 10)
+                {
+                    sectionButtonState[10] = MainWindowState::ButtonStates::On;
+                    section[10].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr1] & 2) == 2 && numOfSections > 9)
+                {
+                    sectionButtonState[9] = MainWindowState::ButtonStates::On;
+                    section[9].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr1] & 1) == 1 && numOfSections > 8)
+                {
+                    sectionButtonState[8] = MainWindowState::ButtonStates::On;
+                    section[8].sectionBtnState = MainWindowState::ButtonStates::On;
+                }
+                mc.ssP[ModuleComm::swOnGr1] = mc.ss[ModuleComm::swOnGr1];
+            } //if swONHi != 0
+            else { if (mc.ssP[ModuleComm::swOnGr1] != 0) { mc.ssP[ModuleComm::swOnGr1] = 0; } }
+
+            // Switches have changed
+            if (mc.ss[ModuleComm::swOffGr0] != mc.ssP[ModuleComm::swOffGr0])
+            {
+                //if Main = Auto then change section to Auto if Off signal from Arduino stopped
+                if (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto)
+                {
+
+                    for(int s=0; s< 8; s++) {
+                        if ((mc.ssP[ModuleComm::swOffGr0] & (1 << s)) && !(mc.ss[ModuleComm::swOffGr0] & (1 << s)) && (sectionButtonState[s] == MainWindowState::ButtonStates::Off))
+                        {
+                            sectionButtonState[s] = MainWindowState::ButtonStates::Auto;
+                            section[s].sectionBtnState = MainWindowState::ButtonStates::Auto;
+                            sectionsChanged = true;
+                        }
+                    }
+                }
+                mc.ssP[ModuleComm::swOffGr0] = mc.ss[ModuleComm::swOffGr0];
+            }
+
+            if (mc.ss[ModuleComm::swOffGr1] != mc.ssP[ModuleComm::swOffGr1])
+            {
+                //if Main = Auto then change section to Auto if Off signal from Arduino stopped
+                if (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto)
+                {
+                    for(int s=8; s< 16; s++) {
+                        if ((mc.ssP[ModuleComm::swOffGr1] & (1 << s)) && !(mc.ss[ModuleComm::swOffGr1] & (1 << s)) && (sectionButtonState[s+8] == MainWindowState::ButtonStates::Off))
+                        {
+                            sectionButtonState[s+8] = MainWindowState::ButtonStates::Auto;
+                            section[s+8].sectionBtnState = MainWindowState::ButtonStates::Auto;
+                            sectionsChanged = true;
+                        }
+                    }
+                }
+                mc.ssP[ModuleComm::swOffGr1] = mc.ss[ModuleComm::swOffGr1];
+            }
+
+            // OFF Signal from Arduino
+            if (mc.ss[ModuleComm::swOffGr0] != 0)
+            {
+                //if section SW in Arduino is switched to OFF; check always, if switch is locked to off GUI should not change
+                for(int s=0; s< 8; s++) {
+                    if ((mc.ss[ModuleComm::swOffGr0] & (1 << s)) && sectionButtonState[s] != MainWindowState::ButtonStates::Off)
+                    {
+                        // Hardware switch override
+                        sectionButtonState[s] = MainWindowState::ButtonStates::Off;
+                        section[s].sectionBtnState = MainWindowState::ButtonStates::Off;
+                        sectionsChanged = true;
+                    }
+                }
+            } // if swOFFLo !=0
+            if (mc.ss[ModuleComm::swOffGr1] != 0)
+            {
+                //if section SW in Arduino is switched to OFF; check always, if switch is locked to off GUI should not change
+                for (int s=0; s<8; s++) {
+                    if ((mc.ss[ModuleComm::swOffGr0] & (1 << s)) && sectionButtonState[s+8] != MainWindowState::ButtonStates::Off)
+                    {
+                        sectionButtonState[s+8] = MainWindowState::ButtonStates::Off;
+                        section[s+8].sectionBtnState = MainWindowState::ButtonStates::Off;
+                        sectionsChanged = true;
+                    }
+                }
+            } // if swOFFHi !=0
+        }//if serial or udp port open
+        else
+        {
+            //DoZones
+            int Bit;
+            // zones to on
+            if (mc.ss[ModuleComm::swOnGr0] != 0)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    Bit = 1 << i;
+                    if ((zoneRanges[i + 1] > 0) && ((mc.ss[ModuleComm::swOnGr0] & Bit) == Bit))
+                    {
+                        section[zoneRanges[i + 1] - 1].sectionBtnState = MainWindowState::ButtonStates::On;
+                        sectionButtonState[zoneRanges[i + 1] - 1] = MainWindowState::ButtonStates::On;
+                        sectionsChanged = true;
+                    }
+                }
+
+                mc.ssP[ModuleComm::swOnGr0] = mc.ss[ModuleComm::swOnGr0];
+            }
+            else { if (mc.ssP[ModuleComm::swOnGr0] != 0) { mc.ssP[ModuleComm::swOnGr0] = 0; } }
+
+            // zones to auto
+            if (mc.ss[ModuleComm::swOffGr0] != mc.ssP[ModuleComm::swOffGr0])
+            {
+                if (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto)
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        Bit = 1 << i;
+                        if ((zoneRanges[i + 1] > 0) && ((mc.ssP[ModuleComm::swOffGr0] & Bit) == Bit)
+                            && ((mc.ss[ModuleComm::swOffGr0] & Bit) != Bit) && (section[zoneRanges[i + 1] - 1].sectionBtnState == MainWindowState::ButtonStates::Off))
+                        {
+                            section[zoneRanges[i + 1] - 1].sectionBtnState = MainWindowState::ButtonStates::Auto;
+                            sectionButtonState[zoneRanges[i + 1] - 1] = MainWindowState::ButtonStates::Auto;
+                            sectionsChanged = true;
+                        }
+                    }
+                }
+                mc.ssP[ModuleComm::swOffGr0] = mc.ss[ModuleComm::swOffGr0];
+            }
+
+            // zones to off
+            if (mc.ss[ModuleComm::swOffGr0] != 0)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    Bit = 1 << i;
+                    if ((zoneRanges[i + 1] > 0) && ((mc.ss[ModuleComm::swOffGr0] & Bit) == Bit) && (section[zoneRanges[i + 1] - 1].sectionBtnState != MainWindowState::ButtonStates::Off))
+                    {
+                        section[zoneRanges[i + 1] - 1].sectionBtnState = MainWindowState::ButtonStates::Off;
+                        sectionButtonState[zoneRanges[i + 1] - 1] = MainWindowState::ButtonStates::Off;
+                        sectionsChanged = true;
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -507,17 +507,6 @@ public:
     void ExportFieldAs_ISOXMLv3();
     void ExportFieldAs_ISOXMLv4();
 
-
-    /************************
-     * formgps_sections.cpp *
-     ************************/
-    //void SectionSetPosition();
-    //void SectionCalcWidths();
-    //void SectionCalcMulti();
-    void BuildMachineByte();
-    void DoRemoteSwitches();
-
-
     /************************
      * formgps_settimgs.cpp *
      ************************/

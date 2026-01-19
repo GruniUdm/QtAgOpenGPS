@@ -438,9 +438,9 @@ void FormGPS::oglMain_Paint()
 
             //draw patches of sections
 #ifndef Q_OS_ANDROID
-            tool.DrawPatchesTriangles(gl, projection*modelview, patchCounter,camera, swFrame);
+            tool.DrawPatchesTrianglesGL(gl, projection*modelview, patchCounter,camera, swFrame);
 #else
-            tool.DrawPatches(gl,projection*modelview,patchCounter,camera,swFrame);
+            tool.DrawPatchesGL(gl,projection*modelview,patchCounter,camera,swFrame);
 #endif
 
             qDebug(qgl) << "time after painting patches " << (float)swFrame.nsecsElapsed() / 1000000;
@@ -507,7 +507,7 @@ void FormGPS::oglMain_Paint()
             toolmv.translate(sin(CVehicle::instance()->fixHeading()) * tool.hitchLength,
                          cos(CVehicle::instance()->fixHeading()) * tool.hitchLength, 0);
 
-            tool.DrawTool(gl,toolmv, projection,
+            tool.DrawToolGL(gl,toolmv, projection,
                           Backend::instance()->isJobStarted(),
                           CVehicle::instance()->isHydLiftOn(),
                           camera,tram);

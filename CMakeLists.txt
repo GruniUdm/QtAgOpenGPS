@@ -131,7 +131,7 @@ qt_add_executable(QtAgOpenGPS
     formgps_opengl.cpp
     formgps_position.cpp
     formgps_saveopen.cpp
-    formgps_sections.cpp
+
     formgps_settings.cpp
     formgps_sim.cpp
 

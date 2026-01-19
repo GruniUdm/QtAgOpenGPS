@@ -119,20 +119,20 @@ public:
     CTool();
     //this class needs modelview and projection as separate matrices because some
     //additiona transformations need to be done.
-    void DrawTool(QOpenGLFunctions *gl,
+    void DrawToolGL(QOpenGLFunctions *gl,
                   QMatrix4x4 modelview,
                   QMatrix4x4 projection,
                   bool isJobStarted, bool isHydLiftOn,
                   CCamera &camera, CTram &tram);
 
-    void DrawPatches(QOpenGLFunctions *gl,
+    void DrawPatchesGL(QOpenGLFunctions *gl,
                      QMatrix4x4 mvp,
                      int patchCounter,
                      const CCamera &camera,
                      QElapsedTimer &swFrame
                      );
 
-    void DrawPatchesTriangles(QOpenGLFunctions *gl,
+    void DrawPatchesTrianglesGL(QOpenGLFunctions *gl,
                      QMatrix4x4 mvp,
                      int patchCounter,
                      const CCamera &camera,
@@ -145,8 +145,10 @@ public:
     QImage DrawPatchesBackQP(const CTram &tram, const CBoundary &bnd, Vec3 pivotAxlePos, bool isHeadlandOn, bool onTrack);
 
     void NewPosition();
-    void ProcessLookAhead(bool isHeadlandOn, int gpsHz, MainWindowState::ButtonStates autoBtnState,
+    void ProcessLookAhead(int gpsHz, MainWindowState::ButtonStates autoBtnState,
                           const CBoundary &bnd, CTram &tram);
+    void BuildMachineByte(CTram &tram);
+    void DoRemoteSwitches();
 
     void clearPatches();
     void loadPatches();
