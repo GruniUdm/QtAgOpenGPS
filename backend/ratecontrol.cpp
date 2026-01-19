@@ -6,6 +6,8 @@
 #include <QDebug>
 #include "agioservice.h"
 #include "pgnparser.h"
+#include "cpgn.h"
+#include "modulecomm.h"
 
 Q_LOGGING_CATEGORY (rc_log, "backend.qtagopengps")
 
@@ -366,7 +368,7 @@ void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
     // PGN 240: RC Data
     if (data.pgnNumber == 240) {
 
-        ModID = data.rateControlInData[0]; // ID из data[5]
+        ModID = data.rateControlInData[0]; // ID из data[ ]
 
         // Проверяем, что ID в допустимом диапазоне (0-3)
         if (ModID < 4) {
@@ -375,5 +377,20 @@ void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
             PWMsetting[ModID] = data.rateControlInData[3];
             SensorReceiving[ModID] = data.rateControlInData[4];
         }
+        modulesSend241(ModID);
     }
+}
+
+void RateControl::modulesSend241(int ID)
+{
+    CPGN_F1 &p_241 = ModuleComm::instance()->p_241;
+    p_241.pgn[CPGN_F1::ID] = ID;
+    p_241.pgn[CPGN_F1::RateSetLo] = (char)((int)cMinUPM[ID]); // target rate
+    p_241.pgn[CPGN_F1::RateSetHI] = (char)((int)cMinUPM[ID] >> 8);
+    p_241.pgn[CPGN_F1::FlowCalLO] = (char)((int)MeterCal[ID]);
+    p_241.pgn[CPGN_F1::FlowCalHI] = (char)((int)MeterCal[ID] >> 8);
+    p_241.pgn[CPGN_F1::Command] = Command(ID);
+    p_241.pgn[CPGN_F1::ManualPWM] = (char)((int)ManualPWM[ID]);
+
+    emit ModuleComm::instance()->p_241_changed();
 }

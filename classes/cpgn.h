@@ -386,7 +386,8 @@ public:
         RateSetHI = 7,
         FlowCalLO = 8,
         FlowCalHI = 9,
-        ManualPWM = 10
+        Command = 10,
+        ManualPWM = 11
     };
     Q_ENUM(CPGN_F1_Fields)
 

@@ -58,6 +58,7 @@ public:
     double MinUPMSpeed(int ID);
     double MinUPM(int ID);
     void loadSettings(int ID);
+    void modulesSend241(int ID);
     void aogset(int aBttnState, int mBttnState, double setwidth, double toolwidth, double aogspeed);
     int PWMsetting[4];
     bool SensorReceiving[4];
