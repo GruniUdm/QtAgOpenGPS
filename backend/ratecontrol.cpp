@@ -39,7 +39,7 @@ RateControl::RateControl(QObject *parent)
     // Инициализация всех массивов
     for (int i = 0; i < 4; i++) {
         ManualPWM[i] = 0;
-        cQuantity[i] = 0;
+        Quantity[i] = 0;
         MeterCal[i] = 0;
         ControlType[i] = 0;
         PWMsetting[i] = 0;
@@ -327,49 +327,53 @@ double RateControl::MinUPM(int ID)
         return cTargetUPM[ID];
 }
 
-void RateControl::dataformodule(QVector<int> set_data, QByteArray pgn_data)
+void RateControl::loadSettings(int ID)
 {
-    if (set_data.isEmpty() || pgn_data.size() < 15) return;
 
-    int ID = set_data[0];
     // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return;
 
-    ProdDensity[ID] = set_data[1];
-    OnScreen[ID] = set_data[2];
-    pidscale[ID] = set_data[8];
-    MeterCal[ID] = set_data[9];
-    TargetRate[ID] = set_data[10];
-    AppMode[ID] = set_data[11];
-    ControlType[ID] = set_data[12];
-    CoverageUnits[ID] = set_data[13];
-    minSpeed[ID] = set_data[14];
+    QVector<int> rateSettings;
 
-    // ИСПРАВЛЕНО: Безопасное извлечение ModID
-    ModID = (pgn_data.size() > 5) ? static_cast<uint8_t>(pgn_data[5]) : 0;
-    if (ModID < 0 || ModID >= 4) ModID = 0;
-
-    // ИСПРАВЛЕНО: Безопасное чтение данных
-    if (pgn_data.size() >= 14) {
-        appRate[ModID] = ((static_cast<qint32>(static_cast<uint8_t>(pgn_data[8]) << 16) +
-                           (static_cast<uint8_t>(pgn_data[7]) << 8) +
-                           static_cast<uint8_t>(pgn_data[6]))) / 1000.0;
-
-        cQuantity[ModID] = (static_cast<uint8_t>(pgn_data[11]) << 16 |
-                            static_cast<uint8_t>(pgn_data[10]) << 8 |
-                            static_cast<uint8_t>(pgn_data[9])) / 1000.0;
-
-        PWMsetting[ModID] = static_cast<qint16>(static_cast<uint8_t>(pgn_data[13]) << 8 |
-                                                static_cast<uint8_t>(pgn_data[12]));
-
-        SensorReceiving[ModID] = ((static_cast<uint8_t>(pgn_data[14]) & 0b00100000) == 0b00100000);
+    switch (ID) {
+    case 0:
+        rateSettings = SettingsManager::instance()->rate_confProduct0();
+    case 1:
+        rateSettings = SettingsManager::instance()->rate_confProduct1();
+    case 2:
+        rateSettings = SettingsManager::instance()->rate_confProduct2();
+    case 3:
+        rateSettings = SettingsManager::instance()->rate_confProduct3();
     }
 
-    qDebug() << "appRate[ModID]:" << cRateApplied[ModID];
-    qDebug() << "TargetRate[ModID]:" << TargetRate[ModID];
-    qDebug() << "SmoothRate:" << cSmoothRate[ModID];
+    ProdDensity[ID] = rateSettings[1];
+    OnScreen[ID] = rateSettings[2];
+    pidscale[ID] = rateSettings[8];
+    MeterCal[ID] = rateSettings[9];
+    TargetRate[ID] = rateSettings[10];
+    AppMode[ID] = rateSettings[11];
+    ControlType[ID] = rateSettings[12];
+    CoverageUnits[ID] = rateSettings[13];
+    minSpeed[ID] = rateSettings[14];
+
 }
 void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
 {
+    // Update data from Blockage modules
 
+    if (!data.isValid) return;
+
+    // PGN 240: RC Data
+    if (data.pgnNumber == 240) {
+
+        ModID = data.rateControlInData[0]; // ID из data[5]
+
+        // Проверяем, что ID в допустимом диапазоне (0-3)
+        if (ModID < 4) {
+            appRate[ModID] = data.rateControlInData[1];
+            Quantity[ModID] = data.rateControlInData[2];
+            PWMsetting[ModID] = data.rateControlInData[3];
+            SensorReceiving[ModID] = data.rateControlInData[4];
+        }
+    }
 }

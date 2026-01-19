@@ -41,10 +41,11 @@ public:
 
     Q_INVOKABLE void rate_bump(bool up, int ID);
 
+
     int ModID;
     double ManualPWM[4];
     double cUPM;
-    double cQuantity[4];
+    double Quantity[4];
     double MeterCal[4];
     double RateSet;
     double actualRate;
@@ -56,7 +57,7 @@ public:
     int Command(int ID);
     double MinUPMSpeed(int ID);
     double MinUPM(int ID);
-    void dataformodule(QVector<int> set_data, QByteArray pgn_data);
+    void loadSettings(int ID);
     void aogset(int aBttnState, int mBttnState, double setwidth, double toolwidth, double aogspeed);
     int PWMsetting[4];
     bool SensorReceiving[4];

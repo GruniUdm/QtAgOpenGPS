@@ -91,10 +91,10 @@ Rectangle{
         product.settings[14] = minSpeed.value;
         product.settings[15] = minUPM.value;
 
-        // Сохраняем имена продуктов
-        for (var i = 0; i < products.length; i++) {
-            Settings.rate_ProductName[i] = products[i].name;
-        }
+        SettingsManager.rate_productName0 = products[0].name;
+        SettingsManager.rate_productName1 = products[1].name;
+        SettingsManager.rate_productName2 = products[2].name;
+        SettingsManager.rate_productName3 = products[3].name;
 
         mandatory.visible = false;
         ModuleComm.modulesSend242()

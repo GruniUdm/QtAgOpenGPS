@@ -197,26 +197,30 @@ void ModuleComm::modulesSend245() {
 
 void ModuleComm::modulesSend242() {
     //qDebug() << "Sending 242 message to AgIO";
-    // values from settings
-    int set_prod1[8] = {0,10,0,0,100,255,0,0};
-    int set_prod2[8] = {1,10,0,0,100,255,0,0};
-    int set_prod3[8] = {3,10,0,0,100,255,0,0};
-    int set_prod4[8] = {3,10,0,0,100,255,0,0};
 
-    // Массив указателей на массивы
-    int* set_prods[4] = {set_prod1, set_prod2, set_prod3, set_prod4};
+    // Получаем векторы настроек
+    QVector<QVector<int>> module_settings;
+    module_settings.append(SettingsManager::instance()->rate_confProduct0());
+    module_settings.append(SettingsManager::instance()->rate_confProduct1());
+    module_settings.append(SettingsManager::instance()->rate_confProduct2());
+    module_settings.append(SettingsManager::instance()->rate_confProduct3());
 
     for (int module_index = 0; module_index < 4; module_index++) {
-        int* module_data = set_prods[module_index];
+        const QVector<int>& module_data = module_settings[module_index];
+
+        if (module_data.size() < 16) {
+            qWarning() << "Module" << module_index << "data vector too small:" << module_data.size();
+            continue;
+        }
 
         p_242.pgn[p_242.ID] = module_data[0];
-        p_242.pgn[p_242.KP] = module_data[1];
-        p_242.pgn[p_242.KI] = module_data[2];
-        p_242.pgn[p_242.KD] = module_data[3];
-        p_242.pgn[p_242.MinPWM] = module_data[4];
-        p_242.pgn[p_242.MaxPWM] = module_data[5];
-        p_242.pgn[p_242.PIDScale] = module_data[6];
-        p_242.pgn[p_242.Command] = module_data[7];
+        p_242.pgn[p_242.KP] = module_data[3];
+        p_242.pgn[p_242.KI] = module_data[4];
+        p_242.pgn[p_242.KD] = module_data[5];
+        p_242.pgn[p_242.MinPWM] = module_data[6];
+        p_242.pgn[p_242.MaxPWM] = module_data[7];
+        p_242.pgn[p_242.PIDScale] = module_data[8];
+        p_242.pgn[p_242.Command] = module_data[9]; // !!!!
 
         //qDebug() << "RC Module " << module_index << ": " << p_242.pgn;
 
