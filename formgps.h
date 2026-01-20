@@ -26,8 +26,6 @@
 #include "ccamera.h"
 #include "btnenum.h"
 
-#include "cworldgrid.h"
-#include "cnmea.h"
 #include "cvehicle.h"
 #include "ctool.h"
 #include "agioservice.h"
@@ -292,16 +290,6 @@ public:
     //create the scene camera
     CCamera camera;
 
-    //create world grid
-    //QScopedPointer <CWorldGrid> worldGrid;
-    CWorldGrid worldGrid;
-
-    //ABLine Instance
-    //QScopedPointer<CABLine> ABLine;
-
-    // Track management - restored from original architecture (was CTrack trk)
-    //CTrack track;
-
     CGuidance gyd;
 
     CTram tram;
@@ -311,7 +299,6 @@ public:
     CContour ct;
     //CYouTurn yt;
 
-    CVehicle* vehicle;  // Pointeur vers singleton
     CTool tool;
 
     //boundary instance

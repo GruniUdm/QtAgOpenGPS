@@ -30,6 +30,7 @@
 #include "flagsinterface.h"
 #include "siminterface.h"
 #include "modulecomm.h"
+#include "worldgrid.h"
 #include "cpgn.h"
 #include "rendering.h"
 
@@ -424,11 +425,11 @@ void FormGPS::oglMain_Paint()
                 fieldcolor = fieldColorNight;
             }
             //draw the field ground images
-            worldGrid.DrawFieldSurface(gl, projection *modelview, isTextureOn, fieldcolor, camera);
+            WorldGrid::instance()->DrawFieldSurface(gl, projection *modelview, isTextureOn, fieldcolor, camera.gridZoom);
 
             ////if grid is on draw it
             if (isGridOn)
-                worldGrid.DrawWorldGrid(gl, modelview, projection, camera.gridZoom, QColor::fromRgbF(0,0,0,1));
+                WorldGrid::instance()->DrawWorldGrid(gl, modelview, projection, camera.gridZoom, QColor::fromRgbF(0,0,0,1));
 
             //OpenGL ES does not support wireframe in this way. If we want wireframe,
             //we'll have to do it with LINES
@@ -455,7 +456,7 @@ void FormGPS::oglMain_Paint()
             else// draw the current and reference AB Lines or CurveAB Ref and line
             {
                 //when switching lines, draw the ghost
-                track.DrawTrack(gl, projection*modelview, isFontOn, worldGrid.isRateMap, yt, camera, gyd);
+                track.DrawTrack(gl, projection*modelview, isFontOn, false, yt, camera, gyd);
             }
 
             track.DrawTrackNew(gl, projection*modelview, camera, *CVehicle::instance());
@@ -669,7 +670,7 @@ void FormGPS::openGLControl_Shutdown()
     destroyShaders();
     destroyTextures();
     //destroy any openGL buffers.
-    worldGrid.destroyGLBuffers();
+    WorldGrid::instance()->destroyGLBuffers();
 }
 
 //back buffer openGL draw function
@@ -886,33 +887,6 @@ void FormGPS::oglBack_Paint()
     //grnPix = temp; //only show clipped image
     memcpy(grnPixels, temp.constBits(), temp.size().width() * temp.size().height() * 4);
 
-    //first channel
-    if (worldGrid.numRateChannels > 0)
-    {
-        /*
-        GL.Enable(EnableCap.Texture2D);
-
-        GL.BindTexture(TextureTarget.Texture2D, texture[(int)textures.RateMap1]);
-        GL.Begin(PrimitiveType.TriangleStrip);
-        GL.Color3(1.0f, 1.0f, 1.0f);
-        GL.TexCoord2(0, 0);
-        GL.Vertex3(worldGrid.eastingMinRate, worldGrid.northingMaxRate, 0.10);
-        GL.TexCoord2(1, 0.0);
-        GL.Vertex3(worldGrid.eastingMaxRate, worldGrid.northingMaxRate, 0.10);
-        GL.TexCoord2(0.0, 1);
-        GL.Vertex3(worldGrid.eastingMinRate, worldGrid.northingMinRate, 0.10);
-        GL.TexCoord2(1, 1);
-        GL.Vertex3(worldGrid.eastingMaxRate, worldGrid.northingMinRate, 0.0);
-        GL.End();
-
-        GL.Flush();
-
-        //read the whole block of pixels up to max lookahead, one read only
-        GL.ReadPixels(250, 1, 1, 1, OpenTK.Graphics.OpenGL.PixelFormat.Red, PixelType.UnsignedByte, rateRed);
-        */
-    }
-
-
     //The remaining code from the original method in the C# code is
     //broken out into a callback in formgps.cpp called
     //processSectionLookahead().
@@ -1034,7 +1008,12 @@ void FormGPS::oglZoom_Paint()
         //oglZoom.SwapBuffers();
 
         //QImage overPix;
+
+#if QT_VERSION < QT_VERSION_CHECK(6,9,0)
         overPix = zoomFBO->toImage().mirrored(false, true).convertToFormat(QImage::Format_RGBX8888);
+#else
+        overPix = zoomFBO->toImage().flipped().convertToFormat(QImage::Format_RGBX8888);
+#endif
         memcpy(overPixels, overPix.constBits(), overPix.size().width() * overPix.size().height() * 4);
     }
 

@@ -13,6 +13,7 @@
 #include "mainwindowstate.h"
 #include "boundaryinterface.h"
 #include "flagsinterface.h"
+#include "worldgrid.h"
 #include "siminterface.h"
 
 enum OPEN_FLAGS {
@@ -835,7 +836,9 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
 bool FormGPS::FileOpenField(QString fieldDir, int flags)
 {
     CNMEA &pn = *Backend::instance()->pn();
+    WorldGrid &worldGrid = *WorldGrid::instance();
     BACKEND_TRACK(track);
+
 
 
 #ifdef __ANDROID__
@@ -1550,8 +1553,6 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         lock.unlock();
     }
 
-    worldGrid.isGeoMap = false;
-
     filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "BackPic.txt");
 
     QFile backPic(filename);
@@ -1565,23 +1566,17 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         line = reader.readLine();
 
         line = reader.readLine();
-        worldGrid.isGeoMap = (line == "True" ? true : false);
+        worldGrid.set_isGeoMap ( (line == "True" ? true : false));
 
         line = reader.readLine();
-        worldGrid.eastingMaxGeo = line.toDouble();
+        worldGrid.set_eastingMaxGeo(line.toDouble());
         line = reader.readLine();
-        worldGrid.eastingMinGeo = line.toDouble();
+        worldGrid.set_eastingMinGeo ( line.toDouble());
         line = reader.readLine();
-        worldGrid.northingMaxGeo = line.toDouble();
+        worldGrid.set_northingMaxGeo ( line.toDouble());
         line = reader.readLine();
-        worldGrid.northingMinGeo = line.toDouble();
+        worldGrid.set_northingMinGeo ( line.toDouble());
 
-
-        if (worldGrid.isGeoMap)
-        {
-            //TODO: load map texture
-            worldGrid.isGeoMap = false;
-        }
         lock.unlock();
     }
 
@@ -2091,6 +2086,8 @@ void FormGPS::FileSaveTram()
 
 void FormGPS::FileSaveBackPic()
 {
+    WorldGrid &worldGrid = *WorldGrid::instance();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -2122,13 +2119,13 @@ void FormGPS::FileSaveBackPic()
 
     writer << "$BackPic" << Qt::endl;
 
-    if (worldGrid.isGeoMap)
+    if (worldGrid.isGeoMap())
     {
         writer << "True" << Qt::endl;
-        writer << worldGrid.eastingMaxGeo << Qt::endl;
-        writer << worldGrid.eastingMinGeo << Qt::endl;
-        writer << worldGrid.northingMaxGeo << Qt::endl;
-        writer << worldGrid.northingMinGeo << Qt::endl;
+        writer << worldGrid.eastingMaxGeo() << Qt::endl;
+        writer << worldGrid.eastingMinGeo() << Qt::endl;
+        writer << worldGrid.northingMaxGeo() << Qt::endl;
+        writer << worldGrid.northingMinGeo() << Qt::endl;
     }
     else
     {

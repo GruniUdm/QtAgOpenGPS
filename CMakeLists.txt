@@ -62,7 +62,7 @@ endif()
 #find_package(Qt6 REQUIRED COMPONENTS Core)
  find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets) #used only for opengl ?
  find_package(Qt6 REQUIRED COMPONENTS Gui)
-# find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
+ find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)  # Required for QRhi (rhiresources.cpp)
  find_package(Qt6 REQUIRED COMPONENTS SerialPort)
 # find_package(Qt6 REQUIRED COMPONENTS OpenGL)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
@@ -389,6 +389,8 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/modulecomm.h backend/modulecomm.cpp
     SOURCES backend/blockage.h backend/blockage.cpp
     SOURCES backend/steerconfig.h backend/steerconfig.cpp
+    SOURCES backend/camera.h backend/camera.cpp
+    SOURCES backend/worldgrid.h backend/worldgrid.cpp
     SOURCES models/recordedpathmodel.h models/recordedpathmodel.cpp
     SOURCES models/fencelinemodel.h models/fencelinemodel.cpp
     SOURCES models/flagmodel.h models/flagmodel.cpp
@@ -464,7 +466,7 @@ target_link_libraries(QtAgOpenGPS PRIVATE
     Qt6::Core
     Qt6::Widgets
     Qt6::Gui
-    Qt6::GuiPrivate
+    Qt6::GuiPrivate  # Required for QRhi (rhiresources.cpp)
 #   Qt6::OpenGL
     Qt6::Quick
     Qt6::QuickWidgets
