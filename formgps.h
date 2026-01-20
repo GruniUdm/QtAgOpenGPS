@@ -531,7 +531,6 @@ public:
     //uchar grnPixels[80001];
     LookAheadPixels grnPixels[150001];
     LookAheadPixels *overPixels = new LookAheadPixels[160000]; //400x400
-    QImage grnPix; //for debugging purposes to show in a window
     QImage overPix; //for debugging purposes to show in a window
 
     /*

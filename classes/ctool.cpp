@@ -945,7 +945,13 @@ void CTool::DrawPatchesTrianglesGL(QOpenGLFunctions *gl,
     }
 }
 
-QImage CTool::DrawPatchesBackQP(const CTram &tram,
+void CTool::DrawPatchesBack(QOpenGLFunctions *gl, QMatrix4x4 mvp)
+{
+
+
+}
+
+void CTool::DrawPatchesBackQP(const CTram &tram,
                                 const CBoundary &bnd,
                                 Vec3 pivotAxlePos,
                                 bool isHeadlandOn,
@@ -954,7 +960,6 @@ QImage CTool::DrawPatchesBackQP(const CTram &tram,
 {
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
-    QImage back_image;
 
     //  Load the identity.
     projection.setToIdentity();
@@ -962,10 +967,10 @@ QImage CTool::DrawPatchesBackQP(const CTram &tram,
     //projection.perspective(6.0f,1,1,6000);
     projection.perspective(glm::toDegrees((double)0.06f), 1.666666666666f, 50.0f, 520.0f);
 
-    if (back_image.isNull())
-        back_image = QImage(QSize(500,300), QImage::Format_RGBX8888);
+    if (grnPix.isNull())
+        grnPix = QImage(QSize(500,300), QImage::Format_RGBX8888);
 
-    back_image.fill(0);
+    grnPix.fill(0);
 
     //gl->glLoadIdentity();					// Reset The View
     modelview.setToIdentity();
@@ -993,9 +998,9 @@ QImage CTool::DrawPatchesBackQP(const CTram &tram,
     QColor patchColor = QColor::fromRgbF(0.0f, 0.5f, 0.0f);
 
     QPainter painter;
-    if (!painter.begin(&back_image)) {
+    if (!painter.begin(&grnPix)) {
         qWarning() << "New GPS frame but back buffer painter is still working on the last one.";
-        return QImage();
+        return;
     }
 
     painter.setRenderHint(QPainter::Antialiasing, false);
@@ -1156,14 +1161,12 @@ QImage CTool::DrawPatchesBackQP(const CTram &tram,
     painter.end();
 
     //TODO adjust coordinate transformations above to eliminate this step
-    back_image = back_image.flipped().convertToFormat(QImage::Format_RGBX8888);
+    grnPix = grnPix.flipped().convertToFormat(QImage::Format_RGBX8888);
 
-    QImage temp = back_image.copy(rpXPosition, 0, rpWidth, 290 /*(int)rpHeight*/);
+    QImage temp = grnPix.copy(rpXPosition, 0, rpWidth, 290 /*(int)rpHeight*/);
     temp.setPixelColor(0,0,QColor::fromRgb(255,128,0));
     //grnPix = temp; //only show clipped image
     memcpy(grnPixels, temp.constBits(), temp.size().width() * temp.size().height() * 4);
-
-    return back_image;
 }
 
 

@@ -7,6 +7,7 @@
 #include "common.h"
 #include <QColor>
 #include <QElapsedTimer>
+#include <QImage>
 #include "vec3.h"
 #include "mainwindowstate.h"
 #include "sectionbuttonsmodel.h"
@@ -110,6 +111,8 @@ public:
 
     bool patchesBufferDirty = true;
 
+    QImage grnPix;
+
     void sectionCalcWidths();
     void sectionCalcMulti();
     void sectionSetPositions();
@@ -142,7 +145,7 @@ public:
     void DrawPatchesBack(QOpenGLFunctions *gl,
                                QMatrix4x4 mvp);
 
-    QImage DrawPatchesBackQP(const CTram &tram, const CBoundary &bnd, Vec3 pivotAxlePos, bool isHeadlandOn, bool onTrack);
+    void DrawPatchesBackQP(const CTram &tram, const CBoundary &bnd, Vec3 pivotAxlePos, bool isHeadlandOn, bool onTrack);
 
     void NewPosition();
     void ProcessLookAhead(int gpsHz, MainWindowState::ButtonStates autoBtnState,
