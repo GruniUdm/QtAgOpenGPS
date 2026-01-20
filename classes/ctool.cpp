@@ -122,6 +122,9 @@ CTool::CTool()
     connect(Tools::instance(), &Tools::sectionButtonStateChanged,
             this, &CTool::onSectionButtonStatechanged);
 
+    connect(Backend::instance(), &Backend::resetTool,
+            this, &CTool::resetTool);
+
     loadSettings();
 }
 
