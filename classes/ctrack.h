@@ -102,11 +102,12 @@ public:
                           CNMEA &pn);
     void ResetCurveLine();
     void AddPathPoint(Vec3 point);
-    void DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera, const CVehicle &vehicle);
+    void DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
     void DrawTrack(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                    bool isFontOn,
                    bool isRateMapOn,
-                   CYouTurn &yt, const CCamera &camera,
+                   double camSetDistance,
+                   CYouTurn &yt,
                    const CGuidance &gyd);
     void DrawTrackGoalPoint(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
     int getHowManyPathsAway();

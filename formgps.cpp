@@ -22,6 +22,7 @@
 #include "recordedpath.h"
 #include "backendaccess.h"
 #include "modulecomm.h"
+#include "camera.h"
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
@@ -753,7 +754,7 @@ void FormGPS::JobClose()
     recPath.shuttleDubinsList.clear();
 
     //FixPanelsAndMenus();
-    camera.SetZoom();
+    Camera::instance()->SetZoom();
 
     //release Bing texture
     lock.unlock();
@@ -774,7 +775,7 @@ void FormGPS::JobNew()
 
     track.ABLine.abHeading = 0.00;
 
-    camera.SetZoom();
+    Camera::instance()->SetZoom();
     fileSaveCounter = 25;
     track.setIsAutoTrack(false);
     Backend::instance()->set_isJobStarted(true);

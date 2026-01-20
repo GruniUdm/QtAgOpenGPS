@@ -34,6 +34,7 @@
 #include "tools.h"
 #include "steerconfig.h"
 #include "backendaccess.h"
+#include "camera.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -50,6 +51,7 @@ void FormGPS::UpdateFixPosition()
     CNMEA &pn = *Backend::instance()->pn();
     BACKEND_TRACK(track);  //bring in a reference "track"
     BACKEND_YT(yt); //bring in a reference "yt"
+    Camera &camera = *Camera::instance();
 
     // PHASE 6.0.33: Declare rawGpsPosition at function start (before goto labels)
     // Used to separate RAW GPS positions (for heading calc) from CORRECTED positions (for display)
@@ -212,7 +214,7 @@ void FormGPS::UpdateFixPosition()
                 }
 
                 //set the camera
-                camera.camHeading = glm::toDegrees(Backend::instance()->m_fixFrame.gpsHeading);
+                camera.set_camHeading(glm::toDegrees(Backend::instance()->m_fixFrame.gpsHeading));
 
                 //now we have a heading, fix the first 3
                 if (CVehicle::instance()->antennaOffset != 0)
@@ -589,12 +591,12 @@ void FormGPS::UpdateFixPosition()
         if (camDelta > glm::twoPI) camDelta -= glm::twoPI;
         else if (camDelta < -glm::twoPI) camDelta += glm::twoPI;
 
-        smoothCamHeading -= camDelta * camera.camSmoothFactor;
+        smoothCamHeading -= camDelta * Camera::camSmoothFactor();
 
         if (smoothCamHeading > glm::twoPI) smoothCamHeading -= glm::twoPI;
         else if (smoothCamHeading < -glm::twoPI) smoothCamHeading += glm::twoPI;
 
-        camera.camHeading = glm::toDegrees(smoothCamHeading);
+        camera.set_camHeading(glm::toDegrees(smoothCamHeading));
 
         // PHASE 6.0.35 FIX: Skip byPass in normal flow (heading with wheel compensation already calculated)
         // byPass should only execute when jumped to from line 98 (slow speed / no initial heading)
@@ -636,12 +638,12 @@ void FormGPS::UpdateFixPosition()
         if (camDelta > glm::twoPI) camDelta -= glm::twoPI;
         else if (camDelta < -glm::twoPI) camDelta += glm::twoPI;
 
-        smoothCamHeading -= camDelta * camera.camSmoothFactor;
+        smoothCamHeading -= camDelta * Camera::camSmoothFactor();
 
         if (smoothCamHeading > glm::twoPI) smoothCamHeading -= glm::twoPI;
         else if (smoothCamHeading < -glm::twoPI) smoothCamHeading += glm::twoPI;
 
-        camera.camHeading = glm::toDegrees(smoothCamHeading);
+        camera.set_camHeading(glm::toDegrees(smoothCamHeading));
 
         afterByPass:
         TheRest();
@@ -652,7 +654,7 @@ void FormGPS::UpdateFixPosition()
         {
             //use NMEA headings for camera and tractor graphic
             CVehicle::instance()->set_fixHeading ( glm::toRadians(pn.headingTrue) );
-            camera.camHeading = pn.headingTrue;
+            camera.set_camHeading(pn.headingTrue);
             Backend::instance()->m_fixFrame.gpsHeading = CVehicle::instance()->fixHeading();
         }
 
@@ -718,9 +720,9 @@ void FormGPS::UpdateFixPosition()
                 qWarning() << "Invalid _imuCorrected value:" << _imuCorrected << "- not assigned to fixHeading";
             }
 
-            camera.camHeading = CVehicle::instance()->fixHeading();
-            if (camera.camHeading > glm::twoPI) camera.camHeading -= glm::twoPI;
-            camera.camHeading = glm::toDegrees(camera.camHeading);
+            double new_camHeading = CVehicle::instance()->fixHeading();
+            if (new_camHeading > glm::twoPI) new_camHeading -= glm::twoPI;
+            camera.set_camHeading(glm::toDegrees(new_camHeading));
         }
 
 
@@ -817,12 +819,12 @@ void FormGPS::UpdateFixPosition()
         if (camDelta > glm::twoPI) camDelta -= glm::twoPI;
         else if (camDelta < -glm::twoPI) camDelta += glm::twoPI;
 
-        smoothCamHeading -= camDelta * camera.camSmoothFactor;
+        smoothCamHeading -= camDelta * Camera::camSmoothFactor();
 
         if (smoothCamHeading > glm::twoPI) smoothCamHeading -= glm::twoPI;
         else if (smoothCamHeading < -glm::twoPI) smoothCamHeading += glm::twoPI;
 
-        camera.camHeading = glm::toDegrees(smoothCamHeading);
+        camera.set_camHeading(glm::toDegrees(smoothCamHeading));
 
         TheRest();
     }
@@ -1810,6 +1812,7 @@ void FormGPS::AddSectionOrPathPoints()
 void FormGPS::InitializeFirstFewGPSPositions()
 {
     CNMEA &pn = *Backend::instance()->pn();
+    Camera &camera = *Camera::instance();
 
     if (!isFirstFixPositionSet)
     {

@@ -14,7 +14,6 @@
 #include "cboundary.h"
 #include "cyouturn.h"
 #include "ctram.h"
-#include "ccamera.h"
 #include "cnmea.h"
 #include "cahrs.h"
 #include "cguidance.h"
@@ -1019,8 +1018,9 @@ void CABCurve::DrawCurveNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
 
 void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                          bool isFontOn,
+                         double camSetDistance,
                          const CTrk &track,
-                         CYouTurn &yt, const CCamera &camera)
+                         CYouTurn &yt)
 {
     //double tool_toolWidth = SettingsManager::instance()->getValue("Vehicle_toolWidth;
     //double tool_toolOverlap = SettingsManager::instance()->getValue("Vehicle_toolOverlap;
@@ -1059,8 +1059,8 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
         if (isFontOn)
         {
             color.setRgbF(0.40f, 0.90f, 0.95f);
-            drawText3D(camera, gl, mvp, track.curvePts[0].easting, track.curvePts[0].northing, "&A", 1.0, true, color);
-            drawText3D(camera, gl, mvp, track.curvePts[track.curvePts.count() - 1].easting, track.curvePts[track.curvePts.count() - 1].northing, "&B", 1.0, true, color);
+            drawText3D(gl, mvp, track.curvePts[0].easting, track.curvePts[0].northing, "&A", 1.0, true, color);
+            drawText3D(gl, mvp, track.curvePts[track.curvePts.count() - 1].easting, track.curvePts[track.curvePts.count() - 1].northing, "&B", 1.0, true, color);
         }
 
         //just draw ref and smoothed line if smoothing window is open
@@ -1097,7 +1097,7 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                     gldraw.draw(gl,mvp,color,GL_LINE_LOOP,lineWidth);
                     gl->glLineWidth(1);}
 
-                if (!vehicle_isStanleyUsed && camera.camSetDistance > -200)
+                if (!vehicle_isStanleyUsed && camSetDistance > -200)
                 {
                     gldraw.clear();
                     //Draw lookahead Point
@@ -1132,7 +1132,7 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
             gldraw.draw(gl, mvp, QColor::fromRgbF(0.95f, 0.2f, 0.95f),GL_LINE_STRIP, lineWidth);
             gl->glLineWidth(1);
 
-            if (!vehicle_isStanleyUsed && camera.camSetDistance > -200)
+            if (!vehicle_isStanleyUsed && camSetDistance > -200)
             {
                 //Draw lookahead Point
                 gldraw.clear();

@@ -23,7 +23,6 @@
 #include "vecfix2fix.h"
 #include "vec2.h"
 #include "vec3.h"
-#include "ccamera.h"
 #include "btnenum.h"
 
 #include "cvehicle.h"
@@ -286,9 +285,6 @@ public:
 
     //used to update the screen status bar etc
     int statusUpdateCounter = 1;
-
-    //create the scene camera
-    CCamera camera;
 
     CGuidance gyd;
 

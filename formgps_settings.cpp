@@ -107,7 +107,6 @@ void FormGPS::loadSettings()
 
     //load various saved settings or properties into the support classes
     ahrs.loadSettings();
-    camera.loadSettings();
     pn.loadSettings();
     CVehicle::instance()->loadSettings();
     yt.loadSettings();

@@ -17,7 +17,6 @@
 #include <QOpenGLBuffer>
 
 class QOpenGLFunctions;
-class CCamera;
 class CYouTurn;
 class CTool;
 class CBoundary;
@@ -137,10 +136,8 @@ public:
                      double steerAngle,
                      bool isFirstHeadingSet,
                      double markLeft,
-                     double markRight,
-                     QRect viewport,
-                     const CCamera &camera
-                     );
+                     double markRight, double camSetDistance,
+                     QRect viewport);
 
     //C++ code should use Qt 6.8 QProperty setters above
     //QML bindings work automatically with BINDABLE functions

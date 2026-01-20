@@ -115,10 +115,9 @@ public:
     void DrawCurveNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
 
     void DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
-                   bool isFontOn,
+                   bool isFontOn, double camSetDistance,
                    const CTrk &track,
-                   CYouTurn &yt, const CCamera &camera
-                   );
+                   CYouTurn &yt);
 
     //void drawTram(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
 

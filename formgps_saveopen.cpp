@@ -15,6 +15,7 @@
 #include "flagsinterface.h"
 #include "worldgrid.h"
 #include "siminterface.h"
+#include "camera.h"
 
 enum OPEN_FLAGS {
     LOAD_MAPPING = 1,
@@ -838,8 +839,7 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
     CNMEA &pn = *Backend::instance()->pn();
     WorldGrid &worldGrid = *WorldGrid::instance();
     BACKEND_TRACK(track);
-
-
+    Camera &camera = *Camera::instance();
 
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + fieldDir;
