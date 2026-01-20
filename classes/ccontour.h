@@ -6,6 +6,7 @@
 #include <climits>
 #include "vec2.h"
 #include "vec3.h"
+#include "simpleproperty.h"
 
 class QOpenGLFunctions;
 class QMatrix4x4;
@@ -34,7 +35,7 @@ private:
 
 public:
     bool isContourOn=false;
-    bool isRightPriority = true;
+    SIMPLE_BINDABLE_PROPERTY(bool, isRightPriority)
     // for closest line point to current fix
     double minDistance = 99999.0, refX, refZ;
 
@@ -69,7 +70,6 @@ public:
 
 
     explicit CContour(QObject *parent = 0);
-    void SetLockToLine(class FormGPS *formGPS);
     void BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehicle, Vec3 pivot, QObject *mainWindow);
     void DistanceFromContourLine(bool isBtnAutoSteerOn, CVehicle &vehicle, CYouTurn &yt, CAHRS &ahrs,  CNMEA &pn, Vec3 pivot, Vec3 steer, QObject *mainWindow);
     void StartContourLine();
@@ -78,11 +78,13 @@ public:
     void BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCounter);
     void DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, QObject *mainWindow, QElapsedTimer &swFrame);
     void ResetContour();
+public slots:
+    void setLockToLine();
+
 signals:
-    //void guidanceLineDistanceOff(int);
-    //void distanceDisplay(int);
-    //void guidanceLineSteerAngle(int);
-    void TimedMessage(int,QString,QString);
+private:
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CContour, bool, m_isRightPriority, true, &CContour::isRightPriorityChanged)
+
 };
 
 #endif // CCONTOUR_H

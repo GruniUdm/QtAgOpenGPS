@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 //import Settings
+import AOG
 
 import ".."
 import "../components"
@@ -39,11 +40,11 @@ Rectangle{
         icon.source: prefix + "/images/Config/ConDa_RollSetZero.png"
         isChecked: false
         onClicked: {
-            if (aog.imuRollDegrees != 88888) {
+            if (Backend.fixFrame.imuRollDegrees != 88888) {
                 // Threading Phase 1: Calculate roll with current zero offset
-                var roll = aog.imuRollDegrees + SettingsManager.imu_rollZero
+                var roll = Backend.fixFrame.imuRollDegrees + SettingsManager.imu_rollZero
                 SettingsManager.imu_rollZero = roll;
-                aogInterface.changeImuRoll(roll)
+                Backend.fixFrame.imuRoll = roll;
             }
         }
     }
@@ -87,8 +88,8 @@ Rectangle{
         icon.source: prefix + "/images/Config/ConDa_ResetIMU.png"
         isChecked: false
         onClicked: {
-            aog.changeImuHeading(88888);
-            aog.changeImuRoll(99999)
+            Backend.fixFrame.imuHeading = 88888;
+            Backend.fixFrame.imuRoll = 99999;
         }
     }
 

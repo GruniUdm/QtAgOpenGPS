@@ -129,8 +129,8 @@ Window{
 					cboxEncoder.checked = true;
 				}
 
-                nudMaxCounts.value = SettingsManager.ardSteer_ardSteerMaxPulseCounts;
-                hsbarSensor.value = SettingsManager.ardSteer_ardSteerMaxPulseCounts;
+                nudMaxCounts.value = SettingsManager.ardSteer_maxPulseCounts;
+                hsbarSensor.value = SettingsManager.ardSteer_maxPulseCounts;
 
                 sett = SettingsManager.ardSteer_setting1;
 
@@ -260,19 +260,7 @@ Window{
 
             //Properties.Settings.Default.Save(); not sure what happens here?? David
 
-            //set pgns
-            //signal handler will do the following:
-            /*
-                   mf.p_251.pgn[mf.p_251.set0] = Properties.Settings.Default.setArdSteer_setting0;
-                   mf.p_251.pgn[mf.p_251.set1] = Properties.Settings.Default.setArdSteer_setting1;
-                   mf.p_251.pgn[mf.p_251.maxPulse] = Properties.Settings.Default.setArdSteer_maxPulseCounts;
-                   mf.p_251.pgn[mf.p_251.minSpeed] = 5; //0.5 kmh THIS IS CHANGED IN AOG FIXES
-
-                   if (SettingsManager.as_isConstantContourOn)
-                   mf.p_251.pgn[mf.p_251.angVel] = 1;
-                   else mf.p_251.pgn[mf.p_251.angVel] = 0;
-                   */
-            aog.modulesSend251() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+            ModuleComm.modulesSend251()
 
             unsaved.visible = false;
         }
@@ -423,7 +411,7 @@ Window{
                     width: 250 * theme.scaleWidth
                     height: 50 * theme.scaleWidth
                     visible: cboxPressureSensor.checked || cboxCurrentSensor.checked
-                    value: aog.sensorData
+                    value: ModuleComm.sensorData
                     from: 0
                     to: 255
                     Text {
@@ -431,7 +419,7 @@ Window{
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: parent.right
                         anchors.leftMargin: 5
-                        text: (aog.sensorData < 0 ? "0" : aog.sensorData) + " %"
+                        text: (ModuleComm.sensorData < 0 ? "0" : ModuleComm.sensorData) + " %"
                         font.bold: true
                     }
                 }

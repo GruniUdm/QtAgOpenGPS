@@ -3,7 +3,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
-//import Settings
+import AOG
 //This is a the row of on-screen section-control buttonw
 
 Rectangle {
@@ -17,26 +17,25 @@ Rectangle {
     color: "transparent"
 
     // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
-    property bool isDayMode: true
-    property int seedBlockRow1: 0
-    property int seedBlockRow2: 0
-    property int seedBlockRow3: 0
-    property int seedBlockRow4: 0
-    property int seedBlockCountMin: 0
-    property int seedBlockCountMax: 10000
+    property bool viewSwitch: false
+    property bool isDayMode: SettingsManager.display_isDayMode
+    property int seedBlockRow1: SettingsManager.seed_blockRow1
+    property int seedBlockRow2: SettingsManager.seed_blockRow2
+    property int seedBlockRow3: SettingsManager.seed_blockRow3
+    property int seedBlockRow4: SettingsManager.seed_blockRow4
+    property int seedBlockCountMin: SettingsManager.seed_blockCountMin
+    property int seedBlockCountMax: SettingsManager.seed_blockCountMax
 
     // Threading Phase 1: Seed blockage configuration
     property int numRows:  Number(seedBlockRow1 + seedBlockRow2 + seedBlockRow3 + seedBlockRow4)
-    property int countMin: Number(seedBlockCountMin*10000)
-    property int countMax: Number(seedBlockCountMax*10000)
+    property int countMin: Number(seedBlockCountMin)
+    property int countMax: Number(seedBlockCountMax)
     property color offColor: "Crimson"
     property color offTextColor: "White"
     property color onColor: "DarkGoldenrod"
     property color onTextColor: "White"
     property color autoColor: "ForestGreen"
     property color autoTextColor: "White"
-    property variant blockageRowCount: aog.blockageRowCount
-
 
     //methods
     function setColors() {
@@ -62,72 +61,45 @@ Rectangle {
         numRows = Number(seedBlockRow1 + seedBlockRow2 + seedBlockRow3 + seedBlockRow4)
         countMin =  Number(seedBlockCountMin)
         countMax =  Number(seedBlockCountMax)
-        }
-
-
-
-    onNumRowsChanged: {
-        rowModel.clear()
-        for (var i = 0; i < numRows; i++) {
-            if(i < blockageRows.blockageRowCount.length){
-                rowModel.append( { rowNo: i } )
-            }
-
-        }
     }
 
     //callbacks, connections, and signals
     Component.onCompleted:  {
         setColors()
         setSizes()
-        rowModel.clear()
-        for (var i = 0; i < numRows; i++) {
-            if(i < blockageRows.blockageRowCount.length){
-                rowModel.append( { rowNo: i } )
-            }
-        }
     }
 
-// Qt 6.8 QProperty + BINDABLE: Functions called in existing Component.onCompleted above
-
-    ListModel {
-        id: rowModel
-    }
+    // Qt 6.8 QProperty + BINDABLE: Functions called in existing Component.onCompleted above
 
     Component {
         id: rowViewDelegate
         BlockageRow {
-            width: (800 * theme.scaleWidth / numRows) < 50 ? (15 * theme.scaleWidth) : (20 * theme.scaleWidth)
+            width: (800 * theme.scaleWidth / numRows) < 50 ? (800 * theme.scaleWidth / numRows) : (20 * theme.scaleWidth)
             //height: (10 * theme.scaleWidth)
-            height: (blockageRows.blockageRowCount[model.rowNo] * 40/(aog.blockage_max+1)+20)*theme.scaleHeight<45*theme.scaleHeight?(blockageRows.blockageRowCount[model.rowNo] * 40/(aog.blockage_max+1)+20)*theme.scaleHeight:40*theme.scaleHeight
             //anchors.bottom: parent.bottom
-            //buttonText: (model.rowNo + 1).toFixed(0)
+            height: (model.count * 40/(Blockage.max+1)+20)*theme.scaleHeight<45*theme.scaleHeight?(model.count * 40/(Blockage.max+1)+20)*theme.scaleHeight:40*theme.scaleHeight
+            useColorBasedAnchors: viewSwitch
+            buttonText: (model.index + 1).toFixed(0)
             // visible: (model.rowNo < numRows) ? true : false
             color: {
-                var count = blockageRows.blockageRowCount[model.rowNo];
                 var dayMode = isDayMode;
                 var off = dayMode ? "Red" : "Crimson";
                 var auto = dayMode ? "Lime" : "ForestGreen";
                 var on = dayMode ? "Yellow" : "DarkGoldenRod";
-                return count < countMin ? off : (count < countMax ? auto : on);
+                return model.count < countMin ? off : (model.count < countMax ? auto : on);
             }
-            //textColor: (blockageRows.blockageRowCount[model.rowNo]===0 ? offTextColor : (blockageRows.blockageRowCount[model.rowNo] === 1 ? autoTextColor : onTextColor))
+            textColor: "black"
         }
     }
 
     ListView {
         id: blockageRowList
         orientation: Qt.Horizontal
-        reuseItems: true
-        //width: rowViewDelegate.width
-        width: 400
+        width: contentWidth
         height: 100 * theme.scaleHeight
-        anchors.left: parent.left
-        anchors.right: parent.right
-        //anchors.top: parent.top
-        model: rowModel
-        //spacing: 1
-        //boundsMovement: Flickable.StopAtBounds
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        model: Blockage.blockageModel
         delegate: rowViewDelegate
     }
 }

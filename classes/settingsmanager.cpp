@@ -11,8 +11,13 @@
 #include <QDataStream>
 #include <QIODevice>
 #include <QTimer>
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY (settingsmanager, "settingsmanager.qtagopengps")
 
 SettingsManager* SettingsManager::s_instance = nullptr;
+QMutex SettingsManager::s_mutex;
+bool SettingsManager::s_cpp_created = false;
 
 SettingsManager::SettingsManager(QObject *parent) : QObject(parent), m_disableAutoSave(false)
 {
@@ -47,11 +52,35 @@ SettingsManager::~SettingsManager()
 
 SettingsManager* SettingsManager::instance()
 {
+    QMutexLocker locker(&s_mutex);
     if (!s_instance) {
         s_instance = new SettingsManager();
+        qDebug(settingsmanager) << "Singleton created by C++ code.";
+        s_cpp_created = true;
+        // ensure cleanup on app exit
+        QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+                         s_instance, []() {
+                             delete s_instance; s_instance = nullptr;
+                         });
     }
     return s_instance;
 }
+
+SettingsManager *SettingsManager::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
+    Q_UNUSED(jsEngine)
+
+    QMutexLocker locker(&s_mutex);
+
+    if(!s_instance) {
+        s_instance = new SettingsManager();
+        qDebug(settingsmanager) << "Singleton created by QML engine.";
+    } else if (s_cpp_created) {
+        qmlEngine->setObjectOwnership(s_instance, QQmlEngine::CppOwnership);
+    }
+
+    return s_instance;
+}
+
 
 // ===== JSON PROFILE SYSTEM (Vehicle/Field profiles) =====
 
@@ -70,7 +99,7 @@ QJsonObject SettingsManager::toJsonUnsafe()
     QString json_value;
     QJsonObject blah;
 
-    for (const auto &key : keys) {
+    for (const auto &key : std::as_const(keys)) {
         b = m_qsettings->value(key);
         type = b.typeName();
 
@@ -173,7 +202,7 @@ bool SettingsManager::loadJson(QString filename)
                 QString payload = new_value.mid(6);
                 QStringList list = payload.split(",");
                 QVariantList varList;
-                for (const QString& item : list) {
+                for (const QString& item : std::as_const(list)) {
                     varList.append(item.toInt());
                 }
                 m_qsettings->setValue(key, varList);
@@ -418,7 +447,7 @@ void SettingsManager::syncPropertiesFromQSettings()
             // Handle QStringList to QVector<int> conversion for tool_zones
             QStringList list = value.toStringList();
             QVector<int> vector;
-            for (const QString& str : list) {
+            for (const QString& str : std::as_const(list)) {
                 bool ok;
                 int val = str.toInt(&ok);
                 if (ok) vector.append(val);

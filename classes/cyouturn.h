@@ -14,12 +14,9 @@
 class CBoundary;
 class CABCurve;
 class CABLine;
-class CVehicle;
 class QOpenGLFunctions;
-class CVehicle;
 class CNMEA;
 class CTrack;
-class FormGPS; // Forward declaration
 
 //class QMatrix4x4;
 
@@ -55,8 +52,6 @@ class CYouTurn: public QObject
 {
     Q_OBJECT
 protected:
-    FormGPS* formGPS = nullptr; // Reference to parent FormGPS
-    CTrack* track = nullptr; // Injected CTrack reference
 
 private:
     int A, B;
@@ -154,31 +149,23 @@ public:
 
     int makeUTurnCounter  = 0; //moved from FormGPS to here
 
-    //reference to mainWindow for qmlItem access
-    QObject *mainWindow = nullptr;
-
     //constructor
     explicit CYouTurn(QObject *parent = 0);
 
     void loadSettings();
     void setMainWindow(QObject *mw); // Qt 6.8 FIX: Moved to .cpp
-    void setFormGPS(FormGPS* gps); // Qt 6.8 FIX: Moved to .cpp
-    void setTrack(CTrack* trk) { track = trk; } // Inject CTrack reference
 
     // Sync local isOutOfBounds with FormGPS - Fix for PropertyWrapper migration regression
     void syncOutOfBounds(bool value);
 
     //Finds the point where an AB Curve crosses the turn line
     bool BuildCurveDubinsYouTurn(bool isTurnLeft,
-                                 Vec3 pivotPos,
-                                 CVehicle &vehicle,
                                  const CBoundary &bnd,
                                  CTrack &trk,
                                  int secondsSinceStart
                                  );
 
-    bool BuildABLineDubinsYouTurn(FormGPS* formGPS, bool isTurnLeft,
-                                  CVehicle &vehicle,
+    bool BuildABLineDubinsYouTurn(bool isTurnLeft,
                                   const CBoundary &bnd,
                                   CTrack &trk,
                                   int secondsSinceStart
@@ -186,43 +173,36 @@ public:
 
 
 private:
-    bool CreateCurveOmegaTurn(bool isTurnLeft, Vec3 pivotPos,
-                              CVehicle &vehicle,
+    bool CreateCurveOmegaTurn(bool isTurnLeft,
                               const CBoundary &bnd,
                               const CTrack &trk,
                               int secondsSinceStart);
 
-    bool CreateCurveWideTurn(bool isTurnLeft, Vec3 pivotPos,
-                             CVehicle &vehicle,
+    bool CreateCurveWideTurn(bool isTurnLeft,
                              const CBoundary &bnd,
                              CTrack &trk,
                              int secondsSinceStart
                              );
 
     bool CreateABOmegaTurn(bool isTurnLeft,
-                           CVehicle &vehicle,
                            const CBoundary &bnd,
                            const CTrack &track);
 
-    bool CreateABWideTurn(FormGPS* formGPS, bool isTurnLeft,
-                          CVehicle &vehicle,
+    bool CreateABWideTurn(bool isTurnLeft,
                           const CBoundary &bnd,
                           CTrack &trk,
                           int secondsSinceStart);
 
     bool KStyleTurnCurve(bool isTurnLeft,
-                         CVehicle &vehicle,
                          const CTrack &trk,
                          const CBoundary &bnd);
 
     bool KStyleTurnAB(bool isTurnLeft,
-                         CVehicle &vehicle,
                          const CABLine &ABLine,
                          const CBoundary &bnd);
 
     QVector<Vec3> &MoveABTurnInsideTurnLine(QVector<Vec3> &uTurList,
                                             double head,
-                                            CVehicle &vehicle,
                                             const CBoundary &bnd)
 ;
 
@@ -255,7 +235,7 @@ private:
     bool FindCurveTurnPoint(const CABCurve &thisCurve, const CBoundary &bnd);
     void FindABTurnPoint(Vec3 fromPt, const CABLine &ABLine, const CBoundary &bnd);
 
-    bool AddABSequenceLines(const CABLine &ABLine, const CVehicle &vehicle);
+    bool AddABSequenceLines(const CABLine &ABLine);
     bool AddCurveSequenceLines(const CABCurve &curve, const CABCurve &nextCurve);
 
 public:
@@ -267,14 +247,13 @@ private:
                                          double head,
                                          bool deleteSecondHalf,
                                          bool invertHeading,
-                                         CVehicle &vehicle,
                                          const CBoundary &bnd);
 
 public:
     void SmoothYouTurn(int smPts);
 
     //called to initiate turn
-    void YouTurnTrigger(CTrack &trk, CVehicle &vehicle);
+    void YouTurnTrigger(CTrack &trk);
 
     //Normal copmpletion of youturn
     void CompleteYouTurn();
@@ -290,34 +269,36 @@ public:
     void FailCreate();
 
     //build the points and path of youturn to be scaled and transformed
-    void BuildManualYouLateral(FormGPS* formGPS, bool isTurnLeft,
-                               CVehicle &vehicle,
+    void BuildManualYouLateral(bool isTurnLeft,
                                CTrack &trk);
 
     //build the points and path of youturn to be scaled and transformed
-    void BuildManualYouTurn(FormGPS* formGPS, bool isTurnLeft, bool isTurnButtonTriggered,
-                            CVehicle &vehicle,
+    void BuildManualYouTurn(bool isTurnLeft, bool isTurnButtonTriggered,
                             CTrack &trk);
 
     //determine distance from youTurn guidance line
-    bool DistanceFromYouTurnLine(CVehicle &v, CNMEA &pn);
+    bool DistanceFromYouTurnLine(CNMEA &pn);
 
     //Duh.... What does this do....
     void DrawYouTurn(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
 signals:
-    void TimedMessage(int,QString,QString);
-    void outOfBounds();
     //void setTriggerSequence(bool);
     //void resetSequenceEventTriggers();
-    void turnOffBoundAlarm();
+    void turnOffBoundAlarm(); //TODO move to MainWindowState property
     void uTurnReset();
     //void guidanceLineDistanceOff(int);
     //void guidanceLineSteerAngle(int);
     //void setLookaheadGoal(double);
 public slots:
     void ResetYouTurn();
-
     void ResetCreatedYouTurn();
+    void swapAutoYouTurnDirection();
+
+    void manualUTurn(bool right);
+    void lateral(bool right);
+
+    void toggleAutoYouTurn();
+    void toggleYouSkip();
 
 };
 

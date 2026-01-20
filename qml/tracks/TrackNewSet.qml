@@ -80,11 +80,11 @@ Item{
                 icon.source: prefix + "/images/LetterABlue.png"
                 onClicked: {
                     aPlusHeading.enabled = true
-                    aPlusHeading.text = (Number(Utils.radians_to_deg(aog.heading)).toLocaleString(Qt.locale(), 'f', 4))
+                    aPlusHeading.text = (Number(Utils.radians_to_deg(Backend.fixFrame.heading)).toLocaleString(Qt.locale(), 'f', 4))
                     btnAPlusOk.enabled = true
                     TracksInterface.start_new(2)
                     TracksInterface.newRefSide = setAPRefSide.refSideRight ? 1 : -1
-                    TracksInterface.mark_start(aog.easting, aog.northing, Number(aPlusHeading.text))
+                    TracksInterface.mark_start(Backend.fixFrame.easting, Backend.fixFrame.northing, Number(aPlusHeading.text))
                     TracksInterface.newHeading = -1
                     TracksInterface.newHeading = Utils.deg_to_radians(Number(aPlusHeading.text))
                 }
@@ -170,7 +170,7 @@ Item{
                     btnB.enabled = true
                     TracksInterface.start_new(2)
                     TracksInterface.newRefSide = setABRefSide.refSideRight ? 1 : -1
-                    TracksInterface.mark_start(aog.easting, aog.northing, aog.heading)
+                    TracksInterface.mark_start(Backend.fixFrame.easting, Backend.fixFrame.northing, Backend.fixFrame.heading)
                 }
             }
             IconButtonTransparent {
@@ -180,7 +180,7 @@ Item{
                 icon.source: prefix + "/images/LetterBBlue.png"
                 onClicked: {
                     btnABOk.enabled = true
-                    TracksInterface.mark_end( setABRefSide.refSideRight ? 1 : -1, aog.easting, aog.northing)
+                    TracksInterface.mark_end( setABRefSide.refSideRight ? 1 : -1, Backend.fixFrame.easting, Backend.fixFrame.northing)
                 }
 
             }
@@ -251,7 +251,7 @@ Item{
                     btnRecord.enabled = true
                     TracksInterface.start_new(4)
                     TracksInterface.newRefSide = setABCurveRefSide.refSideRight ? 1 : -1
-                    TracksInterface.mark_start(aog.easting, aog.northing, aog.heading)
+                    TracksInterface.mark_start(Backend.fixFrame.easting, Backend.fixFrame.northing, Backend.fixFrame.heading)
                 }
             }
             IconButtonTransparent {
@@ -261,7 +261,7 @@ Item{
                 icon.source: prefix + "/images/LetterBBlue.png"
                 onClicked: {
                     setABCurve.visible = false
-                    TracksInterface.mark_end(setABCurveRefSide.refSideRight ? 1 : -1, aog.easting, aog.northing)
+                    TracksInterface.mark_end(setABCurveRefSide.refSideRight ? 1 : -1, Backend.fixFrame.easting, Backend.fixFrame.northing)
                     trackAddName.show(TracksInterface.newName)
                 }
             }
@@ -308,10 +308,10 @@ Item{
         height: 450 * theme.scaleHeight
         onVisibleChanged: {
             if (visible) {
-                latPointA.text = parseFloat((aog.latitude).toFixed(7))
-                lonPointA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
-                latPointB.text = parseFloat((aog.latitude).toFixed(7)) //aog.latitude
-                lonPointB.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+                latPointA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7))
+                lonPointA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
+                latPointB.text = parseFloat((Backend.fixFrame.latitude).toFixed(7)) //Backend.fixFrame.latitude
+                lonPointB.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
 
                 TracksInterface.start_new(2)
                 TracksInterface.newRefSide = 0; //in this mode ref line is where the tractor is
@@ -321,9 +321,9 @@ Item{
         }
 
         function update_ab() {
-            var pta = aog.convertWGS84ToLocal(Number(latPointA.text),
+            var pta = Backend.pn.convertWGS84ToLocal(Number(latPointA.text),
                                               Number(lonPointA.text))
-            var ptb = aog.convertWGS84ToLocal(Number(latPointB.text),
+            var ptb = Backend.pn.convertWGS84ToLocal(Number(latPointB.text),
                                               Number(lonPointB.text))
 
             TracksInterface.mark_start(pta[1], pta[0], 0)
@@ -346,8 +346,8 @@ Item{
                 Layout.row: 2
                 Layout.column: 0
                 onClicked: {
-                    latPointA.text = parseFloat((aog.latitude).toFixed(7)) //aog.latitude
-                    lonPointA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+                    latPointA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7)) //Backend.fixFrame.latitude
+                    lonPointA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
                 }
             }
 
@@ -358,8 +358,8 @@ Item{
                 Layout.row: 5
                 Layout.column: 0
                 onClicked: {
-                    latPointB.text = parseFloat((aog.latitude).toFixed(7)) //aog.latitude
-                    lonPointB.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+                    latPointB.text = parseFloat((Backend.fixFrame.latitude).toFixed(7)) //Backend.fixFrame.latitude
+                    lonPointB.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
                 }
             }
             /*
@@ -487,9 +487,9 @@ Item{
         height: 450 * theme.scaleHeight
         onVisibleChanged: {
             if (visible) {
-                latPointAA.text = parseFloat((aog.latitude).toFixed(7))
-                lonPointAA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
-                latLonHeadingEntry.text = parseFloat((aog.heading).toFixed(4))
+                latPointAA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7))
+                lonPointAA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
+                latLonHeadingEntry.text = parseFloat((Utils.radians_to_deg(Backend.fixFrame.heading)).toFixed(4))
                 TracksInterface.start_new(2)
                 TracksInterface.newRefSide = 0; //in this mode ref line is where the tractor is
 
@@ -498,7 +498,7 @@ Item{
         }
 
         function update_a_heading() {
-            var pta = aog.convertWGS84ToLocal(Number(latPointAA.text),
+            var pta = Backend.pn.convertWGS84ToLocal(Number(latPointAA.text),
                                               Number(lonPointAA.text))
 
             TracksInterface.mark_start(pta[1], pta[0], 0)
@@ -520,8 +520,8 @@ Item{
                 Layout.rowSpan: 2
                 Layout.column: 0
                 onClicked: {
-                    latPointAA.text = parseFloat((aog.latitude).toFixed(7)) //aog.latitude
-                    lonPointAA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+                    latPointAA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7)) //Backend.fixFrame.latitude
+                    lonPointAA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
                 }
             }
 
@@ -616,8 +616,8 @@ Item{
         height: 450 * theme.scaleHeight
         onVisibleChanged: {
             if (visible) {
-                latPointAAA.text = parseFloat((aog.latitude).toFixed(7))
-                lonPointAAA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+                latPointAAA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7))
+                lonPointAAA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
             }
         }
         GridLayout {
@@ -635,8 +635,8 @@ Item{
                 Layout.rowSpan: 2
                 Layout.column: 0
                 onClicked: {
-                    latPointAAA.text = parseFloat((aog.latitude).toFixed(7)) //aog.latitude
-                    lonPointAAA.text = parseFloat((aog.longitude).toFixed(7)) //aog.longitude
+                    latPointAAA.text = parseFloat((Backend.fixFrame.latitude).toFixed(7)) //Backend.fixFrame.latitude
+                    lonPointAAA.text = parseFloat((Backend.fixFrame.longitude).toFixed(7)) //Backend.fixFrame.longitude
                 }
             }
 
@@ -701,451 +701,4 @@ Item{
         //currentFolder: StandardPaths.standardLocations(StandardPaths.DocumentsLocation) + "/QtAgOpenGPS/Fields"
         nameFilters: ["KML Files (*.kml)"]
     }
-/*Dialog {
-    id: abSetter
-    width: 300
-    modal: true
-    height: 550
-    //border.width: 1
-    //border.color: "black"
-    //z: 1
-    function show() {
-        abSetter.visible = true
-    }
-
-    standardButtons: "NoButton"
-    property double a_easting
-    property double a_northing
-    property double a_longitude
-    property double a_latitude
-    property double b_easting
-    property double b_northing
-    property double b_latitude
-    property double b_longitude
-    property bool a_set
-    property double heading //radians
-    property double heading_degrees
-    background: Rectangle{
-        id: backgroundABSetter
-        border.width: 1
-        border.color: aogInterface.blackDayWhiteNight
-        color: aogInterface.backgroundColor
-        anchors.fill: parent
-    }
-
-    visible: false
-
-    onVisibleChanged: {
-        if (visible === true) {
-            a_set = false;
-            a_stuff.visible = true;
-            b_stuff.visible = false
-            headingSpinbox.value = 0
-        }
-    }
-
-    onRejected: {
-        abLinePickerDialog.visible = true
-    }
-
-    onAccepted: {
-        //emit signal to create the line
-        //abLinePickerDialog.addLine(
-            linesInterface.abLine_addLine(newLineName.abLineName,a_easting, a_northing, heading)
-            linesInterface.abLine_updateLines()
-            var count = linesInterface.abLinesList.length
-            //ablineView.currentIndex = count -1
-            //aog.currentABLine = count - 1
-            abSetter.close()
-            abLinePickerDialog.open()
-        }
-
-        Rectangle {
-            id: a_stuff
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: childrenRect.height
-            color: "transparent"
-
-            Text {
-                id: a_label
-                text:  qsTr("Drive to AB line <b>start</b> point and press the A button or enter Latitude and Longitude.")
-                wrapMode: Text.WordWrap
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.margins: 5
-            }
-            IconButtonTransparent{
-                objectName: "a"
-                id: a
-                anchors.top: a_label.bottom
-                anchors.left: parent.left
-                anchors.margins: 5
-                checkable: false
-                icon.source: prefix + "/images/LetterABlue.png"
-                onClicked: {
-                    abSetter.a_easting = aog.toolEasting
-                    abSetter.a_northing = aog.toolNorthing
-                    abSetter.heading = aog.toolHeading
-                    abSetter.heading_degrees = aog.toolHeading * 180 / Math.PI
-                    linesInterface.abLine_setA(true, abSetter.a_easting, abSetter.a_northing, abSetter.heading)
-                    a_manual_latitude.set_without_onchange(aog.toolLatitude)
-                    a_manual_longitude.set_without_onchange(aog.toolLongitude)
-                    b_stuff.visible = true
-
-                    headingSpinbox.set_without_onchange(abSetter.heading_degrees)
-                }
-            }
-
-            GridLayout {
-                anchors.top: a_label.bottom
-                anchors.left: a.right
-                anchors.right: parent.right
-                anchors.margins: 5
-                columns: 2
-                rows: 2
-
-                Text {
-                    text: qsTr("Lat","Latitude abbreviation")
-                }
-                LatLonTextField {
-                    id: a_manual_latitude
-                    Layout.fillWidth: true
-                    placeholderText: qsTr("Latitude")
-
-                    onManualTextChanged: {
-                        if (a_manual_longitude.text != "") {
-                            b_stuff.visible = true
-                        }
-                    }
-
-                    onEditingFinished: {
-                        if (a_manual_longitude.text != "") {
-                            const [northing, easting] = aog.convertWGS84ToLocal(Number(a_manual_latitude.text), Number(a_manual_longitude.text))
-                            abSetter.a_easting = easting
-                            abSetter.a_northing = northing
-                            abSetter.heading = aog.toolHeading
-                            abSetter.heading_degrees = aog.toolHeading * 180 / Math.PI
-                            linesInterface.abLine_setA(true, abSetter.a_easting, abSetter.a_northing, abSetter.heading)
-                        }
-                    }
-                }
-                Text {
-                    text: qsTr("Lon","Longitude abbreviation")
-                }
-                LatLonTextField {
-                    id: a_manual_longitude
-                    Layout.fillWidth: true
-                    placeholderText: qsTr("Longitude")
-                    onManualTextChanged: {
-                        if (a_manual_latitude.text != "") {
-                            b_stuff.visible = true;
-                        }
-                    }
-                    onEditingFinished: {
-                        if (a_manual_latitude.text != "") {
-                            const [northing, easting] = aog.convertWGS84ToLocal(Number(a_manual_latitude.text), Number(a_manual_longitude.text))
-                            abSetter.a_easting = easting
-                            abSetter.a_northing = northing
-                            linesInterface.abLine_setA(true, abSetter.a_easting, abSetter.a_northing, abSetter.heading)
-                        }
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            id: b_stuff
-            anchors.top: a_stuff.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            color: "transparent"
-
-            Text {
-                id: b_label
-                text:  qsTr("For an A+ line, enter the heading.  Otherwise drive to AB line <b>end</b> point and press the B button, or manually enter Latitude and Longitude.")
-                wrapMode: Text.WordWrap
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.margins: 5
-            }
-
-            SpinBox{
-                id: headingSpinbox
-                objectName: "heading"
-                from: 0
-                to: 35999999
-                stepSize: 10000
-                value: 0
-                editable: true
-
-                property real realValue: value/ 100000
-                property int decimals: 2
-
-                property bool suppress_onchange: false
-
-                function set_without_onchange(new_value) {
-                    suppress_onchange = true
-                    value = new_value * 100000
-                    suppress_onchange = false
-                }
-
-                anchors.top: b_label.bottom
-                anchors.margins: 5
-                anchors.horizontalCenter: parent.horizontalCenter
-
-                onValueChanged: {
-                    if (! suppress_onchange) {
-                        abSetter.heading = value / 100000 * Math.PI / 180.0
-                        abSetter.heading_degrees = value / 100000
-
-                        linesInterface.abLine_setA(true, abSetter.a_easting, abSetter.a_northing, abSetter.heading)
-
-                        //calculate b latitude and longitude for the display
-                        //use 100m
-                        abSetter.b_easting = Math.cos(abSetter.heading) * 100 + abSetter.a_easting
-                        abSetter.b_northing = Math.sin(abSetter.heading) * 100 + abSetter.a_northing
-
-                        const [latitude, longitude] = aog.convertLocalToWGS84(abSetter.b_northing, abSetter.b_easting)
-                        b_manual_latitude.set_without_onchange(latitude)
-                        b_manual_longitude.set_without_onchange(longitude)
-                    }
-                }
-
-                textFromValue: function(value, locale) {
-                    return Number(value / 100000).toLocaleString(locale, 'f', decimals)
-                }
-
-                valueFromText: function(text, locale) {
-                    return Number.fromLocaleString(locale, text) * 100000
-                }
-            }
-
-            IconButtonTransparent{
-                objectName: "b"
-                id: b
-                anchors.top: headingSpinbox.bottom
-                anchors.left: parent.left
-                anchors.margins: 5
-                checkable: false
-                icon.source: prefix + "/images/LetterBBlue.png"
-
-                onClicked: {
-                    abSetter.b_easting = aog.toolEasting
-                    abSetter.b_northing = aog.toolNorthing
-
-                    b_manual_latitude.set_without_onchange(aog.toolLatitude)
-                    b_manual_longitude.set_without_onchange(aog.toolLongitude)
-
-                    abSetter.heading = Math.atan2(abSetter.b_easting - abSetter.a_easting,
-                    abSetter.b_northing - abSetter.a_northing)
-
-                    if (abSetter.heading < 0) abSetter.heading += 2 * Math.PI
-
-                    abSetter.heading_degrees = abSetter.heading * 180.0 / Math.PI
-
-                    headingSpinbox.set_without_onchange(abSetter.heading_degrees)
-                }
-            }
-            GridLayout {
-                anchors.top: headingSpinbox.bottom
-                anchors.left: b.right
-                anchors.right: parent.right
-                anchors.margins: 5
-                columns: 2
-                rows: 2
-
-                Text {
-                    text: qsTr("Lat","Latitude abbreviation")
-                }
-                LatLonTextField {
-                    id: b_manual_latitude
-                    Layout.fillWidth: true
-                    placeholderText: qsTr("Latitude")
-                    onEditingFinished: {
-                        if (b_manual_longitude.text != "") {
-                            const [northing, easting] = aog.convertWGS84ToLocal(Number(b_manual_latitude.text), Number(b_manual_longitude.text))
-                            abSetter.b_easting = easting
-                            abSetter.b_northing = northing
-
-                            abSetter.heading = Math.atan2(abSetter.b_easting - abSetter.a_easting,
-                            abSetter.b_northing - abSetter.a_northing)
-
-                            if (abSetter.heading < 0) abSetter.heading += 2 * Math.PI
-
-                            abSetter.heading_degrees = abSetter.heading * 180.0 / Math.PI
-
-                            headingSpinbox.set_without_onchange(abSetter.heading_degrees)
-                        }
-                    }
-                }
-
-                Text {
-                    text: qsTr("Lon","Longitude abbreviation")
-                }
-                LatLonTextField {
-                    id: b_manual_longitude
-                    Layout.fillWidth: true
-                    placeholderText: qsTr("Latitude")
-                    onEditingFinished: {
-                        if (b_manual_latitude.text != "") {
-                            const [northing, easting] = aog.convertWGS84ToLocal(Number(b_manual_latitude.text), Number(b_manual_longitude.text))
-                            abSetter.b_easting = easting
-                            abSetter.b_northing = northing
-                            if (abSetter.heading < 0) abSetter.heading += 2 * Math.PI
-
-                            abSetter.heading_degrees = abSetter.heading * 180.0 / Math.PI
-
-                            headingSpinbox.set_without_onchange(abSetter.heading_degrees)
-                        }
-                    }
-                }
-            }
-        }
-
-
-        IconButtonTransparent{
-            objectName: "btnCancel"
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            anchors.margins: 10
-            icon.source: prefix + "/images/Cancel64.png"
-            onClicked:{
-                //cancel
-                linesInterface.abLine_setA(false,0,0,0) //turn off line setting
-                abSetter.rejected()
-                abSetter.close()
-            }
-        }
-        IconButtonTransparent{
-            objectName: "btnOk"
-            anchors.bottom: parent.bottom
-            anchors.right: parent.right
-            anchors.margins: 10
-            icon.source: prefix + "/images/OK64.png"
-            onClicked: {
-                newLineName.visible = true
-                newLineName.generate_ab_name(abSetter.heading_degrees)
-                abSetter.visible = false
-            }
-        }
-        LineName{
-            id: newLineName
-            objectName: "newLineName"
-            anchors.top: parent.top
-            anchors.left: parent.left
-            title: "AB Line"
-            visible: false
-            onRejected: {
-                //go back to A/B dialog
-                //do nothing
-                abSetter.visible = true
-            }
-
-            onAccepted: {
-                abSetter.accepted()
-            }
-        }
-    }
-
-    LineName{
-        id: copyLineName
-        objectName: "copyLineName"
-        anchors.top:parent.top
-        anchors.left: parent.left
-        title: "Copy AB Line"
-        visible: false
-        z: 2
-        onAccepted: {
-            if(ablineView.currentIndex > -1) {
-                var heading = linesInterface.abLinesList[ablineView.currentIndex].heading
-                var easting = linesInterface.abLinesList[ablineView.currentIndex].easting
-                var northing = linesInterface.abLinesList[ablineView.currentIndex].northing
-                linesInterface.abLine_addLine(copyLineName.abLineName, easting, northing, heading)
-                //linesInterface.abLine_updateLines()
-                ablineView.positionViewAtEnd()
-            }
-        }
-    }
-
-    LineName{
-        id: editLineName
-        objectName: "editLineName"
-        anchors.top:parent.top
-        anchors.left: parent.left
-        title: "AB Line"
-        visible: false
-        z: 1
-        onAccepted: {
-            if(ablineView.currentIndex > -1) {
-                linesInterface.abLine_changeName(ablineView.currentIndex, editLineName.abLineName)
-                //linesInterface.abLine_updateLines()
-                //ablineView.positionViewAtEnd()
-            }
-        }
-    }
-
-    Rectangle{
-        id: listrect
-        anchors.left: parent.left
-        anchors.top:topLine.bottom
-        anchors.right: rightColumn.left
-        anchors.bottom: bottomRow.top
-        anchors.bottomMargin: 0
-        anchors.margins: 10
-        color: aogInterface.backgroundColor
-
-        ListModel {
-            id: ablineModel
-            objectName: "ablineModel"
-        }
-
-        Component.onCompleted: {
-            reloadModel()
-        }
-
-        ListView {
-            id: ablineView
-            anchors.fill: parent
-            model: ablineModel
-            //property int currentIndex: -1
-            clip: true
-
-            delegate: RadioButton{
-                id: control
-                checked: ablineView.currentIndex === index ? true : false
-                indicator: Rectangle{
-                    anchors.fill: parent
-                    anchors.margins: 2
-                    //color: (control.down) ? aogInterface.backgroundColor : aogInterface.blackDayWhiteNight
-                    //color: (control.down) ? aogInterface.blackDayWhiteNight : aogInterface.backgroundColor
-                    color: control.checked ? "blue" : "white"
-                    visible: control.checked
-                }
-
-                onDownChanged: {
-                    ablineView.currentIndex = index
-                }
-
-                width:listrect.width
-                height:50
-                //anchors.fill: parent
-                //color: "light gray"
-                Text{
-                    anchors.left: parent.left
-                    anchors.leftMargin: 5
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: model.name
-                    font.pixelSize: 25
-                    font.bold: true
-                    //color: control.checked ? aogInterface.backgroundColor : aogInterface.blackDayWhiteNight
-                    color: control.checked ? aogInterface.blackDayWhiteNight : aogInterface.backgroundColor
-                    z: 2
-                }
-            }
-        }
-    }
-    */
    }

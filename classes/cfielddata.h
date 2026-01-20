@@ -33,7 +33,6 @@ public:
 
     CFieldData();
 
-    void UpdateFieldBoundaryGUIAreas(QVector<CBoundaryList> &bndList, QObject *mainWindow, class FormGPS *formGPS);
 };
 
 #endif // CFIELDDATA_H

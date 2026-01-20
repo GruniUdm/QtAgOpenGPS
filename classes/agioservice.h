@@ -225,13 +225,10 @@ public:
                NOTIFY ntripUrlIPChanged BINDABLE bindableNtripUrlIP)
 
 public:
-    ~AgIOService();
-
     // C++ singleton access (strict singleton pattern - same as CTrack/CVehicle)
-    static AgIOService* instance() {
-        static AgIOService* s_instance = new AgIOService(nullptr);
-        return s_instance;
-    }
+    static AgIOService* instance();
+    static AgIOService *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
+
     
     // ============================================================================
     // RECTANGLE PATTERN: Manual Method Declarations for all 54 Properties
@@ -727,6 +724,8 @@ signals:
     void nmeaDataReady(const PGNParser::ParsedData& data);     // GPS position data (NMEA only)
     void imuDataReady(const PGNParser::ParsedData& data);      // External IMU data (PGN 211 only)
     void steerDataReady(const PGNParser::ParsedData& data);    // AutoSteer feedback (PGN 253/250)
+    void machineDataReady(const PGNParser::ParsedData& data);    // Machine
+    void blockageDataReady(const PGNParser::ParsedData& data);    // Blockage data (PGN 244)
 
     // Rectangle Pattern NOTIFY signals for STATUS properties only
     // GPS/IMU data properties removed - moved to FormGPS
@@ -904,6 +903,15 @@ signals:
 private:
     // Private constructor for strict singleton pattern
     explicit AgIOService(QObject* parent = nullptr);
+    ~AgIOService();
+
+    //prevent copying
+    AgIOService(const AgIOService &) = delete;
+    AgIOService &operator=(const AgIOService &) = delete;
+
+    static AgIOService *s_instance;
+    static QMutex s_mutex;
+    static bool s_cpp_created;
 
     // ✅ CDC COMPLIANT: Private async methods for non-blocking subnet configuration
     void sendPGN201ToAllInterfaces();
@@ -1101,6 +1109,7 @@ private:
 
     // Phase 6.0.24: Local traffic counters (main thread)
     quint32 m_localCntrMachine;
+    quint32 m_localCntrBlockage;
     quint32 m_localCntrSteer;
     quint32 m_localCntrIMU;
     quint32 m_localCntrUDPOut;

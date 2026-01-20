@@ -17,8 +17,8 @@ MoveablePopup {
     width: 270  * theme.scaleWidth
     visible: false
     modal: false
-    onVisibleChanged: {if (visible){ aog.startDataCollection()} // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-                      else {aog.stopDataCollection()}} // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+    onVisibleChanged: {if (visible){ SteerConfig.startDataCollection()} // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                      else {SteerConfig.stopDataCollection()}} // Qt 6.8 MODERN: Direct Q_INVOKABLE call
 
     TopLine{
         id: topLine
@@ -44,19 +44,19 @@ MoveablePopup {
             anchors.topMargin: 15 * theme.scaleHeight
             anchors.bottomMargin: 15 * theme.scaleHeight
             Text {
-                text: (aog.hasValidRecommendation?qsTr("Ready for Calibration"):(aog.sampleCount>=200?qsTr("Low Confidence"):qsTr("Collecting Data")))
+                text: (SteerConfig.hasValidRecommendation?qsTr("Ready for Calibration"):(SteerConfig.sampleCount>=200?qsTr("Low Confidence"):qsTr("Collecting Data")))
                 font.bold: true
                 Layout.alignment: Qt.AlignCenter
             }
             Text {
-                text: qsTr("Samples: " + aog.sampleCount)
+                text: qsTr("Samples: " + SteerConfig.sampleCount)
                 font.bold: true
                 Layout.alignment: Qt.AlignCenter
             }
             Text {
-                text: qsTr("Confidence: " +  Math.round(aog.confidenceLevel * 100) / 100  + " %")
+                text: qsTr("Confidence: " +  Math.round(SteerConfig.confidenceLevel * 100) / 100  + " %")
                 font.bold: true
-                color: (aog.hasValidRecommendation?"darkGreen":(aog.sampleCount>=200?"orange":"red"))
+                color: (SteerConfig.hasValidRecommendation?"darkGreen":(SteerConfig.sampleCount>=200?"orange":"red"))
                 Layout.alignment: Qt.AlignCenter
             }
         }
@@ -73,14 +73,14 @@ MoveablePopup {
 
             IconButtonTransparent{
                 icon.source: prefix + "/images/Trash.png"
-                onClicked: aog.smartCalLabelClick() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                onClicked: SteerConfig.smartCalLabelClick() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 Layout.fillWidth: true
             }
             IconButtonTransparent{
                 id: btnSmartZeroWAS
                 icon.source: prefix + "/images/SteerZeroSmall.png"
-                enabled: aog.hasValidRecommendation
-                onClicked: aog.smartZeroWAS() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                enabled: SteerConfig.hasValidRecommendation
+                onClicked: SteerConfig.zeroWAS() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 Layout.fillWidth: true
             }
         }

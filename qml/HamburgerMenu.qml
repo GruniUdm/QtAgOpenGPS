@@ -29,6 +29,8 @@ Drawer{
                 PropertyChanges { target: btnRussian; checked: false }
                 PropertyChanges { target: btnSerbian; checked: false }
                 PropertyChanges { target: btnGerman; checked: false }
+                PropertyChanges { target: btnHindi; checked: false }
+                PropertyChanges { target: btnKazak; checked: false }
             },
             State {
                 name: "french"
@@ -38,6 +40,8 @@ Drawer{
                 PropertyChanges { target: btnRussian; checked: false }
                 PropertyChanges { target: btnSerbian; checked: false }
                 PropertyChanges { target: btnGerman; checked: false }
+                PropertyChanges { target: btnHindi; checked: false }
+                PropertyChanges { target: btnKazak; checked: false }
             },
             State {
                 name: "russian"
@@ -47,6 +51,8 @@ Drawer{
                 PropertyChanges { target: btnRussian; checked: true }
                 PropertyChanges { target: btnSerbian; checked: false }
                 PropertyChanges { target: btnGerman; checked: false }
+                PropertyChanges { target: btnHindi; checked: false }
+                PropertyChanges { target: btnKazak; checked: false }
             },
             State {
                 name: "serbian"
@@ -56,6 +62,8 @@ Drawer{
                 PropertyChanges { target: btnRussian; checked: false }
                 PropertyChanges { target: btnSerbian; checked: true }
                 PropertyChanges { target: btnGerman; checked: false }
+                PropertyChanges { target: btnHindi; checked: false }
+                PropertyChanges { target: btnKazak; checked: false }
             },
             State {
                 name: "german"
@@ -65,6 +73,30 @@ Drawer{
                 PropertyChanges { target: btnRussian; checked: false }
                 PropertyChanges { target: btnSerbian; checked: false }
                 PropertyChanges { target: btnGerman; checked: true }
+                PropertyChanges { target: btnHindi; checked: false }
+                PropertyChanges { target: btnKazak; checked: false }
+            },
+            State {
+                name: "hindi"
+                when: SettingsManager.menu_language === "hi"
+                PropertyChanges { target: btnEnglish; checked: false }
+                PropertyChanges { target: btnFrench; checked: false }
+                PropertyChanges { target: btnRussian; checked: false }
+                PropertyChanges { target: btnSerbian; checked: false }
+                PropertyChanges { target: btnGerman; checked: true }
+                PropertyChanges { target: btnHindi; checked: true }
+                PropertyChanges { target: btnKazak; checked: false }
+            },
+            State {
+                name: "kazak"
+                when: SettingsManager.menu_language === "kz"
+                PropertyChanges { target: btnEnglish; checked: false }
+                PropertyChanges { target: btnFrench; checked: false }
+                PropertyChanges { target: btnRussian; checked: false }
+                PropertyChanges { target: btnSerbian; checked: false }
+                PropertyChanges { target: btnGerman; checked: true }
+                PropertyChanges { target: btnHindi; checked: false }
+                PropertyChanges { target: btnKazak; checked: true }
             }
         ]
         height: fieldMenu.height
@@ -157,7 +189,7 @@ Drawer{
             anchors.topMargin: 5
             spacing: 10
             flow: Grid.TopToBottom
-            rows: 5
+            rows: 7
             columns: 1
 
             Comp.IconButtonTextBeside{
@@ -203,6 +235,22 @@ Drawer{
                     hamburgerMenuRoot.visible = false
                     // Threading Phase 1: Language selection - German
                     SettingsManager.menu_language = "de"
+                    aog.settings_save()}
+            }
+            Comp.IconButtonTextBeside{
+                id: btnHindi
+                text: qsTr("हिंदी")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    SettingsManager.menu_language = "hi"
+                    aog.settings_save()}
+            }
+            Comp.IconButtonTextBeside{
+                id: btnKazak
+                text: qsTr("Қазақ")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    SettingsManager.menu_language = "kz"
                     aog.settings_save()}
             }
         }

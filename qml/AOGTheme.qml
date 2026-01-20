@@ -117,12 +117,12 @@ Item {
 //                 sectionOff.play()
 //         }
 //         function onAgeChanged(){
-//             if(aog.age > gpsAgeAlarm)
+//             if(Backend.fixFrame.age > gpsAgeAlarm)
 //                 if(isRTK)
 //                     rtkLost.play()
 //         }
 //         function onDistancePivotToTurnLineChanged(){
-//             if(aog.distancePivotToTurnLine == 20)
+//             if(Backend.distancePivotToTurnLine == 20)
 //                 if(soundUturnOn)
 //                     approachingYouTurn.play()
 //         }

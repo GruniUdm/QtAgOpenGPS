@@ -4,7 +4,7 @@
 // This runs every time we get a new GPS fix, or sim position
 #include "formgps.h"
 #include "cnmea.h"
-#include "cmodulecomm.h"
+#include "modulecomm.h"
 #include "ccontour.h"
 #include "cvehicle.h"
 #include "csection.h"
@@ -22,6 +22,18 @@
 #include "cpgn.h"
 #include "qmlutil.h"
 #include "glutils.h"
+#include "rendering.h"
+#include "backend.h"
+#include "mainwindowstate.h"
+#include "boundaryinterface.h"
+#include "recordedpath.h"
+#include "siminterface.h"
+#include "modulecomm.h"
+#include "cpgn.h"
+#include "blockage.h"
+#include "tools.h"
+#include "steerconfig.h"
+#include "backendaccess.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -35,10 +47,16 @@ void FormGPS::UpdateFixPosition()
 {
     QLocale locale;
 
+    CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_TRACK(track);  //bring in a reference "track"
+    BACKEND_YT(yt); //bring in a reference "yt"
+
     // PHASE 6.0.33: Declare rawGpsPosition at function start (before goto labels)
     // Used to separate RAW GPS positions (for heading calc) from CORRECTED positions (for display)
     // Now copies from m_rawGpsPosition member (set by onNmeaDataReady at 8 Hz)
     Vec2 rawGpsPosition;
+
+    CPGN_FE &p_254 = ModuleComm::instance()->p_254;
 
     //swFrame.Stop();
     //Measure the frequency of the GPS updates
@@ -59,6 +77,8 @@ void FormGPS::UpdateFixPosition()
     //     if (nowHz < 3) nowHz = 3;
     // }
     // Simulation mode: No limits, show true CPU performance
+
+    double mc_actualSteerAngleDegrees = ModuleComm::instance()->actualSteerAngleDegrees();
 
     //simple comp filter
     gpsHz = 0.98 * gpsHz + 0.02 * nowHz;
@@ -97,14 +117,14 @@ void FormGPS::UpdateFixPosition()
         //#region Start
 
         distanceCurrentStepFixDisplay = glm::Distance(prevDistFix, pn.fix);
-        double newDistance = this->distanceUser() + distanceCurrentStepFixDisplay;
+        double newDistance = Backend::instance()->m_currentField.distanceUser + distanceCurrentStepFixDisplay;
         if (newDistance > 999) newDistance = 0;
-        this->setDistanceUser(newDistance);
+        Backend::instance()->currentField_setDistanceUser(newDistance);
         distanceCurrentStepFixDisplay *= 100;
 
         prevDistFix = pn.fix;
 
-        if (fabs(CVehicle::instance()->avgSpeed) < 1.5 && !isFirstHeadingSet)
+        if (fabs(CVehicle::instance()->avgSpeed()) < 1.5 && !isFirstHeadingSet)
             goto byPass;
 
         if (!isFirstHeadingSet) //set in steer settings, Stanley
@@ -140,13 +160,13 @@ void FormGPS::UpdateFixPosition()
                 stepFixPts[0].northing = pn.fix.northing;
                 stepFixPts[0].isSet = 1;
 
-                setGpsHeading(atan2(pn.fix.easting - stepFixPts[2].easting,
-                                    pn.fix.northing - stepFixPts[2].northing));
+                Backend::instance()->m_fixFrame.gpsHeading = atan2(pn.fix.easting - stepFixPts[2].easting,
+                                    pn.fix.northing - stepFixPts[2].northing);
 
-                if (gpsHeading() < 0) setGpsHeading(gpsHeading() + glm::twoPI);
-                else if (gpsHeading() > glm::twoPI) setGpsHeading(gpsHeading() - glm::twoPI);
+                if (Backend::instance()->m_fixFrame.gpsHeading < 0) Backend::instance()->m_fixFrame.gpsHeading = Backend::instance()->m_fixFrame.gpsHeading + glm::twoPI;
+                else if (Backend::instance()->m_fixFrame.gpsHeading > glm::twoPI) Backend::instance()->m_fixFrame.gpsHeading = Backend::instance()->m_fixFrame.gpsHeading - glm::twoPI;
 
-                CVehicle::instance()->fixHeading = gpsHeading();
+                CVehicle::instance()->set_fixHeading ( Backend::instance()->m_fixFrame.gpsHeading );
 
                 //set the imu to gps heading offset
                 if (ahrs.imuHeading != 99999)
@@ -155,7 +175,7 @@ void FormGPS::UpdateFixPosition()
                     imuGPS_Offset = 0;
 
                     //Difference between the IMU heading and the GPS heading
-                    double gyroDelta = (imuHeading + imuGPS_Offset) - gpsHeading();
+                    double gyroDelta = (imuHeading + imuGPS_Offset) - Backend::instance()->m_fixFrame.gpsHeading;
 
                     if (gyroDelta < 0) gyroDelta += glm::twoPI;
                     else if (gyroDelta > glm::twoPI) gyroDelta -= glm::twoPI;
@@ -185,22 +205,22 @@ void FormGPS::UpdateFixPosition()
 
                     // Phase 6.0.24 Problem 18: Validate _imuCorrected before assigning to fixHeading
                     if (std::isfinite(_imuCorrected) && fabs(_imuCorrected) < 100.0) {
-                        CVehicle::instance()->fixHeading = _imuCorrected;
+                        CVehicle::instance()->set_fixHeading ( _imuCorrected );
                     } else {
                         qWarning() << "Invalid _imuCorrected value:" << _imuCorrected << "- not assigned to fixHeading";
                     }
                 }
 
                 //set the camera
-                camera.camHeading = glm::toDegrees(gpsHeading());
+                camera.camHeading = glm::toDegrees(Backend::instance()->m_fixFrame.gpsHeading);
 
                 //now we have a heading, fix the first 3
                 if (CVehicle::instance()->antennaOffset != 0)
                 {
                     for (int i = 0; i < 3; i++)
                     {
-                        stepFixPts[i].easting = (cos(-gpsHeading()) * CVehicle::instance()->antennaOffset) + stepFixPts[i].easting;
-                        stepFixPts[i].northing = (sin(-gpsHeading()) * CVehicle::instance()->antennaOffset) + stepFixPts[i].northing;
+                        stepFixPts[i].easting = (cos(-Backend::instance()->m_fixFrame.gpsHeading) * CVehicle::instance()->antennaOffset) + stepFixPts[i].easting;
+                        stepFixPts[i].northing = (sin(-Backend::instance()->m_fixFrame.gpsHeading) * CVehicle::instance()->antennaOffset) + stepFixPts[i].northing;
                     }
                 }
 
@@ -215,8 +235,8 @@ void FormGPS::UpdateFixPosition()
                     // not any more - April 30, 2019 - roll to right is positive Now! Still Important
                     for (int i = 0; i < 3; i++)
                     {
-                        stepFixPts[i].easting = (cos(-gpsHeading()) * rollCorrectionDistance) + stepFixPts[i].easting;
-                        stepFixPts[i].northing = (sin(-gpsHeading()) * rollCorrectionDistance) + stepFixPts[i].northing;
+                        stepFixPts[i].easting = (cos(-Backend::instance()->m_fixFrame.gpsHeading) * rollCorrectionDistance) + stepFixPts[i].easting;
+                        stepFixPts[i].northing = (sin(-Backend::instance()->m_fixFrame.gpsHeading) * rollCorrectionDistance) + stepFixPts[i].northing;
                     }
                 }
 
@@ -254,8 +274,8 @@ void FormGPS::UpdateFixPosition()
         // Apply antenna offset correction
         if (CVehicle::instance()->antennaOffset != 0)
         {
-            pn.fix.easting = (cos(-gpsHeading()) * CVehicle::instance()->antennaOffset) + pn.fix.easting;
-            pn.fix.northing = (sin(-gpsHeading()) * CVehicle::instance()->antennaOffset) + pn.fix.northing;
+            pn.fix.easting = (cos(-Backend::instance()->m_fixFrame.gpsHeading) * CVehicle::instance()->antennaOffset) + pn.fix.easting;
+            pn.fix.northing = (sin(-Backend::instance()->m_fixFrame.gpsHeading) * CVehicle::instance()->antennaOffset) + pn.fix.northing;
         }
 
         uncorrectedEastingGraph = pn.fix.easting;
@@ -267,8 +287,8 @@ void FormGPS::UpdateFixPosition()
             rollCorrectionDistance = sin(glm::toRadians((ahrs.imuRoll))) * -CVehicle::instance()->antennaHeight;
             correctionDistanceGraph = rollCorrectionDistance;
 
-            pn.fix.easting = (cos(-gpsHeading()) * rollCorrectionDistance) + pn.fix.easting;
-            pn.fix.northing = (sin(-gpsHeading()) * rollCorrectionDistance) + pn.fix.northing;
+            pn.fix.easting = (cos(-Backend::instance()->m_fixFrame.gpsHeading) * rollCorrectionDistance) + pn.fix.easting;
+            pn.fix.northing = (sin(-Backend::instance()->m_fixFrame.gpsHeading) * rollCorrectionDistance) + pn.fix.northing;
         }
 
         //#endregion
@@ -335,12 +355,12 @@ void FormGPS::UpdateFixPosition()
                             newGPSHeading += M_PI;
                             if (newGPSHeading < 0) newGPSHeading += glm::twoPI;
                             else if (newGPSHeading >= glm::twoPI) newGPSHeading -= glm::twoPI;
-                            setIsReverseWithIMU(true);
+                            Backend::instance()->set_isReverseWithIMU(true);
                         }
                         else
                         {
                             CVehicle::instance()->setIsReverse(false);
-                            setIsReverseWithIMU(false);
+                            Backend::instance()->set_isReverseWithIMU(false);
                         }
                     }
                     else
@@ -351,15 +371,15 @@ void FormGPS::UpdateFixPosition()
                     // PHASE 6.0.35: Wheel angle compensation (forwardComp/reverseComp already implemented)
                     if (CVehicle::instance()->isReverse())
                         newGPSHeading -= glm::toRadians(CVehicle::instance()->antennaPivot / 1
-                                                        * mc.actualSteerAngleDegrees * ahrs.reverseComp);
+                                                        * mc_actualSteerAngleDegrees * ahrs.reverseComp);
                     else
                         newGPSHeading -= glm::toRadians(CVehicle::instance()->antennaPivot / 1
-                                                        * mc.actualSteerAngleDegrees * ahrs.forwardComp);
+                                                        * mc_actualSteerAngleDegrees * ahrs.forwardComp);
 
                     if (newGPSHeading < 0) newGPSHeading += glm::twoPI;
                     else if (newGPSHeading >= glm::twoPI) newGPSHeading -= glm::twoPI;
 
-                    setGpsHeading(newGPSHeading);
+                    Backend::instance()->m_fixFrame.gpsHeading = newGPSHeading;
 
                     // PHASE 6.0.35 FIX: Update stepFixPts ONLY when GPS heading recalculated
                     // This ensures stepFixPts[0] and pn.fix remain spaced apart (critical for low speed)
@@ -375,8 +395,8 @@ void FormGPS::UpdateFixPosition()
                     //Difference between the IMU heading and the GPS heading
                     gyroDelta = 0;
 
-                    //if (!isReverseWithIMU)
-                    gyroDelta = (imuHeading + imuGPS_Offset) - gpsHeading();
+                    //if (!Backend::instance()->isReverseWithIMU)
+                    gyroDelta = (imuHeading + imuGPS_Offset) - Backend::instance()->m_fixFrame.gpsHeading;
                     //else
                     //{
                     //    gyroDelta = 0;
@@ -396,7 +416,7 @@ void FormGPS::UpdateFixPosition()
                     else if (gyroDelta < -glm::twoPI) gyroDelta += glm::twoPI;
 
                     //move the offset to line up imu with gps
-                    if(!isReverseWithIMU())
+                    if(!Backend::instance()->isReverseWithIMU())
                         imuGPS_Offset += (gyroDelta * (ahrs.fusionWeight));
                     else
                         imuGPS_Offset += (gyroDelta * (0.02));
@@ -421,7 +441,7 @@ void FormGPS::UpdateFixPosition()
             //use imu as heading when going slow
             // Phase 6.0.24 Problem 18: Validate _imuCorrected before assigning to fixHeading
             if (std::isfinite(_imuCorrected) && fabs(_imuCorrected) < 100.0) {
-                CVehicle::instance()->fixHeading = _imuCorrected;
+                CVehicle::instance()->set_fixHeading ( _imuCorrected );
             } else {
                 qWarning() << "Invalid _imuCorrected value:" << _imuCorrected << "- not assigned to fixHeading";
             }
@@ -464,7 +484,7 @@ void FormGPS::UpdateFixPosition()
                     {
 
                         ////what is angle between the last valid heading before stopping and one just now
-                        delta = fabs(M_PI - fabs(fabs(newGPSHeading - gpsHeading()) - M_PI));
+                        delta = fabs(M_PI - fabs(fabs(newGPSHeading - Backend::instance()->m_fixFrame.gpsHeading) - M_PI));
 
                         filteredDelta = delta * 0.2 + filteredDelta * 0.8;
 
@@ -499,17 +519,17 @@ void FormGPS::UpdateFixPosition()
                             // PHASE 6.0.35: Wheel angle compensation (forwardComp/reverseComp already implemented)
                             if (CVehicle::instance()->isReverse())
                                 newGPSHeading -= glm::toRadians(CVehicle::instance()->antennaPivot / 1
-                                                                * mc.actualSteerAngleDegrees * ahrs.reverseComp);
+                                                                * mc_actualSteerAngleDegrees * ahrs.reverseComp);
                             else
                                 newGPSHeading -= glm::toRadians(CVehicle::instance()->antennaPivot / 1
-                                                                * mc.actualSteerAngleDegrees * ahrs.forwardComp);
+                                                                * mc_actualSteerAngleDegrees * ahrs.forwardComp);
 
                             if (newGPSHeading < 0) newGPSHeading += glm::twoPI;
                             else if (newGPSHeading >= glm::twoPI) newGPSHeading -= glm::twoPI;
 
                             //set the headings
-                            setGpsHeading(newGPSHeading);
-                            CVehicle::instance()->fixHeading = gpsHeading();
+                            Backend::instance()->m_fixFrame.gpsHeading = newGPSHeading;
+                            CVehicle::instance()->set_fixHeading ( Backend::instance()->m_fixFrame.gpsHeading );
 
                             // PHASE 6.0.35 FIX: Update stepFixPts when heading recalculated (No IMU reverse path)
                             for (int i = totalFixSteps - 1; i > 0; i--) stepFixPts[i] = stepFixPts[i - 1];
@@ -526,14 +546,14 @@ void FormGPS::UpdateFixPosition()
                         // PHASE 6.0.35 FIX: Apply wheel angle compensation in forward mode too!
                         // Bug: compensation was only applied in reverse detection branch
                         newGPSHeading -= glm::toRadians(CVehicle::instance()->antennaPivot / 1
-                                                        * mc.actualSteerAngleDegrees * ahrs.forwardComp);
+                                                        * mc_actualSteerAngleDegrees * ahrs.forwardComp);
 
                         if (newGPSHeading < 0) newGPSHeading += glm::twoPI;
                         else if (newGPSHeading >= glm::twoPI) newGPSHeading -= glm::twoPI;
 
                         //set the headings
-                        setGpsHeading(newGPSHeading);
-                        CVehicle::instance()->fixHeading = gpsHeading();
+                        Backend::instance()->m_fixFrame.gpsHeading = newGPSHeading;
+                        CVehicle::instance()->set_fixHeading ( Backend::instance()->m_fixFrame.gpsHeading );
 
                         // PHASE 6.0.35 FIX: Update stepFixPts when heading recalculated (No IMU forward path)
                         for (int i = totalFixSteps - 1; i > 0; i--) stepFixPts[i] = stepFixPts[i - 1];
@@ -554,7 +574,7 @@ void FormGPS::UpdateFixPosition()
 
         //#region Camera
 
-        camDelta = CVehicle::instance()->fixHeading - smoothCamHeading;
+        camDelta = CVehicle::instance()->fixHeading() - smoothCamHeading;
 
         if (camDelta < 0) camDelta += glm::twoPI;
         else if (camDelta > glm::twoPI) camDelta -= glm::twoPI;
@@ -595,13 +615,13 @@ void FormGPS::UpdateFixPosition()
             //use imu as heading when going slow
             // Phase 6.0.24 Problem 18: Validate _imuCorrected before assigning to fixHeading
             if (std::isfinite(_imuCorrected) && fabs(_imuCorrected) < 100.0) {
-                CVehicle::instance()->fixHeading = _imuCorrected;
+                CVehicle::instance()->set_fixHeading ( _imuCorrected );
             } else {
                 qWarning() << "Invalid _imuCorrected value:" << _imuCorrected << "- not assigned to fixHeading";
             }
         }
 
-        camDelta = CVehicle::instance()->fixHeading - smoothCamHeading;
+        camDelta = CVehicle::instance()->fixHeading() - smoothCamHeading;
 
         if (camDelta < 0) camDelta += glm::twoPI;
         else if (camDelta > glm::twoPI) camDelta -= glm::twoPI;
@@ -628,12 +648,12 @@ void FormGPS::UpdateFixPosition()
     } else if (headingFromSource == "VTG")
     {
         isFirstHeadingSet = true;
-        if (CVehicle::instance()->avgSpeed > 1)
+        if (CVehicle::instance()->avgSpeed() > 1)
         {
             //use NMEA headings for camera and tractor graphic
-            CVehicle::instance()->fixHeading = glm::toRadians(pn.headingTrue);
+            CVehicle::instance()->set_fixHeading ( glm::toRadians(pn.headingTrue) );
             camera.camHeading = pn.headingTrue;
-            setGpsHeading(CVehicle::instance()->fixHeading);
+            Backend::instance()->m_fixFrame.gpsHeading = CVehicle::instance()->fixHeading();
         }
 
         //grab the most current fix to last fix distance
@@ -643,8 +663,8 @@ void FormGPS::UpdateFixPosition()
 
         if (CVehicle::instance()->antennaOffset != 0)
         {
-            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading) * CVehicle::instance()->antennaOffset) + pn.fix.easting;
-            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading) * CVehicle::instance()->antennaOffset) + pn.fix.northing;
+            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading()) * CVehicle::instance()->antennaOffset) + pn.fix.easting;
+            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading()) * CVehicle::instance()->antennaOffset) + pn.fix.northing;
         }
         //#endregion
 
@@ -657,7 +677,7 @@ void FormGPS::UpdateFixPosition()
             double correctionHeading = (glm::toRadians(ahrs.imuHeading));
 
             //Difference between the IMU heading and the GPS heading
-            double gyroDelta = (correctionHeading + imuGPS_Offset) - gpsHeading();
+            double gyroDelta = (correctionHeading + imuGPS_Offset) - Backend::instance()->m_fixFrame.gpsHeading;
             if (gyroDelta < 0) gyroDelta += glm::twoPI;
 
             //calculate delta based on circular data problem 0 to 360 to 0, clamp to +- 2 Pi
@@ -693,12 +713,12 @@ void FormGPS::UpdateFixPosition()
 
             // Phase 6.0.24 Problem 18: Validate _imuCorrected before assigning to fixHeading
             if (std::isfinite(_imuCorrected) && fabs(_imuCorrected) < 100.0) {
-                CVehicle::instance()->fixHeading = _imuCorrected;
+                CVehicle::instance()->set_fixHeading ( _imuCorrected);
             } else {
                 qWarning() << "Invalid _imuCorrected value:" << _imuCorrected << "- not assigned to fixHeading";
             }
 
-            camera.camHeading = CVehicle::instance()->fixHeading;
+            camera.camHeading = CVehicle::instance()->fixHeading();
             if (camera.camHeading > glm::twoPI) camera.camHeading -= glm::twoPI;
             camera.camHeading = glm::toDegrees(camera.camHeading);
         }
@@ -714,8 +734,8 @@ void FormGPS::UpdateFixPosition()
 
             // roll to left is positive  **** important!!
             // not any more - April 30, 2019 - roll to right is positive Now! Still Important
-            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading) * rollCorrectionDistance) + pn.fix.easting;
-            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading) * rollCorrectionDistance) + pn.fix.northing;
+            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading()) * rollCorrectionDistance) + pn.fix.easting;
+            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading()) * rollCorrectionDistance) + pn.fix.northing;
         }
 
         //#endregion Roll
@@ -729,15 +749,15 @@ void FormGPS::UpdateFixPosition()
     {
         isFirstHeadingSet = true;
         //use Dual Antenna heading for camera and tractor graphic
-        CVehicle::instance()->fixHeading = glm::toRadians(pn.headingTrueDual);
-        setGpsHeading(CVehicle::instance()->fixHeading);
+        CVehicle::instance()->set_fixHeading ( glm::toRadians(pn.headingTrueDual) );
+        Backend::instance()->m_fixFrame.gpsHeading = CVehicle::instance()->fixHeading();
 
         uncorrectedEastingGraph = pn.fix.easting;
 
         if (CVehicle::instance()->antennaOffset != 0)
         {
-            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading) * CVehicle::instance()->antennaOffset) + pn.fix.easting;
-            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading) * CVehicle::instance()->antennaOffset) + pn.fix.northing;
+            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading()) * CVehicle::instance()->antennaOffset) + pn.fix.easting;
+            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading()) * CVehicle::instance()->antennaOffset) + pn.fix.northing;
         }
 
         if (ahrs.imuRoll != 88888 && CVehicle::instance()->antennaHeight != 0)
@@ -748,17 +768,17 @@ void FormGPS::UpdateFixPosition()
             correctionDistanceGraph = rollCorrectionDistance;
 
             // PHASE 6.0.35 FIX: Use fixHeading (not gpsHeading) for geometric consistency
-            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading) * rollCorrectionDistance) + pn.fix.easting;
-            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading) * rollCorrectionDistance) + pn.fix.northing;
+            pn.fix.easting = (cos(-CVehicle::instance()->fixHeading()) * rollCorrectionDistance) + pn.fix.easting;
+            pn.fix.northing = (sin(-CVehicle::instance()->fixHeading()) * rollCorrectionDistance) + pn.fix.northing;
         }
 
         //grab the most current fix and save the distance from the last fix
         distanceCurrentStepFix = glm::Distance(pn.fix, prevDistFix);
 
         //userDistance can be reset
-        double userDistance = this->distanceUser() + distanceCurrentStepFix;
+        double userDistance = Backend::instance()->m_currentField.distanceUser + distanceCurrentStepFix;
         if (userDistance > 999) userDistance = 0;
-        this->setDistanceUser(userDistance);
+        Backend::instance()->currentField_setDistanceUser(userDistance);
 
         distanceCurrentStepFixDisplay = distanceCurrentStepFix * 100;
         prevDistFix = pn.fix;
@@ -773,7 +793,7 @@ void FormGPS::UpdateFixPosition()
 
 
             //what is angle between the last reverse heading and current dual heading
-            double delta = fabs(M_PI - fabs(fabs(newHeading - CVehicle::instance()->fixHeading) - M_PI));
+            double delta = fabs(M_PI - fabs(fabs(newHeading - CVehicle::instance()->fixHeading()) - M_PI));
 
             //are we going backwards
             CVehicle::instance()->setIsReverse(delta > 2 ? true : false);
@@ -782,7 +802,7 @@ void FormGPS::UpdateFixPosition()
             lastReverseFix = pn.fix;
         }
 
-        double camDelta = CVehicle::instance()->fixHeading - smoothCamHeading;
+        double camDelta = CVehicle::instance()->fixHeading() - smoothCamHeading;
 
         if (camDelta < 0) camDelta += glm::twoPI;
         else if (camDelta > glm::twoPI) camDelta -= glm::twoPI;
@@ -809,8 +829,8 @@ void FormGPS::UpdateFixPosition()
     //else {
     //}
 
-    if (CVehicle::instance()->fixHeading >= glm::twoPI)
-        CVehicle::instance()->fixHeading-= glm::twoPI;
+    if (CVehicle::instance()->fixHeading() >= glm::twoPI)
+        CVehicle::instance()->set_fixHeading( CVehicle::instance()->fixHeading()  - glm::twoPI );
 
     //#endregion
 //
@@ -820,7 +840,7 @@ void FormGPS::UpdateFixPosition()
     double rollCorrectedLat;
     double rollCorrectedLon;
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-        pn.ConvertLocalToWGS84(pn.fix.northing, pn.fix.easting, rollCorrectedLat, rollCorrectedLon, this);
+    pn.ConvertLocalToWGS84(pn.fix.northing, pn.fix.easting, rollCorrectedLat, rollCorrectedLon);
 
     QByteArray pgnRollCorrectedLatLon(22, 0);
 
@@ -841,66 +861,66 @@ void FormGPS::UpdateFixPosition()
     //#region AutoSteer
 
     //preset the values
-    CVehicle::instance()->guidanceLineDistanceOff = 32000;
+    CVehicle::instance()->set_guidanceLineDistanceOff (32000);
 
-    if (this->isContourBtnOn())
+    if (MainWindowState::instance()->isContourBtnOn())
     {
-        ct.DistanceFromContourLine(isBtnAutoSteerOn(), *CVehicle::instance(), yt, ahrs, pn, CVehicle::instance()->pivotAxlePos, CVehicle::instance()->steerAxlePos, mainWindow);
+        ct.DistanceFromContourLine(MainWindowState::instance()->isBtnAutoSteerOn(), *CVehicle::instance(), yt, ahrs, pn, CVehicle::instance()->pivotAxlePos, CVehicle::instance()->steerAxlePos, mainWindow);
     }
     else
     {
         //auto track routine
         // PHASE 6.0.42.9: Fix auto-track condition (C# Position.designer.cs:826)
         // Added timer check to prevent rapid switching (max 1 switch/second)
-        if (track.isAutoTrack() && !isBtnAutoSteerOn() && track.autoTrack3SecTimer >= 1)
+        if (track.isAutoTrack() && !MainWindowState::instance()->isBtnAutoSteerOn() && track.autoTrack3SecTimer >= 1)
         {
             track.autoTrack3SecTimer = 0;  // Reset timer after switch
 
             track.SwitchToClosestRefTrack(CVehicle::instance()->steerAxlePos, *CVehicle::instance());
         }
 
-        bool autoSteerState = isBtnAutoSteerOn();
+        bool autoSteerState = MainWindowState::instance()->isBtnAutoSteerOn();
         track.BuildCurrentLine(CVehicle::instance()->pivotAxlePos,secondsSinceStart,autoSteerState,yt,*CVehicle::instance(),bnd,ahrs,gyd,pn);
     }
 
     // autosteer at full speed of updates
 
     //if the whole path driving driving process is green
-    if (this->isDrivingRecordedPath()) recPath.UpdatePosition(*CVehicle::instance(), yt, isBtnAutoSteerOn());
+    if (RecordedPath::instance()->isDrivingRecordedPath()) recPath.UpdatePosition(yt, MainWindowState::instance()->isBtnAutoSteerOn());
 
     // If Drive button off - normal autosteer
-    if (!CVehicle::instance()->isInFreeDriveMode)
+    if (!CVehicle::instance()->isInFreeDriveMode())
     {
         //fill up0 the appropriate arrays with new values
-        p_254.pgn[p_254.speedHi] = (char)((int)(fabs(CVehicle::instance()->avgSpeed) * 10.0) >> 8);
-        p_254.pgn[p_254.speedLo] = (char)((int)(fabs(CVehicle::instance()->avgSpeed) * 10.0));
+        p_254.pgn[CPGN_FE::speedHi] = (char)((int)(fabs(CVehicle::instance()->avgSpeed()) * 10.0) >> 8);
+        p_254.pgn[CPGN_FE::speedLo] = (char)((int)(fabs(CVehicle::instance()->avgSpeed()) * 10.0));
         //mc.machineControlData[mc.cnSpeed] = mc.autoSteerData[mc.sdSpeed];
 
         //save distance for display
-        lightbarDistance = CVehicle::instance()->guidanceLineDistanceOff;
+        lightbarDistance = CVehicle::instance()->guidanceLineDistanceOff();
 
-        if (!isBtnAutoSteerOn()) //32020 means auto steer is off
+        if (!MainWindowState::instance()->isBtnAutoSteerOn()) //32020 means auto steer is off
         {
             //NOTE: Is this supposed to be commented out?
-            //CVehicle::instance()->guidanceLineDistanceOff = 32020;
-            p_254.pgn[p_254.status] = 0;  // PHASE 6.0.29: OFF → send 0 (match C# original)
+            //CVehicle::instance()->set_guidanceLineDistanceOff (32020);
+            p_254.pgn[CPGN_FE::status] = 0;  // PHASE 6.0.29: OFF → send 0 (match C# original)
         }
 
-        else p_254.pgn[p_254.status] = 1;  // PHASE 6.0.29: ON → send 1 (match C# original)
+        else p_254.pgn[CPGN_FE::status] = 1;  // PHASE 6.0.29: ON → send 1 (match C# original)
 
-        if (this->isDrivingRecordedPath() || recPath.isFollowingDubinsToPath) p_254.pgn[p_254.status] = 1;  // PHASE 6.0.29: Force ON (match C# original)
+        if (RecordedPath::instance()->isDrivingRecordedPath() || recPath.isFollowingDubinsToPath) p_254.pgn[CPGN_FE::status] = 1;  // PHASE 6.0.29: Force ON (match C# original)
 
         // PHASE 6.0.42.8: Auto-snap track to pivot when autosteer turns ON
         // C# original: OpenGL.Designer.cs:1858-1876
         // Behavior: When autosteer activates, automatically center track to current tractor position
         // This is a ONE-TIME snap (not continuous tracking) controlled by isAutoSnapped flag
-        if (mc.steerSwitchHigh)
+        if (ModuleComm::instance()->steerSwitchHigh())
         {
             // Manual steer override active (switch on handlebar)
             // Reset auto-snap flag so it can snap again when autosteer re-enabled
             track.setIsAutoSnapped(false);
         }
-        else if (isBtnAutoSteerOn())
+        else if (MainWindowState::instance()->isBtnAutoSteerOn())
         {
             // Autosteer is ON → perform auto-snap if enabled and not already snapped
             if (track.isAutoSnapToPivot() && !track.isAutoSnapped())
@@ -915,43 +935,43 @@ void FormGPS::UpdateFixPosition()
             track.setIsAutoSnapped(false);
         }
 
-        //mc.autoSteerData[7] = unchecked((byte)(CVehicle::instance()->guidanceLineDistanceOff >> 8));
-        //mc.autoSteerData[8] = unchecked((byte)(CVehicle::instance()->guidanceLineDistanceOff));
+        //mc.autoSteerData[7] = unchecked((byte)(CVehicle::instance()->guidanceLineDistanceOff() >> 8));
+        //mc.autoSteerData[8] = unchecked((byte)(CVehicle::instance()->guidanceLineDistanceOff()));
 
         //convert to cm from mm and divide by 2 - lightbar
         int distanceX2;
-        //if (CVehicle::instance()->guidanceLineDistanceOff == 32020 || CVehicle::instance()->guidanceLineDistanceOff == 32000)
-        if (!isBtnAutoSteerOn() || CVehicle::instance()->guidanceLineDistanceOff == 32000)
+        //if (CVehicle::instance()->set_guidanceLineDistanceOff() == 32020 || CVehicle::instance()->guidanceLineDistanceOff() == 32000)
+        if (!MainWindowState::instance()->isBtnAutoSteerOn() || CVehicle::instance()->guidanceLineDistanceOff() == 32000)
             distanceX2 = 255;
 
         else
         {
-            distanceX2 = (int)(CVehicle::instance()->guidanceLineDistanceOff * 0.05);
+            distanceX2 = (int)(CVehicle::instance()->guidanceLineDistanceOff() * 0.05);
 
             if (distanceX2 < -127) distanceX2 = -127;
             else if (distanceX2 > 127) distanceX2 = 127;
             distanceX2 += 127;
         }
 
-        p_254.pgn[p_254.lineDistance] = (char)distanceX2;
+        p_254.pgn[CPGN_FE::lineDistance] = (char)distanceX2;
 
-        if (!timerSim.isActive())
+        if (!SimInterface::instance()->isRunning())
         {
-            if (isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed > CVehicle::instance()->maxSteerSpeed)
+            if (MainWindowState::instance()->isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed() > SettingsManager::instance()->as_maxSteerSpeed())
             {
-                onStopAutoSteer();
+                MainWindowState::instance()->set_isBtnAutoSteerOn(false);
                 if (isMetric)
                     TimedMessageBox(3000, tr("AutoSteer Disabled"), tr("Above Maximum Safe Steering Speed: ") + locale.toString(CVehicle::instance()->maxSteerSpeed, 'g', 1) + tr(" Kmh"));
                 else
                     TimedMessageBox(3000, tr("AutoSteer Disabled"), tr("Above Maximum Safe Steering Speed: ") + locale.toString(CVehicle::instance()->maxSteerSpeed * 0.621371, 'g', 1) + tr(" MPH"));
             }
 
-            if (isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed < CVehicle::instance()->minSteerSpeed)
+            if (MainWindowState::instance()->isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed() < SettingsManager::instance()->as_minSteerSpeed())
             {
                 minSteerSpeedTimer++;
                 if (minSteerSpeedTimer > 80)
                 {
-                    onStopAutoSteer();
+                    MainWindowState::instance()->set_isBtnAutoSteerOn(false);
                     if (isMetric)
                         TimedMessageBox(3000, tr("AutoSteer Disabled"), tr("Below Minimum Safe Steering Speed: ") + locale.toString(CVehicle::instance()->minSteerSpeed, 'g', 1) + tr(" Kmh"));
                     else
@@ -965,10 +985,10 @@ void FormGPS::UpdateFixPosition()
         }
 
         double tanSteerAngle = tan(glm::toRadians(((double)(CVehicle::instance()->guidanceLineSteerAngle)) * 0.01));
-        double tanActSteerAngle = tan(glm::toRadians(mc.actualSteerAngleDegrees));
+        double tanActSteerAngle = tan(glm::toRadians(mc_actualSteerAngleDegrees));
 
-        setAngVel = 0.277777 * CVehicle::instance()->avgSpeed * tanSteerAngle / CVehicle::instance()->wheelbase;
-        actAngVel = glm::toDegrees(0.277777 * CVehicle::instance()->avgSpeed * tanActSteerAngle / CVehicle::instance()->wheelbase);
+        setAngVel = 0.277777 * CVehicle::instance()->avgSpeed() * tanSteerAngle / CVehicle::instance()->wheelbase;
+        actAngVel = glm::toDegrees(0.277777 * CVehicle::instance()->avgSpeed() * tanActSteerAngle / CVehicle::instance()->wheelbase);
 
 
         isMaxAngularVelocity = false;
@@ -976,7 +996,7 @@ void FormGPS::UpdateFixPosition()
         if (fabs(setAngVel) > CVehicle::instance()->maxAngularVelocity)
         {
             setAngVel = CVehicle::instance()->maxAngularVelocity;
-            tanSteerAngle = 3.6 * setAngVel * CVehicle::instance()->wheelbase / CVehicle::instance()->avgSpeed;
+            tanSteerAngle = 3.6 * setAngVel * CVehicle::instance()->wheelbase / CVehicle::instance()->avgSpeed();
             if (CVehicle::instance()->guidanceLineSteerAngle < 0)
                 CVehicle::instance()->guidanceLineSteerAngle = (short)(glm::toDegrees(atan(tanSteerAngle)) * -100);
             else
@@ -986,33 +1006,33 @@ void FormGPS::UpdateFixPosition()
 
         setAngVel = glm::toDegrees(setAngVel);
 
-        p_254.pgn[p_254.steerAngleHi] = (char)(CVehicle::instance()->guidanceLineSteerAngle >> 8);
-        p_254.pgn[p_254.steerAngleLo] = (char)(CVehicle::instance()->guidanceLineSteerAngle);
+        p_254.pgn[CPGN_FE::steerAngleHi] = (char)(CVehicle::instance()->guidanceLineSteerAngle >> 8);
+        p_254.pgn[CPGN_FE::steerAngleLo] = (char)(CVehicle::instance()->guidanceLineSteerAngle);
 
         if (CVehicle::instance()->isChangingDirection() && ahrs.imuHeading == 99999)
-            p_254.pgn[p_254.status] = 0;  // PHASE 6.0.29: Changing direction → OFF (match C# original)
+            p_254.pgn[CPGN_FE::status] = 0;  // PHASE 6.0.29: Changing direction → OFF (match C# original)
 
         //for now if backing up, turn off autosteer
         if (!isSteerInReverse)
         {
-            if (CVehicle::instance()->isReverse()) p_254.pgn[p_254.status] = 0;  // PHASE 6.0.29: Reverse → OFF (match C# original)
+            if (CVehicle::instance()->isReverse()) p_254.pgn[CPGN_FE::status] = 0;  // PHASE 6.0.29: Reverse → OFF (match C# original)
         }
     }
 
     else //Drive button is on
     {
         //fill up the auto steer array with free drive values
-        p_254.pgn[p_254.speedHi] = (char)((int)(80) >> 8);
-        p_254.pgn[p_254.speedLo] = (char)((int)(80));
+        p_254.pgn[CPGN_FE::speedHi] = (char)((int)(80) >> 8);
+        p_254.pgn[CPGN_FE::speedLo] = (char)((int)(80));
 
         //turn on status to operate
-        p_254.pgn[p_254.status] = 1;  // PHASE 6.0.29: Free Drive ON (match C# original)
+        p_254.pgn[CPGN_FE::status] = 1;  // PHASE 6.0.29: Free Drive ON (match C# original)
 
         //send the steer angle
-        CVehicle::instance()->guidanceLineSteerAngle = (qint16)(CVehicle::instance()->driveFreeSteerAngle * 100);
+        CVehicle::instance()->guidanceLineSteerAngle = (qint16)(CVehicle::instance()->driveFreeSteerAngle() * 100);
 
-        p_254.pgn[p_254.steerAngleHi] = (char)(CVehicle::instance()->guidanceLineSteerAngle >> 8);
-        p_254.pgn[p_254.steerAngleLo] = (char)(CVehicle::instance()->guidanceLineSteerAngle);
+        p_254.pgn[CPGN_FE::steerAngleHi] = (char)(CVehicle::instance()->guidanceLineSteerAngle >> 8);
+        p_254.pgn[CPGN_FE::steerAngleLo] = (char)(CVehicle::instance()->guidanceLineSteerAngle);
 
 
     }
@@ -1028,234 +1048,31 @@ void FormGPS::UpdateFixPosition()
     }
 
     // Smart WAS Calibration data collection
-    if (IsCollectingData && abs(CVehicle::instance()->guidanceLineDistanceOff) < 500) // Within 50cm of guidance line
+    if (SteerConfig::instance()->isCollectingData && abs(CVehicle::instance()->guidanceLineDistanceOff()) < 500) // Within 50cm of guidance line
     {
         // Convert guidanceLineSteerAngle from centidegrees to degrees and collect data
-        AddSteerAngleSample(CVehicle::instance()->guidanceLineSteerAngle * 0.01, abs(CVehicle::instance()->avgSpeed));
+        SteerConfig::instance()->AddSteerAngleSample(CVehicle::instance()->guidanceLineSteerAngle * 0.01, abs(CVehicle::instance()->avgSpeed()));
     }
 
     //for average cross track error
-    if (CVehicle::instance()->guidanceLineDistanceOff < 29000)
+    if (CVehicle::instance()->guidanceLineDistanceOff() < 29000)
     {
-        crossTrackError = (int)((double)crossTrackError * 0.90 + fabs((double)CVehicle::instance()->guidanceLineDistanceOff) * 0.1);
+        crossTrackError = (int)((double)crossTrackError * 0.90 + fabs((double)CVehicle::instance()->guidanceLineDistanceOff()) * 0.1);
     }
     else
     {
         crossTrackError = 0;
     }
 
-    //#endregion
-
-    //#region AutoSteer
-
-    //preset the values
-    /*
-     * NOTE: Can this all be removed? It's not present in CS
-    CVehicle::instance()->guidanceLineDistanceOff = 32000;
-
-    if (this->isContourBtnOn())
-    {
-        ct.DistanceFromContourLine(isBtnAutoSteerOn(), *CVehicle::instance(), yt, ahrs, pn, CVehicle::instance()->pivotAxlePos, CVehicle::instance()->steerAxlePos, mainWindow);
-    }
-    else
-    {
-        if (curve.isCurveSet && curve.isBtnCurveOn)
-        {
-            //do the calcs for AB Curve
-            curve.GetCurrentCurveLine(CVehicle::instance()->pivotAxlePos, CVehicle::instance()->steerAxlePos, secondsSinceStart, isBtnAutoSteerOn(), mc.steerSwitchHigh, *CVehicle::instance(), bnd, yt, ahrs, gyd, pn);
-        }
-
-        if (ABLine.isABLineSet && ABLine.isBtnABLineOn)
-        {
-            ABLine.GetCurrentABLine(CVehicle::instance()->pivotAxlePos, CVehicle::instance()->steerAxlePos, secondsSinceStart, isBtnAutoSteerOn(), mc.steerSwitchHigh, *CVehicle::instance(), yt, ahrs, gyd, pn);
-        }
-    }
-
-    // autosteer at full speed of updates
-
-    //if the whole path driving driving process is green
-    if (this->isDrivingRecordedPath()) recPath.UpdatePosition(*CVehicle::instance(), yt, isBtnAutoSteerOn());
-
-    // If Drive button off - normal autosteer
-    if (!CVehicle::instance()->isInFreeDriveMode)
-    {
-        //fill up0 the appropriate arrays with new values
-        p_254.pgn[p_254.speedHi] = (char)((int)(fabs(CVehicle::instance()->avgSpeed) * 10.0) >> 8);
-        p_254.pgn[p_254.speedLo] = (char)((int)(fabs(CVehicle::instance()->avgSpeed) * 10.0));
-        //mc.machineControlData[mc.cnSpeed] = mc.autoSteerData[mc.sdSpeed];
-
-        //save distance for display
-        lightbarDistance = CVehicle::instance()->guidanceLineDistanceOff;
-
-        if (!isBtnAutoSteerOn()) //32020 means auto steer is off
-        {
-            //CVehicle::instance()->guidanceLineDistanceOff = 32020;
-            p_254.pgn[p_254.status] = 0;  // PHASE 6.0.29: OFF → send 0 (match C# original)
-        }
-
-        else p_254.pgn[p_254.status] = 1;  // PHASE 6.0.29: ON → send 1 (match C# original)
-
-        if (this->isDrivingRecordedPath() || recPath.isFollowingDubinsToPath) p_254.pgn[p_254.status] = 1;  // PHASE 6.0.29: Force ON (match C# original)
-
-        // PHASE 6.0.42.8: Auto-snap track to pivot when autosteer turns ON
-        // C# original: OpenGL.Designer.cs:1858-1876
-        // Behavior: When autosteer activates, automatically center track to current tractor position
-        // This is a ONE-TIME snap (not continuous tracking) controlled by isAutoSnapped flag
-        if (mc.steerSwitchHigh)
-        {
-            // Manual steer override active (switch on handlebar)
-            // Reset auto-snap flag so it can snap again when autosteer re-enabled
-            track.setIsAutoSnapped(false);
-        }
-        else if (isBtnAutoSteerOn())
-        {
-            // Autosteer is ON → perform auto-snap if enabled and not already snapped
-            if (track.isAutoSnapToPivot() && !track.isAutoSnapped())
-            {
-                track.SnapToPivot();           // Nudge track to align with current pivot position
-                track.setIsAutoSnapped(true);  // Mark as snapped (prevents re-snap until reset)
-            }
-        }
-        else
-        {
-            // Autosteer is OFF → reset auto-snap flag for next activation cycle
-            track.setIsAutoSnapped(false);
-        }
-
-        //mc.autoSteerData[7] = unchecked((byte)(CVehicle::instance()->guidanceLineDistanceOff >> 8));
-        //mc.autoSteerData[8] = unchecked((byte)(CVehicle::instance()->guidanceLineDistanceOff));
-
-        //convert to cm from mm and divide by 2 - lightbar
-        int distanceX2;
-        //if (CVehicle::instance()->guidanceLineDistanceOff == 32020 || CVehicle::instance()->guidanceLineDistanceOff == 32000)
-        if (!isBtnAutoSteerOn() || CVehicle::instance()->guidanceLineDistanceOff == 32000)
-            distanceX2 = 255;
-
-        else
-        {
-            distanceX2 = (int)(CVehicle::instance()->guidanceLineDistanceOff * 0.05);
-
-            if (distanceX2 < -127) distanceX2 = -127;
-            else if (distanceX2 > 127) distanceX2 = 127;
-            distanceX2 += 127;
-        }
-
-        p_254.pgn[p_254.lineDistance] = (char)distanceX2;
-
-        if (!timerSim.isActive())
-        {
-            if (isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed > CVehicle::instance()->maxSteerSpeed)
-            {
-                onStopAutoSteer();
-
-                if (isMetric)
-                    TimedMessageBox(3000, tr("AutoSteer Disabled"), tr("Above Maximum Safe Steering Speed: ") + locale.toString(CVehicle::instance()->maxSteerSpeed, 'g', 1) + tr(" Kmh"));
-                else
-                    TimedMessageBox(3000, tr("AutoSteer Disabled"), tr("Above Maximum Safe Steering Speed: ") + locale.toString(CVehicle::instance()->maxSteerSpeed * 0.621371, 'g', 1) + tr(" MPH"));
-            }
-
-            if (isBtnAutoSteerOn() && CVehicle::instance()->avgSpeed < CVehicle::instance()->minSteerSpeed)
-            {
-                minSteerSpeedTimer++;
-                if (minSteerSpeedTimer > 80)
-                {
-                    onStopAutoSteer();
-                    if (isMetric)
-                        TimedMessageBox(3000, tr("AutoSteer Disabled"), tr("Below Minimum Safe Steering Speed: ") + locale.toString(CVehicle::instance()->maxSteerSpeed, 'g', 1) + tr(" Kmh"));
-                    else
-                        TimedMessageBox(3000, tr("AutoSteer Disabled"), tr("Below Minimum Safe Steering Speed: ") + locale.toString(CVehicle::instance()->maxSteerSpeed * 0.621371, 'g', 1) + tr(" MPH"));
-                }
-            }
-            else
-            {
-                minSteerSpeedTimer = 0;
-            }
-        }
-
-        double tanSteerAngle = tan(glm::toRadians(((double)(CVehicle::instance()->guidanceLineSteerAngle)) * 0.01));
-        double tanActSteerAngle = tan(glm::toRadians(mc.actualSteerAngleDegrees));
-
-        setAngVel = 0.277777 * CVehicle::instance()->avgSpeed * tanSteerAngle / CVehicle::instance()->wheelbase;
-        actAngVel = glm::toDegrees(0.277777 * CVehicle::instance()->avgSpeed * tanActSteerAngle / CVehicle::instance()->wheelbase);
-
-
-        isMaxAngularVelocity = false;
-        //greater then settings rads/sec limit steer angle
-        if (fabs(setAngVel) > CVehicle::instance()->maxAngularVelocity)
-        {
-            setAngVel = CVehicle::instance()->maxAngularVelocity;
-            tanSteerAngle = 3.6 * setAngVel * CVehicle::instance()->wheelbase / CVehicle::instance()->avgSpeed;
-            if (CVehicle::instance()->guidanceLineSteerAngle < 0)
-                CVehicle::instance()->guidanceLineSteerAngle = (short)(glm::toDegrees(atan(tanSteerAngle)) * -100);
-            else
-                CVehicle::instance()->guidanceLineSteerAngle = (short)(glm::toDegrees(atan(tanSteerAngle)) * 100);
-            isMaxAngularVelocity = true;
-        }
-
-        setAngVel = glm::toDegrees(setAngVel);
-
-        p_254.pgn[p_254.steerAngleHi] = (char)(CVehicle::instance()->guidanceLineSteerAngle >> 8);
-        p_254.pgn[p_254.steerAngleLo] = (char)(CVehicle::instance()->guidanceLineSteerAngle);
-
-        if (isChangingDirection && ahrs.imuHeading == 99999)
-            p_254.pgn[p_254.status] = 0;
-
-        //for now if backing up, turn off autosteer
-        if (!isSteerInReverse)
-        {
-            if (CVehicle::instance()->isReverse()) p_254.pgn[p_254.status] = 0;
-        }
-    }
-
-    else //Drive button is on
-    {
-        //fill up the auto steer array with free drive values
-        p_254.pgn[p_254.speedHi] = (char)((int)(80) >> 8);
-        p_254.pgn[p_254.speedLo] = (char)((int)(80));
-
-        //turn on status to operate
-        p_254.pgn[p_254.status] = 1;
-
-        //send the steer angle
-        CVehicle::instance()->guidanceLineSteerAngle = (qint16)(CVehicle::instance()->driveFreeSteerAngle * 100);
-
-        p_254.pgn[p_254.steerAngleHi] = (char)(CVehicle::instance()->guidanceLineSteerAngle >> 8);
-        p_254.pgn[p_254.steerAngleLo] = (char)(CVehicle::instance()->guidanceLineSteerAngle);
-
-
-    }
-
-    //out serial to autosteer module  //indivdual classes load the distance and heading deltas
-    // SendPgnToLoop(p_254.pgn); // ❌ REMOVED - Phase 4.6: AgIOService Workers handle PGN
-    // Phase 6.0.33: Send PGN 254 at 50 Hz (synchronized with timer frequency)
-    // Status byte (line 795) controls module behavior: 0=OFF (no steering), 1=ON (steering)
-    // Module always responds with PGN 253 feedback → enables wheel display in real-time
-    // SAFE: isBtnAutoSteerOn = false at startup (formgps.cpp:27), never saved in settings
-    if (m_agioService) {
-        m_agioService->sendPgn(p_254.pgn);
-    }
-
-    //for average cross track error
-    if (CVehicle::instance()->guidanceLineDistanceOff < 29000)
-    {
-        crossTrackError = (int)((double)crossTrackError * 0.90 + fabs((double)CVehicle::instance()->guidanceLineDistanceOff) * 0.1);
-    }
-    else
-    {
-        crossTrackError = 0;
-    }
-
-    //#endregion
-*/
     //#region Youturn
 
     //if an outer boundary is set, then apply critical stop logic
     if (bnd.bndList.count() > 0)
     {
         //check if inside all fence
-        if (!this->isYouTurnBtnOn())
+        if (!MainWindowState::instance()->isYouTurnBtnOn())
         {
-            this->setIsOutOfBounds(!bnd.IsPointInsideFenceArea(CVehicle::instance()->pivotAxlePos));
+            BoundaryInterface::instance()->set_isOutOfBounds(!bnd.IsPointInsideFenceArea(CVehicle::instance()->pivotAxlePos));
             // Qt 6.8 FIX: Removed redundant self-assignment that could cause binding loop
         }
         else //Youturn is on
@@ -1266,8 +1083,7 @@ void FormGPS::UpdateFixPosition()
             //if (!yt.isYouTurnTriggered)
             if (isInTurnBounds)
             {
-                this->setIsOutOfBounds(false);
-                this->setIsOutOfBounds(false);
+                BoundaryInterface::instance()->set_isOutOfBounds(false);
                 //now check to make sure we are not in an inner turn boundary - drive thru is ok
                 if (yt.youTurnPhase != 10)
                 {
@@ -1279,13 +1095,12 @@ void FormGPS::UpdateFixPosition()
                     {
                         if (track.getMode() == TrackMode::AB)
                         {
-                            yt.BuildABLineDubinsYouTurn(this, yt.isYouTurnRight,*CVehicle::instance(),bnd,
+                            yt.BuildABLineDubinsYouTurn(yt.isYouTurnRight,bnd,
                                                         track,secondsSinceStart);
                         }
                         else
                         {
-                            yt.BuildCurveDubinsYouTurn(yt.isYouTurnRight, CVehicle::instance()->pivotAxlePos,
-                                                       *CVehicle::instance(),bnd,track,secondsSinceStart);
+                            yt.BuildCurveDubinsYouTurn(yt.isYouTurnRight, bnd,track,secondsSinceStart);
                         }
                     }
 
@@ -1316,12 +1131,12 @@ void FormGPS::UpdateFixPosition()
                     //if we are close enough to pattern, trigger.
                     if ((_distancePivotToTurnLine <= 1.0) && (_distancePivotToTurnLine >= 0) && !yt.isYouTurnTriggered)
                     {
-                        yt.YouTurnTrigger(track, *CVehicle::instance());
+                        yt.YouTurnTrigger(track);
                         //moved to QML
                         //sounds.isBoundAlarming = false;
                     }
 
-                    //if (isBtnAutoSteerOn() && CVehicle::instance()->guidanceLineDistanceOff > 300 && !yt.isYouTurnTriggered)
+                    //if (Backend::instance()->mainWindow->isBtnAutoSteerOn() && CVehicle::instance()->guidanceLineDistanceOff() > 300 && !yt.isYouTurnTriggered)
                     //{
                     //    yt.ResetCreatedYouTurn();
                     //}
@@ -1332,7 +1147,7 @@ void FormGPS::UpdateFixPosition()
                 if (!yt.isYouTurnTriggered)
                 {
                     yt.ResetCreatedYouTurn();
-                    this->setIsOutOfBounds(!bnd.IsPointInsideFenceArea(CVehicle::instance()->pivotAxlePos));
+                    BoundaryInterface::instance()->set_isOutOfBounds(!bnd.IsPointInsideFenceArea(CVehicle::instance()->pivotAxlePos));
                     // Qt 6.8 FIX: Removed redundant self-assignment that could cause binding loop
                 }
 
@@ -1343,9 +1158,9 @@ void FormGPS::UpdateFixPosition()
             //else
             //{
             //    //this->setIsOutOfBounds(true);
-            //    if (isBtnAutoSteerOn())
+            //    if (Backend::instance()->mainWindow->isBtnAutoSteerOn())
             //    {
-            //        if (this->isYouTurnBtnOn())
+            //        if (MainWindowState::instance()->isYouTurnBtnOn())
             //        {
             //            yt.ResetCreatedYouTurn();
             //            //sim.stepDistance = 0 / 17.86;
@@ -1361,8 +1176,7 @@ void FormGPS::UpdateFixPosition()
     }
     else
     {
-        this->setIsOutOfBounds(false);
-        this->setIsOutOfBounds(false);
+        BoundaryInterface::instance()->set_isOutOfBounds(false);
     }
 
     //#endregion
@@ -1371,146 +1185,95 @@ void FormGPS::UpdateFixPosition()
     //oglMain.MakeCurrent();
     //oglMain.Refresh();
 
-    if (isJobStarted()) {
+    if (Backend::instance()->isJobStarted()) {
         processSectionLookahead();
+
 
         //oglZoom_Paint();
         //processOverlapCount();
     }
 
     qDebug(qpos) << "Time before painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
-#if !defined(Q_OS_WINDOWS) //&& !defined(Q_OS_ANDROID)
+#ifdef USE_INDIRECT_RENDERING
     oglMain_Paint();
 #endif
 
-    //NOTE: Not sure here.
-    //stop the timer and calc how long it took to do calcs and draw
-    AOGRendererInSG *renderer = mainWindow->findChild<AOGRendererInSG *>("openglcontrol");
+    //Both the framebuffer and the qquickitem renderer share the same interface here.
+    QQuickItem *renderer = mainWindow->findChild<QQuickItem *>("openglcontrol");
     // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
     if (renderer) {
-        QMetaObject::invokeMethod(renderer, "update", Qt::DirectConnection);
+        renderer->update();
     }
     qDebug(qpos) << "Time after painting field: " << (float)swFrame.nsecsElapsed() / 1000000;
 
-    frameTimeRough = swFrame.elapsed();
-
-    //if (frameTimeRough > 80) frameTimeRough = 80;
-
-    // Phase 6.0.20: Qt 6.8 BINDABLE - use setter for automatic signal emission
-    setFrameTime(frameTime() * 0.90 + frameTimeRough * 0.1);
-
-    // ===== Q_PROPERTY OPTIMIZED UPDATE - OPTION A =====
-    // Direct member updates + grouped signals (305x faster than setProperty)
+    Backend::instance()->m_fixFrame.setFrameTime(swFrame.elapsed());
 
     // Variables for change tracking
-    bool posChangedFlag = false, vehChangedFlag = false, steerChangedFlag = false;
-    bool imuChangedFlag = false, gpsChangedFlag = false, blockageChangedFlag = false;
-    bool navChangedFlag = false, toolPosChangedFlag = false, wizardChangedFlag = false;
-    bool geometryChangedFlag = false, miscChangedFlag = false;
+    bool miscChangedFlag = false;
 
     // Calculate tool position once
     double tool_lat, tool_lon;
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-        pn.ConvertLocalToWGS84(CVehicle::instance()->pivotAxlePos.northing, CVehicle::instance()->pivotAxlePos.easting, tool_lat, tool_lon, this);
+    pn.ConvertLocalToWGS84(CVehicle::instance()->pivotAxlePos.northing, CVehicle::instance()->pivotAxlePos.easting, tool_lat, tool_lon);
 
-    // Phase 6.0.20: Qt 6.8 BINDABLE - use setter for automatic signal emission
-    setAvgPivDistance(avgPivDistance() * 0.5 + CVehicle::instance()->guidanceLineDistanceOff * 0.5);
+    CVehicle::instance()->set_avgPivDistance(CVehicle::instance()->avgPivDistance() * 0.5 + CVehicle::instance()->guidanceLineDistanceOff() * 0.5);
 
     // Steer module counter logic - Phase 6.0.20 Task 24 Step 3.2
-    if (!timerSim.isActive()) {
-        int counter = steerModuleConnectedCounter();
+    if (!SimInterface::instance()->isRunning()) {
+        int counter = ModuleComm::instance()->steerModuleConnectedCounter();
         if (counter++ > 30)
             counter = 31;
-        setSteerModuleConnectedCounter(counter);
+        ModuleComm::instance()->set_steerModuleConnectedCounter(counter);
     }
 
     // === Position GPS Updates (6 properties) - Qt 6.8 QProperty (Phase 6.0.9.06) ===
-    if (m_latitude != pn.latitude) { m_latitude = pn.latitude; posChangedFlag = true; }
-    if (m_longitude != pn.longitude) { m_longitude = pn.longitude; posChangedFlag = true; }
-    if (m_altitude != pn.altitude) { m_altitude = pn.altitude; posChangedFlag = true; }
-    if (m_easting != CVehicle::instance()->pivotAxlePos.easting) { m_easting = CVehicle::instance()->pivotAxlePos.easting; posChangedFlag = true; }
-    if (m_northing != CVehicle::instance()->pivotAxlePos.northing) { m_northing = CVehicle::instance()->pivotAxlePos.northing; posChangedFlag = true; }
-    if (m_heading != CVehicle::instance()->pivotAxlePos.heading) { m_heading = CVehicle::instance()->pivotAxlePos.heading; posChangedFlag = true; }
+    Backend::instance()->m_fixFrame.latitude = pn.latitude;
+    Backend::instance()->m_fixFrame.longitude = pn.longitude;
+    Backend::instance()->m_fixFrame.altitude = pn.altitude;
+    Backend::instance()->m_fixFrame.easting = CVehicle::instance()->pivotAxlePos.easting;
+    Backend::instance()->m_fixFrame.northing = CVehicle::instance()->pivotAxlePos.northing;
+    Backend::instance()->m_fixFrame.heading = CVehicle::instance()->pivotAxlePos.heading;
 
-    // === Vehicle State Updates (8 properties) ===
-    if (m_speedKph != CVehicle::instance()->avgSpeed) { m_speedKph = CVehicle::instance()->avgSpeed; vehChangedFlag = true; }
-    if (m_fusedHeading != CVehicle::instance()->fixHeading) { m_fusedHeading = CVehicle::instance()->fixHeading; vehChangedFlag = true; }
-    if (m_toolEasting != CVehicle::instance()->toolPos.easting) { m_toolEasting = CVehicle::instance()->toolPos.easting; vehChangedFlag = true; }
-    if (m_toolNorthing != CVehicle::instance()->toolPos.northing) { m_toolNorthing = CVehicle::instance()->toolPos.northing; vehChangedFlag = true; }
-    if (m_toolHeading != CVehicle::instance()->toolPos.heading) { m_toolHeading = CVehicle::instance()->toolPos.heading; vehChangedFlag = true; }
-    if (m_offlineDistance != CVehicle::instance()->guidanceLineDistanceOff) {
-        m_offlineDistance = CVehicle::instance()->guidanceLineDistanceOff;
-        // Phase 6.0.20: Q_OBJECT_BINDABLE_PROPERTY auto-emits offlineDistanceChanged()
-        // No manual qmlItem()->setProperty() needed - BINDABLE handles QML reactivity
-        vehChangedFlag = true;
-    }
-    // avgPivDistance uses existing variable directly - no member needed
-    // isReverseWithIMU now uses Q_OBJECT_BINDABLE_PROPERTY m_isReverseWithIMU
-
-    // === Steering Control Updates (6 properties) ===
-    if (m_steerAngleActual != mc.actualSteerAngleDegrees) { m_steerAngleActual = mc.actualSteerAngleDegrees; steerChangedFlag = true; }
-    if (m_steerAngleSet != CVehicle::instance()->driveFreeSteerAngle) { m_steerAngleSet = CVehicle::instance()->driveFreeSteerAngle; steerChangedFlag = true; }
-    if (m_lblPWMDisplay != mc.pwmDisplay) { m_lblPWMDisplay = mc.pwmDisplay; steerChangedFlag = true; }
-    if (m_calcSteerAngleInner != steerAngleRight) { m_calcSteerAngleInner = steerAngleRight; steerChangedFlag = true; }
-    if (m_calcSteerAngleOuter != steerAngleRight) { m_calcSteerAngleOuter = steerAngleRight; steerChangedFlag = true; }
-    if (m_diameter != _diameter) { m_diameter = _diameter; steerChangedFlag = true; }
+    Blockage::instance()->current_speed = pn.speed;
 
     // === IMU Data Updates (5 properties) ===
-    if (m_imuRoll != ahrs.imuRoll) { m_imuRoll = ahrs.imuRoll; imuChangedFlag = true; }
-    if (m_imuPitch != ahrs.imuPitch) { m_imuPitch = ahrs.imuPitch; imuChangedFlag = true; }
-    if (m_imuHeading != ahrs.imuHeading) { m_imuHeading = ahrs.imuHeading; imuChangedFlag = true; }
-    if (m_imuRollDegrees != ahrs.imuRoll) { m_imuRollDegrees = ahrs.imuRoll; imuChangedFlag = true; }
-    if (m_imuAngVel != ahrs.angVel) { m_imuAngVel = ahrs.angVel; imuChangedFlag = true; }
+    Backend::instance()->m_fixFrame.imuRoll = ahrs.imuRoll;
+    Backend::instance()->m_fixFrame.imuPitch = ahrs.imuPitch;
+    Backend::instance()->m_fixFrame.imuHeading = ahrs.imuHeading;
+    Backend::instance()->m_fixFrame.imuRollDegrees = ahrs.imuRoll;
+    Backend::instance()->m_fixFrame.imuAngVel = ahrs.angVel;
 
     // === GPS Status Updates (8 properties) ===
-    if (m_hdop != pn.hdop) { m_hdop = pn.hdop; gpsChangedFlag = true; }
-    if (m_age != pn.age) { m_age = pn.age; gpsChangedFlag = true; }
-    if (m_fixQuality != (int)pn.fixQuality) { m_fixQuality = (int)pn.fixQuality; gpsChangedFlag = true; }
-    if (m_satellitesTracked != pn.satellitesTracked) { m_satellitesTracked = pn.satellitesTracked; gpsChangedFlag = true; }
-    if (m_hz != gpsHz) { m_hz = gpsHz; gpsChangedFlag = true; }
-    if (m_rawHz != nowHz) { m_rawHz = nowHz; gpsChangedFlag = true; }
+    Backend::instance()->m_fixFrame.hdop = pn.hdop;
+    Backend::instance()->m_fixFrame.age = pn.age;
+    Backend::instance()->m_fixFrame.fixQuality = (int)pn.fixQuality;
+    Backend::instance()->m_fixFrame.satellitesTracked = pn.satellitesTracked;
+    Backend::instance()->m_fixFrame.hz = gpsHz;
+    Backend::instance()->m_fixFrame.rawHz = nowHz;
     // Phase 6.0.20 Task 24 Step 5.6: droppedSentences - TODO implement real GPS frame drop counter
     // For now, set to 0 (old udpWatchCounts removed in Phase 4.6 AgIOService migration)
-    if (m_droppedSentences != 0) { m_droppedSentences = 0; gpsChangedFlag = true; }
-    // frameTime and steerModuleConnectedCounter use existing variables directly - no members needed
+    if (Backend::instance()->m_fixFrame.droppedSentences !=0) {
+        Backend::instance()->m_fixFrame.droppedSentences = 0;
+    }
 
-    // === Blockage Sensors Updates (8 properties) - Qt 6.8 QProperty ===
-    if (m_blockage_avg != tool.blockage_avg) { m_blockage_avg = tool.blockage_avg; blockageChangedFlag = true; }
-    if (m_blockage_min1 != tool.blockage_min1) { m_blockage_min1 = tool.blockage_min1; blockageChangedFlag = true; }
-    if (m_blockage_min2 != tool.blockage_min2) { m_blockage_min2 = tool.blockage_min2; blockageChangedFlag = true; }
-    if (m_blockage_max != tool.blockage_max) { m_blockage_max = tool.blockage_max; blockageChangedFlag = true; }
-    if (m_blockage_min1_i != tool.blockage_min1_i) { m_blockage_min1_i = tool.blockage_min1_i; blockageChangedFlag = true; }
-    if (m_blockage_min2_i != tool.blockage_min2_i) { m_blockage_min2_i = tool.blockage_min2_i; blockageChangedFlag = true; }
-    if (m_blockage_max_i != tool.blockage_max_i) { m_blockage_max_i = tool.blockage_max_i; blockageChangedFlag = true; }
-    if (m_blockage_blocked != (bool)tool.blockage_blocked) { m_blockage_blocked = (bool)tool.blockage_blocked; blockageChangedFlag = true; }
+    //TODO: limit this to update qml at only 10hz
+    emit Backend::instance()->fixFrameChanged();
 
     // === Navigation Updates (6 properties) ===
-    if (m_distancePivotToTurnLine != _distancePivotToTurnLine) { m_distancePivotToTurnLine = _distancePivotToTurnLine; navChangedFlag = true; }
-    if (m_isYouTurnRight != yt.isYouTurnRight) { m_isYouTurnRight = yt.isYouTurnRight; navChangedFlag = true; }
-    if (m_isYouTurnTriggered != yt.isYouTurnTriggered) { m_isYouTurnTriggered = yt.isYouTurnTriggered; navChangedFlag = true; }
-    if (m_current_trackNum != track.getHowManyPathsAway()) { m_current_trackNum = track.getHowManyPathsAway(); navChangedFlag = true; }
-    if (m_lblmodeActualXTE != CVehicle::instance()->modeActualXTE) { m_lblmodeActualXTE = CVehicle::instance()->modeActualXTE; navChangedFlag = true; }
-    if (m_lblmodeActualHeadingError != CVehicle::instance()->modeActualHeadingError) { m_lblmodeActualHeadingError = CVehicle::instance()->modeActualHeadingError; navChangedFlag = true; }
+    Backend::instance()->set_distancePivotToTurnLine(_distancePivotToTurnLine);
+    Backend::instance()->set_isYouTurnRight (yt.isYouTurnRight);
+    Backend::instance()->set_isYouTurnTriggered ( yt.isYouTurnTriggered);
+    Backend::instance()->set_imuCorrected( _imuCorrected);
 
     // === Tool Position Updates (2 properties) ===
-    if (m_toolLatitude != tool_lat) { m_toolLatitude = tool_lat; toolPosChangedFlag = true; }
-    if (m_toolLongitude != tool_lon) { m_toolLongitude = tool_lon; toolPosChangedFlag = true; }
+    Tools::instance()->m_toolsList[0].value<Tool *>()->set_easting(tool.toolPos.easting);
+    Tools::instance()->m_toolsList[0].value<Tool *>()->set_northing(tool.toolPos.northing);
+    Tools::instance()->m_toolsList[0].value<Tool *>()->set_latitude(tool_lat);
+    Tools::instance()->m_toolsList[0].value<Tool *>()->set_longitude(tool_lon);
+    Tools::instance()->m_toolsList[0].value<Tool *>()->set_heading(tool.toolPos.heading);
 
-    // === Wizard/Calibration Updates (4 properties) ===
-    if (m_sampleCount != SampleCount) { m_sampleCount = SampleCount; wizardChangedFlag = true; }
-    if (m_confidenceLevel != ConfidenceLevel) { m_confidenceLevel = ConfidenceLevel; wizardChangedFlag = true; }
-    if (m_hasValidRecommendation != HasValidRecommendation) { m_hasValidRecommendation = HasValidRecommendation; wizardChangedFlag = true; }
-    if (m_startSA != isSA) { m_startSA = isSA; wizardChangedFlag = true; }
 
-    // === Visual Geometry Updates (2 properties) ===
-    QVariant newVehicleXY = CVehicle::instance()->pivot_axle_xy;
-    QVariant newBoundingBox = CVehicle::instance()->bounding_box;
-    if (m_vehicle_xy != newVehicleXY) { m_vehicle_xy = newVehicleXY; geometryChangedFlag = true; }
-    if (m_vehicle_bounding_box != newBoundingBox) { m_vehicle_bounding_box = newBoundingBox; geometryChangedFlag = true; }
 
-    // === Misc Status Updates (2 properties) ===
-    if (m_steerSwitchHigh != mc.steerSwitchHigh) { m_steerSwitchHigh = mc.steerSwitchHigh; miscChangedFlag = true; }
-    if (m_imuCorrected != _imuCorrected) { m_imuCorrected = _imuCorrected; miscChangedFlag = true; }
 
     // ===== QProperty + BINDABLE AUTOMATIC NOTIFICATIONS =====
     // Qt 6.8 QProperty system automatically handles change notifications
@@ -1523,11 +1286,13 @@ void FormGPS::UpdateFixPosition()
 
 void FormGPS::TheRest()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
     //positions and headings
     CalculatePositionHeading();
 
     //calculate lookahead at full speed, no sentence misses
-    CalculateSectionLookAhead(CVehicle::instance()->toolPos.northing, CVehicle::instance()->toolPos.easting, CVehicle::instance()->cosSectionHeading, CVehicle::instance()->sinSectionHeading);
+    CalculateSectionLookAhead(tool.toolPos.northing, tool.toolPos.easting, CVehicle::instance()->cosSectionHeading, CVehicle::instance()->sinSectionHeading);
 
     //To prevent drawing high numbers of triangles, determine and test before drawing vertex
     sectionTriggerDistance = glm::Distance(pn.fix, prevSectionPos);
@@ -1535,7 +1300,7 @@ void FormGPS::TheRest()
     gridTriggerDistance = glm::DistanceSquared(pn.fix, prevGridPos);
 
     //NOTE: Michael, maybe verify this is all good
-    if ( isLogElevation && gridTriggerDistance > 2.9 && patchCounter !=0 && isJobStarted())
+    if ( isLogElevation && gridTriggerDistance > 2.9 && patchCounter !=0 && Backend::instance()->isJobStarted())
     {
         //grab fix and elevation
         sbGrid.append(
@@ -1554,14 +1319,14 @@ void FormGPS::TheRest()
     }
 
     //contour points
-    if (isJobStarted() &&(contourTriggerDistance > tool.contourWidth
+    if (Backend::instance()->isJobStarted() &&(contourTriggerDistance > tool.contourWidth
                          || contourTriggerDistance > sectionTriggerStepDistance))
     {
         AddContourPoints();
     }
 
     //section on off and points
-    if (sectionTriggerDistance > sectionTriggerStepDistance && isJobStarted())
+    if (sectionTriggerDistance > sectionTriggerStepDistance && Backend::instance()->isJobStarted())
     {
         AddSectionOrPathPoints();
     }
@@ -1569,777 +1334,73 @@ void FormGPS::TheRest()
     //test if travelled far enough for new boundary point
     if (bnd.isOkToAddPoints)
     {
-        double boundaryDistance = glm::Distance(pn.fix, prevBoundaryPos);
-        if (boundaryDistance > 1) AddBoundaryPoint();
+        //if at least 1 metre distance from last point, add a new one
+        bnd.AddCurrentPoint(1);
     }
 
     //calc distance travelled since last GPS fix
     //distance = glm::distance(pn.fix, prevFix);
     //if (CVehicle::instance()->avgSpeed > 1)
 
-    if ((CVehicle::instance()->avgSpeed - previousSpeed  ) < -CVehicle::instance()->panicStopSpeed && CVehicle::instance()->panicStopSpeed != 0)
+    if ((CVehicle::instance()->avgSpeed() - previousSpeed  ) < -CVehicle::instance()->panicStopSpeed && CVehicle::instance()->panicStopSpeed != 0)
     {
-        if (isBtnAutoSteerOn()) onStopAutoSteer();
+        if (MainWindowState::instance()->isBtnAutoSteerOn())
+            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
     }
 
-    previousSpeed = CVehicle::instance()->avgSpeed;
+    previousSpeed = CVehicle::instance()->avgSpeed();
 }
 
 void FormGPS::processSectionLookahead() {
     //qDebug(qpos) << "frame time before doing section lookahead " << swFrame.elapsed(;
     //lock.lockForWrite(;
     //qDebug(qpos) << "frame time after getting lock  " << swFrame.elapsed(;
+
 #define USE_QPAINTER_BACKBUFFER
 
     qDebug(qpos) << "Main callback thread is" << QThread::currentThread();
+    QImage back_buffer;
 
 #ifdef USE_QPAINTER_BACKBUFFER
-    auto result = QtConcurrent::run( [this]() {
-        QMatrix4x4 projection;
-        QMatrix4x4 modelview;
+    auto result = QtConcurrent::run( [this, &back_buffer]() {
+        BACKEND_TRACK(track);
 
-        //  Load the identity.
-        projection.setToIdentity();
+        //Draw the coverage in the back buffer
+        tool.DrawPatchesBackQP(tram,bnd, CVehicle::instance()->pivotAxlePos, MainWindowState::instance()->isHeadlandOn(), track.idx() > -1);
 
-        //projection.perspective(6.0f,1,1,6000);
-        projection.perspective(glm::toDegrees((double)0.06f), 1.666666666666f, 50.0f, 520.0f);
-
-        if (this->grnPix.isNull())
-            this->grnPix = QImage(QSize(500,300), QImage::Format_RGBX8888);
-
-        this->grnPix.fill(0);
-
-        //gl->glLoadIdentity();					// Reset The View
-        modelview.setToIdentity();
-
-        //back the camera up
-        modelview.translate(0, 0, -500);
-
-        //rotate camera so heading matched fix heading in the world
-        //gl->glRotated(toDegrees(CVehicle::instance()->fixHeadingSection), 0, 0, 1);
-        modelview.rotate(glm::toDegrees(CVehicle::instance()->toolPos.heading), 0, 0, 1);
-
-        modelview.translate(-CVehicle::instance()->toolPos.easting - sin(CVehicle::instance()->toolPos.heading) * 15,
-                            -CVehicle::instance()->toolPos.northing - cos(CVehicle::instance()->toolPos.heading) * 15,
-                            0);
-
-        // Viewport: NDC to pixel coordinates
-        QMatrix4x4 viewport;
-        viewport.translate(500 / 2.0f, 300 / 2.0f, 0);
-        viewport.scale(500 / 2.0f, -300 / 2.0f, 1);  // negative Y to flip
-
-        QMatrix4x4 mvp = projection * modelview;
-
-
-        //patch color
-        QColor patchColor = QColor::fromRgbF(0.0f, 0.5f, 0.0f);
-
-        QPainter painter;
-        if (!painter.begin(&grnPix)) {
-            qWarning() << "New GPS frame but back buffer painter is still working on the last one.";
-            return;
-        }
-
-        painter.setRenderHint(QPainter::Antialiasing, false);
-
-        painter.setPen(Qt::NoPen);
-
-        QMatrix4x4 vmvp = viewport * mvp;
-
-        painter.setTransform(vmvp.toTransform());
-        painter.setBrush(QBrush(patchColor));
-
-        QPolygonF triangle;
-        QList<QLineF> lines;
-
-        //to draw or not the triangle patch
-        bool isDraw;
-
-        double pivEplus = CVehicle::instance()->pivotAxlePos.easting + 50;
-        double pivEminus = CVehicle::instance()->pivotAxlePos.easting - 50;
-        double pivNplus = CVehicle::instance()->pivotAxlePos.northing + 50;
-        double pivNminus = CVehicle::instance()->pivotAxlePos.northing - 50;
-
-        //QPolygonF frustum({{pivEminus, pivNplus}, {pivEplus, pivNplus },
-        //                   { pivEplus, pivNminus}, {pivEminus, pivNminus }});
-
-        //draw patches j= # of sections
-        for (int j = 0; j < this->triStrip.count(); j++)
-        {
-            //every time the section turns off and on is a new patch
-            int patchCount = this->triStrip[j].patchList.size();
-
-            if (patchCount > 0)
-            {
-                //for every new chunk of patch
-                for (int k = 0; k < this->triStrip[j].patchList.size() ; k++)
-                {
-                    isDraw = false;
-                    QSharedPointer<PatchTriangleList> triList = this->triStrip[j].patchList[k];
-                    QSharedPointer<PatchBoundingBox> bb = this->triStrip[j].patchBoundingBoxList[k];
-
-                    /*
-                    QPolygonF patchBox({{ (*bb).minx, (*bb).miny }, {(*bb).maxx, (*bb).miny},
-                                        { (*bb).maxx, (*bb).maxy }, { (*bb).minx, (*bb).maxy } });
-
-                    if (frustum.intersects(patchBox))
-                        isDraw = true;
-                    */
-
-                    int count2 = triList->size();
-                    for (int i = 1; i < count2; i+=3)
-                    {
-                        //determine if point is in frustum or not
-                        if ((*triList)[i].x() > pivEplus)
-                            continue;
-                        if ((*triList)[i].x() < pivEminus)
-                            continue;
-                        if ((*triList)[i].y() > pivNplus)
-                            continue;
-                        if ((*triList)[i].y() < pivNminus)
-                            continue;
-
-                        //point is in frustum so draw the entire patch
-                        isDraw = true;
-                        break;
-                    }
-
-                    if (isDraw)
-                    {
-                        triangle.clear();
-                        //triangle strip to polygon:
-                        //first two vertices, then every other one to the end
-                        //then from the end back to vertex #3, but every other one.
-
-                        triangle.append(QPointF((*triList)[1].x(), (*triList)[1].y()));
-                        triangle.append(QPointF((*triList)[2].x(), (*triList)[2].y()));
-
-                        //even vertices after first two
-                        for (int i=4; i < count2; i+=2) {
-                            triangle.append(QPointF((*triList)[i].x(), (*triList)[i].y()));
-                        }
-
-                        //odd remaining vertices
-                        for (int i=count2 - (count2 % 2 ? 2 : 1) ; i >2 ; i -=2) {
-                            triangle.append(QPointF((*triList)[i].x(), (*triList)[i].y()));
-                        }
-
-                        painter.drawPolygon(triangle);
-
-                    }
-                }
-            }
-        }
-
-        //draw tool bar for debugging
-        //gldraw.clear();
-        //gldraw.append(QVector3D(tool.section[0].leftPoint.easting, tool.section[0].leftPoint.northing,0.5));
-        //gldraw.append(QVector3D(tool.section[tool.numOfSections-1].rightPoint.easting, tool.section[tool.numOfSections-1].rightPoint.northing,0.5));
-        //gldraw.draw(gl,projection*modelview,QColor::fromRgb(255,0,0),GL_LINE_STRIP,1);
-
-        //draw 245 green for the tram tracks
-        QPen pen(QColor::fromRgb(0,245,0));
-        pen.setWidth(8);
-        painter.setPen(pen);
-
-        if (this->tram.displayMode !=0 && this->tram.displayMode !=0 && (this->track.idx() > -1))
-        {
-            if ((this->tram.displayMode == 1 || this->tram.displayMode == 2))
-            {
-
-                for (int i = 0; i < this->tram.tramList.count(); i++)
-                {
-                    lines.clear();
-                    for (int h = 1; h < this->tram.tramList[i]->count(); h++) {
-                        lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, (*this->tram.tramList[i])[h-1]),
-                                           glm::backbuffer_world_to_screen(mvp, (*this->tram.tramList[i])[h])));
-                    }
-
-                    painter.drawLines(lines);
-                }
-            }
-
-            if (this->tram.displayMode == 1 || this->tram.displayMode == 3)
-            {
-                lines.clear();
-                for (int h = 0; h < this->tram.tramBndOuterArr.count(); h++) {
-                    lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, this->tram.tramBndOuterArr[h-1]),
-                                       glm::backbuffer_world_to_screen(mvp, this->tram.tramBndOuterArr[h])));
-                }
-
-                for (int h = 0; h < this->tram.tramBndInnerArr.count(); h++) {
-                    lines.append(QLineF(glm::backbuffer_world_to_screen(mvp, this->tram.tramBndInnerArr[h-1]),
-                                       glm::backbuffer_world_to_screen(mvp, this->tram.tramBndInnerArr[h])));
-                }
-
-                painter.drawLines(lines);
-            }
-        }
-
-        //draw 240 green for boundary
-        if (this->bnd.bndList.count() > 0)
-        {
-            ////draw the bnd line
-            if (this->bnd.bndList[0].fenceLine.count() > 3)
-            {
-                DrawPolygonBack(painter, mvp, this->bnd.bndList[0].fenceLine,3,QColor::fromRgb(0,240,0));
-            }
-
-
-            //draw 250 green for the headland
-            if (this->isHeadlandOn() && this->bnd.isSectionControlledByHeadland)
-            {
-                DrawPolygonBack(painter, mvp, this->bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
-            }
-        }
-
-        painter.end();
-
-        //TODO adjust coordinate transformations above to eliminate this step
-        this->grnPix = this->grnPix.mirrored().convertToFormat(QImage::Format_RGBX8888);
-
-        QImage temp = this->grnPix.copy(tool.rpXPosition, 0, tool.rpWidth, 290 /*(int)rpHeight*/);
-        temp.setPixelColor(0,0,QColor::fromRgb(255,128,0));
-        //grnPix = temp; //only show clipped image
-        memcpy(this->grnPixels, temp.constBits(), temp.size().width() * temp.size().height() * 4);
-        //grnPix = temp;
-
-        QThread *currentThread = QThread::currentThread();
-        qDebug(qpos) << "Back render thread is" << currentThread;
-
-        QMetaObject::invokeMethod(QApplication::instance(), [this]() {
+        QMetaObject::invokeMethod(QApplication::instance(), [this, &back_buffer]() {
 #else
     oglBack_Paint();
 #endif
 
-    QThread *currentThread = QThread::currentThread();
-    qDebug(qpos) << "Back processing thread is" << currentThread;
+    CPGN_EF &p_239 = ModuleComm::instance()->p_239;
+    CPGN_E5 &p_229 = ModuleComm::instance()->p_229;
 
     if (SettingsManager::instance()->display_showBack()) {
-        grnPixelsWindow->setPixmap(QPixmap::fromImage(grnPix.mirrored()));
+#if QT_VERSION < QT_VERSION_CHECK(6,9,0)
+        grnPixelsWindow->setPixmap(QPixmap::fromImage(tool.grnPix.mirrored(false, true)));
+#else
+        grnPixelsWindow->setPixmap(QPixmap::fromImage(tool.grnPix.flipped()));
+#endif
         //overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
     }
 
-    //determine where the tool is wrt to headland
-    if (this->isHeadlandOn()) bnd.WhereAreToolCorners(tool);
-
-    //set the look ahead for hyd Lift in pixels per second
-    CVehicle::instance()->hydLiftLookAheadDistanceLeft = tool.farLeftSpeed * CVehicle::instance()->hydLiftLookAheadTime * 10;
-    CVehicle::instance()->hydLiftLookAheadDistanceRight = tool.farRightSpeed * CVehicle::instance()->hydLiftLookAheadTime * 10;
-
-    if (CVehicle::instance()->hydLiftLookAheadDistanceLeft > 200) CVehicle::instance()->hydLiftLookAheadDistanceLeft = 200;
-    if (CVehicle::instance()->hydLiftLookAheadDistanceRight > 200) CVehicle::instance()->hydLiftLookAheadDistanceRight = 200;
-
-    tool.lookAheadDistanceOnPixelsLeft = tool.farLeftSpeed * tool.lookAheadOnSetting * 10;
-    tool.lookAheadDistanceOnPixelsRight = tool.farRightSpeed * tool.lookAheadOnSetting * 10;
-
-    if (tool.lookAheadDistanceOnPixelsLeft > 200) tool.lookAheadDistanceOnPixelsLeft = 200;
-    if (tool.lookAheadDistanceOnPixelsRight > 200) tool.lookAheadDistanceOnPixelsRight = 200;
-
-    tool.lookAheadDistanceOffPixelsLeft = tool.farLeftSpeed * tool.lookAheadOffSetting * 10;
-    tool.lookAheadDistanceOffPixelsRight = tool.farRightSpeed * tool.lookAheadOffSetting * 10;
-
-    if (tool.lookAheadDistanceOffPixelsLeft > 160) tool.lookAheadDistanceOffPixelsLeft = 160;
-    if (tool.lookAheadDistanceOffPixelsRight > 160) tool.lookAheadDistanceOffPixelsRight = 160;
-
-    //determine if section is in boundary and headland using the section left/right positions
-    bool isLeftIn = true, isRightIn = true;
-
-    if (bnd.bndList.count() > 0)
-    {
-        for (int j = 0; j < tool.numOfSections; j++)
-        {
-            //only one first left point, the rest are all rights moved over to left
-            isLeftIn = j == 0 ? bnd.IsPointInsideFenceArea(tool.section[j].leftPoint) : isRightIn;
-            isRightIn = bnd.IsPointInsideFenceArea(tool.section[j].rightPoint);
-
-            if (tool.isSectionOffWhenOut)
-            {
-                //merge the two sides into in or out
-                if (isLeftIn || isRightIn) tool.section[j].isInBoundary = true;
-                else tool.section[j].isInBoundary = false;
-            }
-            else
-            {
-                //merge the two sides into in or out
-                if (!isLeftIn || !isRightIn) tool.section[j].isInBoundary = false;
-                else tool.section[j].isInBoundary = true;
-            }
-        }
-    }
-
-    //determine farthest ahead lookahead - is the height of the readpixel line
-    double rpHeight = 0;
-    double rpOnHeight = 0;
-    double rpToolHeight = 0;
-
-    //pick the larger side
-    if (CVehicle::instance()->hydLiftLookAheadDistanceLeft > CVehicle::instance()->hydLiftLookAheadDistanceRight) rpToolHeight = CVehicle::instance()->hydLiftLookAheadDistanceLeft;
-    else rpToolHeight = CVehicle::instance()->hydLiftLookAheadDistanceRight;
-
-    if (tool.lookAheadDistanceOnPixelsLeft > tool.lookAheadDistanceOnPixelsRight) rpOnHeight = tool.lookAheadDistanceOnPixelsLeft;
-    else rpOnHeight = tool.lookAheadDistanceOnPixelsRight;
-
-    isHeadlandClose = false;
-
-    //clamp the height after looking way ahead, this is for switching off super section only
-    rpOnHeight = fabs(rpOnHeight);
-    rpToolHeight = fabs(rpToolHeight);
-
-    //10 % min is required for overlap, otherwise it never would be on.
-    int pixLimit = (int)((double)(tool.section[0].rpSectionWidth * rpOnHeight) / (double)(5.0));
-    //bnd.isSectionControlledByHeadland = true;
-    if ((rpOnHeight < rpToolHeight && this->isHeadlandOn() && bnd.isSectionControlledByHeadland)) rpHeight = rpToolHeight + 2;
-    else rpHeight = rpOnHeight + 2;
-    //qDebug(qpos) << bnd.isSectionControlledByHeadland << "headland sections";
-
-    if (rpHeight > 290) rpHeight = 290;
-    if (rpHeight < 8) rpHeight = 8;
-
-    //read the whole block of pixels up to max lookahead, one read only
-    //pixels are already read in another thread.
-
-    //determine if headland is in read pixel buffer left middle and right.
-    int start = 0, end = 0, tagged = 0, totalPixel = 0;
-
-    //slope of the look ahead line
-    double mOn = 0, mOff = 0;
-
-    //tram and hydraulics
-    if (tram.displayMode > 0 && tool.width > CVehicle::instance()->trackWidth)
-    {
-        tram.controlByte = 0;
-        //1 pixels in is there a tram line?
-        if (tram.isOuter)
-        {
-            if (grnPixels[(int)(tram.halfWheelTrack * 10)].green == 245) tram.controlByte += 2;
-            if (grnPixels[tool.rpWidth - (int)(tram.halfWheelTrack * 10)].green == 245) tram.controlByte += 1;
-        }
-        else
-        {
-            if (grnPixels[tool.rpWidth / 2 - (int)(tram.halfWheelTrack * 10)].green == 245) tram.controlByte += 2;
-            if (grnPixels[tool.rpWidth / 2 + (int)(tram.halfWheelTrack * 10)].green == 245) tram.controlByte += 1;
-        }
-    }
-    else tram.controlByte = 0;
-
-    //determine if in or out of headland, do hydraulics if on
-    if (this->isHeadlandOn())
-    {
-        //calculate the slope
-        double m = (CVehicle::instance()->hydLiftLookAheadDistanceRight - CVehicle::instance()->hydLiftLookAheadDistanceLeft) / tool.rpWidth;
-        int height = 1;
-
-        for (int pos = 0; pos < tool.rpWidth; pos++)
-        {
-            height = (int)(CVehicle::instance()->hydLiftLookAheadDistanceLeft + (m * pos)) - 1;
-            for (int a = pos; a < height * tool.rpWidth; a += tool.rpWidth)
-            {
-                if (grnPixels[a].green == 250)
-                {
-                    isHeadlandClose = true;
-                    goto GetOutTool;
-                }
-            }
-        }
-
-    GetOutTool: //goto
-
-        //is the tool completely in the headland or not
-        bnd.isToolInHeadland = bnd.isToolOuterPointsInHeadland && !isHeadlandClose;
-
-        //set hydraulics based on tool in headland or not
-        bnd.SetHydPosition(static_cast<btnStates>(this->autoBtnState()), p_239, *CVehicle::instance());
-
-        //set hydraulics based on tool in headland or not
-        bnd.SetHydPosition(static_cast<btnStates>(this->autoBtnState()), p_239, *CVehicle::instance());
-
-    }
-
-    ///////////////////////////////////////////   Section control        ssssssssssssssssssssss
-
-    int endHeight = 1, startHeight = 1;
-
-    if (this->isHeadlandOn() && bnd.isSectionControlledByHeadland) bnd.WhereAreToolLookOnPoints(*CVehicle::instance(), tool);
-
-    for (int j = 0; j < tool.numOfSections; j++)
-    {
-        //Off or too slow or going backwards
-        if (tool.sectionButtonState[j] == btnStates::Off || CVehicle::instance()->avgSpeed < CVehicle::instance()->slowSpeedCutoff || tool.section[j].speedPixels < 0)
-        {
-            tool.section[j].sectionOnRequest = false;
-            tool.section[j].sectionOffRequest = true;
-
-            // Manual on, force the section On
-            if (tool.sectionButtonState[j] == btnStates::On)
-            {
-                tool.section[j].sectionOnRequest = true;
-                tool.section[j].sectionOffRequest = false;
-                continue;
-            }
-            continue;
-        }
-
-        // Manual on, force the section On
-        if (tool.sectionButtonState[j] == btnStates::On)
-        {
-            tool.section[j].sectionOnRequest = true;
-            tool.section[j].sectionOffRequest = false;
-            continue;
-        }
-
-
-        //AutoSection - If any nowhere applied, send OnRequest, if its all green send an offRequest
-        tool.section[j].isSectionRequiredOn = false;
-
-        //calculate the slopes of the lines
-        mOn = (tool.lookAheadDistanceOnPixelsRight - tool.lookAheadDistanceOnPixelsLeft) / tool.rpWidth;
-        mOff = (tool.lookAheadDistanceOffPixelsRight - tool.lookAheadDistanceOffPixelsLeft) / tool.rpWidth;
-
-        start = tool.section[j].rpSectionPosition - tool.section[0].rpSectionPosition;
-        end = tool.section[j].rpSectionWidth - 1 + start;
-
-        if (end >= tool.rpWidth)
-            end = tool.rpWidth - 1;
-
-        totalPixel = 1;
-        tagged = 0;
-
-        for (int pos = start; pos <= end; pos++)
-        {
-            startHeight = (int)(tool.lookAheadDistanceOffPixelsLeft + (mOff * pos)) * tool.rpWidth + pos;
-            endHeight = (int)(tool.lookAheadDistanceOnPixelsLeft + (mOn * pos)) * tool.rpWidth + pos;
-
-            for (int a = startHeight; a <= endHeight; a += tool.rpWidth)
-            {
-                totalPixel++;
-                if (grnPixels[a].green == 0) tagged++;
-            }
-        }
-
-        //determine if meeting minimum coverage
-        tool.section[j].isSectionRequiredOn = ((tagged * 100) / totalPixel > (100 - tool.minCoverage));
-
-        //logic if in or out of boundaries or headland
-        if (bnd.bndList.count() > 0)
-        {
-            //if out of boundary, turn it off
-            if (!tool.section[j].isInBoundary)
-            {
-                tool.section[j].isSectionRequiredOn = false;
-                tool.section[j].sectionOffRequest = true;
-                tool.section[j].sectionOnRequest = false;
-                tool.section[j].sectionOffTimer = 0;
-                tool.section[j].sectionOnTimer = 0;
-                continue;
-            }
-            else
-            {
-                //is headland coming up
-                if (this->isHeadlandOn() && bnd.isSectionControlledByHeadland)
-                {
-                    bool isHeadlandInLookOn = false;
-
-                    //is headline in off to on area
-                    mOn = (tool.lookAheadDistanceOnPixelsRight - tool.lookAheadDistanceOnPixelsLeft) / tool.rpWidth;
-                    mOff = (tool.lookAheadDistanceOffPixelsRight - tool.lookAheadDistanceOffPixelsLeft) / tool.rpWidth;
-
-                    start = tool.section[j].rpSectionPosition - tool.section[0].rpSectionPosition;
-
-                    end = tool.section[j].rpSectionWidth - 1 + start;
-
-                    if (end >= tool.rpWidth)
-                        end = tool.rpWidth - 1;
-
-                    tagged = 0;
-
-                    for (int pos = start; pos <= end; pos++)
-                    {
-                        startHeight = (int)(tool.lookAheadDistanceOffPixelsLeft + (mOff * pos)) * tool.rpWidth + pos;
-                        endHeight = (int)(tool.lookAheadDistanceOnPixelsLeft + (mOn * pos)) * tool.rpWidth + pos;
-
-                        for (int a = startHeight; a <= endHeight; a += tool.rpWidth)
-                        {
-                            if (a < 0)
-                                mOn = 0;
-                            if (grnPixels[a].green == 250)
-                            {
-                                isHeadlandInLookOn = true;
-                                goto GetOutHdOn;
-                            }
-                        }
-                    }
-                GetOutHdOn:
-
-                    //determine if look ahead points are completely in headland
-                    if (tool.section[j].isSectionRequiredOn && tool.section[j].isLookOnInHeadland && !isHeadlandInLookOn)
-                    {
-                        tool.section[j].isSectionRequiredOn = false;
-                        tool.section[j].sectionOffRequest = true;
-                        tool.section[j].sectionOnRequest = false;
-                    }
-
-                    if (tool.section[j].isSectionRequiredOn && !tool.section[j].isLookOnInHeadland && isHeadlandInLookOn)
-                    {
-                        tool.section[j].isSectionRequiredOn = true;
-                        tool.section[j].sectionOffRequest = false;
-                        tool.section[j].sectionOnRequest = true;
-                    }
-                }
-            }
-        }
-
-
-        //global request to turn on section
-        tool.section[j].sectionOnRequest = tool.section[j].isSectionRequiredOn;
-        tool.section[j].sectionOffRequest = !tool.section[j].sectionOnRequest;
-
-    }  // end of go thru all sections "for"
-
-    //Set all the on and off times based from on off section requests
-    for (int j = 0; j < tool.numOfSections; j++)
-    {
-        //SECTION timers
-
-        if (tool.section[j].sectionOnRequest) {
-            bool wasOn = tool.section[j].isSectionOn;
-            tool.section[j].isSectionOn = true;
-            // PHASE 6.0.36: sectionButtonState (user preference) should NOT be modified here
-            // Only isSectionOn (calculated state) changes - matches C# original architecture
-        }
-
-        //turn off delay
-        if (tool.turnOffDelay > 0)
-        {
-            if (!tool.section[j].sectionOffRequest) tool.section[j].sectionOffTimer = (int)(gpsHz / 2.0 * tool.turnOffDelay);
-
-            if (tool.section[j].sectionOffTimer > 0) tool.section[j].sectionOffTimer--;
-
-            if (tool.section[j].sectionOffRequest && tool.section[j].sectionOffTimer == 0)
-            {
-                if (tool.section[j].isSectionOn) {
-                    tool.section[j].isSectionOn = false;
-                    // PHASE 6.0.36: sectionButtonState (user preference) NOT modified
-                    // Only isSectionOn (calculated state) changes - matches C# original
-                }
-            }
-        }
-        else
-        {
-            if (tool.section[j].sectionOffRequest) {
-                bool wasOn = tool.section[j].isSectionOn;
-                tool.section[j].isSectionOn = false;
-                // PHASE 6.0.36: sectionButtonState (user preference) NOT modified here
-                // Only isSectionOn (calculated state) changes - matches C# original architecture
-                // sectionButtonState controlled ONLY by user actions: button clicks, Master Auto
-            }
-        }
-
-        //Mapping timers
-        if (tool.section[j].sectionOnRequest && !tool.section[j].isMappingOn && tool.section[j].mappingOnTimer == 0)
-        {
-            tool.section[j].mappingOnTimer = (int)(tool.lookAheadOnSetting * (gpsHz / 2) - 1);
-        }
-        else if (tool.section[j].sectionOnRequest && tool.section[j].isMappingOn && tool.section[j].mappingOffTimer > 1)
-        {
-            tool.section[j].mappingOffTimer = 0;
-            tool.section[j].mappingOnTimer = (int)(tool.lookAheadOnSetting * (gpsHz / 2) - 1);
-        }
-
-        if (tool.lookAheadOffSetting > 0)
-        {
-            if (tool.section[j].sectionOffRequest && tool.section[j].isMappingOn && tool.section[j].mappingOffTimer == 0)
-            {
-                tool.section[j].mappingOffTimer = (int)(tool.lookAheadOffSetting * (gpsHz / 2) + 4);
-            }
-        }
-        else if (tool.turnOffDelay > 0)
-        {
-            if (tool.section[j].sectionOffRequest && tool.section[j].isMappingOn && tool.section[j].mappingOffTimer == 0)
-                tool.section[j].mappingOffTimer = (int)(tool.turnOffDelay * gpsHz / 2);
-        }
-        else
-        {
-            tool.section[j].mappingOffTimer = 0;
-        }
-
-        //MAPPING - Not the making of triangle patches - only status - on or off
-        if (tool.section[j].sectionOnRequest)
-        {
-            tool.section[j].mappingOffTimer = 0;
-            if (tool.section[j].mappingOnTimer > 1)
-                tool.section[j].mappingOnTimer--;
-            else
-            {
-                tool.section[j].isMappingOn = true;
-            }
-        }
-
-        if (tool.section[j].sectionOffRequest)
-        {
-            tool.section[j].mappingOnTimer = 0;
-            if (tool.section[j].mappingOffTimer > 1)
-                tool.section[j].mappingOffTimer--;
-            else
-            {
-                tool.section[j].isMappingOn = false;
-            }
-        }
-    }
-
-    //Checks the workswitch or steerSwitch if required
-    if (ahrs.isAutoSteerAuto || mc.isRemoteWorkSystemOn)
-        mc.CheckWorkAndSteerSwitch(ahrs,isBtnAutoSteerOn());
-
-    // check if any sections have changed status
-    number = 0;
-
-    for (int j = 0; j < tool.numOfSections; j++)
-    {
-        if (tool.section[j].isMappingOn)
-        {
-            number |= 1ul << j;
-        }
-    }
-
-    //there has been a status change of section on/off
-    if (number != lastNumber)
-    {
-        int sectionOnOffZones = 0, patchingZones = 0;
-
-        //everything off
-        if (number == 0)
-        {
-            for (int j = 0; j < triStrip.count(); j++)
-            {
-                if (triStrip[j].isDrawing)
-                    triStrip[j].TurnMappingOff(tool, fd, mainWindow, this);
-            }
-        }
-        else if (!tool.isMultiColoredSections)
-        {
-            //set the start and end positions from section points
-            for (int j = 0; j < tool.numOfSections; j++)
-            {
-                //skip till first mapping section
-                if (!tool.section[j].isMappingOn) continue;
-
-                //do we need more patches created
-                if (triStrip.count() < sectionOnOffZones + 1)
-                    triStrip.append(CPatches());
-
-                //set this strip start edge to edge of this section
-                triStrip[sectionOnOffZones].newStartSectionNum = j;
-
-                while ((j + 1) < tool.numOfSections && tool.section[j + 1].isMappingOn)
-                {
-                    j++;
-                }
-
-                //set the edge of this section to be end edge of strp
-                triStrip[sectionOnOffZones].newEndSectionNum = j;
-                sectionOnOffZones++;
-            }
-
-            //count current patch strips being made
-            for (int j = 0; j < triStrip.count(); j++)
-            {
-                if (triStrip[j].isDrawing) patchingZones++;
-            }
-
-            //tests for creating new strips or continuing
-            bool isOk = (patchingZones == sectionOnOffZones && sectionOnOffZones < 3);
-
-            if (isOk)
-            {
-                for (int j = 0; j < sectionOnOffZones; j++)
-                {
-                    if (triStrip[j].newStartSectionNum > triStrip[j].currentEndSectionNum
-                        || triStrip[j].newEndSectionNum < triStrip[j].currentStartSectionNum)
-                        isOk = false;
-                }
-            }
-
-            if (isOk)
-            {
-                for (int j = 0; j < sectionOnOffZones; j++)
-                {
-                    if (triStrip[j].newStartSectionNum != triStrip[j].currentStartSectionNum
-                        || triStrip[j].newEndSectionNum != triStrip[j].currentEndSectionNum)
-                    {
-                        //if (tool.isSectionsNotZones)
-                        {
-                            triStrip[j].AddMappingPoint(tool,fd, 0, mainWindow, this);
-                        }
-
-                        triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
-                        triStrip[j].currentEndSectionNum = triStrip[j].newEndSectionNum;
-                        triStrip[j].AddMappingPoint(tool,fd, 0, mainWindow, this);
-                    }
-                }
-            }
-            else
-            {
-                //too complicated, just make new strips
-                for (int j = 0; j < triStrip.count(); j++)
-                {
-                    if (triStrip[j].isDrawing)
-                        triStrip[j].TurnMappingOff(tool, fd, mainWindow, this);
-                }
-
-                for (int j = 0; j < sectionOnOffZones; j++)
-                {
-                    triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
-                    triStrip[j].currentEndSectionNum = triStrip[j].newEndSectionNum;
-                    triStrip[j].TurnMappingOn(tool, 0);
-                }
-            }
-        }
-        else if (tool.isMultiColoredSections) //could be else only but this is more clear
-        {
-            //set the start and end positions from section points
-            for (int j = 0; j < tool.numOfSections; j++)
-            {
-                //do we need more patches created
-                if (triStrip.count() < sectionOnOffZones + 1)
-                    triStrip.append(CPatches());
-
-                //set this strip start edge to edge of this section
-                triStrip[sectionOnOffZones].newStartSectionNum = j;
-
-                //set the edge of this section to be end edge of strp
-                triStrip[sectionOnOffZones].newEndSectionNum = j;
-                sectionOnOffZones++;
-
-                if (!tool.section[j].isMappingOn)
-                {
-                    if (triStrip[j].isDrawing)
-                        triStrip[j].TurnMappingOff(tool, fd, mainWindow, this);
-                }
-                else
-                {
-                    triStrip[j].currentStartSectionNum = triStrip[j].newStartSectionNum;
-                    triStrip[j].currentEndSectionNum = triStrip[j].newEndSectionNum;
-                    triStrip[j].TurnMappingOn(tool,j);
-                }
-            }
-        }
-
-
-        lastNumber = number;
-    }
+    //calculate sections on and off
+    tool.ProcessLookAhead(Backend::instance()->m_fixFrame.hz,
+                          MainWindowState::instance()->autoBtnState(),
+                          bnd, tram);
 
     //send the byte out to section machines
-    BuildMachineByte();
+    tool.BuildMachineByte(tram);
 
     //if a minute has elapsed save the field in case of crash and to be able to resume
-    if (minuteCounter > 30 && this->sentenceCounter() < 20)
+    if (minuteCounter > 30 && Backend::instance()->m_fixFrame.sentenceCounter < 20)
     {
         // Phase 2.4: No longer need to stop timer - saves are now fast (< 50ms)
         // tmrWatchdog->stop();  // REMOVED - buffered saves don't block GPS
 
         //don't save if no gps
-        if (isJobStarted())
+        if (Backend::instance()->isJobStarted())
         {
             //auto save the field patches, contours accumulated so far
             FileSaveSections();  // Now < 50ms with buffering
@@ -2364,9 +1425,9 @@ void FormGPS::processSectionLookahead() {
 
     }
 
-    if (isJobStarted())
+    if (Backend::instance()->isJobStarted())
     {
-        p_239.pgn[p_239.geoStop] = this->isOutOfBounds() ? 1 : 0;
+        p_239.pgn[CPGN_EF::geoStop] = BoundaryInterface::instance()->isOutOfBounds() ? 1 : 0;
 
         // SendPgnToLoop(p_239.pgn;  // âŒ REMOVED - Phase 4.6: AgIOService Workers handle PGN
 
@@ -2378,7 +1439,7 @@ void FormGPS::processSectionLookahead() {
     }
 
 #ifdef USE_QPAINTER_BACKBUFFER
-    qWarning() << "After threaded back buffer drawing, section lookahead finished at " << swFrame.elapsed();
+    qDebug(qpos) << "After threaded back buffer drawing, section lookahead finished at " << swFrame.elapsed();
     }, Qt::QueuedConnection);
     });
 #endif
@@ -2391,18 +1452,20 @@ void FormGPS::processSectionLookahead() {
 
 void FormGPS::CalculatePositionHeading()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_TRACK(track);
     // #region pivot hitch trail
     //Probably move this into CVehicle
 
     //translate from pivot position to steer axle and pivot axle position
     //translate world to the pivot axle
-    CVehicle::instance()->pivotAxlePos.easting = pn.fix.easting - (sin(CVehicle::instance()->fixHeading) * CVehicle::instance()->antennaPivot);
-    CVehicle::instance()->pivotAxlePos.northing = pn.fix.northing - (cos(CVehicle::instance()->fixHeading) * CVehicle::instance()->antennaPivot);
-    CVehicle::instance()->pivotAxlePos.heading = CVehicle::instance()->fixHeading;
+    CVehicle::instance()->pivotAxlePos.easting = pn.fix.easting - (sin(CVehicle::instance()->fixHeading()) * CVehicle::instance()->antennaPivot);
+    CVehicle::instance()->pivotAxlePos.northing = pn.fix.northing - (cos(CVehicle::instance()->fixHeading()) * CVehicle::instance()->antennaPivot);
+    CVehicle::instance()->pivotAxlePos.heading = CVehicle::instance()->fixHeading();
 
-    CVehicle::instance()->steerAxlePos.easting = CVehicle::instance()->pivotAxlePos.easting + (sin(CVehicle::instance()->fixHeading) * CVehicle::instance()->wheelbase);
-    CVehicle::instance()->steerAxlePos.northing = CVehicle::instance()->pivotAxlePos.northing + (cos(CVehicle::instance()->fixHeading) * CVehicle::instance()->wheelbase);
-    CVehicle::instance()->steerAxlePos.heading = CVehicle::instance()->fixHeading;
+    CVehicle::instance()->steerAxlePos.easting = CVehicle::instance()->pivotAxlePos.easting + (sin(CVehicle::instance()->fixHeading()) * CVehicle::instance()->wheelbase);
+    CVehicle::instance()->steerAxlePos.northing = CVehicle::instance()->pivotAxlePos.northing + (cos(CVehicle::instance()->fixHeading()) * CVehicle::instance()->wheelbase);
+    CVehicle::instance()->steerAxlePos.heading = CVehicle::instance()->fixHeading();
     
     // PHASE 4.3: Measure execution latency for vehicle position update
     // This measures the TIME BETWEEN calls (which gives us frequency)
@@ -2432,14 +1495,14 @@ void FormGPS::CalculatePositionHeading()
 
     if (!track.ABLine.isLateralTriggered && !track.curve.isLateralTriggered)
     {
-        double guidanceLookDist = (max(tool.width * 0.5, CVehicle::instance()->avgSpeed * 0.277777 * guidanceLookAheadTime));
-        CVehicle::instance()->guidanceLookPos.easting = CVehicle::instance()->pivotAxlePos.easting + (sin(CVehicle::instance()->fixHeading) * guidanceLookDist);
-        CVehicle::instance()->guidanceLookPos.northing = CVehicle::instance()->pivotAxlePos.northing + (cos(CVehicle::instance()->fixHeading) * guidanceLookDist);
+        double guidanceLookDist = (std::max(tool.width * 0.5, CVehicle::instance()->avgSpeed() * 0.277777 * Backend::instance()->guidanceLookAheadTime()));
+        CVehicle::instance()->guidanceLookPos.easting = CVehicle::instance()->pivotAxlePos.easting + (sin(CVehicle::instance()->fixHeading()) * guidanceLookDist);
+        CVehicle::instance()->guidanceLookPos.northing = CVehicle::instance()->pivotAxlePos.northing + (cos(CVehicle::instance()->fixHeading()) * guidanceLookDist);
     }
 
     //determine where the rigid vehicle hitch ends
-    CVehicle::instance()->hitchPos.easting = pn.fix.easting + (sin(CVehicle::instance()->fixHeading) * (tool.hitchLength - CVehicle::instance()->antennaPivot));
-    CVehicle::instance()->hitchPos.northing = pn.fix.northing + (cos(CVehicle::instance()->fixHeading) * (tool.hitchLength - CVehicle::instance()->antennaPivot));
+    CVehicle::instance()->hitchPos.easting = pn.fix.easting + (sin(CVehicle::instance()->fixHeading()) * (tool.hitchLength - CVehicle::instance()->antennaPivot));
+    CVehicle::instance()->hitchPos.northing = pn.fix.northing + (cos(CVehicle::instance()->fixHeading()) * (tool.hitchLength - CVehicle::instance()->antennaPivot));
 
     //tool attached via a trailing hitch
     if (tool.isToolTrailing)
@@ -2450,78 +1513,78 @@ void FormGPS::CalculatePositionHeading()
             //Torriem rules!!!!! Oh yes, this is all his. Thank-you
             if (distanceCurrentStepFix != 0)
             {
-                CVehicle::instance()->tankPos.heading = atan2(CVehicle::instance()->hitchPos.easting - CVehicle::instance()->tankPos.easting, CVehicle::instance()->hitchPos.northing - CVehicle::instance()->tankPos.northing);
-                if (CVehicle::instance()->tankPos.heading < 0) CVehicle::instance()->tankPos.heading += glm::twoPI;
+                tool.tankPos.heading = atan2(CVehicle::instance()->hitchPos.easting - tool.tankPos.easting, CVehicle::instance()->hitchPos.northing - tool.tankPos.northing);
+                if (tool.tankPos.heading < 0) tool.tankPos.heading += glm::twoPI;
             }
 
             ////the tool is seriously jacknifed or just starting out so just spring it back.
-            over = fabs(M_PI - fabs(fabs(CVehicle::instance()->tankPos.heading - CVehicle::instance()->fixHeading) - M_PI));
+            over = fabs(M_PI - fabs(fabs(tool.tankPos.heading - CVehicle::instance()->fixHeading()) - M_PI));
 
             if ((over < 2.0) && (startCounter > 50))
             {
-                CVehicle::instance()->tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(CVehicle::instance()->tankPos.heading) * (tool.tankTrailingHitchLength));
-                CVehicle::instance()->tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(CVehicle::instance()->tankPos.heading) * (tool.tankTrailingHitchLength));
+                tool.tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
+                tool.tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
             }
 
             //criteria for a forced reset to put tool directly behind vehicle
             if (over > 2.0 || startCounter < 51 )
             {
-                CVehicle::instance()->tankPos.heading = CVehicle::instance()->fixHeading;
-                CVehicle::instance()->tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(CVehicle::instance()->tankPos.heading) * (tool.tankTrailingHitchLength));
-                CVehicle::instance()->tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(CVehicle::instance()->tankPos.heading) * (tool.tankTrailingHitchLength));
+                tool.tankPos.heading = CVehicle::instance()->fixHeading();
+                tool.tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
+                tool.tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
             }
 
         }
 
         else
         {
-            CVehicle::instance()->tankPos.heading = CVehicle::instance()->fixHeading;
-            CVehicle::instance()->tankPos.easting = CVehicle::instance()->hitchPos.easting;
-            CVehicle::instance()->tankPos.northing = CVehicle::instance()->hitchPos.northing;
+            tool.tankPos.heading = CVehicle::instance()->fixHeading();
+            tool.tankPos.easting = CVehicle::instance()->hitchPos.easting;
+            tool.tankPos.northing = CVehicle::instance()->hitchPos.northing;
         }
 
         //Torriem rules!!!!! Oh yes, this is all his. Thank-you
         if (distanceCurrentStepFix != 0)
         {
-            CVehicle::instance()->toolPivotPos.heading = atan2(CVehicle::instance()->tankPos.easting - CVehicle::instance()->toolPivotPos.easting, CVehicle::instance()->tankPos.northing - CVehicle::instance()->toolPivotPos.northing);
-            if (CVehicle::instance()->toolPivotPos.heading < 0) CVehicle::instance()->toolPivotPos.heading += glm::twoPI;
+            tool.toolPivotPos.heading = atan2(tool.tankPos.easting - tool.toolPivotPos.easting, tool.tankPos.northing - tool.toolPivotPos.northing);
+            if (tool.toolPivotPos.heading < 0) tool.toolPivotPos.heading += glm::twoPI;
         }
 
         ////the tool is seriously jacknifed or just starting out so just spring it back.
-        over = fabs(M_PI - fabs(fabs(CVehicle::instance()->toolPivotPos.heading - CVehicle::instance()->tankPos.heading) - M_PI));
+        over = fabs(M_PI - fabs(fabs(tool.toolPivotPos.heading - tool.tankPos.heading) - M_PI));
 
         if ((over < 1.9) && (startCounter > 50))
         {
-            CVehicle::instance()->toolPivotPos.easting = CVehicle::instance()->tankPos.easting + (sin(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength));
-            CVehicle::instance()->toolPivotPos.northing = CVehicle::instance()->tankPos.northing + (cos(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength));
+            tool.toolPivotPos.easting = tool.tankPos.easting + (sin(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
+            tool.toolPivotPos.northing = tool.tankPos.northing + (cos(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
         }
 
         //criteria for a forced reset to put tool directly behind vehicle
         if (over > 1.9 || startCounter < 51 )
         {
-            CVehicle::instance()->toolPivotPos.heading = CVehicle::instance()->tankPos.heading;
-            CVehicle::instance()->toolPivotPos.easting = CVehicle::instance()->tankPos.easting + (sin(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength));
-            CVehicle::instance()->toolPivotPos.northing = CVehicle::instance()->tankPos.northing + (cos(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength));
+            tool.toolPivotPos.heading = tool.tankPos.heading;
+            tool.toolPivotPos.easting = tool.tankPos.easting + (sin(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
+            tool.toolPivotPos.northing = tool.tankPos.northing + (cos(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
         }
 
-        CVehicle::instance()->toolPos.heading = CVehicle::instance()->toolPivotPos.heading;
-        CVehicle::instance()->toolPos.easting = CVehicle::instance()->tankPos.easting +
-                                  (sin(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
-        CVehicle::instance()->toolPos.northing = CVehicle::instance()->tankPos.northing +
-                                   (cos(CVehicle::instance()->toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
+        tool.toolPos.heading = tool.toolPivotPos.heading;
+        tool.toolPos.easting = tool.tankPos.easting +
+                                  (sin(tool.toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
+        tool.toolPos.northing = tool.tankPos.northing +
+                                   (cos(tool.toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
 
     }
 
     //rigidly connected to vehicle
     else
     {
-        CVehicle::instance()->toolPivotPos.heading = CVehicle::instance()->fixHeading;
-        CVehicle::instance()->toolPivotPos.easting = CVehicle::instance()->hitchPos.easting;
-        CVehicle::instance()->toolPivotPos.northing = CVehicle::instance()->hitchPos.northing;
+        tool.toolPivotPos.heading = CVehicle::instance()->fixHeading();
+        tool.toolPivotPos.easting = CVehicle::instance()->hitchPos.easting;
+        tool.toolPivotPos.northing = CVehicle::instance()->hitchPos.northing;
 
-        CVehicle::instance()->toolPos.heading = CVehicle::instance()->fixHeading;
-        CVehicle::instance()->toolPos.easting = CVehicle::instance()->hitchPos.easting;
-        CVehicle::instance()->toolPos.northing = CVehicle::instance()->hitchPos.northing;
+        tool.toolPos.heading = CVehicle::instance()->fixHeading();
+        tool.toolPos.easting = CVehicle::instance()->hitchPos.easting;
+        tool.toolPos.northing = CVehicle::instance()->hitchPos.northing;
     }
 
     //#endregion
@@ -2550,11 +1613,11 @@ void FormGPS::CalculatePositionHeading()
 
     //finally fixed distance for making a curve line
     if (!track.curve.isMakingCurve) CVehicle::instance()->sectionTriggerStepDistance = CVehicle::instance()->sectionTriggerStepDistance + 0.5;
-    //if (this->isContourBtnOn()) CVehicle::instance()->sectionTriggerStepDistance *=0.5;
+    //if (MainWindowState::instance()->isContourBtnOn()) CVehicle::instance()->sectionTriggerStepDistance *=0.5;
 
     //precalc the sin and cos of heading * -1
-    CVehicle::instance()->sinSectionHeading = sin(-CVehicle::instance()->toolPivotPos.heading);
-    CVehicle::instance()->cosSectionHeading = cos(-CVehicle::instance()->toolPivotPos.heading);
+    CVehicle::instance()->sinSectionHeading = sin(-tool.toolPivotPos.heading);
+    CVehicle::instance()->cosSectionHeading = cos(-tool.toolPivotPos.heading);
 }
 
 //calculate the extreme tool left, right velocities, each section lookahead, and whether or not its going backwards
@@ -2566,7 +1629,7 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
     double leftSpeed = 0, rightSpeed = 0;
 
     //speed max for section kmh*0.277 to m/s * 10 cm per pixel * 1.7 max speed
-    double meterPerSecPerPixel = fabs(CVehicle::instance()->avgSpeed) * 4.5;
+    double meterPerSecPerPixel = fabs(CVehicle::instance()->avgSpeed()) * 4.5;
     //qDebug(qpos) << pn.speed << ", m/s per pixel is " << meterPerSecPerPixel;
 
     //now loop all the section rights and the one extreme left
@@ -2627,14 +1690,14 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
 
         if (head < 0) head += glm::twoPI;
 
-        if (M_PI - fabs(fabs(head - CVehicle::instance()->toolPos.heading) - M_PI) > glm::PIBy2)
+        if (M_PI - fabs(fabs(head - tool.toolPos.heading) - M_PI) > glm::PIBy2)
         {
             if (leftSpeed > 0) leftSpeed *= -1;
         }
 
         head = right.headingXZ();
         if (head < 0) head += glm::twoPI;
-        if (M_PI - fabs(fabs(head - CVehicle::instance()->toolPos.heading) - M_PI) > glm::PIBy2)
+        if (M_PI - fabs(fabs(head - tool.toolPos.heading) - M_PI) > glm::PIBy2)
         {
             if (rightSpeed > 0) rightSpeed *= -1;
         }
@@ -2646,7 +1709,7 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
             sped = (leftSpeed * 0.1);
             if (sped < 0.1) sped = 0.1;
             tool.farLeftSpeed = tool.farLeftSpeed * 0.7 + sped * 0.3;
-            //qWarning() << sped << tool.farLeftSpeed << CVehicle::instance()->avgSpeed;
+            //qWarning() << sped << tool.farLeftSpeed << CVehicle::instance()->avgSpeed();
         }
 
         if (j == tool.numOfSections - 1)
@@ -2663,38 +1726,6 @@ void FormGPS::CalculateSectionLookAhead(double northing, double easting, double 
         }
         else sped = rightSpeed;
         tool.section[j].speedPixels = tool.section[j].speedPixels * 0.7 + sped * 0.3;
-    }
-}
-
-//perimeter and boundary point generation
-void FormGPS::AddBoundaryPoint()
-{
-    //save the north & east as previous
-    prevBoundaryPos.easting = pn.fix.easting;
-    prevBoundaryPos.northing = pn.fix.northing;
-
-    //build the boundary line
-    if (bnd.isOkToAddPoints)
-    {
-        if (this->isDrawRightSide())
-        {
-            //Right side
-            Vec3 point(CVehicle::instance()->pivotAxlePos.easting + sin(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * -this->createBndOffset(),
-                       CVehicle::instance()->pivotAxlePos.northing + cos(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * -this->createBndOffset(),
-                       CVehicle::instance()->pivotAxlePos.heading);
-            bnd.bndBeingMadePts.append(point);
-        }
-
-        //draw on left side
-        else
-        {
-            //Right side
-            Vec3 point(CVehicle::instance()->pivotAxlePos.easting + sin(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * this->createBndOffset(),
-                       CVehicle::instance()->pivotAxlePos.northing + cos(CVehicle::instance()->pivotAxlePos.heading - glm::PIBy2) * this->createBndOffset(),
-                       CVehicle::instance()->pivotAxlePos.heading);
-            bnd.bndBeingMadePts.append(point);
-        }
-        boundary_calculate_area(); //in formgps_ui_boundary.cpp
     }
 }
 
@@ -2723,7 +1754,7 @@ void FormGPS::AddContourPoints()
         }
 
         //Build contour line if close enough to a patch
-        if (this->isContourBtnOn()) ct.BuildContourGuidanceLine(secondsSinceStart, *CVehicle::instance(), CVehicle::instance()->pivotAxlePos, mainWindow);
+        if (MainWindowState::instance()->isContourBtnOn()) ct.BuildContourGuidanceLine(secondsSinceStart, *CVehicle::instance(), CVehicle::instance()->pivotAxlePos, mainWindow);
     }
     //save the north & east as previous
     prevContourPos.northing = CVehicle::instance()->pivotAxlePos.northing;
@@ -2733,12 +1764,15 @@ void FormGPS::AddContourPoints()
 //add the points for section, contour line points, Area Calc feature
 void FormGPS::AddSectionOrPathPoints()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_TRACK(track);
+
     if (recPath.isRecordOn)
     {
         //keep minimum speed of 1.0
-        double speed = CVehicle::instance()->avgSpeed;
-        if (CVehicle::instance()->avgSpeed < 1.0) speed = 1.0;
-        bool autoBtn = (this->autoBtnState() == btnStates::Auto);
+        double speed = CVehicle::instance()->avgSpeed();
+        if (CVehicle::instance()->avgSpeed() < 1.0) speed = 1.0;
+        bool autoBtn = (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto);
 
         recPath.recList.append(CRecPathPt(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, CVehicle::instance()->pivotAxlePos.heading, speed, autoBtn));
     }
@@ -2753,17 +1787,20 @@ void FormGPS::AddSectionOrPathPoints()
     patchCounter = 0;
 
     //send the current and previous GPS fore/aft corrected fix to each section
-    for (int j = 0; j < triStrip.count(); j++)
+    for (int j = 0; j < tool.triStrip.count(); j++)
     {
-        if (triStrip[j].isDrawing)
+        if (tool.triStrip[j].isDrawing)
         {
-            if (this->isPatchesChangingColor())
+            if (Backend::instance()->isPatchesChangingColor())
             {
-                triStrip[j].numTriangles = 64;
-                this->setIsPatchesChangingColor(false);
+                tool.triStrip[j].numTriangles = 64;
+                Backend::instance()->set_isPatchesChangingColor(false);
             }
 
-            triStrip[j].AddMappingPoint(tool, fd, j, mainWindow, this);
+            tool.triStrip[j].AddMappingPoint(tool.secColors[j],
+                                        tool.section[tool.triStrip[j].currentStartSectionNum].leftPoint,
+                                        tool.section[tool.triStrip[j].currentEndSectionNum].rightPoint,
+                                        tool.patchSaveList);
             patchCounter++;
         }
     }
@@ -2772,11 +1809,13 @@ void FormGPS::AddSectionOrPathPoints()
 //the start of first few frames to initialize entire program
 void FormGPS::InitializeFirstFewGPSPositions()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
     if (!isFirstFixPositionSet)
     {
         // PHASE 6.0.41: Force latStart/lonStart update when switching modes, even if field open
         // Prevents gray screen when GPS arrives after SIM->REAL switch with open field
-        if (!isJobStarted() || m_forceGPSReinitialization)
+        if (!Backend::instance()->isJobStarted() || m_forceGPSReinitialization)
         {
             // PHASE 6.0.42.5: Validate GPS coordinates before initialization
             // Race condition fix: Timer (40 Hz) can trigger BEFORE GPS data arrives after mode switch
@@ -2791,12 +1830,9 @@ void FormGPS::InitializeFirstFewGPSPositions()
             }
 
             // Valid coordinates → initialize normally
-            // Phase 6.3.1: Use PropertyWrapper for safe property access
-            this->setLatStart(pn.latitude);
-            // Phase 6.3.1: Use PropertyWrapper for safe property access
-            this->setLonStart(pn.longitude);
-            // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-            pn.SetLocalMetersPerDegree(this);
+            pn.setLatStart(pn.latitude);
+            pn.setLonStart(pn.longitude);
+            pn.SetLocalMetersPerDegree();
 
             // PHASE 6.0.41: Clear flag after successful reinitialization
             if (m_forceGPSReinitialization) {
@@ -2805,7 +1841,7 @@ void FormGPS::InitializeFirstFewGPSPositions()
         }
 
         // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-        pn.ConvertWGS84ToLocal(pn.latitude, pn.longitude, pn.fix.northing, pn.fix.easting, this);
+        pn.ConvertWGS84ToLocal(pn.latitude, pn.longitude, pn.fix.northing, pn.fix.easting);
 
         //Draw a grid once we know where in the world we are.
         isFirstFixPositionSet = true;
@@ -2834,8 +1870,8 @@ void FormGPS::InitializeFirstFewGPSPositions()
         }
 
         //in radians
-        CVehicle::instance()->fixHeading = 0;
-        CVehicle::instance()->toolPos.heading = CVehicle::instance()->fixHeading;
+        CVehicle::instance()->set_fixHeading( 0 );
+        tool.toolPos.heading = CVehicle::instance()->fixHeading();
 
         //send out initial zero settings
         if (isGPSPositionInitialized)
@@ -2852,6 +1888,7 @@ void FormGPS::InitializeFirstFewGPSPositions()
 // Phase 6.0.21: Receive parsed data from AgIOService broadcast signal
 void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
 {
+    CNMEA &pn = *Backend::instance()->pn();
     if (!data.isValid) return;
 
     // Phase 6.0.21.12: Ignore UDP GPS data when simulation is ON
@@ -2924,7 +1961,7 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
     // → Roll corrections applied to stale northing/easting → tracteur pivote!
     // Simulation does this correctly (formgps_sim.cpp:55) - real mode must match
     if (validGpsFix) {
-        pn.ConvertWGS84ToLocal(pn.latitude, pn.longitude, pn.fix.northing, pn.fix.easting, this);
+        pn.ConvertWGS84ToLocal(pn.latitude, pn.longitude, pn.fix.northing, pn.fix.easting);
     }
 
     // ✅ Problem 14 Fix (Final): Store IMU data in ahrs structure (40 Hz)
@@ -2939,39 +1976,38 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
         // ✅ NO THROTTLING: Assign directly to Q_PROPERTY (40 Hz)
         // Qt optimizes: only triggers QML update if value actually changed
         // Simpler architecture: no intermediate storage, no sync bugs
-        setImuHeading(data.imuHeading);  // 0° = north (VALID)
-        setImuRoll(data.imuRoll);        // 0° = horizontal (VALID)
-        setImuPitch(data.imuPitch);      // 0° = no slope (VALID)
-        setYawRate(data.yawRate);        // 0°/s = no rotation (VALID)
+        Backend::instance()->m_fixFrame.imuHeading = data.imuHeading;  // 0° = north (VALID)
+        Backend::instance()->m_fixFrame.imuRoll = data.imuRoll;        // 0° = horizontal (VALID)
+        Backend::instance()->m_fixFrame.imuPitch = data.imuPitch;      // 0° = no slope (VALID)
+        Backend::instance()->m_fixFrame.yawRate = data.yawRate;        // 0°/s = no rotation (VALID)
     }
 
     // PHASE 6.0.23: Store AutoSteer control data if present (PGN 253/250) - 40 Hz
     if (data.hasSteerData) {
         // Steer Angle Actual (from PGN 253 byte 5-6)
         if (data.steerAngleActual != 0) {
-            mc.actualSteerAngleDegrees = data.steerAngleActual * 0.01;
+            ModuleComm::instance()->set_actualSteerAngleDegrees(data.steerAngleActual * 0.01);
         }
 
         // Switch Status (from PGN 253 byte 11)
         if (data.switchByte != 0) {
-            mc.workSwitchHigh = (data.switchByte & 0x01) == 0x01;
-            mc.steerSwitchHigh = (data.switchByte & 0x02) == 0x02;
-            mc.CheckWorkAndSteerSwitch(ahrs, isBtnAutoSteerOn());
+            ModuleComm::instance()->set_workSwitchHigh((data.switchByte & 0x01) == 0x01);
+            ModuleComm::instance()->set_steerSwitchHigh((data.switchByte & 0x02) == 0x02);
+            ModuleComm::instance()->CheckWorkAndSteerSwitch(MainWindowState::instance()->isBtnAutoSteerOn());
         }
 
         // PWM Display (from PGN 253 byte 12)
         if (data.pwmDisplay != 0) {
-            mc.pwmDisplay = data.pwmDisplay;
+            ModuleComm::instance()->set_pwmDisplay(data.pwmDisplay);
         }
 
         // Sensor Value (from PGN 250 byte 5)
         if (data.sensorValue != 0) {
-            mc.sensorData = data.sensorValue;
+            ModuleComm::instance()->set_sensorData(data.sensorValue);
         }
     }
 
-    // ✅ PHASE 6.0.21.9: Reset sentenceCounter on valid NMEA data (prevents "No GPS" false alarm)
-    this->setSentenceCounter(0);
+    Backend::instance()->m_fixFrame.sentenceCounter = 0;
 
     // Phase 6.0.24: UpdateFixPosition() moved to timerGPS callback (40 Hz fixed rate)
     // onParsedDataReady() now ONLY stores data in pn/ahrs structures
@@ -2985,41 +2021,12 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
         // Position data (10 Hz → QML)
         // ✅ Problem 14 Fix: pn.latitude/longitude now validated above (not overwritten with 0)
         // Safe to assign - will use last valid position if current data was 0
-        setLatitude(pn.latitude);
-        setLongitude(pn.longitude);
-        setAltitude(pn.altitude);
-
-        // Heading (10 Hz → QML)
-        if (data.headingDual > 0) {
-            setHeading(data.headingDual);
-        } else if (data.heading > 0) {
-            setHeading(data.heading);
-        }
 
         // Speed (10 Hz → QML)
-        setSpeedKph(pn.vtgSpeed);
-
-        // GPS quality indicators (10 Hz → QML)
-        setHdop(pn.hdop);
-        setAge(pn.age);
-        setFixQuality(pn.fixQuality);
-        setSatellitesTracked(pn.satellitesTracked);
-
         // ✅ IMU data is now assigned directly at 40 Hz (see above, no throttling)
         // Simpler: no need to duplicate assignment here
 
         // AutoSteer display data (10 Hz → QML)
-        if (data.hasSteerData) {
-            if (data.steerAngleActual != 0) {
-                setSteerAngleActual(mc.actualSteerAngleDegrees);
-            }
-            if (data.switchByte != 0) {
-                setSteerSwitchHigh(mc.steerSwitchHigh);
-            }
-            if (data.pwmDisplay != 0) {
-                setLblPWMDisplay(mc.pwmDisplay);
-            }
-        }
     }
 }
 
@@ -3027,6 +2034,7 @@ void FormGPS::onParsedDataReady(const PGNParser::ParsedData& data)
 
 void FormGPS::onNmeaDataReady(const PGNParser::ParsedData& data)
 {
+    CNMEA &pn = *Backend::instance()->pn();
     // NMEA GPS data handler (~8 Hz)
     // Updates internal structures only - UpdateFixPosition() called by timerGPS at 40 Hz
 
@@ -3048,7 +2056,7 @@ void FormGPS::onNmeaDataReady(const PGNParser::ParsedData& data)
         if (data.latitude != 0.0 && data.longitude != 0.0) {
             pn.latitude = data.latitude;
             pn.longitude = data.longitude;
-            pn.ConvertWGS84ToLocal(pn.latitude, pn.longitude, pn.fix.northing, pn.fix.easting, this);
+            pn.ConvertWGS84ToLocal(pn.latitude, pn.longitude, pn.fix.northing, pn.fix.easting);
 
             // PHASE 6.0.33: Store RAW GPS position (8 Hz updates, immutable)
             // This position is NEVER modified by corrections (antenna offset, roll)
@@ -3086,17 +2094,16 @@ void FormGPS::onNmeaDataReady(const PGNParser::ParsedData& data)
         ahrs.imuYawRate = data.yawRate;
 
         // Update Q_PROPERTY (used by QML display)
-        setImuHeading(data.imuHeading);  // 0° = north (VALID)
-        setImuRoll(data.imuRoll);        // 0° = horizontal (VALID)
-        setImuPitch(data.imuPitch);      // 0° = no slope (VALID)
-        setYawRate(data.yawRate);        // 0°/s = no rotation (VALID)
+        Backend::instance()->m_fixFrame.imuHeading = data.imuHeading; // 0° = north (VALID)
+        Backend::instance()->m_fixFrame.imuRoll = data.imuRoll;        // 0° = horizontal (VALID)
+        Backend::instance()->m_fixFrame.imuPitch = data.imuPitch;      // 0° = no slope (VALID)
+        Backend::instance()->m_fixFrame.yawRate = data.yawRate;        // 0°/s = no rotation (VALID)
     }
 
-    // Phase 6.0.27 Part 3: Reset sentenceCounter on valid NMEA data (prevents "No GPS" false alarm)
     // Watchdog timer (tmrWatchdog_timeout) increments sentenceCounter every 250ms
     // MainWindow.qml shows "No GPS" warning when sentenceCounter > 29 (~7.25 seconds)
     // Must reset counter to 0 when NMEA data arrives to indicate GPS is working
-    this->setSentenceCounter(0);
+    Backend::instance()->m_fixFrame.sentenceCounter = 0;
 
     // NO UpdateFixPosition() here - called by timerGPS at 40 Hz fixed rate
 }
@@ -3115,15 +2122,15 @@ void FormGPS::onImuDataReady(const PGNParser::ParsedData& data)
 
     // PGN 212: IMU disconnect - set sentinel values
     if (data.pgnNumber == 212) {
-        setImuHeading(99999.0);  // Sentinel: IMU disconnected
-        setImuRoll(88888.0);     // Sentinel: IMU disconnected
-        setYawRate(0.0);
+        Backend::instance()->m_fixFrame.imuHeading = 99999.0;  // Sentinel: IMU disconnected
+        Backend::instance()->m_fixFrame.imuRoll = 88888.0;     // Sentinel: IMU disconnected
+        Backend::instance()->m_fixFrame.yawRate = 0.0;
         return;
     }
 
     // PGN 211: External IMU data
     if (data.hasIMU) {
-        setImuHeading(data.imuHeading);
+        Backend::instance()->m_fixFrame.imuHeading = data.imuHeading;
 
         // Roll with filtering and inversion
         double rollK = data.imuRoll;
@@ -3131,13 +2138,13 @@ void FormGPS::onImuDataReady(const PGNParser::ParsedData& data)
         rollK -= ahrs.rollZero;
 
         // Apply exponential filter
-        double currentRoll = imuRoll();
+        double currentRoll = Backend::instance()->m_fixFrame.imuRoll;
         double filteredRoll = currentRoll * ahrs.rollFilter + rollK * (1.0 - ahrs.rollFilter);
-        setImuRoll(filteredRoll);
+        Backend::instance()->m_fixFrame.imuRoll = filteredRoll;
 
         // Yaw rate
         if (data.yawRate != 0.0) {
-            setYawRate(data.yawRate);
+            Backend::instance()->m_fixFrame.yawRate = data.yawRate;
         }
     }
 
@@ -3155,14 +2162,13 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
     // PGN 253: AutoSteer status
     if (data.pgnNumber == 253) {
         // Actual steer angle from module
-        mc.actualSteerAngleChart = data.steerAngleActual;
-        mc.actualSteerAngleDegrees = data.steerAngleActual * 0.01;
+        ModuleComm::instance()->set_actualSteerAngleDegrees(data.steerAngleActual * 0.01);
 
         // IMU data from AutoSteer module (fallback if no external IMU)
         if (data.hasIMU) {
             // Heading from AutoSteer BNO085 (if valid)
             if (data.imuHeading != 9999.0) {
-                setImuHeading(data.imuHeading);
+                Backend::instance()->m_fixFrame.imuHeading = data.imuHeading;
             }
 
             // Roll from AutoSteer BNO085 (if valid, with filtering)
@@ -3171,31 +2177,37 @@ void FormGPS::onSteerDataReady(const PGNParser::ParsedData& data)
                 if (ahrs.isRollInvert) rollK *= -1.0;
                 rollK -= ahrs.rollZero;
 
-                double currentRoll = imuRoll();
+                double currentRoll = Backend::instance()->m_fixFrame.imuRoll;
                 double filteredRoll = currentRoll * ahrs.rollFilter + rollK * (1.0 - ahrs.rollFilter);
-                setImuRoll(filteredRoll);
+                Backend::instance()->m_fixFrame.imuRoll = filteredRoll;
             }
         }
 
         // Switch status (work switch, steer switch)
-        mc.workSwitchHigh = (data.switchByte & 0x01) != 0;
-        mc.steerSwitchHigh = (data.switchByte & 0x02) != 0;
+        ModuleComm::instance()->set_workSwitchHigh((data.switchByte & 0x01) != 0);
+        ModuleComm::instance()->set_steerSwitchHigh((data.switchByte & 0x02) != 0);
 
         // PWM display (motor drive 0-255)
-        mc.pwmDisplay = data.pwmDisplay;
+        ModuleComm::instance()->set_pwmDisplay(data.pwmDisplay);
 
         // Reset module connection timeout counter
-        setSteerModuleConnectedCounter(0);
+        ModuleComm::instance()->set_steerModuleConnectedCounter(0);
     }
 
     // PGN 250: Sensor data (pressure/current)
     if (data.pgnNumber == 250) {
-        mc.sensorData = data.sensorValue;
+        ModuleComm::instance()->set_sensorData(data.sensorValue);
     }
 
     // NO UpdateFixPosition() - AutoSteer feedback only
 }
 
+void FormGPS::onMachineDataReady(const PGNParser::ParsedData& data)
+{}
+
+void FormGPS::onBlockageDataReady(const PGNParser::ParsedData& data)
+{
+}
 // Phase 6.0.24: GPS timer callback - UpdateFixPosition() at 40 Hz fixed rate
 void FormGPS::onGPSTimerTimeout()
 {

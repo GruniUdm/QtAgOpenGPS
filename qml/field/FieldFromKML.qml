@@ -51,8 +51,8 @@ Dialog{
             selectByMouse: true
             placeholderText: focus || text ? "" : "New Field Name"
             onTextChanged: {
-                for (var i=0; i < fieldInterface.field_list.length ; i++) {
-                    if (text === fieldInterface.field_list[i].name) {
+                for (var i=0; i < FieldInterface.field_list.length ; i++) {
+                    if (text === FieldInterface.field_list[i].name) {
                         errorMessage.visible = true
                         break
                     } else

@@ -13,8 +13,8 @@
 #include "classes/settingsmanager.h"
 #include "cnmea.h"
 #include "qmlutil.h"
-//#include "common.h"
-#include "formgps.h" //TODO get rid of this; it's a circular reference
+#include "mainwindowstate.h"
+#include "backend.h"
 #include <QElapsedTimer>
 
 CContour::CContour(QObject *parent)
@@ -23,11 +23,11 @@ CContour::CContour(QObject *parent)
     ptList = QSharedPointer<QVector<Vec3>>(new QVector<Vec3>());
 }
 
-void CContour::SetLockToLine(FormGPS *formGPS)
+void CContour::setLockToLine()
 {
     if (ctList.count() > 5) {
-        bool currentLocked = formGPS->btnIsContourLocked();
-        formGPS->setBtnIsContourLocked(!currentLocked);
+        bool currentLocked = MainWindowState::instance()->btnIsContourLocked();
+        MainWindowState::instance()->set_btnIsContourLocked(!currentLocked);
     }
 }
 
@@ -73,7 +73,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
     boxB.easting = pivot.easting + sin2HL + sinH;
     boxB.northing = pivot.northing + cos2HL + cosH;
 
-    if (!mainWindow->property("btnIsContourLocked").toBool())
+    if (!MainWindowState::instance()->btnIsContourLocked())
     {
         stripNum = -1;
         for (int s = 0; s < stripCount; s++)
@@ -115,7 +115,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
         {
             //no points in the box, exit
             ctList.clear();
-            mainWindow->setProperty("btnIsContourLocked", false);
+            MainWindowState::instance()->set_btnIsContourLocked(false);
             return;
         }
     }
@@ -129,7 +129,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
         if (ptCount < 2)
         {
             ctList.clear();
-            mainWindow->setProperty("btnIsContourLocked", false);
+            MainWindowState::instance()->set_btnIsContourLocked(false);
             return;
         }
 
@@ -159,7 +159,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
         if (minDistance > toolContourDistance)
         {
             ctList.clear();
-            mainWindow->setProperty("btnIsContourLocked", false);
+            MainWindowState::instance()->set_btnIsContourLocked(false);
             return;
         }
     }
@@ -195,7 +195,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
     else return;
 
     //are we going same direction as stripList was created?
-    bool isSameWay = M_PI - fabs(fabs(CVehicle::instance()->fixHeading - (*stripList[stripNum])[pt].heading) - M_PI) < 1.57;
+    bool isSameWay = M_PI - fabs(fabs(CVehicle::instance()->fixHeading() - (*stripList[stripNum])[pt].heading) - M_PI) < 1.57;
 
     double RefDist = (distanceFromRefLine + (isSameWay ? tool_toolOffset : -tool_toolOffset))
                      / (tool_toolWidth - tool_toolOverlap);
@@ -284,14 +284,14 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
         if (ptc < 5)
         {
             ctList.clear();
-            mainWindow->setProperty("btnIsContourLocked", false);
+            MainWindowState::instance()->set_btnIsContourLocked(false);
             return;
         }
     }
     else
     {
         ctList.clear();
-        mainWindow->setProperty("btnIsContourLocked", false);
+        MainWindowState::instance()->set_btnIsContourLocked(false);
         return;
     }
 
@@ -394,7 +394,7 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             if (abFixHeadingDelta < -0.74) abFixHeadingDelta = -0.74;
 
             steerAngleCT = atan((distanceFromCurrentLinePivot * stanleyDistanceErrorGain)
-                                     / ((fabs(CVehicle::instance()->avgSpeed) * 0.277777) + 1));
+                                     / ((fabs(CVehicle::instance()->avgSpeed()) * 0.277777) + 1));
 
             if (steerAngleCT > 0.74) steerAngleCT = 0.74;
             if (steerAngleCT < -0.74) steerAngleCT = -0.74;
@@ -428,10 +428,11 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             //just need to make sure the points continue ascending in list order or heading switches all over the place
             if (A > B) { C = A; A = B; B = C; }
 
-            if (mainWindow->property("btnIsContourLocked").toBool() && (A < 2 || B > ptCount - 3))
+            if (MainWindowState::instance()->btnIsContourLocked() &&
+                (A < 2 || B > ptCount - 3))
             {
                 //ctList.clear();
-                mainWindow->setProperty("btnIsContourLocked", false);
+                MainWindowState::instance()->set_btnIsContourLocked(false);
                 lastLockPt = INT_MAX;
                 return;
             }
@@ -472,7 +473,7 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
 
                 if (isBtnAutoSteerOn
                     && fabs(pivotDerivative) < (0.1)
-                    && CVehicle::instance()->avgSpeed > 2.5
+                    && CVehicle::instance()->avgSpeed() > 2.5
                     && !yt.isYouTurnTriggered)
                 {
                     //if over the line heading wrong way, rapidly decrease integral
@@ -541,8 +542,8 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
             double localHeading;// = glm::twoPI - mf.fixHeading;
 
-            if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
-            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading - inty;
+            if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
+            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading() - inty;
 
             steerAngleCT = glm::toDegrees(atan(2 * (((goalPointCT.easting - pivot.easting) * cos(localHeading))
                                                         + ((goalPointCT.northing - pivot.northing) * sin(localHeading))) * wheelbase / goalPointDistanceSquared));
@@ -556,17 +557,17 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
         }
 
         //used for smooth mode
-        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+        CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
         //fill in the autosteer variables
-        CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+        CVehicle::instance()->set_guidanceLineDistanceOff ((short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
         CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleCT * 100);
     }
     else
     {
         //invalid distance so tell AS module
         distanceFromCurrentLinePivot = 32000; //???
-        CVehicle::instance()->guidanceLineDistanceOff = 32000;
+        CVehicle::instance()->set_guidanceLineDistanceOff (32000);
     }
 
 }
@@ -634,13 +635,13 @@ void CContour::BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCo
     spacingInt *= 0.01;
     if (bnd.bndList.count() == 0)
     {
-        emit TimedMessage(1500, tr("Boundary Contour Error"), tr("No Boundaries Made"));
+        emit Backend::instance()->timedMessage(1500, tr("Boundary Contour Error"), tr("No Boundaries Made"));
         return;
     }
 
     if (patchCounter != 0)
     {
-        emit TimedMessage(1500, tr("Section Control On"), tr("Turn Off Section Control"));
+        emit Backend::instance()->timedMessage(1500, tr("Section Control On"), tr("Turn Off Section Control"));
         return;
     }
 
@@ -674,7 +675,7 @@ void CContour::BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCo
         }
     }
 
-    emit TimedMessage(1500, tr("Boundary Contour"), tr("Contour Path Created"));
+    emit Backend::instance()->timedMessage(1500, tr("Boundary Contour"), tr("Contour Path Created"));
 }
 
 //draw the red follow me line
@@ -708,7 +709,7 @@ void CContour::DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, QObj
     //Draw the captured ref strip, red if locked
     double useWidth;
 
-    if (mainWindow->property("btnIsContourLocked").toBool())
+    if (MainWindowState::instance()->btnIsContourLocked())
     {
         color.setRgbF(0.983f, 0.92f, 0.420f);
         useWidth = 4;
@@ -755,7 +756,7 @@ void CContour::DrawContourLine(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, QObj
         }
 
         //now draw the remaining points
-        //TODO: android crashes here sometimes with QList index out of range
+        //TODO: android crashes here sometimes with QList index out of range.  Need to implement locking
         for (int h = numbuffs*10000; h < stripList[stripNum]->count(); h++)
             gldraw.append(QVector3D((*stripList[stripNum])[h].easting, (*stripList[stripNum])[h].northing, 0));
 

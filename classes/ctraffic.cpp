@@ -12,6 +12,10 @@ void CTraffic::setHelloFromMachine(quint32 value) {
     m_helloFromMachine = value;
 }
 
+void CTraffic::setHelloFromBlockage(quint32 value) {
+    m_helloFromBlockage = value;
+}
+
 void CTraffic::setHelloFromAutoSteer(quint32 value) {
     m_helloFromAutoSteer = value;
 }
@@ -54,6 +58,10 @@ quint32 CTraffic::helloFromMachine() const {
     return m_helloFromMachine;
 }
 
+quint32 CTraffic::helloFromBlockage() const {
+    return m_helloFromBlockage;
+}
+
 quint32 CTraffic::helloFromAutoSteer() const {
     return m_helloFromAutoSteer;
 }
@@ -94,6 +102,10 @@ double CTraffic::udpInFreq() const {
 
 QBindable<quint32> CTraffic::bindableHelloFromMachine() {
     return QBindable<quint32>(&m_helloFromMachine);
+}
+
+QBindable<quint32> CTraffic::bindableHelloFromBlockage() {
+    return QBindable<quint32>(&m_helloFromBlockage);
 }
 
 QBindable<quint32> CTraffic::bindableHelloFromAutoSteer() {

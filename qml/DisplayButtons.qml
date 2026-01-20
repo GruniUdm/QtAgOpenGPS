@@ -28,7 +28,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/TiltDown.png"
             onClicked: {
-                aog.tiltDown() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Backend.tiltDown() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -39,7 +39,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/Camera2D64.png"
             onClicked: {
-                aog.view2D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Backend.view2D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -50,7 +50,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/CameraNorth2D.png"
             onClicked: {
-                aog.normal2D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Backend.normal2D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -61,7 +61,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/ZoomOut48.png"
             onClicked: {
-                aog.zoomOut() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Backend.zoomOut() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -96,7 +96,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/TiltUp.png"
             onClicked: {
-                aog.tiltUp() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Backend.tiltUp() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -107,7 +107,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/Camera3D64.png"
             onClicked: {
-                aog.view3D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Backend.view3D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -118,7 +118,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/CameraNorth64.png"
             onClicked: {
-                aog.normal3D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Backend.normal3D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }
@@ -129,7 +129,7 @@ Comp.TimedRectangle{
             radius: 10
             icon.source: prefix + "/images/ZoomIn48.png"
             onClicked: {
-                aog.zoomIn() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                Backend.zoomIn() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                 displayButtons.resetTimer() 
             }
         }

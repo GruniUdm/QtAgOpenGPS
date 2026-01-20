@@ -84,7 +84,8 @@ Rectangle{
             height: 50* theme.scaleHeight
             anchors.bottom: parent.bottom
             anchors.left: parent.left
-            //placeholderText: settings.setGPS_simLatitude
+            placeholderText: SettingsManager.gps_simLatitude
+            inputMethodHints: Qt.ImhDigitsOnly
         }
         Comp.TextLine{
             text: qsTr("Longitude")
@@ -103,7 +104,8 @@ Rectangle{
             height: 50* theme.scaleHeight
             anchors.bottom: parent.bottom
             anchors.right: parent.right
-            //placeholderText: settings.setGPS_simLongitude
+            placeholderText: SettingsManager.gps_simLongitude
+            inputMethodHints: Qt.ImhDigitsOnly
         }
     }
     //width: 200* theme.scaleWidth
@@ -122,9 +124,10 @@ Rectangle{
         Comp.IconButtonTransparent{
             icon.source: prefix + "/images/OK64.png"
             onClicked: {
-                settings.gps_simLatitude = latInput.text
-                settings.gps_simLongitude = lonInput.text
+                SettingsManager.gps_simLatitude = latInput.text
+                SettingsManager.gps_simLongitude = lonInput.text
                 setSimCoordsRoot.visible = false
+                aog.settings_reload()
             }
         }
     }

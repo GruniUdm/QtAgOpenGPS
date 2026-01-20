@@ -79,7 +79,7 @@ MoveablePopup {
                 icon.source: prefix + "/images/FileEditName.png"
                 onClicked: {
                     if (trackView.currentIndex > -1) {
-                        editLineName.set_name(aogInterface.abLinesList[trackView.currentIndex].name)
+                        editLineName.set_name(TracksInterface.getTrackName(trackView.currentIndex))
                         editLineName.visible = true
                     }
                 }

@@ -7,6 +7,7 @@ import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 //import Settings
 // Interface import removed - now QML_SINGLETON
+import AOG
 
 import ".."
 import "../components"
@@ -85,7 +86,7 @@ Drawer {
                 text: qsTr("Resume")
                 icon.source: prefix + "/images/FilePrevious.png"
                 // Threading Phase 1: Resume field enable check
-                enabled: SettingsManager.f_currentDir !== "Default" && !aog.isJobStarted
+                enabled: SettingsManager.f_currentDir !== "Default" && !Backend.isJobStarted
                 onEnabledChanged: fieldToResumeText.visible = enabled
 
                 onClicked: {
@@ -109,7 +110,7 @@ Drawer {
                 isChecked: false
                 text: qsTr("Close")
                 icon.source: prefix + "/images/FileClose.png"
-                enabled: aog.isJobStarted
+                enabled: Backend.isJobStarted
                 onClicked: {
                     aog.fieldClose() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
                     fieldMenu.visible = false

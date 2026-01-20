@@ -70,16 +70,16 @@ ApplicationWindow {
                     width: parent.width
                     
                     Text { text: "Latitude:" }
-                    Text { text: serviceAvailable ? aog.latitude.toFixed(6) : "N/A" }
+                    Text { text: serviceAvailable ? Backend.fixFrame.latitude.toFixed(6) : "N/A" }
 
                     Text { text: "Longitude:" }
-                    Text { text: serviceAvailable ? aog.longitude.toFixed(6) : "N/A" }
+                    Text { text: serviceAvailable ? Backend.fixFrame.longitude.toFixed(6) : "N/A" }
 
                     Text { text: "Heading:" }
-                    Text { text: serviceAvailable ? aog.heading.toFixed(2) + "°" : "N/A" }
+                    Text { text: serviceAvailable ? Backend.fixFrame.heading.toFixed(2) + "°" : "N/A" }
 
                     Text { text: "Speed:" }
-                    Text { text: serviceAvailable ? aog.speedKph.toFixed(1) + " km/h" : "N/A" }
+                    Text { text: serviceAvailable ? VehicleInterface.avgSpeed.toFixed(1) + " km/h" : "N/A" }
                     
                     Text { text: "GPS Connected:" }
                     Text { 

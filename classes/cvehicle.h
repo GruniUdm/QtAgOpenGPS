@@ -12,6 +12,7 @@
 #include <QJSEngine>
 #include <QProperty>
 #include <QBindable>
+#include <QMutex>
 
 #include <QOpenGLBuffer>
 
@@ -30,7 +31,9 @@ class CTrack;
 class CVehicle: public QObject
 {
     Q_OBJECT
-    // QML registration handled manually in main.cpp
+    QML_NAMED_ELEMENT(VehicleInterface)
+    QML_SINGLETON
+
     // ===== QML PROPERTIES - Qt 6.8 QProperty + BINDABLE + NOTIFY =====
     Q_PROPERTY(bool isHydLiftOn READ isHydLiftOn WRITE setIsHydLiftOn NOTIFY isHydLiftOnChanged BINDABLE bindableIsHydLiftOn)
     Q_PROPERTY(bool hydLiftDown READ hydLiftDown WRITE setHydLiftDown NOTIFY hydLiftDownChanged BINDABLE bindableHydLiftDown)
@@ -39,14 +42,13 @@ class CVehicle: public QObject
     Q_PROPERTY(int rightTramState READ rightTramState WRITE setRightTramState NOTIFY rightTramStateChanged BINDABLE bindableRightTramState)
     Q_PROPERTY(bool isReverse READ isReverse WRITE setIsReverse NOTIFY isReverseChanged BINDABLE bindableIsReverse)
     Q_PROPERTY(QList<QVariant> vehicleList READ vehicleList WRITE setVehicleList NOTIFY vehicleListChanged BINDABLE bindableVehicleList)
+    Q_PROPERTY(bool isInFreeDriveMode READ isInFreeDriveMode WRITE setIsInFreeDriveMode NOTIFY isInFreeDriveModeChanged BINDABLE bindableIsInFreeDriveMode)
+    Q_PROPERTY(double driveFreeSteerAngle READ driveFreeSteerAngle WRITE setDriveFreeSteerAngle NOTIFY driveFreeSteerAngleChanged BINDABLE bindableDriveFreeSteerAngle)
 
 public:
     // C++ singleton access (strict singleton pattern - same as CTrack)
-    static CVehicle* instance() {
-        static CVehicle* s_instance = new CVehicle(nullptr);
-        return s_instance;
-    }
-
+    static CVehicle *instance();
+    static CVehicle *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
     bool isSteerAxleAhead;
     bool isPivotBehindAntenna;
@@ -78,49 +80,28 @@ public:
     double maxSteerSpeed = 20.0;
     double minSteerSpeed = 1.0;
     double maxAngularVelocity = 1.0;
-    double hydLiftLookAheadTime = 0.0;
     double trackWidth = 2.0;  // Phase 6.0.24 Problem 18: Safe default for OpenGL rendering
-
-    double hydLiftLookAheadDistanceLeft = 0.0;
-    double hydLiftLookAheadDistanceRight = 0.0;
-
 
     double stanleyIntegralDistanceAwayTriggerAB = 0.0;
     double stanleyIntegralGainAB = 0.0;
     double purePursuitIntegralGain = 0.0;
 
-    //flag for free drive window to control autosteer
-    bool isInFreeDriveMode = false;
-
-    //the trackbar angle for free drive
-    double driveFreeSteerAngle = 0;
-
     double modeXTE = 0.0;
-    double modeActualXTE = 0.0;
-    double modeActualHeadingError = 0.0;
     int modeTime = 0;
 
     double functionSpeedLimit = 20.0;  // Phase 6.0.24 Problem 18: Safe default speed limit
 
 
     //from pn or main form:
-    // Phase 6.0.24 Problem 18: Initialize avgSpeed to prevent exponential averaging from preserving garbage values
-    double avgSpeed = 0.0;  // Average speed - MUST be 0.0 at startup to avoid infinity decay when first NMEA arrives
     int ringCounter = 0;
 
 
     //tram indicator vars
 
-    //headings
-    double fixHeading = 0.0;
-
     //storage for the cos and sin of heading
     double cosSectionHeading = 1.0, sinSectionHeading = 0.0;
     Vec3 pivotAxlePos;
     Vec3 steerAxlePos;
-    Vec3 toolPivotPos;
-    Vec3 toolPos;
-    Vec3 tankPos;
     Vec3 hitchPos;
     Vec2 guidanceLookPos;
 
@@ -129,8 +110,6 @@ public:
     double fixNorthing = 3.0;
 
     // autosteer variables for sending serial
-    // Phase 6.0.24 Problem 18: Initialize to prevent garbage values in PGN packets
-    short int guidanceLineDistanceOff = 0;
     short int guidanceLineSteerAngle = 0;
     short int distanceDisplay = 0;
 
@@ -150,9 +129,6 @@ public:
 
     //from Position.Designer.cs
 
-    QRect bounding_box;
-    QPoint pivot_axle_xy;
-
     void loadSettings();
     void saveSettings();
 
@@ -160,15 +136,23 @@ public:
     void DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview, QMatrix4x4 projection,
                      double steerAngle,
                      bool isFirstHeadingSet,
+                     double markLeft,
+                     double markRight,
                      QRect viewport,
-                     const CCamera &camera,
-                     const CTool &tool,
-                     CBoundary &bnd,
-                     QObject *mainWindow);
+                     const CCamera &camera
+                     );
 
     //C++ code should use Qt 6.8 QProperty setters above
     //QML bindings work automatically with BINDABLE functions
     // Legacy setters replaced by Qt 6.8 QProperty pattern
+    SIMPLE_BINDABLE_PROPERTY (double,modeActualXTE)
+    SIMPLE_BINDABLE_PROPERTY (double,modeActualHeadingError)
+    SIMPLE_BINDABLE_PROPERTY (QPoint,screenCoord)
+    SIMPLE_BINDABLE_PROPERTY (QRect,screenBounding)
+    SIMPLE_BINDABLE_PROPERTY (short int, guidanceLineDistanceOff)
+    SIMPLE_BINDABLE_PROPERTY (double, avgPivDistance)
+    SIMPLE_BINDABLE_PROPERTY (double, avgSpeed)
+    SIMPLE_BINDABLE_PROPERTY (double, fixHeading)
 
 signals:
     //void setLookAheadGoal(double);
@@ -180,7 +164,8 @@ signals:
     void leftTramStateChanged();
     void rightTramStateChanged();
     void vehicleListChanged();
-
+    void isInFreeDriveModeChanged();
+    void driveFreeSteerAngleChanged();
 
     // Thread-safe vehicle management signals (Phase 1 architecture)
     void vehicle_saveas(QString vehicle_name);
@@ -229,13 +214,17 @@ public:
     void setVehicleList(const QList<QVariant>& value); // Qt 6.8 FIX: Moved to .cpp
     QBindable<QList<QVariant>> bindableVehicleList(); // Qt 6.8 FIX: Moved to .cpp
 
+    bool isInFreeDriveMode() const;
+    void setIsInFreeDriveMode(bool new_mode);
+    QBindable<bool> bindableIsInFreeDriveMode();
+
+    double driveFreeSteerAngle() const;
+    void setDriveFreeSteerAngle(double new_angle);
+    QBindable<double> bindableDriveFreeSteerAngle();
+
     // Legacy compatibility methods
     void setLeftTramIndicator(int value) { setLeftTramState(value); }
     void setRightTramIndicator(int value) { setRightTramState(value); }
-
-    // MainWindow reference methods
-    void setMainWindow(QObject* window);
-    QObject* getMainWindow() const { return mainWindow; }
 
 public slots:
     void AverageTheSpeed(double newSpeed);
@@ -256,8 +245,13 @@ private:
         // Phase 6.0.24 Problem 18: Initialize avgSpeed as defense-in-depth
         // Critical: Without this, exponential averaging preserves random memory values
         // Formula: avgSpeed = newSpeed*0.75 + avgSpeed*0.25 means 25% of old value persists
-        avgSpeed = 0.0;
     }
+
+    ~CVehicle() override=default;
+
+    static CVehicle *s_instance;
+    static QMutex s_mutex;
+    static bool s_cpp_created;
 
     // Qt 6.8 MIGRATION: Lazy initialization flag
     mutable bool m_settingsLoaded = false;
@@ -268,9 +262,6 @@ private:
         }
     }
 
-    //reference to mainWindow for qmlItem access
-    QObject *mainWindow = nullptr;
-
     // ===== Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY Private Members =====
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, bool, m_isHydLiftOn, &CVehicle::isHydLiftOnChanged)
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, bool, m_hydLiftDown, &CVehicle::hydLiftDownChanged)
@@ -279,6 +270,17 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, int, m_leftTramState, &CVehicle::leftTramStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, int, m_rightTramState, &CVehicle::rightTramStateChanged)
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QList<QVariant>, m_vehicleList, &CVehicle::vehicleListChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, bool, m_isInFreeDriveMode, false, &CVehicle::isInFreeDriveModeChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_driveFreeSteerAngle, 0, &CVehicle::driveFreeSteerAngleChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_modeActualXTE, 0, &CVehicle::modeActualXTEChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_modeActualHeadingError, 0, &CVehicle::modeActualHeadingErrorChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QPoint, m_screenCoord, &CVehicle::screenCoordChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QRect, m_screenBounding, &CVehicle::screenBoundingChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, short int, m_guidanceLineDistanceOff, 0, &CVehicle::guidanceLineDistanceOffChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_avgPivDistance, 32000, &CVehicle::avgPivDistanceChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_avgSpeed, 0, &CVehicle::avgSpeedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_fixHeading, 0, &CVehicle::fixHeadingChanged)
+
 };
 
 #endif // CVEHICLE_H

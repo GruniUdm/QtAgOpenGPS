@@ -7,7 +7,6 @@ import QtQuick.Controls.Fusion
 //import Settings
 import AOG
 
-
 import ".."
 import "../components"
 
@@ -20,10 +19,10 @@ Rectangle {
     border.color: "black"
     border.width: 1.5
 
-    property double timeUntilFinished: (aog.speedKph > 1 ?
-                                            (aog.areaBoundaryOuterLessInner - aog.workedAreaTotal) /
+    property double timeUntilFinished: (VehicleInterface.avgSpeed > 1 ?
+                                            (Backend.currentField.areaBoundaryOuterLessInner - Backend.currentField.workedAreaTotal) /
                                             // Threading Phase 1: Tool width for time calculation
-                                            SettingsManager.vehicle_toolWidth / aog.speedKph / 1000
+                                            SettingsManager.vehicle_toolWidth / VehicleInterface.avgSpeed / 1000
                                           : Number.POSITIVE_INFINITY)
 
     property int hoursUntilFinished: (timeUntilFinished != Number.POSITIVE_INFINITY ?
@@ -40,9 +39,9 @@ Rectangle {
                                                  .arg(Qt.locale().toString(minutesUntilFinished,'f',0))
                                                : qsTr("\u221E hours")
 
-    property string percentLeft: aog.areaBoundaryOuterLessInner > 0 ?
+    property string percentLeft: Backend.currentField.areaBoundaryOuterLessInner > 0 ?
                                      qsTr("%1%")
-                                     .arg(Qt.locale().toString((aog.areaBoundaryOuterLessInner - aog.workedAreaTotal) / aog.areaBoundaryOuterLessInner * 100, 'f', 0))
+                                     .arg(Qt.locale().toString((Backend.currentField.areaBoundaryOuterLessInner - Backend.currentField.workedAreaTotal) / Backend.currentField.areaBoundaryOuterLessInner * 100, 'f', 0))
                                    : qsTr("--")
 
     Column{
@@ -50,20 +49,20 @@ Rectangle {
         anchors.top: parent.top
         anchors.margins: 15
         anchors.horizontalCenter: parent.horizontalCenter
-        TextLine{ color: "white"; text: qsTr("Total: ")+ Utils.area_to_unit_string(aog.areaBoundaryOuterLessInner, 2)}
+        TextLine{ color: "white"; text: qsTr("Total: ")+ Utils.area_to_unit_string(Backend.currentField.areaBoundaryOuterLessInner, 2)}
         Spacer {}
         Rectangle{ color: "white"; height:2; width: fieldData.width * .75; anchors.horizontalCenter: parent.horizontalCenter;}
         TextLine{ color: "white"; text: qsTr("Worked")}
-        TextLine{ color: "white"; text: qsTr("Applied: ")+ Utils.area_to_unit_string(aog.workedAreaTotal, 2)}
-        TextLine{ color: "white"; text: qsTr("Remain: ")+ Utils.area_to_unit_string((aog.areaBoundaryOuterLessInner - aog.workedAreaTotal), 2)}
+        TextLine{ color: "white"; text: qsTr("Applied: ")+ Utils.area_to_unit_string(Backend.currentField.workedAreaTotal, 2)}
+        TextLine{ color: "white"; text: qsTr("Remain: ")+ Utils.area_to_unit_string((Backend.currentField.areaBoundaryOuterLessInner - Backend.currentField.workedAreaTotal), 2)}
         TextLine{ color: "white"; text: fieldData.percentLeft }
         TextLine{ color: "white"; text: fieldData.timeUntilFinishedString }
         Spacer {}
         Rectangle{ color: "white"; height:2; width: fieldData.width * .75; anchors.horizontalCenter: parent.horizontalCenter;}
         TextLine{ color: "white"; text: qsTr("Actual")}
-        TextLine{ color: "white"; text: qsTr("Applied: ")+ Utils.area_to_unit_string(aog.actualAreaCovered, 2)}
-        TextLine{ color: "white"; text: qsTr("Remain: ") + Utils.area_to_unit_string((aog.areaBoundaryOuterLessInner - aog.actualAreaCovered), 2)}
-        TextLine{ color: "white"; text: qsTr("Overlap: ") + Utils.area_to_unit_string((aog.workedAreaTotal - aog.actualAreaCovered), 2)}
-        TextLine{ color: "white"; text: Utils.workRateString(aog.speedKph) }
+        TextLine{ color: "white"; text: qsTr("Applied: ")+ Utils.area_to_unit_string(Backend.currentField.actualAreaCovered, 2)}
+        TextLine{ color: "white"; text: qsTr("Remain: ") + Utils.area_to_unit_string((Backend.currentField.areaBoundaryOuterLessInner - Backend.currentField.actualAreaCovered), 2)}
+        TextLine{ color: "white"; text: qsTr("Overlap: ") + Utils.area_to_unit_string((Backend.currentField.workedAreaTotal - Backend.currentField.actualAreaCovered), 2)}
+        TextLine{ color: "white"; text: Utils.workRateString(VehicleInterface.avgSpeed) }
     }
 }

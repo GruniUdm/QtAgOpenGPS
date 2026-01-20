@@ -5,6 +5,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Controls.Material
+import AOG
 
 import ".."
 import "../components"
@@ -56,8 +57,8 @@ Dialog {
             selectByMouse: true
             placeholderText: focus || text ? "" : qsTr("New Field Name")
             onTextChanged: {
-                for (var i=0; i < fieldInterface.field_list.length ; i++) {
-                    if (text === fieldInterface.field_list[i].name) {
+                for (var i=0; i < FieldInterface.field_list.length ; i++) {
+                    if (text === FieldInterface.field_list[i].name) {
                         errorMessage.visible = true
                         break
                     } else

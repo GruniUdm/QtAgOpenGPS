@@ -15,6 +15,10 @@
 // Control via main.cpp: agioservice.debug=true|false
 Q_LOGGING_CATEGORY(agioservice, "agioservice")
 
+AgIOService *AgIOService::s_instance = nullptr;
+QMutex AgIOService::s_mutex;
+bool AgIOService::s_cpp_created = false;
+
 // SomcoSoftware approach: Qt manages the singleton automatically
 
 AgIOService::AgIOService(QObject *parent)
@@ -162,6 +166,7 @@ AgIOService::AgIOService(QObject *parent)
     m_lastTrafficTime = 0;
 
     m_localCntrMachine = 99;      // 99 = disconnected (as per CTraffic initialization)
+    m_localCntrBlockage = 99;
     m_localCntrSteer = 99;
     m_localCntrIMU = 99;
     m_localCntrUDPOut = 0;
@@ -217,7 +222,36 @@ AgIOService::~AgIOService()
     }
 }
 
-// Meyer's singleton pattern - no explicit create() method needed in .cpp
+AgIOService *AgIOService::instance() {
+    QMutexLocker locker(&s_mutex);
+    if (!s_instance) {
+        s_instance = new AgIOService();
+        qDebug(agioservice) << "singleton created by C++ code.";
+        s_cpp_created = true;
+        // ensure cleanup on app exit
+        QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+                         s_instance, []() {
+                             delete s_instance; s_instance = nullptr;
+                         });
+    }
+    return s_instance;
+}
+
+AgIOService *AgIOService::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
+    Q_UNUSED(jsEngine)
+
+    QMutexLocker locker(&s_mutex);
+
+    if(!s_instance) {
+        s_instance = new AgIOService();
+        qDebug(agioservice) << "singleton created by QML engine.";
+    } else if (s_cpp_created) {
+        qmlEngine->setObjectOwnership(s_instance, QQmlEngine::CppOwnership);
+    }
+
+    return s_instance;
+}
+
 
 // ============================================================================
 // RECTANGLE PATTERN: Manual Implementation of Getters, Setters, and Bindables
@@ -354,7 +388,7 @@ QVariantList AgIOService::activeProtocols() const
         QVariantMap protocol;
         protocol["id"] = it.key();  // "$PANDA" or "PGN211"
         protocol["description"] = getProtocolDescription(it.key());
-        protocol["source"] = QString("%1:%2").arg(status.transport).arg(status.sourceID);
+        protocol["source"] = QString("%1:%2").arg(status.transport, status.sourceID);
         protocol["frequency"] = status.frequency;
 
         protocols.append(protocol);
@@ -394,6 +428,7 @@ QString AgIOService::getProtocolDescription(const QString& protocolId) const
         {"PGN237", "Machine Status OUT"},
         {"PGN229", "64 Sections IN"},
         {"PGN123", "Hello Machine OUT"},
+        {"PGN244", "Blockage Data IN"},
 
         // PGN Messages - IMU Module
         {"PGN211", "IMU Data OUT"},
@@ -1349,7 +1384,12 @@ void AgIOService::sendModuleHello()
 
     // Phase 6.0.24: Direct call in main thread (implementation in agioservice_udp.cpp)
     // Send PGN 200 hello to broadcast address (modules listening on port 8888)
-    sendHelloMessage("");  // Empty string = use broadcast address
+    auto* settings = SettingsManager::instance();
+    QString ipStr = QString("%1.%2.%3")
+                        .arg(settings->ethernet_ipOne())
+                        .arg(settings->ethernet_ipTwo())
+                        .arg(settings->ethernet_ipThree());
+    sendHelloMessage(ipStr);  // Empty string = use broadcast address ???
 }
 
 QString AgIOService::detectModuleType(const PGNParser::ParsedData& data)
@@ -1362,6 +1402,7 @@ QString AgIOService::detectModuleType(const PGNParser::ParsedData& data)
     } else if (data.sourceType == "PGN") {
         // PGN binary data
         if (data.pgnNumber == 211) return "IMU";         // IMU data
+        if (data.pgnNumber == 123) return "MACHINE";         // Machine data
         if (data.pgnNumber == 253) return "Steer";       // AutoSteer status
         if (data.pgnNumber == 214) return "GPS";         // GPS main antenna
         if (data.pgnNumber == 126 || data.pgnNumber == 127) return "Steer";  // WAS data
@@ -2626,7 +2667,7 @@ QStringList AgIOService::getAvailableSerialPortsForModule(const QString& moduleT
     }
 
     // Filter out used ports
-    for (const QString& port : allPorts) {
+    for (const QString& port : std::as_const(allPorts)) {
         if (!usedPorts.contains(port)) {
             availablePorts.append(port);
         }

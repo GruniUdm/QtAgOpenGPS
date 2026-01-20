@@ -4,9 +4,14 @@
 // This loads the setting (or some of them) into variables, that we can access later
 #include "formgps.h"
 #include "classes/settingsmanager.h"
+#include "backend.h"
+#include "backendaccess.h"
 
 void FormGPS::loadSettings()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_YT(yt);
+
     isMetric = SettingsManager::instance()->menu_isMetric();
 
     isUTurnOn = SettingsManager::instance()->feature_isUTurnOn();
@@ -74,12 +79,12 @@ void FormGPS::loadSettings()
     isConstantContourOn = SettingsManager::instance()->as_isConstantContourOn();
     isSteerInReverse = SettingsManager::instance()->as_isSteerInReverse();
 
-    guidanceLookAheadTime = SettingsManager::instance()->as_guidanceLookAheadTime();
+    Backend::instance()->set_guidanceLookAheadTime(SettingsManager::instance()->as_guidanceLookAheadTime());
 
     //gyd pulls directly from settings
     //gyd.sideHillCompFactor = property_setAS_sideHillComp;
 
-    fd.UpdateFieldBoundaryGUIAreas(bnd.bndList, mainWindow, this);
+    bnd.UpdateFieldBoundaryGUIAreas();
 
     isStanleyUsed = SettingsManager::instance()->vehicle_isStanleyUsed();
     isDay = SettingsManager::instance()->display_isDayMode();
@@ -104,8 +109,6 @@ void FormGPS::loadSettings()
     ahrs.loadSettings();
     camera.loadSettings();
     pn.loadSettings();
-    if(!isJobStarted())
-        sim.loadSettings();
     CVehicle::instance()->loadSettings();
     yt.loadSettings();
 }

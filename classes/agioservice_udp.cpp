@@ -433,6 +433,12 @@ void AgIOService::onUdpDataReady()
                 if (parsedData.pgnNumber == 211) {
                     if (!imuConnected()) setImuConnected(true);
                 }
+                if (parsedData.pgnNumber == 123) {
+                    if (!machineConnected()) setMachineConnected(true);
+                }
+                if (parsedData.pgnNumber == 124) {
+                    if (!blockageConnected()) setBlockageConnected(true);
+                }
             }
         }
 
@@ -483,6 +489,9 @@ void AgIOService::onUdpDataReady()
                 case 250:  // AutoSteer sensor (pressure/current)
                     // PGN 253/250 → AutoSteer feedback (~40 Hz throttled by timer)
                     emit steerDataReady(parsedData);
+                    break;
+                case 244:  // Blockage Data
+                    emit blockageDataReady(parsedData);
                     break;
 
                 case 212:  // IMU disconnect sentinel
@@ -1456,6 +1465,7 @@ void AgIOService::doTraffic()
     if (!m_isUdpEnabled) {
         if (m_traffic) {
             m_traffic->setHelloFromMachine(99);
+            m_traffic->setHelloFromBlockage(99);
             m_traffic->setHelloFromAutoSteer(99);
             m_traffic->setHelloFromIMU(99);
             m_traffic->setCntrUDPOut(0);
@@ -1470,6 +1480,7 @@ void AgIOService::doTraffic()
     }
 
     m_localCntrMachine++;
+    m_localCntrBlockage++;
     m_localCntrSteer++;
     m_localCntrIMU++;
 
@@ -1508,6 +1519,7 @@ void AgIOService::doTraffic()
 
     if (m_traffic) {
         m_traffic->setHelloFromMachine(m_localCntrMachine);
+        m_traffic->setHelloFromBlockage(m_localCntrBlockage);
         m_traffic->setHelloFromAutoSteer(m_localCntrSteer);
         m_traffic->setHelloFromIMU(m_localCntrIMU);
         m_traffic->setCntrUDPOut(m_localCntrUDPOut);
@@ -1522,17 +1534,26 @@ void AgIOService::doTraffic()
     }
 
     bool machineConnected = (m_localCntrMachine < 3);
+    bool blockageConnected = (m_localCntrBlockage < 10);
     bool steerConnected = (m_localCntrSteer < 3);
     bool imuConnected = (m_localCntrIMU < 3);
 
     static bool lastMachineConnected = false;
+    static bool lastBlockageConnected = false;
     static bool lastSteerConnected = false;
     static bool lastIMUConnected = false;
 
     if (machineConnected != lastMachineConnected) {
-        emit moduleMachineStatusChanged(machineConnected);
+        //emit moduleMachineStatusChanged(machineConnected);
+        setMachineConnected(machineConnected);
         lastMachineConnected = machineConnected;
         qCDebug(agioservice) << "Machine module:" << (machineConnected ? "CONNECTED" : "DISCONNECTED");
+    }
+    if (blockageConnected != lastBlockageConnected) {
+        //emit moduleMachineStatusChanged(machineConnected);
+        setBlockageConnected(blockageConnected);
+        lastBlockageConnected = blockageConnected;
+        qCDebug(agioservice) << "Blockage module:" << (blockageConnected ? "CONNECTED" : "DISCONNECTED");
     }
     if (steerConnected != lastSteerConnected) {
         emit moduleSteerStatusChanged(steerConnected);
@@ -1571,6 +1592,13 @@ void AgIOService::processHelloMessage(const QByteArray& data)
             }
             break;
 
+        case 124:
+            if (m_localCntrBlockage != 0) {
+                m_localCntrBlockage = 0;
+                qCDebug(agioservice) << "Blockage module (124) scan reply - counter reset";
+            }
+            break;
+
         case 126:
             if (m_localCntrSteer != 0) {
                 m_localCntrSteer = 0;
@@ -1599,6 +1627,13 @@ void AgIOService::processHelloMessage(const QByteArray& data)
             if (m_localCntrMachine != 0) {
                 m_localCntrMachine = 0;
                 qDebug() << "Machine hello received - counter reset";
+            }
+            break;
+
+        case 124:
+            if (m_localCntrBlockage != 0) {
+                m_localCntrBlockage = 0;
+                qDebug() << "Blockage hello received - counter reset";
             }
             break;
 

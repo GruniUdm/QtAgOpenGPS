@@ -8,7 +8,7 @@
 #include <QSharedPointer>
 #include <QOpenGLBuffer>
 #include "cboundarylist.h"
-#include "btnenum.h"
+#include "mainwindowstate.h"
 #include <QObject>
 
 
@@ -17,8 +17,7 @@ class QMatrix4x4;
 class CVehicle;
 class CABLine;
 class CYouTurn;
-class CModuleComm;
-class CFieldData;
+class ModuleComm;
 class CTool;
 class CPGN_EF;
 
@@ -32,6 +31,8 @@ private:
 
     bool bufferCurrent = false;
     bool backBufferCurrent = false;
+
+    Vec2 prevBoundaryPos;
 
 public:
     //area of boundaries
@@ -67,21 +68,16 @@ public:
     //CFence.cs
     bool IsPointInsideFenceArea(Vec3 testPoint) const ;
     bool IsPointInsideFenceArea(Vec2 testPoint) const;
-    void DrawFenceLines(const CVehicle &v, const CModuleComm &mc, QOpenGLFunctions *g, const QMatrix4x4 &mvp, QObject *mainWindow);
+    void DrawFenceLines(Vec3 pivot, QOpenGLFunctions *g, const QMatrix4x4 &mvp, QObject *mainWindow);
 
     //CTurn.sh
     int IsPointInsideTurnArea(Vec3 pt) const;
     void FindClosestTurnPoint(const CABLine &abline, Vec3 fromPt);
-    void BuildTurnLines(CFieldData &fd, QObject *mainWindow, class FormGPS *formGPS);
+    void BuildTurnLines();
 
     //CHead.cs
-    void SetHydPosition(btnStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle); //TODO sounds, p_239
-    void WhereAreToolCorners(CTool &tool);
-    void WhereAreToolLookOnPoints(CVehicle &vehicle, CTool &tool);
-    bool IsPointInsideHeadArea(Vec2 pt);
-
-
-
+    void SetHydPosition(MainWindowState::ButtonStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle); //TODO sounds, p_239
+    bool IsPointInsideHeadArea(Vec2 pt) const;
 
     /*
     void findClosestBoundaryPoint(Vec2 fromPt, double headAB);
@@ -90,9 +86,37 @@ public:
     //void drawClosestPoint(QOpenGLFunctions *g, const QMatrix4x4 &mvp);
     //void drawBoundaryLineOnBackBuffer(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
 
+    void AddCurrentPoint(double min_dist);
+    void UpdateFieldBoundaryGUIAreas();
+    bool CalculateMinMax();
+    bool loadBoundary(const QString &field_path);
+    static double getSavedFieldArea(const QString &boundarytxt_path);
+
+
+public slots:
+    // methods to be used by GUI.
+    void calculateArea();
+    void updateList();
+    void start();
+    void stop();
+    void addPoint();
+    void deleteLastPoint();
+    void pause();
+    void record();
+    void reset();
+    void deleteBoundary(int which_boundary);
+    void setDriveThrough(int which_boundary, bool drive_thru);
+    void deleteAll();
+
+    void loadBoundaryFromKML(QString filename);
+    void addBoundaryOSMPoint(double latitude, double longitude);
+
+
 signals:
     void TimedMessage(int timeout, QString title, QString message);
     void soundHydLiftChange(bool);
+
+    void saveBoundaryRequested();
 
 };
 

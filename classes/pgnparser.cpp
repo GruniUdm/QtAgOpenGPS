@@ -114,6 +114,8 @@ PGNParser::ParsedData PGNParser::parsePGN(const QByteArray& data) {
             return parsePGN253(data);
         case 250:  // 0xFA - AutoSteer Sensor (pressure/current monitoring)
             return parsePGN250(data);
+        case 244:  // 0xFA - Blockage Data
+            return parsePGN244(data);
         case 211:  // 0xD3 - IMU Data (heading, roll, pitch)
             return parsePGN211(data);
         case 212:  // 0xD4 - IMU Disconnect (Phase 6.0.25)
@@ -126,6 +128,8 @@ PGNParser::ParsedData PGNParser::parsePGN(const QByteArray& data) {
             return parsePGN121(data);
         case 123:  // 0x7B - Hello Machine (relay status)
             return parsePGN123(data);
+        case 124:  // 0x7B - Hello Blockage
+            return parsePGN124(data);
 
         // Legacy PGN (to be removed after validation)
         case 127:  // OLD - incorrectly extracted Source ID 0x7F
@@ -970,6 +974,55 @@ PGNParser::ParsedData PGNParser::parsePGN253(const QByteArray& data) {
     return result;
 }
 
+PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
+    // PGN 244 (0xF4): Blockage Data
+    // Byte 0-1: Header (0x80 0x81)
+    // Byte 2: Source ID (0x7b = Machine)
+    // Byte 3: PGN (0xF4 = 244) Blockage Monitor
+    // Byte 4: Length (4 bytes)
+    // Byte 5: Module ID
+    // Byte 6: Section Number
+    // Byte 7-8: Section value
+    // Byte 9: Checksum
+
+    ParsedData result;
+
+    if (data.size() != 10) {
+        return result;
+    }
+
+    // Validate header and PGN
+    if ((unsigned char)data[0] != 0x80 || (unsigned char)data[1] != 0x81) {
+        return result;
+    }
+    if ((unsigned char)data[3] != 0xF4) {
+        return result;
+    }
+
+    int m_ID = static_cast<quint8>(data[5]);
+    int sect_n = static_cast<quint8>(data[6]);
+    qint16 sect_val = static_cast<qint16>((static_cast<quint8>(data[8]) << 8) | static_cast<quint8>(data[7]));
+
+    result.isValid = true;
+    result.sourceType = "PGN";
+    result.pgnNumber = 244;
+    result.sentenceType = "Blockage_Data_IN";
+    result.moduleType = "Machine";
+    result.blockagesection[0] = m_ID;
+    result.blockagesection[1] = sect_n;
+    result.blockagesection[2] = sect_val;
+
+    // // Debug log (throttled to prevent spam at 40 Hz)
+    // static int logCounter = 0;
+    // if (++logCounter % 200 == 0) {  // Log every 200th message (5 sec at 40Hz)
+    //qDebug() << "PGN 244 - Blockage:" ;
+    //              << "deg, PWM:" << result.pwmDisplay
+    //              << ", Switch:" << QString::number(result.switchByte, 16);
+    // }
+
+    return result;
+}
+
 PGNParser::ParsedData PGNParser::parsePGN211(const QByteArray& data) {
     // PGN 211 (0xD3): IMU Data
     // Byte 0-1: Header (0x80 0x81)
@@ -1135,6 +1188,36 @@ PGNParser::ParsedData PGNParser::parsePGN123(const QByteArray& data) {
     qDebug() << "✅ PGN 123: Machine module detected (relays:"
              << QString::number(relayLo, 16).toUpper()
              << QString::number(relayHi, 16).toUpper() << ")";
+
+    return result;
+}
+
+PGNParser::ParsedData PGNParser::parsePGN124(const QByteArray& data) {
+    // PGN 124 (0x7C): Hello Blockage OUT
+    // Format: 0x80 0x81 0x7B 0x7C 0x05 [00 00] [00 00] [00 00 00] [CRC]
+    // Purpose: Module identification
+
+    ParsedData result;
+
+    if (data.size() < 11) {
+        return result;
+    }
+
+    // Validate header
+    if ((unsigned char)data[0] != 0x80 || (unsigned char)data[1] != 0x81) {
+        return result;
+    }
+
+    // Validate source and PGN
+    if ((unsigned char)data[2] != 0x7B || (unsigned char)data[3] != 0x7C) {
+        return result;
+    }
+
+
+    result.isValid = true;
+    result.sourceType = "PGN";
+    result.pgnNumber = 124;
+    result.sentenceType = "BLOCKAGE_HELLO";
 
     return result;
 }

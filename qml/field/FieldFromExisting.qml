@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 import QtQuick.Controls.Material
+import AOG
 //import Settings
 
 import ".."
@@ -88,8 +89,8 @@ Dialog {
                 height: 50  * theme.scaleHeight
 
                 onTextChanged: {
-                    for (var i=0; i < fieldInterface.field_list.length ; i++) {
-                        if (text === fieldInterface.field_list[i].name) {
+                    for (var i=0; i < FieldInterface.field_list.length ; i++) {
+                        if (text === FieldInterface.field_list[i].name) {
                             errorMessage.visible = true
                             break
                         } else
@@ -248,13 +249,13 @@ Dialog {
                             newField.text != existingField.text) {
                         var flag = 0;
                         if (btnKeepFlags.checked)
-                            flag |= fieldInterface.loadFlags
+                            flag |= FieldInterface.Flags.Flags
                         if (btnKeepHeadland.checked)
-                            flag |= fieldInterface.loadHeadland
+                            flag |= FieldInterface.Flags.Headland
                         if (btnKeepLines.checked)
-                            flag |= fieldInterface.loadLines
+                            flag |= FieldInterface.Flags.Lines
                         if (btnKeepMapping.checked)
-                            flag |= fieldInterface.loadMapping
+                            flag |= FieldInterface.Flags.Mapping
 
                         fieldFromExisting.visible = false
                         aog.fieldNewFrom(fieldView.currentFieldName, newField.text.trim(), flag) // Qt 6.8 MODERN: Direct Q_INVOKABLE call

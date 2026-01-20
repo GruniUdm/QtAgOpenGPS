@@ -2,8 +2,6 @@
 #include "glm.h"
 #include "classes/settingsmanager.h"
 #include "cabline.h"
-#include "cfielddata.h"
-#include "formgps.h"
 
 /************/
 /* CTurn.cs *
@@ -102,7 +100,7 @@ void CBoundary::FindClosestTurnPoint(const CABLine &ABLine, Vec3 fromPt)
     }
 }
 
-void CBoundary::BuildTurnLines(CFieldData &fd, QObject *mainWindow, FormGPS *formGPS)
+void CBoundary::BuildTurnLines()
 {
     if (bndList.count() == 0)
     {
@@ -111,7 +109,7 @@ void CBoundary::BuildTurnLines(CFieldData &fd, QObject *mainWindow, FormGPS *for
     }
 
     //update the GUI values for boundaries
-    fd.UpdateFieldBoundaryGUIAreas(bndList, mainWindow, formGPS);
+    UpdateFieldBoundaryGUIAreas();
 
     //to fill the list of line points
     Vec3 point;

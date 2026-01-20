@@ -16,8 +16,10 @@
 #include <iomanip>
 
 #include "cboundarylist.h"
+#include "fieldinterface.h"
+#include "siminterface.h"
+#include "backend.h"
 
-double latK, lonK = 0.0;
 
 void FormGPS::field_update_list() {
 
@@ -43,9 +45,7 @@ void FormGPS::field_update_list() {
         }
     }
 
-    if (fieldInterface) {
-        fieldInterface->setProperty("field_list", fieldList);
-    }
+    FieldInterface::instance()->set_field_list(fieldList);
 }
 
 void FormGPS::field_close() {
@@ -94,7 +94,7 @@ void FormGPS::field_open(QString field_name) {
 }
 
 void FormGPS::field_new(QString field_name) {
-    // Phase 6.0.4: PropertyWrapper completely removed - using Qt 6.8 Q_PROPERTY native architecture
+    CNMEA &pn = *Backend::instance()->pn();
 
     //assume the GUI will vet the name a little bit
     lock.lockForWrite();
@@ -112,11 +112,11 @@ void FormGPS::field_new(QString field_name) {
     JobNew();
 
     // Phase 6.3.1: Use PropertyWrapper for safe property access
-    this->setLatStart(pn.latitude);
+    pn.setLatStart(pn.latitude);
     // Phase 6.3.1: Use PropertyWrapper for safe property access
-    this->setLonStart(pn.longitude);
+    pn.setLonStart(pn.longitude);
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.SetLocalMetersPerDegree(this);
+    pn.SetLocalMetersPerDegree();
 
     FileCreateField();
     FileCreateSections();
@@ -172,7 +172,7 @@ void FormGPS::field_new_from(QString existing, QString field_name, int flags) {
     //some how we have to write the existing patches to the disk.
     //FileSaveSections only write pending triangles
 
-    for(QSharedPointer<PatchTriangleList> &l: triStrip[0].patchList) {
+    for(QSharedPointer<PatchTriangleList> &l: tool.triStrip[0].patchList) {
         tool.patchSaveList.append(l);
     }
     FileSaveSections();
@@ -195,202 +195,203 @@ bool parseDouble(const std::string& input, double& output) {
     return !iss.fail() && iss.eof();
 }
 
-void FindLatLon(const std::string& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Error opening file.\n";
+void FormGPS::FindLatLon(QString filename)
+{
+    qDebug() << "Finding average Lat/Lon from KML file:" << filename;
+
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Error opening file:" << file.errorString();
         return;
     }
 
-    std::string line;
-    std::string coordinates;
-    try {
-        while (std::getline(file, line)) {
-            size_t startIndex = line.find("<coordinates>");
-            if (startIndex != std::string::npos) {
-                // Found opening tag
-                while (true) {
-                    size_t endIndex = line.find("</coordinates>");
+    QTextStream stream(&file);
+    QString line;
+    QString coordinates;
 
-                    if (endIndex == std::string::npos) {
-                        if (startIndex == std::string::npos)
-                            coordinates += line;
-                        else
-                            coordinates += line.substr(startIndex + 13);  // Skip "<coordinates>"
+    while (!stream.atEnd()) {
+        line = stream.readLine().trimmed();
+
+        int startIndex = line.indexOf(QLatin1String("<coordinates>"));
+        if (startIndex != -1) {
+            // Found <coordinates> tag — extract content
+            while (true) {
+                int endIndex = line.indexOf(QLatin1String("</coordinates>"));
+                if (endIndex == -1) {
+                    // No closing tag in this line
+                    if (startIndex == -1) {
+                        coordinates += line;
                     } else {
-                        if (startIndex == std::string::npos)
-                            coordinates += line.substr(0, endIndex);
-                        else
-                            coordinates += line.substr(startIndex + 13, endIndex - (startIndex + 13));
-                        break;
+                        coordinates += QStringView(line).mid(startIndex + 13); // Skip "<coordinates>"
                     }
-
-                    if (!std::getline(file, line)) break;
-                    line.erase(0, line.find_first_not_of(" \t\n\r\f\v")); // trim
-                    startIndex = std::string::npos;
-                }
-
-                // Split the coordinates by whitespace
-                std::istringstream ss(coordinates);
-                std::string item;
-                std::vector<std::string> numberSets;
-                while (ss >> item) {
-                    numberSets.push_back(item);
-                }
-
-                if (numberSets.size() > 2) {
-                    double counter = 0, lat = 0, lon = 0;
-                    latK = lonK = 0;
-
-                    for (const auto& coord : numberSets) {
-                        if (coord.length() < 3) continue;
-                        size_t comma1 = coord.find(',');
-                        size_t comma2 = coord.find(',', comma1 + 1);
-                        if (comma1 == std::string::npos || comma2 == std::string::npos) continue;
-
-                        std::string lonStr = coord.substr(0, comma1);
-                        std::string latStr = coord.substr(comma1 + 1, comma2 - comma1 - 1);
-
-                        try {
-                            double tempLon, tempLat = 0.0;
-                            parseDouble(lonStr,tempLon);
-                            parseDouble(latStr,tempLat);
-                            lon += tempLon;
-                            lat += tempLat;
-                            counter += 1;
-                        } catch (...) {
-                            continue;
-                        }
-                    }
-
-                    if (counter > 0) {
-                        lonK = lon / counter;
-                        latK = lat / counter;
-                    }
-
-                    coordinates.clear();
                 } else {
-                    std::cerr << "Error reading KML: Too few coordinate points.\n";
-                    return;
+                    // Closing tag found
+                    if (startIndex == -1) {
+                        coordinates += QStringView(line).left(endIndex);
+                    } else {
+                        coordinates += QStringView(line).mid(startIndex + 13, endIndex - (startIndex + 13));
+                    }
+                    break;
                 }
 
-                break; // Exit after finding and processing first <coordinates> block
+                if (stream.atEnd()) break;
+                line = stream.readLine().trimmed();
+                startIndex = -1; // reset for continuation lines
             }
+
+            // Split coordinates by whitespace (spaces, tabs, newlines)
+            QStringList coordList = coordinates.split(QRegularExpression(QStringLiteral("\\s+")),
+                                                      Qt::SkipEmptyParts);
+
+            if (coordList.size() <= 2) {
+                qWarning() << "Error reading KML: Too few coordinate points.";
+                file.close();
+                return;
+            }
+
+            double totalLat = 0.0;
+            double totalLon = 0.0;
+            int validCount = 0;
+
+            for (const QString& coord : std::as_const(coordList)) {
+                if (coord.length() < 3) continue;
+
+                int comma1 = coord.indexOf(QLatin1Char(','));
+                int comma2 = coord.indexOf(QLatin1Char(','), comma1 + 1);
+
+                if (comma1 == -1 || comma2 == -1) continue;
+
+                QString lonStr = coord.left(comma1);
+                QString latStr = coord.mid(comma1 + 1, comma2 - comma1 - 1);
+
+                bool okLon = false, okLat = false;
+                double lon = lonStr.toDouble(&okLon);
+                double lat = latStr.toDouble(&okLat);
+
+                if (okLon && okLat) {
+                    totalLon += lon;
+                    totalLat += lat;
+                    ++validCount;
+                }
+            }
+
+            if (validCount > 0) {
+                lonK = totalLon / validCount;
+                latK = totalLat / validCount;
+                qDebug() << "Average Lat:" << latK << "Lon:" << lonK;
+            } else {
+                qWarning() << "No valid coordinates found in KML.";
+            }
+
+            break; // Process only the first <coordinates> block
         }
-    } catch (...) {
-        std::cerr << "Exception: Error Finding Lat Lon.\n";
-        return;
     }
 
-    // In original C#: mf.bnd.isOkToAddPoints = false;
-    // Here: simulate behavior or ignore
+    file.close();
 }
 
-void FormGPS::LoadKMLBoundary(const std::string& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Error opening file.\n";
+void FormGPS::LoadKMLBoundary(QString filename) {
+    CNMEA &pn = *Backend::instance()->pn();
+
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Error opening file:" << file.errorString();
         return;
     }
 
-    std::string line;
-    std::string coordinates;
-    try {
-        while (std::getline(file, line)) {
-            size_t startIndex = line.find("<coordinates>");
-            if (startIndex != std::string::npos) {
-                // Found opening tag
-                while (true) {
-                    size_t endIndex = line.find("</coordinates>");
+    QTextStream stream(&file);
+    QString line;
+    QString coordinates;
 
-                    if (endIndex == std::string::npos) {
-                        if (startIndex == std::string::npos)
-                            coordinates += line;
-                        else
-                            coordinates += line.substr(startIndex + 13);  // Skip "<coordinates>"
+    while (!stream.atEnd()) {
+        line = stream.readLine().trimmed();
+
+        int startIndex = line.indexOf(QLatin1String("<coordinates>"));
+        if (startIndex != -1) {
+            // Found opening tag
+            while (true) {
+                int endIndex = line.indexOf(QLatin1String("</coordinates>"));
+                if (endIndex == -1) {
+                    if (startIndex == -1) {
+                        coordinates += line;
                     } else {
-                        if (startIndex == std::string::npos)
-                            coordinates += line.substr(0, endIndex);
-                        else
-                            coordinates += line.substr(startIndex + 13, endIndex - (startIndex + 13));
-                        break;
+                        coordinates += QStringView(line).mid(startIndex + 13); // Skip "<coordinates>"
                     }
-
-                    if (!std::getline(file, line)) break;
-                    line.erase(0, line.find_first_not_of(" \t\n\r\f\v")); // trim
-                    startIndex = std::string::npos;
-                }
-
-                // Split the coordinates by whitespace
-                std::istringstream ss(coordinates);
-                std::string item;
-                std::vector<std::string> numberSets;
-                while (ss >> item) {
-                    numberSets.push_back(item);
-                }
-
-                if (numberSets.size() > 2) {
-                    double counter = 0, lat = 0, lon = 0;
-                    latK = lonK = 0;
-
-                    CBoundaryList New;
-
-                    for (const auto& coord : numberSets) {
-                        if (coord.length() < 3) continue;
-                        // Qt 6.8 fix: Remove debug print causing freeze with large KML files
-                        // qDebug() << coord;
-                        size_t comma1 = coord.find(',');
-                        size_t comma2 = coord.find(',', comma1 + 1);
-                        if (comma1 == std::string::npos || comma2 == std::string::npos) continue;
-
-                        std::string lonStr = coord.substr(0, comma1);
-                        std::string latStr = coord.substr(comma1 + 1, comma2 - comma1 - 1);
-
-                        try {
-                            double easting, northing, tmp1, tmp2 = 0.0;
-                            parseDouble(lonStr,lonK);
-                            parseDouble(latStr,latK);
-                            // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-                            pn.ConvertWGS84ToLocal(latK, lonK, northing, easting, this);
-                            Vec3 temp(easting, northing, 0);
-                            New.fenceLine.append(temp);
-                        } catch (...) {
-                            continue;
-                        }
-                    }
-
-                    //build the boundary, make sure is clockwise for outer counter clockwise for inner
-                    New.CalculateFenceArea(bnd.bndList.count());
-                    New.FixFenceLine(bnd.bndList.count());
-
-                    bnd.bndList.append(New);
-
-                    //btnABDraw.Visible = true;
-
-                    coordinates.clear();
                 } else {
-                    std::cerr << "Error reading KML: Too few coordinate points.\n";
-                    return;
+                    if (startIndex == -1) {
+                        coordinates += QStringView(line).left(endIndex);
+                    } else {
+                        coordinates += QStringView(line).mid(startIndex + 13, endIndex - (startIndex + 13));
+                    }
+                    break;
                 }
 
-                break; // Exit after finding and processing first <coordinates> block
+                if (stream.atEnd()) break;
+                line = stream.readLine().trimmed();
+                startIndex = -1; // reset for subsequent lines
             }
+
+            // Split coordinates by whitespace
+            QStringList numberSets = coordinates.split(QRegularExpression(QStringLiteral("\\s+")),
+                                                       Qt::SkipEmptyParts);
+
+            if (numberSets.size() > 2) {
+                double latK = 0.0, lonK = 0.0;
+                CBoundaryList New;
+
+                for (const QString& coord : std::as_const(numberSets)) {
+                    if (coord.length() < 3) continue;
+
+                    qDebug() << coord;
+
+                    int comma1 = coord.indexOf(QLatin1Char(','));
+                    int comma2 = coord.indexOf(QLatin1Char(','), comma1 + 1);
+
+                    if (comma1 == -1 || comma2 == -1) continue;
+
+                    QString lonStr = coord.left(comma1);
+                    QString latStr = coord.mid(comma1 + 1, comma2 - comma1 - 1);
+
+                    bool ok1 = false, ok2 = false;
+                    double lonVal = lonStr.toDouble(&ok1);
+                    double latVal = latStr.toDouble(&ok2);
+
+                    if (!ok1 || !ok2) continue;
+
+                    latK = latVal;
+                    lonK = lonVal;
+
+                    double easting = 0.0, northing = 0.0;
+                    pn.ConvertWGS84ToLocal(latK, lonK, northing, easting);
+                    Vec3 temp(easting, northing, 0);
+                    New.fenceLine.append(temp);
+                }
+
+                // Build the boundary: clockwise for outer, counter-clockwise for inner
+                New.CalculateFenceArea(bnd.bndList.count());
+                New.FixFenceLine(bnd.bndList.count());
+                bnd.bndList.append(New);
+
+            } else {
+                qWarning() << "Error reading KML: Too few coordinate points.";
+                file.close();
+                return;
+            }
+
+            break; // Process only the first <coordinates> block
         }
-    } catch (...) {
-        std::cerr << "Exception: Error Finding Lat Lon.\n";
-        return;
     }
 
-    // In original C#: mf.bnd.isOkToAddPoints = false;
-    // Here: simulate behavior or ignore
+    file.close();
 }
 
 void FormGPS::field_new_from_KML(QString field_name, QString file_name) {
+    CNMEA &pn = *Backend::instance()->pn();
+
     qDebug() << field_name << " " << file_name;
 
-    // Phase 6.0.4: PropertyWrapper completely removed - using Qt 6.8 Q_PROPERTY native architecture
-
-        //assume the GUI will vet the name a little bit
+    //assume the GUI will vet the name a little bit
+    field_close();
     lock.lockForWrite();
     FileSaveEverythingBeforeClosingField(false);  // Don't save vehicle when creating field from KML
     currentFieldDirectory = field_name.trimmed();
@@ -408,24 +409,23 @@ void FormGPS::field_new_from_KML(QString field_name, QString file_name) {
         localPath = file_name;
     }
     file_name = localPath;
-    FindLatLon(file_name.toStdString());
+    FindLatLon(file_name);
 
     // Phase 6.3.1: Use PropertyWrapper for safe property access
-    this->setLatStart(latK);
+    pn.setLatStart(latK);
     // Phase 6.3.1: Use PropertyWrapper for safe property access
-    this->setLonStart(lonK);
-    if (timerSim.isActive())
+    pn.setLonStart(lonK);
+    if (SimInterface::instance()->isRunning())
         {
-            pn.latitude = this->latStart();
-            pn.longitude = this->lonStart();
+            pn.latitude = pn.latStart();
+            pn.longitude = pn.lonStart();
 
-            sim.latitude = this->latStart();
-            SettingsManager::instance()->setGps_simLatitude(this->latStart());
-            sim.longitude = this->lonStart();
-            SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+            SettingsManager::instance()->setGps_simLatitude(pn.latStart());
+            SettingsManager::instance()->setGps_simLongitude(pn.lonStart());
+            SimInterface::instance()->reset();
         }
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.SetLocalMetersPerDegree(this);
+    pn.SetLocalMetersPerDegree();
 
 
     FileCreateField();
@@ -440,7 +440,7 @@ void FormGPS::field_new_from_KML(QString field_name, QString file_name) {
     FileSaveTram();
     FileSaveHeadland();    // Create empty Headland.txt to prevent load errors
 
-    LoadKMLBoundary(file_name.toStdString());
+    LoadKMLBoundary(file_name);
     lock.unlock();
 }
 

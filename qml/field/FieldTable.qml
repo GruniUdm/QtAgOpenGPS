@@ -4,6 +4,7 @@
 // Loaded by FieldOpen.qml. Contains the list of fields
 import QtQuick
 import AOG
+import "../" //bring in Utils
 
 
 pragma ComponentBehavior: Bound
@@ -31,12 +32,12 @@ ListView {
         var distance = 0.0
 
         fieldsModel.clear()
-        for( var i=0; i < fieldInterface.field_list.length ;i++)  {
-            distance = Utils.distanceLatLon(aog.latitude, aog.longitude, fieldInterface.field_list[i].latitude, fieldInterface.field_list[i].longitude)
+        for( var i=0; i < FieldInterface.field_list.length ;i++)  {
+            distance = Utils.distanceLatLon(Backend.fixFrame.latitude, Backend.fixFrame.longitude, FieldInterface.field_list[i].latitude, FieldInterface.field_list[i].longitude)
             fieldsModel.append( { index: i,
-                                  name: fieldInterface.field_list[i].name,
+                                  name: FieldInterface.field_list[i].name,
                                   distance: distance,
-                                  boundaryArea: fieldInterface.field_list[i].boundaryArea
+                                  boundaryArea: FieldInterface.field_list[i].boundaryArea
                               } )
         }
         sort()
@@ -87,7 +88,7 @@ ListView {
     //TODO implement a model sort function
 
     Connections {
-        target: fieldInterface
+        target: FieldInterface
         function onField_listChanged() {
             tableView.update_model()
         }

@@ -5,20 +5,23 @@
 #ifndef OPENGLCONTROL_H
 #define OPENGLCONTROL_H
 
+#include "rendering.h"
 #include <QQuickWindow>
-//#include <QOpenGLContext>
-#include <QQuickFramebufferObject>
+#include <QQuickItem>
+#ifdef USE_QSGRENDERNODE
+#   include <QSGRenderNode>
+#else
+#   include <QQuickFramebufferObject>
+#endif
 #include <QtQml/qqmlregistration.h>
 #include <QProperty>
 #include <QBindable>
 #include <QOpenGLFunctions>
-#include <QSGRenderNode>
-
 #include <functional>
 Q_DECLARE_METATYPE(std::function<void (void)>)
 
-class AOGRendererItem;
 
+#ifndef USE_QSGRENDERNODE
 class AOGRenderer : public QQuickFramebufferObject::Renderer
 {
 
@@ -93,9 +96,12 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(AOGRendererInSG, double, m_shiftY, &AOGRendererInSG::shiftYChanged)
 };
 
+#else
+
+class AOGRendererItem;
 class AOGRendererItem : public QQuickItem {
     Q_OBJECT
-    QML_NAMED_ELEMENT(AOGRendererItem)
+    QML_NAMED_ELEMENT(AOGRenderer)
 
     Q_PROPERTY(std::function<void (void)> paintCallback READ getPaintCallback WRITE setPaintCallback NOTIFY paintCallbackChanged)
     Q_PROPERTY(std::function<void (void)> initCallback READ getInitCallback WRITE setInitCallback NOTIFY initCallbackChanged)
@@ -157,7 +163,6 @@ public slots:
     //void sync();
     //void cleanup();
 };
-
 class AOGRendererNode : public QSGRenderNode
 {
 public:
@@ -186,5 +191,6 @@ public:
     //QSize m_viewportSize;
     //QQuickWindow *m_window = nullptr;
 };
+#endif
 
 #endif // OPENGLCONTROL_H

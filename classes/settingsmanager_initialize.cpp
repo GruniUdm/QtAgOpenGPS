@@ -383,7 +383,7 @@ void SettingsManager::initializeFromSettings()
         QStringList defaultList({"1", "2", "3", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"});
         QStringList list = m_qsettings->value("relay/pinConfig", defaultList).toStringList();
         QVector<int> vector;
-        for (const QString& str : list) {
+        for (const QString& str : std::as_const(list)) {
             bool ok;
             int val = str.toInt(&ok);
             if (ok) vector.append(val);
@@ -394,7 +394,7 @@ void SettingsManager::initializeFromSettings()
         QStringList defaultList({"2", "10", "20", "0", "0", "0", "0", "0", "0"});
         QStringList list = m_qsettings->value("tool/zones", defaultList).toStringList();
         QVector<int> vector;
-        for (const QString& str : list) {
+        for (const QString& str : std::as_const(list)) {
             bool ok;
             int val = str.toInt(&ok);
             if (ok) vector.append(val);
