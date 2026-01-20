@@ -64,6 +64,21 @@ public:
     SIMPLE_BINDABLE_PROPERTY(double, gridZoom)
     SIMPLE_BINDABLE_PROPERTY(bool, camFollowing)
     SIMPLE_BINDABLE_PROPERTY(int, camMode)
+public slots:
+    //respond to UI events here
+    void zoomIn();
+    void zoomOut();
+    void tiltDown();
+    void tiltUp();
+    void view2D();
+    void view3D();
+    void normal2D();
+    void normal3D();
+
+signals:
+    //tell the GUI to redraw the field
+    void updateView();
+
 
 private:
     explicit Camera(QObject *parent = nullptr);

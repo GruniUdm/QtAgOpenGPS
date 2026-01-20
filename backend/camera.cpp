@@ -5,6 +5,7 @@
 #include "settingsmanager.h"
 #include <QCoreApplication>
 #include <QLoggingCategory>
+#include "backend.h"
 
 Q_LOGGING_CATEGORY(camera_log, "camera.qtagopengps")
 
@@ -16,6 +17,15 @@ Camera::Camera(QObject *parent)
     : QObject(parent)
 {
     m_camFollowing = true;
+
+    connect(Backend::instance(), &Backend::zoomIn, this, &Camera::zoomIn);
+    connect(Backend::instance(), &Backend::zoomOut, this, &Camera::zoomOut);
+    connect(Backend::instance(), &Backend::tiltDown, this, &Camera::tiltDown);
+    connect(Backend::instance(), &Backend::tiltUp, this, &Camera::tiltUp);
+    connect(Backend::instance(), &Backend::view2D, this, &Camera::view2D);
+    connect(Backend::instance(), &Backend::view3D, this, &Camera::view3D);
+    connect(Backend::instance(), &Backend::normal2D, this, &Camera::normal2D);
+    connect(Backend::instance(), &Backend::normal3D, this, &Camera::normal3D);
 }
 
 Camera *Camera::instance()
@@ -97,3 +107,80 @@ void Camera::SetZoom()
 
     emit gridZoomChanged();
 }
+
+void Camera::tiltDown() {
+    double camPitch = Camera::camPitch(); //shortcut to SettingsManager
+
+    if (camPitch > -59) camPitch = -60;
+    camPitch += ((camPitch * 0.012) - 1);
+    if (camPitch < -76) camPitch = -76;
+
+    Camera::setCamPitch(camPitch);
+
+    emit updateView();
+    //if (openGLControl) {
+    //    QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
+    //}
+}
+
+void Camera::tiltUp() {
+    double camPitch = Camera::camPitch();
+
+    camPitch -= ((camPitch * 0.012) - 1);
+    if (camPitch > -58) camPitch = 0;
+
+    Camera::setCamPitch(camPitch);
+    emit updateView();
+}
+
+void Camera::view2D() {
+    set_camFollowing (true);
+    Camera::setCamPitch(0);
+}
+
+void Camera::view3D() {
+    set_camFollowing (true);
+    Camera::setCamPitch(-65);
+}
+
+void Camera::normal2D() {
+    set_camFollowing (false);
+    Camera::setCamPitch(0);
+}
+
+void Camera::normal3D() {
+    Camera::setCamPitch(-65);
+    set_camFollowing (false);
+}
+
+void Camera::zoomIn() {
+    double zoomValue = Camera::zoomValue();
+    if (zoomValue <= 20) {
+        if ((zoomValue -= zoomValue * 0.1) < 3.0)
+            zoomValue = 3.0;
+    } else {
+        if ((zoomValue -= zoomValue * 0.05) < 3.0)
+            zoomValue = 3.0;
+    }
+    set_camSetDistance(zoomValue * zoomValue * -1);
+
+    Camera::setZoomValue(zoomValue);
+
+    SetZoom();
+    emit updateView();
+}
+
+void Camera::zoomOut() {
+    double zoomValue = Camera::zoomValue();
+
+    if (zoomValue <= 20) zoomValue += zoomValue * 0.1;
+    else zoomValue += zoomValue * 0.05;
+    if (zoomValue > 220) zoomValue = 220;
+    set_camSetDistance(zoomValue * zoomValue * -1);
+
+    Camera::setZoomValue(zoomValue);
+
+    SetZoom();
+    emit updateView();
+}
+
