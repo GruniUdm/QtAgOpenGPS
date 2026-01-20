@@ -3,7 +3,6 @@
 #include "glutils.h"
 #include "classes/settingsmanager.h"
 #include "glutils.h"
-#include "ccamera.h"
 #include "ctram.h"
 #include "cboundary.h"
 #include "cvehicle.h"
@@ -166,10 +165,10 @@ void CTool::saveSettings()
 }
 
 void CTool::DrawToolGL(QOpenGLFunctions *gl, QMatrix4x4 mv,
-                     QMatrix4x4 projection,
-                     bool isJobStarted,
-                     bool isHydLiftOn,
-                     CCamera &camera, CTram &tram)
+                       QMatrix4x4 projection,
+                       bool isJobStarted,
+                       bool isHydLiftOn,
+                       double camSetDistance, CTram &tram)
 {
     double tram_halfWheelTrack = SettingsManager::instance()->vehicle_trackWidth() * 0.5;
     bool tool_isDisplayTramControl = SettingsManager::instance()->tool_isDisplayTramControl();
@@ -276,7 +275,7 @@ void CTool::DrawToolGL(QOpenGLFunctions *gl, QMatrix4x4 mv,
     //draw the sections
     //line width 2 now
 
-    double hite = camera.camSetDistance / -150;
+    double hite = camSetDistance / -150;
     if (hite > 12) hite = 12;
     if (hite < 1) hite = 1;
 
@@ -327,7 +326,7 @@ void CTool::DrawToolGL(QOpenGLFunctions *gl, QMatrix4x4 mv,
 
         gldraw.draw(gl, projection * mv, color, GL_TRIANGLE_FAN, 2.0f);
 
-        if (camera.camSetDistance > -width * 200)
+        if (camSetDistance > -width * 200)
         {
             color.setRgbF(0.0, 0.0, 0.0);
             gldraw.draw(gl,projection * mv, color, GL_LINE_LOOP, 1.0);
@@ -335,7 +334,7 @@ void CTool::DrawToolGL(QOpenGLFunctions *gl, QMatrix4x4 mv,
     }
 
     //zones
-    if (!isSectionsNotZones && zones > 0 && camera.camSetDistance > -150)
+    if (!isSectionsNotZones && zones > 0 && camSetDistance > -150)
     {
         gldraw.clear();
         color.setRgbF(0.5f, 0.80f, 0.950f);
@@ -352,9 +351,9 @@ void CTool::DrawToolGL(QOpenGLFunctions *gl, QMatrix4x4 mv,
     //tram Dots
     if ( tool_isDisplayTramControl && tram.displayMode != 0)
     {
-        if (camera.camSetDistance > -300)
+        if (camSetDistance > -300)
         {
-            if (camera.camSetDistance > -100)
+            if (camSetDistance > -100)
                 pointSize = 16;
             else pointSize = 12;
 
@@ -398,10 +397,10 @@ void CTool::DrawToolGL(QOpenGLFunctions *gl, QMatrix4x4 mv,
 }
 
 void CTool::DrawPatchesGL(QOpenGLFunctions *gl,
-                        QMatrix4x4 mvp,
-                        int patchCounter,
-                        const CCamera &camera,
-                        QElapsedTimer &swFrame)
+                          QMatrix4x4 mvp,
+                          int patchCounter,
+                          double camSetDistance,
+                          QElapsedTimer &swFrame)
 {
     GLHelperOneColor gldraw1;
     int currentPatchBuffer = 0;
@@ -446,10 +445,10 @@ void CTool::DrawPatchesGL(QOpenGLFunctions *gl,
 
     //initialize the steps for mipmap of triangles (skipping detail while zooming out)
     int mipmap = 0;
-    if (camera.camSetDistance < -800) mipmap = 2;
-    if (camera.camSetDistance < -1500) mipmap = 4;
-    if (camera.camSetDistance < -2400) mipmap = 8;
-    if (camera.camSetDistance < -5000) mipmap = 16;
+    if (camSetDistance < -800) mipmap = 2;
+    if (camSetDistance < -1500) mipmap = 4;
+    if (camSetDistance < -2400) mipmap = 8;
+    if (camSetDistance < -5000) mipmap = 16;
 
     if (mipmap > 1)
         qDebug(ctool_log) << "mipmap is" << mipmap;
@@ -718,10 +717,9 @@ void CTool::DrawPatchesGL(QOpenGLFunctions *gl,
 }
 
 void CTool::DrawPatchesTrianglesGL(QOpenGLFunctions *gl,
-                                 QMatrix4x4 mvp,
-                                 int patchCounter,
-                                 const CCamera &camera,
-                                 QElapsedTimer &swFrame)
+                                   QMatrix4x4 mvp,
+                                   int patchCounter,
+                                   QElapsedTimer &swFrame)
 {
     GLHelperOneColor gldraw1;
     int currentPatchBuffer = 0;

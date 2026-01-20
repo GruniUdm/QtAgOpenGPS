@@ -154,7 +154,6 @@ qt_add_executable(QtAgOpenGPS
     classes/cahrs.h classes/cahrs.cpp
     classes/cboundary.h classes/cboundary.cpp
     classes/cboundarylist.h classes/cboundarylist.cpp
-    classes/ccamera.h classes/ccamera.cpp
     classes/ccontour.h classes/ccontour.cpp
     classes/cdubins.h classes/cdubins.cpp
     classes/cfence.cpp

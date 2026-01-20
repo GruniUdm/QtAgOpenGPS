@@ -33,6 +33,7 @@
 #include "recordedpath.h"
 #include "siminterface.h"
 #include "modulecomm.h"
+#include "camera.h"
 
 Q_LOGGING_CATEGORY (formgps_ui, "formgps_ui.qtagopengps")
 #define QDEBUG qDebug(formgps_ui)
@@ -260,15 +261,11 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect(Backend::instance(), &Backend::snapToPivot, this, &FormGPS::snapToPivot);
     connect(Backend::instance(), &Backend::snapSideways, this, &FormGPS::snapSideways);
 
-    connect(Backend::instance(), &Backend::zoomIn, this, &FormGPS::zoomIn);
-    connect(Backend::instance(), &Backend::zoomOut, this, &FormGPS::zoomOut);
-    connect(Backend::instance(), &Backend::tiltDown, this, &FormGPS::tiltDown);
-    connect(Backend::instance(), &Backend::tiltUp, this, &FormGPS::tiltUp);
-    connect(Backend::instance(), &Backend::view2D, this, &FormGPS::view2D);
-    connect(Backend::instance(), &Backend::view3D, this, &FormGPS::view3D);
-    connect(Backend::instance(), &Backend::normal2D, this, &FormGPS::normal2D);
-    connect(Backend::instance(), &Backend::normal3D, this, &FormGPS::normal3D);
-
+    connect(Camera::instance(), &Camera::updateView, [this]() {
+        if (openGLControl) {
+            QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
+        }
+    });
 
     connect(&recPath, &CRecordedPath::stoppedDriving, this, &FormGPS::onStoppedDriving, Qt::QueuedConnection);
 
@@ -297,25 +294,26 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
 void FormGPS::onGLControl_dragged(int pressX, int pressY, int mouseX, int mouseY)
 {
+    Camera &camera = *Camera::instance();
     QVector3D from,to,offset;
 
     from = mouseClickToPan(pressX, pressY);
     to = mouseClickToPan(mouseX, mouseY);
     offset = to - from;
 
-    camera.panX += offset.x();
-    camera.panY += offset.y();
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
+    camera.set_panX(camera.panX() + offset.x());
+    camera.set_panY(camera.panY() + offset.y());
     if (openGLControl) {
         QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
     }
 }
 
 void FormGPS::centerOgl() {
+    Camera &camera = *Camera::instance();
     QDEBUG<<"center ogl";
-    camera.panX = 0;
-    camera.panY = 0;
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
+
+    camera.set_panX(0);
+    camera.set_panY(0);
     if (openGLControl) {
         QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
     }
@@ -341,10 +339,6 @@ void FormGPS::onGLControl_clicked(const QVariant &event)
     }
 }
 
-
-
-// ===== BATCH 3 - 8 ACTIONS Camera Navigation - Qt 6.8 Q_INVOKABLE Implementation =====
-// ===== BATCH 4 - 2 ACTIONS Settings - Qt 6.8 Q_INVOKABLE Implementation =====
 void FormGPS::settingsReload() {
     on_settings_reload();
 }
@@ -459,86 +453,6 @@ void FormGPS::contourPriority(bool isRight) {
     ct.set_isRightPriority (isRight);
     QDEBUG << "Contour isRight: " << isRight;
 }
-
-void FormGPS::tiltDown() {
-    if (camera.camPitch > -59) camera.camPitch = -60;
-    camera.camPitch += ((camera.camPitch * 0.012) - 1);
-    if (camera.camPitch < -76) camera.camPitch = -76;
-
-    lastHeight = -1; //redraw the sky
-    SettingsManager::instance()->setDisplay_camPitch(camera.camPitch);
-    if (openGLControl) {
-        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
-    }
-}
-
-void FormGPS::tiltUp() {
-    double camPitch = SettingsManager::instance()->display_camPitch();
-
-    lastHeight = -1; //redraw the sky
-    camera.camPitch -= ((camera.camPitch * 0.012) - 1);
-    if (camera.camPitch > -58) camera.camPitch = 0;
-
-    SettingsManager::instance()->setDisplay_camPitch(camera.camPitch);
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
-    if (openGLControl) {
-        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
-    }
-}
-
-void FormGPS::view2D() {
-    camera.camFollowing = true;
-    camera.camPitch = 0;
-    navPanelCounter = 0;
-}
-
-void FormGPS::view3D() {
-    camera.camFollowing = true;
-    camera.camPitch = -65;
-    navPanelCounter = 0;
-}
-
-void FormGPS::normal2D() {
-    camera.camFollowing = false;
-    camera.camPitch = 0;
-    navPanelCounter = 0;
-}
-
-void FormGPS::normal3D() {
-    camera.camPitch = -65;
-    camera.camFollowing = false;
-    navPanelCounter = 0;
-}
-
-void FormGPS::zoomIn() {
-    if (camera.zoomValue <= 20) {
-        if ((camera.zoomValue -= camera.zoomValue * 0.1) < 3.0)
-            camera.zoomValue = 3.0;
-    } else {
-        if ((camera.zoomValue -= camera.zoomValue * 0.05) < 3.0)
-            camera.zoomValue = 3.0;
-    }
-    camera.camSetDistance = camera.zoomValue * camera.zoomValue * -1;
-    camera.SetZoom();
-    //TODO save zoom to properties
-    if (openGLControl) {
-        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
-    }
-}
-
-void FormGPS::zoomOut() {
-    if (camera.zoomValue <= 20) camera.zoomValue += camera.zoomValue * 0.1;
-    else camera.zoomValue += camera.zoomValue * 0.05;
-    if (camera.zoomValue > 220) camera.zoomValue = 220;
-    camera.camSetDistance = camera.zoomValue * camera.zoomValue * -1;
-    camera.SetZoom();
-
-    //todo save to properties
-    if (openGLControl) {
-        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
-    }
-}
-
 
 void FormGPS::TimedMessageBox(int timeout, QString s1, QString s2)
 {

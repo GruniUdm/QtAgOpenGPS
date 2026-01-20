@@ -5,7 +5,6 @@
 #include "cboundary.h"
 #include "cyouturn.h"
 #include "ctram.h"
-#include "ccamera.h"
 #include "cahrs.h"
 #include "cguidance.h"
 #include "ctrack.h"
@@ -343,8 +342,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
     //mf.setAngVel = 0.277777 * mf.avgSpeed * (Math.Tan(glm::toRadians(steerAngleAB))) / mf.CVehicle::instance()->wheelbase;
     //mf.setAngVel = glm::toDegrees(mf.setAngVel);
 }
-void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
-                            const CCamera &camera)
+void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
 {
     GLHelperOneColor gldraw;
     QColor color;
@@ -355,17 +353,17 @@ void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     gldraw.draw(gl, mvp, QColor::fromRgbF(0.95f, 0.70f, 0.50f), GL_LINES, lineWidth);
     gl->glLineWidth(1);
     color.setRgbF(0.2f, 0.950f, 0.20f);
-    drawText3D(camera,gl,mvp, desPtA.easting, desPtA.northing, "&A", 1.0, true, color);
+    drawText3D(gl,mvp, desPtA.easting, desPtA.northing, "&A", 1.0, true, color);
     if (isDesPtBSet)
-        drawText3D(camera,gl,mvp, desPtB.easting, desPtB.northing, "&B", 1.0, true, color);
+        drawText3D(gl,mvp, desPtB.easting, desPtB.northing, "&B", 1.0, true, color);
 }
 
 void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                           bool isFontOn,
                           bool isRateMapOn,
+                          double camSetDistance,
                           const CTrk &track,
                           CYouTurn &yt,
-                          const CCamera &camera,
                           const CGuidance &gyd)
 {
     double tool_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
@@ -396,8 +394,8 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     if (isFontOn && !isMakingABLine)
     {
         color.setRgbF(0.00990f, 0.990f, 0.095f);
-        drawText3D(camera,gl,mvp, track.ptA.easting, track.ptA.northing, "&A", 1.0, true, color);
-        drawText3D(camera,gl,mvp, track.ptB.easting, track.ptB.northing, "&B", 1.0, true, color);
+        drawText3D(gl,mvp, track.ptA.easting, track.ptA.northing, "&A", 1.0, true, color);
+        drawText3D(gl,mvp, track.ptB.easting, track.ptB.northing, "&B", 1.0, true, color);
     }
 
     //Draw reference AB line
@@ -450,7 +448,7 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     gldraw.draw(gl,mvp,color,GL_LINES,lineWidth);
     gl->glLineWidth(1);
 
-    if (isSideGuideLines && camera.camSetDistance > tool_toolWidth * -120)
+    if (isSideGuideLines && camSetDistance > tool_toolWidth * -120)
     {
         //get the tool offset and width
         double toolOffset = tool_toolOffset * 2;
@@ -501,7 +499,7 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
         gl->glLineWidth(1);
     }
 
-    if (!isStanleyUsed && camera.camSetDistance > -200)
+    if (!isStanleyUsed && camSetDistance > -200)
     {
         //Draw lookahead Point
         gldraw.clear();

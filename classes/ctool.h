@@ -15,7 +15,6 @@
 class QOpenGLFunctions;
 class QMatrix4x4;
 class CVehicle;
-class CCamera;
 class CTram;
 class CBoundary;
 
@@ -126,21 +125,20 @@ public:
                   QMatrix4x4 modelview,
                   QMatrix4x4 projection,
                   bool isJobStarted, bool isHydLiftOn,
-                  CCamera &camera, CTram &tram);
+                  double camSetDistance, CTram &tram);
 
     void DrawPatchesGL(QOpenGLFunctions *gl,
                      QMatrix4x4 mvp,
                      int patchCounter,
-                     const CCamera &camera,
+                     double camSetDistance,
                      QElapsedTimer &swFrame
                      );
 
     void DrawPatchesTrianglesGL(QOpenGLFunctions *gl,
-                     QMatrix4x4 mvp,
-                     int patchCounter,
-                     const CCamera &camera,
-                     QElapsedTimer &swFrame
-                     );
+                                QMatrix4x4 mvp,
+                                int patchCounter,
+                                QElapsedTimer &swFrame
+                                );
 
     void DrawPatchesBack(QOpenGLFunctions *gl,
                                QMatrix4x4 mvp);

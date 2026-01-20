@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QOpenGLTexture>
 #include <QOpenGLShaderProgram>
-#include "ccamera.h"
+#include "camera.h"
 #include <assert.h>
 #include <math.h>
 #include "classes/settingsmanager.h"
@@ -591,12 +591,13 @@ void drawText(QOpenGLFunctions *gl, QMatrix4x4 mvp, double x, double y, QString 
 
 
 
-void drawText3D(const CCamera &camera, QOpenGLFunctions *gl,
+void drawText3D(QOpenGLFunctions *gl,
                 QMatrix4x4 mvp, double x1, double y1, QString text,
                 double size, bool colorize, QColor color)
 {
     GLHelperTexture gldraw;
     VertexTexcoord vt;
+    Camera &camera = *Camera::instance();
 
     double x = 0, y = 0;
 
@@ -605,16 +606,16 @@ void drawText3D(const CCamera &camera, QOpenGLFunctions *gl,
     if (SettingsManager::instance()->display_camPitch() < -45)
     {
         mvp.rotate(90, 1, 0, 0);
-        if (camera.camFollowing) mvp.rotate(-camera.camHeading, 0, 1, 0);
-        size = -camera.camSetDistance;
+        if (camera.camFollowing()) mvp.rotate(-camera.camHeading(), 0, 1, 0);
+        size = -camera.camSetDistance();
         size = pow(size, 0.8);
         size /= 300;
     }
 
     else
     {
-        if (camera.camFollowing) mvp.rotate(-camera.camHeading, 0, 0, 1);
-        size = -camera.camSetDistance;
+        if (camera.camFollowing()) mvp.rotate(-camera.camHeading(), 0, 0, 1);
+        size = -camera.camSetDistance();
         size = pow(size, 0.85);
         size /= 500;
     }
@@ -667,21 +668,22 @@ void drawText3D(const CCamera &camera, QOpenGLFunctions *gl,
 
 }
 
-void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp,
+void drawTextVehicle(QOpenGLFunctions *gl, QMatrix4x4 mvp,
                      double x, double y, QString text, double size, bool colorize, QColor color)
 {
     GLHelperTexture gldraw;
     VertexTexcoord vt;
+    Camera &camera = *Camera::instance();
 
-    size *= -camera.camSetDistance;
+    size *= -camera.camSetDistance();
     size = pow(size, 0.8)/800;
 
     //2d
     if (SettingsManager::instance()->display_camPitch() < -58)
     {
-        if (!camera.camFollowing)
+        if (!camera.camFollowing())
         {
-            mvp.rotate(camera.camHeading, 0, 0, 1);
+            mvp.rotate(camera.camHeading(), 0, 0, 1);
             y *= 1.2;
         }
         else
@@ -694,10 +696,10 @@ void drawTextVehicle(const CCamera &camera, QOpenGLFunctions *gl, QMatrix4x4 mvp
     //3d
     else
     {
-        if (!camera.camFollowing)
+        if (!camera.camFollowing())
         {
             mvp.rotate(90, 1, 0, 0);
-            mvp.rotate(camera.camHeading, 0, 1, 0);
+            mvp.rotate(camera.camHeading(), 0, 1, 0);
             y *= 0.3;
         }
         else

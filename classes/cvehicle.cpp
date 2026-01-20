@@ -9,14 +9,12 @@
 #include <QDir>
 #include <QCoreApplication>
 #include "classes/settingsmanager.h"
-#include "ccamera.h"
 #include "cboundary.h"
 #include "qmlutil.h"
 #include "ctool.h"
 #include "glm.h"
 #include "glutils.h"
 #include "cnmea.h"
-#include "ccamera.h"
 #include "cabline.h"
 #include "cabcurve.h"
 #include "ccontour.h"
@@ -230,8 +228,8 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
                            bool isFirstHeadingSet,
                            double markLeft,
                            double markRight,
-                           QRect viewport,
-                           const CCamera &camera
+                           double camSetDistance,
+                           QRect viewport
                            )
 {
     ensureSettingsLoaded();  // Qt 6.8 MIGRATION: Lazy load settings
@@ -560,7 +558,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
         m_screenBounding = find_bounding_box(viewport.height(), p1, p1, p3, p4);
     }
 
-    if (camera.camSetDistance > -75 && isFirstHeadingSet)
+    if (camSetDistance > -75 && isFirstHeadingSet)
     {
         //draw the bright antenna dot
         gldraw.clear();
@@ -608,10 +606,10 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
 
     //Svenn Arrow
 
-    if (display_isSvennArrowOn && camera.camSetDistance > -1000)
+    if (display_isSvennArrowOn && camSetDistance > -1000)
     {
         //double offs = mf.curve.distanceFromCurrentLinePivot * 0.3;
-        double svennDist = camera.camSetDistance * -0.07;
+        double svennDist = camSetDistance * -0.07;
         double svennWidth = svennDist * 0.22;
 
         gldraw.clear();

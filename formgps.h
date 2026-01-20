@@ -23,7 +23,6 @@
 #include "vecfix2fix.h"
 #include "vec2.h"
 #include "vec3.h"
-#include "ccamera.h"
 #include "btnenum.h"
 
 #include "cvehicle.h"
@@ -264,8 +263,6 @@ public:
     //sunrise, sunset
 
     bool isFlashOnOff = false;
-    //makes nav panel disappear after 6 seconds
-    int navPanelCounter = 0;
 
 private:
 public:
@@ -286,9 +283,6 @@ public:
 
     //used to update the screen status bar etc
     int statusUpdateCounter = 1;
-
-    //create the scene camera
-    CCamera camera;
 
     CGuidance gyd;
 
@@ -510,7 +504,6 @@ public:
     double camDistanceFactor = -2;
     int mouseX = 0, mouseY = 0;
     double mouseEasting = 0, mouseNorthing = 0;
-    int lastWidth=-1, lastHeight=-1;
     // Phase 6.0.24 Problem 18: Initialize field boundary variables
     double offX = 0.0, offY = 0.0;
 
@@ -714,14 +707,6 @@ public slots:
     void snapToPivot();
 
     //displaybuttons.qml
-    void zoomIn();
-    void zoomOut();
-    void tiltDown();
-    void tiltUp();
-    void view2D();
-    void view3D();
-    void normal2D();
-    void normal3D();
 
     void SwapDirection();
     void turnOffBoundAlarm();
