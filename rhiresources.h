@@ -4,7 +4,7 @@
 #ifndef RHIRESOURCES_H
 #define RHIRESOURCES_H
 
-#include <rhi/qshader.h>
+#include <rhi/qrhi.h>
 #include <QVector>
 #include <QMatrix4x4>
 #include <QColor>

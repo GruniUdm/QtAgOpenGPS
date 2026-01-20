@@ -270,28 +270,28 @@ bool RhiResources::createColorPipeline()
     qDebug() << "  Creating color pipeline...";
 
     // Create uniform buffer
-    m_colorPipeline.uniformBuffer = m_rhi->newBuffer(
+    m_colorPipelineSet.uniformBuffer = m_rhi->newBuffer(
         QRhiBuffer::Dynamic,
         QRhiBuffer::UniformBuffer,
         sizeof(ColorUniforms)
     );
 
-    if (!m_colorPipeline.uniformBuffer->create()) {
+    if (!m_colorPipelineSet.uniformBuffer->create()) {
         qWarning() << "Failed to create color uniform buffer";
         return false;
     }
 
     // Create shader resource bindings
-    m_colorPipeline.bindings = m_rhi->newShaderResourceBindings();
-    m_colorPipeline.bindings->setBindings({
+    m_colorPipelineSet.bindings = m_rhi->newShaderResourceBindings();
+    m_colorPipelineSet.bindings->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(
             0,
             QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage,
-            m_colorPipeline.uniformBuffer
+            m_colorPipelineSet.uniformBuffer
         )
     });
 
-    if (!m_colorPipeline.bindings->create()) {
+    if (!m_colorPipelineSet.bindings->create()) {
         qWarning() << "Failed to create color shader resource bindings";
         return false;
     }
@@ -305,15 +305,6 @@ bool RhiResources::createColorPipeline()
         return false;
     }
 
-    // Create pipeline
-    m_colorPipeline.pipeline = m_rhi->newGraphicsPipeline();
-
-    // Shader stages
-    m_colorPipeline.pipeline->setShaderStages({
-        { QRhiShaderStage::Vertex, vertShader },
-        { QRhiShaderStage::Fragment, fragShader }
-    });
-
     // Vertex input layout (vec3 position)
     QRhiVertexInputLayout inputLayout;
     inputLayout.setBindings({
@@ -322,24 +313,38 @@ bool RhiResources::createColorPipeline()
     inputLayout.setAttributes({
         { 0, 0, QRhiVertexInputAttribute::Float3, 0 }  // binding, location, format, offset
     });
-    m_colorPipeline.pipeline->setVertexInputLayout(inputLayout);
 
-    // Shader resources
-    m_colorPipeline.pipeline->setShaderResourceBindings(m_colorPipeline.bindings);
+    // Create pipeline for Lines topology (primary use case for color pipeline)
+    m_colorPipelineSet.lines = m_rhi->newGraphicsPipeline();
+    m_colorPipelineSet.lines->setShaderStages({
+        { QRhiShaderStage::Vertex, vertShader },
+        { QRhiShaderStage::Fragment, fragShader }
+    });
+    m_colorPipelineSet.lines->setVertexInputLayout(inputLayout);
+    m_colorPipelineSet.lines->setShaderResourceBindings(m_colorPipelineSet.bindings);
+    m_colorPipelineSet.lines->setRenderPassDescriptor(m_renderPass);
+    m_colorPipelineSet.lines->setTopology(QRhiGraphicsPipeline::Lines);
+    m_colorPipelineSet.lines->setDepthTest(true);
+    m_colorPipelineSet.lines->setDepthWrite(true);
+    if (!m_colorPipelineSet.lines->create()) {
+        qWarning() << "Failed to create color lines graphics pipeline";
+        return false;
+    }
 
-    // Render pass
-    m_colorPipeline.pipeline->setRenderPassDescriptor(m_renderPass);
-
-    // Topology (default is Triangles, can be changed per draw)
-    m_colorPipeline.pipeline->setTopology(QRhiGraphicsPipeline::Lines);
-
-    // Depth test
-    m_colorPipeline.pipeline->setDepthTest(true);
-    m_colorPipeline.pipeline->setDepthWrite(true);
-
-    // Create the pipeline
-    if (!m_colorPipeline.pipeline->create()) {
-        qWarning() << "Failed to create color graphics pipeline";
+    // Create pipeline for Triangles topology
+    m_colorPipelineSet.triangles = m_rhi->newGraphicsPipeline();
+    m_colorPipelineSet.triangles->setShaderStages({
+        { QRhiShaderStage::Vertex, vertShader },
+        { QRhiShaderStage::Fragment, fragShader }
+    });
+    m_colorPipelineSet.triangles->setVertexInputLayout(inputLayout);
+    m_colorPipelineSet.triangles->setShaderResourceBindings(m_colorPipelineSet.bindings);
+    m_colorPipelineSet.triangles->setRenderPassDescriptor(m_renderPass);
+    m_colorPipelineSet.triangles->setTopology(QRhiGraphicsPipeline::Triangles);
+    m_colorPipelineSet.triangles->setDepthTest(true);
+    m_colorPipelineSet.triangles->setDepthWrite(true);
+    if (!m_colorPipelineSet.triangles->create()) {
+        qWarning() << "Failed to create color triangles graphics pipeline";
         return false;
     }
 
@@ -352,28 +357,28 @@ bool RhiResources::createColorsPipeline()
     qDebug() << "  Creating colors (interpolated) pipeline...";
 
     // Create uniform buffer
-    m_colorsPipeline.uniformBuffer = m_rhi->newBuffer(
+    m_colorsPipelineSet.uniformBuffer = m_rhi->newBuffer(
         QRhiBuffer::Dynamic,
         QRhiBuffer::UniformBuffer,
         sizeof(ColorsUniforms)
     );
 
-    if (!m_colorsPipeline.uniformBuffer->create()) {
+    if (!m_colorsPipelineSet.uniformBuffer->create()) {
         qWarning() << "Failed to create colors uniform buffer";
         return false;
     }
 
     // Create shader resource bindings
-    m_colorsPipeline.bindings = m_rhi->newShaderResourceBindings();
-    m_colorsPipeline.bindings->setBindings({
+    m_colorsPipelineSet.bindings = m_rhi->newShaderResourceBindings();
+    m_colorsPipelineSet.bindings->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(
             0,
             QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage,
-            m_colorsPipeline.uniformBuffer
+            m_colorsPipelineSet.uniformBuffer
         )
     });
 
-    if (!m_colorsPipeline.bindings->create()) {
+    if (!m_colorsPipelineSet.bindings->create()) {
         qWarning() << "Failed to create colors shader resource bindings";
         return false;
     }
@@ -387,15 +392,6 @@ bool RhiResources::createColorsPipeline()
         return false;
     }
 
-    // Create pipeline
-    m_colorsPipeline.pipeline = m_rhi->newGraphicsPipeline();
-
-    // Shader stages
-    m_colorsPipeline.pipeline->setShaderStages({
-        { QRhiShaderStage::Vertex, vertShader },
-        { QRhiShaderStage::Fragment, fragShader }
-    });
-
     // Vertex input layout (vec3 position + vec4 color)
     QRhiVertexInputLayout inputLayout;
     inputLayout.setBindings({
@@ -405,24 +401,38 @@ bool RhiResources::createColorsPipeline()
         { 0, 0, QRhiVertexInputAttribute::Float3, 0 },                      // position
         { 0, 1, QRhiVertexInputAttribute::Float4, 3 * sizeof(float) }       // color
     });
-    m_colorsPipeline.pipeline->setVertexInputLayout(inputLayout);
 
-    // Shader resources
-    m_colorsPipeline.pipeline->setShaderResourceBindings(m_colorsPipeline.bindings);
+    // Create pipeline for Triangles topology (primary use case for colors pipeline)
+    m_colorsPipelineSet.triangles = m_rhi->newGraphicsPipeline();
+    m_colorsPipelineSet.triangles->setShaderStages({
+        { QRhiShaderStage::Vertex, vertShader },
+        { QRhiShaderStage::Fragment, fragShader }
+    });
+    m_colorsPipelineSet.triangles->setVertexInputLayout(inputLayout);
+    m_colorsPipelineSet.triangles->setShaderResourceBindings(m_colorsPipelineSet.bindings);
+    m_colorsPipelineSet.triangles->setRenderPassDescriptor(m_renderPass);
+    m_colorsPipelineSet.triangles->setTopology(QRhiGraphicsPipeline::Triangles);
+    m_colorsPipelineSet.triangles->setDepthTest(true);
+    m_colorsPipelineSet.triangles->setDepthWrite(true);
+    if (!m_colorsPipelineSet.triangles->create()) {
+        qWarning() << "Failed to create colors triangles graphics pipeline";
+        return false;
+    }
 
-    // Render pass
-    m_colorsPipeline.pipeline->setRenderPassDescriptor(m_renderPass);
-
-    // Topology
-    m_colorsPipeline.pipeline->setTopology(QRhiGraphicsPipeline::Triangles);
-
-    // Depth test
-    m_colorsPipeline.pipeline->setDepthTest(true);
-    m_colorsPipeline.pipeline->setDepthWrite(true);
-
-    // Create the pipeline
-    if (!m_colorsPipeline.pipeline->create()) {
-        qWarning() << "Failed to create colors graphics pipeline";
+    // Create pipeline for TriangleStrip topology
+    m_colorsPipelineSet.triangleStrip = m_rhi->newGraphicsPipeline();
+    m_colorsPipelineSet.triangleStrip->setShaderStages({
+        { QRhiShaderStage::Vertex, vertShader },
+        { QRhiShaderStage::Fragment, fragShader }
+    });
+    m_colorsPipelineSet.triangleStrip->setVertexInputLayout(inputLayout);
+    m_colorsPipelineSet.triangleStrip->setShaderResourceBindings(m_colorsPipelineSet.bindings);
+    m_colorsPipelineSet.triangleStrip->setRenderPassDescriptor(m_renderPass);
+    m_colorsPipelineSet.triangleStrip->setTopology(QRhiGraphicsPipeline::TriangleStrip);
+    m_colorsPipelineSet.triangleStrip->setDepthTest(true);
+    m_colorsPipelineSet.triangleStrip->setDepthWrite(true);
+    if (!m_colorsPipelineSet.triangleStrip->create()) {
+        qWarning() << "Failed to create colors triangleStrip graphics pipeline";
         return false;
     }
 
@@ -435,25 +445,25 @@ bool RhiResources::createTexturePipeline()
     qDebug() << "  Creating texture pipeline...";
 
     // Create uniform buffer
-    m_texturePipeline.uniformBuffer = m_rhi->newBuffer(
+    m_texturePipelineSet.uniformBuffer = m_rhi->newBuffer(
         QRhiBuffer::Dynamic,
         QRhiBuffer::UniformBuffer,
         sizeof(TextureUniforms)
     );
 
-    if (!m_texturePipeline.uniformBuffer->create()) {
+    if (!m_texturePipelineSet.uniformBuffer->create()) {
         qWarning() << "Failed to create texture uniform buffer";
         return false;
     }
 
     // Create shader resource bindings (texture will be set dynamically per draw)
     // For now, use the font texture as default
-    m_texturePipeline.bindings = m_rhi->newShaderResourceBindings();
-    m_texturePipeline.bindings->setBindings({
+    m_texturePipelineSet.bindings = m_rhi->newShaderResourceBindings();
+    m_texturePipelineSet.bindings->setBindings({
         QRhiShaderResourceBinding::uniformBuffer(
             0,
             QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage,
-            m_texturePipeline.uniformBuffer
+            m_texturePipelineSet.uniformBuffer
         ),
         QRhiShaderResourceBinding::sampledTexture(
             1,
@@ -463,7 +473,7 @@ bool RhiResources::createTexturePipeline()
         )
     });
 
-    if (!m_texturePipeline.bindings->create()) {
+    if (!m_texturePipelineSet.bindings->create()) {
         qWarning() << "Failed to create texture shader resource bindings";
         return false;
     }
@@ -477,15 +487,6 @@ bool RhiResources::createTexturePipeline()
         return false;
     }
 
-    // Create pipeline
-    m_texturePipeline.pipeline = m_rhi->newGraphicsPipeline();
-
-    // Shader stages
-    m_texturePipeline.pipeline->setShaderStages({
-        { QRhiShaderStage::Vertex, vertShader },
-        { QRhiShaderStage::Fragment, fragShader }
-    });
-
     // Vertex input layout (vec3 position + vec2 texcoord)
     QRhiVertexInputLayout inputLayout;
     inputLayout.setBindings({
@@ -495,16 +496,6 @@ bool RhiResources::createTexturePipeline()
         { 0, 0, QRhiVertexInputAttribute::Float3, 0 },                      // position
         { 0, 1, QRhiVertexInputAttribute::Float2, 3 * sizeof(float) }       // texcoord
     });
-    m_texturePipeline.pipeline->setVertexInputLayout(inputLayout);
-
-    // Shader resources
-    m_texturePipeline.pipeline->setShaderResourceBindings(m_texturePipeline.bindings);
-
-    // Render pass
-    m_texturePipeline.pipeline->setRenderPassDescriptor(m_renderPass);
-
-    // Topology
-    m_texturePipeline.pipeline->setTopology(QRhiGraphicsPipeline::Triangles);
 
     // Blending for textures (especially font rendering)
     QRhiGraphicsPipeline::TargetBlend blend;
@@ -513,15 +504,40 @@ bool RhiResources::createTexturePipeline()
     blend.dstColor = QRhiGraphicsPipeline::OneMinusSrcAlpha;
     blend.srcAlpha = QRhiGraphicsPipeline::One;
     blend.dstAlpha = QRhiGraphicsPipeline::OneMinusSrcAlpha;
-    m_texturePipeline.pipeline->setTargetBlends({ blend });
 
-    // Depth test
-    m_texturePipeline.pipeline->setDepthTest(true);
-    m_texturePipeline.pipeline->setDepthWrite(true);
+    // Create pipeline for Triangles topology (primary use case for texture pipeline)
+    m_texturePipelineSet.triangles = m_rhi->newGraphicsPipeline();
+    m_texturePipelineSet.triangles->setShaderStages({
+        { QRhiShaderStage::Vertex, vertShader },
+        { QRhiShaderStage::Fragment, fragShader }
+    });
+    m_texturePipelineSet.triangles->setVertexInputLayout(inputLayout);
+    m_texturePipelineSet.triangles->setShaderResourceBindings(m_texturePipelineSet.bindings);
+    m_texturePipelineSet.triangles->setRenderPassDescriptor(m_renderPass);
+    m_texturePipelineSet.triangles->setTopology(QRhiGraphicsPipeline::Triangles);
+    m_texturePipelineSet.triangles->setTargetBlends({ blend });
+    m_texturePipelineSet.triangles->setDepthTest(true);
+    m_texturePipelineSet.triangles->setDepthWrite(true);
+    if (!m_texturePipelineSet.triangles->create()) {
+        qWarning() << "Failed to create texture triangles graphics pipeline";
+        return false;
+    }
 
-    // Create the pipeline
-    if (!m_texturePipeline.pipeline->create()) {
-        qWarning() << "Failed to create texture graphics pipeline";
+    // Create pipeline for TriangleStrip topology
+    m_texturePipelineSet.triangleStrip = m_rhi->newGraphicsPipeline();
+    m_texturePipelineSet.triangleStrip->setShaderStages({
+        { QRhiShaderStage::Vertex, vertShader },
+        { QRhiShaderStage::Fragment, fragShader }
+    });
+    m_texturePipelineSet.triangleStrip->setVertexInputLayout(inputLayout);
+    m_texturePipelineSet.triangleStrip->setShaderResourceBindings(m_texturePipelineSet.bindings);
+    m_texturePipelineSet.triangleStrip->setRenderPassDescriptor(m_renderPass);
+    m_texturePipelineSet.triangleStrip->setTopology(QRhiGraphicsPipeline::TriangleStrip);
+    m_texturePipelineSet.triangleStrip->setTargetBlends({ blend });
+    m_texturePipelineSet.triangleStrip->setDepthTest(true);
+    m_texturePipelineSet.triangleStrip->setDepthWrite(true);
+    if (!m_texturePipelineSet.triangleStrip->create()) {
+        qWarning() << "Failed to create texture triangleStrip graphics pipeline";
         return false;
     }
 
