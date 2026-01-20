@@ -1161,7 +1161,11 @@ void CTool::DrawPatchesBackQP(const CTram &tram,
     painter.end();
 
     //TODO adjust coordinate transformations above to eliminate this step
+#if QT_VERSION < QT_VERSION_CHECK(6,9,0)
+    grnPix = grnPix.mirrored(false, true).convertToFormat(QImage::Format_RGBX8888);
+#else
     grnPix = grnPix.flipped().convertToFormat(QImage::Format_RGBX8888);
+#endif
 
     QImage temp = grnPix.copy(rpXPosition, 0, rpWidth, 290 /*(int)rpHeight*/);
     temp.setPixelColor(0,0,QColor::fromRgb(255,128,0));

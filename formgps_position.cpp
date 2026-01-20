@@ -1377,7 +1377,11 @@ void FormGPS::processSectionLookahead() {
     CPGN_E5 &p_229 = ModuleComm::instance()->p_229;
 
     if (SettingsManager::instance()->display_showBack()) {
+#if QT_VERSION < QT_VERSION_CHECK(6,9,0)
+        grnPixelsWindow->setPixmap(QPixmap::fromImage(tool.grnPix.mirrored(false, true)));
+#else
         grnPixelsWindow->setPixmap(QPixmap::fromImage(tool.grnPix.flipped()));
+#endif
         //overlapPixelsWindow->setPixmap(QPixmap::fromImage(overPix.mirrored()));
     }
 

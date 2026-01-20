@@ -60,7 +60,7 @@ endif()
 
 # Find required libraries
 #find_package(Qt6 REQUIRED COMPONENTS Core)
- find_package(Qt6 REQUIRED COMPONENTS Widgets) #used only for opengl ?
+ find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets) #used only for opengl ?
  find_package(Qt6 REQUIRED COMPONENTS Gui)
  find_package(Qt6 REQUIRED COMPONENTS SerialPort)
 # find_package(Qt6 REQUIRED COMPONENTS OpenGL)

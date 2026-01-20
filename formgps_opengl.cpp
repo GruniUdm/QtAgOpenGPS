@@ -871,7 +871,12 @@ void FormGPS::oglBack_Paint()
 
     //read the whole block of pixels up to max lookahead, one read only
     //we'll use Qt's QImage function to grab it.
+#if QT_VERSION < QT_VERSION_CHECK(6,9,0)
+    tool.grnPix = backFBO->toImage().mirrored(false, true).convertToFormat(QImage::Format_RGBX8888);
+#else
     tool.grnPix = backFBO->toImage().flipped().convertToFormat(QImage::Format_RGBX8888);
+#endif
+
     qDebug(qgl) << "Time after glReadPixels: " << swFrame.elapsed();
     //qDebug(qgl) << grnPix.size();
     //QImage temp = grnPix.copy(tool.rpXPosition, 250, tool.rpWidth, 290 /*(int)rpHeight*/);
@@ -1029,7 +1034,7 @@ void FormGPS::oglZoom_Paint()
         //oglZoom.SwapBuffers();
 
         //QImage overPix;
-        overPix = zoomFBO->toImage().flipped().convertToFormat(QImage::Format_RGBX8888);
+        overPix = zoomFBO->toImage().mirrored(false, true).convertToFormat(QImage::Format_RGBX8888);
         memcpy(overPixels, overPix.constBits(), overPix.size().width() * overPix.size().height() * 4);
     }
 
