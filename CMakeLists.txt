@@ -176,7 +176,6 @@ qt_add_executable(QtAgOpenGPS
     classes/cturn.cpp
     classes/cturnlines.cpp
     # classes/cvehicle.h classes/cvehicle.cpp  # MOVED to qt_add_qml_module (QML_ELEMENT)
-    classes/cworldgrid.h classes/cworldgrid.cpp
     classes/cyouturn.h classes/cyouturn.cpp
     classes/glm.h
     classes/vec2.h classes/vec2.cpp

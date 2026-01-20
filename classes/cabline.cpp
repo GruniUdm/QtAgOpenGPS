@@ -9,7 +9,6 @@
 #include "cahrs.h"
 #include "cguidance.h"
 #include "ctrack.h"
-#include "cworldgrid.h"
 #include <QOpenGLFunctions>
 #include <QColor>
 #include "glutils.h"

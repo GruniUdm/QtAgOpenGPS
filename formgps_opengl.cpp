@@ -11,7 +11,6 @@
 #include "formgps.h"
 #include "csection.h"
 #include "cvehicle.h"
-#include "cworldgrid.h"
 #include "ccontour.h"
 #include "cabline.h"
 #include "cboundary.h"
