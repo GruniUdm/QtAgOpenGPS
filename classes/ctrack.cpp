@@ -17,7 +17,6 @@
 #include "ccamera.h"
 #include "cahrs.h"
 #include "cguidance.h"
-#include "cworldgrid.h"
 
 // Approche SomcoSoftware : Qt gère le singleton automatiquement
 

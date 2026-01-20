@@ -6,6 +6,7 @@
 #include "glm.h"
 #include "classes/settingsmanager.h"
 #include "backend.h"
+#include "worldgrid.h"
 
 Q_LOGGING_CATEGORY (cnmea_log, "cnmea.qtagopengps")
 
@@ -59,8 +60,9 @@ void CNMEA::SetLocalMetersPerDegree()
     double northing, easting;
 
     ConvertWGS84ToLocal(latitude, longitude, northing, easting);
-    emit checkZoomWorldGrid(northing, easting); //ask main form to call checkZoomWorldGrid
 
+    WorldGrid::instance()->set_fixEasting(easting);
+    WorldGrid::instance()->set_fixNorthing(northing);
 }
 
 

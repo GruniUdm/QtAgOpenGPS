@@ -74,11 +74,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     // CTrack will be auto-initialized via QML singleton pattern
     qDebug() << "  âœ… CTrack singleton will be auto-created by Qt";
     
-    vehicle = CVehicle::instance();
-    qDebug() << "  âœ… CVehicle singleton created:" << vehicle;
-
-    qDebug() << "ðŸ”— Now calling connect_classes...";
-
     // Qt 6.8: Constructor ready for QML loading
     qDebug() << "âœ… FormGPS constructor core completed - ready for QML loading";
 
@@ -555,9 +550,6 @@ void FormGPS::tmrWatchdog_timeout()
 
         isFlashOnOff = !isFlashOnOff;
 
-        //the ratemap trigger
-        worldGrid.isRateTrigger = true;
-
         //Make sure it is off when it should
         if (!MainWindowState::instance()->isContourBtnOn() &&
             track.idx() == -1 &&
@@ -762,8 +754,6 @@ void FormGPS::JobClose()
 
     //FixPanelsAndMenus();
     camera.SetZoom();
-    worldGrid.isGeoMap = false;
-    worldGrid.isRateMap = false;
 
     //release Bing texture
     lock.unlock();

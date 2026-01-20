@@ -21,6 +21,8 @@ CContour::CContour(QObject *parent)
     : QObject(parent)
 {
     ptList = QSharedPointer<QVector<Vec3>>(new QVector<Vec3>());
+
+    connect(Backend::instance(), &Backend::contourLock, this, &CContour::setLockToLine);
 }
 
 void CContour::setLockToLine()

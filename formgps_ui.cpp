@@ -251,14 +251,10 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     // Timer will be started when GPS data starts arriving (not in simulation mode)
     timerGPS.start(100);  // 100ms = 10 Hz (synchronized with NMEA data rate)
 
-    connect(Backend::instance()->pn(), &CNMEA::checkZoomWorldGrid, &worldGrid, &CWorldGrid::checkZoomWorldGrid, Qt::QueuedConnection);
-
-    connect(Backend::instance(), &Backend::resetTool, &tool, &CTool::resetTool);
     connect(Backend::instance(), &Backend::resetDirection, this, &FormGPS::resetDirection);
 
     connect(Backend::instance(), &Backend::centerOgl, this, &FormGPS::centerOgl);
 
-    connect(Backend::instance(), &Backend::contourLock, &ct, &CContour::setLockToLine);
     connect(Backend::instance(), &Backend::contourPriority, this, &FormGPS::contourPriority);
 
     connect(Backend::instance(), &Backend::snapToPivot, this, &FormGPS::snapToPivot);
