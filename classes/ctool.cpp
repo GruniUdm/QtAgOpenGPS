@@ -23,6 +23,20 @@ extern QOpenGLShaderProgram *interpColorShader;
 
 Q_LOGGING_CATEGORY (ctool_log, "ctool.qtagopengps")
 
+#define STRINGISE_IMPL(x) #x
+#define STRINGISE(x) STRINGISE_IMPL(x)
+
+#if defined(_MSC_VER)
+// MSVC format: file(line): warning CXXXX: message
+#define FILE_LINE_LINK __FILE__ "(" STRINGISE(__LINE__) ") : "
+#define COMPILER_WARNING(msg) __pragma(message(FILE_LINE_LINK "warning: " msg))
+#elif defined(__GNUC__) || defined(__clang__)
+// GCC/Clang use _Pragma to embed #pragma GCC warning inside a macro
+#define COMPILER_WARNING(msg) _Pragma(STRINGISE(GCC warning msg))
+#else
+#define COMPILER_WARNING(msg)
+#endif
+
 struct PatchBuffer {
     QOpenGLBuffer patchBuffer;
     int length;
@@ -1920,7 +1934,7 @@ void CTool::BuildMachineByte(CTram &tram) {
 }
 
 void CTool::DoRemoteSwitches() {
-#warning This method is not called anywhere. Check AgOpenGPS or Twol to find out what we missed.
+    COMPILER_WARNING("This method is not called anywhere. Check AgOpenGPS or Twol to find out what we missed.")
     ModuleComm &mc = *ModuleComm::instance();
 
     // Check if AgIOService is ON - if OFF, skip all hardware switch processing
