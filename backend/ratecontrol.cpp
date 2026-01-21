@@ -18,6 +18,7 @@ bool RateControl::s_cpp_created = false;
 // ИСПРАВЛЕНО: Добавлена полная инициализация всех членов класса
 RateControl::RateControl(QObject *parent)
     : QObject{parent},
+    m_currentProductId(0),  // Инициализируем явно
     ModID(0),
     cUPM(0),
     RateSet(0),
@@ -35,9 +36,9 @@ RateControl::RateControl(QObject *parent)
     maxpwm(0),
     rateSensor(0)
 {
-    //connect us to agio
-    connect(AgIOService::instance(), &AgIOService::rateControlDataReady,
-            this, &RateControl::onRateControlDataReady, Qt::DirectConnection);
+    // Сначала создаем модель
+    m_rcModel = new RCModel(this);
+
     // Инициализация всех массивов
     for (int i = 0; i < 4; i++) {
         ManualPWM[i] = 0;
@@ -62,6 +63,22 @@ RateControl::RateControl(QObject *parent)
         ProdDensity[i] = 0;
         TargetRate[i] = 0;
     }
+
+    // Создаем начальные продукты в модели
+    for (int i = 0; i < 4; i++) {
+        RCModel::Product product;
+        product.id = i;
+        product.name = QString("Product %1").arg(i + 1);
+        product.setRate = 0;
+        product.smoothRate = 0;
+        product.actualRate = 0;
+        product.isActive = false;
+        m_rcModel->addProduct(product);
+    }
+
+    // Подключаем к AgIOService
+    connect(AgIOService::instance(), &AgIOService::rateControlDataReady,
+            this, &RateControl::onRateControlDataReady, Qt::DirectConnection);
 }
 
 RateControl *RateControl::instance() {
@@ -113,15 +130,6 @@ void RateControl::rate_auto(int ID)
     // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return;
     ManualPWM[ID] = 0;
-}
-
-void RateControl::aogset(int aBttnState, int mBttnState, double setwidth, double toolwidth, double aogspeed)
-{
-    aBtnState = aBttnState;
-    mBtnState = mBttnState;
-    width = toolwidth;
-    swidth = setwidth;
-    speed = aogspeed;
 }
 
 int RateControl::Command(int ID)
@@ -331,8 +339,6 @@ double RateControl::MinUPM(int ID)
 
 void RateControl::loadSettings(int ID)
 {
-
-    // ИСПРАВЛЕНО: Проверка границ ID
     if (ID < 0 || ID >= 4) return;
 
     QVector<int> rateSettings;
@@ -340,12 +346,16 @@ void RateControl::loadSettings(int ID)
     switch (ID) {
     case 0:
         rateSettings = SettingsManager::instance()->rate_confProduct0();
+        break; // Добавить break!
     case 1:
         rateSettings = SettingsManager::instance()->rate_confProduct1();
+        break;
     case 2:
         rateSettings = SettingsManager::instance()->rate_confProduct2();
+        break;
     case 3:
         rateSettings = SettingsManager::instance()->rate_confProduct3();
+        break;
     }
 
     ProdDensity[ID] = rateSettings[1];
@@ -377,7 +387,9 @@ void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
             PWMsetting[ModID] = data.rateControlInData[3];
             SensorReceiving[ModID] = data.rateControlInData[4];
         }
+        loadSettings(ModID);
         modulesSend241(ModID);
+        updateModel(ModID);
     }
 }
 
@@ -393,4 +405,64 @@ void RateControl::modulesSend241(int ID)
     p_241.pgn[CPGN_F1::ManualPWM] = (char)((int)ManualPWM[ID]);
 
     emit ModuleComm::instance()->p_241_changed();
+}
+void RateControl::updateModel(int id)
+{
+    if (id < 0 || id >= 4) return;
+
+    // Обновляем модель из массивов
+    if (m_rcModel->productExists(id)) {
+        // Получаем данные из Settings для имени
+        QString productName = "";
+        switch (id) {
+        case 0: productName = SettingsManager::instance()->rate_productName0(); break;
+        case 1: productName = SettingsManager::instance()->rate_productName1(); break;
+        case 2: productName = SettingsManager::instance()->rate_productName2(); break;
+        case 3: productName = SettingsManager::instance()->rate_productName3(); break;
+        }
+
+        // Обновляем модель
+        m_rcModel->updateName(id, productName);
+        m_rcModel->updateSetRate(id, TargetRate[id]);
+        m_rcModel->updateSmoothRate(id, cSmoothRate[id]);
+        m_rcModel->updateActualRate(id, cCurrentRate[id]);
+        bool isActive = ProductOn(id) && OnScreen[id];
+        m_rcModel->updateIsActive(id, isActive);
+    }
+}
+void RateControl::setCurrentProductId(int id)
+{
+    if (id >= 0 && id < 4 && m_currentProductId != id) {
+        m_currentProductId = id;
+        emit currentProductIdChanged(id);
+        updateModel(id);
+    }
+}
+
+QVariantMap RateControl::getProductData(int id) const
+{
+    if (!m_rcModel || id < 0 || id >= 4)
+        return QVariantMap();
+
+    return m_rcModel->getProductById(id);
+}
+void RateControl::increaseSetRate(int id, double step)
+{
+    if (m_rcModel && id >= 0 && id < 4) {
+        TargetRate[id] = TargetRate[id] + step;
+
+        m_rcModel->updateSetRate(id, TargetRate[id]);
+        // Обновляем данные после изменения
+        updateModel(id+1);
+    }
+}
+
+void RateControl::decreaseSetRate(int id, double step)
+{
+    if (m_rcModel && id >= 0 && id < 4) {
+        TargetRate[id] = TargetRate[id] - step;
+        m_rcModel->updateSetRate(id, TargetRate[id]);
+        // Обновляем данные после изменения
+        updateModel(id+1);
+    }
 }

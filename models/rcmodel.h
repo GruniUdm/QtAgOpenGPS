@@ -16,7 +16,8 @@ public:
         NameRole,
         SetRateRole,
         SmoothRateRole,
-        ActualRateRole
+        ActualRateRole,
+        IsActiveRole
     };
     Q_ENUM(Roles)
 
@@ -26,6 +27,7 @@ public:
         double setRate;     // Установленная норма
         double smoothRate;  // Фактическая усредненная норма
         double actualRate;  // Фактическая норма без фильтров
+        bool isActive;         // Активен ли продукт
     };
 
     explicit RCModel(QObject *parent = nullptr);
@@ -35,6 +37,9 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
 
+    Q_INVOKABLE QVariantMap get(int index) const;
+    Q_INVOKABLE QVariantMap getProductById(int id) const;
+
     // Data management
     void setProducts(const QVector<Product> &products);
     void addProduct(const Product &product);
@@ -42,14 +47,15 @@ public:
     void clear();
 
     // Methods to change rates
-    void increaseSetRate(int id, double step = 10);
-    void decreaseSetRate(int id, double step = 10);
+    Q_INVOKABLE void increaseSetRate(int id, double step = 10);
+    Q_INVOKABLE void decreaseSetRate(int id, double step = 10);
 
     // Update methods
     void updateSmoothRate(int id, double newRate);
     void updateActualRate(int id, double newRate);
     void updateSetRate(int id, double newRate);
     void updateName(int id, const QString &name);
+    void updateIsActive(int id, bool isActive);
 
     // Utility
     int count() const { return m_products.count(); }

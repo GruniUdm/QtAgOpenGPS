@@ -31,6 +31,8 @@ QVariant RCModel::data(const QModelIndex &index, int role) const
         return product.smoothRate;
     case ActualRateRole:
         return product.actualRate;
+    case IsActiveRole:
+        return product.isActive;
     default:
         return QVariant();
     }
@@ -44,6 +46,7 @@ QHash<int, QByteArray> RCModel::roleNames() const
     roles[SetRateRole] = "productSetRate";
     roles[SmoothRateRole] = "productSmoothRate";
     roles[ActualRateRole] = "productActualRate";
+    roles[IsActiveRole] = "productIsActive";
     return roles;
 }
 
@@ -187,4 +190,44 @@ int RCModel::findProductIndex(int id) const
         }
     }
     return -1;
+}
+void RCModel::updateIsActive(int id, bool isActive)
+{
+    int index = findProductIndex(id);
+    if (index == -1) return;
+
+    m_products[index].isActive = isActive;
+
+    QModelIndex modelIndex = createIndex(index, 0);
+    emit dataChanged(modelIndex, modelIndex, {IsActiveRole});
+}
+QVariantMap RCModel::get(int index) const
+{
+    QVariantMap map;
+    if (index >= 0 && index < m_products.count()) {
+        const Product &product = m_products[index];
+        map["productId"] = product.id;
+        map["productName"] = product.name;
+        map["productSetRate"] = product.setRate;
+        map["productSmoothRate"] = product.smoothRate;
+        map["productActualRate"] = product.actualRate;
+        map["productIsActive"] = product.isActive;
+    }
+    return map;
+}
+
+QVariantMap RCModel::getProductById(int id) const
+{
+    QVariantMap map;
+    int index = findProductIndex(id);
+    if (index != -1) {
+        const Product &product = m_products[index];
+        map["productId"] = product.id;
+        map["productName"] = product.name;
+        map["productSetRate"] = product.setRate;
+        map["productSmoothRate"] = product.smoothRate;
+        map["productActualRate"] = product.actualRate;
+        map["productIsActive"] = product.isActive;
+    }
+    return map;
 }

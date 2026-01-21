@@ -13,80 +13,139 @@ Comp.MoveablePopup {
     width: 220  * theme.scaleWidth
     visible: false
     modal: false
+
+    property int currentProductId: 0
+    property var currentProduct: null
+
+    // Обновляем данные при изменении ID
+    onCurrentProductIdChanged: {
+        if (RateControl.rcModel) {
+            // Обновляем currentProduct
+            for (var i = 0; i < RateControl.rcModel.count; i++) {
+                var product = RateControl.rcModel.get(i);
+                if (product.productId === currentProductId) {
+                    currentProduct = product;
+                    return;
+                }
+            }
+            currentProduct = null;
+        }
+    }
+
+    // Также обновляем при показе
+    onVisibleChanged: {
+        if (visible) {
+            currentProductId = 0; // Сбрасываем на первый продукт
+        }
+    }
+
+    // Функция для получения данных продукта
+    function getProductData(id) {
+        if (!RateControl.rcModel) return null;
+        // Используем встроенный метод модели для получения данных по индексу
+        // Нужно найти продукт по ID в модели
+        for (var i = 0; i < RateControl.rcModel.count; i++) {
+            var product = RateControl.rcModel.get(i);
+            if (product.productId === id) {
+                return product;
+            }
+        }
+        return null;
+    }
+
+    // Текущий продукт
+    //property var currentProduct: getProductData(currentProductId)
+
 Rectangle{
     id: rcData
     width: 220 * theme.scaleWidth
     height: 220 * theme.scaleHeight
     color: "#4d4d4d"
-    property double errRate: aog.actualRate0;
-    onVisibleChanged: { if (rcData.visible == true) show()}
+
+    onVisibleChanged: {
+        if (rcData.visible == true) {
+            show()
+        }
+    }
+
     function show(){
-        product1.isChecked = true
+        currentProductId = 0;
     }
 
     Comp.TopLine{
         id: rcDataTopLine
-        onBtnCloseClicked:  rcDataPopup.visible  = false
+        onBtnCloseClicked: rcDataPopup.visible = false
         titleText: qsTr("RC")
     }
+
     ButtonGroup {
         buttons: buttonsTop.children
     }
+
     RowLayout{
         id: buttonsTop
         anchors.top: rcDataTopLine.bottom
         anchors.topMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width - 10 * theme.scaleWidth
+
         Comp.IconButtonColor{
             id: product1
-            checkable: aog.product0stat
-            //checked: true
+            checkable: true
             colorChecked: "green"
             icon.source: prefix + "/images/ratec1.png"
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
-            visible: true
+            checked: currentProductId === 0
+            onClicked: currentProductId = 0
         }
 
         Comp.IconButtonColor{
             id: product2
-            checkable: aog.product1stat
+            checkable: true
             colorChecked: "green"
             icon.source: prefix + "/images/ratec2.png"
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
-            visible: true
+            checked: currentProductId === 1
+            onClicked: currentProductId = 1
         }
+
         Comp.IconButtonColor{
             id: product3
-            checkable: aog.product2stat
+            checkable: true
             colorChecked: "green"
             icon.source: prefix + "/images/ratec3.png"
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
-            visible: true
+            checked: currentProductId === 2
+            onClicked: currentProductId = 2
         }
+
         Comp.IconButtonColor{
             id: product4
-            checkable: aog.product3stat
+            checkable: true
             colorChecked: "green"
             icon.source: prefix + "/images/ratec4.png"
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
-            visible: true
+            checked: currentProductId === 3
+            onClicked: currentProductId = 3
         }
     }
+
     ButtonGroup {
         buttons: buttonsMl.children
     }
+
     RowLayout{
         id: buttonsMl
-        visible: product1.checked
+        visible: true
         anchors.top: buttonsTop.bottom
         anchors.topMargin: 17 * theme.scaleHeight
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width - 10 * theme.scaleWidth
+
         Rectangle{
             id: applied1
             property bool clicked: false;
@@ -96,18 +155,28 @@ Rectangle{
             Layout.alignment: Qt.AlignCenter
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /2 - 5 * theme.scaleWidth
+
             Text{
-                text: applied1.clicked?Math.round(aog.actualRate0, 0):Math.round(aog.smoothRate0, 0)
+                text: {
+                    if (!currentProduct) return "0";
+                    var actualRate = currentProduct.productActualRate || 0;
+                    var smoothRate = currentProduct.productSmoothRate || 0;
+                    return applied1.clicked ?
+                           Math.round(actualRate) :
+                           Math.round(smoothRate);
+                }
                 font.pixelSize: 30;
                 anchors.centerIn: parent
                 color: aog.backgroundColor
             }
+
             MouseArea{
                 id: switcher1
                 anchors.fill: applied1
                 onClicked: applied1.clicked = !applied1.clicked
             }
         }
+
         Rectangle{
             id: target1
             color: aog.backgroundColor
@@ -116,184 +185,34 @@ Rectangle{
             Layout.alignment: Qt.AlignCenter
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /2 - 5 * theme.scaleWidth
+
             Text{
-                text: Settings.rate_Product0[10]
+                text: currentProduct ?
+                      Math.round(currentProduct.productSetRate || 0) :
+                      "0"
                 font.pixelSize: 30;
                 anchors.centerIn: parent
-
             }
         }
-
     }
-    RowLayout{
-        id: buttonsM2
-        visible: product2.checked
-        anchors.top: buttonsTop.bottom
-        anchors.topMargin: 17 * theme.scaleHeight
-        anchors.horizontalCenter: parent.horizontalCenter
-        width: parent.width - 10 * theme.scaleWidth
-        Rectangle{
-            id: applied2
-            property bool clicked: false;
-            color: "#4d4d4d"
-            border.color: "black"
-            radius: 10
-            Layout.alignment: Qt.AlignCenter
-            implicitHeight: 50 * theme.scaleHeight
-            implicitWidth: parent.width /2 - 5 * theme.scaleWidth
-            Text{
-                text: applied2.clicked?Math.round(aog.actualRate1, 0):Math.round(aog.smoothRate1, 0)
-                font.pixelSize: 30;
-                anchors.centerIn: parent
-                color: aog.backgroundColor
-            }
-            MouseArea{
-                anchors.fill: applied2
-                onClicked: applied2.clicked = !applied2.clicked
-            }
-        }
-        Rectangle{
-            id: target2
-            color: aog.backgroundColor
-            border.color: "black"
-            radius: 10
-            Layout.alignment: Qt.AlignCenter
-            implicitHeight: 50 * theme.scaleHeight
-            implicitWidth: parent.width /2 - 5 * theme.scaleWidth
-            Text{
-                text: Settings.rate_Product1[10]
-                font.pixelSize: 30;
-                anchors.centerIn: parent
 
-            }
-        }
-
-    }
-    RowLayout{
-        id: buttonsM3
-        visible: product3.checked
-        anchors.top: buttonsTop.bottom
-        anchors.topMargin: 17 * theme.scaleHeight
-        anchors.horizontalCenter: parent.horizontalCenter
-        width: parent.width - 10 * theme.scaleWidth
-        Rectangle{
-            id: applied3
-            property bool clicked: false;
-            color: "#4d4d4d"
-            border.color: "black"
-            radius: 10
-            Layout.alignment: Qt.AlignCenter
-            implicitHeight: 50 * theme.scaleHeight
-            implicitWidth: parent.width /2 - 5 * theme.scaleWidth
-            Text{
-                text: applied3.clicked?Math.round(aog.actualRate2, 0):Math.round(aog.smoothRate2, 0)
-                font.pixelSize: 30;
-                anchors.centerIn: parent
-                color: aog.backgroundColor
-            }
-            MouseArea{
-                anchors.fill: applied3
-                onClicked: applied3.clicked = !applied3.clicked
-            }
-        }
-        Rectangle{
-            id: target3
-            color: aog.backgroundColor
-            border.color: "black"
-            radius: 10
-            Layout.alignment: Qt.AlignCenter
-            implicitHeight: 50 * theme.scaleHeight
-            implicitWidth: parent.width /2 - 5 * theme.scaleWidth
-            Text{
-                text: Settings.rate_Product2[10]
-                font.pixelSize: 30;
-                anchors.centerIn: parent
-
-            }
-        }
-
-    }
-    RowLayout{
-        id: buttonsM4
-        visible: product4.checked
-        anchors.top: buttonsTop.bottom
-        anchors.topMargin: 17 * theme .scaleHeight
-        anchors.horizontalCenter: parent.horizontalCenter
-        width: parent.width - 10 * theme.scaleWidth
-        Rectangle{
-            id: applied4
-            property bool clicked: false;
-            color: "#4d4d4d"
-            border.color: "black"
-            radius: 10
-            Layout.alignment: Qt.AlignCenter
-            implicitHeight: 50 * theme.scaleHeight
-            implicitWidth: parent.width /2 - 5 * theme.scaleWidth
-            Text{
-                text: applied4.clicked?Math.round(aog.actualRate3, 0):Math.round(aog.smoothRate3, 0)
-                font.pixelSize: 30;
-                anchors.centerIn: parent
-                color: aog.backgroundColor
-            }
-            MouseArea{
-                anchors.fill: applied4
-                onClicked: applied4.clicked = !applied4.clicked
-            }
-        }
-        Rectangle{
-            id: target4
-            color: aog.backgroundColor
-            border.color: "black"
-            radius: 10
-            Layout.alignment: Qt.AlignCenter
-            implicitHeight: 50 * theme.scaleHeight
-            implicitWidth: parent.width /2 - 5 * theme.scaleWidth
-            Text{
-                text: Settings.rate_Product3[10]
-                font.pixelSize: 30;
-                anchors.centerIn: parent
-
-            }
-        }
-
-    }
     Rectangle{
         id: productName
-        property bool clicked: false;
         color: "#4d4d4d"
         border.color: "black"
         radius: 10
-        Layout.alignment: Qt.AlignCenter
         implicitHeight: 50 * theme.scaleHeight
         implicitWidth: parent.width /2 - 5 * theme.scaleWidth
         anchors.left: parent.left
         anchors.leftMargin: 5 * theme.scaleHeight
         anchors.bottom: parent.bottom
+
         Text{
-            visible: product1.checked
-            text: Settings.rate_ProductName[0]
-            font.pixelSize: 30* theme.scaleHeight;
-            anchors.centerIn: parent
-            color: aog.backgroundColor
-        }
-        Text{
-            visible: product2.checked
-            text: Settings.rate_ProductName[1]
-            font.pixelSize: 30* theme.scaleHeight;
-            anchors.centerIn: parent
-            color: aog.backgroundColor
-        }
-        Text{
-            visible: product3.checked
-            text: Settings.rate_ProductName[2]
-            font.pixelSize: 30* theme.scaleHeight;
-            anchors.centerIn: parent
-            color: aog.backgroundColor
-        }
-        Text{
-            visible: product4.checked
-            text: Settings.rate_ProductName[3]
-            font.pixelSize: 30* theme.scaleHeight;
+            visible: true
+            text: currentProduct ?
+                  (currentProduct.productName || "Product " + (currentProductId + 1)) :
+                  "N/A"
+            font.pixelSize: 16 * theme.scaleHeight; // Еще меньше для надежности
             anchors.centerIn: parent
             color: aog.backgroundColor
         }
@@ -301,25 +220,21 @@ Rectangle{
 
     Comp.IconButtonColor{
         id: rateUp
-        checkable: true
-        colorChecked: "lightgray"
         icon.source: prefix + "/images/ratec-up.png"
         implicitHeight: 50 * theme.scaleHeight
         implicitWidth: 50 * theme.scaleWidth
         anchors.right: parent.right
         anchors.rightMargin: 5 * theme.scaleHeight
         anchors.bottom: parent.bottom
-        onClicked: { if (product1.checked == true) {Settings.rate_Product0[10]>500?Settings.rate_Product0[10]=500:Settings.rate_Product0[10]+=10}
-            else if  (product2.checked == true) {Settings.rate_Product1[10]>500?Settings.rate_Product1[10]=500:Settings.rate_Product1[10]+=10}
-            else if  (product3.checked == true) {Settings.rate_Product2[10]>500?Settings.rate_Product2[10]=500:Settings.rate_Product2[10]+=10}
-            else if  (product4.checked == true) {Settings.rate_Product3[10]>500?Settings.rate_Product3[10]=500:Settings.rate_Product3[10]+=10}
+        onClicked: {
+            RateControl.increaseSetRate(currentProductId, 10);
+            // Обновляем текущий продукт после изменения
+            currentProduct = getProductData(currentProductId);
         }
     }
 
     Comp.IconButtonColor{
         id: rateDown
-        checkable: true
-        colorChecked: "lightgray"
         icon.source: prefix + "/images/ratec-down.png"
         implicitHeight: 50 * theme.scaleHeight
         implicitWidth: 50 * theme.scaleWidth
@@ -328,18 +243,11 @@ Rectangle{
         anchors.left: productName.right
         anchors.leftMargin: 5 * theme.scaleHeight
         anchors.bottom: parent.bottom
-        onClicked: { if (product1.checked == true) {Settings.rate_Product0[10]<10?Settings.rate_Product0[10]=0:Settings.rate_Product0[10]-=10}
-            else   if (product2.checked == true) {Settings.rate_Product1[10]<10?Settings.rate_Product1[10]=0:Settings.rate_Product1[10]-=10}
-            else   if (product3.checked == true) {Settings.rate_Product2[10]<10?Settings.rate_Product2[10]=0:Settings.rate_Product2[10]-=10}
-            else   if (product4.checked == true) {Settings.rate_Product3[10]<10?Settings.rate_Product3[10]=0:Settings.rate_Product3[10]-=10}
+        onClicked: {
+            RateControl.decreaseSetRate(currentProductId, 10);
+            // Обновляем текущий продукт после изменения
+            currentProduct = getProductData(currentProductId);
         }
     }
-
-    function errormessage() { if (aog.actualRate0 < Settings.rate_Product0[10]*0.9 & aog.product0stat & Settings.rate_Product0[2]){
-            timedMessage.addMessage(2000, qsTr("Low rate. Increase speed!"));}
-        else if (aog.actualRate0 > Settings.rate_Product0[10] * 1.1 & aog.product0stat & Settings.rate_Product0[2]){
-            timedMessage.addMessage(2000, qsTr("High rate. Reduce speed!"));}
-    }
-
 }
 }

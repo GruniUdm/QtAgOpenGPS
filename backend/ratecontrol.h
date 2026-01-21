@@ -38,9 +38,14 @@ public:
     Q_PROPERTY(RCModel *rcModel READ rcModel CONSTANT)
     RCModel *rcModel() const { return m_rcModel; }
     RCModel *m_rcModel;
+    Q_PROPERTY(int currentProductId READ currentProductId WRITE setCurrentProductId NOTIFY currentProductIdChanged)
 
     Q_INVOKABLE void rate_bump(bool up, int ID);
-
+    Q_INVOKABLE void setCurrentProductId(int id);
+    Q_INVOKABLE QVariantMap getProductData(int id) const;
+    Q_INVOKABLE void increaseSetRate(int id, double step = 10);
+    Q_INVOKABLE void decreaseSetRate(int id, double step = 10);
+    int currentProductId() const { return m_currentProductId; }
 
     int ModID;
     double ManualPWM[4];
@@ -59,6 +64,7 @@ public:
     double MinUPM(int ID);
     void loadSettings(int ID);
     void modulesSend241(int ID);
+    void updateModel(int ID);
     void aogset(int aBttnState, int mBttnState, double setwidth, double toolwidth, double aogspeed);
     int PWMsetting[4];
     bool SensorReceiving[4];
@@ -95,8 +101,10 @@ private:
     double minUPM[4];
     double ProdDensity[4];
     bool cEnableProdDensity = false;
+    int m_currentProductId = 0;
 
 signals:
+    void currentProductIdChanged(int id);
 public slots:
     void rate_auto(int ID);
 
