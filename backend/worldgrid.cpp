@@ -216,11 +216,6 @@ void WorldGrid::checkZoomWorldGrid(double northing, double easting)
 
     // Check to see if we need to regenerate all the buffers for OpenGL
     invalidateBuffers();
-
-    emit northingMaxChanged();
-    emit northingMinChanged();
-    emit eastingMaxChanged();
-    emit eastingMinChanged();
 }
 
 void WorldGrid::destroyGLBuffers()
