@@ -1101,6 +1101,17 @@ Window {
                     grid {
                         color: Qt.rgba(0,0,0,1)
                         //size: SettingsManager.window_gridSize
+                        visible: SettingsManager.display_isGridOn
+                    }
+
+                    fieldSurface {
+                        showTexture: SettingsManager.display_isTextureOn
+
+                        // Field color: day/night from settings
+                        color: SettingsManager.display_isDayMode ?
+                                   SettingsManager.display_colorFieldDay :
+                                   SettingsManager.display_colorFieldNight
+
                     }
 
                     // Camera rotation from vehicle heading (radians to degrees)
@@ -1114,15 +1125,8 @@ Window {
                     showCoverage: true
                     showGuidance: true
                     showVehicle: true
-                    showGrid: SettingsManager.display_isGridOn
 
                     // Field surface texture mode from settings
-                    isTextureOn: SettingsManager.display_isTextureOn
-
-                    // Field color: day/night from settings
-                    fieldColor: SettingsManager.display_isDayMode ?
-                                    SettingsManager.display_colorFieldDay :
-                                    SettingsManager.display_colorFieldNight
 
                     // Background color: sky blue for day, black for night
                     // Day: rgb(69, 102, 179) = rgba(0.27, 0.4, 0.7, 1)

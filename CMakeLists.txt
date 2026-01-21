@@ -406,8 +406,9 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES scenegraph/gridnode.h scenegraph/gridnode.cpp
     SOURCES scenegraph/vehiclenode.h scenegraph/vehiclenode.cpp
     SOURCES scenegraph/boundarynode.h scenegraph/boundarynode.cpp
-    SOURCES scenegraph/camerasettings.h scenegraph/camerasettings.cpp
+    SOURCES scenegraph/cameraproperties.h scenegraph/cameraproperties.cpp
     SOURCES scenegraph/gridproperties.h scenegraph/gridproperties.cpp
+    SOURCES scenegraph/fieldsurfaceproperties.h scenegraph/fieldsurfaceproperties.cpp
 
 )
 

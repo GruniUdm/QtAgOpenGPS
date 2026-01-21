@@ -4,14 +4,18 @@
 // Scene graph-based field view renderer implementation
 
 #include "fieldviewitem.h"
-#include "camerasettings.h"
+#include "cameraproperties.h"
 #include "gridproperties.h"
+#include "fieldsurfaceproperties.h"
+
 #include "fieldsurfacenode.h"
 #include "gridnode.h"
 #include "boundarynode.h"
 #include "vehiclenode.h"
 #include "aogmaterial.h"
 #include "aoggeometry.h"
+
+#include "glm.h"
 
 #include "cvehicle.h"
 #include "cboundary.h"
@@ -71,29 +75,35 @@ FieldViewItem::FieldViewItem(QQuickItem *parent)
     setClip(true);  // Clip rendering to item bounds
 
     // Create camera settings object (owned by this)
-    m_camera = new CameraSettings(this);
+    m_camera = new CameraProperties(this);
 
     m_grid = new GridProperties(this);
 
+    m_fieldSurface = new FieldSurfaceProperties(this);
+
     // Connect camera property changes to update()
-    connect(m_camera, &CameraSettings::zoomChanged, this, &QQuickItem::update);
-    connect(m_camera, &CameraSettings::xChanged, this, &QQuickItem::update);
-    connect(m_camera, &CameraSettings::yChanged, this, &QQuickItem::update);
-    connect(m_camera, &CameraSettings::rotationChanged, this, &QQuickItem::update);
-    connect(m_camera, &CameraSettings::pitchChanged, this, &QQuickItem::update);
-    connect(m_camera, &CameraSettings::fovChanged, this, &QQuickItem::update);
+    connect(m_camera, &CameraProperties::zoomChanged, this, &QQuickItem::update);
+    connect(m_camera, &CameraProperties::xChanged, this, &QQuickItem::update);
+    connect(m_camera, &CameraProperties::yChanged, this, &QQuickItem::update);
+    connect(m_camera, &CameraProperties::rotationChanged, this, &QQuickItem::update);
+    connect(m_camera, &CameraProperties::pitchChanged, this, &QQuickItem::update);
+    connect(m_camera, &CameraProperties::fovChanged, this, &QQuickItem::update);
 
     //Connect grid property changes to update()
     connect(m_grid, &GridProperties::sizeChanged, this, &QQuickItem::update);
     connect(m_grid, &GridProperties::colorChanged, this, &QQuickItem::update);
+    connect(m_grid, &GridProperties::visibleChanged, this, &QQuickItem::update);
+
+    //Connect field surface property changes to update()
+    connect(m_fieldSurface, &FieldSurfaceProperties::visibleChanged, this, &QQuickItem::update);
+    connect(m_fieldSurface, &FieldSurfaceProperties::colorChanged, this, &QQuickItem::update);
+    connect(m_fieldSurface, &FieldSurfaceProperties::showTextureChanged, this, &QQuickItem::update);
 
     // Connect other property changes to update()
     connect(this, &FieldViewItem::boundaryColorChanged, this, &QQuickItem::update);
     connect(this, &FieldViewItem::guidanceColorChanged, this, &QQuickItem::update);
-    connect(this, &FieldViewItem::fieldColorChanged, this, &QQuickItem::update);
     connect(this, &FieldViewItem::backgroundColorChanged, this, &QQuickItem::update);
     connect(this, &FieldViewItem::vehicleColorChanged, this, &QQuickItem::update);
-    connect(this, &FieldViewItem::isTextureOnChanged, this, &QQuickItem::update);
 }
 
 FieldViewItem::~FieldViewItem()
@@ -104,9 +114,11 @@ FieldViewItem::~FieldViewItem()
 // Camera Property Accessor
 // ============================================================================
 
-CameraSettings* FieldViewItem::camera() const { return m_camera; }
+CameraProperties* FieldViewItem::camera() const { return m_camera; }
 
 GridProperties* FieldViewItem::grid() const { return m_grid; }
+
+FieldSurfaceProperties* FieldViewItem::fieldSurface() const { return m_fieldSurface; }
 
 // ============================================================================
 // Visibility Property Accessors
@@ -128,14 +140,6 @@ bool FieldViewItem::showVehicle() const { return m_showVehicle; }
 void FieldViewItem::setShowVehicle(bool value) { m_showVehicle = value; }
 QBindable<bool> FieldViewItem::bindableShowVehicle() { return &m_showVehicle; }
 
-bool FieldViewItem::showGrid() const { return m_showGrid; }
-void FieldViewItem::setShowGrid(bool value) { m_showGrid = value; }
-QBindable<bool> FieldViewItem::bindableShowGrid() { return &m_showGrid; }
-
-bool FieldViewItem::isTextureOn() const { return m_isTextureOn; }
-void FieldViewItem::setIsTextureOn(bool value) { m_isTextureOn = value; m_fieldSurfaceDirty = true; }
-QBindable<bool> FieldViewItem::bindableIsTextureOn() { return &m_isTextureOn; }
-
 // ============================================================================
 // Color Property Accessors
 // ============================================================================
@@ -147,10 +151,6 @@ QBindable<QColor> FieldViewItem::bindableBoundaryColor() { return &m_boundaryCol
 QColor FieldViewItem::guidanceColor() const { return m_guidanceColor; }
 void FieldViewItem::setGuidanceColor(const QColor &color) { m_guidanceColor = color; }
 QBindable<QColor> FieldViewItem::bindableGuidanceColor() { return &m_guidanceColor; }
-
-QColor FieldViewItem::fieldColor() const { return m_fieldColor; }
-void FieldViewItem::setFieldColor(const QColor &color) { m_fieldColor = color; }
-QBindable<QColor> FieldViewItem::bindableFieldColor() { return &m_fieldColor; }
 
 QColor FieldViewItem::backgroundColor() const { return m_backgroundColor; }
 void FieldViewItem::setBackgroundColor(const QColor &color) { m_backgroundColor = color; }
@@ -270,19 +270,21 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 
     QMatrix4x4 currentMvp = m_currentNcd * m_currentP * m_currentMv;
 
-    // Always update field surface (it changes with camera position)
-    rootNode->fieldSurfaceNode->update(
-        currentMvp,
-        m_fieldColor,
-        m_isTextureOn,
-        m_floorTexture,
-        eastingMin, eastingMax,
-        northingMin, northingMax,
-        count
-    );
+    if (m_fieldSurface->visible()) {
+        // Always update field surface (it changes with camera position)
+        rootNode->fieldSurfaceNode->update(
+            currentMvp,
+            m_fieldSurface->color(),
+            m_fieldSurface->showTexture(),
+            m_floorTexture,
+            eastingMin, eastingMax,
+            northingMin, northingMax,
+            count
+        );
+    }
 
     // Update grid if visible
-    if (m_showGrid) {
+    if (m_grid->visible()) {
         // Calculate grid spacing based on zoom
         double gridSpacing = 10.0;
         double camDistance = m_camera->zoom();
@@ -345,7 +347,7 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 
 void FieldViewItem::loadFloorTexture()
 {
-    if (m_isTextureOn && !m_floorTexture && window()) {
+    if (m_fieldSurface->showTexture() && !m_floorTexture && window()) {
         // Load texture if not already loaded
 #ifdef LOCAL_QML
         QString texPath = QStringLiteral("local:/images/textures/floor.png");
