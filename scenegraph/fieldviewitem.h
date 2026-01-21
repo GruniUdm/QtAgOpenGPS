@@ -30,7 +30,11 @@ class FieldSurfaceNode;
 class GridNode;
 class BoundaryNode;
 class VehicleNode;
+class CameraSettings;
+class GridProperties;
 
+Q_MOC_INCLUDE("camerasettings.h")
+Q_MOC_INCLUDE("gridproperties.h")
 // ============================================================================
 // FieldViewNode - Root node for the field view scene graph
 // ============================================================================
@@ -60,13 +64,9 @@ class FieldViewItem : public QQuickItem
     Q_OBJECT
     QML_ELEMENT
 
-    // ===== Camera/View Properties - Exposed to QML =====
-    Q_PROPERTY(double zoom READ zoom WRITE setZoom NOTIFY zoomChanged BINDABLE bindableZoom)
-    Q_PROPERTY(double cameraX READ cameraX WRITE setCameraX NOTIFY cameraXChanged BINDABLE bindableCameraX)
-    Q_PROPERTY(double cameraY READ cameraY WRITE setCameraY NOTIFY cameraYChanged BINDABLE bindableCameraY)
-    Q_PROPERTY(double cameraRotation READ cameraRotation WRITE setCameraRotation NOTIFY cameraRotationChanged BINDABLE bindableCameraRotation)
-    Q_PROPERTY(double cameraPitch READ cameraPitch WRITE setCameraPitch NOTIFY cameraPitchChanged BINDABLE bindableCameraPitch)
-    Q_PROPERTY(double fovDegrees READ fovDegrees WRITE setFovDegrees NOTIFY fovDegreesChanged BINDABLE bindableFovDegrees)
+    // ===== Camera/View Properties - Grouped for QML access (camera.zoom, camera.x, etc.) =====
+    Q_PROPERTY(CameraSettings* camera READ camera CONSTANT)
+    Q_PROPERTY(GridProperties* grid READ grid CONSTANT)
 
     // ===== Rendering State Properties =====
     Q_PROPERTY(bool showBoundary READ showBoundary WRITE setShowBoundary NOTIFY showBoundaryChanged BINDABLE bindableShowBoundary)
@@ -79,7 +79,6 @@ class FieldViewItem : public QQuickItem
     // ===== Color Properties =====
     Q_PROPERTY(QColor boundaryColor READ boundaryColor WRITE setBoundaryColor NOTIFY boundaryColorChanged BINDABLE bindableBoundaryColor)
     Q_PROPERTY(QColor guidanceColor READ guidanceColor WRITE setGuidanceColor NOTIFY guidanceColorChanged BINDABLE bindableGuidanceColor)
-    Q_PROPERTY(QColor gridColor READ gridColor WRITE setGridColor NOTIFY gridColorChanged BINDABLE bindableGridColor)
     Q_PROPERTY(QColor fieldColor READ fieldColor WRITE setFieldColor NOTIFY fieldColorChanged BINDABLE bindableFieldColor)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged BINDABLE bindableBackgroundColor)
     Q_PROPERTY(QColor vehicleColor READ vehicleColor WRITE setVehicleColor NOTIFY vehicleColorChanged BINDABLE bindableVehicleColor)
@@ -88,30 +87,9 @@ public:
     explicit FieldViewItem(QQuickItem *parent = nullptr);
     ~FieldViewItem() override;
 
-    // ===== Camera Property Accessors =====
-    double zoom() const;
-    void setZoom(double value);
-    QBindable<double> bindableZoom();
-
-    double cameraX() const;
-    void setCameraX(double value);
-    QBindable<double> bindableCameraX();
-
-    double cameraY() const;
-    void setCameraY(double value);
-    QBindable<double> bindableCameraY();
-
-    double cameraRotation() const;
-    void setCameraRotation(double value);
-    QBindable<double> bindableCameraRotation();
-
-    double cameraPitch() const;
-    void setCameraPitch(double value);
-    QBindable<double> bindableCameraPitch();
-
-    double fovDegrees() const;
-    void setFovDegrees(double value);
-    QBindable<double> bindableFovDegrees();
+    // ===== Camera Property Accessor =====
+    CameraSettings* camera() const;
+    GridProperties * grid() const;
 
     // ===== Visibility Property Accessors =====
     bool showBoundary() const;
@@ -147,10 +125,6 @@ public:
     void setGuidanceColor(const QColor &color);
     QBindable<QColor> bindableGuidanceColor();
 
-    QColor gridColor() const;
-    void setGridColor(const QColor &color);
-    QBindable<QColor> bindableGridColor();
-
     QColor fieldColor() const;
     void setFieldColor(const QColor &color);
     QBindable<QColor> bindableFieldColor();
@@ -170,14 +144,6 @@ public:
     Q_INVOKABLE void markAllDirty();
 
 signals:
-    // Camera signals
-    void zoomChanged();
-    void cameraXChanged();
-    void cameraYChanged();
-    void cameraRotationChanged();
-    void cameraPitchChanged();
-    void fovDegreesChanged();
-
     // Visibility signals
     void showBoundaryChanged();
     void showCoverageChanged();
@@ -189,7 +155,6 @@ signals:
     // Color signals
     void boundaryColorChanged();
     void guidanceColorChanged();
-    void gridColorChanged();
     void fieldColorChanged();
     void backgroundColorChanged();
     void vehicleColorChanged();
@@ -207,7 +172,7 @@ private:
     void loadFloorTexture();
 
     // ===== Matrix Building =====
-    QMatrix4x4 buildMvpMatrix() const;
+    QMatrix4x4 buildNdcMatrix() const;
     QMatrix4x4 buildProjectionMatrix() const;
     QMatrix4x4 buildViewMatrix() const;
 
@@ -219,7 +184,9 @@ private:
     bool m_gridDirty = true;
 
     // ===== Current MVP Matrix (set each frame for materials) =====
-    QMatrix4x4 m_currentMvp;
+    QMatrix4x4 m_currentMv;
+    QMatrix4x4 m_currentP;
+    QMatrix4x4 m_currentNcd;
 
     // ===== Texture for field surface =====
     QSGTexture *m_floorTexture = nullptr;
@@ -248,14 +215,11 @@ private:
 
     void syncFromSingletons();
 
-    // ===== Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY Members =====
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, double, m_zoom, 15.0, &FieldViewItem::zoomChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, double, m_cameraX, 0.0, &FieldViewItem::cameraXChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, double, m_cameraY, 0.0, &FieldViewItem::cameraYChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, double, m_cameraRotation, 0.0, &FieldViewItem::cameraRotationChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, double, m_cameraPitch, -20.0, &FieldViewItem::cameraPitchChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, double, m_fovDegrees, 40.1, &FieldViewItem::fovDegreesChanged)
+    // ===== Grouped Property Objects =====
+    CameraSettings *m_camera = nullptr;
+    GridProperties *m_grid = nullptr;
 
+    // ===== Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY Members =====
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, bool, m_showBoundary, true, &FieldViewItem::showBoundaryChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, bool, m_showCoverage, true, &FieldViewItem::showCoverageChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, bool, m_showGuidance, true, &FieldViewItem::showGuidanceChanged)
@@ -265,7 +229,6 @@ private:
 
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, QColor, m_boundaryColor, QColor(255, 255, 0), &FieldViewItem::boundaryColorChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, QColor, m_guidanceColor, QColor(0, 255, 0), &FieldViewItem::guidanceColorChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, QColor, m_gridColor, QColor(0, 0, 0), &FieldViewItem::gridColorChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, QColor, m_fieldColor, QColor(145, 145, 145), &FieldViewItem::fieldColorChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, QColor, m_backgroundColor, QColor(69, 102, 179), &FieldViewItem::backgroundColorChanged)  // Day sky blue
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, QColor, m_vehicleColor, QColor(255, 255, 255), &FieldViewItem::vehicleColorChanged)

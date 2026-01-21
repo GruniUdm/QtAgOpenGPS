@@ -6,6 +6,8 @@
 #include "vehiclenode.h"
 #include "aogmaterial.h"
 #include "aoggeometry.h"
+#include "settingsmanager.h"
+#include "modulecomm.h"
 
 #include <QtMath>
 #include <QVector3D>
@@ -28,16 +30,21 @@ void VehicleNode::clearChildren()
     m_geomNode = nullptr;
 }
 
-void VehicleNode::update(const QMatrix4x4 &mvp,
-                          const QColor &vehicleColor,
-                          double vehicleX, double vehicleY,
-                          double vehicleHeading)
+void VehicleNode::update(const QMatrix4x4 &mv, const QMatrix4x4 &p, const QMatrix4x4 &ncd,
+                         const QColor &vehicleColor,
+                         double vehicleX, double vehicleY,
+                         double vehicleHeading)
 {
     // Clear and rebuild each frame (position changes frequently)
     clearChildren();
 
+
+    QMatrix4x4 localmv = mv;
+    //localmv.translate(vehicleX, vehicleY,0);
+
     // Transform vehicle shape by position and heading
     double heading = qDegreesToRadians(vehicleHeading);
+
     double cosH = qCos(heading);
     double sinH = qSin(heading);
 
@@ -67,7 +74,7 @@ void VehicleNode::update(const QMatrix4x4 &mvp,
 
     auto *material = new AOGFlatColorMaterial();
     material->setColor(vehicleColor);
-    material->setMvpMatrix(mvp);
+    material->setMvpMatrix(ncd * p * localmv);
 
     m_geomNode->setMaterial(material);
     m_geomNode->setFlag(QSGNode::OwnsMaterial);

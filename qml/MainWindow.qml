@@ -1089,20 +1089,25 @@ Window {
                     anchors.bottom: controlsRow.top
                     anchors.margins: 4
 
-                    // ===== Bind to existing singletons =====
-                    // Camera position from Backend.fixFrame
-                    cameraX: Backend.fixFrame.easting
-                    cameraY: Backend.fixFrame.northing
+                    camera {
+                        x: Backend.fixFrame.easting
+                        y: Backend.fixFrame.northing
+                        rotation: Camera.camFollowing ? -Utils.radians_to_deg(VehicleInterface.fixHeading) : 0
+                        zoom: Math.abs(Camera.camSetDistance)
+                        pitch: SettingsManager.display_camPitch
+                        fov: 40
+                    }
+
+                    grid {
+                        color: Qt.rgba(0,0,0,1)
+                        //size: SettingsManager.window_gridSize
+                    }
 
                     // Camera rotation from vehicle heading (radians to degrees)
-                    cameraRotation: Camera.camFollowing ? -Utils.radians_to_deg(VehicleInterface.fixHeading) : 0
 
                     // Camera zoom/distance from Camera singleton (camSetDistance is negative)
-                    zoom: Math.abs(Camera.camSetDistance)
-                    fovDegrees: 40
 
                     // Camera pitch from settings
-                    cameraPitch: SettingsManager.display_camPitch
 
                     // Visibility settings
                     showBoundary: true
@@ -1113,10 +1118,6 @@ Window {
 
                     // Field surface texture mode from settings
                     isTextureOn: SettingsManager.display_isTextureOn
-
-                    // ===== Color bindings - Day/Night mode from SettingsManager =====
-                    // Grid color: black (same as WorldGrid in formgps_opengl.cpp)
-                    gridColor: Qt.rgba(0, 0, 0, 1)
 
                     // Field color: day/night from settings
                     fieldColor: SettingsManager.display_isDayMode ?

@@ -4,6 +4,8 @@
 // Scene graph-based field view renderer implementation
 
 #include "fieldviewitem.h"
+#include "camerasettings.h"
+#include "gridproperties.h"
 #include "fieldsurfacenode.h"
 #include "gridnode.h"
 #include "boundarynode.h"
@@ -13,9 +15,6 @@
 
 #include "cvehicle.h"
 #include "cboundary.h"
-#include "backend.h"
-#include "settingsmanager.h"
-#include "backend/worldgrid.h"
 
 #include <QSGGeometryNode>
 #include <QSGFlatColorMaterial>
@@ -71,15 +70,26 @@ FieldViewItem::FieldViewItem(QQuickItem *parent)
     setFlag(ItemHasContents, true);
     setClip(true);  // Clip rendering to item bounds
 
-    // Connect to update() when properties change
-    connect(this, &FieldViewItem::zoomChanged, this, &QQuickItem::update);
-    connect(this, &FieldViewItem::cameraXChanged, this, &QQuickItem::update);
-    connect(this, &FieldViewItem::cameraYChanged, this, &QQuickItem::update);
-    connect(this, &FieldViewItem::cameraRotationChanged, this, &QQuickItem::update);
-    connect(this, &FieldViewItem::cameraPitchChanged, this, &QQuickItem::update);
+    // Create camera settings object (owned by this)
+    m_camera = new CameraSettings(this);
+
+    m_grid = new GridProperties(this);
+
+    // Connect camera property changes to update()
+    connect(m_camera, &CameraSettings::zoomChanged, this, &QQuickItem::update);
+    connect(m_camera, &CameraSettings::xChanged, this, &QQuickItem::update);
+    connect(m_camera, &CameraSettings::yChanged, this, &QQuickItem::update);
+    connect(m_camera, &CameraSettings::rotationChanged, this, &QQuickItem::update);
+    connect(m_camera, &CameraSettings::pitchChanged, this, &QQuickItem::update);
+    connect(m_camera, &CameraSettings::fovChanged, this, &QQuickItem::update);
+
+    //Connect grid property changes to update()
+    connect(m_grid, &GridProperties::sizeChanged, this, &QQuickItem::update);
+    connect(m_grid, &GridProperties::colorChanged, this, &QQuickItem::update);
+
+    // Connect other property changes to update()
     connect(this, &FieldViewItem::boundaryColorChanged, this, &QQuickItem::update);
     connect(this, &FieldViewItem::guidanceColorChanged, this, &QQuickItem::update);
-    connect(this, &FieldViewItem::gridColorChanged, this, &QQuickItem::update);
     connect(this, &FieldViewItem::fieldColorChanged, this, &QQuickItem::update);
     connect(this, &FieldViewItem::backgroundColorChanged, this, &QQuickItem::update);
     connect(this, &FieldViewItem::vehicleColorChanged, this, &QQuickItem::update);
@@ -91,32 +101,12 @@ FieldViewItem::~FieldViewItem()
 }
 
 // ============================================================================
-// Camera Property Accessors
+// Camera Property Accessor
 // ============================================================================
 
-double FieldViewItem::zoom() const { return m_zoom; }
-void FieldViewItem::setZoom(double value) { m_zoom = value; }
-QBindable<double> FieldViewItem::bindableZoom() { return &m_zoom; }
+CameraSettings* FieldViewItem::camera() const { return m_camera; }
 
-double FieldViewItem::cameraX() const { return m_cameraX; }
-void FieldViewItem::setCameraX(double value) { m_cameraX = value; }
-QBindable<double> FieldViewItem::bindableCameraX() { return &m_cameraX; }
-
-double FieldViewItem::cameraY() const { return m_cameraY; }
-void FieldViewItem::setCameraY(double value) { m_cameraY = value; }
-QBindable<double> FieldViewItem::bindableCameraY() { return &m_cameraY; }
-
-double FieldViewItem::cameraRotation() const { return m_cameraRotation; }
-void FieldViewItem::setCameraRotation(double value) { m_cameraRotation = value; }
-QBindable<double> FieldViewItem::bindableCameraRotation() { return &m_cameraRotation; }
-
-double FieldViewItem::cameraPitch() const { return m_cameraPitch; }
-void FieldViewItem::setCameraPitch(double value) { m_cameraPitch = value; }
-QBindable<double> FieldViewItem::bindableCameraPitch() { return &m_cameraPitch; }
-
-double FieldViewItem::fovDegrees() const { return m_fovDegrees; }
-void FieldViewItem::setFovDegrees(double value) { m_fovDegrees = value; }
-QBindable<double> FieldViewItem::bindableFovDegrees() { return &m_fovDegrees; }
+GridProperties* FieldViewItem::grid() const { return m_grid; }
 
 // ============================================================================
 // Visibility Property Accessors
@@ -157,10 +147,6 @@ QBindable<QColor> FieldViewItem::bindableBoundaryColor() { return &m_boundaryCol
 QColor FieldViewItem::guidanceColor() const { return m_guidanceColor; }
 void FieldViewItem::setGuidanceColor(const QColor &color) { m_guidanceColor = color; }
 QBindable<QColor> FieldViewItem::bindableGuidanceColor() { return &m_guidanceColor; }
-
-QColor FieldViewItem::gridColor() const { return m_gridColor; }
-void FieldViewItem::setGridColor(const QColor &color) { m_gridColor = color; }
-QBindable<QColor> FieldViewItem::bindableGridColor() { return &m_gridColor; }
 
 QColor FieldViewItem::fieldColor() const { return m_fieldColor; }
 void FieldViewItem::setFieldColor(const QColor &color) { m_fieldColor = color; }
@@ -252,7 +238,9 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     }
 
     // Build the MVP matrix once for all children
-    m_currentMvp = buildMvpMatrix();
+    m_currentMv = buildViewMatrix();
+    m_currentP = buildProjectionMatrix();
+    m_currentNcd = buildNdcMatrix();
 
     // Note: We don't set the matrix on the transform node because QSGTransformNode
     // is for 2D scene graph transforms, not 3D MVP matrices. Instead, we pass
@@ -262,28 +250,42 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     loadFloorTexture();
 
     // Get WorldGrid data for field surface and grid
-    auto *worldGrid = WorldGrid::instance();
-    double eastingMin = worldGrid->eastingMin();
-    double eastingMax = worldGrid->eastingMax();
-    double northingMin = worldGrid->northingMin();
-    double northingMax = worldGrid->northingMax();
+    //adjust zoom based on cam distance
+    double _gridZoom = m_camera->zoom();
+    int count;
+
+    if (_gridZoom> 100) count = 4;
+    else if (_gridZoom> 80) count = 8;
+    else if (_gridZoom> 50) count = 16;
+    else if (_gridZoom> 20) count = 32;
+    else if (_gridZoom> 10) count = 64;
+    else count = 80;
+
+    double n = glm::roundMidAwayFromZero(camera()->y() / (m_grid->size() / count * 2)) * (m_grid->size() / count * 2);
+    double e = glm::roundMidAwayFromZero(camera()->x() / (m_grid->size() / count * 2)) * (m_grid->size() / count * 2);
+    double eastingMin = e - m_grid->size();
+    double eastingMax = e + m_grid->size();
+    double northingMin = n - m_grid->size();
+    double northingMax = n + m_grid->size();
+
+    QMatrix4x4 currentMvp = m_currentNcd * m_currentP * m_currentMv;
 
     // Always update field surface (it changes with camera position)
     rootNode->fieldSurfaceNode->update(
-        m_currentMvp,
+        currentMvp,
         m_fieldColor,
         m_isTextureOn,
         m_floorTexture,
         eastingMin, eastingMax,
         northingMin, northingMax,
-        static_cast<int>(worldGrid->count())
+        count
     );
 
     // Update grid if visible
     if (m_showGrid) {
         // Calculate grid spacing based on zoom
         double gridSpacing = 10.0;
-        double camDistance = m_zoom;
+        double camDistance = m_camera->zoom();
         if (camDistance <= 20000 && camDistance > 10000) gridSpacing = 2012;
         else if (camDistance <= 10000 && camDistance > 5000) gridSpacing = 1006;
         else if (camDistance <= 5000 && camDistance > 2000) gridSpacing = 503;
@@ -295,8 +297,8 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         else if (camDistance <= 50 && camDistance > 1) gridSpacing = 5.03;
 
         rootNode->gridNode->update(
-            m_currentMvp,
-            m_gridColor,
+            currentMvp,
+            m_grid->color(),
             eastingMin, eastingMax,
             northingMin, northingMax,
             gridSpacing
@@ -307,7 +309,7 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     // Update boundary if visible and dirty
     if (m_showBoundary && m_boundaryDirty) {
         rootNode->boundaryNode->update(
-            m_currentMvp,
+            currentMvp,
             m_boundaryColor,
             m_renderData.boundaries
         );
@@ -328,7 +330,9 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     // Vehicle always updates (position changes frequently)
     if (m_showVehicle) {
         rootNode->vehicleNode->update(
-            m_currentMvp,
+            m_currentMv,
+            m_currentP,
+            m_currentNcd,
             m_vehicleColor,
             m_renderData.vehicleX,
             m_renderData.vehicleY,
@@ -372,10 +376,10 @@ void FieldViewItem::loadFloorTexture()
 // Matrix Building
 // ============================================================================
 
-QMatrix4x4 FieldViewItem::buildMvpMatrix() const
+QMatrix4x4 FieldViewItem::buildNdcMatrix() const
 {
     // Standard 3D MVP: world coords -> NDC (-1 to 1)
-    QMatrix4x4 mvp3d = buildProjectionMatrix() * buildViewMatrix();
+    //QMatrix4x4 mvp3d = buildProjectionMatrix() * buildViewMatrix();
 
     // Transform from NDC to item-local coordinates
     // NDC: x=-1 to 1, y=-1 to 1
@@ -392,15 +396,15 @@ QMatrix4x4 FieldViewItem::buildMvpMatrix() const
     float w = static_cast<float>(width());
     float h = static_cast<float>(height());
 
-    if (w <= 0 || h <= 0)
-        return mvp3d;  // Fallback if size not set yet
-
     QMatrix4x4 ndcToItem;
-    // First translate NDC origin to item center, then scale
-    ndcToItem.translate(w / 2.0f, h / 2.0f, 0.0f);
-    ndcToItem.scale(w / 2.0f, -h / 2.0f, 1.0f);  // Negative Y to flip (Qt Y is down)
 
-    return ndcToItem * mvp3d;
+    if (w > 0 && h > 0) {
+        // First translate NDC origin to item center, then scale
+        ndcToItem.translate(w / 2.0f, h / 2.0f, 0.0f);
+        ndcToItem.scale(w / 2.0f, -h / 2.0f, 1.0f);  // Negative Y to flip (Qt Y is down)
+    }
+
+    return ndcToItem;
 }
 
 QMatrix4x4 FieldViewItem::buildProjectionMatrix() const
@@ -412,11 +416,11 @@ QMatrix4x4 FieldViewItem::buildProjectionMatrix() const
     if (aspect <= 0)
         aspect = 1.0f;
 
-    // FOV is set via fovDegrees property (default 40.1 degrees matches OpenGL's fovy = 0.7 radians)
+    // FOV is set via camera.fov property (default 40.1 degrees matches OpenGL's fovy = 0.7 radians)
     // Far plane uses camDistanceFactor * camSetDistance where camDistanceFactor = -2
-    // Since m_zoom is positive (abs of camSetDistance), far = 2 * m_zoom
-    float fov = static_cast<float>(m_fovDegrees);
-    float farPlane = static_cast<float>(2.0 * m_zoom);
+    // Since zoom is positive (abs of camSetDistance), far = 2 * zoom
+    float fov = static_cast<float>(m_camera->fov());
+    float farPlane = static_cast<float>(2.0 * m_camera->zoom());
     if (farPlane < 100.0f) farPlane = 100.0f;  // Minimum far plane
 
     projection.perspective(fov, aspect, 1.0f, farPlane);
@@ -429,17 +433,17 @@ QMatrix4x4 FieldViewItem::buildViewMatrix() const
     QMatrix4x4 view;
 
     // Match OpenGL version: camera distance = camSetDistance * 0.5
-    // m_zoom is positive (abs of camSetDistance), so we use -m_zoom * 0.5
-    view.translate(0, 0, static_cast<float>(-m_zoom * 0.5));
+    // zoom is positive (abs of camSetDistance), so we use -zoom * 0.5
+    view.translate(0, 0, static_cast<float>(-m_camera->zoom() * 0.5));
 
     // Apply pitch (tilt)
-    view.rotate(static_cast<float>(m_cameraPitch), 1.0f, 0.0f, 0.0f);
+    view.rotate(static_cast<float>(m_camera->pitch()), 1.0f, 0.0f, 0.0f);
 
     // Apply rotation (yaw) - camera follows vehicle heading
-    view.rotate(static_cast<float>(-m_cameraRotation), 0.0f, 0.0f, 1.0f);
+    view.rotate(static_cast<float>(-m_camera->rotation()), 0.0f, 0.0f, 1.0f);
 
     // Translate to camera position (center on vehicle/target)
-    view.translate(static_cast<float>(-m_cameraX), static_cast<float>(-m_cameraY), 0.0f);
+    view.translate(static_cast<float>(-m_camera->x()), static_cast<float>(-m_camera->y()), 0.0f);
 
     return view;
 }

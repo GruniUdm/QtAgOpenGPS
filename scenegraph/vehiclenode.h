@@ -17,7 +17,9 @@ public:
     VehicleNode();
     ~VehicleNode() override;
 
-    void update(const QMatrix4x4 &mvp,
+    void update(const QMatrix4x4 &mv,
+                const QMatrix4x4 &p,
+                const QMatrix4x4 &ncd,
                 const QColor &vehicleColor,
                 double vehicleX, double vehicleY,
                 double vehicleHeading);
