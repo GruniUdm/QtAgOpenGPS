@@ -21,6 +21,10 @@ struct ColorVertex {
     float r, g, b, a;   // RGBA color
 };
 
+struct PositionVertex {
+    float x,y,z; // 3D position
+};
+
 // Vertex with position and texture coordinate
 struct TexturedVertex {
     float x, y, z;      // 3D position
