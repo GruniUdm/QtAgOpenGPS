@@ -4,6 +4,10 @@
 // Scene graph-based field view renderer implementation
 
 #include "fieldviewitem.h"
+#include "fieldsurfacenode.h"
+#include "gridnode.h"
+#include "boundarynode.h"
+#include "vehiclenode.h"
 #include "aogmaterial.h"
 #include "aoggeometry.h"
 
@@ -33,18 +37,18 @@ Q_LOGGING_CATEGORY(fieldviewitem_log, "fieldviewitem.qtagopengps")
 
 FieldViewNode::FieldViewNode()
 {
-    // Create child node containers
-    fieldSurfaceNode = new QSGNode();
-    backgroundNode = new QSGNode();
-    boundaryNode = new QSGNode();
-    coverageNode = new QSGNode();
-    guidanceNode = new QSGNode();
-    vehicleNode = new QSGNode();
+    // Create child nodes (typed for refactored ones, generic for others)
+    fieldSurfaceNode = new FieldSurfaceNode();
+    gridNode = new GridNode();
+    boundaryNode = new BoundaryNode();
+    coverageNode = new QSGNode();   // Not yet refactored
+    guidanceNode = new QSGNode();   // Not yet refactored
+    vehicleNode = new VehicleNode();
     uiNode = new QSGNode();
 
     // Add children in render order (back to front)
     appendChildNode(fieldSurfaceNode);  // Field surface first (furthest back)
-    appendChildNode(backgroundNode);    // Grid lines
+    appendChildNode(gridNode);          // Grid lines
     appendChildNode(boundaryNode);
     appendChildNode(coverageNode);
     appendChildNode(guidanceNode);
@@ -254,38 +258,115 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     // is for 2D scene graph transforms, not 3D MVP matrices. Instead, we pass
     // the MVP matrix to each material's shader.
 
-    // Always update field surface (it changes with camera position)
-    updateFieldSurfaceNode(rootNode);
+    // Load floor texture if needed (requires window())
+    loadFloorTexture();
 
-    // Update child nodes based on dirty flags
+    // Get WorldGrid data for field surface and grid
+    auto *worldGrid = WorldGrid::instance();
+    double eastingMin = worldGrid->eastingMin();
+    double eastingMax = worldGrid->eastingMax();
+    double northingMin = worldGrid->northingMin();
+    double northingMax = worldGrid->northingMax();
+
+    // Always update field surface (it changes with camera position)
+    rootNode->fieldSurfaceNode->update(
+        m_currentMvp,
+        m_fieldColor,
+        m_isTextureOn,
+        m_floorTexture,
+        eastingMin, eastingMax,
+        northingMin, northingMax,
+        static_cast<int>(worldGrid->count())
+    );
+
+    // Update grid if visible
+    if (m_showGrid) {
+        // Calculate grid spacing based on zoom
+        double gridSpacing = 10.0;
+        double camDistance = m_zoom;
+        if (camDistance <= 20000 && camDistance > 10000) gridSpacing = 2012;
+        else if (camDistance <= 10000 && camDistance > 5000) gridSpacing = 1006;
+        else if (camDistance <= 5000 && camDistance > 2000) gridSpacing = 503;
+        else if (camDistance <= 2000 && camDistance > 1000) gridSpacing = 201.2;
+        else if (camDistance <= 1000 && camDistance > 500) gridSpacing = 100.6;
+        else if (camDistance <= 500 && camDistance > 250) gridSpacing = 50.3;
+        else if (camDistance <= 250 && camDistance > 150) gridSpacing = 25.15;
+        else if (camDistance <= 150 && camDistance > 50) gridSpacing = 10.06;
+        else if (camDistance <= 50 && camDistance > 1) gridSpacing = 5.03;
+
+        rootNode->gridNode->update(
+            m_currentMvp,
+            m_gridColor,
+            eastingMin, eastingMax,
+            northingMin, northingMax,
+            gridSpacing
+        );
+        m_gridDirty = false;
+    }
+
+    // Update boundary if visible and dirty
     if (m_showBoundary && m_boundaryDirty) {
-        updateBoundaryNode(rootNode);
+        rootNode->boundaryNode->update(
+            m_currentMvp,
+            m_boundaryColor,
+            m_renderData.boundaries
+        );
         m_boundaryDirty = false;
     }
 
+    // Update coverage and guidance (not yet refactored)
     if (m_showCoverage && m_coverageDirty) {
-        updateCoverageNode(rootNode);
+        //updateCoverageNode(rootNode);
         m_coverageDirty = false;
     }
 
     if (m_showGuidance && m_guidanceDirty) {
-        updateGuidanceNode(rootNode);
+        //updateGuidanceNode(rootNode);
         m_guidanceDirty = false;
-    }
-
-    if (m_showGrid) {
-        // Grid always updates when camera moves (position-dependent)
-        updateGridNode(rootNode);
-        m_gridDirty = false;
     }
 
     // Vehicle always updates (position changes frequently)
     if (m_showVehicle) {
-        updateVehicleNode(rootNode);
+        rootNode->vehicleNode->update(
+            m_currentMvp,
+            m_vehicleColor,
+            m_renderData.vehicleX,
+            m_renderData.vehicleY,
+            m_renderData.vehicleHeading
+        );
     }
 
     return rootNode;
 }
+
+void FieldViewItem::loadFloorTexture()
+{
+    if (m_isTextureOn && !m_floorTexture && window()) {
+        // Load texture if not already loaded
+#ifdef LOCAL_QML
+        QString texPath = QStringLiteral("local:/images/textures/floor.png");
+#else
+        QString texPath = QStringLiteral(":/AOG/images/textures/floor.png");
+#endif
+        QImage floorImage(texPath);
+        if (!floorImage.isNull()) {
+            // Convert to RGBA format if needed for consistent texture handling
+            if (floorImage.format() != QImage::Format_RGBA8888 &&
+                floorImage.format() != QImage::Format_RGBA8888_Premultiplied) {
+                floorImage = floorImage.convertToFormat(QImage::Format_RGBA8888);
+            }
+            // Don't use atlas - we need repeating wrap mode
+            m_floorTexture = window()->createTextureFromImage(floorImage);
+            if (m_floorTexture) {
+                m_floorTexture->setHorizontalWrapMode(QSGTexture::Repeat);
+                m_floorTexture->setVerticalWrapMode(QSGTexture::Repeat);
+                m_floorTexture->setFiltering(QSGTexture::Linear);
+                m_floorTexture->setMipmapFiltering(QSGTexture::None);
+            }
+        }
+    }
+}
+
 
 // ============================================================================
 // Matrix Building
@@ -361,375 +442,4 @@ QMatrix4x4 FieldViewItem::buildViewMatrix() const
     view.translate(static_cast<float>(-m_cameraX), static_cast<float>(-m_cameraY), 0.0f);
 
     return view;
-}
-
-// ============================================================================
-// Node Update Methods
-// ============================================================================
-
-void FieldViewItem::updateBoundaryNode(FieldViewNode *rootNode)
-{
-    // Clear existing boundary geometry
-    while (rootNode->boundaryNode->childCount() > 0) {
-        QSGNode *child = rootNode->boundaryNode->firstChild();
-        rootNode->boundaryNode->removeChildNode(child);
-        delete child;
-    }
-
-    // Create geometry for each boundary
-    for (const auto &boundary : m_renderData.boundaries) {
-        if (boundary.size() < 3)
-            continue;
-
-        // Create geometry node for this boundary
-        auto *geomNode = new QSGGeometryNode();
-
-        // Create line loop geometry
-        auto *geometry = AOGGeometry::createLineLoopGeometry(boundary);
-        if (!geometry)
-            continue;
-
-        geomNode->setGeometry(geometry);
-        geomNode->setFlag(QSGNode::OwnsGeometry);
-
-        // Create material with MVP matrix
-        auto *material = new AOGFlatColorMaterial();
-        material->setColor(m_boundaryColor);
-        material->setMvpMatrix(m_currentMvp);
-
-        geomNode->setMaterial(material);
-        geomNode->setFlag(QSGNode::OwnsMaterial);
-
-        rootNode->boundaryNode->appendChildNode(geomNode);
-    }
-}
-
-void FieldViewItem::updateCoverageNode(FieldViewNode *rootNode)
-{
-    // Clear existing coverage geometry
-    while (rootNode->coverageNode->childCount() > 0) {
-        QSGNode *child = rootNode->coverageNode->firstChild();
-        rootNode->coverageNode->removeChildNode(child);
-        delete child;
-    }
-
-    if (m_renderData.coverageVertices.isEmpty())
-        return;
-
-    // Create colored triangles for coverage
-    auto *geomNode = new QSGGeometryNode();
-
-    auto *geometry = AOGGeometry::createColoredTrianglesGeometry(
-        m_renderData.coverageVertices,
-        m_renderData.coverageColors
-    );
-    if (!geometry) {
-        delete geomNode;
-        return;
-    }
-
-    geomNode->setGeometry(geometry);
-    geomNode->setFlag(QSGNode::OwnsGeometry);
-
-    // Use vertex color material for coverage with MVP matrix
-    auto *material = new AOGVertexColorMaterial();
-    material->setMvpMatrix(m_currentMvp);
-    geomNode->setMaterial(material);
-    geomNode->setFlag(QSGNode::OwnsMaterial);
-
-    rootNode->coverageNode->appendChildNode(geomNode);
-}
-
-void FieldViewItem::updateGuidanceNode(FieldViewNode *rootNode)
-{
-    // Clear existing guidance geometry
-    while (rootNode->guidanceNode->childCount() > 0) {
-        QSGNode *child = rootNode->guidanceNode->firstChild();
-        rootNode->guidanceNode->removeChildNode(child);
-        delete child;
-    }
-
-    if (!m_renderData.hasGuidance || m_renderData.guidanceLine.isEmpty())
-        return;
-
-    // Create line strip for guidance line
-    auto *geomNode = new QSGGeometryNode();
-
-    auto *geometry = AOGGeometry::createLineStripGeometry(m_renderData.guidanceLine);
-    if (!geometry) {
-        delete geomNode;
-        return;
-    }
-
-    geomNode->setGeometry(geometry);
-    geomNode->setFlag(QSGNode::OwnsGeometry);
-
-    auto *material = new AOGFlatColorMaterial();
-    material->setColor(m_guidanceColor);
-    material->setMvpMatrix(m_currentMvp);
-
-    geomNode->setMaterial(material);
-    geomNode->setFlag(QSGNode::OwnsMaterial);
-
-    rootNode->guidanceNode->appendChildNode(geomNode);
-}
-
-void FieldViewItem::updateVehicleNode(FieldViewNode *rootNode)
-{
-    // Clear existing vehicle geometry
-    while (rootNode->vehicleNode->childCount() > 0) {
-        QSGNode *child = rootNode->vehicleNode->firstChild();
-        rootNode->vehicleNode->removeChildNode(child);
-        delete child;
-    }
-
-    // Create a simple triangle for vehicle representation
-    // This will be replaced with proper vehicle geometry later
-    QVector<QVector3D> vehicleTriangle;
-
-    // Transform vehicle shape by position and heading
-    double heading = qDegreesToRadians(m_renderData.vehicleHeading);
-    double cosH = qCos(heading);
-    double sinH = qSin(heading);
-
-    // Vehicle arrow shape (pointing in direction of travel)
-    double size = 2.0;  // meters
-
-    // Transform local coordinates to world coordinates
-    auto transformPoint = [&](double lx, double ly) -> QVector3D {
-        double wx = m_renderData.vehicleX + (lx * cosH - ly * sinH);
-        double wy = m_renderData.vehicleY + (lx * sinH + ly * cosH);
-        return QVector3D(static_cast<float>(wx), static_cast<float>(wy), 0.0f);
-    };
-
-    // Arrow pointing forward (positive Y in local coords)
-    vehicleTriangle.append(transformPoint(0, size));      // Front
-    vehicleTriangle.append(transformPoint(-size/2, -size/2)); // Back left
-    vehicleTriangle.append(transformPoint(size/2, -size/2));  // Back right
-
-    auto *geomNode = new QSGGeometryNode();
-
-    auto *geometry = AOGGeometry::createTrianglesGeometry(vehicleTriangle);
-    if (!geometry) {
-        delete geomNode;
-        return;
-    }
-
-    geomNode->setGeometry(geometry);
-    geomNode->setFlag(QSGNode::OwnsGeometry);
-
-    auto *material = new AOGFlatColorMaterial();
-    material->setColor(m_vehicleColor);  // Use the configurable vehicle color
-    material->setMvpMatrix(m_currentMvp);
-
-    geomNode->setMaterial(material);
-    geomNode->setFlag(QSGNode::OwnsMaterial);
-
-    rootNode->vehicleNode->appendChildNode(geomNode);
-}
-
-void FieldViewItem::updateGridNode(FieldViewNode *rootNode)
-{
-    // Clear existing grid geometry
-    while (rootNode->backgroundNode->childCount() > 0) {
-        QSGNode *child = rootNode->backgroundNode->firstChild();
-        rootNode->backgroundNode->removeChildNode(child);
-        delete child;
-    }
-
-    // Create grid lines similar to WorldGrid::DrawWorldGrid
-    QVector<QVector3D> gridLines;
-
-    // Get extents from WorldGrid singleton if available
-    double eastingMin = m_cameraX - 200;
-    double eastingMax = m_cameraX + 200;
-    double northingMin = m_cameraY - 200;
-    double northingMax = m_cameraY + 200;
-
-    // Calculate grid spacing based on zoom (similar to Camera::SetZoom)
-    double gridZoom = 10.0;  // Default 10 meter spacing
-    double camDistance = m_zoom;
-    if (camDistance <= 20000 && camDistance > 10000) gridZoom = 2012;
-    else if (camDistance <= 10000 && camDistance > 5000) gridZoom = 1006;
-    else if (camDistance <= 5000 && camDistance > 2000) gridZoom = 503;
-    else if (camDistance <= 2000 && camDistance > 1000) gridZoom = 201.2;
-    else if (camDistance <= 1000 && camDistance > 500) gridZoom = 100.6;
-    else if (camDistance <= 500 && camDistance > 250) gridZoom = 50.3;
-    else if (camDistance <= 250 && camDistance > 150) gridZoom = 25.15;
-    else if (camDistance <= 150 && camDistance > 50) gridZoom = 10.06;
-    else if (camDistance <= 50 && camDistance > 1) gridZoom = 5.03;
-
-    // Helper function to round mid away from zero (like glm::roundMidAwayFromZero)
-    auto roundMidAwayFromZero = [](double val) -> double {
-        return (val >= 0) ? qFloor(val + 0.5) : qCeil(val - 0.5);
-    };
-
-    // Create vertical lines (constant easting, varying northing)
-    // Match WorldGrid: for (double num = roundMidAwayFromZero(eastingMin / gridZoom) * gridZoom; num < eastingMax; num += gridZoom)
-    for (double num = roundMidAwayFromZero(eastingMin / gridZoom) * gridZoom; num < eastingMax; num += gridZoom) {
-        if (num < eastingMin) continue;
-        gridLines.append(QVector3D(static_cast<float>(num), static_cast<float>(northingMax), 0.1f));
-        gridLines.append(QVector3D(static_cast<float>(num), static_cast<float>(northingMin), 0.1f));
-    }
-
-    // Create horizontal lines (constant northing, varying easting)
-    // Match WorldGrid: for (double num2 = roundMidAwayFromZero(northingMin / gridZoom) * gridZoom; num2 < northingMax; num2 += gridZoom)
-    for (double num2 = roundMidAwayFromZero(northingMin / gridZoom) * gridZoom; num2 < northingMax; num2 += gridZoom) {
-        if (num2 < northingMin) continue;
-        gridLines.append(QVector3D(static_cast<float>(eastingMax), static_cast<float>(num2), 0.1f));
-        gridLines.append(QVector3D(static_cast<float>(eastingMin), static_cast<float>(num2), 0.1f));
-    }
-
-    if (gridLines.isEmpty())
-        return;
-
-    auto *geomNode = new QSGGeometryNode();
-
-    auto *geometry = AOGGeometry::createLinesGeometry(gridLines);
-    if (!geometry) {
-        delete geomNode;
-        return;
-    }
-
-    geomNode->setGeometry(geometry);
-    geomNode->setFlag(QSGNode::OwnsGeometry);
-
-    auto *material = new AOGFlatColorMaterial();
-    material->setColor(m_gridColor);  // Use the configurable grid color
-    material->setMvpMatrix(m_currentMvp);  // Set the MVP matrix!
-
-    geomNode->setMaterial(material);
-    geomNode->setFlag(QSGNode::OwnsMaterial);
-
-    rootNode->backgroundNode->appendChildNode(geomNode);
-}
-
-void FieldViewItem::updateFieldSurfaceNode(FieldViewNode *rootNode)
-{
-    //qCDebug(fieldviewitem_log) << "FieldViewItem::updateFieldSurfaceNode - isTextureOn:" << m_isTextureOn.value()
-    //           << "window:" << window();
-
-    // Clear existing field surface geometry
-    while (rootNode->fieldSurfaceNode->childCount() > 0) {
-        QSGNode *child = rootNode->fieldSurfaceNode->firstChild();
-        rootNode->fieldSurfaceNode->removeChildNode(child);
-        delete child;
-    }
-
-    // Get field extents from WorldGrid (6000 meter grid size by default)
-    auto *worldGrid = WorldGrid::instance();
-    double eastingMin = worldGrid->eastingMin();
-    double eastingMax = worldGrid->eastingMax();
-    double northingMin = worldGrid->northingMin();
-    double northingMax = worldGrid->northingMax();
-
-    // Z position slightly behind (negative Z is further away in our coordinate system)
-    const float surfaceZ = -0.10f;
-
-    // Check if we should use texture and if it's available
-    bool useTexture = m_isTextureOn && m_floorTexture;
-
-    if (m_isTextureOn && !m_floorTexture && window()) {
-        // Load texture if not already loaded
-#ifdef LOCAL_QML
-        QString texPath = QStringLiteral("local:/images/textures/floor.png");
-#else
-        QString texPath = QStringLiteral(":/AOG/images/textures/floor.png");
-#endif
-        QImage floorImage(texPath);
-        if (!floorImage.isNull()) {
-            // Convert to RGBA format if needed for consistent texture handling
-            if (floorImage.format() != QImage::Format_RGBA8888 &&
-                floorImage.format() != QImage::Format_RGBA8888_Premultiplied) {
-                floorImage = floorImage.convertToFormat(QImage::Format_RGBA8888);
-            }
-            // Don't use atlas - we need repeating wrap mode
-            m_floorTexture = window()->createTextureFromImage(floorImage);
-            if (m_floorTexture) {
-                m_floorTexture->setHorizontalWrapMode(QSGTexture::Repeat);
-                m_floorTexture->setVerticalWrapMode(QSGTexture::Repeat);
-                m_floorTexture->setFiltering(QSGTexture::Linear);
-                m_floorTexture->setMipmapFiltering(QSGTexture::None);
-                useTexture = true;
-            }
-        }
-    }
-
-    if (useTexture) {
-        // Textured field surface
-        // Use WorldGrid's count for texture tiling (default 40, adjusted based on zoom)
-        int count = static_cast<int>(worldGrid->count());
-
-        // Create textured quad geometry manually (4 vertices for triangle strip)
-        auto *geometry = new QSGGeometry(AOGGeometry::texturedVertexAttributes(), 4);
-        geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
-
-        TexturedVertex *data = static_cast<TexturedVertex *>(geometry->vertexData());
-
-        // Vertex order for triangle strip: top-left, top-right, bottom-left, bottom-right
-        // This matches WorldGrid's vertex order
-        data[0].x = static_cast<float>(eastingMin);
-        data[0].y = static_cast<float>(northingMax);
-        data[0].z = surfaceZ;
-        data[0].u = 0.0f;
-        data[0].v = 0.0f;
-
-        data[1].x = static_cast<float>(eastingMax);
-        data[1].y = static_cast<float>(northingMax);
-        data[1].z = surfaceZ;
-        data[1].u = static_cast<float>(count);
-        data[1].v = 0.0f;
-
-        data[2].x = static_cast<float>(eastingMin);
-        data[2].y = static_cast<float>(northingMin);
-        data[2].z = surfaceZ;
-        data[2].u = 0.0f;
-        data[2].v = static_cast<float>(count);
-
-        data[3].x = static_cast<float>(eastingMax);
-        data[3].y = static_cast<float>(northingMin);
-        data[3].z = surfaceZ;
-        data[3].u = static_cast<float>(count);
-        data[3].v = static_cast<float>(count);
-
-        auto *geomNode = new QSGGeometryNode();
-        geomNode->setGeometry(geometry);
-        geomNode->setFlag(QSGNode::OwnsGeometry);
-
-        auto *material = new AOGTextureMaterial();
-        material->setTexture(m_floorTexture);
-        material->setColor(m_fieldColor);  // Tint color for the texture
-        material->setUseColor(true);       // Enable color tinting (like OpenGL version)
-        material->setMvpMatrix(m_currentMvp);
-
-        geomNode->setMaterial(material);
-        geomNode->setFlag(QSGNode::OwnsMaterial);
-
-        rootNode->fieldSurfaceNode->appendChildNode(geomNode);
-    } else {
-        // Solid color field surface
-        QVector<QVector3D> surfaceQuad;
-        // Vertex order for triangle strip: top-left, top-right, bottom-left, bottom-right
-        surfaceQuad.append(QVector3D(static_cast<float>(eastingMin), static_cast<float>(northingMax), surfaceZ));
-        surfaceQuad.append(QVector3D(static_cast<float>(eastingMax), static_cast<float>(northingMax), surfaceZ));
-        surfaceQuad.append(QVector3D(static_cast<float>(eastingMin), static_cast<float>(northingMin), surfaceZ));
-        surfaceQuad.append(QVector3D(static_cast<float>(eastingMax), static_cast<float>(northingMin), surfaceZ));
-
-        auto *geometry = AOGGeometry::createTriangleStripGeometry(surfaceQuad);
-        if (!geometry)
-            return;
-
-        auto *geomNode = new QSGGeometryNode();
-        geomNode->setGeometry(geometry);
-        geomNode->setFlag(QSGNode::OwnsGeometry);
-
-        auto *material = new AOGFlatColorMaterial();
-        material->setColor(m_fieldColor);
-        material->setMvpMatrix(m_currentMvp);
-
-        geomNode->setMaterial(material);
-        geomNode->setFlag(QSGNode::OwnsMaterial);
-
-        rootNode->fieldSurfaceNode->appendChildNode(geomNode);
-    }
 }

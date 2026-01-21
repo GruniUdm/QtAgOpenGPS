@@ -25,6 +25,12 @@ class CCamera;
 class Backend;
 class SettingsManager;
 
+// Forward declarations for node classes
+class FieldSurfaceNode;
+class GridNode;
+class BoundaryNode;
+class VehicleNode;
+
 // ============================================================================
 // FieldViewNode - Root node for the field view scene graph
 // ============================================================================
@@ -36,12 +42,12 @@ public:
     ~FieldViewNode();
 
     // Child nodes for different render layers (rendered back to front)
-    QSGNode *fieldSurfaceNode = nullptr; // Field surface (solid color or textured)
-    QSGNode *backgroundNode = nullptr;   // World grid lines
-    QSGNode *boundaryNode = nullptr;     // Field boundaries
-    QSGNode *coverageNode = nullptr;     // Coverage patches
-    QSGNode *guidanceNode = nullptr;     // Guidance lines (AB line, contour, etc.)
-    QSGNode *vehicleNode = nullptr;      // Vehicle representation
+    FieldSurfaceNode *fieldSurfaceNode = nullptr;
+    GridNode *gridNode = nullptr;
+    BoundaryNode *boundaryNode = nullptr;
+    QSGNode *coverageNode = nullptr;     // Coverage patches (not yet refactored)
+    QSGNode *guidanceNode = nullptr;     // Guidance lines (not yet refactored)
+    VehicleNode *vehicleNode = nullptr;
     QSGNode *uiNode = nullptr;           // UI overlays (markers, flags)
 };
 
@@ -193,13 +199,12 @@ protected:
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override;
 
 private:
-    // ===== Node Update Methods =====
-    void updateFieldSurfaceNode(FieldViewNode *rootNode);
-    void updateBoundaryNode(FieldViewNode *rootNode);
+    // ===== Node Update Methods (for nodes not yet refactored) =====
     void updateCoverageNode(FieldViewNode *rootNode);
     void updateGuidanceNode(FieldViewNode *rootNode);
-    void updateVehicleNode(FieldViewNode *rootNode);
-    void updateGridNode(FieldViewNode *rootNode);
+
+    // ===== Texture Loading (requires QQuickWindow) =====
+    void loadFloorTexture();
 
     // ===== Matrix Building =====
     QMatrix4x4 buildMvpMatrix() const;

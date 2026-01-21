@@ -402,6 +402,11 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES scenegraph/aogmaterial.h scenegraph/aogmaterial.cpp
     SOURCES scenegraph/aoggeometry.h scenegraph/aoggeometry.cpp
     SOURCES scenegraph/fieldviewitem.h scenegraph/fieldviewitem.cpp
+    SOURCES scenegraph/fieldsurfacenode.h scenegraph/fieldsurfacenode.cpp
+    SOURCES scenegraph/gridnode.h scenegraph/gridnode.cpp
+    SOURCES scenegraph/vehiclenode.h scenegraph/vehiclenode.cpp
+    SOURCES scenegraph/boundarynode.h scenegraph/boundarynode.cpp
+
 )
 
 ###### End Script of Handling QML in module ######
