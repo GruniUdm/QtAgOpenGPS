@@ -10,6 +10,8 @@
 #include <QSGTexture>
 
 FieldSurfaceNode::FieldSurfaceNode()
+    : m_geomNode(nullptr)
+    , m_isTextured(false)
 {
 }
 
@@ -39,10 +41,11 @@ void FieldSurfaceNode::update(const QMatrix4x4 &mvp,
     // Determine if we should use texture
     bool useTexture = isTextureOn && texture;
 
-    // If mode changed, we need to rebuild
-    if (useTexture != m_isTextured) {
+    // If mode changed, we need to rebuild, or at very start
+    if (useTexture != m_isTextured || !m_init_children) {
         clearChildren();
         m_isTextured = useTexture;
+        m_init_children = true;
     }
 
     if (useTexture) {
@@ -127,15 +130,8 @@ void FieldSurfaceNode::updateSolidColor(const QMatrix4x4 &mvp, const QColor &fie
 
     if (!m_geomNode) {
         // Create new geometry node
-        QVector<QVector3D> surfaceQuad;
-        surfaceQuad.append(QVector3D(static_cast<float>(eastingMin), static_cast<float>(northingMax), surfaceZ));
-        surfaceQuad.append(QVector3D(static_cast<float>(eastingMax), static_cast<float>(northingMax), surfaceZ));
-        surfaceQuad.append(QVector3D(static_cast<float>(eastingMin), static_cast<float>(northingMin), surfaceZ));
-        surfaceQuad.append(QVector3D(static_cast<float>(eastingMax), static_cast<float>(northingMin), surfaceZ));
-
-        auto *geometry = AOGGeometry::createTriangleStripGeometry(surfaceQuad);
-        if (!geometry)
-            return;
+        auto *geometry = new QSGGeometry(AOGGeometry::positionAttributes(), 4);
+        geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
 
         m_geomNode = new QSGGeometryNode();
         m_geomNode->setGeometry(geometry);
@@ -146,29 +142,29 @@ void FieldSurfaceNode::updateSolidColor(const QMatrix4x4 &mvp, const QColor &fie
         m_geomNode->setFlag(QSGNode::OwnsMaterial);
 
         appendChildNode(m_geomNode);
-    } else {
-        // Update existing geometry
-        auto *geometry = m_geomNode->geometry();
-        ColorVertex *data = static_cast<ColorVertex *>(geometry->vertexData());
-
-        data[0].x = static_cast<float>(eastingMin);
-        data[0].y = static_cast<float>(northingMax);
-        data[0].z = surfaceZ;
-
-        data[1].x = static_cast<float>(eastingMax);
-        data[1].y = static_cast<float>(northingMax);
-        data[1].z = surfaceZ;
-
-        data[2].x = static_cast<float>(eastingMin);
-        data[2].y = static_cast<float>(northingMin);
-        data[2].z = surfaceZ;
-
-        data[3].x = static_cast<float>(eastingMax);
-        data[3].y = static_cast<float>(northingMin);
-        data[3].z = surfaceZ;
-
-        m_geomNode->markDirty(QSGNode::DirtyGeometry);
     }
+
+    // Update existing geometry
+    auto *geometry = m_geomNode->geometry();
+    PositionVertex *data = static_cast<PositionVertex *>(geometry->vertexData());
+
+    data[0].x = static_cast<float>(eastingMin);
+    data[0].y = static_cast<float>(northingMax);
+    data[0].z = surfaceZ;
+
+    data[1].x = static_cast<float>(eastingMax);
+    data[1].y = static_cast<float>(northingMax);
+    data[1].z = surfaceZ;
+
+    data[2].x = static_cast<float>(eastingMin);
+    data[2].y = static_cast<float>(northingMin);
+    data[2].z = surfaceZ;
+
+    data[3].x = static_cast<float>(eastingMax);
+    data[3].y = static_cast<float>(northingMin);
+    data[3].z = surfaceZ;
+
+    m_geomNode->markDirty(QSGNode::DirtyGeometry);
 
     // Update material
     auto *material = static_cast<AOGFlatColorMaterial *>(m_geomNode->material());

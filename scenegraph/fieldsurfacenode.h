@@ -42,6 +42,7 @@ private:
     void clearChildren();
 
     QSGGeometryNode *m_geomNode = nullptr;
+    bool m_init_children = false;
     bool m_isTextured = false;
 };
 
