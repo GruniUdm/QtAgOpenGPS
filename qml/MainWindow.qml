@@ -28,6 +28,17 @@ Window {
     // ⚡ Qt 6.8 Modern Pattern: Simple initialization notification
     // No complex property bindings or signal handlers needed
 
+    // Function to toggle the FieldView test window
+    function toggleFieldViewTest() {
+        fieldViewTestWindow.visible = !fieldViewTestWindow.visible
+    }
+
+    // Keyboard shortcut to toggle FieldView test window (Ctrl+Shift+F)
+    Shortcut {
+        sequence: "Ctrl+Shift+F"
+        onActivated: toggleFieldViewTest()
+    }
+
     LoggingCategory {
         id: qmlLog
 
@@ -983,6 +994,328 @@ Window {
         Item{
             id: windowsArea      //container for declaring all the windows
             anchors.fill: parent //that can be displayed on the main screen
+
+            // ===== Floating FieldViewItem Test Window =====
+            Rectangle {
+                id: fieldViewTestWindow
+                x: 50
+                y: 100
+                width: 420
+                height: 400
+                color: "#2d2d2d"
+                border.color: "#888888"
+                border.width: 2
+                radius: 8
+                visible: false
+                z: 100  // Always on top
+
+                // Title bar for dragging
+                Rectangle {
+                    id: titleBar
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 30
+                    color: "#444444"
+                    radius: 6
+
+                    // Square off bottom corners
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        height: 10
+                        color: parent.color
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "FieldView Test (Scene Graph)"
+                        color: "#ffffff"
+                        font.bold: true
+                    }
+
+                    // Close button
+                    Rectangle {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.rightMargin: 5
+                        width: 20
+                        height: 20
+                        radius: 10
+                        color: closeMouseArea.containsMouse ? "#ff4444" : "#666666"
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "X"
+                            color: "#ffffff"
+                            font.bold: true
+                            font.pixelSize: 12
+                        }
+
+                        MouseArea {
+                            id: closeMouseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: fieldViewTestWindow.visible = false
+                        }
+                    }
+
+                    // Drag handling
+                    MouseArea {
+                        id: dragArea
+                        anchors.fill: parent
+                        anchors.rightMargin: 30  // Don't interfere with close button
+                        property point clickPos: "0,0"
+
+                        onPressed: function(mouse) {
+                            clickPos = Qt.point(mouse.x, mouse.y)
+                        }
+
+                        onPositionChanged: function(mouse) {
+                            var delta = Qt.point(mouse.x - clickPos.x, mouse.y - clickPos.y)
+                            fieldViewTestWindow.x += delta.x
+                            fieldViewTestWindow.y += delta.y
+                        }
+                    }
+                }
+
+                // FieldViewItem content area
+                FieldViewItem {
+                    id: testFieldView
+                    anchors.top: titleBar.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: controlsRow.top
+                    anchors.margins: 4
+
+                    // ===== Bind to existing singletons =====
+                    // Camera position from Backend.fixFrame
+                    cameraX: Backend.fixFrame.easting
+                    cameraY: Backend.fixFrame.northing
+
+                    // Camera rotation from vehicle heading (radians to degrees)
+                    cameraRotation: Camera.camFollowing ? -Utils.radians_to_deg(VehicleInterface.fixHeading) : 0
+
+                    // Camera zoom/distance from Camera singleton (camSetDistance is negative)
+                    zoom: Math.abs(Camera.camSetDistance)
+                    fovDegrees: 40
+
+                    // Camera pitch from settings
+                    cameraPitch: SettingsManager.display_camPitch
+
+                    // Visibility settings
+                    showBoundary: true
+                    showCoverage: true
+                    showGuidance: true
+                    showVehicle: true
+                    showGrid: SettingsManager.display_isGridOn
+
+                    // Field surface texture mode from settings
+                    isTextureOn: SettingsManager.display_isTextureOn
+
+                    // ===== Color bindings - Day/Night mode from SettingsManager =====
+                    // Grid color: black (same as WorldGrid in formgps_opengl.cpp)
+                    gridColor: Qt.rgba(0, 0, 0, 1)
+
+                    // Field color: day/night from settings
+                    fieldColor: SettingsManager.display_isDayMode ?
+                                    SettingsManager.display_colorFieldDay :
+                                    SettingsManager.display_colorFieldNight
+
+                    // Background color: sky blue for day, black for night
+                    // Day: rgb(69, 102, 179) = rgba(0.27, 0.4, 0.7, 1)
+                    // Night: black
+                    backgroundColor: SettingsManager.display_isDayMode ?
+                                         Qt.rgba(0.27, 0.4, 0.7, 1) :
+                                         Qt.rgba(0, 0, 0, 1)
+
+                    // Vehicle color from settings
+                    vehicleColor: SettingsManager.display_colorVehicle
+
+                    // Boundary and guidance colors (yellow and green)
+                    boundaryColor: Qt.rgba(1, 1, 0, 1)
+                    guidanceColor: Qt.rgba(0, 1, 0, 1)
+                }
+
+                // Controls column at bottom
+                Column {
+                    id: controlsRow
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.margins: 4
+                    spacing: 2
+
+                    // Info display row
+                    Row {
+                        spacing: 8
+                        Text {
+                            text: "Pos: " + Backend.fixFrame.easting.toFixed(1) + ", " + Backend.fixFrame.northing.toFixed(1)
+                            color: "#aaaaaa"
+                            font.pixelSize: 10
+                        }
+                        Text {
+                            text: "Hdg: " + Utils.radians_to_deg(VehicleInterface.fixHeading).toFixed(1) + "°"
+                            color: "#aaaaaa"
+                            font.pixelSize: 10
+                        }
+                    }
+
+                    // WorldGrid extents row
+                    Row {
+                        spacing: 8
+                        Text {
+                            text: "Grid: E[" + WorldGrid.eastingMin.toFixed(0) + "," + WorldGrid.eastingMax.toFixed(0) +
+                                  "] N[" + WorldGrid.northingMin.toFixed(0) + "," + WorldGrid.northingMax.toFixed(0) + "]"
+                            color: "#888888"
+                            font.pixelSize: 9
+                        }
+                    }
+
+                    // Controls row
+                    Row {
+                        spacing: 4
+
+                        // Zoom controls - use Camera singleton
+                        Rectangle {
+                            width: 25
+                            height: 25
+                            color: "#555555"
+                            radius: 4
+                            Text { anchors.centerIn: parent; text: "-"; color: "white"; font.pixelSize: 16 }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: Backend.zoomOut()
+                            }
+                        }
+
+                        Text {
+                            height: 25
+                            verticalAlignment: Text.AlignVCenter
+                            text: "Zoom: " + Math.abs(Camera.camSetDistance).toFixed(0)
+                            color: "#cccccc"
+                            font.pixelSize: 11
+                        }
+
+                        Rectangle {
+                            width: 25
+                            height: 25
+                            color: "#555555"
+                            radius: 4
+                            Text { anchors.centerIn: parent; text: "+"; color: "white"; font.pixelSize: 16 }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: Backend.zoomIn()
+                            }
+                        }
+
+                        // Spacer
+                        Item { width: 6; height: 1 }
+
+                        // Pitch controls - use Backend tilt methods
+                        Rectangle {
+                            width: 25
+                            height: 25
+                            color: "#555555"
+                            radius: 4
+                            Text { anchors.centerIn: parent; text: "^"; color: "white"; font.pixelSize: 14 }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: Backend.tiltUp()
+                            }
+                        }
+
+                        Text {
+                            height: 25
+                            verticalAlignment: Text.AlignVCenter
+                            text: "Tilt: " + SettingsManager.display_camPitch.toFixed(0)
+                            color: "#cccccc"
+                            font.pixelSize: 11
+                        }
+
+                        Rectangle {
+                            width: 25
+                            height: 25
+                            color: "#555555"
+                            radius: 4
+                            Text { anchors.centerIn: parent; text: "v"; color: "white"; font.pixelSize: 14 }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: Backend.tiltDown()
+                            }
+                        }
+
+                        // Spacer
+                        Item { width: 6; height: 1 }
+
+                        // Following mode toggle
+                        Rectangle {
+                            width: 50
+                            height: 25
+                            color: Camera.camFollowing ? "#446644" : "#555555"
+                            radius: 4
+                            Text {
+                                anchors.centerIn: parent
+                                text: Camera.camFollowing ? "Follow" : "North"
+                                color: "white"
+                                font.pixelSize: 10
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: Camera.set_camFollowing(!Camera.camFollowing)
+                            }
+                        }
+                    }
+                }
+
+                // Resize handle (bottom-right corner)
+                Rectangle {
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    width: 15
+                    height: 15
+                    color: "transparent"
+
+                    // Diagonal lines to indicate resize
+                    Canvas {
+                        anchors.fill: parent
+                        onPaint: {
+                            var ctx = getContext("2d")
+                            ctx.strokeStyle = "#888888"
+                            ctx.lineWidth = 1
+                            ctx.beginPath()
+                            ctx.moveTo(width - 3, height)
+                            ctx.lineTo(width, height - 3)
+                            ctx.moveTo(width - 7, height)
+                            ctx.lineTo(width, height - 7)
+                            ctx.moveTo(width - 11, height)
+                            ctx.lineTo(width, height - 11)
+                            ctx.stroke()
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.SizeFDiagCursor
+                        property point clickPos: "0,0"
+
+                        onPressed: function(mouse) {
+                            clickPos = Qt.point(mouse.x, mouse.y)
+                        }
+
+                        onPositionChanged: function(mouse) {
+                            var deltaX = mouse.x - clickPos.x
+                            var deltaY = mouse.y - clickPos.y
+                            var newWidth = Math.max(300, fieldViewTestWindow.width + deltaX)
+                            var newHeight = Math.max(250, fieldViewTestWindow.height + deltaY)
+                            fieldViewTestWindow.width = newWidth
+                            fieldViewTestWindow.height = newHeight
+                        }
+                    }
+                }
+            }
+
             Field.FieldFromExisting{
                 id: fieldFromExisting
                 x: 0

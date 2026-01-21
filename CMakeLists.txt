@@ -397,6 +397,11 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES models/toolssectionbuttonsmodel.h models/toolssectionbuttonsmodel.cpp
     SOURCES models/fieldsmodel.h models/fieldsmodel.cpp
     SOURCES backendaccess.h
+
+    # Scene graph-based renderer (Phase: QSG Migration)
+    SOURCES scenegraph/aogmaterial.h scenegraph/aogmaterial.cpp
+    SOURCES scenegraph/aoggeometry.h scenegraph/aoggeometry.cpp
+    SOURCES scenegraph/fieldviewitem.h scenegraph/fieldviewitem.cpp
 )
 
 ###### End Script of Handling QML in module ######
@@ -454,6 +459,7 @@ target_include_directories(QtAgOpenGPS PRIVATE
     classes
     backend
     models
+    scenegraph
 )
 
 # QtAgIO QML module disabled - migrated to qml/agio/ in Phase 4.2

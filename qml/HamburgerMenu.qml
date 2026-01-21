@@ -146,6 +146,13 @@ Drawer{
                 }
             }
             Comp.IconButtonTextBeside{
+                text: qsTr("FieldView Test (Ctrl+Shift+F)")
+                onClicked: {
+                    hamburgerMenuRoot.visible = false
+                    mainWindow.toggleFieldViewTest()
+                }
+            }
+            Comp.IconButtonTextBeside{
                 text: qsTr("Reset All")
                 onClicked: console.log("")
                 visible: false//todo
