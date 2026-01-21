@@ -38,6 +38,20 @@
 Q_LOGGING_CATEGORY (formgps_ui, "formgps_ui.qtagopengps")
 #define QDEBUG qDebug(formgps_ui)
 
+#define STRINGISE_IMPL(x) #x
+#define STRINGISE(x) STRINGISE_IMPL(x)
+
+#if defined(_MSC_VER)
+// MSVC format: file(line): warning CXXXX: message
+#define FILE_LINE_LINK __FILE__ "(" STRINGISE(__LINE__) ") : "
+#define COMPILER_WARNING(msg) __pragma(message(FILE_LINE_LINK "warning: " msg))
+#elif defined(__GNUC__) || defined(__clang__)
+// GCC/Clang use _Pragma to embed #pragma GCC warning inside a macro
+#define COMPILER_WARNING(msg) _Pragma(STRINGISE(GCC warning msg))
+#else
+#define COMPILER_WARNING(msg)
+#endif
+
 QString caseInsensitiveFilename(QString directory, QString filename);
 
 // ⚡ PHASE 6.0.4: Q_PROPERTY setters moved to inline implementation in formgps.h
@@ -449,7 +463,7 @@ void FormGPS::resetDirection(){
 }
 
 void FormGPS::contourPriority(bool isRight) {
-#warning ct.isRightPriority is never used anywhere.  bug?
+    COMPILER_WARNING ("ct.isRightPriority is never used anywhere.  bug?")
     ct.set_isRightPriority (isRight);
     QDEBUG << "Contour isRight: " << isRight;
 }
@@ -564,13 +578,13 @@ void FormGPS::headlines_save() {
 
 //Track Snap buttons
 void FormGPS::snapToPivot() {
-#warning snapToPivot not yet implemented
+    COMPILER_WARNING("snapToPivot not yet implemented")
     //TODO
     QDEBUG<<"snap to pivot";
 }
 
 void FormGPS::snapSideways(double distance) {
-#warning snapSideways not yet implemented
+    COMPILER_WARNING("snapSideways not yet implemented")
     //TODO
 }
 
