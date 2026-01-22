@@ -10,6 +10,7 @@
 #include <QSGMaterialShader>
 #include <QMatrix4x4>
 #include <QColor>
+#include <QSize>
 #include <QSGGeometry>
 
 #include "aoggeometry.h"  // For ThickLineVertex struct
@@ -26,9 +27,16 @@ public:
     void setColor(const QColor &color);
     QColor color() const { return m_color; }
 
-    // Separate matrices for proper thick line calculation
-    void setModelViewProjectionMatrix(const QMatrix4x4 &mvp);
-    QMatrix4x4 modelViewProjectionMatrix() const { return m_mvpMatrix; }
+    // MVP matrix (projection * modelview) - standard clip space
+    void setMvpMatrix(const QMatrix4x4 &mvp);
+    QMatrix4x4 mvpMatrix() const { return m_mvpMatrix; }
+
+    // NDC matrix - viewport transform applied at the end
+    void setNdcMatrix(const QMatrix4x4 &ndc);
+    QMatrix4x4 ndcMatrix() const { return m_ndcMatrix; }
+
+    void setViewportSize(const QSize &size);
+    QSize viewportSize() const { return m_viewportSize; }
 
     void setLineWidth(float width);
     float lineWidth() const { return m_lineWidth; }
@@ -39,8 +47,9 @@ public:
 private:
     QColor m_color = Qt::white;
     QMatrix4x4 m_mvpMatrix;
-    float m_lineWidth = 2.0f;  // Width in screen pixels
+    QMatrix4x4 m_ndcMatrix;
     QSize m_viewportSize;
+    float m_lineWidth = 2.0f;  // Width in screen pixels
 };
 
 class ThickLineMaterialShader : public QSGMaterialShader

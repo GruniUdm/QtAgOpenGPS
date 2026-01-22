@@ -40,8 +40,11 @@ int ThickLineMaterial::compare(const QSGMaterial *other) const
     if (m_lineWidth != o->m_lineWidth)
         return m_lineWidth < o->m_lineWidth ? -1 : 1;
 
+    if (m_viewportSize != o->m_viewportSize)
+        return -1;
+
     // Matrices differ per frame, always return non-equal to force update
-    if (m_mvpMatrix != o->m_mvpMatrix)
+    if (m_mvpMatrix != o->m_mvpMatrix || m_ndcMatrix != o->m_ndcMatrix)
         return -1;
 
     return 0;
@@ -52,9 +55,19 @@ void ThickLineMaterial::setColor(const QColor &color)
     m_color = color;
 }
 
-void ThickLineMaterial::setModelViewProjectionMatrix(const QMatrix4x4 &mvp)
+void ThickLineMaterial::setMvpMatrix(const QMatrix4x4 &mvp)
 {
     m_mvpMatrix = mvp;
+}
+
+void ThickLineMaterial::setNdcMatrix(const QMatrix4x4 &ndc)
+{
+    m_ndcMatrix = ndc;
+}
+
+void ThickLineMaterial::setViewportSize(const QSize &size)
+{
+    m_viewportSize = size;
 }
 
 void ThickLineMaterial::setLineWidth(float width)
@@ -83,25 +96,61 @@ bool ThickLineMaterialShader::updateUniformData(RenderState &state,
                                                  QSGMaterial *oldMaterial)
 {
     Q_UNUSED(oldMaterial);
+    Q_UNUSED(state);
 
     bool changed = false;
     QByteArray *buf = state.uniformData();
 
+    //qDebug(thicklinematerial_log) << buf->size();
+
     auto *material = static_cast<ThickLineMaterial *>(newMaterial);
 
+    // Uniform buffer layout (std140):
+    // offset 0:  mat4 mvpMatrix (64 bytes)
+    // offset 64: vec4 color (16 bytes)
+    // offset 80: float lineWidth (4 bytes, padded to 16)
+
+    // Update MVP matrix
+    // Our MVP transforms: world coords -> item-local coords
+    // state.combinedMatrix() transforms: item-local coords -> window clip space
+    // Combined: world coords -> window clip space, properly positioned in the item
+    QMatrix4x4 combinedMatrix = state.combinedMatrix() * material->mvpMatrix();
+    memcpy(buf->data(), combinedMatrix.constData(), 64);
+    changed = true;
+
+    // Update color
+    QColor c = material->color();
+    float colorData[4] = {
+        static_cast<float>(c.redF()),
+        static_cast<float>(c.greenF()),
+        static_cast<float>(c.blueF()),
+        static_cast<float>(c.alphaF())
+    };
+    memcpy(buf->data() + 64, colorData, 16);
+    changed = true;
+
+    // Update point size
+    float lineWidth = material->lineWidth();
+    memcpy(buf->data() + 80, &lineWidth, 4);
+
+    return changed;
+
+#if 0
     // Uniform buffer layout (must match shader, std140):
-    // mat4 combined   @ offset 0 (64 bytes) - state.combinedMatrix() for final transform
-    // vec4 color      @ offset 64 (16 bytes)
-    // float lineWidth @ offset 80 (4 bytes)
-    // (padding to 224 bytes for std140 alignment)
+    // mat4 mvpMatrix    @ offset 0   (64 bytes)
+    // mat4 ndcMatrix    @ offset 64  (64 bytes)
+    // vec4 color        @ offset 128 (16 bytes)
+    // vec2 viewportSize @ offset 144 (8 bytes)
+    // float lineWidth   @ offset 152 (4 bytes)
+    // (padding to 160 bytes for std140 alignment)
 
-    // ModelView matrix
-    //const QMatrix4x4 &mvp = material->modelViewMatrix();
-    //memcpy(buf->data(), mvp.constData(), 64);
+    // MVP matrix
+    const QMatrix4x4 &mvp = material->mvpMatrix();
+    memcpy(buf->data() + 0, mvp.constData(), 64);
 
-    const QMatrix4x4 &mvp = material->modelViewProjectionMatrix();
-
-    memcpy(buf->data(), mvp.constData(), 64);
+    // NDC matrix
+    const QMatrix4x4 &ndc = material->ndcMatrix();
+    memcpy(buf->data() + 64, ndc.constData(), 64);
 
     // Color (as vec4)
     const QColor &c = material->color();
@@ -111,12 +160,21 @@ bool ThickLineMaterialShader::updateUniformData(RenderState &state,
         static_cast<float>(c.blueF()),
         static_cast<float>(c.alphaF())
     };
-    memcpy(buf->data() + 64, color, 16);
+    memcpy(buf->data() + 128, color, 16);
+
+    // Viewport size (as vec2)
+    QSize vp = material->viewportSize();
+    float viewportSize[2] = {
+        static_cast<float>(vp.width()),
+        static_cast<float>(vp.height())
+    };
+    memcpy(buf->data() + 144, viewportSize, 8);
 
     // Line width
     float lineWidth = material->lineWidth();
-    memcpy(buf->data() + 80, &lineWidth, 4);
+    memcpy(buf->data() + 152, &lineWidth, 4);
 
     changed = true;
     return changed;
+#endif
 }

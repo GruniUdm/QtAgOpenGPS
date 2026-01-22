@@ -99,6 +99,7 @@ QSGGeometry *createTexturedQuadGeometry(const QRectF &rect, const QRectF &texCoo
 // Create thick line geometry for screen-space width lines
 // Each line segment becomes a quad (4 vertices in triangle strip)
 // Use with ThickLineMaterial which expands to screen-pixel width in shader
+QSGGeometry *createLinesGeometry2(const QVector<QVector3D> &points);
 QSGGeometry *createThickLineGeometry(const QVector<QVector3D> &points);
 
 // Create thick line loop geometry (closed loop)

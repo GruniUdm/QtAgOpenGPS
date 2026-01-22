@@ -281,6 +281,48 @@ const QSGGeometry::AttributeSet &thickLineAttributes()
     return attrSet;
 }
 
+QSGGeometry *createLinesGeometry2(const QVector<QVector3D> &points)
+{
+    if (points.size() < 2)
+        return nullptr;
+
+    /*
+    auto *geometry = new QSGGeometry(positionAttributes(), points.size());
+    geometry->setDrawingMode(QSGGeometry::DrawLines);
+    geometry->setLineWidth(1.0f);
+
+    float *data = static_cast<float *>(geometry->vertexData());
+    for (const auto &pt : points) {
+        *data++ = pt.x();
+        *data++ = pt.y();
+        *data++ = pt.z();
+    }
+
+    return geometry;
+    */
+    if (points.size() < 2)
+        return nullptr;
+
+    auto *geometry = new QSGGeometry(thickLineAttributes(), points.size());
+    geometry->setDrawingMode(QSGGeometry::DrawLines);
+    geometry->setLineWidth(1.0f);
+
+    float *data = static_cast<float *>(geometry->vertexData());
+    for (const auto &pt : points) {
+        *data++ = pt.x();
+        *data++ = pt.y();
+        *data++ = pt.z();
+        *data++ = 1;
+        *data++ = pt.x();
+        *data++ = pt.y();
+        *data++ = pt.z();
+        *data++ = 1;
+        *data++ = 1;
+    }
+
+    return geometry;
+}
+
 QSGGeometry *createThickLineGeometry(const QVector<QVector3D> &points)
 {
     // Each consecutive pair of points forms a line segment
@@ -300,7 +342,8 @@ QSGGeometry *createThickLineGeometry(const QVector<QVector3D> &points)
     }
 
     auto *geometry = new QSGGeometry(thickLineAttributes(), numVertices);
-    geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
+    //geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
+    geometry->setDrawingMode(QSGGeometry::DrawLines);
 
     ThickLineVertex *data = static_cast<ThickLineVertex *>(geometry->vertexData());
     int idx = 0;
