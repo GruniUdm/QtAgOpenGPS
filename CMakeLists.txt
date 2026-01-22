@@ -409,6 +409,8 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES scenegraph/cameraproperties.h scenegraph/cameraproperties.cpp
     SOURCES scenegraph/gridproperties.h scenegraph/gridproperties.cpp
     SOURCES scenegraph/fieldsurfaceproperties.h scenegraph/fieldsurfaceproperties.cpp
+    SOURCES scenegraph/vehicleproperties.h scenegraph/vehicleproperties.cpp
+    SOURCES scenegraph/thicklinematerial.h scenegraph/thicklinematerial.cpp
 
 )
 
@@ -519,6 +521,8 @@ qt_add_shaders(QtAgOpenGPS "rhi_shaders"
         shaders/colors_fshader.frag
         shaders/colortex_vshader.vert
         shaders/colortex_fshader.frag
+        shaders/thickline.vert
+        shaders/thickline.frag
 )
 
 # Compile defines

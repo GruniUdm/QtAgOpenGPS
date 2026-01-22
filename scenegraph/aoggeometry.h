@@ -31,6 +31,14 @@ struct TexturedVertex {
     float u, v;         // Texture coordinates
 };
 
+// Vertex for thick lines (screen-space width)
+// Each vertex knows both endpoints so shader can compute screen-space direction
+struct ThickLineVertex {
+    float ax, ay, az, aw;  // Endpoint A position
+    float bx, by, bz, bw;  // Endpoint B position
+    float side;        // -1 or +1 (which side of the line)
+};
+
 // ============================================================================
 // Custom Attribute Sets
 // ============================================================================
@@ -45,6 +53,10 @@ const QSGGeometry::AttributeSet &colorVertexAttributes();
 
 // Position (3 floats) + TexCoord (2 floats)
 const QSGGeometry::AttributeSet &texturedVertexAttributes();
+
+// Thick line attributes (for screen-space width lines)
+// posA (3) + posB (3) + side (1) + end (1) = 8 floats per vertex
+const QSGGeometry::AttributeSet &thickLineAttributes();
 
 // ============================================================================
 // Geometry Creation Functions
@@ -83,6 +95,14 @@ QSGGeometry *createColoredTrianglesGeometry(const QVector<QVector3D> &vertices,
 // Create textured quad
 QSGGeometry *createTexturedQuadGeometry(const QRectF &rect, const QRectF &texCoords,
                                         float z = 0.0f);
+
+// Create thick line geometry for screen-space width lines
+// Each line segment becomes a quad (4 vertices in triangle strip)
+// Use with ThickLineMaterial which expands to screen-pixel width in shader
+QSGGeometry *createThickLineGeometry(const QVector<QVector3D> &points);
+
+// Create thick line loop geometry (closed loop)
+QSGGeometry *createThickLineLoopGeometry(const QVector<QVector3D> &points);
 
 // ============================================================================
 // Geometry Update Functions (for retained mode - reuse existing QSGGeometry)
