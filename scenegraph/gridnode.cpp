@@ -146,8 +146,8 @@ void GridNode::update(const QMatrix4x4 &mvMatrix, const QMatrix4x4 &pMatrix, con
     auto *material = new ThickLineMaterial();
     material->setColor(gridColor);
     material->setLineWidth(lineWidth);
-    //material->setMvpMatrix(pMatrix * mvMatrix);  // Standard MVP (NDC is [-1,1])
-    material->setMvpMatrix(ndcMatrix * pMatrix * mvMatrix);
+    material->setMvpMatrix(pMatrix * mvMatrix);  // Standard MVP (NDC is [-1,1])
+    //material->setMvpMatrix(ndcMatrix * pMatrix * mvMatrix);
     material->setNdcMatrix(ndcMatrix);            // Viewport transform applied at end
     material->setViewportSize(viewportSize);
 

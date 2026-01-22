@@ -35,6 +35,10 @@ public:
     void setNdcMatrix(const QMatrix4x4 &ndc);
     QMatrix4x4 ndcMatrix() const { return m_ndcMatrix; }
 
+    // window matrix - transform to final window coordinate system
+    void setWindowMatrix(const QMatrix4x4 &window);
+    QMatrix4x4 windowMatrix() const { return m_windowMatrix; }
+
     void setViewportSize(const QSize &size);
     QSize viewportSize() const { return m_viewportSize; }
 
@@ -48,6 +52,7 @@ private:
     QColor m_color = Qt::white;
     QMatrix4x4 m_mvpMatrix;
     QMatrix4x4 m_ndcMatrix;
+    QMatrix4x4 m_windowMatrix;
     QSize m_viewportSize;
     float m_lineWidth = 2.0f;  // Width in screen pixels
 };

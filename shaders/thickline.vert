@@ -12,9 +12,10 @@ layout(location = 2) in float side;     // -1.0 or 1.0 (left/right side of quad)
 
 layout(std140, binding = 0) uniform buf {
     mat4 mvpMatrix;     // projection * modelview (standard clip space, NDC is [-1,1])
-    //mat4 ndcMatrix;     // viewport transform (applied at the end)
+    mat4 ndcMatrix;     // viewport transform (applied at the end)
+    mat4 windowMatrix;  // final transform to the window clip space
     vec4 color;
-    //vec2 viewportSize;  // viewport width and height in pixels
+    vec2 viewportSize;  // viewport width and height in pixels
     float lineWidth;    // line width in pixels
 } ubuf;
 
@@ -25,8 +26,18 @@ out gl_PerVertex {
 
 void main()
 {
-    // Step 1: Transform to standard MVP clip space (NDC will be [-1, 1])
-    vec4 currClip = ubuf.mvpMatrix * pos;
+    // Step 1: Transform to standard viewport MVP clip space (NDC will be [-1, 1])
+    vec4 currClip = ubuf.ndcMatrix * ubuf.mvpMatrix * vec4(pos, 1.0);
+
+    float x = currClip.x / currClip.w; //get screen X
+    x += 10;
+
+    vec4 newClip = currClip;
+
+    //shift the lines to the right by 10 screen pixels
+    newClip.x = x * currClip.w;
+
+    newClip = ubuf.windowMatrix * newClip; //return final coordinates
 /*
     vec4 nextClip = ubuf.mvpMatrix * nextPos;
     // Step 2: Calculate line direction using homogeneous coordinates
@@ -53,5 +64,5 @@ void main()
     // Step 4: Apply NDC matrix to convert to scene graph's expected clip space
     //gl_Position = ubuf.ndcMatrix * currClip;
     gl_PointSize = 1;
-    gl_Position = currClip;
+    gl_Position = newClip;
 }
