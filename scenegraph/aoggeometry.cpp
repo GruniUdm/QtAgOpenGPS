@@ -340,8 +340,8 @@ QSGGeometry *createThickLineGeometry(const QVector<QVector3D> &points)
     }
 
     auto *geometry = new QSGGeometry(thickLineAttributes(), numVertices);
-    //geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
-    geometry->setDrawingMode(QSGGeometry::DrawLines);
+    geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
+    //geometry->setDrawingMode(QSGGeometry::DrawLineStrip);
 
     ThickLineVertex *data = static_cast<ThickLineVertex *>(geometry->vertexData());
     int idx = 0;

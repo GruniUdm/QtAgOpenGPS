@@ -27,19 +27,8 @@ out gl_PerVertex {
 void main()
 {
     // Step 1: Transform to standard viewport MVP clip space (NDC will be [-1, 1])
-    vec4 currClip = ubuf.ndcMatrix * ubuf.mvpMatrix * vec4(pos, 1.0);
-
-    float x = currClip.x / currClip.w; //get screen X
-    x += 10;
-
-    vec4 newClip = currClip;
-
-    //shift the lines to the right by 10 screen pixels
-    newClip.x = x * currClip.w;
-
-    newClip = ubuf.windowMatrix * newClip; //return final coordinates
-/*
-    vec4 nextClip = ubuf.mvpMatrix * nextPos;
+    vec4 currClip = ubuf.mvpMatrix * vec4(pos, 1.0);
+    vec4 nextClip = ubuf.mvpMatrix * vec4(nextPos, 1.0);
     // Step 2: Calculate line direction using homogeneous coordinates
     // This works correctly even when w is negative (vertex behind camera)
     vec2 lineVec = nextClip.xy * currClip.w - currClip.xy * nextClip.w;
@@ -54,15 +43,15 @@ void main()
     // 1 pixel = 2 / viewportSize NDC units
     // In clip space: offset = pixelOffset * (2 / viewportSize) * abs(w)
     float halfWidth = ubuf.lineWidth * 0.5;
+    //float halfWidth = 6 * 0.5;
     vec2 pixelToNDC = vec2(2.0 / ubuf.viewportSize.x, 2.0 / ubuf.viewportSize.y);
     vec2 ndcOffset = normal * halfWidth * pixelToNDC * side;
     vec2 clipOffset = ndcOffset * abs(currClip.w);
 
     // Apply offset in clip space
     currClip.xy += clipOffset;
-*/
-    // Step 4: Apply NDC matrix to convert to scene graph's expected clip space
-    //gl_Position = ubuf.ndcMatrix * currClip;
+    // Step 4: Apply window and NDC matrix to convert to scene graph's expected clip space
+    gl_Position = ubuf.windowMatrix * ubuf.ndcMatrix * currClip;
+
     gl_PointSize = 1;
-    gl_Position = newClip;
 }

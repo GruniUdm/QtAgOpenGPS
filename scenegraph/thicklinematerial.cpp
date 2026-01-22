@@ -129,7 +129,7 @@ bool ThickLineMaterialShader::updateUniformData(RenderState &state,
     memcpy(buf->data()+64, material->ndcMatrix().constData(), 64);
     memcpy(buf->data()+64+64, state.combinedMatrix().constData(), 64);
 
-    // Update color
+    // Update color (offset 192)
     QColor c = material->color();
     float colorData[4] = {
         static_cast<float>(c.redF()),
@@ -137,12 +137,20 @@ bool ThickLineMaterialShader::updateUniformData(RenderState &state,
         static_cast<float>(c.blueF()),
         static_cast<float>(c.alphaF())
     };
-    memcpy(buf->data() + 64+64+64, colorData, 16);
+    memcpy(buf->data() + 192, colorData, 16);
     changed = true;
 
-    // Update point size
+    // Update viewport size (offset 208)
+    QSize vp = material->viewportSize();
+    float viewportSize[2] = {
+        static_cast<float>(vp.width()),
+        static_cast<float>(vp.height())
+    };
+    memcpy(buf->data() + 208, viewportSize, 8);
+
+    // Update line width (offset 216)
     float lineWidth = material->lineWidth();
-    memcpy(buf->data() + 64+64+64+16, &lineWidth, 4);
+    memcpy(buf->data() + 216, &lineWidth, 4);
 
     return changed;
 

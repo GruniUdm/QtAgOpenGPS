@@ -112,7 +112,6 @@ void GridNode::update(const QMatrix4x4 &mvMatrix, const QMatrix4x4 &pMatrix, con
         }
     }
 
-    /*
     // Create horizontal lines (constant northing, varying easting)
     for (double num2 = roundMidAwayFromZero(northingMin / gridSpacing) * gridSpacing;
          num2 < northingMax; num2 += gridSpacing) {
@@ -127,13 +126,12 @@ void GridNode::update(const QMatrix4x4 &mvMatrix, const QMatrix4x4 &pMatrix, con
             gridLines.append(clippedB);
         }
     }
-    */
 
     if (gridLines.isEmpty())
         return;
 
-    //auto *geometry = AOGGeometry::createThickLineGeometry(gridLines);
-    auto *geometry = AOGGeometry::createLinesGeometry2(gridLines);
+    auto *geometry = AOGGeometry::createThickLineGeometry(gridLines);
+    //auto *geometry = AOGGeometry::createLinesGeometry2(gridLines);
     //auto *geometry = AOGGeometry::createLinesGeometry(gridLines);
     if (!geometry)
         return;
