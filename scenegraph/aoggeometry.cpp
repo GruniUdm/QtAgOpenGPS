@@ -267,8 +267,8 @@ const QSGGeometry::AttributeSet &thickLineAttributes()
     // For vertices at endpoint B: pos=B, nextPos=A (swapped so shader always uses pos)
 
     static QSGGeometry::Attribute attrs[] = {
-        QSGGeometry::Attribute::create(0, 4, QSGGeometry::FloatType, true),   // pos (vec4)
-        QSGGeometry::Attribute::create(1, 4, QSGGeometry::FloatType, false),  // nextPos (vec4)
+        QSGGeometry::Attribute::create(0, 3, QSGGeometry::FloatType, true),   // pos (vec4)
+        QSGGeometry::Attribute::create(1, 3, QSGGeometry::FloatType, false),  // nextPos (vec4)
         QSGGeometry::Attribute::create(2, 1, QSGGeometry::FloatType, false),  // side
     };
 
@@ -312,11 +312,9 @@ QSGGeometry *createLinesGeometry2(const QVector<QVector3D> &points)
         *data++ = pt.x();
         *data++ = pt.y();
         *data++ = pt.z();
-        *data++ = 1;
         *data++ = pt.x();
         *data++ = pt.y();
         *data++ = pt.z();
-        *data++ = 1;
         *data++ = 1;
     }
 
@@ -353,28 +351,28 @@ QSGGeometry *createThickLineGeometry(const QVector<QVector3D> &points)
         const QVector3D &b = points[seg + 1];
 
         // First vertex of segment (at A, side -1): pos=A, nextPos=B
-        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z(); data[idx].aw = 1;
-        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z(); data[idx].bw = 1;
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
         data[idx].side = -1.0f;
         idx++;
 
         // Second vertex (at A, side +1): pos=A, nextPos=B
-        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z(); data[idx].aw = 1;
-        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z(); data[idx].bw = 1;
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
         data[idx].side = 1.0f;
         idx++;
 
         // Third vertex (at B, side -1): pos=B, nextPos=A (swapped!)
         // Side is negated (+1) because swapping positions reverses the direction/normal
-        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z(); data[idx].aw = 1;
-        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z(); data[idx].bw = 1;
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
         data[idx].side = 1.0f;  // Negated to compensate for reversed normal
         idx++;
 
         // Fourth vertex (at B, side +1): pos=B, nextPos=A (swapped!)
         // Side is negated (-1) because swapping positions reverses the direction/normal
-        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z(); data[idx].aw = 1;
-        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z(); data[idx].bw = 1;
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
         data[idx].side = -1.0f;  // Negated to compensate for reversed normal
         idx++;
 
@@ -387,8 +385,8 @@ QSGGeometry *createThickLineGeometry(const QVector<QVector3D> &points)
             // Pre-duplicate first vertex of next segment
             const QVector3D &nextA = points[seg + 1];
             const QVector3D &nextB = points[seg + 2];
-            data[idx].ax = nextA.x(); data[idx].ay = nextA.y(); data[idx].az = nextA.z(); data[idx].aw = 1;
-            data[idx].bx = nextB.x(); data[idx].by = nextB.y(); data[idx].bz = nextB.z(); data[idx].bw = 1;
+            data[idx].ax = nextA.x(); data[idx].ay = nextA.y(); data[idx].az = nextA.z();
+            data[idx].bx = nextB.x(); data[idx].by = nextB.y(); data[idx].bz = nextB.z();
             data[idx].side = -1.0f;
             idx++;
         }

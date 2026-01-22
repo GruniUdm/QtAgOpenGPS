@@ -34,8 +34,8 @@ struct TexturedVertex {
 // Vertex for thick lines (screen-space width)
 // Each vertex knows both endpoints so shader can compute screen-space direction
 struct ThickLineVertex {
-    float ax, ay, az, aw;  // Endpoint A position
-    float bx, by, bz, bw;  // Endpoint B position
+    float ax, ay, az;  // Endpoint A position
+    float bx, by, bz;  // Endpoint B position
     float side;        // -1 or +1 (which side of the line)
 };
 

@@ -6,8 +6,8 @@
 
 //layout(location = 0) in vec3 pos;
 
-layout(location = 0) in vec4 pos;       // Current vertex
-layout(location = 1) in vec4 nextPos;   // Neighbor vertex
+layout(location = 0) in vec3 pos;       // Current vertex
+layout(location = 1) in vec3 nextPos;   // Neighbor vertex
 layout(location = 2) in float side;     // -1.0 or 1.0 (left/right side of quad)
 
 layout(std140, binding = 0) uniform buf {
