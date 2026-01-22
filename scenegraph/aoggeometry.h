@@ -39,6 +39,15 @@ struct ThickLineVertex {
     float side;        // -1 or +1 (which side of the line)
 };
 
+// Vertex for dashed thick lines (screen-space width with dash pattern)
+// Same as ThickLineVertex but with cumulative distance for dash calculation
+struct DashedThickLineVertex {
+    float ax, ay, az;  // Endpoint A position (pos)
+    float bx, by, bz;  // Endpoint B position (nextPos)
+    float side;        // -1 or +1 (which side of the line)
+    float distance;    // Cumulative distance along the line (world units)
+};
+
 // ============================================================================
 // Custom Attribute Sets
 // ============================================================================
@@ -55,8 +64,12 @@ const QSGGeometry::AttributeSet &colorVertexAttributes();
 const QSGGeometry::AttributeSet &texturedVertexAttributes();
 
 // Thick line attributes (for screen-space width lines)
-// posA (3) + posB (3) + side (1) + end (1) = 8 floats per vertex
+// posA (3) + posB (3) + side (1) = 7 floats per vertex
 const QSGGeometry::AttributeSet &thickLineAttributes();
+
+// Dashed thick line attributes (for screen-space width lines with dash pattern)
+// posA (3) + posB (3) + side (1) + distance (1) = 8 floats per vertex
+const QSGGeometry::AttributeSet &dashedThickLineAttributes();
 
 // ============================================================================
 // Geometry Creation Functions
@@ -100,10 +113,26 @@ QSGGeometry *createTexturedQuadGeometry(const QRectF &rect, const QRectF &texCoo
 // Each line segment becomes a quad (4 vertices in triangle strip)
 // Use with ThickLineMaterial which expands to screen-pixel width in shader
 QSGGeometry *createLinesGeometry2(const QVector<QVector3D> &points);
+
+// For CONNECTED polylines: points[0]→points[1]→points[2]→...
 QSGGeometry *createThickLineGeometry(const QVector<QVector3D> &points);
+
+// For DISCONNECTED line segments (like GL_LINES): points[0]→points[1], points[2]→points[3], ...
+QSGGeometry *createThickLinesGeometry(const QVector<QVector3D> &points);
 
 // Create thick line loop geometry (closed loop)
 QSGGeometry *createThickLineLoopGeometry(const QVector<QVector3D> &points);
+
+// Create dashed thick line geometry for screen-space width dashed lines
+// For CONNECTED polylines: points[0]→points[1]→points[2]→...
+// Use with DashedThickLineMaterial which expands to screen-pixel width and applies dash pattern
+QSGGeometry *createDashedThickLineGeometry(const QVector<QVector3D> &points);
+
+// For DISCONNECTED line segments (like GL_LINES): points[0]→points[1], points[2]→points[3], ...
+QSGGeometry *createDashedThickLinesGeometry(const QVector<QVector3D> &points);
+
+// Create dashed thick line loop geometry (closed loop)
+QSGGeometry *createDashedThickLineLoopGeometry(const QVector<QVector3D> &points);
 
 // ============================================================================
 // Geometry Update Functions (for retained mode - reuse existing QSGGeometry)

@@ -33,7 +33,7 @@ void GridNode::clearChildren()
 }
 
 void GridNode::update(const QMatrix4x4 &mvMatrix, const QMatrix4x4 &pMatrix, const QMatrix4x4 &ndcMatrix, const QSize viewportSize,
-                      const QColor &gridColor, int lineWidth,
+                      const QColor &gridColor, double lineWidth,
                       double eastingMin, double eastingMax,
                       double northingMin, double northingMax,
                       double gridSpacing)
@@ -130,27 +130,46 @@ void GridNode::update(const QMatrix4x4 &mvMatrix, const QMatrix4x4 &pMatrix, con
     if (gridLines.isEmpty())
         return;
 
-    auto *geometry = AOGGeometry::createThickLineGeometry(gridLines);
-    //auto *geometry = AOGGeometry::createLinesGeometry2(gridLines);
-    //auto *geometry = AOGGeometry::createLinesGeometry(gridLines);
-    if (!geometry)
-        return;
+    if (lineWidth <= 0.2) {
+        //use normal lines
+        auto *geometry = AOGGeometry::createLinesGeometry(gridLines);
+        if (!geometry)
+            return;
 
-    m_geomNode = new QSGGeometryNode();
-    m_geomNode->setGeometry(geometry);
-    m_geomNode->setFlag(QSGNode::OwnsGeometry);
+        m_geomNode = new QSGGeometryNode();
+        m_geomNode->setGeometry(geometry);
+        m_geomNode->setFlag(QSGNode::OwnsGeometry);
 
-    //auto *material = new AOGFlatColorMaterial();
-    auto *material = new ThickLineMaterial();
-    material->setColor(gridColor);
-    material->setLineWidth(lineWidth);
-    material->setMvpMatrix(pMatrix * mvMatrix);  // Standard MVP (NDC is [-1,1])
-    //material->setMvpMatrix(ndcMatrix * pMatrix * mvMatrix);
-    material->setNdcMatrix(ndcMatrix);            // Viewport transform applied at end
-    material->setViewportSize(viewportSize);
+        auto *material = new AOGFlatColorMaterial();
+        material->setColor(gridColor);
+        material->setMvpMatrix(ndcMatrix * pMatrix * mvMatrix);
 
-    m_geomNode->setMaterial(material);
-    m_geomNode->setFlag(QSGNode::OwnsMaterial);
+        m_geomNode->setMaterial(material);
+        m_geomNode->setFlag(QSGNode::OwnsMaterial);
+
+    } else {
+        // Grid lines are disconnected segments (pairs of points), not a connected polyline
+        auto *geometry = AOGGeometry::createThickLinesGeometry(gridLines);
+        //auto *geometry = AOGGeometry::createLinesGeometry2(gridLines);
+        if (!geometry)
+            return;
+
+        m_geomNode = new QSGGeometryNode();
+        m_geomNode->setGeometry(geometry);
+        m_geomNode->setFlag(QSGNode::OwnsGeometry);
+
+        //auto *material = new AOGFlatColorMaterial();
+        auto *material = new ThickLineMaterial();
+        material->setColor(gridColor);
+        material->setLineWidth(lineWidth);
+        material->setMvpMatrix(pMatrix * mvMatrix);  // Standard MVP (NDC is [-1,1])
+        //material->setMvpMatrix(ndcMatrix * pMatrix * mvMatrix);
+        material->setNdcMatrix(ndcMatrix);            // Viewport transform applied at end
+        material->setViewportSize(viewportSize);
+
+        m_geomNode->setMaterial(material);
+        m_geomNode->setFlag(QSGNode::OwnsMaterial);
+    }
 
     appendChildNode(m_geomNode);
 }

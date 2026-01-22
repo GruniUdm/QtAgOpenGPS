@@ -22,7 +22,7 @@ public:
     SIMPLE_BINDABLE_PROPERTY(double, size)
     SIMPLE_BINDABLE_PROPERTY(QColor, color)
     SIMPLE_BINDABLE_PROPERTY(bool, visible)
-    SIMPLE_BINDABLE_PROPERTY(int, thickness)
+    SIMPLE_BINDABLE_PROPERTY(double, thickness)
 
 signals:
 
@@ -30,7 +30,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(GridProperties, double, m_size, 6000, &GridProperties::sizeChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(GridProperties, QColor, m_color, QColor(0,0,0), &GridProperties::colorChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(GridProperties, bool, m_visible, true, &GridProperties::visibleChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(GridProperties, int, m_thickness, 1, &GridProperties::thicknessChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(GridProperties, double, m_thickness, 1, &GridProperties::thicknessChanged)
 };
 
 #endif // GRIDPROPERTIES_H

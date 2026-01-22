@@ -23,7 +23,7 @@ public:
                 const QMatrix4x4 &ndcMatrix,
                 const QSize viewportSize,
                 const QColor &gridColor,
-                int lineWidth,
+                double lineWidth,
                 double eastingMin, double eastingMax,
                 double northingMin, double northingMax,
                 double gridSpacing);
