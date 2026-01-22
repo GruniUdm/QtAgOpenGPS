@@ -1102,6 +1102,7 @@ Window {
                         color: Qt.rgba(0,0,0,1)
                         //size: SettingsManager.window_gridSize
                         visible: SettingsManager.display_isGridOn
+                        thickness: 1
                     }
 
                     fieldSurface {
