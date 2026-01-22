@@ -27,6 +27,7 @@
 #include <QSGTexture>
 #include <QQuickWindow>
 #include <QImage>
+#include <QSize>
 #include <QtMath>
 #include <QDebug>
 #include <QLoggingCategory>
@@ -298,9 +299,14 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         else if (camDistance <= 150 && camDistance > 50) gridSpacing = 10.06;
         else if (camDistance <= 50 && camDistance > 1) gridSpacing = 5.03;
 
+        QSize viewportSize(static_cast<int>(width()), static_cast<int>(height()));
         rootNode->gridNode->update(
-            currentMvp,
+            m_currentMv,
+            m_currentP,
+            m_currentNcd,
+            viewportSize,
             m_grid->color(),
+            static_cast<float>(m_grid->thickness()),
             eastingMin, eastingMax,
             northingMin, northingMax,
             gridSpacing

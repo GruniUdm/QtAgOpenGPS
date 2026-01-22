@@ -254,6 +254,437 @@ QSGGeometry *createTexturedQuadGeometry(const QRectF &rect, const QRectF &texCoo
 }
 
 // ============================================================================
+// Thick Line Geometry (for screen-space width lines)
+// ============================================================================
+
+const QSGGeometry::AttributeSet &thickLineAttributes()
+{
+    // Attribute layout for thick line vertices:
+    // - attribute 0: pos (vec4) - current vertex position (with w=1)
+    // - attribute 1: nextPos (vec4) - neighbor position for direction calculation
+    // - attribute 2: side (float) - which side of line (-1 or +1)
+    // For vertices at endpoint A: pos=A, nextPos=B
+    // For vertices at endpoint B: pos=B, nextPos=A (swapped so shader always uses pos)
+
+    static QSGGeometry::Attribute attrs[] = {
+        QSGGeometry::Attribute::create(0, 3, QSGGeometry::FloatType, true),   // pos (vec4)
+        QSGGeometry::Attribute::create(1, 3, QSGGeometry::FloatType, false),  // nextPos (vec4)
+        QSGGeometry::Attribute::create(2, 1, QSGGeometry::FloatType, false),  // side
+    };
+
+    static QSGGeometry::AttributeSet attrSet = {
+        3,                          // attribute count
+        sizeof(ThickLineVertex),    // stride
+        attrs
+    };
+
+    return attrSet;
+}
+
+const QSGGeometry::AttributeSet &dashedThickLineAttributes()
+{
+    // Attribute layout for dashed thick line vertices:
+    // - attribute 0: pos (vec3) - current vertex position
+    // - attribute 1: nextPos (vec3) - neighbor position for direction calculation
+    // - attribute 2: side (float) - which side of line (-1 or +1)
+    // - attribute 3: distance (float) - cumulative distance along line (world units)
+
+    static QSGGeometry::Attribute attrs[] = {
+        QSGGeometry::Attribute::create(0, 3, QSGGeometry::FloatType, true),   // pos (vec3)
+        QSGGeometry::Attribute::create(1, 3, QSGGeometry::FloatType, false),  // nextPos (vec3)
+        QSGGeometry::Attribute::create(2, 1, QSGGeometry::FloatType, false),  // side
+        QSGGeometry::Attribute::create(3, 1, QSGGeometry::FloatType, false),  // distance
+    };
+
+    static QSGGeometry::AttributeSet attrSet = {
+        4,                               // attribute count
+        sizeof(DashedThickLineVertex),   // stride
+        attrs
+    };
+
+    return attrSet;
+}
+
+QSGGeometry *createLinesGeometry2(const QVector<QVector3D> &points)
+{
+    if (points.size() < 2)
+        return nullptr;
+
+    /*
+    auto *geometry = new QSGGeometry(positionAttributes(), points.size());
+    geometry->setDrawingMode(QSGGeometry::DrawLines);
+    geometry->setLineWidth(1.0f);
+
+    float *data = static_cast<float *>(geometry->vertexData());
+    for (const auto &pt : points) {
+        *data++ = pt.x();
+        *data++ = pt.y();
+        *data++ = pt.z();
+    }
+
+    return geometry;
+    */
+    if (points.size() < 2)
+        return nullptr;
+
+    auto *geometry = new QSGGeometry(thickLineAttributes(), points.size());
+    geometry->setDrawingMode(QSGGeometry::DrawLines);
+    geometry->setLineWidth(1.0f);
+
+    float *data = static_cast<float *>(geometry->vertexData());
+    for (const auto &pt : points) {
+        *data++ = pt.x();
+        *data++ = pt.y();
+        *data++ = pt.z();
+        *data++ = pt.x();
+        *data++ = pt.y();
+        *data++ = pt.z();
+        *data++ = 1;
+    }
+
+    return geometry;
+}
+
+QSGGeometry *createThickLineGeometry(const QVector<QVector3D> &points)
+{
+    // Treats input as a CONNECTED polyline: points[0]→points[1]→points[2]→...
+    // Each consecutive pair of points forms a line segment
+    // Each segment needs 4 vertices (triangle strip for a quad)
+    // With degenerate triangles to connect segments
+
+    if (points.size() < 2)
+        return nullptr;
+
+    int numSegments = points.size() - 1;
+    // 4 vertices per segment, plus 2 degenerate vertices between segments (except last)
+    int numVertices = numSegments * 4 + (numSegments - 1) * 2;
+
+    if (numSegments == 1) {
+        // Single segment, no degenerate triangles needed
+        numVertices = 4;
+    }
+
+    auto *geometry = new QSGGeometry(thickLineAttributes(), numVertices);
+    geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
+
+    ThickLineVertex *data = static_cast<ThickLineVertex *>(geometry->vertexData());
+    int idx = 0;
+
+    for (int seg = 0; seg < numSegments; ++seg) {
+        const QVector3D &a = points[seg];
+        const QVector3D &b = points[seg + 1];
+
+        // First vertex of segment (at A, side -1): pos=A, nextPos=B
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
+        data[idx].side = -1.0f;
+        idx++;
+
+        // Second vertex (at A, side +1): pos=A, nextPos=B
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
+        data[idx].side = 1.0f;
+        idx++;
+
+        // Third vertex (at B, side -1): pos=B, nextPos=A (swapped!)
+        // Side is negated (+1) because swapping positions reverses the direction/normal
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
+        data[idx].side = 1.0f;  // Negated to compensate for reversed normal
+        idx++;
+
+        // Fourth vertex (at B, side +1): pos=B, nextPos=A (swapped!)
+        // Side is negated (-1) because swapping positions reverses the direction/normal
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
+        data[idx].side = -1.0f;  // Negated to compensate for reversed normal
+        idx++;
+
+        // Add degenerate triangles between segments (repeat last vertex, then first of next)
+        if (seg < numSegments - 1) {
+            // Repeat last vertex
+            data[idx] = data[idx - 1];
+            idx++;
+
+            // Pre-duplicate first vertex of next segment
+            const QVector3D &nextA = points[seg + 1];
+            const QVector3D &nextB = points[seg + 2];
+            data[idx].ax = nextA.x(); data[idx].ay = nextA.y(); data[idx].az = nextA.z();
+            data[idx].bx = nextB.x(); data[idx].by = nextB.y(); data[idx].bz = nextB.z();
+            data[idx].side = -1.0f;
+            idx++;
+        }
+    }
+
+    return geometry;
+}
+
+QSGGeometry *createThickLinesGeometry(const QVector<QVector3D> &points)
+{
+    // Treats input as DISCONNECTED line segments: points[0]→points[1], points[2]→points[3], ...
+    // Each pair of points is an independent line segment (like GL_LINES)
+    // Each segment needs 4 vertices (triangle strip for a quad)
+    // Degenerate triangles separate each segment
+
+    if (points.size() < 2 || points.size() % 2 != 0)
+        return nullptr;
+
+    int numSegments = points.size() / 2;
+    // 4 vertices per segment, plus 2 degenerate vertices between segments (except last)
+    int numVertices = numSegments * 4 + (numSegments - 1) * 2;
+
+    if (numSegments == 1) {
+        numVertices = 4;
+    }
+
+    auto *geometry = new QSGGeometry(thickLineAttributes(), numVertices);
+    geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
+
+    ThickLineVertex *data = static_cast<ThickLineVertex *>(geometry->vertexData());
+    int idx = 0;
+
+    for (int seg = 0; seg < numSegments; ++seg) {
+        const QVector3D &a = points[seg * 2];      // Start of this segment
+        const QVector3D &b = points[seg * 2 + 1];  // End of this segment
+
+        // First vertex of segment (at A, side -1): pos=A, nextPos=B
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
+        data[idx].side = -1.0f;
+        idx++;
+
+        // Second vertex (at A, side +1): pos=A, nextPos=B
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
+        data[idx].side = 1.0f;
+        idx++;
+
+        // Third vertex (at B, side -1): pos=B, nextPos=A (swapped!)
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
+        data[idx].side = 1.0f;  // Negated to compensate for reversed normal
+        idx++;
+
+        // Fourth vertex (at B, side +1): pos=B, nextPos=A (swapped!)
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
+        data[idx].side = -1.0f;  // Negated to compensate for reversed normal
+        idx++;
+
+        // Add degenerate triangles between segments
+        if (seg < numSegments - 1) {
+            // Repeat last vertex
+            data[idx] = data[idx - 1];
+            idx++;
+
+            // Pre-duplicate first vertex of next segment
+            const QVector3D &nextA = points[(seg + 1) * 2];
+            const QVector3D &nextB = points[(seg + 1) * 2 + 1];
+            data[idx].ax = nextA.x(); data[idx].ay = nextA.y(); data[idx].az = nextA.z();
+            data[idx].bx = nextB.x(); data[idx].by = nextB.y(); data[idx].bz = nextB.z();
+            data[idx].side = -1.0f;
+            idx++;
+        }
+    }
+
+    return geometry;
+}
+
+QSGGeometry *createThickLineLoopGeometry(const QVector<QVector3D> &points)
+{
+    if (points.size() < 3)
+        return nullptr;
+
+    // Create a closed loop by appending the first point to the end
+    QVector<QVector3D> closedPoints = points;
+    closedPoints.append(points.first());
+
+    return createThickLineGeometry(closedPoints);
+}
+
+// ============================================================================
+// Dashed Thick Line Geometry (for screen-space width dashed lines)
+// ============================================================================
+
+QSGGeometry *createDashedThickLineGeometry(const QVector<QVector3D> &points)
+{
+    // Treats input as a CONNECTED polyline: points[0]→points[1]→points[2]→...
+    // Each consecutive pair of points forms a line segment
+    // Each segment needs 4 vertices (triangle strip for a quad)
+    // With degenerate triangles to connect segments
+    // Distance is accumulated along the polyline for dash pattern
+
+    if (points.size() < 2)
+        return nullptr;
+
+    int numSegments = points.size() - 1;
+    // 4 vertices per segment, plus 2 degenerate vertices between segments (except last)
+    int numVertices = numSegments * 4 + (numSegments - 1) * 2;
+
+    if (numSegments == 1) {
+        // Single segment, no degenerate triangles needed
+        numVertices = 4;
+    }
+
+    auto *geometry = new QSGGeometry(dashedThickLineAttributes(), numVertices);
+    geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
+
+    DashedThickLineVertex *data = static_cast<DashedThickLineVertex *>(geometry->vertexData());
+    int idx = 0;
+    float cumulativeDistance = 0.0f;
+
+    for (int seg = 0; seg < numSegments; ++seg) {
+        const QVector3D &a = points[seg];
+        const QVector3D &b = points[seg + 1];
+
+        float segmentLength = (b - a).length();
+
+        // First vertex of segment (at A, side -1): pos=A, nextPos=B
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
+        data[idx].side = -1.0f;
+        data[idx].distance = cumulativeDistance;
+        idx++;
+
+        // Second vertex (at A, side +1): pos=A, nextPos=B
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
+        data[idx].side = 1.0f;
+        data[idx].distance = cumulativeDistance;
+        idx++;
+
+        // Third vertex (at B, side -1): pos=B, nextPos=A (swapped!)
+        // Side is negated (+1) because swapping positions reverses the direction/normal
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
+        data[idx].side = 1.0f;  // Negated to compensate for reversed normal
+        data[idx].distance = cumulativeDistance + segmentLength;
+        idx++;
+
+        // Fourth vertex (at B, side +1): pos=B, nextPos=A (swapped!)
+        // Side is negated (-1) because swapping positions reverses the direction/normal
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
+        data[idx].side = -1.0f;  // Negated to compensate for reversed normal
+        data[idx].distance = cumulativeDistance + segmentLength;
+        idx++;
+
+        cumulativeDistance += segmentLength;
+
+        // Add degenerate triangles between segments (repeat last vertex, then first of next)
+        if (seg < numSegments - 1) {
+            // Repeat last vertex
+            data[idx] = data[idx - 1];
+            idx++;
+
+            // Pre-duplicate first vertex of next segment
+            const QVector3D &nextA = points[seg + 1];
+            const QVector3D &nextB = points[seg + 2];
+            float nextSegmentLength = (nextB - nextA).length();
+            Q_UNUSED(nextSegmentLength);  // Used only for clarity in the next iteration
+            data[idx].ax = nextA.x(); data[idx].ay = nextA.y(); data[idx].az = nextA.z();
+            data[idx].bx = nextB.x(); data[idx].by = nextB.y(); data[idx].bz = nextB.z();
+            data[idx].side = -1.0f;
+            data[idx].distance = cumulativeDistance;  // Distance at start of next segment
+            idx++;
+        }
+    }
+
+    return geometry;
+}
+
+QSGGeometry *createDashedThickLinesGeometry(const QVector<QVector3D> &points)
+{
+    // Treats input as DISCONNECTED line segments: points[0]→points[1], points[2]→points[3], ...
+    // Each pair of points is an independent line segment (like GL_LINES)
+    // Each segment needs 4 vertices (triangle strip for a quad)
+    // Degenerate triangles separate each segment
+    // Distance resets to 0 at the start of each segment
+
+    if (points.size() < 2 || points.size() % 2 != 0)
+        return nullptr;
+
+    int numSegments = points.size() / 2;
+    // 4 vertices per segment, plus 2 degenerate vertices between segments (except last)
+    int numVertices = numSegments * 4 + (numSegments - 1) * 2;
+
+    if (numSegments == 1) {
+        numVertices = 4;
+    }
+
+    auto *geometry = new QSGGeometry(dashedThickLineAttributes(), numVertices);
+    geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
+
+    DashedThickLineVertex *data = static_cast<DashedThickLineVertex *>(geometry->vertexData());
+    int idx = 0;
+
+    for (int seg = 0; seg < numSegments; ++seg) {
+        const QVector3D &a = points[seg * 2];      // Start of this segment
+        const QVector3D &b = points[seg * 2 + 1];  // End of this segment
+
+        float segmentLength = (b - a).length();
+
+        // First vertex of segment (at A, side -1): pos=A, nextPos=B
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
+        data[idx].side = -1.0f;
+        data[idx].distance = 0.0f;  // Reset distance at start of each segment
+        idx++;
+
+        // Second vertex (at A, side +1): pos=A, nextPos=B
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
+        data[idx].side = 1.0f;
+        data[idx].distance = 0.0f;
+        idx++;
+
+        // Third vertex (at B, side -1): pos=B, nextPos=A (swapped!)
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
+        data[idx].side = 1.0f;  // Negated to compensate for reversed normal
+        data[idx].distance = segmentLength;
+        idx++;
+
+        // Fourth vertex (at B, side +1): pos=B, nextPos=A (swapped!)
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
+        data[idx].side = -1.0f;  // Negated to compensate for reversed normal
+        data[idx].distance = segmentLength;
+        idx++;
+
+        // Add degenerate triangles between segments
+        if (seg < numSegments - 1) {
+            // Repeat last vertex
+            data[idx] = data[idx - 1];
+            idx++;
+
+            // Pre-duplicate first vertex of next segment
+            const QVector3D &nextA = points[(seg + 1) * 2];
+            const QVector3D &nextB = points[(seg + 1) * 2 + 1];
+            data[idx].ax = nextA.x(); data[idx].ay = nextA.y(); data[idx].az = nextA.z();
+            data[idx].bx = nextB.x(); data[idx].by = nextB.y(); data[idx].bz = nextB.z();
+            data[idx].side = -1.0f;
+            data[idx].distance = 0.0f;  // Reset distance for next segment
+            idx++;
+        }
+    }
+
+    return geometry;
+}
+
+QSGGeometry *createDashedThickLineLoopGeometry(const QVector<QVector3D> &points)
+{
+    if (points.size() < 3)
+        return nullptr;
+
+    // Create a closed loop by appending the first point to the end
+    QVector<QVector3D> closedPoints = points;
+    closedPoints.append(points.first());
+
+    return createDashedThickLineGeometry(closedPoints);
+}
+
+// ============================================================================
 // Geometry Update Functions
 // ============================================================================
 

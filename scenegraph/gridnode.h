@@ -9,6 +9,7 @@
 #include <QSGNode>
 #include <QSGGeometryNode>
 #include <QMatrix4x4>
+#include <QSize>
 #include <QColor>
 
 class GridNode : public QSGNode
@@ -17,8 +18,12 @@ public:
     GridNode();
     ~GridNode() override;
 
-    void update(const QMatrix4x4 &mvp,
+    void update(const QMatrix4x4 &mvMatrix,
+                const QMatrix4x4 &pMatrix,
+                const QMatrix4x4 &ndcMatrix,
+                const QSize viewportSize,
                 const QColor &gridColor,
+                double lineWidth,
                 double eastingMin, double eastingMax,
                 double northingMin, double northingMax,
                 double gridSpacing);

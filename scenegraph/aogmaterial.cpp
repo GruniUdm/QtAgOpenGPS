@@ -78,7 +78,6 @@ AOGFlatColorShader::AOGFlatColorShader()
 bool AOGFlatColorShader::updateUniformData(RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial)
 {
     Q_UNUSED(oldMaterial);
-
     bool changed = false;
     QByteArray *buf = state.uniformData();
 
