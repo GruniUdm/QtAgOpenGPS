@@ -35,7 +35,7 @@ RateControl::RateControl(QObject *parent)
     minpwm = 0;
     maxpwm = 0;
     rateSensor = 0;
-    current_speed = 0;
+    speed = 0;
 
     // Сначала создаем модель
     m_rcModel = new RCModel(this);
@@ -412,9 +412,8 @@ void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
     // PGN 240: RC Data
     if (data.pgnNumber == 240) {
 
-        int moduleIndex = data.rateControlInData[0]; // Индекс из данных PGN
+        int moduleIndex = data.rateControlInData[0];
 
-        // Проверяем, что индекс в допустимом диапазоне (0-3)
         if (moduleIndex >= 0 && moduleIndex < 4) {
             appRate[moduleIndex] = data.rateControlInData[1];
             Quantity[moduleIndex] = data.rateControlInData[2];
@@ -430,10 +429,12 @@ void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
             cMinUPMSpeed[moduleIndex] = MinUPMSpeed(moduleIndex);
             cMinUPM[moduleIndex] = MinUPM(moduleIndex);
 
-            // Загружаем настройки и обновляем модель
-            updateModel(moduleIndex);
-            modulesSend241(moduleIndex);
+            // Обновляем модель - это вызовет dataChanged
+            if (m_rcModel) {
+                updateModel(moduleIndex);
+            }
 
+            modulesSend241(moduleIndex);
         }
     }
 }

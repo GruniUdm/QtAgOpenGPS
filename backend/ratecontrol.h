@@ -78,7 +78,7 @@ public:
     double cTargetUPM[4];
     double cMinUPMSpeed[4];
     double cMinUPM[4];
-    double current_speed; //For now filled in by formGPS.
+    double speed; //For now filled in by formGPS.
     double width; // tool width section control
     double swidth; // tool width fot constant upm
 
@@ -101,8 +101,6 @@ private:
     int CoverageUnits[4];
     int AppMode[4];
     double appRate[4];
-
-    double speed;
     double minSpeed[4];
     double minUPM[4];
     double ProdDensity[4];

@@ -125,18 +125,41 @@ void RCModel::updateSmoothRate(int index, double newRate)
 {
     if (index < 0 || index >= m_products.count()) return;
 
+    // Проверяем, изменилось ли значение
+    if (qFuzzyCompare(m_products[index].smoothRate, newRate))
+        return;
+
     m_products[index].smoothRate = newRate;
     QModelIndex modelIndex = createIndex(index, 0);
     emit dataChanged(modelIndex, modelIndex, {SmoothRateRole});
+    emit smoothRateChanged(index, newRate);  // Добавьте эту строку
 }
 
 void RCModel::updateActualRate(int index, double newRate)
 {
     if (index < 0 || index >= m_products.count()) return;
 
+    // Проверяем, изменилось ли значение
+    if (qFuzzyCompare(m_products[index].actualRate, newRate))
+        return;
+
     m_products[index].actualRate = newRate;
     QModelIndex modelIndex = createIndex(index, 0);
     emit dataChanged(modelIndex, modelIndex, {ActualRateRole});
+    emit actualRateChanged(index, newRate);  // Добавьте эту строку
+}
+
+void RCModel::updateIsActive(int index, bool isActive)
+{
+    if (index < 0 || index >= m_products.count()) return;
+
+    if (m_products[index].isActive == isActive)
+        return;
+
+    m_products[index].isActive = isActive;
+    QModelIndex modelIndex = createIndex(index, 0);
+    emit dataChanged(modelIndex, modelIndex, {IsActiveRole});
+    emit productActiveChanged(index, isActive);  // Добавьте эту строку
 }
 
 void RCModel::updateSetRate(int index, double newRate)
@@ -156,13 +179,4 @@ void RCModel::updateName(int index, const QString &name)
     m_products[index].name = name;
     QModelIndex modelIndex = createIndex(index, 0);
     emit dataChanged(modelIndex, modelIndex, {NameRole});
-}
-
-void RCModel::updateIsActive(int index, bool isActive)
-{
-    if (index < 0 || index >= m_products.count()) return;
-
-    m_products[index].isActive = isActive;
-    QModelIndex modelIndex = createIndex(index, 0);
-    emit dataChanged(modelIndex, modelIndex, {IsActiveRole});
 }

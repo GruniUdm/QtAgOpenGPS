@@ -1237,7 +1237,7 @@ void FormGPS::UpdateFixPosition()
 
     Blockage::instance()->current_speed = pn.speed;
 
-    RateControl::instance()->current_speed = pn.speed;
+    RateControl::instance()->speed = pn.speed;
     RateControl::instance()->width = tool.applyWidth;
     RateControl::instance()->swidth = SettingsManager::instance()->vehicle_toolWidth();
     RateControl::instance()->aBtnState = (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto);
@@ -1966,6 +1966,12 @@ void FormGPS::processSectionLookahead() {
                 tool.section[j].isMappingOn = false;
             }
         }
+    }
+
+    tool.applyWidth = 0; // width for RateControl
+    for (int j = 0; j < MAXSECTIONS; j++)
+    {
+        if (tool.section[j].isSectionOn) tool.applyWidth += tool.section[j].sectionWidth;
     }
 
     //Checks the workswitch or steerSwitch if required

@@ -61,6 +61,9 @@ public:
 signals:
     void countChanged();
     void productRateChanged(int index, double newSetRate);
+    void smoothRateChanged(int index, double newRate);  // Добавить
+    void actualRateChanged(int index, double newRate);   // Добавить
+    void productActiveChanged(int index, bool isActive); // Добавить
 
 private:
     QVector<Product> m_products;
