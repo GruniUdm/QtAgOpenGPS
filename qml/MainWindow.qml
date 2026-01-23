@@ -1112,6 +1112,16 @@ Window {
                         color: SettingsManager.display_isDayMode ?
                                    SettingsManager.display_colorFieldDay :
                                    SettingsManager.display_colorFieldNight
+                    }
+
+                    vehicle {
+                        color: SettingsManager.display_colorVehicle
+                        type: 1
+                        trackWidth: SettingsManager.vehicle_trackWidth
+                        wheelBase: SettingsManager.vehicle_wheelbase
+                        drawbarLength: ! SettingsManager.tool_isToolFront ? (SettingsManager.tool_isToolRearFixed ? 0 : abs(SettingsManager.vehicle_hitchLength)) : 0;
+                        threePtLength: ! SettingsManager.tool_isToolFront ? (SettingsManager.tool_isToolRearFixed ? abs(SettingsManager.vehicle_hitchLength):0 ) : 0;
+                        frontHitchLength: 0
 
                     }
 
@@ -1125,7 +1135,6 @@ Window {
                     showBoundary: true
                     showCoverage: true
                     showGuidance: true
-                    showVehicle: true
 
                     // Field surface texture mode from settings
 
@@ -1137,7 +1146,6 @@ Window {
                                          Qt.rgba(0, 0, 0, 1)
 
                     // Vehicle color from settings
-                    vehicleColor: SettingsManager.display_colorVehicle
 
                     // Boundary and guidance colors (yellow and green)
                     boundaryColor: Qt.rgba(1, 1, 0, 1)

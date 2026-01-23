@@ -222,7 +222,7 @@ void FieldViewItem::updatePolish()
         m_renderData.vehicleX = vehicle->pivotAxlePos.easting;
         m_renderData.vehicleY = vehicle->pivotAxlePos.northing;
         m_renderData.vehicleHeading = vehicle->fixHeading();
-        qDebug(fieldviewitem_log) << m_renderData.vehicleX << m_renderData.vehicleY;
+        //qDebug(fieldviewitem_log) << glm::toDegrees(vehicle->fixHeading()) << m_renderData.vehicleX << m_renderData.vehicleY;
 
         // Note: steerAngle would need to come from another source
     }
