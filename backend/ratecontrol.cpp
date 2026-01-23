@@ -421,6 +421,8 @@ void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
             PWMsetting[moduleIndex] = data.rateControlInData[3];
             SensorReceiving[moduleIndex] = data.rateControlInData[4];
 
+            loadSettings(moduleIndex);
+
             cTargetUPM[moduleIndex] = TargetUPM(moduleIndex) * 10;
             cRateApplied[moduleIndex] = RateApplied(moduleIndex);
             cSmoothRate[moduleIndex] = SmoothRate(moduleIndex);
@@ -429,7 +431,6 @@ void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
             cMinUPM[moduleIndex] = MinUPM(moduleIndex);
 
             // Загружаем настройки и обновляем модель
-            loadSettings(moduleIndex);
             updateModel(moduleIndex);
             modulesSend241(moduleIndex);
 
@@ -449,8 +450,6 @@ void RateControl::modulesSend241(int index)
     p_241.pgn[CPGN_F1::FlowCalHI] = (char)((int)MeterCal[index] >> 8);
     p_241.pgn[CPGN_F1::Command] = Command(index);
     p_241.pgn[CPGN_F1::ManualPWM] = (char)((int)ManualPWM[index]);
-
-    updateModel(index);
 
     AgIOService::instance()->sendPgn(p_241.pgn);
 }
@@ -512,12 +511,6 @@ void RateControl::increaseSetRate(int index, double step)
     // Обновляем модель
     m_rcModel->updateSetRate(index, TargetRate[index]);
 
-    // Пересчитываем и обновляем все данные для этого индекса
-    cTargetUPM[index] = TargetUPM(index) * 10;
-    cRateApplied[index] = RateApplied(index);
-    cSmoothRate[index] = SmoothRate(index);
-    cCurrentRate[index] = CurrentRate(index);
-
     // Полное обновление модели
     updateModel(index);
 
@@ -535,12 +528,6 @@ void RateControl::decreaseSetRate(int index, double step)
 
     // Обновляем модель
     m_rcModel->updateSetRate(index, TargetRate[index]);
-
-    // Пересчитываем и обновляем все данные для этого индекса
-    cTargetUPM[index] = TargetUPM(index) * 10;
-    cRateApplied[index] = RateApplied(index);
-    cSmoothRate[index] = SmoothRate(index);
-    cCurrentRate[index] = CurrentRate(index);
 
     // Полное обновление модели
     updateModel(index);
