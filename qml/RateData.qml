@@ -17,6 +17,10 @@ Comp.MoveablePopup {
     // Используем индекс вместо ID
     property int currentProductIndex: 0
     property var currentProduct: null
+    property bool product1Active: false;
+    property bool product2Active: false;
+    property bool product3Active: false;
+    property bool product4Active: false;
 
     // Функция для обновления текущего продукта по индексу
     function updateCurrentProduct() {
@@ -26,6 +30,45 @@ Comp.MoveablePopup {
             currentProduct = null;
         }
     }
+
+            // Функция для обновления всех свойств активности
+            function updateAllProductActivities() {
+                if (!RateControl.rcModel) {
+                    product1Active = false;
+                    product2Active = false;
+                    product3Active = false;
+                    product4Active = false;
+                    return;
+                }
+
+                if (RateControl.rcModel.count > 0) {
+                    var product = RateControl.rcModel.get(0);
+                    product1Active = product ? product.isActive : false;
+                } else {
+                    product1Active = false;
+                }
+
+                if (RateControl.rcModel.count > 1) {
+                    var product = RateControl.rcModel.get(1);
+                    product2Active = product ? product.isActive : false;
+                } else {
+                    product2Active = false;
+                }
+
+                if (RateControl.rcModel.count > 2) {
+                    var product = RateControl.rcModel.get(2);
+                    product3Active = product ? product.isActive : false;
+                } else {
+                    product3Active = false;
+                }
+
+                if (RateControl.rcModel.count > 3) {
+                    var product = RateControl.rcModel.get(3);
+                    product4Active = product ? product.isActive : false;
+                } else {
+                    product4Active = false;
+                }
+            }
 
     // Обновляем при изменении индекса
     onCurrentProductIndexChanged: {
@@ -45,6 +88,7 @@ Comp.MoveablePopup {
         target: RateControl.rcModel
         onCountChanged: updateCurrentProduct()
         onDataChanged: {
+            updateAllProductActivities();
             // Если изменились данные текущего индекса
             if (topLeft.row <= currentProductIndex && bottomRight.row >= currentProductIndex) {
                 updateCurrentProduct();
@@ -67,6 +111,7 @@ Rectangle{
     function show(){
         currentProductIndex = 0;
         updateCurrentProduct();
+        updateAllProductActivities();
     }
 
     Comp.TopLine{
@@ -95,8 +140,8 @@ Rectangle{
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
             checked: currentProductIndex === 0
             // Отключаем кнопку, если продукта нет
-            enabled: RateControl.rcModel ? RateControl.rcModel.count > 0 : false
-            //enabled: RateControl.rcModel.get(0).isActive
+            //enabled: RateControl.rcModel ? RateControl.rcModel.count > 0 : false
+            enabled: product1Active
             onClicked: currentProductIndex = 0
         }
 
@@ -108,7 +153,8 @@ Rectangle{
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
             checked: currentProductIndex === 1
-            enabled: RateControl.rcModel ? RateControl.rcModel.count > 1 : false
+            //enabled: RateControl.rcModel ? RateControl.rcModel.count > 1 : false
+            enabled: product2Active
             onClicked: currentProductIndex = 1
         }
 
@@ -120,7 +166,8 @@ Rectangle{
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
             checked: currentProductIndex === 2
-            enabled: RateControl.rcModel ? RateControl.rcModel.count > 2 : false
+            //enabled: RateControl.rcModel ? RateControl.rcModel.count > 2 : false
+            enabled: product3Active
             onClicked: currentProductIndex = 2
         }
 
@@ -132,7 +179,8 @@ Rectangle{
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
             checked: currentProductIndex === 3
-            enabled: RateControl.rcModel ? RateControl.rcModel.count > 3 : false
+            //enabled: RateControl.rcModel ? RateControl.rcModel.count > 3 : false
+            enabled: product4Active
             onClicked: currentProductIndex = 3
         }
     }
