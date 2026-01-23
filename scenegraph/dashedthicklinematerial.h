@@ -1,10 +1,10 @@
 // Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
-// Thick line material - renders lines with constant screen-pixel width
+// Dashed thick line material - renders dashed lines with constant screen-pixel width
 
-#ifndef THICKLINEMATERIAL_H
-#define THICKLINEMATERIAL_H
+#ifndef DASHEDTHICKLINEMATERIAL_H
+#define DASHEDTHICKLINEMATERIAL_H
 
 #include <QSGMaterial>
 #include <QSGMaterialShader>
@@ -13,13 +13,12 @@
 #include <QSize>
 #include <QSGGeometry>
 #include "aogmaterial.h"
+#include "aoggeometry.h"  // For DashedThickLineVertex struct
 
-#include "aoggeometry.h"  // For ThickLineVertex struct
-
-class ThickLineMaterial : public AOGMaterial
+class DashedThickLineMaterial : public AOGMaterial
 {
 public:
-    ThickLineMaterial();
+    DashedThickLineMaterial();
 
     QSGMaterialType *type() const override;
     QSGMaterialShader *createShader(QSGRendererInterface::RenderMode renderMode) const override;
@@ -34,21 +33,30 @@ public:
     void setLineWidth(float width);
     float lineWidth() const { return m_lineWidth; }
 
-    // Geometry attribute set for thick lines
+    // Dash pattern (in screen pixels)
+    void setDashLength(float length);
+    float dashLength() const { return m_dashLength; }
+
+    void setGapLength(float length);
+    float gapLength() const { return m_gapLength; }
+
+    // Geometry attribute set for dashed thick lines
     static const QSGGeometry::AttributeSet &attributes();
 
 private:
     QColor m_color = Qt::white;
     QSize m_viewportSize;
-    float m_lineWidth = 2.0f;  // Width in screen pixels
+    float m_lineWidth = 2.0f;    // Width in screen pixels
+    float m_dashLength = 10.0f;  // Dash length in screen pixels
+    float m_gapLength = 5.0f;    // Gap length in screen pixels
 };
 
-class ThickLineMaterialShader : public QSGMaterialShader
+class DashedThickLineMaterialShader : public QSGMaterialShader
 {
 public:
-    ThickLineMaterialShader();
+    DashedThickLineMaterialShader();
 
     bool updateUniformData(RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial) override;
 };
 
-#endif // THICKLINEMATERIAL_H
+#endif // DASHEDTHICKLINEMATERIAL_H

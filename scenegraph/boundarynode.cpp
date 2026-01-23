@@ -4,7 +4,7 @@
 // Boundary node implementation
 
 #include "boundarynode.h"
-#include "aogmaterial.h"
+#include "materials.h"
 #include "aoggeometry.h"
 
 BoundaryNode::BoundaryNode()

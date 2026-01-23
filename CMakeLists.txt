@@ -320,8 +320,10 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         PROPERTIES QT_QML_SINGLETON_TYPE TRUE
     )
 else() #LOCAL_QML ON
-    file(GLOB_RECURSE qml_files "qml/*")
-    add_custom_target(AOGQML SOURCES ${qml_files})
+    file(GLOB_RECURSE qml_files "qml/*" "images/*" "sounds/*" "shaders/*")
+    add_custom_target(AOGQML SOURCES
+        ${qml_files}
+    )
     message("Local QML is ON!")
     add_compile_definitions(LOCAL_QML)
 
@@ -400,6 +402,7 @@ qt_add_qml_module(QtAgOpenGPS
 
     # Scene graph-based renderer (Phase: QSG Migration)
     SOURCES scenegraph/aogmaterial.h scenegraph/aogmaterial.cpp
+    SOURCES scenegraph/materials.h scenegraph/materials.cpp
     SOURCES scenegraph/aoggeometry.h scenegraph/aoggeometry.cpp
     SOURCES scenegraph/fieldviewitem.h scenegraph/fieldviewitem.cpp
     SOURCES scenegraph/fieldsurfacenode.h scenegraph/fieldsurfacenode.cpp

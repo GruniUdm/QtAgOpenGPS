@@ -33,10 +33,12 @@ class VehicleNode;
 class CameraProperties;
 class GridProperties;
 class FieldSurfaceProperties;
+class VehicleProperties;
 
 Q_MOC_INCLUDE("cameraproperties.h")
 Q_MOC_INCLUDE("gridproperties.h")
 Q_MOC_INCLUDE("fieldsurfaceproperties.h")
+Q_MOC_INCLUDE("vehicleproperties.h")
 // ============================================================================
 // FieldViewNode - Root node for the field view scene graph
 // ============================================================================
@@ -70,27 +72,27 @@ class FieldViewItem : public QQuickItem
     Q_PROPERTY(CameraProperties* camera READ camera CONSTANT)
     Q_PROPERTY(GridProperties* grid READ grid CONSTANT)
     Q_PROPERTY(FieldSurfaceProperties* fieldSurface READ fieldSurface CONSTANT)
+    Q_PROPERTY(VehicleProperties* vehicle READ vehicle CONSTANT)
 
     // ===== Rendering State Properties =====
     Q_PROPERTY(bool showBoundary READ showBoundary WRITE setShowBoundary NOTIFY showBoundaryChanged BINDABLE bindableShowBoundary)
     Q_PROPERTY(bool showCoverage READ showCoverage WRITE setShowCoverage NOTIFY showCoverageChanged BINDABLE bindableShowCoverage)
     Q_PROPERTY(bool showGuidance READ showGuidance WRITE setShowGuidance NOTIFY showGuidanceChanged BINDABLE bindableShowGuidance)
-    Q_PROPERTY(bool showVehicle READ showVehicle WRITE setShowVehicle NOTIFY showVehicleChanged BINDABLE bindableShowVehicle)
 
     // ===== Color Properties =====
     Q_PROPERTY(QColor boundaryColor READ boundaryColor WRITE setBoundaryColor NOTIFY boundaryColorChanged BINDABLE bindableBoundaryColor)
     Q_PROPERTY(QColor guidanceColor READ guidanceColor WRITE setGuidanceColor NOTIFY guidanceColorChanged BINDABLE bindableGuidanceColor)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged BINDABLE bindableBackgroundColor)
-    Q_PROPERTY(QColor vehicleColor READ vehicleColor WRITE setVehicleColor NOTIFY vehicleColorChanged BINDABLE bindableVehicleColor)
 
 public:
     explicit FieldViewItem(QQuickItem *parent = nullptr);
     ~FieldViewItem() override;
 
-    // ===== Camera Property Accessor =====
+    // ===== Property Groups Accessors =====
     CameraProperties* camera() const;
     GridProperties * grid() const;
     FieldSurfaceProperties* fieldSurface() const;
+    VehicleProperties* vehicle() const;
 
     // ===== Visibility Property Accessors =====
     bool showBoundary() const;
@@ -105,10 +107,6 @@ public:
     void setShowGuidance(bool value);
     QBindable<bool> bindableShowGuidance();
 
-    bool showVehicle() const;
-    void setShowVehicle(bool value);
-    QBindable<bool> bindableShowVehicle();
-
     // ===== Color Property Accessors =====
     QColor boundaryColor() const;
     void setBoundaryColor(const QColor &color);
@@ -122,11 +120,9 @@ public:
     void setBackgroundColor(const QColor &color);
     QBindable<QColor> bindableBackgroundColor();
 
-    QColor vehicleColor() const;
-    void setVehicleColor(const QColor &color);
-    QBindable<QColor> bindableVehicleColor();
-
     // ===== Public Methods =====
+    Q_INVOKABLE void requestUpdate();  // Call this instead of update() to also sync singleton data
+    Q_INVOKABLE void updateVehicle();
     Q_INVOKABLE void markBoundaryDirty();
     Q_INVOKABLE void markCoverageDirty();
     Q_INVOKABLE void markGuidanceDirty();
@@ -137,16 +133,15 @@ signals:
     void showBoundaryChanged();
     void showCoverageChanged();
     void showGuidanceChanged();
-    void showVehicleChanged();
 
     // Color signals
     void boundaryColorChanged();
     void guidanceColorChanged();
     void backgroundColorChanged();
-    void vehicleColorChanged();
 
 protected:
-    // ===== Core Scene Graph Method =====
+    // ===== Core Scene Graph Methods =====
+    void updatePolish() override;  // Runs on GUI thread before rendering
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override;
 
 private:
@@ -156,6 +151,7 @@ private:
 
     // ===== Texture Loading (requires QQuickWindow) =====
     void loadFloorTexture();
+    void loadTractorTexture();
 
     // ===== Matrix Building =====
     QMatrix4x4 buildNdcMatrix() const;
@@ -176,6 +172,7 @@ private:
 
     // ===== Texture for field surface =====
     QSGTexture *m_floorTexture = nullptr;
+    QSGTexture *m_tractorTexture = nullptr;
 
     // ===== Singleton Access (cached for thread safety) =====
     // These are populated in updatePaintNode from the main thread
@@ -199,23 +196,20 @@ private:
     };
     RenderData m_renderData;
 
-    void syncFromSingletons();
-
     // ===== Grouped Property Objects =====
     CameraProperties *m_camera = nullptr;
     GridProperties *m_grid = nullptr;
     FieldSurfaceProperties *m_fieldSurface = nullptr;
+    VehicleProperties *m_vehicle = nullptr;
 
     // ===== Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY Members =====
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, bool, m_showBoundary, true, &FieldViewItem::showBoundaryChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, bool, m_showCoverage, true, &FieldViewItem::showCoverageChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, bool, m_showGuidance, true, &FieldViewItem::showGuidanceChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, bool, m_showVehicle, true, &FieldViewItem::showVehicleChanged)
 
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, QColor, m_boundaryColor, QColor(255, 255, 0), &FieldViewItem::boundaryColorChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, QColor, m_guidanceColor, QColor(0, 255, 0), &FieldViewItem::guidanceColorChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, QColor, m_backgroundColor, QColor(69, 102, 179), &FieldViewItem::backgroundColorChanged)  // Day sky blue
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, QColor, m_vehicleColor, QColor(255, 255, 255), &FieldViewItem::vehicleColorChanged)
 };
 
 #endif // FIELDVIEWITEM_H

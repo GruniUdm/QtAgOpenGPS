@@ -7,6 +7,7 @@
 #include "cameraproperties.h"
 #include "gridproperties.h"
 #include "fieldsurfaceproperties.h"
+#include "vehicleproperties.h"
 
 #include "fieldsurfacenode.h"
 #include "gridnode.h"
@@ -77,34 +78,39 @@ FieldViewItem::FieldViewItem(QQuickItem *parent)
 
     // Create camera settings object (owned by this)
     m_camera = new CameraProperties(this);
-
     m_grid = new GridProperties(this);
-
     m_fieldSurface = new FieldSurfaceProperties(this);
+    m_vehicle = new VehicleProperties(this);
 
     // Connect camera property changes to update()
-    connect(m_camera, &CameraProperties::zoomChanged, this, &QQuickItem::update);
-    connect(m_camera, &CameraProperties::xChanged, this, &QQuickItem::update);
-    connect(m_camera, &CameraProperties::yChanged, this, &QQuickItem::update);
-    connect(m_camera, &CameraProperties::rotationChanged, this, &QQuickItem::update);
-    connect(m_camera, &CameraProperties::pitchChanged, this, &QQuickItem::update);
-    connect(m_camera, &CameraProperties::fovChanged, this, &QQuickItem::update);
+    connect(m_camera, &CameraProperties::zoomChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_camera, &CameraProperties::xChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_camera, &CameraProperties::yChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_camera, &CameraProperties::rotationChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_camera, &CameraProperties::pitchChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_camera, &CameraProperties::fovChanged, this, &FieldViewItem::requestUpdate);
 
     //Connect grid property changes to update()
-    connect(m_grid, &GridProperties::sizeChanged, this, &QQuickItem::update);
-    connect(m_grid, &GridProperties::colorChanged, this, &QQuickItem::update);
-    connect(m_grid, &GridProperties::visibleChanged, this, &QQuickItem::update);
+    connect(m_grid, &GridProperties::sizeChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_grid, &GridProperties::colorChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_grid, &GridProperties::visibleChanged, this, &FieldViewItem::requestUpdate);
 
     //Connect field surface property changes to update()
-    connect(m_fieldSurface, &FieldSurfaceProperties::visibleChanged, this, &QQuickItem::update);
-    connect(m_fieldSurface, &FieldSurfaceProperties::colorChanged, this, &QQuickItem::update);
-    connect(m_fieldSurface, &FieldSurfaceProperties::showTextureChanged, this, &QQuickItem::update);
+    connect(m_fieldSurface, &FieldSurfaceProperties::visibleChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_fieldSurface, &FieldSurfaceProperties::colorChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_fieldSurface, &FieldSurfaceProperties::showTextureChanged, this, &FieldViewItem::requestUpdate);
+
+    connect(m_vehicle, &VehicleProperties::visibleChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_vehicle, &VehicleProperties::colorChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_vehicle, &VehicleProperties::typeChanged, this, &FieldViewItem::requestUpdate);
 
     // Connect other property changes to update()
-    connect(this, &FieldViewItem::boundaryColorChanged, this, &QQuickItem::update);
-    connect(this, &FieldViewItem::guidanceColorChanged, this, &QQuickItem::update);
-    connect(this, &FieldViewItem::backgroundColorChanged, this, &QQuickItem::update);
-    connect(this, &FieldViewItem::vehicleColorChanged, this, &QQuickItem::update);
+    connect(this, &FieldViewItem::boundaryColorChanged, this, &FieldViewItem::requestUpdate);
+    connect(this, &FieldViewItem::guidanceColorChanged, this, &FieldViewItem::requestUpdate);
+    connect(this, &FieldViewItem::backgroundColorChanged, this, &FieldViewItem::requestUpdate);
+
+    // Schedule initial polish to sync singleton data before first render
+    polish();
 }
 
 FieldViewItem::~FieldViewItem()
@@ -112,7 +118,7 @@ FieldViewItem::~FieldViewItem()
 }
 
 // ============================================================================
-// Camera Property Accessor
+// Property Groups Accessors
 // ============================================================================
 
 CameraProperties* FieldViewItem::camera() const { return m_camera; }
@@ -120,6 +126,8 @@ CameraProperties* FieldViewItem::camera() const { return m_camera; }
 GridProperties* FieldViewItem::grid() const { return m_grid; }
 
 FieldSurfaceProperties* FieldViewItem::fieldSurface() const { return m_fieldSurface; }
+
+VehicleProperties* FieldViewItem::vehicle() const { return m_vehicle; }
 
 // ============================================================================
 // Visibility Property Accessors
@@ -137,10 +145,6 @@ bool FieldViewItem::showGuidance() const { return m_showGuidance; }
 void FieldViewItem::setShowGuidance(bool value) { m_showGuidance = value; }
 QBindable<bool> FieldViewItem::bindableShowGuidance() { return &m_showGuidance; }
 
-bool FieldViewItem::showVehicle() const { return m_showVehicle; }
-void FieldViewItem::setShowVehicle(bool value) { m_showVehicle = value; }
-QBindable<bool> FieldViewItem::bindableShowVehicle() { return &m_showVehicle; }
-
 // ============================================================================
 // Color Property Accessors
 // ============================================================================
@@ -157,13 +161,24 @@ QColor FieldViewItem::backgroundColor() const { return m_backgroundColor; }
 void FieldViewItem::setBackgroundColor(const QColor &color) { m_backgroundColor = color; }
 QBindable<QColor> FieldViewItem::bindableBackgroundColor() { return &m_backgroundColor; }
 
-QColor FieldViewItem::vehicleColor() const { return m_vehicleColor; }
-void FieldViewItem::setVehicleColor(const QColor &color) { m_vehicleColor = color; }
-QBindable<QColor> FieldViewItem::bindableVehicleColor() { return &m_vehicleColor; }
-
 // ============================================================================
 // Public Methods
 // ============================================================================
+
+void FieldViewItem::requestUpdate()
+{
+    polish();
+    update();
+}
+
+void FieldViewItem::updateVehicle()
+{
+    polish();
+
+    //vehicleNode.m
+    //let vehicle know the geometry has to be updated
+    update();
+}
 
 void FieldViewItem::markBoundaryDirty()
 {
@@ -193,19 +208,22 @@ void FieldViewItem::markAllDirty()
 }
 
 // ============================================================================
-// Synchronize Data from Singletons
+// Polish (GUI Thread) - Sync Data Before Rendering
 // ============================================================================
 
-void FieldViewItem::syncFromSingletons()
+void FieldViewItem::updatePolish()
 {
-    // Access singletons - this runs on the GUI thread before updatePaintNode
-    // Copy data needed for rendering to avoid thread-safety issues
+    // This runs on the GUI thread before updatePaintNode() (render thread)
+    // Safe to access singletons and GUI-thread-only data here
+    // Copy data into m_renderData for thread-safe access in updatePaintNode()
 
     // Get vehicle data
     if (auto *vehicle = CVehicle::instance()) {
         m_renderData.vehicleX = vehicle->pivotAxlePos.easting;
         m_renderData.vehicleY = vehicle->pivotAxlePos.northing;
         m_renderData.vehicleHeading = vehicle->fixHeading();
+        qDebug(fieldviewitem_log) << m_renderData.vehicleX << m_renderData.vehicleY;
+
         // Note: steerAngle would need to come from another source
     }
 
@@ -228,8 +246,8 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     //qCDebug(fieldviewitem_log) << "FieldViewItem::updatePaintNode called, oldNode:" << oldNode;
 
-    // Sync data from singletons (GUI thread, safe to access)
-    syncFromSingletons();
+    // Data from singletons was already synced in updatePolish() (GUI thread)
+    // m_renderData is now safe to use here on the render thread
 
     // Get or create root node
     FieldViewNode *rootNode = static_cast<FieldViewNode *>(oldNode);
@@ -336,15 +354,18 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     }
 
     // Vehicle always updates (position changes frequently)
-    if (m_showVehicle) {
+    if (m_vehicle->visible()) {
+        loadTractorTexture();
         rootNode->vehicleNode->update(
             m_currentMv,
             m_currentP,
             m_currentNcd,
-            m_vehicleColor,
+            m_vehicle->color(),
+            m_tractorTexture,
             m_renderData.vehicleX,
             m_renderData.vehicleY,
-            m_renderData.vehicleHeading
+            m_renderData.vehicleHeading,
+            m_vehicle
         );
     }
 
@@ -379,6 +400,33 @@ void FieldViewItem::loadFloorTexture()
     }
 }
 
+void FieldViewItem::loadTractorTexture()
+{
+    if (!m_tractorTexture && window()) {
+        // Load texture if not already loaded
+#ifdef LOCAL_QML
+        QString texPath = QStringLiteral("local:/images/textures/z_Tractor.png");
+#else
+        QString texPath = QStringLiteral(":/AOG/images/textures/z_Tractor.png");
+#endif
+        QImage tractorImage(texPath);
+        if (!tractorImage.isNull()) {
+            // Convert to RGBA format if needed for consistent texture handling
+            if (tractorImage.format() != QImage::Format_RGBA8888 &&
+                tractorImage.format() != QImage::Format_RGBA8888_Premultiplied) {
+                tractorImage = tractorImage.convertToFormat(QImage::Format_RGBA8888);
+            }
+            // Don't use atlas - we need repeating wrap mode
+            m_tractorTexture = window()->createTextureFromImage(tractorImage);
+            if (m_tractorTexture) {
+                m_tractorTexture->setHorizontalWrapMode(QSGTexture::ClampToEdge);
+                m_tractorTexture->setVerticalWrapMode(QSGTexture::ClampToEdge);
+                m_tractorTexture->setFiltering(QSGTexture::Linear);
+                m_tractorTexture->setMipmapFiltering(QSGTexture::None);
+            }
+        }
+    }
+}
 
 // ============================================================================
 // Matrix Building

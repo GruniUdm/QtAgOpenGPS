@@ -8,8 +8,12 @@
 
 #include <QSGNode>
 #include <QSGGeometryNode>
+#include <QSGTexture>
 #include <QMatrix4x4>
 #include <QColor>
+#include "vehicleproperties.h"
+
+class QQuickWindow;
 
 class VehicleNode : public QSGNode
 {
@@ -21,12 +25,16 @@ public:
                 const QMatrix4x4 &p,
                 const QMatrix4x4 &ncd,
                 const QColor &vehicleColor,
+                QSGTexture *texture,
                 double vehicleX, double vehicleY,
-                double vehicleHeading);
+                double vehicleHeading,
+                const VehicleProperties *properties);
 
 private:
     void clearChildren();
+
     QSGGeometryNode *m_geomNode = nullptr;
+    QSGTexture *m_texture = nullptr;
 };
 
 #endif // VEHICLENODE_H

@@ -4,7 +4,7 @@
 // Field surface node implementation
 
 #include "fieldsurfacenode.h"
-#include "aogmaterial.h"
+#include "materials.h"
 #include "aoggeometry.h"
 
 #include <QSGTexture>

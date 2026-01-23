@@ -4,7 +4,7 @@
 // Grid node implementation
 
 #include "gridnode.h"
-#include "aogmaterial.h"
+#include "materials.h"
 #include "aoggeometry.h"
 #include "thicklinematerial.h"
 
@@ -162,9 +162,7 @@ void GridNode::update(const QMatrix4x4 &mvMatrix, const QMatrix4x4 &pMatrix, con
         auto *material = new ThickLineMaterial();
         material->setColor(gridColor);
         material->setLineWidth(lineWidth);
-        material->setMvpMatrix(pMatrix * mvMatrix);  // Standard MVP (NDC is [-1,1])
-        //material->setMvpMatrix(ndcMatrix * pMatrix * mvMatrix);
-        material->setNdcMatrix(ndcMatrix);            // Viewport transform applied at end
+        material->setMvpMatrix(ndcMatrix * pMatrix * mvMatrix);
         material->setViewportSize(viewportSize);
 
         m_geomNode->setMaterial(material);

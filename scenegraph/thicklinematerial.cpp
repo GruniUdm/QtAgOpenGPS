@@ -44,8 +44,7 @@ int ThickLineMaterial::compare(const QSGMaterial *other) const
         return -1;
 
     // Matrices differ per frame, always return non-equal to force update
-    if (m_mvpMatrix != o->m_mvpMatrix || m_ndcMatrix != o->m_ndcMatrix ||
-        m_windowMatrix != o->m_windowMatrix)
+    if (m_mvpMatrix != o->m_mvpMatrix)
         return -1;
 
     return 0;
@@ -54,21 +53,6 @@ int ThickLineMaterial::compare(const QSGMaterial *other) const
 void ThickLineMaterial::setColor(const QColor &color)
 {
     m_color = color;
-}
-
-void ThickLineMaterial::setMvpMatrix(const QMatrix4x4 &mvp)
-{
-    m_mvpMatrix = mvp;
-}
-
-void ThickLineMaterial::setNdcMatrix(const QMatrix4x4 &ndc)
-{
-    m_ndcMatrix = ndc;
-}
-
-void ThickLineMaterial::setWindowMatrix(const QMatrix4x4 &window)
-{
-    m_windowMatrix = window;
 }
 
 void ThickLineMaterial::setViewportSize(const QSize &size)
@@ -112,22 +96,18 @@ bool ThickLineMaterialShader::updateUniformData(RenderState &state,
     auto *material = static_cast<ThickLineMaterial *>(newMaterial);
 
     // Uniform buffer layout (std140):
-    // offset 0:  mat4 mvpMatrix (64 bytes)
-    // offset 64: mat4 ndcMatrix (64 bytes)
-    // offset 128: mat4 windowMatrix (64 bytes)
-    // offset 192: vec4 color (16 bytes)
-    // offset 208: float lineWidth (4 bytes, padded to 16)
+    // offset 0:  mat4 full mvpMatrix (64 bytes)
+    // offset 64: vec4 color (16 bytes)
+    // offset 80: vec2 viewPort (8 bytes)
+    // offset 88: float lineWidth (4 bytes, padded to 16)
 
     // Update MVP matrix
     // Our MVP transforms: world coords -> item-local coords
     // state.combinedMatrix() transforms: item-local coords -> window clip space
     // Combined: world coords -> window clip space, properly positioned in the item
-    //QMatrix4x4 combinedMatrix = state.combinedMatrix() * material->mvpMatrix();
-    memcpy(buf->data(), material->mvpMatrix().constData(), 64);
+    QMatrix4x4 combinedMatrix = state.combinedMatrix() * material->mvpMatrix();
+    memcpy(buf->data(), combinedMatrix.constData(), 64);
     changed = true;
-
-    memcpy(buf->data()+64, material->ndcMatrix().constData(), 64);
-    memcpy(buf->data()+64+64, state.combinedMatrix().constData(), 64);
 
     // Update color (offset 192)
     QColor c = material->color();
@@ -137,7 +117,7 @@ bool ThickLineMaterialShader::updateUniformData(RenderState &state,
         static_cast<float>(c.blueF()),
         static_cast<float>(c.alphaF())
     };
-    memcpy(buf->data() + 192, colorData, 16);
+    memcpy(buf->data() + 64, colorData, 16);
     changed = true;
 
     // Update viewport size (offset 208)
@@ -146,11 +126,11 @@ bool ThickLineMaterialShader::updateUniformData(RenderState &state,
         static_cast<float>(vp.width()),
         static_cast<float>(vp.height())
     };
-    memcpy(buf->data() + 208, viewportSize, 8);
+    memcpy(buf->data() + 64+16, viewportSize, 8);
 
     // Update line width (offset 216)
     float lineWidth = material->lineWidth();
-    memcpy(buf->data() + 216, &lineWidth, 4);
+    memcpy(buf->data() + 64+16+8 , &lineWidth, 4);
 
     return changed;
 

@@ -1,21 +1,24 @@
 #version 440
 
-// Thick line vertex shader
+// Dashed thick line vertex shader
 // Expands line segments to quads with constant screen-pixel width
-// Uses standard MVP clip space for calculations, then applies NDC matrix at the end
+// Passes distance along line to fragment shader for dash pattern
 
-//layout(location = 0) in vec3 pos;
-
-layout(location = 0) in vec3 pos;       // Current vertex
-layout(location = 1) in vec3 nextPos;   // Neighbor vertex
+layout(location = 0) in vec3 pos;       // Current vertex position
+layout(location = 1) in vec3 nextPos;   // Neighbor vertex position
 layout(location = 2) in float side;     // -1.0 or 1.0 (left/right side of quad)
+layout(location = 3) in float distance; // Cumulative distance along line (world units)
 
 layout(std140, binding = 0) uniform buf {
-    mat4 mvpMatrix;     // projection * modelview (standard clip space, NDC is [-1,1])
+    mat4 mvpMatrix;     // full final matrix
     vec4 color;
     vec2 viewportSize;  // viewport width and height in pixels
     float lineWidth;    // line width in pixels
+    float dashLength;   // dash length in pixels
+    float gapLength;    // gap length in pixels
 } ubuf;
+
+layout(location = 0) out float vDistance;  // Pass distance to fragment shader
 
 out gl_PerVertex {
     vec4 gl_Position;
@@ -27,7 +30,6 @@ void main()
     // Step 1: Transform all the way to final clip space
     // This ensures the offset is perpendicular to the line as it appears on screen,
     // regardless of any rotations in ndcMatrix or windowMatrix
-    //mat4 fullMVP = ubuf.windowMatrix * ubuf.ndcMatrix * ubuf.mvpMatrix;
     vec4 currClip = ubuf.mvpMatrix * vec4(pos, 1.0);
     vec4 nextClip = ubuf.mvpMatrix * vec4(nextPos, 1.0);
 
@@ -53,6 +55,8 @@ void main()
     currClip.xy += clipOffset;
 
     gl_Position = currClip;
+    gl_PointSize = 1.0;
 
-    gl_PointSize = 1;
+    // Pass distance to fragment shader for dash pattern calculation
+    vDistance = distance;
 }
