@@ -28,6 +28,9 @@ public:
     SIMPLE_BINDABLE_PROPERTY(double, wheelBase)
     SIMPLE_BINDABLE_PROPERTY(double, trackWidth)
     SIMPLE_BINDABLE_PROPERTY(double, steerAngle)
+    SIMPLE_BINDABLE_PROPERTY(double, drawbarLength)
+    SIMPLE_BINDABLE_PROPERTY(double, threePtLength)
+    SIMPLE_BINDABLE_PROPERTY(double, frontHitchLength)
 
 signals:
 private:
@@ -37,6 +40,9 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, double, m_wheelBase, 3, &VehicleProperties::wheelBaseChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, double, m_trackWidth, 2, &VehicleProperties::trackWidthChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, double, m_steerAngle, 0, &VehicleProperties::steerAngleChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, bool, m_drawbarLength, 1, &VehicleProperties::drawbarLengthChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, bool, m_threePtLength, 0, &VehicleProperties::threePtLengthChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, bool, m_frontHitchLength, 4, &VehicleProperties::frontHitchLengthChanged)
 };
 
 #endif // VEHICLEPROPERTIES_H

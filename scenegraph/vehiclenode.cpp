@@ -7,6 +7,7 @@
 #include "aogmaterial.h"
 #include "aoggeometry.h"
 #include "materials.h"
+#include "thicklinematerial.h"
 
 #include <QVector3D>
 
@@ -32,6 +33,7 @@ void VehicleNode::update(const QMatrix4x4 &mv,
                          const QMatrix4x4 &p,
                          const QMatrix4x4 &ncd,
                          const QColor &vehicleColor,
+                         const QSize &viewportSize,
                          QSGTexture *texture,
                          double vehicleX, double vehicleY,
                          double vehicleHeading,
@@ -49,6 +51,61 @@ void VehicleNode::update(const QMatrix4x4 &mv,
         clearChildren();
         const float trackWidth = properties->trackWidth();   // 2m total width
         const float wheelBase = properties->wheelBase();
+
+
+        //draw front hitch
+        if (properties->frontHitchLength()) {
+        }
+
+        if (properties->drawbarLength()) {
+            QVector<QVector3D> h;
+
+            h.append({ 0, static_cast<float>(properties->drawbarLength()), 0});
+            h.append({ 0, 0, 0});
+
+            //shadow
+            auto *geometry = AOGGeometry::createThickLinesGeometry(h);
+            if (geometry) {
+                m_geomNode = new QSGGeometryNode();
+                m_geomNode->setGeometry(geometry);
+                m_geomNode->setFlag(QSGNode::OwnsGeometry);
+
+                //auto *material = new AOGFlatColorMaterial();
+                auto *material = new ThickLineMaterial();
+                material->setColor(QColor(0,0,0,1));
+                material->setLineWidth(3.0f);
+                material->setMvpMatrix(ncd * p * vehicleMv);
+                material->setViewportSize(viewportSize);
+
+                m_geomNode->setMaterial(material);
+                m_geomNode->setFlag(QSGNode::OwnsMaterial);
+
+                appendChildNode(m_geomNode);
+            }
+
+            //TODO: create a thick lines material that can do multiple colors; then we can
+            // do all the hitches in just two nodes.
+            geometry = AOGGeometry::createThickLinesGeometry(h);
+            if (geometry) {
+                m_geomNode = new QSGGeometryNode();
+                m_geomNode->setGeometry(geometry);
+                m_geomNode->setFlag(QSGNode::OwnsGeometry);
+
+                //auto *material = new AOGFlatColorMaterial();
+                auto *material = new ThickLineMaterial();
+                material->setColor(QColor(0,0,0,1));
+                material->setLineWidth(3.0f);
+                material->setMvpMatrix(ncd * p * vehicleMv);
+                material->setViewportSize(viewportSize);
+
+                m_geomNode->setMaterial(material);
+                m_geomNode->setFlag(QSGNode::OwnsMaterial);
+
+                appendChildNode(m_geomNode);
+            }
+
+        }
+
 
         if (texture && properties->type() == 1) {
             // Create textured quad for vehicle using local coordinates
@@ -145,6 +202,7 @@ void VehicleNode::update(const QMatrix4x4 &mv,
             gchild = static_cast<QSGGeometryNode *>(child);
             auto *material = static_cast<AOGMaterial *>(gchild->material());
             material->setMvpMatrix(ncd * p * vehicleMv);
+            material->setViewportSize(viewportSize);
 
             child = child->nextSibling();
         }

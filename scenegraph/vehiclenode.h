@@ -25,6 +25,7 @@ public:
                 const QMatrix4x4 &p,
                 const QMatrix4x4 &ncd,
                 const QColor &vehicleColor,
+                const QSize &viewportSize,
                 QSGTexture *texture,
                 double vehicleX, double vehicleY,
                 double vehicleHeading,

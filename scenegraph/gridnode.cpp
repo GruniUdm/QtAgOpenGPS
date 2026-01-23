@@ -7,6 +7,7 @@
 #include "materials.h"
 #include "aoggeometry.h"
 #include "thicklinematerial.h"
+#include "thicklinecolorsmaterial.h"
 
 #include <QtMath>
 #include <QVector3D>
@@ -91,6 +92,8 @@ void GridNode::update(const QMatrix4x4 &mvMatrix, const QMatrix4x4 &pMatrix, con
 
     // Create grid lines with near-plane clipping
     QVector<QVector3D> gridLines;
+    //for testing colored lines
+    //QVector<ColorVertexVectors> gridLines2;
 
     // Helper function to round mid away from zero (like glm::roundMidAwayFromZero)
     auto roundMidAwayFromZero = [](double val) -> double {
@@ -109,6 +112,9 @@ void GridNode::update(const QMatrix4x4 &mvMatrix, const QMatrix4x4 &pMatrix, con
         if (clipLineToNearPlane(a, b, clippedA, clippedB)) {
             gridLines.append(clippedA);
             gridLines.append(clippedB);
+
+            //gridLines2.append( { clippedA, gridColor });
+            //gridLines2.append( { clippedB, gridColor });
         }
     }
 
@@ -124,6 +130,9 @@ void GridNode::update(const QMatrix4x4 &mvMatrix, const QMatrix4x4 &pMatrix, con
         if (clipLineToNearPlane(a, b, clippedA, clippedB)) {
             gridLines.append(clippedA);
             gridLines.append(clippedB);
+
+            //gridLines2.append( { clippedA, gridColor });
+            //gridLines2.append( { clippedB, gridColor });
         }
     }
 
@@ -150,6 +159,7 @@ void GridNode::update(const QMatrix4x4 &mvMatrix, const QMatrix4x4 &pMatrix, con
     } else {
         // Grid lines are disconnected segments (pairs of points), not a connected polyline
         auto *geometry = AOGGeometry::createThickLinesGeometry(gridLines);
+        //auto *geometry = AOGGeometry::createThickLinesColorsGeometry(gridLines2);
         //auto *geometry = AOGGeometry::createLinesGeometry2(gridLines);
         if (!geometry)
             return;
@@ -158,7 +168,7 @@ void GridNode::update(const QMatrix4x4 &mvMatrix, const QMatrix4x4 &pMatrix, con
         m_geomNode->setGeometry(geometry);
         m_geomNode->setFlag(QSGNode::OwnsGeometry);
 
-        //auto *material = new AOGFlatColorMaterial();
+        //auto *material = new ThickLineColorsMaterial();
         auto *material = new ThickLineMaterial();
         material->setColor(gridColor);
         material->setLineWidth(lineWidth);

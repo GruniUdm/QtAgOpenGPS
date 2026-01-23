@@ -249,6 +249,8 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     // Data from singletons was already synced in updatePolish() (GUI thread)
     // m_renderData is now safe to use here on the render thread
 
+    QSize viewportSize(static_cast<int>(width()), static_cast<int>(height()));
+
     // Get or create root node
     FieldViewNode *rootNode = static_cast<FieldViewNode *>(oldNode);
     if (!rootNode) {
@@ -317,7 +319,6 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         else if (camDistance <= 150 && camDistance > 50) gridSpacing = 10.06;
         else if (camDistance <= 50 && camDistance > 1) gridSpacing = 5.03;
 
-        QSize viewportSize(static_cast<int>(width()), static_cast<int>(height()));
         rootNode->gridNode->update(
             m_currentMv,
             m_currentP,
@@ -361,6 +362,7 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
             m_currentP,
             m_currentNcd,
             m_vehicle->color(),
+            viewportSize,
             m_tractorTexture,
             m_renderData.vehicleX,
             m_renderData.vehicleY,
