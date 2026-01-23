@@ -15,27 +15,28 @@ RateControl *RateControl::s_instance = nullptr;
 QMutex RateControl::s_mutex;
 bool RateControl::s_cpp_created = false;
 
-// ИСПРАВЛЕНО: Добавлена полная инициализация всех членов класса
 RateControl::RateControl(QObject *parent)
-    : QObject{parent},
-    m_currentProductId(0),  // Инициализируем явно
-    ModID(0),
-    cUPM(0),
-    RateSet(0),
-    actualRate(0),
-    aBtnState(0),
-    mBtnState(0),
-    HectaresPerMinute(0),
-    width(0),
-    swidth(0),
-    speed(0),
-    kp(0),
-    ki(0),
-    kd(0),
-    minpwm(0),
-    maxpwm(0),
-    rateSensor(0)
+    : QObject{parent}
 {
+    m_currentProductIndex = 0;
+    ModID = 0;
+    cUPM = 0;
+    RateSet = 0;
+    actualRate = 0;
+    aBtnState = 0;
+    mBtnState = 0;
+    HectaresPerMinute = 0;
+    width = 0;
+    swidth = 0;
+    speed = 0;
+    kp = 0;
+    ki = 0;
+    kd = 0;
+    minpwm = 0;
+    maxpwm = 0;
+    rateSensor = 0;
+    current_speed = 0;
+
     // Сначала создаем модель
     m_rcModel = new RCModel(this);
 
@@ -65,20 +66,48 @@ RateControl::RateControl(QObject *parent)
     }
 
     // Создаем начальные продукты в модели
-    for (int i = 0; i < 4; i++) {
-        RCModel::Product product;
-        product.id = i;
-        product.name = QString("Product %1").arg(i + 1);
-        product.setRate = 0;
-        product.smoothRate = 0;
-        product.actualRate = 0;
-        product.isActive = false;
-        m_rcModel->addProduct(product);
-    }
+    initializeProducts();
 
     // Подключаем к AgIOService
     connect(AgIOService::instance(), &AgIOService::rateControlDataReady,
             this, &RateControl::onRateControlDataReady, Qt::DirectConnection);
+}
+
+// Метод для инициализации продуктов
+void RateControl::initializeProducts()
+{
+    if (!m_rcModel) return;
+
+    // Очищаем текущие продукты
+    m_rcModel->clear();
+
+    // Создаем 4 продукта
+    for (int i = 0; i < 4; ++i) {
+        loadSettings(i);
+        RCModel::Product product;
+        product.id = i; // Сохраняем индекс как ID для обратной совместимости
+        product.name = getProductNameFromSettings(i); // Получаем имя из настроек
+        product.setRate = TargetRate[i];
+        product.smoothRate = cSmoothRate[i];
+        product.actualRate = cCurrentRate[i];
+        product.isActive = ProductOn(i) && OnScreen[i];
+
+        m_rcModel->addProduct(product);
+    }
+}
+
+// Вспомогательный метод для получения имени из настроек
+QString RateControl::getProductNameFromSettings(int index)
+{
+    if (index < 0 || index >= 4) return QString("Product %1").arg(index + 1);
+
+    switch (index) {
+    case 0: return SettingsManager::instance()->rate_productName0();
+    case 1: return SettingsManager::instance()->rate_productName1();
+    case 2: return SettingsManager::instance()->rate_productName2();
+    case 3: return SettingsManager::instance()->rate_productName3();
+   // default: return QString("Product %1").arg(index + 1);
+    }
 }
 
 RateControl *RateControl::instance() {
@@ -111,74 +140,74 @@ RateControl *RateControl::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
     return s_instance;
 }
 
-void RateControl::rate_bump(bool up, int ID)
+void RateControl::rate_bump(bool up, int index)
 {
-    // ИСПРАВЛЕНО: Проверка границ ID
-    if (ID < 0 || ID >= 4) return;
+    // Проверка границ индекса
+    if (index < 0 || index >= 4) return;
 
     if (up) {
-        if (ManualPWM[ID] < 250) ManualPWM[ID] += 10;
-        else ManualPWM[ID] = 255;
+        if (ManualPWM[index] < 250) ManualPWM[index] += 10;
+        else ManualPWM[index] = 255;
     } else {
-        if (ManualPWM[ID] > -250) ManualPWM[ID] -= 10;
-        else ManualPWM[ID] = -255;
+        if (ManualPWM[index] > -250) ManualPWM[index] -= 10;
+        else ManualPWM[index] = -255;
     }
 }
 
-void RateControl::rate_auto(int ID)
+void RateControl::rate_auto(int index)
 {
-    // ИСПРАВЛЕНО: Проверка границ ID
-    if (ID < 0 || ID >= 4) return;
-    ManualPWM[ID] = 0;
+    // Проверка границ индекса
+    if (index < 0 || index >= 4) return;
+    ManualPWM[index] = 0;
 }
 
-int RateControl::Command(int ID)
+int RateControl::Command(int index)
 {
-    // ИСПРАВЛЕНО: Проверка границ ID
-    if (ID < 0 || ID >= 4) return 0;
+    // Проверка границ индекса
+    if (index < 0 || index >= 4) return 0;
 
     int Result = 0;
 
-    // ИСПРАВЛЕНО: Безопасная битовая маска
-    if (ControlType[ID] >= 0 && ControlType[ID] < 32) {
-        Result |= (1 << (ControlType[ID] + 1));
+    // Безопасная битовая маска
+    if (ControlType[index] >= 0 && ControlType[index] < 32) {
+        Result |= (1 << (ControlType[index] + 1));
     }
 
     if (aBtnState) Result |= (1 << 6);
-    if ((mBtnState) || (ManualPWM[ID] == 0)) Result |= (1 << 4);
+    if ((mBtnState) || (ManualPWM[index] == 0)) Result |= (1 << 4);
 
     return Result;
 }
 
-bool RateControl::ProductOn(int ID)
+bool RateControl::ProductOn(int index)
 {
-    // ИСПРАВЛЕНО: Проверка границ ID
-    if (ID < 0 || ID >= 4) return false;
+    // Проверка границ индекса
+    if (index < 0 || index >= 4) return false;
 
     bool Result = false;
-    if (ControlType[ID] == 4) {
-        Result = SensorReceiving[ID];
+    if (ControlType[index] == 4) {
+        Result = SensorReceiving[index];
     } else {
-        Result = (SensorReceiving[ID] && HectaresPerMinute > 0);
+        Result = (SensorReceiving[index] && HectaresPerMinute > 0);
     }
     return Result;
 }
 
-double RateControl::SmoothRate(int ID)
+double RateControl::SmoothRate(int index)
 {
-    // ИСПРАВЛЕНО: Проверка границ ID
-    if (ID < 0 || ID >= 4) return 0;
+    // Проверка границ индекса
+    if (index < 0 || index >= 4) return 0;
 
     double Result = 0;
-    if (ProductOn(ID)) {
-        double Ra = RateApplied(ID);
-        if (ProdDensity[ID] > 0) Ra *= ProdDensity[ID];
+    if (ProductOn(index)) {
+        double Ra = RateApplied(index);
+        if (ProdDensity[index] > 0) Ra *= ProdDensity[index];
 
-        if (TargetRate[ID] > 0) {
-            double Rt = Ra / TargetRate[ID];
+        if (TargetRate[index] > 0) {
+            double Rt = Ra / TargetRate[index];
 
             if (Rt >= 0.95 && Rt <= 1.05 && aBtnState) {
-                Result = TargetRate[ID];
+                Result = TargetRate[index];
             } else {
                 Result = Ra;
             }
@@ -189,164 +218,164 @@ double RateControl::SmoothRate(int ID)
     return Result;
 }
 
-double RateControl::CurrentRate(int ID)
+double RateControl::CurrentRate(int index)
 {
-    // ИСПРАВЛЕНО: Проверка границ ID
-    if (ID < 0 || ID >= 4) return 0;
+    // Проверка границ индекса
+    if (index < 0 || index >= 4) return 0;
 
-    if (ProductOn(ID)) {
-        double V = RateApplied(ID);
-        if (ProdDensity[ID] > 0) V *= ProdDensity[ID];
+    if (ProductOn(index)) {
+        double V = RateApplied(index);
+        if (ProdDensity[index] > 0) V *= ProdDensity[index];
         return V;
     } else {
         return 0;
     }
 }
 
-double RateControl::TargetUPM(int ID)
+double RateControl::TargetUPM(int index)
 {
-    // ИСПРАВЛЕНО: Проверка границ ID
-    if (ID < 0 || ID >= 4) return 0;
+    // Проверка границ индекса
+    if (index < 0 || index >= 4) return 0;
 
     double Result = 0;
-    switch (CoverageUnits[ID]) {
+    switch (CoverageUnits[index]) {
     case 0: // acres
-        if (AppMode[ID] == 1) {
+        if (AppMode[index] == 1) {
             // Constant UPM
-            double HPM = swidth * cMinUPMSpeed[ID] / 600.0;
-            // ИСПРАВЛЕНО: Проверка деления на ноль
+            double HPM = swidth * cMinUPMSpeed[index] / 600.0;
+            // Проверка деления на ноль
             if (HPM > 0.0001) {
-                Result = TargetRate[ID] * HPM * 2.47;
+                Result = TargetRate[index] * HPM * 2.47;
             }
         } else {
             // section controlled UPM
-            Result = TargetRate[ID] * HectaresPerMinute * 2.47;
+            Result = TargetRate[index] * HectaresPerMinute * 2.47;
         }
         break;
 
     case 1: // hectares
-        if (AppMode[ID] == 1) {
+        if (AppMode[index] == 1) {
             // Constant UPM
-            double HPM = swidth * cMinUPMSpeed[ID] / 600.0;
+            double HPM = swidth * cMinUPMSpeed[index] / 600.0;
             if (HPM > 0.0001) {
-                Result = TargetRate[ID] * HPM;
+                Result = TargetRate[index] * HPM;
             }
         } else {
             // section controlled UPM
-            Result = TargetRate[ID] * HectaresPerMinute;
+            Result = TargetRate[index] * HectaresPerMinute;
         }
         break;
 
     case 2: // minutes
-        Result = TargetRate[ID];
+        Result = TargetRate[index];
         break;
 
     default: // hours
-        Result = TargetRate[ID] / 60;
+        Result = TargetRate[index] / 60;
         break;
     }
 
-    if (ProdDensity[ID] > 0) {
-        Result /= ProdDensity[ID];
+    if (ProdDensity[index] > 0) {
+        Result /= ProdDensity[index];
     }
     return Result;
 }
 
-double RateControl::RateApplied(int ID)
+double RateControl::RateApplied(int index)
 {
-    // ИСПРАВЛЕНО: Проверка границ ID
-    if (ID < 0 || ID >= 4) return 0;
+    // Проверка границ индекса
+    if (index < 0 || index >= 4) return 0;
 
-    HectaresPerMinute = width * cMinUPMSpeed[ID] / 600.0;
+    HectaresPerMinute = width * cMinUPMSpeed[index] / 600.0;
     double Result = 0;
 
-    switch (CoverageUnits[ID]) {
+    switch (CoverageUnits[index]) {
     case 0: // acres
-        if (AppMode[ID] == 1) {
+        if (AppMode[index] == 1) {
             // Constant UPM
-            double HPM = swidth * cMinUPMSpeed[ID] / 600.0;
-            // ИСПРАВЛЕНО: Правильное условие и проверка деления на ноль
+            double HPM = swidth * cMinUPMSpeed[index] / 600.0;
+            // Правильное условие и проверка деления на ноль
             if (HPM > 0.0001) {
-                Result = appRate[ID] / (HPM * 2.47);
+                Result = appRate[index] / (HPM * 2.47);
             }
-        } else if (AppMode[ID] == 0 || AppMode[ID] == 2) {
-            // ИСПРАВЛЕНО: Правильное условие
+        } else if (AppMode[index] == 0 || AppMode[index] == 2) {
+            // Правильное условие
             if (HectaresPerMinute > 0.0001) {
-                Result = appRate[ID] / (HectaresPerMinute * 2.47);
+                Result = appRate[index] / (HectaresPerMinute * 2.47);
             }
         } else {
             // Document target rate
-            Result = TargetRate[ID];
+            Result = TargetRate[index];
         }
         break;
 
     case 1: // hectares
-        if (AppMode[ID] == 1) {
-            double HPM = swidth * cMinUPMSpeed[ID] / 600.0;
+        if (AppMode[index] == 1) {
+            double HPM = swidth * cMinUPMSpeed[index] / 600.0;
             if (HPM > 0.0001) {
-                Result = appRate[ID] / HPM;
+                Result = appRate[index] / HPM;
             }
-        } else if (AppMode[ID] == 0 || AppMode[ID] == 2) {
+        } else if (AppMode[index] == 0 || AppMode[index] == 2) {
             if (HectaresPerMinute > 0.0001) {
-                Result = appRate[ID] / HectaresPerMinute;
+                Result = appRate[index] / HectaresPerMinute;
             }
         } else {
-            Result = TargetRate[ID];
+            Result = TargetRate[index];
         }
         break;
 
     case 2: // minutes
-        if (AppMode[ID] == 3) {
-            Result = TargetRate[ID];
+        if (AppMode[index] == 3) {
+            Result = TargetRate[index];
         } else {
-            Result = appRate[ID];
+            Result = appRate[index];
         }
         break;
 
     default: // hours
-        if (AppMode[ID] == 3) {
-            // ИСПРАВЛЕНО: Используем ID вместо ModID
-            Result = TargetRate[ID];
+        if (AppMode[index] == 3) {
+
+            Result = TargetRate[index];
         } else {
-            Result = appRate[ID] * 60;
+            Result = appRate[index] * 60;
         }
         break;
     }
     return Result;
 }
 
-double RateControl::MinUPMSpeed(int ID)
+double RateControl::MinUPMSpeed(int index)
 {
-    // ИСПРАВЛЕНО: Проверка границ ID
-    if (ID < 0 || ID >= 4) return 0;
+    // Проверка границ индекса
+    if (index < 0 || index >= 4) return 0;
 
-    if (speed < minSpeed[ID])
+    if (speed < minSpeed[index])
         return 0;
     else
         return speed;
 }
 
-double RateControl::MinUPM(int ID)
+double RateControl::MinUPM(int index)
 {
-    // ИСПРАВЛЕНО: Проверка границ ID
-    if (ID < 0 || ID >= 4) return 0;
+    // Проверка границ индекса
+    if (index < 0 || index >= 4) return 0;
 
-    if (cTargetUPM[ID] != 0 && cTargetUPM[ID] < minUPM[ID])
-        return minUPM[ID];
+    if (cTargetUPM[index] != 0 && cTargetUPM[index] < minUPM[index])
+        return minUPM[index];
     else
-        return cTargetUPM[ID];
+        return cTargetUPM[index];
 }
 
-void RateControl::loadSettings(int ID)
+void RateControl::loadSettings(int index)
 {
-    if (ID < 0 || ID >= 4) return;
+    if (index < 0 || index >= 4) return;
 
     QVector<int> rateSettings;
 
-    switch (ID) {
+    switch (index) {
     case 0:
         rateSettings = SettingsManager::instance()->rate_confProduct0();
-        break; // Добавить break!
+        break;
     case 1:
         rateSettings = SettingsManager::instance()->rate_confProduct1();
         break;
@@ -358,17 +387,22 @@ void RateControl::loadSettings(int ID)
         break;
     }
 
-    ProdDensity[ID] = rateSettings[1];
-    OnScreen[ID] = rateSettings[2];
-    pidscale[ID] = rateSettings[8];
-    MeterCal[ID] = rateSettings[9];
-    TargetRate[ID] = rateSettings[10];
-    AppMode[ID] = rateSettings[11];
-    ControlType[ID] = rateSettings[12];
-    CoverageUnits[ID] = rateSettings[13];
-    minSpeed[ID] = rateSettings[14];
+    if (rateSettings.size() >= 15) {
+        ProdDensity[index] = rateSettings[1];
+        OnScreen[index] = rateSettings[2];
+        pidscale[index] = rateSettings[8];
+        MeterCal[index] = rateSettings[9];
+        TargetRate[index] = rateSettings[10];
+        AppMode[index] = rateSettings[11];
+        ControlType[index] = rateSettings[12];
+        CoverageUnits[index] = rateSettings[13];
+        minSpeed[index] = rateSettings[14];
+    }
 
+    // Обновляем модель после загрузки настроек
+    updateModel(index);
 }
+
 void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
 {
     // Update data from RC modules
@@ -378,100 +412,158 @@ void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
     // PGN 240: RC Data
     if (data.pgnNumber == 240) {
 
-        ModID = data.rateControlInData[0]; // ID из data[ ]
+        int moduleIndex = data.rateControlInData[0]; // Индекс из данных PGN
 
-        // Проверяем, что ID в допустимом диапазоне (0-3)
-        if (ModID < 4) {
-            appRate[ModID] = data.rateControlInData[1];
-            Quantity[ModID] = data.rateControlInData[2];
-            PWMsetting[ModID] = data.rateControlInData[3];
-            SensorReceiving[ModID] = data.rateControlInData[4];
+        // Проверяем, что индекс в допустимом диапазоне (0-3)
+        if (moduleIndex >= 0 && moduleIndex < 4) {
+            appRate[moduleIndex] = data.rateControlInData[1];
+            Quantity[moduleIndex] = data.rateControlInData[2];
+            PWMsetting[moduleIndex] = data.rateControlInData[3];
+            SensorReceiving[moduleIndex] = data.rateControlInData[4];
 
-            cTargetUPM[ModID] = TargetUPM(ModID)*10;
-            cRateApplied[ModID] = RateApplied(ModID);
-            cSmoothRate[ModID] = SmoothRate(ModID);
-            cCurrentRate[ModID] = CurrentRate(ModID);
-            cMinUPMSpeed[ModID] = MinUPMSpeed(ModID);
-            cMinUPM[ModID] = MinUPM(ModID);
+            cTargetUPM[moduleIndex] = TargetUPM(moduleIndex) * 10;
+            cRateApplied[moduleIndex] = RateApplied(moduleIndex);
+            cSmoothRate[moduleIndex] = SmoothRate(moduleIndex);
+            cCurrentRate[moduleIndex] = CurrentRate(moduleIndex);
+            cMinUPMSpeed[moduleIndex] = MinUPMSpeed(moduleIndex);
+            cMinUPM[moduleIndex] = MinUPM(moduleIndex);
+
+            // Загружаем настройки и обновляем модель
+            loadSettings(moduleIndex);
+            updateModel(moduleIndex);
+            modulesSend241(moduleIndex);
+
         }
-        loadSettings(ModID);
-        modulesSend241(ModID);
-        updateModel(ModID);
     }
 }
 
-void RateControl::modulesSend241(int ID)
+void RateControl::modulesSend241(int index)
 {
+    if (index < 0 || index >= 4) return;
+
     CPGN_F1 &p_241 = ModuleComm::instance()->p_241;
-    p_241.pgn[CPGN_F1::ID] = ID;
-    p_241.pgn[CPGN_F1::RateSetLo] = (char)((int)cMinUPM[ID]); // target rate
-    p_241.pgn[CPGN_F1::RateSetHI] = (char)((int)cMinUPM[ID] >> 8);
-    p_241.pgn[CPGN_F1::FlowCalLO] = (char)((int)MeterCal[ID]);
-    p_241.pgn[CPGN_F1::FlowCalHI] = (char)((int)MeterCal[ID] >> 8);
-    p_241.pgn[CPGN_F1::Command] = Command(ID);
-    p_241.pgn[CPGN_F1::ManualPWM] = (char)((int)ManualPWM[ID]);
+    p_241.pgn[CPGN_F1::ID] = index; // Используем индекс
+    p_241.pgn[CPGN_F1::RateSetLo] = (char)((int)cMinUPM[index]); // target rate
+    p_241.pgn[CPGN_F1::RateSetHI] = (char)((int)cMinUPM[index] >> 8);
+    p_241.pgn[CPGN_F1::FlowCalLO] = (char)((int)MeterCal[index]);
+    p_241.pgn[CPGN_F1::FlowCalHI] = (char)((int)MeterCal[index] >> 8);
+    p_241.pgn[CPGN_F1::Command] = Command(index);
+    p_241.pgn[CPGN_F1::ManualPWM] = (char)((int)ManualPWM[index]);
+
+    updateModel(index);
 
     AgIOService::instance()->sendPgn(p_241.pgn);
 }
-void RateControl::updateModel(int id)
+
+void RateControl::updateModel(int index)
 {
-    if (id < 0 || id >= 4) return;
+    if (index < 0 || index >= 4) return;
 
-    // Обновляем модель из массивов
-    if (m_rcModel->productExists(id)) {
-        // Получаем данные из Settings для имени
-        QString productName = "";
-        switch (id) {
-        case 0: productName = SettingsManager::instance()->rate_productName0(); break;
-        case 1: productName = SettingsManager::instance()->rate_productName1(); break;
-        case 2: productName = SettingsManager::instance()->rate_productName2(); break;
-        case 3: productName = SettingsManager::instance()->rate_productName3(); break;
-        }
+    // Проверяем валидность индекса в модели
+    if (!m_rcModel || index >= m_rcModel->count()) return;
 
-        // Обновляем модель
-        m_rcModel->updateName(id, productName);
-        m_rcModel->updateSetRate(id, TargetRate[id]);
-        m_rcModel->updateSmoothRate(id, cSmoothRate[id]);
-        m_rcModel->updateActualRate(id, cCurrentRate[id]);
-        bool isActive = ProductOn(id) && OnScreen[id];
-        m_rcModel->updateIsActive(id, isActive);
+    // Получаем данные из Settings для имени
+    QString productName = getProductNameFromSettings(index);
 
+    // Обновляем модель по индексу
+    m_rcModel->updateName(index, productName);
+    m_rcModel->updateSetRate(index, TargetRate[index]);
+    m_rcModel->updateSmoothRate(index, cSmoothRate[index]);
+    m_rcModel->updateActualRate(index, cCurrentRate[index]);
+
+    // Проверяем, активен ли продукт
+    bool isActive = ProductOn(index) && OnScreen[index];
+    m_rcModel->updateIsActive(index, isActive);
+
+    qDebug(rc_log) << "Updated product" << index
+                   << "Name:" << productName
+                   << "SetRate:" << TargetRate[index]
+                   << "SmoothRate:" << cSmoothRate[index]
+                   << "ActualRate:" << cCurrentRate[index]
+                   << "Active:" << isActive;
+}
+
+void RateControl::setCurrentProductIndex(int index)
+{
+    if (index >= 0 && index < 4 && m_currentProductIndex != index) {
+        m_currentProductIndex = index;
+        emit currentProductIndexChanged(index);
+
+        // Обновляем данные для выбранного продукта
+        updateModel(index);
     }
 }
 
-void RateControl::setCurrentProductId(int id)
+QVariantMap RateControl::getProductDataByIndex(int index) const
 {
-    if (id >= 0 && id < 4 && m_currentProductId != id) {
-        m_currentProductId = id;
-        emit currentProductIdChanged(id);
-        updateModel(id);
-    }
-}
-
-QVariantMap RateControl::getProductData(int id) const
-{
-    if (!m_rcModel || id < 0 || id >= 4)
+    if (!m_rcModel || index < 0 || index >= 4)
         return QVariantMap();
 
-    return m_rcModel->getProductById(id);
+    return m_rcModel->get(index);
 }
-void RateControl::increaseSetRate(int id, double step)
-{
-    if (m_rcModel && id >= 0 && id < 4) {
-        TargetRate[id] = TargetRate[id] + step;
 
-        m_rcModel->updateSetRate(id, TargetRate[id]);
-        // Обновляем данные после изменения
-        updateModel(id+1);
+// Q_INVOKABLE методы для QML
+void RateControl::increaseSetRate(int index, double step)
+{
+    if (index < 0 || index >= 4 || !m_rcModel) return;
+
+    TargetRate[index] += step;
+
+    // Обновляем модель
+    m_rcModel->updateSetRate(index, TargetRate[index]);
+
+    // Пересчитываем и обновляем все данные для этого индекса
+    cTargetUPM[index] = TargetUPM(index) * 10;
+    cRateApplied[index] = RateApplied(index);
+    cSmoothRate[index] = SmoothRate(index);
+    cCurrentRate[index] = CurrentRate(index);
+
+    // Полное обновление модели
+    updateModel(index);
+
+    qDebug(rc_log) << "Increased set rate for product" << index
+                   << "by" << step << "New rate:" << TargetRate[index];
+}
+
+void RateControl::decreaseSetRate(int index, double step)
+{
+    if (index < 0 || index >= 4 || !m_rcModel) return;
+
+    double newRate = TargetRate[index] - step;
+    if (newRate < 0) newRate = 0;
+    TargetRate[index] = newRate;
+
+    // Обновляем модель
+    m_rcModel->updateSetRate(index, TargetRate[index]);
+
+    // Пересчитываем и обновляем все данные для этого индекса
+    cTargetUPM[index] = TargetUPM(index) * 10;
+    cRateApplied[index] = RateApplied(index);
+    cSmoothRate[index] = SmoothRate(index);
+    cCurrentRate[index] = CurrentRate(index);
+
+    // Полное обновление модели
+    updateModel(index);
+
+    qDebug(rc_log) << "Decreased set rate for product" << index
+                   << "by" << step << "New rate:" << TargetRate[index];
+}
+
+// Метод для обновления всех продуктов
+void RateControl::updateAllProducts()
+{
+    if (!m_rcModel) return;
+
+    for (int i = 0; i < 4 && i < m_rcModel->count(); ++i) {
+        updateModel(i);
     }
 }
 
-void RateControl::decreaseSetRate(int id, double step)
+// Метод для принудительного обновления продукта
+void RateControl::refreshProduct(int index)
 {
-    if (m_rcModel && id >= 0 && id < 4) {
-        TargetRate[id] = TargetRate[id] - step;
-        m_rcModel->updateSetRate(id, TargetRate[id]);
-        // Обновляем данные после изменения
-        updateModel(id+1);
-    }
+    if (index < 0 || index >= 4) return;
+
+    loadSettings(index);
+    updateModel(index);
 }

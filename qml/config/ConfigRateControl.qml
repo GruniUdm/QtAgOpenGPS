@@ -12,7 +12,7 @@ import "../components"
 Rectangle{
     id: configRateControl
     anchors.fill: parent
-    color: aog.backgroundColor
+    color: aogInterface.backgroundColor
     visible: false
 
     onVisibleChanged: {

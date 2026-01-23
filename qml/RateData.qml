@@ -14,47 +14,43 @@ Comp.MoveablePopup {
     visible: false
     modal: false
 
-    property int currentProductId: 0
+    // Используем индекс вместо ID
+    property int currentProductIndex: 0
     property var currentProduct: null
 
-    // Обновляем данные при изменении ID
-    onCurrentProductIdChanged: {
-        if (RateControl.rcModel) {
-            // Обновляем currentProduct
-            for (var i = 0; i < RateControl.rcModel.count; i++) {
-                var product = RateControl.rcModel.get(i);
-                if (product.productId === currentProductId) {
-                    currentProduct = product;
-                    return;
-                }
-            }
+    // Функция для обновления текущего продукта по индексу
+    function updateCurrentProduct() {
+        if (RateControl.rcModel && currentProductIndex >= 0 && currentProductIndex < RateControl.rcModel.count) {
+            currentProduct = RateControl.rcModel.get(currentProductIndex);
+        } else {
             currentProduct = null;
         }
     }
 
-    // Также обновляем при показе
+    // Обновляем при изменении индекса
+    onCurrentProductIndexChanged: {
+        updateCurrentProduct();
+    }
+
+    // Обновляем при показе
     onVisibleChanged: {
         if (visible) {
-            currentProductId = 0; // Сбрасываем на первый продукт
+            currentProductIndex = 0;
+            updateCurrentProduct();
         }
     }
 
-    // Функция для получения данных продукта
-    function getProductData(id) {
-        if (!RateControl.rcModel) return null;
-        // Используем встроенный метод модели для получения данных по индексу
-        // Нужно найти продукт по ID в модели
-        for (var i = 0; i < RateControl.rcModel.count; i++) {
-            var product = RateControl.rcModel.get(i);
-            if (product.productId === id) {
-                return product;
+    // Также обновляем при изменениях в модели
+    Connections {
+        target: RateControl.rcModel
+        onCountChanged: updateCurrentProduct()
+        onDataChanged: {
+            // Если изменились данные текущего индекса
+            if (topLeft.row <= currentProductIndex && bottomRight.row >= currentProductIndex) {
+                updateCurrentProduct();
             }
         }
-        return null;
     }
-
-    // Текущий продукт
-    //property var currentProduct: getProductData(currentProductId)
 
 Rectangle{
     id: rcData
@@ -69,7 +65,8 @@ Rectangle{
     }
 
     function show(){
-        currentProductId = 0;
+        currentProductIndex = 0;
+        updateCurrentProduct();
     }
 
     Comp.TopLine{
@@ -96,8 +93,11 @@ Rectangle{
             icon.source: prefix + "/images/ratec1.png"
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
-            checked: currentProductId === 0
-            onClicked: currentProductId = 0
+            checked: currentProductIndex === 0
+            // Отключаем кнопку, если продукта нет
+            enabled: RateControl.rcModel ? RateControl.rcModel.count > 0 : false
+            //enabled: RateControl.rcModel.get(0).isActive
+            onClicked: currentProductIndex = 0
         }
 
         Comp.IconButtonColor{
@@ -107,8 +107,9 @@ Rectangle{
             icon.source: prefix + "/images/ratec2.png"
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
-            checked: currentProductId === 1
-            onClicked: currentProductId = 1
+            checked: currentProductIndex === 1
+            enabled: RateControl.rcModel ? RateControl.rcModel.count > 1 : false
+            onClicked: currentProductIndex = 1
         }
 
         Comp.IconButtonColor{
@@ -118,8 +119,9 @@ Rectangle{
             icon.source: prefix + "/images/ratec3.png"
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
-            checked: currentProductId === 2
-            onClicked: currentProductId = 2
+            checked: currentProductIndex === 2
+            enabled: RateControl.rcModel ? RateControl.rcModel.count > 2 : false
+            onClicked: currentProductIndex = 2
         }
 
         Comp.IconButtonColor{
@@ -129,8 +131,9 @@ Rectangle{
             icon.source: prefix + "/images/ratec4.png"
             implicitHeight: 50 * theme.scaleHeight
             implicitWidth: parent.width /4 - 5 * theme.scaleWidth
-            checked: currentProductId === 3
-            onClicked: currentProductId = 3
+            checked: currentProductIndex === 3
+            enabled: RateControl.rcModel ? RateControl.rcModel.count > 3 : false
+            onClicked: currentProductIndex = 3
         }
     }
 
@@ -167,7 +170,7 @@ Rectangle{
                 }
                 font.pixelSize: 30;
                 anchors.centerIn: parent
-                color: aog.backgroundColor
+                color: aogInterface.backgroundColor
             }
 
             MouseArea{
@@ -179,7 +182,7 @@ Rectangle{
 
         Rectangle{
             id: target1
-            color: aog.backgroundColor
+            color: aogInterface.backgroundColor
             border.color: "black"
             radius: 10
             Layout.alignment: Qt.AlignCenter
@@ -210,11 +213,11 @@ Rectangle{
         Text{
             visible: true
             text: currentProduct ?
-                  (currentProduct.productName || "Product " + (currentProductId + 1)) :
+                  (currentProduct.productName || "Product " + (currentProductIndex + 1)) :
                   "N/A"
-            font.pixelSize: 16 * theme.scaleHeight; // Еще меньше для надежности
+            font.pixelSize: 16 * theme.scaleHeight;
             anchors.centerIn: parent
-            color: aog.backgroundColor
+            color: aogInterface.backgroundColor
         }
     }
 
@@ -226,10 +229,12 @@ Rectangle{
         anchors.right: parent.right
         anchors.rightMargin: 5 * theme.scaleHeight
         anchors.bottom: parent.bottom
+        enabled: currentProductIndex >= 0 && currentProductIndex < 4
         onClicked: {
-            RateControl.increaseSetRate(currentProductId, 10);
-            // Обновляем текущий продукт после изменения
-            currentProduct = getProductData(currentProductId);
+            // Используем индекс
+            RateControl.rcModel.increaseSetRate(currentProductIndex, 10);
+            // Обновляем текущий продукт
+            updateCurrentProduct();
         }
     }
 
@@ -243,10 +248,12 @@ Rectangle{
         anchors.left: productName.right
         anchors.leftMargin: 5 * theme.scaleHeight
         anchors.bottom: parent.bottom
+        enabled: currentProductIndex >= 0 && currentProductIndex < 4
         onClicked: {
-            RateControl.decreaseSetRate(currentProductId, 10);
-            // Обновляем текущий продукт после изменения
-            currentProduct = getProductData(currentProductId);
+            // Используем индекс
+            RateControl.rcModel.decreaseSetRate(currentProductIndex, 10);
+            // Обновляем текущий продукт
+            updateCurrentProduct();
         }
     }
 }
