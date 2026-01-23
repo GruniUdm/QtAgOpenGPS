@@ -1240,6 +1240,8 @@ void FormGPS::UpdateFixPosition()
     RateControl::instance()->current_speed = pn.speed;
     RateControl::instance()->width = tool.applyWidth;
     RateControl::instance()->swidth = SettingsManager::instance()->vehicle_toolWidth();
+    RateControl::instance()->aBtnState = (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto);
+    RateControl::instance()->mBtnState = (MainWindowState::instance()->manualBtnState() == MainWindowState::ButtonStates::On);
 
     // === IMU Data Updates (5 properties) ===
     Backend::instance()->m_fixFrame.imuRoll = ahrs.imuRoll;

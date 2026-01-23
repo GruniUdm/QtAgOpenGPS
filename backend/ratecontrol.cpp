@@ -144,8 +144,8 @@ int RateControl::Command(int ID)
         Result |= (1 << (ControlType[ID] + 1));
     }
 
-    if (aBtnState > 0) Result |= (1 << 6);
-    if ((mBtnState > 0) || (ManualPWM[ID] == 0)) Result |= (1 << 4);
+    if (aBtnState) Result |= (1 << 6);
+    if ((mBtnState) || (ManualPWM[ID] == 0)) Result |= (1 << 4);
 
     return Result;
 }
@@ -177,7 +177,7 @@ double RateControl::SmoothRate(int ID)
         if (TargetRate[ID] > 0) {
             double Rt = Ra / TargetRate[ID];
 
-            if (Rt >= 0.95 && Rt <= 1.05 && aBtnState > 0) {
+            if (Rt >= 0.95 && Rt <= 1.05 && aBtnState) {
                 Result = TargetRate[ID];
             } else {
                 Result = Ra;
@@ -371,7 +371,7 @@ void RateControl::loadSettings(int ID)
 }
 void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
 {
-    // Update data from Blockage modules
+    // Update data from RC modules
 
     if (!data.isValid) return;
 
@@ -386,6 +386,13 @@ void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
             Quantity[ModID] = data.rateControlInData[2];
             PWMsetting[ModID] = data.rateControlInData[3];
             SensorReceiving[ModID] = data.rateControlInData[4];
+
+            cTargetUPM[ModID] = TargetUPM(ModID)*10;
+            cRateApplied[ModID] = RateApplied(ModID);
+            cSmoothRate[ModID] = SmoothRate(ModID);
+            cCurrentRate[ModID] = CurrentRate(ModID);
+            cMinUPMSpeed[ModID] = MinUPMSpeed(ModID);
+            cMinUPM[ModID] = MinUPM(ModID);
         }
         loadSettings(ModID);
         modulesSend241(ModID);
@@ -404,7 +411,7 @@ void RateControl::modulesSend241(int ID)
     p_241.pgn[CPGN_F1::Command] = Command(ID);
     p_241.pgn[CPGN_F1::ManualPWM] = (char)((int)ManualPWM[ID]);
 
-    emit ModuleComm::instance()->p_241_changed();
+    AgIOService::instance()->sendPgn(p_241.pgn);
 }
 void RateControl::updateModel(int id)
 {
@@ -428,8 +435,10 @@ void RateControl::updateModel(int id)
         m_rcModel->updateActualRate(id, cCurrentRate[id]);
         bool isActive = ProductOn(id) && OnScreen[id];
         m_rcModel->updateIsActive(id, isActive);
+
     }
 }
+
 void RateControl::setCurrentProductId(int id)
 {
     if (id >= 0 && id < 4 && m_currentProductId != id) {

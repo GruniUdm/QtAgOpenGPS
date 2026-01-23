@@ -68,8 +68,8 @@ public:
     void aogset(int aBttnState, int mBttnState, double setwidth, double toolwidth, double aogspeed);
     int PWMsetting[4];
     bool SensorReceiving[4];
-    int aBtnState;
-    int mBtnState;
+    bool aBtnState;
+    bool mBtnState;
     double cRateApplied[4];
     double cSmoothRate[4];
     double cCurrentRate[4];
