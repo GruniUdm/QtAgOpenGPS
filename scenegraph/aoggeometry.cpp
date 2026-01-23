@@ -281,6 +281,31 @@ const QSGGeometry::AttributeSet &thickLineAttributes()
     return attrSet;
 }
 
+const QSGGeometry::AttributeSet &thickLineColorsAttributes()
+{
+    // Attribute layout for thick line vertices:
+    // - attribute 0: pos (vec4) - current vertex position (with w=1)
+    // - attribute 1: nextPos (vec4) - neighbor position for direction calculation
+    // - attribute 2: side (float) - which side of line (-1 or +1)
+    // For vertices at endpoint A: pos=A, nextPos=B
+    // For vertices at endpoint B: pos=B, nextPos=A (swapped so shader always uses pos)
+
+    static QSGGeometry::Attribute attrs[] = {
+        QSGGeometry::Attribute::create(0, 3, QSGGeometry::FloatType, true),   // pos (vec3)
+        QSGGeometry::Attribute::create(1, 4, QSGGeometry::FloatType, false),  // color (vec4)
+        QSGGeometry::Attribute::create(2, 3, QSGGeometry::FloatType, false),  // nextPos (vec3)
+        QSGGeometry::Attribute::create(3, 1, QSGGeometry::FloatType, false),  // side
+    };
+
+    static QSGGeometry::AttributeSet attrSet = {
+        4,                          // attribute count
+        sizeof(ThickLineColorsVertex),    // stride
+        attrs
+    };
+
+    return attrSet;
+}
+
 const QSGGeometry::AttributeSet &dashedThickLineAttributes()
 {
     // Attribute layout for dashed thick line vertices:
@@ -502,6 +527,210 @@ QSGGeometry *createThickLineLoopGeometry(const QVector<QVector3D> &points)
     return createThickLineGeometry(closedPoints);
 }
 
+// ===============================================
+// multiple colored line (interpolated)
+// ===============================================
+
+QSGGeometry *createThickLineColorsGeometry(const QVector<ColorVertexVectors> &points)
+{
+    // Treats input as a CONNECTED polyline: points[0]→points[1]→points[2]→...
+    // Each consecutive pair of points forms a line segment
+    // Each segment needs 4 vertices (triangle strip for a quad)
+    // With degenerate triangles to connect segments
+
+    if (points.size() < 2)
+        return nullptr;
+
+    int numSegments = points.size() - 1;
+    // 4 vertices per segment, plus 2 degenerate vertices between segments (except last)
+    int numVertices = numSegments * 4 + (numSegments - 1) * 2;
+
+    if (numSegments == 1) {
+        // Single segment, no degenerate triangles needed
+        numVertices = 4;
+    }
+
+    auto *geometry = new QSGGeometry(thickLineColorsAttributes(), numVertices);
+    geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
+
+    ThickLineColorsVertex *data = static_cast<ThickLineColorsVertex *>(geometry->vertexData());
+    int idx = 0;
+
+    for (int seg = 0; seg < numSegments; ++seg) {
+        const QVector3D &a = points[seg].vertex;
+        const QColor &color = points[seg].color;
+        const QVector3D &b = points[seg + 1].vertex;
+
+        // First vertex of segment (at A, side -1): pos=A, nextPos=B
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
+        data[idx].side = -1.0f;
+        data[idx].r = color.redF();
+        data[idx].g = color.greenF();
+        data[idx].b = color.blueF();
+        data[idx].a = color.alphaF();
+        idx++;
+
+        // Second vertex (at A, side +1): pos=A, nextPos=B
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
+        data[idx].side = 1.0f;
+        data[idx].r = color.redF();
+        data[idx].g = color.greenF();
+        data[idx].b = color.blueF();
+        data[idx].a = color.alphaF();
+        idx++;
+
+        // Third vertex (at B, side -1): pos=B, nextPos=A (swapped!)
+        // Side is negated (+1) because swapping positions reverses the direction/normal
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
+        data[idx].side = 1.0f;  // Negated to compensate for reversed normal
+        data[idx].r = color.redF();
+        data[idx].g = color.greenF();
+        data[idx].b = color.blueF();
+        data[idx].a = color.alphaF();
+        idx++;
+
+        // Fourth vertex (at B, side +1): pos=B, nextPos=A (swapped!)
+        // Side is negated (-1) because swapping positions reverses the direction/normal
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
+        data[idx].side = -1.0f;  // Negated to compensate for reversed normal
+        data[idx].r = color.redF();
+        data[idx].g = color.greenF();
+        data[idx].b = color.blueF();
+        data[idx].a = color.alphaF();
+        idx++;
+
+        // Add degenerate triangles between segments (repeat last vertex, then first of next)
+        if (seg < numSegments - 1) {
+            // Repeat last vertex
+            data[idx] = data[idx - 1];
+            idx++;
+
+            // Pre-duplicate first vertex of next segment
+            const QVector3D &nextA = points[seg + 1].vertex;
+            const QColor &color = points[seg + 1 ].color;
+            const QVector3D &nextB = points[seg + 2].vertex;
+            data[idx].ax = nextA.x(); data[idx].ay = nextA.y(); data[idx].az = nextA.z();
+            data[idx].bx = nextB.x(); data[idx].by = nextB.y(); data[idx].bz = nextB.z();
+            data[idx].side = -1.0f;
+            data[idx].r = color.redF();
+            data[idx].g = color.greenF();
+            data[idx].b = color.blueF();
+            data[idx].a = color.alphaF();
+            idx++;
+        }
+    }
+
+    return geometry;
+}
+
+QSGGeometry *createThickLinesColorsGeometry(const QVector<ColorVertexVectors> &points)
+{
+    // Treats input as DISCONNECTED line segments: points[0]→points[1], points[2]→points[3], ...
+    // Each pair of points is an independent line segment (like GL_LINES)
+    // Each segment needs 4 vertices (triangle strip for a quad)
+    // Degenerate triangles separate each segment
+
+    if (points.size() < 2 || points.size() % 2 != 0)
+        return nullptr;
+
+    int numSegments = points.size() / 2;
+    // 4 vertices per segment, plus 2 degenerate vertices between segments (except last)
+    int numVertices = numSegments * 4 + (numSegments - 1) * 2;
+
+    if (numSegments == 1) {
+        numVertices = 4;
+    }
+
+    auto *geometry = new QSGGeometry(thickLineColorsAttributes(), numVertices);
+    geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
+
+    ThickLineColorsVertex *data = static_cast<ThickLineColorsVertex *>(geometry->vertexData());
+    int idx = 0;
+
+    for (int seg = 0; seg < numSegments; ++seg) {
+        const QVector3D &a = points[seg * 2].vertex;      // Start of this segment
+        const QColor &color = points[seg * 2].color;      // Start of this segment
+        const QVector3D &b = points[seg * 2 + 1].vertex;  // End of this segment
+
+        // First vertex of segment (at A, side -1): pos=A, nextPos=B
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
+        data[idx].side = -1.0f;
+        data[idx].r = color.redF();
+        data[idx].g = color.greenF();
+        data[idx].b = color.blueF();
+        data[idx].a = color.alphaF();
+        idx++;
+
+        // Second vertex (at A, side +1): pos=A, nextPos=B
+        data[idx].ax = a.x(); data[idx].ay = a.y(); data[idx].az = a.z();
+        data[idx].bx = b.x(); data[idx].by = b.y(); data[idx].bz = b.z();
+        data[idx].side = 1.0f;
+        data[idx].r = color.redF();
+        data[idx].g = color.greenF();
+        data[idx].b = color.blueF();
+        data[idx].a = color.alphaF();
+        idx++;
+
+        // Third vertex (at B, side -1): pos=B, nextPos=A (swapped!)
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
+        data[idx].side = 1.0f;  // Negated to compensate for reversed normal
+        data[idx].r = color.redF();
+        data[idx].g = color.greenF();
+        data[idx].b = color.blueF();
+        data[idx].a = color.alphaF();
+        idx++;
+
+        // Fourth vertex (at B, side +1): pos=B, nextPos=A (swapped!)
+        data[idx].ax = b.x(); data[idx].ay = b.y(); data[idx].az = b.z();
+        data[idx].bx = a.x(); data[idx].by = a.y(); data[idx].bz = a.z();
+        data[idx].side = -1.0f;  // Negated to compensate for reversed normal
+        data[idx].r = color.redF();
+        data[idx].g = color.greenF();
+        data[idx].b = color.blueF();
+        data[idx].a = color.alphaF();
+        idx++;
+
+        // Add degenerate triangles between segments
+        if (seg < numSegments - 1) {
+            // Repeat last vertex
+            data[idx] = data[idx - 1];
+            idx++;
+
+            // Pre-duplicate first vertex of next segment
+            const QVector3D &nextA = points[(seg + 1) * 2].vertex;
+            const QColor &color = points[(seg + 1) * 2].color;
+            const QVector3D &nextB = points[(seg + 1) * 2 + 1].vertex;
+            data[idx].ax = nextA.x(); data[idx].ay = nextA.y(); data[idx].az = nextA.z();
+            data[idx].bx = nextB.x(); data[idx].by = nextB.y(); data[idx].bz = nextB.z();
+            data[idx].side = -1.0f;
+            data[idx].r = color.redF();
+            data[idx].g = color.greenF();
+            data[idx].b = color.blueF();
+            data[idx].a = color.alphaF();
+            idx++;
+        }
+    }
+
+    return geometry;
+}
+
+QSGGeometry *createThickLineColorsLoopGeometry(const QVector<ColorVertexVectors> &points)
+{
+    if (points.size() < 3)
+        return nullptr;
+
+    // Create a closed loop by appending the first point to the end
+    QVector<ColorVertexVectors> closedPoints = points;
+    closedPoints.append(points.first());
+
+    return createThickLineColorsGeometry(closedPoints);
+}
 // ============================================================================
 // Dashed Thick Line Geometry (for screen-space width dashed lines)
 // ============================================================================

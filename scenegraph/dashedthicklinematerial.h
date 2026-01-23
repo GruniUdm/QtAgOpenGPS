@@ -27,9 +27,6 @@ public:
     void setColor(const QColor &color);
     QColor color() const { return m_color; }
 
-    void setViewportSize(const QSize &size);
-    QSize viewportSize() const { return m_viewportSize; }
-
     void setLineWidth(float width);
     float lineWidth() const { return m_lineWidth; }
 
@@ -45,7 +42,6 @@ public:
 
 private:
     QColor m_color = Qt::white;
-    QSize m_viewportSize;
     float m_lineWidth = 2.0f;    // Width in screen pixels
     float m_dashLength = 10.0f;  // Dash length in screen pixels
     float m_gapLength = 5.0f;    // Gap length in screen pixels

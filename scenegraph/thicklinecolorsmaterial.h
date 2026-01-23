@@ -3,8 +3,8 @@
 //
 // Thick line material - renders lines with constant screen-pixel width
 
-#ifndef THICKLINEMATERIAL_H
-#define THICKLINEMATERIAL_H
+#ifndef THICKLINECOLORSMATERIAL_H
+#define THICKLINECOLORSMATERIAL_H
 
 #include <QSGMaterial>
 #include <QSGMaterialShader>
@@ -14,12 +14,12 @@
 #include <QSGGeometry>
 #include "aogmaterial.h"
 
-#include "aoggeometry.h"  // For ThickLineVertex struct
+#include "aoggeometry.h"  // For ThickLineColorsVertex struct
 
-class ThickLineMaterial : public AOGMaterial
+class ThickLineColorsMaterial : public AOGMaterial
 {
 public:
-    ThickLineMaterial();
+    ThickLineColorsMaterial();
 
     QSGMaterialType *type() const override;
     QSGMaterialShader *createShader(QSGRendererInterface::RenderMode renderMode) const override;
@@ -39,12 +39,12 @@ private:
     float m_lineWidth = 2.0f;  // Width in screen pixels
 };
 
-class ThickLineMaterialShader : public QSGMaterialShader
+class ThickLineColorsMaterialShader : public QSGMaterialShader
 {
 public:
-    ThickLineMaterialShader();
+    ThickLineColorsMaterialShader();
 
     bool updateUniformData(RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial) override;
 };
 
-#endif // THICKLINEMATERIAL_H
+#endif // THICKLINECOLORSMATERIAL_H

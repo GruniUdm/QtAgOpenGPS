@@ -9,7 +9,7 @@
 #include <QSGMaterial>
 #include <QSGMaterialShader>
 #include <QMatrix4x4>
-#include <QColor>
+#include <QSize>
 #include <QSGTexture>
 
 // ============================================================================b
@@ -23,11 +23,16 @@ class AOGMaterial : public QSGMaterial
 public:
     AOGMaterial()=default;
 
-    void setMvpMatrix(const QMatrix4x4 &mvpMatrix);
+    void setMvpMatrix(const QMatrix4x4 &fullMatrix);
     QMatrix4x4 mvpMatrix() const { return m_mvpMatrix; }
+
+    void setViewportSize(const QSize &size);
+    QSize viewportSize() const { return m_viewportSize; }
+
 
 protected:
     QMatrix4x4 m_mvpMatrix;
+    QSize m_viewportSize;
 };
 
 #endif // AOGMATERIAL_H

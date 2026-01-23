@@ -18,3 +18,8 @@ void AOGMaterial::setMvpMatrix(const QMatrix4x4 &mvpMatrix)
 {
     m_mvpMatrix = mvpMatrix;
 }
+
+void AOGMaterial::setViewportSize(const QSize &size)
+{
+    m_viewportSize = size;
+}

@@ -61,11 +61,6 @@ void DashedThickLineMaterial::setColor(const QColor &color)
     m_color = color;
 }
 
-void DashedThickLineMaterial::setViewportSize(const QSize &size)
-{
-    m_viewportSize = size;
-}
-
 void DashedThickLineMaterial::setLineWidth(float width)
 {
     m_lineWidth = width;

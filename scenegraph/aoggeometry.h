@@ -39,6 +39,18 @@ struct ThickLineVertex {
     float side;        // -1 or +1 (which side of the line)
 };
 
+struct ThickLineColorsVertex {
+    float ax, ay, az;  // Endpoint A position
+    float r, g, b, a;  // endpoint A color
+    float bx, by, bz;  // Endpoint B position
+    float side;        // -1 or +1 (which side of the line)
+};
+
+struct ColorVertexVectors {
+    QVector3D vertex;
+    QColor color;
+};
+
 // Vertex for dashed thick lines (screen-space width with dash pattern)
 // Same as ThickLineVertex but with cumulative distance for dash calculation
 struct DashedThickLineVertex {
@@ -122,6 +134,10 @@ QSGGeometry *createThickLinesGeometry(const QVector<QVector3D> &points);
 
 // Create thick line loop geometry (closed loop)
 QSGGeometry *createThickLineLoopGeometry(const QVector<QVector3D> &points);
+
+QSGGeometry *createThickLineColorsGeometry(const QVector<ColorVertexVectors> &points);
+QSGGeometry *createThickLinesColorsGeometry(const QVector<ColorVertexVectors> &points);
+QSGGeometry *createThickLineColorsLoopGeometry(const QVector<ColorVertexVectors> &points);
 
 // Create dashed thick line geometry for screen-space width dashed lines
 // For CONNECTED polylines: points[0]→points[1]→points[2]→...
