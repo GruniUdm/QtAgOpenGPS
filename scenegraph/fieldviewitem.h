@@ -16,8 +16,6 @@
 #include <QBindable>
 #include <QColor>
 
-class QSGTexture;
-
 // Forward declarations for AOG classes
 class CVehicle;
 class CBoundary;
@@ -34,6 +32,7 @@ class CameraProperties;
 class GridProperties;
 class FieldSurfaceProperties;
 class VehicleProperties;
+class TextureFactory;
 
 Q_MOC_INCLUDE("cameraproperties.h")
 Q_MOC_INCLUDE("gridproperties.h")
@@ -143,15 +142,12 @@ protected:
     // ===== Core Scene Graph Methods =====
     void updatePolish() override;  // Runs on GUI thread before rendering
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override;
+    void releaseResources() override;  // Called while GL context still valid
 
 private:
     // ===== Node Update Methods (for nodes not yet refactored) =====
     void updateCoverageNode(FieldViewNode *rootNode);
     void updateGuidanceNode(FieldViewNode *rootNode);
-
-    // ===== Texture Loading (requires QQuickWindow) =====
-    void loadFloorTexture();
-    void loadTractorTexture();
 
     // ===== Matrix Building =====
     QMatrix4x4 buildNdcMatrix() const;
@@ -160,6 +156,7 @@ private:
 
     // ===== Dirty Tracking =====
     bool m_fieldSurfaceDirty = true;
+    bool m_vehicleDirty = true;
     bool m_boundaryDirty = true;
     bool m_coverageDirty = true;
     bool m_guidanceDirty = true;
@@ -170,9 +167,8 @@ private:
     QMatrix4x4 m_currentP;
     QMatrix4x4 m_currentNcd;
 
-    // ===== Texture for field surface =====
-    QSGTexture *m_floorTexture = nullptr;
-    QSGTexture *m_tractorTexture = nullptr;
+    // ===== Texture Factory =====
+    TextureFactory *m_textureFactory = nullptr;
 
     // ===== Singleton Access (cached for thread safety) =====
     // These are populated in updatePaintNode from the main thread

@@ -15,6 +15,7 @@
 #include "vehiclenode.h"
 #include "aogmaterial.h"
 #include "aoggeometry.h"
+#include "texturefactory.h"
 
 #include "glm.h"
 
@@ -25,9 +26,7 @@
 #include <QSGFlatColorMaterial>
 #include <QSGTextureMaterial>
 #include <QSGOpaqueTextureMaterial>
-#include <QSGTexture>
 #include <QQuickWindow>
-#include <QImage>
 #include <QSize>
 #include <QtMath>
 #include <QDebug>
@@ -102,7 +101,15 @@ FieldViewItem::FieldViewItem(QQuickItem *parent)
 
     connect(m_vehicle, &VehicleProperties::visibleChanged, this, &FieldViewItem::requestUpdate);
     connect(m_vehicle, &VehicleProperties::colorChanged, this, &FieldViewItem::requestUpdate);
-    connect(m_vehicle, &VehicleProperties::typeChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_vehicle, &VehicleProperties::steerAngleChanged, this, &FieldViewItem::requestUpdate);
+    // redraw vehicle geometry if any of these properties change:
+    connect(m_vehicle, &VehicleProperties::typeChanged, this, &FieldViewItem::updateVehicle);
+    connect(m_vehicle, &VehicleProperties::trackWidthChanged, this, &FieldViewItem::updateVehicle);
+    connect(m_vehicle, &VehicleProperties::wheelBaseChanged, this, &FieldViewItem::updateVehicle);
+    connect(m_vehicle, &VehicleProperties::drawbarLengthChanged, this, &FieldViewItem::updateVehicle);
+    connect(m_vehicle, &VehicleProperties::threePtLengthChanged, this, &FieldViewItem::updateVehicle);
+    connect(m_vehicle, &VehicleProperties::frontHitchLengthChanged, this, &FieldViewItem::updateVehicle);
+
 
     // Connect other property changes to update()
     connect(this, &FieldViewItem::boundaryColorChanged, this, &FieldViewItem::requestUpdate);
@@ -115,6 +122,14 @@ FieldViewItem::FieldViewItem(QQuickItem *parent)
 
 FieldViewItem::~FieldViewItem()
 {
+    // Note: m_textureFactory is cleaned up in releaseResources() while GL context is valid
+}
+
+void FieldViewItem::releaseResources()
+{
+    // Called while GL/Vulkan context is still valid - safe to delete textures here
+    delete m_textureFactory;
+    m_textureFactory = nullptr;
 }
 
 // ============================================================================
@@ -173,10 +188,8 @@ void FieldViewItem::requestUpdate()
 
 void FieldViewItem::updateVehicle()
 {
+    m_vehicleDirty = true;
     polish();
-
-    //vehicleNode.m
-    //let vehicle know the geometry has to be updated
     update();
 }
 
@@ -267,8 +280,10 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     // is for 2D scene graph transforms, not 3D MVP matrices. Instead, we pass
     // the MVP matrix to each material's shader.
 
-    // Load floor texture if needed (requires window())
-    loadFloorTexture();
+    // Initialize texture factory if needed (requires window())
+    if (!m_textureFactory && window()) {
+        m_textureFactory = new TextureFactory(window());
+    }
 
     // Get WorldGrid data for field surface and grid
     //adjust zoom based on cam distance
@@ -292,12 +307,18 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     QMatrix4x4 currentMvp = m_currentNcd * m_currentP * m_currentMv;
 
     if (m_fieldSurface->visible()) {
+        // Get floor texture from factory (created on demand)
+        QSGTexture *floorTexture = nullptr;
+        if (m_fieldSurface->showTexture() && m_textureFactory) {
+            floorTexture = m_textureFactory->texture(TextureId::Floor);
+        }
+
         // Always update field surface (it changes with camera position)
         rootNode->fieldSurfaceNode->update(
             currentMvp,
             m_fieldSurface->color(),
             m_fieldSurface->showTexture(),
-            m_floorTexture,
+            floorTexture,
             eastingMin, eastingMax,
             northingMin, northingMax,
             count
@@ -354,16 +375,19 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         m_guidanceDirty = false;
     }
 
-    // Vehicle always updates (position changes frequently)
+    if (m_vehicleDirty) {
+        //regenerate geometry
+        m_vehicleDirty = false;
+        rootNode->vehicleNode->clearChildren();
+    }
     if (m_vehicle->visible()) {
-        loadTractorTexture();
         rootNode->vehicleNode->update(
             m_currentMv,
             m_currentP,
             m_currentNcd,
             m_vehicle->color(),
             viewportSize,
-            m_tractorTexture,
+            m_textureFactory,
             m_renderData.vehicleX,
             m_renderData.vehicleY,
             m_renderData.vehicleHeading,
@@ -372,62 +396,6 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     }
 
     return rootNode;
-}
-
-void FieldViewItem::loadFloorTexture()
-{
-    if (m_fieldSurface->showTexture() && !m_floorTexture && window()) {
-        // Load texture if not already loaded
-#ifdef LOCAL_QML
-        QString texPath = QStringLiteral("local:/images/textures/floor.png");
-#else
-        QString texPath = QStringLiteral(":/AOG/images/textures/floor.png");
-#endif
-        QImage floorImage(texPath);
-        if (!floorImage.isNull()) {
-            // Convert to RGBA format if needed for consistent texture handling
-            if (floorImage.format() != QImage::Format_RGBA8888 &&
-                floorImage.format() != QImage::Format_RGBA8888_Premultiplied) {
-                floorImage = floorImage.convertToFormat(QImage::Format_RGBA8888);
-            }
-            // Don't use atlas - we need repeating wrap mode
-            m_floorTexture = window()->createTextureFromImage(floorImage);
-            if (m_floorTexture) {
-                m_floorTexture->setHorizontalWrapMode(QSGTexture::Repeat);
-                m_floorTexture->setVerticalWrapMode(QSGTexture::Repeat);
-                m_floorTexture->setFiltering(QSGTexture::Linear);
-                m_floorTexture->setMipmapFiltering(QSGTexture::None);
-            }
-        }
-    }
-}
-
-void FieldViewItem::loadTractorTexture()
-{
-    if (!m_tractorTexture && window()) {
-        // Load texture if not already loaded
-#ifdef LOCAL_QML
-        QString texPath = QStringLiteral("local:/images/textures/z_Tractor.png");
-#else
-        QString texPath = QStringLiteral(":/AOG/images/textures/z_Tractor.png");
-#endif
-        QImage tractorImage(texPath);
-        if (!tractorImage.isNull()) {
-            // Convert to RGBA format if needed for consistent texture handling
-            if (tractorImage.format() != QImage::Format_RGBA8888 &&
-                tractorImage.format() != QImage::Format_RGBA8888_Premultiplied) {
-                tractorImage = tractorImage.convertToFormat(QImage::Format_RGBA8888);
-            }
-            // Don't use atlas - we need repeating wrap mode
-            m_tractorTexture = window()->createTextureFromImage(tractorImage);
-            if (m_tractorTexture) {
-                m_tractorTexture->setHorizontalWrapMode(QSGTexture::ClampToEdge);
-                m_tractorTexture->setVerticalWrapMode(QSGTexture::ClampToEdge);
-                m_tractorTexture->setFiltering(QSGTexture::Linear);
-                m_tractorTexture->setMipmapFiltering(QSGTexture::None);
-            }
-        }
-    }
 }
 
 // ============================================================================

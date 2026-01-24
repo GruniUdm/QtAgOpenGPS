@@ -416,6 +416,7 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES scenegraph/thicklinematerial.h scenegraph/thicklinematerial.cpp
     SOURCES scenegraph/thicklinecolorsmaterial.h scenegraph/thicklinecolorsmaterial.cpp
     SOURCES scenegraph/dashedthicklinematerial.h scenegraph/dashedthicklinematerial.cpp
+    SOURCES scenegraph/texturefactory.h scenegraph/texturefactory.cpp
 
 )
 

@@ -1099,7 +1099,7 @@ Window {
                     }
 
                     grid {
-                        color: Qt.rgba(0,0,0,1)
+                        color: Qt.rgba(0,0,0,0.7)
                         //size: SettingsManager.window_gridSize
                         visible: SettingsManager.display_isGridOn
                         thickness: 1
@@ -1116,12 +1116,13 @@ Window {
 
                     vehicle {
                         color: SettingsManager.display_colorVehicle
-                        type: 1
+                        type: 2
                         trackWidth: SettingsManager.vehicle_trackWidth
                         wheelBase: SettingsManager.vehicle_wheelbase
                         drawbarLength: ! SettingsManager.tool_isToolFront ? (SettingsManager.tool_isToolRearFixed ? 0 : abs(SettingsManager.vehicle_hitchLength)) : 0;
                         threePtLength: ! SettingsManager.tool_isToolFront ? (SettingsManager.tool_isToolRearFixed ? abs(SettingsManager.vehicle_hitchLength):0 ) : 0;
                         frontHitchLength: 0
+                        steerAngle: SimInterface.isRunning() ? SimInterface.steerAngle : ModuleComm.actualSteerAngleDegrees
 
                     }
 

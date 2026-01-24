@@ -11,9 +11,20 @@
 #include <QSGTexture>
 #include <QMatrix4x4>
 #include <QColor>
+#include <QHash>
+#include "texturefactory.h"
 #include "vehicleproperties.h"
 
 class QQuickWindow;
+
+// Node types for vehicle geometry components
+enum class VehicleNodeType {
+    HitchShadow,
+    HitchLine,
+    Body,
+    RightWheel,
+    LeftWheel
+};
 
 class VehicleNode : public QSGNode
 {
@@ -26,15 +37,19 @@ public:
                 const QMatrix4x4 &ncd,
                 const QColor &vehicleColor,
                 const QSize &viewportSize,
-                QSGTexture *texture,
+                TextureFactory *textureFactory,
                 double vehicleX, double vehicleY,
                 double vehicleHeading,
                 const VehicleProperties *properties);
 
-private:
     void clearChildren();
+private:
+    void updateNodeMvp(QSGGeometryNode *node,
+                       const QMatrix4x4 mvp,
+                       const QSize &viewportSize);
 
-    QSGGeometryNode *m_geomNode = nullptr;
+
+    QHash<VehicleNodeType, QSGGeometryNode*> m_nodes;
     QSGTexture *m_texture = nullptr;
 };
 
