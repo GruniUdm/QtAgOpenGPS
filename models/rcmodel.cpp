@@ -28,6 +28,10 @@ QVariant RCModel::data(const QModelIndex &index, int role) const
         return product.smoothRate;
     case ActualRateRole:
         return product.actualRate;
+    case AppliedRateRole:
+        return product.appliedRate;
+    case PWMRole:
+        return product.pwm;
     case IsActiveRole:
         return product.isActive;
     default:
@@ -43,6 +47,8 @@ QHash<int, QByteArray> RCModel::roleNames() const
     roles[SetRateRole] = "productSetRate";
     roles[SmoothRateRole] = "productSmoothRate";
     roles[ActualRateRole] = "productActualRate";
+    roles[AppliedRateRole] = "productAppliedRate";
+    roles[PWMRole] = "productPWM";
     roles[IsActiveRole] = "productIsActive";
     return roles;
 }
@@ -56,6 +62,8 @@ QVariantMap RCModel::get(int index) const
         map["productSetRate"] = product.setRate;
         map["productSmoothRate"] = product.smoothRate;
         map["productActualRate"] = product.actualRate;
+        map["productAppliedRate"] = product.appliedRate;
+        map["productPWM"] = product.pwm;
         map["productIsActive"] = product.isActive;
     }
     return map;
@@ -151,4 +159,24 @@ void RCModel::updateName(int index, const QString &name)
     m_products[index].name = name;
     QModelIndex modelIndex = createIndex(index, 0);
     emit dataChanged(modelIndex, modelIndex, {NameRole});
+}
+
+void RCModel::updateAppliedRate(int index, double newRate)
+{
+    if (index < 0 || index >= m_products.count()) return;
+
+    m_products[index].appliedRate = newRate;
+    QModelIndex modelIndex = createIndex(index, 0);
+    emit dataChanged(modelIndex, modelIndex, {ActualRateRole});
+    emit appliedRateChanged(index, newRate);
+}
+
+void RCModel::updatePWM(int index, int pwm)
+{
+    if (index < 0 || index >= m_products.count()) return;
+
+    m_products[index].appliedRate = pwm;
+    QModelIndex modelIndex = createIndex(index, 0);
+    emit dataChanged(modelIndex, modelIndex, {PWMRole});
+    emit pwmChanged(index, pwm);
 }
