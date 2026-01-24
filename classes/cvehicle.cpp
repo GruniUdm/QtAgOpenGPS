@@ -266,8 +266,6 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     QVector3D p3;
     QVector3D p4;
     QVector3D s;
-    // Phase 6.0.24 Problem 18: Remove unused variables x,w (were uninitialized 0xCCCCCCCC in debugger)
-    // int x,w;  // REMOVED - never used in function
 
     s = QVector3D(0,0,0);
     p1 = s.project(modelview, projection, viewport);
