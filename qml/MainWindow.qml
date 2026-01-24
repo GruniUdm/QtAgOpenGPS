@@ -1116,13 +1116,13 @@ Window {
 
                     vehicle {
                         color: SettingsManager.display_colorVehicle
-                        type: 2
+                        type: SettingsManager.vehicle_vehicleType
                         trackWidth: SettingsManager.vehicle_trackWidth
                         wheelBase: SettingsManager.vehicle_wheelbase
                         drawbarLength: ! SettingsManager.tool_isToolFront ? (SettingsManager.tool_isToolRearFixed ? 0 : abs(SettingsManager.vehicle_hitchLength)) : 0;
                         threePtLength: ! SettingsManager.tool_isToolFront ? (SettingsManager.tool_isToolRearFixed ? abs(SettingsManager.vehicle_hitchLength):0 ) : 0;
                         frontHitchLength: 0
-                        steerAngle: SimInterface.isRunning() ? SimInterface.steerAngle : ModuleComm.actualSteerAngleDegrees
+                        steerAngle: SimInterface.isRunning() ? SimInterface.steerAngleActual : ModuleComm.actualSteerAngleDegrees
 
                     }
 

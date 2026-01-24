@@ -208,8 +208,6 @@ void VehicleNode::update(const QMatrix4x4 &mv,
 
             } else if (properties->type() == 2) {
                 // 4WD Tractor Rear
-                // Requires its own matrix!
-
                 data[0].x = -properties->trackWidth();
                 data[0].y = -properties->wheelBase() * 0.65;
                 data[0].z = 0.0f;
@@ -256,7 +254,144 @@ void VehicleNode::update(const QMatrix4x4 &mv,
             m_nodes[VehicleNodeType::Body] = geomNode;
 
             // =============================================
-            // Now draw right steering tire, or tractor front
+            // Now draw left steering tire, or tractor front
+            // =============================================
+
+            geometry = new QSGGeometry(AOGGeometry::texturedVertexAttributes(), 4);
+            geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
+
+            geomNode = new QSGGeometryNode();
+            geomNode->setGeometry(geometry);
+            geomNode->setFlag(QSGNode::OwnsGeometry);
+
+            material = new AOGTextureMaterial();
+
+            data = static_cast<TexturedVertex *>(geometry->vertexData());
+
+            if (properties->type() == 0) {
+                //front left wheel
+
+                // Front-right (texture top-right: u=1, v=0)
+                data[3].x = properties->trackWidth() * 0.5;
+                data[3].y = properties->wheelBase() * 0.75;
+                data[3].z = 0.0f;
+                data[3].u = 1.0f;
+                data[3].v = 0.0f;
+
+                // front left
+                data[2].x = -properties->trackWidth() * 0.5;
+                data[2].y = properties->wheelBase()*0.75;
+                data[2].z = 0.0f;
+                data[2].u = 0.0f;
+                data[2].v = 0.0f;
+
+                // bottom right
+                data[1].x = properties->trackWidth() * 0.5;
+                data[1].y = -properties->wheelBase() * 0.75;
+                data[1].z = 0.0f;
+                data[1].u = 1.0f;
+                data[1].v = 1.0f;
+
+                //bottom left
+                data[0].x = -properties->trackWidth() * 0.5;
+                data[0].y = -properties->wheelBase() * 0.75;
+                data[0].z = 0.0f;
+                data[0].u = 0.0f;
+                data[0].v = 1.0f;
+
+                QSGTexture *texture = textureFactory->texture(TextureId::FrontWheels);
+                if (texture) {
+                    material->setTexture(texture);
+                }
+
+
+            } else if (properties->type() == 1) {
+                //harvester rear left wheel
+
+                // Front-right (texture top-right: u=1, v=0)
+                data[3].x = properties->trackWidth() * 0.25;
+                data[3].y = properties->wheelBase() * 0.5;
+                data[3].z = 0.0f;
+                data[3].u = 1.0f;
+                data[3].v = 0.0f;
+
+                // front left
+                data[2].x = -properties->trackWidth() * 0.25;
+                data[2].y = properties->wheelBase()*0.5;
+                data[2].z = 0.0f;
+                data[2].u = 0.0f;
+                data[2].v = 0.0f;
+
+                // bottom right
+                data[1].x = properties->trackWidth() * 0.25;
+                data[1].y = -properties->wheelBase() * 0.5;
+                data[1].z = 0.0f;
+                data[1].u = 1.0f;
+                data[1].v = 1.0f;
+
+                //bottom left
+                data[0].x = -properties->trackWidth() * 0.25;
+                data[0].y = -properties->wheelBase() * 0.5;
+                data[0].z = 0.0f;
+                data[0].u = 0.0f;
+                data[0].v = 1.0f;
+
+                QSGTexture *texture = textureFactory->texture(TextureId::FrontWheels);
+                if (texture) {
+                    material->setTexture(texture);
+                }
+
+
+            } else if (properties->type() == 2) {
+                //4wd tractor front half
+
+                // Front-right (texture top-right: u=1, v=0)
+                data[3].x = properties->trackWidth();
+                data[3].y = properties->wheelBase() * 0.65;
+                data[3].z = 0.0f;
+                data[3].u = 1.0f;
+                data[3].v = 0.0f;
+
+                // front left
+                data[2].x = -properties->trackWidth();
+                data[2].y = properties->wheelBase()*0.65;
+                data[2].z = 0.0f;
+                data[2].u = 0.0f;
+                data[2].v = 0.0f;
+
+                // bottom right
+                data[1].x = properties->trackWidth();
+                data[1].y = -properties->wheelBase() * 0.65;
+                data[1].z = 0.0f;
+                data[1].u = 1.0f;
+                data[1].v = 1.0f;
+
+                //bottom left
+                data[0].x = -properties->trackWidth();
+                data[0].y = -properties->wheelBase() * 0.65;
+                data[0].z = 0.0f;
+                data[0].u = 0.0f;
+                data[0].v = 1.0f;
+
+                QSGTexture *texture = textureFactory->texture(TextureId::Tractor4WDFront);
+                if (texture) {
+                    material->setTexture(texture);
+                }
+
+            }
+
+            // Don't use color tinting - show texture as-is
+            material->setUseColor(false);
+
+            geomNode->setMaterial(material);
+            geomNode->setFlag(QSGNode::OwnsMaterial);
+            //geomNode->setFlag(QSGNode::DirtyGeometry); //
+
+            appendChildNode(geomNode);
+            m_nodes[VehicleNodeType::LeftWheel] = geomNode;
+
+            // =============================================
+            // Now draw right steering tire
             // =============================================
 
             geometry = new QSGGeometry(AOGGeometry::texturedVertexAttributes(), 4);
@@ -342,44 +477,6 @@ void VehicleNode::update(const QMatrix4x4 &mv,
                 if (texture) {
                     material->setTexture(texture);
                 }
-
-
-            } else if (properties->type() == 2) {
-                //4wd tractor front half
-
-                // Front-right (texture top-right: u=1, v=0)
-                data[3].x = properties->trackWidth();
-                data[3].y = properties->wheelBase() * 0.65;
-                data[3].z = 0.0f;
-                data[3].u = 1.0f;
-                data[3].v = 0.0f;
-
-                // front left
-                data[2].x = -properties->trackWidth();
-                data[2].y = properties->wheelBase()*0.65;
-                data[2].z = 0.0f;
-                data[2].u = 0.0f;
-                data[2].v = 0.0f;
-
-                // bottom right
-                data[1].x = properties->trackWidth();
-                data[1].y = -properties->wheelBase() * 0.65;
-                data[1].z = 0.0f;
-                data[1].u = 1.0f;
-                data[1].v = 1.0f;
-
-                //bottom left
-                data[0].x = -properties->trackWidth();
-                data[0].y = -properties->wheelBase() * 0.65;
-                data[0].z = 0.0f;
-                data[0].u = 0.0f;
-                data[0].v = 1.0f;
-
-                QSGTexture *texture = textureFactory->texture(TextureId::FrontWheels);
-                if (texture) {
-                    material->setTexture(texture);
-                }
-
             }
 
             // Don't use color tinting - show texture as-is
@@ -390,8 +487,7 @@ void VehicleNode::update(const QMatrix4x4 &mv,
             //geomNode->setFlag(QSGNode::DirtyGeometry); //
 
             appendChildNode(geomNode);
-            m_nodes[VehicleNodeType::LeftWheel] = geomNode;
-
+            m_nodes[VehicleNodeType::RightWheel] = geomNode;
 
         } else {
             //just draw a triangle
@@ -441,20 +537,15 @@ void VehicleNode::update(const QMatrix4x4 &mv,
 
     //Calculate steering angles for wheels
     double leftAckerman, rightAckerman;
-    if (properties->type() == 0) { //tractor
-        if (properties->steerAngle() < 2)
-        {
-            leftAckerman = 1.25 * -properties->steerAngle();
-            rightAckerman = -properties->steerAngle();
-        }
-        else
-        {
-            leftAckerman = -properties->steerAngle();
-            rightAckerman = 1.25 * -properties->steerAngle();
-        }
-    } else if (properties->type() == 2){//4wd tractor
-        //4wd tractor needs special matrices
-        leftAckerman = -0.5 * properties->steerAngle(); //needs to be degrees!
+    if (properties->steerAngle() < 2)
+    {
+        leftAckerman = 1.25 * -properties->steerAngle();
+        rightAckerman = -properties->steerAngle();
+    }
+    else
+    {
+        leftAckerman = -properties->steerAngle();
+        rightAckerman = 1.25 * -properties->steerAngle();
     }
 
     //tractor body
@@ -463,9 +554,8 @@ void VehicleNode::update(const QMatrix4x4 &mv,
 
         if (properties->type() == 2) { //4WD
                  //4wd tractor needs special matrices
-                double rearSteer = 0.5 * properties->steerAngle(); //needs to be degrees!
                 tempMvp.translate(0, -properties->wheelBase() * 0.5);
-                tempMvp.rotate(rearSteer, 0, 0, 1);
+                tempMvp.rotate(0.5 * properties->steerAngle(), 0, 0, 1);
         }
         //no special body transformation otherwise
 
@@ -476,19 +566,12 @@ void VehicleNode::update(const QMatrix4x4 &mv,
     if (m_nodes.value(VehicleNodeType::RightWheel, nullptr)) {
         tempMvp = vehicleMv;
 
-        if (properties->type() == 2) { //4WD
-                 //4wd tractor needs special matrices
-                double frontSteer = - 0.5 * properties->steerAngle(); //needs to be degrees!
-                tempMvp.translate(0, -properties->wheelBase() * 0.5);
-                tempMvp.rotate(frontSteer, 0, 0, 1);
-        } else {
-            if (properties->type() == 0) { // tractor front right tire
-                tempMvp.translate(properties->trackWidth() * 1.5, properties->wheelBase(), 0);
-                tempMvp.rotate(rightAckerman, 0, 0, 1);
-            } else { //harvester back right tire
-                tempMvp.translate(properties->trackWidth() * 0.5, -properties->wheelBase(), 0);
-                tempMvp.rotate(-rightAckerman, 0, 0, 1);
-            }
+        if (properties->type() == 0) { // tractor front right tire
+            tempMvp.translate(properties->trackWidth() * 0.5, properties->wheelBase(), 0);
+            tempMvp.rotate(rightAckerman, 0, 0, 1);
+        } else { //harvester back right tire
+            tempMvp.translate(properties->trackWidth() * 0.5, -properties->wheelBase(), 0);
+            tempMvp.rotate(-rightAckerman, 0, 0, 1);
         }
 
         updateNodeMvp(m_nodes[VehicleNodeType::RightWheel], ncdP * tempMvp, viewportSize);
@@ -498,7 +581,10 @@ void VehicleNode::update(const QMatrix4x4 &mv,
     if (m_nodes.value(VehicleNodeType::LeftWheel, nullptr)) {
         tempMvp = vehicleMv;
 
-        if (properties->type() == 0) { // tractor front left tire
+        if (properties->type() == 2) { //4WD rear body
+                tempMvp.translate(0, properties->wheelBase() * 0.5);
+                tempMvp.rotate(-0.5 * properties->steerAngle(), 0, 0, 1);
+        } else if (properties->type() == 0) { // tractor front left tire
             tempMvp.translate(-properties->trackWidth() * 0.5, properties->wheelBase(), 0);
             tempMvp.rotate(leftAckerman, 0, 0, 1);
         } else { //harvester back right tire
