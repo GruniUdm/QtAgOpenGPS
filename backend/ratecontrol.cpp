@@ -153,7 +153,7 @@ void RateControl::rate_bump(bool up, int index)
     }
 }
 
-void RateControl::rate_auto(int index)
+void RateControl::rate_pwm_auto(int index)
 {
     // Проверка границ индекса
     if (index < 0 || index >= 4) return;

@@ -46,6 +46,7 @@ public:
     Q_INVOKABLE void decreaseSetRate(int index, double step = 10);
     Q_INVOKABLE void refreshProduct(int index);
     Q_INVOKABLE void updateAllProducts();
+    Q_INVOKABLE  void rate_pwm_auto(int ID);
 
     int currentProductIndex() const { return m_currentProductIndex; }
 
@@ -111,7 +112,6 @@ signals:
     void currentProductIndexChanged(int index);
 
 public slots:
-    void rate_auto(int ID);
     void onRateControlDataReady(const PGNParser::ParsedData& data);
 };
 

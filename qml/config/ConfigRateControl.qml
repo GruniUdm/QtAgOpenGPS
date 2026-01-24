@@ -458,7 +458,7 @@ Rectangle{
         anchors.rightMargin: 20 * theme.scaleHeight
         anchors.leftMargin: 20 * theme.scaleHeight
         icon.source: prefix + "/images/AutoStop.png"
-        onClicked: aog.rate_pwm_auto(moduleID.value)
+        onClicked: RateControl.rate_pwm_auto(moduleID.value)
         enabled: cboxIsRateControlOn.checked
     }
 
