@@ -153,13 +153,32 @@ void RateControl::rate_bump(bool up, int index)
         if (ManualPWM[index] > -250) ManualPWM[index] -= 10;
         else ManualPWM[index] = -255;
     }
+
+    qWarning() << "RateControl::rate_bump - Index:" << index
+               << "ManualPWM:" << ManualPWM[index];
+
+    // ОБНОВЛЯЕМ МОДЕЛЬ!
+    updateModel(index);
+
+    // Отправляем команду модулю
+    modulesSend241(index);
 }
 
 void RateControl::rate_pwm_auto(int index)
 {
     // Проверка границ индекса
     if (index < 0 || index >= 4) return;
+
     ManualPWM[index] = 0;
+
+    qWarning() << "RateControl::rate_pwm_auto - Index:" << index
+               << "ManualPWM reset to 0";
+
+    // ОБНОВЛЯЕМ МОДЕЛЬ!
+    updateModel(index);
+
+    // Отправляем команду модулю
+    modulesSend241(index);
 }
 
 int RateControl::Command(int index)
@@ -466,17 +485,23 @@ void RateControl::updateModel(int index)
     // Получаем данные из Settings для имени
     QString productName = getProductNameFromSettings(index);
 
-    // Обновляем модель по индексу
+    // ОБНОВЛЯЕМ ВСЕ ДАННЫЕ В МОДЕЛИ
     m_rcModel->updateName(index, productName);
     m_rcModel->updateSetRate(index, TargetRate[index]);
     m_rcModel->updateSmoothRate(index, cSmoothRate[index]);
     m_rcModel->updateActualRate(index, cCurrentRate[index]);
     m_rcModel->updateAppliedRate(index, cRateApplied[index]);
-    m_rcModel->updatePWM(index, ManualPWM[index]);
+    m_rcModel->updatePWM(index, ManualPWM[index]);  // Используем ManualPWM
 
-    // Проверяем, активен ли продукт
-    bool isActive = SensorReceiving[index];
+    // Проверяем, активен ли продукт - используем правильную логику
+    bool isActive = ProductOn(index) && OnScreen[index] && SensorReceiving[index];
     m_rcModel->updateIsActive(index, isActive);
+
+    qWarning() << "RateControl::updateModel - Index:" << index
+               << "Name:" << productName
+               << "SetRate:" << TargetRate[index]
+               << "PWM:" << ManualPWM[index]
+               << "Active:" << isActive;
 }
 
 void RateControl::setCurrentProductIndex(int index)

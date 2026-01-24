@@ -18,6 +18,12 @@ Rectangle{
     onVisibleChanged: {
         if (visible) loadCurrentProduct();
     }
+
+    onProdIDChanged: {
+    if (ratePWMUP.enabled)
+    {manPWM.text = qsTr("Manual PWM 0");}
+    }
+
     property int prodID: 0;
 
     // Массив продуктов для упрощения управления
@@ -102,6 +108,24 @@ Rectangle{
 
         var data = RateControl.rcModel.get(prodID);
         return data ? data.productPWM || 0 : 0;
+    }
+
+    Connections {
+        target: RateControl.rcModel
+        onDataChanged: {
+            // Если изменились данные текущего продукта
+            if (topLeft.row <= prodID && bottomRight.row >= prodID) {
+                // Обновляем PWM
+                manPWM.text = qsTr("Manual PWM: ") + getCurrentPWM();
+            }
+        }
+
+        // Обработка сигнала PWM
+        onPwmChanged: {
+            if (index === prodID) {
+                manPWM.text = qsTr("Manual PWM: ") + getCurrentPWM();
+            }
+        }
     }
 
     Label{
@@ -458,7 +482,7 @@ Rectangle{
         anchors.rightMargin: 20 * theme.scaleHeight
         anchors.leftMargin: 20 * theme.scaleHeight
         icon.source: prefix + "/images/AutoStop.png"
-        onClicked: RateControl.rate_pwm_auto(moduleID.value)
+        onClicked: RateControl.rate_pwm_auto(prodID)
         enabled: cboxIsRateControlOn.checked
     }
 
@@ -472,7 +496,7 @@ Rectangle{
         anchors.rightMargin: 20 * theme.scaleHeight
         anchors.leftMargin: 20 * theme.scaleHeight
         icon.source: prefix + "/images/UpArrow64.png"
-        onClicked: RateControl.rate_bump(true, moduleID.value)
+        onClicked: RateControl.rate_bump(true, prodID)
         enabled: cboxIsRateControlOn.checked
 
         Label{
@@ -481,24 +505,6 @@ Rectangle{
             anchors.bottomMargin: 20 * theme.scaleHeight
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("Manual PWM ") + getCurrentPWM()
-        }
-
-        Connections {
-            target: RateControl.rcModel
-            onDataChanged: {
-                // Если изменились данные текущего продукта
-                if (topLeft.row <= prodID && bottomRight.row >= prodID) {
-                    // Обновляем PWM
-                    manPWM.text = qsTr("Manual PWM: ") + getCurrentPWM();
-                }
-            }
-
-            // Обработка сигнала PWM
-            onPwmChanged: {
-                if (index === prodID) {
-                    manPWM.text = qsTr("Manual PWM: ") + getCurrentPWM();
-                }
-            }
         }
     }
 
@@ -512,7 +518,7 @@ Rectangle{
         anchors.rightMargin: 20 * theme.scaleHeight
         anchors.leftMargin: 20 * theme.scaleHeight
         icon.source: prefix + "/images/DnArrow64.png"
-        onClicked: RateControl.rate_bump(false, moduleID.value)
+        onClicked: RateControl.rate_bump(false, prodID)
         enabled: cboxIsRateControlOn.checked
     }
 

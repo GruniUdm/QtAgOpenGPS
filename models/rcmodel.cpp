@@ -20,6 +20,8 @@ QVariant RCModel::data(const QModelIndex &index, int role) const
     const Product &product = m_products[index.row()];
 
     switch (role) {
+    case IdRole:          // ДОБАВЬТЕ ЭТО
+        return product.id;
     case NameRole:
         return product.name;
     case SetRateRole:
@@ -39,6 +41,23 @@ QVariant RCModel::data(const QModelIndex &index, int role) const
     }
 }
 
+QVariantMap RCModel::get(int index) const
+{
+    QVariantMap map;
+    if (index >= 0 && index < m_products.count()) {
+        const Product &product = m_products[index];
+        map["productId"] = product.id;           // ДОБАВЬТЕ
+        map["productName"] = product.name;
+        map["productSetRate"] = product.setRate;
+        map["productSmoothRate"] = product.smoothRate;
+        map["productActualRate"] = product.actualRate;
+        map["productAppliedRate"] = product.appliedRate;
+        map["productPWM"] = product.pwm;
+        map["productIsActive"] = product.isActive;
+    }
+    return map;
+}
+
 QHash<int, QByteArray> RCModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
@@ -51,22 +70,6 @@ QHash<int, QByteArray> RCModel::roleNames() const
     roles[PWMRole] = "productPWM";
     roles[IsActiveRole] = "productIsActive";
     return roles;
-}
-
-QVariantMap RCModel::get(int index) const
-{
-    QVariantMap map;
-    if (index >= 0 && index < m_products.count()) {
-        const Product &product = m_products[index];
-        map["productName"] = product.name;
-        map["productSetRate"] = product.setRate;
-        map["productSmoothRate"] = product.smoothRate;
-        map["productActualRate"] = product.actualRate;
-        map["productAppliedRate"] = product.appliedRate;
-        map["productPWM"] = product.pwm;
-        map["productIsActive"] = product.isActive;
-    }
-    return map;
 }
 
 int RCModel::getProductId(int index) const
@@ -175,7 +178,7 @@ void RCModel::updatePWM(int index, int pwm)
 {
     if (index < 0 || index >= m_products.count()) return;
 
-    m_products[index].appliedRate = pwm;
+    m_products[index].pwm = pwm;
     QModelIndex modelIndex = createIndex(index, 0);
     emit dataChanged(modelIndex, modelIndex, {PWMRole});
     emit pwmChanged(index, pwm);
