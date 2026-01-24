@@ -89,6 +89,8 @@ void RateControl::initializeProducts()
         product.setRate = TargetRate[i];
         product.smoothRate = cSmoothRate[i];
         product.actualRate = cCurrentRate[i];
+        product.appliedRate = cRateApplied[i];
+        product.pwm = ManualPWM[i];
         product.isActive = ProductOn(i);
 
         m_rcModel->addProduct(product);
@@ -469,6 +471,8 @@ void RateControl::updateModel(int index)
     m_rcModel->updateSetRate(index, TargetRate[index]);
     m_rcModel->updateSmoothRate(index, cSmoothRate[index]);
     m_rcModel->updateActualRate(index, cCurrentRate[index]);
+    m_rcModel->updateAppliedRate(index, cRateApplied[index]);
+    m_rcModel->updatePWM(index, ManualPWM[index]);
 
     // Проверяем, активен ли продукт
     bool isActive = SensorReceiving[index];

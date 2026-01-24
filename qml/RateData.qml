@@ -18,6 +18,7 @@ Comp.MoveablePopup {
     // Свойства для данных текущего продукта (будем обновлять их через таймер)
     property double currentSmoothRate: 0
     property double currentActualRate: 0
+    property double currentAppliedlRate: 0
     property double currentSetRate: 0
     property string currentProductName: ""
     property bool currentProductActive: false
@@ -38,6 +39,7 @@ Comp.MoveablePopup {
             if (data) {
                 currentSmoothRate = data.productSmoothRate || 0;
                 currentActualRate = data.productActualRate || 0;
+                currentAppliedlRate = data.productAppliedRate || 0;
                 currentSetRate = data.productSetRate || 0;
                 currentProductName = data.productName || ("Product " + (currentProductIndex + 1));
                 currentProductActive = data.productIsActive || false;
@@ -171,7 +173,7 @@ Comp.MoveablePopup {
             width: parent.width - 10 * theme.scaleWidth
 
             Rectangle {
-                id: applied1
+                id: applied
                 property bool clicked: false
                 color: "#4d4d4d"
                 border.color: "black"
@@ -181,7 +183,7 @@ Comp.MoveablePopup {
                 implicitWidth: parent.width / 2 - 5 * theme.scaleWidth
 
                 Text {
-                    text: applied1.clicked ? Math.round(currentActualRate) : Math.round(currentSmoothRate)
+                    text: applied.clicked ? Math.round(currentActualRate) : Math.round(currentSmoothRate)
                     font.pixelSize: 30
                     anchors.centerIn: parent
                     color: aogInterface.backgroundColor
@@ -189,13 +191,14 @@ Comp.MoveablePopup {
 
                 MouseArea {
                     id: switcher1
-                    anchors.fill: applied1
-                    onClicked: applied1.clicked = !applied1.clicked
+                    anchors.fill: applied
+                    onClicked: applied.clicked = !applied.clicked
                 }
             }
 
             Rectangle {
-                id: target1
+                id: target
+                property bool clicked: false
                 color: aogInterface.backgroundColor
                 border.color: "black"
                 radius: 10
@@ -204,9 +207,15 @@ Comp.MoveablePopup {
                 implicitWidth: parent.width / 2 - 5 * theme.scaleWidth
 
                 Text {
-                    text: Math.round(currentSetRate)
+                    text: target.clicked ? Math.round(currentAppliedlRate) : Math.round(currentSetRate)
                     font.pixelSize: 30
                     anchors.centerIn: parent
+                }
+
+                MouseArea {
+                    id: switcher2
+                    anchors.fill: target
+                    onClicked: target.clicked = !target.clicked
                 }
             }
         }

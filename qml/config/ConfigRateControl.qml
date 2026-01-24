@@ -26,25 +26,21 @@ Rectangle{
             id: 0,
             settings: SettingsManager.rate_confProduct0,
             name: SettingsManager.rate_productName0,
-            pwm: aog.actualRatePWM0
         },
         {
             id: 1,
             settings: SettingsManager.rate_confProduct1,
             name: SettingsManager.rate_productName1,
-            pwm: aog.actualRatePWM1
         },
         {
             id: 2,
             settings: SettingsManager.rate_confProduct2,
             name: SettingsManager.rate_productName2,
-            pwm: aog.actualRatePWM2
         },
         {
             id: 3,
             settings: SettingsManager.rate_confProduct3,
             name: SettingsManager.rate_productName3,
-            pwm: aog.actualRatePWM3
         }
     ]
 
@@ -101,7 +97,11 @@ Rectangle{
     }
 
     function getCurrentPWM() {
-        return products[prodID].pwm;
+        if (!RateControl.rcModel || prodID < 0 || prodID >= RateControl.rcModel.count)
+            return 0;
+
+        var data = RateControl.rcModel.get(prodID);
+        return data ? data.productPWM || 0 : 0;
     }
 
     Label{
@@ -476,10 +476,29 @@ Rectangle{
         enabled: cboxIsRateControlOn.checked
 
         Label{
+            id: manPWM
             anchors.bottom: parent.top
             anchors.bottomMargin: 20 * theme.scaleHeight
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("Manual PWM ") + getCurrentPWM()
+        }
+
+        Connections {
+            target: RateControl.rcModel
+            onDataChanged: {
+                // Если изменились данные текущего продукта
+                if (topLeft.row <= prodID && bottomRight.row >= prodID) {
+                    // Обновляем PWM
+                    manPWM.text = qsTr("Manual PWM: ") + getCurrentPWM();
+                }
+            }
+
+            // Обработка сигнала PWM
+            onPwmChanged: {
+                if (index === prodID) {
+                    manPWM.text = qsTr("Manual PWM: ") + getCurrentPWM();
+                }
+            }
         }
     }
 
