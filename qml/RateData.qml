@@ -63,7 +63,7 @@ Comp.MoveablePopup {
         target: rcModel
         enabled: rcDataPopup.visible
 
-        onDataChanged: {
+        function onDataChanged(topLeft, bottomRight, roles) {
             // Если изменился текущий продукт, обновляем данные
             if (topLeft.row <= currentProductIndex && bottomRight.row >= currentProductIndex) {
                 updateAllData();
@@ -72,7 +72,9 @@ Comp.MoveablePopup {
             updateAllData();
         }
 
-        onCountChanged: updateAllData()
+        function onCountChanged() {
+            updateAllData()
+        }
     }
 
     // Обновляем данные при изменении индекса
@@ -112,48 +114,51 @@ Comp.MoveablePopup {
             Comp.IconButtonColor {
                 id: product1
                 checkable: true
-                colorChecked: "green"
+                colorChecked: product1Active?"green":"grey"
                 icon.source: prefix + "/images/ratec1.png"
                 implicitHeight: 50 * theme.scaleHeight
                 implicitWidth: parent.width / 4 - 5 * theme.scaleWidth
                 checked: currentProductIndex === 0
-                enabled: product1Active
+                //enabled: product1Active
+                enabled: SettingsManager.rate_confProduct0[2]
                 onClicked: currentProductIndex = 0
+
             }
 
             Comp.IconButtonColor {
                 id: product2
                 checkable: true
-                colorChecked: "green"
+                colorChecked: product2Active?"green":"grey"
                 icon.source: prefix + "/images/ratec2.png"
                 implicitHeight: 50 * theme.scaleHeight
                 implicitWidth: parent.width / 4 - 5 * theme.scaleWidth
                 checked: currentProductIndex === 1
-                enabled: product2Active
+                //enabled: product2Active
+                enabled: SettingsManager.rate_confProduct1[2]
                 onClicked: currentProductIndex = 1
             }
 
             Comp.IconButtonColor {
                 id: product3
                 checkable: true
-                colorChecked: "green"
+                colorChecked: product3Active?"green":"grey"
                 icon.source: prefix + "/images/ratec3.png"
                 implicitHeight: 50 * theme.scaleHeight
                 implicitWidth: parent.width / 4 - 5 * theme.scaleWidth
                 checked: currentProductIndex === 2
-                enabled: product3Active
+                enabled: SettingsManager.rate_confProduct2[2]
                 onClicked: currentProductIndex = 2
             }
 
             Comp.IconButtonColor {
                 id: product4
                 checkable: true
-                colorChecked: "green"
+                colorChecked: product4Active?"green":"grey"
                 icon.source: prefix + "/images/ratec4.png"
                 implicitHeight: 50 * theme.scaleHeight
                 implicitWidth: parent.width / 4 - 5 * theme.scaleWidth
                 checked: currentProductIndex === 3
-                enabled: product4Active
+                enabled: SettingsManager.rate_confProduct3[2]
                 onClicked: currentProductIndex = 3
             }
         }
@@ -234,14 +239,7 @@ Comp.MoveablePopup {
             anchors.rightMargin: 5 * theme.scaleHeight
             anchors.bottom: parent.bottom
             enabled: currentProductIndex >= 0 && currentProductIndex < 4 && currentProductActive
-            onClicked: {
-                // Используем метод модели как в первом варианте
-                if (rcModel) {
-                    rcModel.increaseSetRate(currentProductIndex, 10);
-                    // Немедленное обновление
-                    updateAllData();
-                }
-            }
+            onClicked: RateControl.increaseSetRate(currentProductIndex, 10);
         }
 
         Comp.IconButtonColor {
@@ -255,14 +253,7 @@ Comp.MoveablePopup {
             anchors.leftMargin: 5 * theme.scaleHeight
             anchors.bottom: parent.bottom
             enabled: currentProductIndex >= 0 && currentProductIndex < 4 && currentProductActive
-            onClicked: {
-                // Используем метод модели как в первом варианте
-                if (rcModel) {
-                    rcModel.decreaseSetRate(currentProductIndex, 10);
-                    // Немедленное обновление
-                    updateAllData();
-                }
-            }
+            onClicked: RateControl.decreaseSetRate(currentProductIndex, 10);
         }
     }
 }

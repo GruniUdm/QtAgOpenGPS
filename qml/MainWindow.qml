@@ -614,7 +614,7 @@ Window {
                 id: rateData
                 //anchors.left: parent.left
                 //anchors.verticalCenter: parent.verticalCenter
-                visible: true//(aog.product0stat && Settings.rate_Product0[2]>0) ? true : false
+                visible: SettingsManager.rate_confProduct0[2]||SettingsManager.rate_confProduct1[2]||SettingsManager.rate_confProduct2[2]||SettingsManager.rate_confProduct3[2]
             }
 
             SimController{

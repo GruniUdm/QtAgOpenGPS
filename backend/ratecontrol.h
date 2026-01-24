@@ -51,7 +51,7 @@ public:
 
     // Публичные поля для доступа извне
     int ModID;
-    double ManualPWM[4];
+    int ManualPWM[4];
     double cUPM;
     double Quantity[4];
     double MeterCal[4];

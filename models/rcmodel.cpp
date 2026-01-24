@@ -20,8 +20,6 @@ QVariant RCModel::data(const QModelIndex &index, int role) const
     const Product &product = m_products[index.row()];
 
     switch (role) {
-    case IdRole:
-        return product.id;
     case NameRole:
         return product.name;
     case SetRateRole:
@@ -54,7 +52,6 @@ QVariantMap RCModel::get(int index) const
     QVariantMap map;
     if (index >= 0 && index < m_products.count()) {
         const Product &product = m_products[index];
-        map["productId"] = product.id;
         map["productName"] = product.name;
         map["productSetRate"] = product.setRate;
         map["productSmoothRate"] = product.smoothRate;
@@ -94,31 +91,6 @@ void RCModel::clear()
     m_products.clear();
     endResetModel();
     emit countChanged();
-}
-
-void RCModel::increaseSetRate(int index, double step)
-{
-    if (index < 0 || index >= m_products.count()) return;
-
-    m_products[index].setRate += step;
-
-    QModelIndex modelIndex = createIndex(index, 0);
-    emit dataChanged(modelIndex, modelIndex, {SetRateRole});
-    emit productRateChanged(index, m_products[index].setRate);
-}
-
-void RCModel::decreaseSetRate(int index, double step)
-{
-    if (index < 0 || index >= m_products.count()) return;
-
-    double newRate = m_products[index].setRate - step;
-    if (newRate < 0) newRate = 0;
-
-    m_products[index].setRate = newRate;
-
-    QModelIndex modelIndex = createIndex(index, 0);
-    emit dataChanged(modelIndex, modelIndex, {SetRateRole});
-    emit productRateChanged(index, newRate);
 }
 
 void RCModel::updateSmoothRate(int index, double newRate)

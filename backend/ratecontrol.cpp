@@ -85,12 +85,11 @@ void RateControl::initializeProducts()
     for (int i = 0; i < 4; ++i) {
         loadSettings(i);
         RCModel::Product product;
-        product.id = i; // Сохраняем индекс как ID для обратной совместимости
         product.name = getProductNameFromSettings(i); // Получаем имя из настроек
         product.setRate = TargetRate[i];
         product.smoothRate = cSmoothRate[i];
         product.actualRate = cCurrentRate[i];
-        product.isActive = ProductOn(i) && OnScreen[i];
+        product.isActive = ProductOn(i);
 
         m_rcModel->addProduct(product);
     }
@@ -106,7 +105,7 @@ QString RateControl::getProductNameFromSettings(int index)
     case 1: return SettingsManager::instance()->rate_productName1();
     case 2: return SettingsManager::instance()->rate_productName2();
     case 3: return SettingsManager::instance()->rate_productName3();
-   // default: return QString("Product %1").arg(index + 1);
+    default: return QString("Product %1").arg(index + 1);
     }
 }
 
@@ -429,7 +428,7 @@ void RateControl::onRateControlDataReady(const PGNParser::ParsedData &data)
             cMinUPMSpeed[moduleIndex] = MinUPMSpeed(moduleIndex);
             cMinUPM[moduleIndex] = MinUPM(moduleIndex);
 
-            // Обновляем модель - это вызовет dataChanged
+            // Обновляем модель
             if (m_rcModel) {
                 updateModel(moduleIndex);
             }
@@ -450,7 +449,7 @@ void RateControl::modulesSend241(int index)
     p_241.pgn[CPGN_F1::FlowCalLO] = (char)((int)MeterCal[index]);
     p_241.pgn[CPGN_F1::FlowCalHI] = (char)((int)MeterCal[index] >> 8);
     p_241.pgn[CPGN_F1::Command] = Command(index);
-    p_241.pgn[CPGN_F1::ManualPWM] = (char)((int)ManualPWM[index]);
+    p_241.pgn[CPGN_F1::ManualPWM] = (char)(ManualPWM[index]/2);
 
     AgIOService::instance()->sendPgn(p_241.pgn);
 }
@@ -472,15 +471,8 @@ void RateControl::updateModel(int index)
     m_rcModel->updateActualRate(index, cCurrentRate[index]);
 
     // Проверяем, активен ли продукт
-    bool isActive = ProductOn(index) && OnScreen[index];
+    bool isActive = SensorReceiving[index];
     m_rcModel->updateIsActive(index, isActive);
-
-    qDebug(rc_log) << "Updated product" << index
-                   << "Name:" << productName
-                   << "SetRate:" << TargetRate[index]
-                   << "SmoothRate:" << cSmoothRate[index]
-                   << "ActualRate:" << cCurrentRate[index]
-                   << "Active:" << isActive;
 }
 
 void RateControl::setCurrentProductIndex(int index)
@@ -509,10 +501,41 @@ void RateControl::increaseSetRate(int index, double step)
 
     TargetRate[index] += step;
 
+    SettingsManager* manager = SettingsManager::instance();
+
+    // Получаем текущий вектор настроек
+    QVector<int> settings;
+
+    switch (index) {
+    case 0: settings = manager->rate_confProduct0(); break;
+    case 1: settings = manager->rate_confProduct1(); break;
+    case 2: settings = manager->rate_confProduct2(); break;
+    case 3: settings = manager->rate_confProduct3(); break;
+    }
+
+    // Убеждаемся, что вектор достаточно большой
+    // Если нужен индекс 10, то размер должен быть >= 11
+    if (settings.size() <= 10) {
+        settings.resize(11); // Увеличиваем размер до 11 элементов
+        // Заполняем нулями новые элементы, если нужно
+        for (int i = settings.size(); i < 10; i++) {
+            settings.append(0.0);
+        }
+    }
+
+    // Изменяем только 10-й элемент (индекс 10)
+    settings[10] = TargetRate[index];
+
+    // Сохраняем измененный вектор обратно
+    switch (index) {
+    case 0: manager->setRate_confProduct0(settings); break;
+    case 1: manager->setRate_confProduct1(settings); break;
+    case 2: manager->setRate_confProduct2(settings); break;
+    case 3: manager->setRate_confProduct3(settings); break;
+    }
+
     // Обновляем модель
     m_rcModel->updateSetRate(index, TargetRate[index]);
-
-    // Полное обновление модели
     updateModel(index);
 
     qDebug(rc_log) << "Increased set rate for product" << index
@@ -523,17 +546,46 @@ void RateControl::decreaseSetRate(int index, double step)
 {
     if (index < 0 || index >= 4 || !m_rcModel) return;
 
-    double newRate = TargetRate[index] - step;
-    if (newRate < 0) newRate = 0;
-    TargetRate[index] = newRate;
+    TargetRate[index] -= step;
+
+    SettingsManager* manager = SettingsManager::instance();
+
+    // Получаем текущий вектор настроек
+    QVector<int> settings;
+
+    switch (index) {
+    case 0: settings = manager->rate_confProduct0(); break;
+    case 1: settings = manager->rate_confProduct1(); break;
+    case 2: settings = manager->rate_confProduct2(); break;
+    case 3: settings = manager->rate_confProduct3(); break;
+    }
+
+    // Убеждаемся, что вектор достаточно большой
+    // Если нужен индекс 10, то размер должен быть >= 11
+    if (settings.size() <= 10) {
+        settings.resize(11); // Увеличиваем размер до 11 элементов
+        // Заполняем нулями новые элементы, если нужно
+        for (int i = settings.size(); i < 10; i++) {
+            settings.append(0.0);
+        }
+    }
+
+    // Изменяем только 10-й элемент (индекс 10)
+    settings[10] = TargetRate[index];
+
+    // Сохраняем измененный вектор обратно
+    switch (index) {
+    case 0: manager->setRate_confProduct0(settings); break;
+    case 1: manager->setRate_confProduct1(settings); break;
+    case 2: manager->setRate_confProduct2(settings); break;
+    case 3: manager->setRate_confProduct3(settings); break;
+    }
 
     // Обновляем модель
     m_rcModel->updateSetRate(index, TargetRate[index]);
-
-    // Полное обновление модели
     updateModel(index);
 
-    qDebug(rc_log) << "Decreased set rate for product" << index
+    qDebug(rc_log) << "Increased set rate for product" << index
                    << "by" << step << "New rate:" << TargetRate[index];
 }
 

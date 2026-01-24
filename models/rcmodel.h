@@ -46,8 +46,6 @@ public:
     void clear();
 
     // Методы изменения данных по индексу
-    Q_INVOKABLE void increaseSetRate(int index, double step = 10);
-    Q_INVOKABLE void decreaseSetRate(int index, double step = 10);
     void updateSmoothRate(int index, double newRate);
     void updateActualRate(int index, double newRate);
     void updateSetRate(int index, double newRate);
