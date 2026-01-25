@@ -22,10 +22,12 @@ enum class VehicleNodeType {
     HitchShadow,
     HitchLine,
     Body,
+    ArrowLineLoop,
     RightWheel,
     LeftWheel,
     QuestionMark,
     AntennaDot,
+    AntennaDotShadow,
     Marker,
     SvennArrow
 };
@@ -44,9 +46,11 @@ public:
                 TextureFactory *textureFactory,
                 double vehicleX, double vehicleY,
                 double vehicleHeading,
-                const VehicleProperties *properties);
+                const VehicleProperties *properties,
+                double camSetDistance);
 
     void clearChildren();
+
 private:
     void updateNodeMvp(QSGGeometryNode *node,
                        const QMatrix4x4 mvp,

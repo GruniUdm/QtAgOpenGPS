@@ -1093,7 +1093,7 @@ Window {
                         x: Backend.fixFrame.easting
                         y: Backend.fixFrame.northing
                         rotation: Camera.camFollowing ? -Utils.radians_to_deg(VehicleInterface.fixHeading) : 0
-                        zoom: Math.abs(Camera.camSetDistance)
+                        zoom: Camera.camSetDistance
                         pitch: SettingsManager.display_camPitch
                         fov: 40
                     }
@@ -1116,6 +1116,7 @@ Window {
 
                     vehicle {
                         color: SettingsManager.display_colorVehicle
+                        opacity: 0.75 //only used for arrow vehicle
                         type: SettingsManager.vehicle_vehicleType
                         trackWidth: SettingsManager.vehicle_trackWidth
                         wheelBase: SettingsManager.vehicle_wheelbase
@@ -1123,7 +1124,11 @@ Window {
                         threePtLength: ! SettingsManager.tool_isToolFront ? (SettingsManager.tool_isToolRearFixed ? SettingsManager.vehicle_hitchLength:0 ) : 0;
                         frontHitchLength: 0
                         steerAngle: SimInterface.isRunning() ? SimInterface.steerAngleActual : ModuleComm.actualSteerAngleDegrees
-
+                        antennaOffset: SettingsManager.vehicle_antennaOffset
+                        antennaForward: SettingsManager.vehicle_antennaPivot
+                        markBoundary: 0 //if nonzero, draws boundary marking line to this distance
+                        svennArrow: true
+                        firstHeadingSet: true
                     }
 
                     tools {

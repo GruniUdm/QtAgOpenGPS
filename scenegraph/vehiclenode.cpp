@@ -8,6 +8,8 @@
 #include "aoggeometry.h"
 #include "materials.h"
 #include "thicklinematerial.h"
+#include "roundpointsizematerial.h"
+#include "roundpointmaterial.h"
 #include "glm.h"
 
 #include <QVector3D>
@@ -38,7 +40,7 @@ void VehicleNode::update(const QMatrix4x4 &mv,
                          TextureFactory *textureFactory,
                          double vehicleX, double vehicleY,
                          double vehicleHeading,
-                         const VehicleProperties *properties)
+                         const VehicleProperties *properties, double camSetDistance)
 {
     if (childCount() < 1 /*|| we need to change something */) {
         // construct geometry. either this is the initial display, or
@@ -111,7 +113,40 @@ void VehicleNode::update(const QMatrix4x4 &mv,
             }
         }
 
-        if (textureFactory) {
+        if (textureFactory && properties->type() < 3) {
+            //draw Question mark
+
+            if (!properties->firstHeadingSet()) {
+
+                auto *geometry = new QSGGeometry(AOGGeometry::texturedVertexAttributes(), 4);
+                geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
+
+                auto *geomNode = new QSGGeometryNode();
+                geomNode->setGeometry(geometry);
+                geomNode->setFlag(QSGNode::OwnsGeometry);
+
+                auto *material = new AOGTextureMaterial();
+
+                TexturedVertex *data = static_cast<TexturedVertex *>(geometry->vertexData());
+
+                data[0] = { 5.0f ,5.0f ,0.0f , 1.0f ,0.0f  };
+                data[1] = { 1.0f ,5.0f ,0.0f , 0.0f ,0.0f  };
+                data[2] = { 5.0f ,1.0f ,0.0f , 1.0f ,1.0f  };
+                data[3] = { 1.0f ,1.0f ,0.0f , 0.0f ,1.0f  };
+
+                QSGTexture *texture = textureFactory->texture(TextureId::QuestionMark);
+                if (texture) {
+                    material->setTexture(texture);
+                }
+
+                material->setUseColor(false);
+                geomNode->setMaterial(material);
+                geomNode->setFlag(QSGNode::OwnsMaterial);
+
+                appendChildNode(geomNode);
+                m_nodes[VehicleNodeType::QuestionMark] = geomNode;
+            }
+
             //Body of tractor or combine
 
             // Create textured quad for vehicle using local coordinates
@@ -121,12 +156,11 @@ void VehicleNode::update(const QMatrix4x4 &mv,
             auto *geometry = new QSGGeometry(AOGGeometry::texturedVertexAttributes(), 4);
             geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
 
-            auto geomNode = new QSGGeometryNode();
+            auto *geomNode = new QSGGeometryNode();
             geomNode->setGeometry(geometry);
             geomNode->setFlag(QSGNode::OwnsGeometry);
 
             auto *material = new AOGTextureMaterial();
-
 
             TexturedVertex *data = static_cast<TexturedVertex *>(geometry->vertexData());
 
@@ -138,32 +172,10 @@ void VehicleNode::update(const QMatrix4x4 &mv,
             if (properties->type() == 0) {
                 // Regular tractor back
 
-                data[0].x = -properties->trackWidth();
-                data[0].y = -properties->wheelBase() * 0.5;
-                data[0].z = 0.0f;
-                data[0].u = 0.0f;
-                data[0].v = 1.0f;
-
-                // Back-right (texture bottom-right: u=1, v=1)
-                data[1].x = properties->trackWidth();
-                data[1].y = -properties->wheelBase() * 0.5;
-                data[1].z = 0.0f;
-                data[1].u = 1.0f;
-                data[1].v = 1.0f;
-
-                // Front-left (texture top-left: u=0, v=0)
-                data[2].x = -properties->trackWidth();
-                data[2].y = properties->wheelBase()*1.5;
-                data[2].z = 0.0f;
-                data[2].u = 0.0f;
-                data[2].v = 0.0f;
-
-                // Front-right (texture top-right: u=1, v=0)
-                data[3].x = properties->trackWidth();
-                data[3].y = properties->wheelBase() * 1.5;
-                data[3].z = 0.0f;
-                data[3].u = 1.0f;
-                data[3].v = 0.0f;
+                data[0] = { -properties->trackWidth(), -properties->wheelBase() * 0.5f, 0.0f, 0.0f, 1.0f};
+                data[1] = {  properties->trackWidth(), -properties->wheelBase() * 0.5f, 0.0f, 1.0f, 1.0f};
+                data[2] = { -properties->trackWidth(),  properties->wheelBase() * 1.5f, 0.0f, 0.0f, 0.0f};
+                data[3] = {  properties->trackWidth(),  properties->wheelBase() * 1.5f, 0.0f, 1.0f, 0.0f};
 
                 QSGTexture *texture = textureFactory->texture(TextureId::Tractor);
                 if (texture) {
@@ -173,33 +185,10 @@ void VehicleNode::update(const QMatrix4x4 &mv,
 
             } else if (properties->type() == 1) {
                 // Harvester body
-
-                data[0].x = -properties->trackWidth();
-                data[0].y = -properties->wheelBase() * 1.5;
-                data[0].z = 0.0f;
-                data[0].u = 0.0f;
-                data[0].v = 1.0f;
-
-                // Back-right (texture bottom-right: u=1, v=1)
-                data[1].x = properties->trackWidth();
-                data[1].y = -properties->wheelBase() * 1.5;
-                data[1].z = 0.0f;
-                data[1].u = 1.0f;
-                data[1].v = 1.0f;
-
-                // Front-left (texture top-left: u=0, v=0)
-                data[2].x = -properties->trackWidth();
-                data[2].y = properties->wheelBase()*1.5;
-                data[2].z = 0.0f;
-                data[2].u = 0.0f;
-                data[2].v = 0.0f;
-
-                // Front-right (texture top-right: u=1, v=0)
-                data[3].x = properties->trackWidth();
-                data[3].y = properties->wheelBase() * 1.5;
-                data[3].z = 0.0f;
-                data[3].u = 1.0f;
-                data[3].v = 0.0f;
+                data[0] = { -properties->trackWidth(), -properties->wheelBase() * 1.5f, 0.0f, 0.0f, 1.0f };
+                data[1] = {  properties->trackWidth(), -properties->wheelBase() * 1.5f, 0.0f, 1.0f, 1.0f };
+                data[2] = { -properties->trackWidth(),  properties->wheelBase() * 1.5f, 0.0f, 0.0f, 0.0f };
+                data[3] = {  properties->trackWidth(),  properties->wheelBase() * 1.5f, 0.0f, 1.0f, 0.0f };
 
                 QSGTexture *texture = textureFactory->texture(TextureId::Harvester);
                 if (texture) {
@@ -208,32 +197,10 @@ void VehicleNode::update(const QMatrix4x4 &mv,
 
             } else if (properties->type() == 2) {
                 // 4WD Tractor Rear
-                data[0].x = -properties->trackWidth();
-                data[0].y = -properties->wheelBase() * 0.65;
-                data[0].z = 0.0f;
-                data[0].u = 0.0f;
-                data[0].v = 1.0f;
-
-                // Back-right (texture bottom-right: u=1, v=1)
-                data[1].x = properties->trackWidth();
-                data[1].y = -properties->wheelBase() * 0.65;
-                data[1].z = 0.0f;
-                data[1].u = 1.0f;
-                data[1].v = 1.0f;
-
-                // Front-left (texture top-left: u=0, v=0)
-                data[2].x = -properties->trackWidth();
-                data[2].y = properties->wheelBase()*0.65;
-                data[2].z = 0.0f;
-                data[2].u = 0.0f;
-                data[2].v = 0.0f;
-
-                // Front-right (texture top-right: u=1, v=0)
-                data[3].x = properties->trackWidth();
-                data[3].y = properties->wheelBase() * 0.65;
-                data[3].z = 0.0f;
-                data[3].u = 1.0f;
-                data[3].v = 0.0f;
+                data[0] = { -properties->trackWidth(), -properties->wheelBase() * 0.65f, 0.0f, 0.0f, 1.0f };
+                data[1] = {  properties->trackWidth(), -properties->wheelBase() * 0.65f, 0.0f, 1.0f, 1.0f };
+                data[2] = { -properties->trackWidth(),  properties->wheelBase() * 0.65f, 0.0f, 0.0f, 0.0f };
+                data[3] = {  properties->trackWidth(),  properties->wheelBase() * 0.65f, 0.0f, 1.0f, 0.0f };
 
                 QSGTexture *texture = textureFactory->texture(TextureId::Tractor4WDRear);
                 if (texture) {
@@ -270,108 +237,34 @@ void VehicleNode::update(const QMatrix4x4 &mv,
 
             if (properties->type() == 0) {
                 //front left wheel
-
-                // Front-right (texture top-right: u=1, v=0)
-                data[3].x = properties->trackWidth() * 0.5;
-                data[3].y = properties->wheelBase() * 0.75;
-                data[3].z = 0.0f;
-                data[3].u = 1.0f;
-                data[3].v = 0.0f;
-
-                // front left
-                data[2].x = -properties->trackWidth() * 0.5;
-                data[2].y = properties->wheelBase()*0.75;
-                data[2].z = 0.0f;
-                data[2].u = 0.0f;
-                data[2].v = 0.0f;
-
-                // bottom right
-                data[1].x = properties->trackWidth() * 0.5;
-                data[1].y = -properties->wheelBase() * 0.75;
-                data[1].z = 0.0f;
-                data[1].u = 1.0f;
-                data[1].v = 1.0f;
-
-                //bottom left
-                data[0].x = -properties->trackWidth() * 0.5;
-                data[0].y = -properties->wheelBase() * 0.75;
-                data[0].z = 0.0f;
-                data[0].u = 0.0f;
-                data[0].v = 1.0f;
+                data[0] = { -properties->trackWidth() * 0.5f, -properties->wheelBase() * 0.75f, 0.0f, 0.0f, 1.0f };
+                data[1] = {  properties->trackWidth() * 0.5f, -properties->wheelBase() * 0.75f, 0.0f, 1.0f, 1.0f };
+                data[2] = { -properties->trackWidth() * 0.5f,  properties->wheelBase() * 0.75f, 0.0f, 0.0f, 0.0f };
+                data[3] = {  properties->trackWidth() * 0.5f,  properties->wheelBase() * 0.75f, 0.0f, 1.0f, 0.0f };
 
                 QSGTexture *texture = textureFactory->texture(TextureId::FrontWheels);
                 if (texture) {
                     material->setTexture(texture);
                 }
-
 
             } else if (properties->type() == 1) {
                 //harvester rear left wheel
-
-                // Front-right (texture top-right: u=1, v=0)
-                data[3].x = properties->trackWidth() * 0.25;
-                data[3].y = properties->wheelBase() * 0.5;
-                data[3].z = 0.0f;
-                data[3].u = 1.0f;
-                data[3].v = 0.0f;
-
-                // front left
-                data[2].x = -properties->trackWidth() * 0.25;
-                data[2].y = properties->wheelBase()*0.5;
-                data[2].z = 0.0f;
-                data[2].u = 0.0f;
-                data[2].v = 0.0f;
-
-                // bottom right
-                data[1].x = properties->trackWidth() * 0.25;
-                data[1].y = -properties->wheelBase() * 0.5;
-                data[1].z = 0.0f;
-                data[1].u = 1.0f;
-                data[1].v = 1.0f;
-
-                //bottom left
-                data[0].x = -properties->trackWidth() * 0.25;
-                data[0].y = -properties->wheelBase() * 0.5;
-                data[0].z = 0.0f;
-                data[0].u = 0.0f;
-                data[0].v = 1.0f;
+                data[0] = { -properties->trackWidth() * 0.25f, -properties->wheelBase() * 0.5f, 0.0f, 0.0f, 1.0f };
+                data[1] = {  properties->trackWidth() * 0.25f, -properties->wheelBase() * 0.5f, 0.0f, 1.0f, 1.0f };
+                data[2] = { -properties->trackWidth() * 0.25f,  properties->wheelBase() * 0.5f, 0.0f, 0.0f, 0.0f };
+                data[3] = {  properties->trackWidth() * 0.25f,  properties->wheelBase() * 0.5f, 0.0f, 1.0f, 0.0f };
 
                 QSGTexture *texture = textureFactory->texture(TextureId::FrontWheels);
                 if (texture) {
                     material->setTexture(texture);
                 }
 
-
             } else if (properties->type() == 2) {
                 //4wd tractor front half
-
-                // Front-right (texture top-right: u=1, v=0)
-                data[3].x = properties->trackWidth();
-                data[3].y = properties->wheelBase() * 0.65;
-                data[3].z = 0.0f;
-                data[3].u = 1.0f;
-                data[3].v = 0.0f;
-
-                // front left
-                data[2].x = -properties->trackWidth();
-                data[2].y = properties->wheelBase()*0.65;
-                data[2].z = 0.0f;
-                data[2].u = 0.0f;
-                data[2].v = 0.0f;
-
-                // bottom right
-                data[1].x = properties->trackWidth();
-                data[1].y = -properties->wheelBase() * 0.65;
-                data[1].z = 0.0f;
-                data[1].u = 1.0f;
-                data[1].v = 1.0f;
-
-                //bottom left
-                data[0].x = -properties->trackWidth();
-                data[0].y = -properties->wheelBase() * 0.65;
-                data[0].z = 0.0f;
-                data[0].u = 0.0f;
-                data[0].v = 1.0f;
+                data[0] = { -properties->trackWidth(), -properties->wheelBase() * 0.65f, 0.0f, 0.0f, 1.0f };
+                data[1] = {  properties->trackWidth(), -properties->wheelBase() * 0.65f, 0.0f, 1.0f, 1.0f };
+                data[2] = { -properties->trackWidth(),  properties->wheelBase() * 0.65f, 0.0f, 0.0f, 0.0f };
+                data[3] = {  properties->trackWidth(),  properties->wheelBase() * 0.65f, 0.0f, 1.0f, 0.0f };
 
                 QSGTexture *texture = textureFactory->texture(TextureId::Tractor4WDFront);
                 if (texture) {
@@ -407,71 +300,22 @@ void VehicleNode::update(const QMatrix4x4 &mv,
 
             if (properties->type() == 0) {
                 //front right wheel
-
-                // Front-right (texture top-right: u=1, v=0)
-                data[3].x = properties->trackWidth() * 0.5;
-                data[3].y = properties->wheelBase() * 0.75;
-                data[3].z = 0.0f;
-                data[3].u = 1.0f;
-                data[3].v = 0.0f;
-
-                // front left
-                data[2].x = -properties->trackWidth() * 0.5;
-                data[2].y = properties->wheelBase()*0.75;
-                data[2].z = 0.0f;
-                data[2].u = 0.0f;
-                data[2].v = 0.0f;
-
-                // bottom right
-                data[1].x = properties->trackWidth() * 0.5;
-                data[1].y = -properties->wheelBase() * 0.75;
-                data[1].z = 0.0f;
-                data[1].u = 1.0f;
-                data[1].v = 1.0f;
-
-                //bottom left
-                data[0].x = -properties->trackWidth() * 0.5;
-                data[0].y = -properties->wheelBase() * 0.75;
-                data[0].z = 0.0f;
-                data[0].u = 0.0f;
-                data[0].v = 1.0f;
+                data[0] = { -properties->trackWidth() * 0.5f, -properties->wheelBase() * 0.75f, 0.0f, 0.0f, 1.0f };
+                data[1] = {  properties->trackWidth() * 0.5f, -properties->wheelBase() * 0.75f, 0.0f, 1.0f, 1.0f };
+                data[2] = { -properties->trackWidth() * 0.5f,  properties->wheelBase() * 0.75f, 0.0f, 0.0f, 0.0f };
+                data[3] = {  properties->trackWidth() * 0.5f,  properties->wheelBase() * 0.75f, 0.0f, 1.0f, 0.0f };
 
                 QSGTexture *texture = textureFactory->texture(TextureId::FrontWheels);
                 if (texture) {
                     material->setTexture(texture);
                 }
 
-
             } else if (properties->type() == 1) {
                 //harvester rear right wheel
-
-                // Front-right (texture top-right: u=1, v=0)
-                data[3].x = properties->trackWidth() * 0.25;
-                data[3].y = properties->wheelBase() * 0.5;
-                data[3].z = 0.0f;
-                data[3].u = 1.0f;
-                data[3].v = 0.0f;
-
-                // front left
-                data[2].x = -properties->trackWidth() * 0.25;
-                data[2].y = properties->wheelBase()*0.5;
-                data[2].z = 0.0f;
-                data[2].u = 0.0f;
-                data[2].v = 0.0f;
-
-                // bottom right
-                data[1].x = properties->trackWidth() * 0.25;
-                data[1].y = -properties->wheelBase() * 0.5;
-                data[1].z = 0.0f;
-                data[1].u = 1.0f;
-                data[1].v = 1.0f;
-
-                //bottom left
-                data[0].x = -properties->trackWidth() * 0.25;
-                data[0].y = -properties->wheelBase() * 0.5;
-                data[0].z = 0.0f;
-                data[0].u = 0.0f;
-                data[0].v = 1.0f;
+                data[0] = { -properties->trackWidth() * 0.25f, -properties->wheelBase() * 0.5f, 0.0f, 0.0f, 1.0f };
+                data[1] = {  properties->trackWidth() * 0.25f, -properties->wheelBase() * 0.5f, 0.0f, 1.0f, 1.0f };
+                data[2] = { -properties->trackWidth() * 0.25f,  properties->wheelBase() * 0.5f, 0.0f, 0.0f, 0.0f };
+                data[3] = {  properties->trackWidth() * 0.25f,  properties->wheelBase() * 0.5f, 0.0f, 1.0f, 0.0f };
 
                 QSGTexture *texture = textureFactory->texture(TextureId::FrontWheels);
                 if (texture) {
@@ -491,30 +335,126 @@ void VehicleNode::update(const QMatrix4x4 &mv,
 
         } else {
             //just draw a triangle
+            auto *geometry = new QSGGeometry(AOGGeometry::colorVertexAttributes(), 4);
+            geometry->setDrawingMode(QSGGeometry::DrawTriangleFan);
+            // Fill vertex data
+            ColorVertex *v = static_cast<ColorVertex*>(geometry->vertexData());
+            v[0] = { 0.0f, properties->antennaForward(), 0.0f,  0.0f, 1.20f, 1.22f, properties->opacity() };
+            v[2] = { 0.0f, properties->wheelBase(), 0.0f,       1.22f, 0.0f, 1.2f,  properties->opacity() };
+            v[1] = { -1.0f, 0.0f, 0.0f,                         1.22f, 0.0f, 1.2f,  properties->opacity() };
+            v[3] = {  1.0f, 0.0f, 0.0f,                         1.22f, 0.0f, 1.2f,  properties->opacity() };
 
+            // Create geometry node
+            auto *geomNode = new QSGGeometryNode();
+            geomNode->setGeometry(geometry);
+            geomNode->setFlag(QSGNode::OwnsGeometry);
 
-            // Fallback to colored triangle using local coordinates
-            QVector<QVector3D> vehicleTriangle;
-            vehicleTriangle.append(QVector3D(0.0f, wheelBase * 2, 0.0f));       // Front
-            vehicleTriangle.append(QVector3D(-wheelBase, -wheelBase, 0.0f));    // Back left
-            vehicleTriangle.append(QVector3D(wheelBase, -wheelBase, 0.0f));     // Back right
+            // Create and configure material
+            auto *material = new AOGVertexColorMaterial();
 
-            auto *geometry = AOGGeometry::createTrianglesGeometry(vehicleTriangle);
-            if (!geometry)
-                return;
+            geomNode->setMaterial(material);
+            geomNode->setFlag(QSGNode::OwnsMaterial);
 
+            // Add to scene graph
+            appendChildNode(geomNode);
+            m_nodes[VehicleNodeType::Body] = geomNode;
+
+            QVector<QVector3D> lines;
+            lines.append( { -1.0f, 0.0f, 0.0f });
+            lines.append( {  1.0f, 0.0f, 0.0f });
+            lines.append( {  0.0f, properties->wheelBase(), 0.0f });
+
+            geometry = AOGGeometry::createThickLineLoopGeometry(lines);
+            geomNode = new QSGGeometryNode();
+            geomNode->setGeometry(geometry);
+            geomNode->setFlag(QSGNode::OwnsGeometry);
+
+            auto *lineMaterial = new ThickLineMaterial();
+            lineMaterial->setColor(QColor::fromRgbF(0.12, 0.12, 0.12));
+            lineMaterial->setLineWidth(1.0f);
+
+            geomNode->setMaterial(lineMaterial);
+            geomNode->setFlag(QSGNode::OwnsMaterial);
+
+            appendChildNode(geomNode);
+            m_nodes[VehicleNodeType::ArrowLineLoop] = geomNode;
+
+        }
+
+        // antenna dot
+        if (camSetDistance > -75 && properties->firstHeadingSet()) {
+            auto *geometry = new QSGGeometry(AOGGeometry::colorSizeVertexAttributes(), 2);
+            geometry->setDrawingMode(QSGGeometry::DrawPoints);
+            // Fill vertex data
+            ColorSizeVertex *v = static_cast<ColorSizeVertex*>(geometry->vertexData());
+            v[0] = { properties->antennaOffset(), properties->antennaForward(), 0.0f,  0.0f, 0.0f, 0.0f, 1.0f, 16.0f };
+            v[1] = { properties->antennaOffset(), properties->antennaForward(), 0.0f,  0.2f, 0.98f, 0.98f, 1.0f, 10.0f };
+
+            // Create geometry node
+            auto *geomNode = new QSGGeometryNode();
+            geomNode->setGeometry(geometry);
+            geomNode->setFlag(QSGNode::OwnsGeometry);
+
+            // Create and configure material
+            auto *material = new RoundPointSizeMaterial();
+            material->setSoftness(0.2f);           // edge softness (0-1)
+
+            geomNode->setMaterial(material);
+            geomNode->setFlag(QSGNode::OwnsMaterial);
+
+            // Add to scene graph
+            appendChildNode(geomNode);
+            m_nodes[VehicleNodeType::AntennaDot] = geomNode;
+        }
+
+        // boundary marking
+        if (properties->markBoundary() != 0) {
+            QVector<QVector3D> bndLine;
+
+            bndLine.append( { 0.0f, 0.0f, 0.0f } );
+            bndLine.append( { properties->markBoundary(), 0.0f, 0.0f } ) ;
+            bndLine.append( { properties->markBoundary() * 0.75f, 0.25f, 0.0f } );
+
+            auto *geometry = AOGGeometry::createThickLineGeometry(bndLine);
             auto geomNode = new QSGGeometryNode();
             geomNode->setGeometry(geometry);
             geomNode->setFlag(QSGNode::OwnsGeometry);
 
-            auto *material = new AOGFlatColorMaterial();
-            material->setColor(vehicleColor);
+            auto *material = new ThickLineMaterial();
+            material->setColor(QColor::fromRgbF(1.270, 1.220, 0.20, 1.0));
+            material->setLineWidth(2.0f);
 
             geomNode->setMaterial(material);
             geomNode->setFlag(QSGNode::OwnsMaterial);
 
             appendChildNode(geomNode);
-            m_nodes[VehicleNodeType::Body] = geomNode;
+            m_nodes[VehicleNodeType::Marker] = geomNode;
+        }
+
+        //Svenn Arow
+        if (properties->svennArrow() && camSetDistance > -1000) {
+            float svennDist = camSetDistance * -0.07;
+            float svennWidth = svennDist * 0.22;
+            QVector<QVector3D> svennLine;
+
+            svennLine.append( { svennWidth, properties->wheelBase() + svennDist, 0.0f } );
+            svennLine.append( { 0, properties->wheelBase() + svennWidth + 0.5f + svennDist, 0.0f} );
+            svennLine.append( { -svennWidth, properties->wheelBase() + svennDist, 0.0f } );
+
+            auto *geometry = AOGGeometry::createThickLineGeometry(svennLine);
+            auto geomNode = new QSGGeometryNode();
+            geomNode->setGeometry(geometry);
+            geomNode->setFlag(QSGNode::OwnsGeometry);
+
+            auto *material = new ThickLineMaterial();
+            material->setColor(QColor::fromRgbF(1.2, 1.25, 0.10));
+            material->setLineWidth(1.0f);
+
+            geomNode->setMaterial(material);
+            geomNode->setFlag(QSGNode::OwnsMaterial);
+
+            appendChildNode(geomNode);
+            m_nodes[VehicleNodeType::SvennArrow] = geomNode;
         }
     }
 
@@ -533,6 +473,16 @@ void VehicleNode::update(const QMatrix4x4 &mv,
         updateNodeMvp(m_nodes[VehicleNodeType::HitchShadow], ncdP * vehicleMv, viewportSize);
     if (m_nodes.value(VehicleNodeType::HitchLine, nullptr))
         updateNodeMvp(m_nodes[VehicleNodeType::HitchLine], ncdP * vehicleMv, viewportSize);
+    if (m_nodes.value(VehicleNodeType::QuestionMark, nullptr))
+        updateNodeMvp(m_nodes[VehicleNodeType::QuestionMark], ncdP * vehicleMv, viewportSize);
+    if (m_nodes.value(VehicleNodeType::AntennaDot, nullptr))
+        updateNodeMvp(m_nodes[VehicleNodeType::AntennaDot], ncdP * vehicleMv, viewportSize);
+    if (m_nodes.value(VehicleNodeType::Marker, nullptr))
+        updateNodeMvp(m_nodes[VehicleNodeType::Marker], ncdP * vehicleMv, viewportSize);
+    if (m_nodes.value(VehicleNodeType::SvennArrow, nullptr))
+        updateNodeMvp(m_nodes[VehicleNodeType::SvennArrow], ncdP * vehicleMv, viewportSize);
+    if (m_nodes.value(VehicleNodeType::ArrowLineLoop, nullptr))
+        updateNodeMvp(m_nodes[VehicleNodeType::ArrowLineLoop], ncdP * vehicleMv, viewportSize);
 
 
     //Calculate steering angles for wheels

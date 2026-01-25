@@ -93,6 +93,13 @@ FieldViewItem::FieldViewItem(QQuickItem *parent)
     connect(m_camera, &CameraProperties::rotationChanged, this, &FieldViewItem::requestUpdate);
     connect(m_camera, &CameraProperties::pitchChanged, this, &FieldViewItem::requestUpdate);
     connect(m_camera, &CameraProperties::fovChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_camera, &CameraProperties::zoomChanged, [&]() {
+        if (m_vehicle->svennArrow() && m_camera->zoom() > -1000 ||
+            m_vehicle->firstHeadingSet() && m_camera->zoom() > -75) {
+
+            updateVehicle();
+        }
+    });
 
     //Connect grid property changes to update()
     connect(m_grid, &GridProperties::sizeChanged, this, &FieldViewItem::requestUpdate);
@@ -108,12 +115,7 @@ FieldViewItem::FieldViewItem(QQuickItem *parent)
     connect(m_vehicle, &VehicleProperties::colorChanged, this, &FieldViewItem::requestUpdate);
     connect(m_vehicle, &VehicleProperties::steerAngleChanged, this, &FieldViewItem::requestUpdate);
     // redraw vehicle geometry if any of these properties change:
-    connect(m_vehicle, &VehicleProperties::typeChanged, this, &FieldViewItem::updateVehicle);
-    connect(m_vehicle, &VehicleProperties::trackWidthChanged, this, &FieldViewItem::updateVehicle);
-    connect(m_vehicle, &VehicleProperties::wheelBaseChanged, this, &FieldViewItem::updateVehicle);
-    connect(m_vehicle, &VehicleProperties::drawbarLengthChanged, this, &FieldViewItem::updateVehicle);
-    connect(m_vehicle, &VehicleProperties::threePtLengthChanged, this, &FieldViewItem::updateVehicle);
-    connect(m_vehicle, &VehicleProperties::frontHitchLengthChanged, this, &FieldViewItem::updateVehicle);
+    connect(m_vehicle, &VehicleProperties::vehicleChanged, this, &FieldViewItem::updateVehicle);
 
     connect(m_tools, &ToolsProperties::visibleChanged, this, &FieldViewItem::requestUpdate);
     connect(m_tools, &ToolsProperties::toolsChanged, this, &FieldViewItem::updateTools);
@@ -304,7 +306,7 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 
     // Get WorldGrid data for field surface and grid
     //adjust zoom based on cam distance
-    double _gridZoom = m_camera->zoom();
+    double _gridZoom = abs(m_camera->zoom());
     int count;
 
     if (_gridZoom> 100) count = 4;
@@ -346,7 +348,7 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     if (m_grid->visible()) {
         // Calculate grid spacing based on zoom
         double gridSpacing = 10.0;
-        double camDistance = m_camera->zoom();
+        double camDistance = abs(m_camera->zoom());
         if (camDistance <= 20000 && camDistance > 10000) gridSpacing = 2012;
         else if (camDistance <= 10000 && camDistance > 5000) gridSpacing = 1006;
         else if (camDistance <= 5000 && camDistance > 2000) gridSpacing = 503;
@@ -392,26 +394,6 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         m_guidanceDirty = false;
     }
 
-    if (m_vehicleDirty) {
-        //regenerate geometry
-        m_vehicleDirty = false;
-        rootNode->vehicleNode->clearChildren();
-    }
-    if (m_vehicle->visible()) {
-        rootNode->vehicleNode->update(
-            m_currentMv,
-            m_currentP,
-            m_currentNcd,
-            m_vehicle->color(),
-            viewportSize,
-            m_textureFactory,
-            m_renderData.vehicleX,
-            m_renderData.vehicleY,
-            m_renderData.vehicleHeading,
-            m_vehicle
-        );
-    }
-
     if (m_toolsDirty) {
         m_toolsDirty = false;
         rootNode->toolsNode->clearChildren();
@@ -436,6 +418,28 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
             m_textureFactory,
             m_tools);
 
+    }
+
+
+    if (m_vehicleDirty) {
+        //regenerate geometry
+        m_vehicleDirty = false;
+        rootNode->vehicleNode->clearChildren();
+    }
+    if (m_vehicle->visible()) {
+        rootNode->vehicleNode->update(
+            m_currentMv,
+            m_currentP,
+            m_currentNcd,
+            m_vehicle->color(),
+            viewportSize,
+            m_textureFactory,
+            m_renderData.vehicleX,
+            m_renderData.vehicleY,
+            m_renderData.vehicleHeading,
+            m_vehicle,
+            m_camera->zoom()
+        );
     }
 
     return rootNode;
@@ -489,7 +493,7 @@ QMatrix4x4 FieldViewItem::buildProjectionMatrix() const
     // Far plane uses camDistanceFactor * camSetDistance where camDistanceFactor = -2
     // Since zoom is positive (abs of camSetDistance), far = 2 * zoom
     float fov = static_cast<float>(m_camera->fov());
-    float farPlane = static_cast<float>(2.0 * m_camera->zoom());
+    float farPlane = static_cast<float>(2.0 * abs(m_camera->zoom()));
     if (farPlane < 100.0f) farPlane = 100.0f;  // Minimum far plane
 
     projection.perspective(fov, aspect, 1.0f, farPlane);
@@ -503,7 +507,7 @@ QMatrix4x4 FieldViewItem::buildViewMatrix() const
 
     // Match OpenGL version: camera distance = camSetDistance * 0.5
     // zoom is positive (abs of camSetDistance), so we use -zoom * 0.5
-    view.translate(0, 0, static_cast<float>(-m_camera->zoom() * 0.5));
+    view.translate(0, 0, static_cast<float>(m_camera->zoom() * 0.5));
 
     // Apply pitch (tilt)
     view.rotate(static_cast<float>(m_camera->pitch()), 1.0f, 0.0f, 0.0f);
