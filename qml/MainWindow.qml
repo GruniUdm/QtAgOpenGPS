@@ -1119,11 +1119,41 @@ Window {
                         type: SettingsManager.vehicle_vehicleType
                         trackWidth: SettingsManager.vehicle_trackWidth
                         wheelBase: SettingsManager.vehicle_wheelbase
-                        drawbarLength: ! SettingsManager.tool_isToolFront ? (SettingsManager.tool_isToolRearFixed ? 0 : abs(SettingsManager.vehicle_hitchLength)) : 0;
-                        threePtLength: ! SettingsManager.tool_isToolFront ? (SettingsManager.tool_isToolRearFixed ? abs(SettingsManager.vehicle_hitchLength):0 ) : 0;
+                        drawbarLength: ! SettingsManager.tool_isToolFront ? (SettingsManager.tool_isToolRearFixed ? 0 : SettingsManager.vehicle_hitchLength) : 0;
+                        threePtLength: ! SettingsManager.tool_isToolFront ? (SettingsManager.tool_isToolRearFixed ? SettingsManager.vehicle_hitchLength:0 ) : 0;
                         frontHitchLength: 0
                         steerAngle: SimInterface.isRunning() ? SimInterface.steerAngleActual : ModuleComm.actualSteerAngleDegrees
 
+                    }
+
+                    tools {
+                        tools: [
+                            ToolProperties {
+                                trailing: true
+                                isTBTTank: true
+                                hitchLength: -2.5
+                                offset: 0.0
+                                heading: 20
+                            },
+                            ToolProperties {
+                                trailing: true
+                                hitchLength: -3
+                                offset: 0.0
+                                heading: -15
+
+                                sections: [
+                                    SectionProperties {
+                                        leftPosition: -1
+                                        rightPosition: 0
+                                    },
+                                    SectionProperties {
+                                        leftPosition: 0
+                                        rightPosition: 1
+                                    }
+                                ]
+                            }
+                        ]
+                        visible: true
                     }
 
                     // Camera rotation from vehicle heading (radians to degrees)

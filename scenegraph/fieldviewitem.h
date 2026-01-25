@@ -28,16 +28,20 @@ class FieldSurfaceNode;
 class GridNode;
 class BoundaryNode;
 class VehicleNode;
+class ToolsNode;
 class CameraProperties;
 class GridProperties;
 class FieldSurfaceProperties;
 class VehicleProperties;
+class ToolsProperties;
 class TextureFactory;
 
 Q_MOC_INCLUDE("cameraproperties.h")
 Q_MOC_INCLUDE("gridproperties.h")
 Q_MOC_INCLUDE("fieldsurfaceproperties.h")
 Q_MOC_INCLUDE("vehicleproperties.h")
+Q_MOC_INCLUDE("toolsproperties.h")
+
 // ============================================================================
 // FieldViewNode - Root node for the field view scene graph
 // ============================================================================
@@ -55,6 +59,7 @@ public:
     QSGNode *coverageNode = nullptr;     // Coverage patches (not yet refactored)
     QSGNode *guidanceNode = nullptr;     // Guidance lines (not yet refactored)
     VehicleNode *vehicleNode = nullptr;
+    ToolsNode *toolsNode = nullptr;
     QSGNode *uiNode = nullptr;           // UI overlays (markers, flags)
 };
 
@@ -72,6 +77,7 @@ class FieldViewItem : public QQuickItem
     Q_PROPERTY(GridProperties* grid READ grid CONSTANT)
     Q_PROPERTY(FieldSurfaceProperties* fieldSurface READ fieldSurface CONSTANT)
     Q_PROPERTY(VehicleProperties* vehicle READ vehicle CONSTANT)
+    Q_PROPERTY(ToolsProperties* tools READ tools CONSTANT)
 
     // ===== Rendering State Properties =====
     Q_PROPERTY(bool showBoundary READ showBoundary WRITE setShowBoundary NOTIFY showBoundaryChanged BINDABLE bindableShowBoundary)
@@ -92,6 +98,7 @@ public:
     GridProperties * grid() const;
     FieldSurfaceProperties* fieldSurface() const;
     VehicleProperties* vehicle() const;
+    ToolsProperties* tools() const;
 
     // ===== Visibility Property Accessors =====
     bool showBoundary() const;
@@ -122,6 +129,7 @@ public:
     // ===== Public Methods =====
     Q_INVOKABLE void requestUpdate();  // Call this instead of update() to also sync singleton data
     Q_INVOKABLE void updateVehicle();
+    Q_INVOKABLE void updateTools();
     Q_INVOKABLE void markBoundaryDirty();
     Q_INVOKABLE void markCoverageDirty();
     Q_INVOKABLE void markGuidanceDirty();
@@ -157,6 +165,7 @@ private:
     // ===== Dirty Tracking =====
     bool m_fieldSurfaceDirty = true;
     bool m_vehicleDirty = true;
+    bool m_toolsDirty = true;
     bool m_boundaryDirty = true;
     bool m_coverageDirty = true;
     bool m_guidanceDirty = true;
@@ -197,6 +206,7 @@ private:
     GridProperties *m_grid = nullptr;
     FieldSurfaceProperties *m_fieldSurface = nullptr;
     VehicleProperties *m_vehicle = nullptr;
+    ToolsProperties *m_tools = nullptr;
 
     // ===== Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY Members =====
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, bool, m_showBoundary, true, &FieldViewItem::showBoundaryChanged)

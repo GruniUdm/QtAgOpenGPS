@@ -23,7 +23,11 @@ enum class VehicleNodeType {
     HitchLine,
     Body,
     RightWheel,
-    LeftWheel
+    LeftWheel,
+    QuestionMark,
+    AntennaDot,
+    Marker,
+    SvennArrow
 };
 
 class VehicleNode : public QSGNode
@@ -50,7 +54,6 @@ private:
 
 
     QHash<VehicleNodeType, QSGGeometryNode*> m_nodes;
-    QSGTexture *m_texture = nullptr;
 };
 
 #endif // VEHICLENODE_H

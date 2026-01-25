@@ -61,7 +61,7 @@ void VehicleNode::update(const QMatrix4x4 &mv,
 
         if (properties->drawbarLength()) {
 
-            hitches.append({ 0, static_cast<float>(-properties->drawbarLength()), 0});
+            hitches.append({ 0, static_cast<float>(properties->drawbarLength()), 0});
             hitches.append({ 0, 0, 0});
         }
 

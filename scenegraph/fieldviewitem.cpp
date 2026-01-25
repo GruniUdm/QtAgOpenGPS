@@ -8,11 +8,13 @@
 #include "gridproperties.h"
 #include "fieldsurfaceproperties.h"
 #include "vehicleproperties.h"
+#include "toolsproperties.h"
 
 #include "fieldsurfacenode.h"
 #include "gridnode.h"
 #include "boundarynode.h"
 #include "vehiclenode.h"
+#include "toolsnode.h"
 #include "aogmaterial.h"
 #include "aoggeometry.h"
 #include "texturefactory.h"
@@ -48,6 +50,7 @@ FieldViewNode::FieldViewNode()
     coverageNode = new QSGNode();   // Not yet refactored
     guidanceNode = new QSGNode();   // Not yet refactored
     vehicleNode = new VehicleNode();
+    toolsNode = new ToolsNode();
     uiNode = new QSGNode();
 
     // Add children in render order (back to front)
@@ -57,6 +60,7 @@ FieldViewNode::FieldViewNode()
     appendChildNode(coverageNode);
     appendChildNode(guidanceNode);
     appendChildNode(vehicleNode);
+    appendChildNode(toolsNode);
     appendChildNode(uiNode);
 }
 
@@ -80,6 +84,7 @@ FieldViewItem::FieldViewItem(QQuickItem *parent)
     m_grid = new GridProperties(this);
     m_fieldSurface = new FieldSurfaceProperties(this);
     m_vehicle = new VehicleProperties(this);
+    m_tools = new ToolsProperties(this);
 
     // Connect camera property changes to update()
     connect(m_camera, &CameraProperties::zoomChanged, this, &FieldViewItem::requestUpdate);
@@ -110,6 +115,8 @@ FieldViewItem::FieldViewItem(QQuickItem *parent)
     connect(m_vehicle, &VehicleProperties::threePtLengthChanged, this, &FieldViewItem::updateVehicle);
     connect(m_vehicle, &VehicleProperties::frontHitchLengthChanged, this, &FieldViewItem::updateVehicle);
 
+    connect(m_tools, &ToolsProperties::visibleChanged, this, &FieldViewItem::requestUpdate);
+    connect(m_tools, &ToolsProperties::toolsChanged, this, &FieldViewItem::updateTools);
 
     // Connect other property changes to update()
     connect(this, &FieldViewItem::boundaryColorChanged, this, &FieldViewItem::requestUpdate);
@@ -143,6 +150,8 @@ GridProperties* FieldViewItem::grid() const { return m_grid; }
 FieldSurfaceProperties* FieldViewItem::fieldSurface() const { return m_fieldSurface; }
 
 VehicleProperties* FieldViewItem::vehicle() const { return m_vehicle; }
+
+ToolsProperties* FieldViewItem::tools() const { return m_tools; }
 
 // ============================================================================
 // Visibility Property Accessors
@@ -191,6 +200,14 @@ void FieldViewItem::updateVehicle()
     m_vehicleDirty = true;
     polish();
     update();
+}
+
+void FieldViewItem::updateTools()
+{
+    m_toolsDirty = true;
+    polish();
+    update();
+
 }
 
 void FieldViewItem::markBoundaryDirty()
@@ -393,6 +410,32 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
             m_renderData.vehicleHeading,
             m_vehicle
         );
+    }
+
+    if (m_toolsDirty) {
+        m_toolsDirty = false;
+        rootNode->toolsNode->clearChildren();
+    }
+
+    if (m_tools->visible()) {
+        //set up mv foor the tools, based on the vehicle
+        QMatrix4x4 toolMv = m_currentMv;
+
+        //move to pivot axle
+        toolMv.translate(m_renderData.vehicleX, m_renderData.vehicleY,0);
+        // translate down to the hitch pin without doing a rotate to make
+        // life easier for toolsNode to rotate from straight north
+        toolMv.translate(sin(m_renderData.vehicleHeading) * m_vehicle->drawbarLength(),
+                         cos(m_renderData.vehicleHeading) * m_vehicle->drawbarLength(), 0);
+
+        rootNode->toolsNode->update(
+            toolMv,
+            m_currentP,
+            m_currentNcd,
+            viewportSize,
+            m_textureFactory,
+            m_tools);
+
     }
 
     return rootNode;

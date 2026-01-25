@@ -417,6 +417,11 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES scenegraph/thicklinecolorsmaterial.h scenegraph/thicklinecolorsmaterial.cpp
     SOURCES scenegraph/dashedthicklinematerial.h scenegraph/dashedthicklinematerial.cpp
     SOURCES scenegraph/texturefactory.h scenegraph/texturefactory.cpp
+    SOURCES scenegraph/toolsproperties.h scenegraph/toolsproperties.cpp
+    SOURCES scenegraph/toolproperties.h scenegraph/toolproperties.cpp
+    SOURCES scenegraph/sectionproperties.h scenegraph/sectionproperties.cpp
+    SOURCES scenegraph/toolsnode.h scenegraph/toolsnode.cpp
+    SOURCES scenegraph/roundpointmaterial.h scenegraph/roundpointmaterial.cpp
 
 )
 
@@ -533,6 +538,8 @@ qt_add_shaders(QtAgOpenGPS "rhi_shaders"
         shaders/thicklinecolors.frag
         shaders/dashedthickline.vert
         shaders/dashedthickline.frag
+        shaders/roundpoint.vert
+        shaders/roundpoint.frag
 )
 
 # Compile defines
