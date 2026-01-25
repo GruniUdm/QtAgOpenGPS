@@ -21,6 +21,12 @@ struct ColorVertex {
     float r, g, b, a;   // RGBA color
 };
 
+struct ColorSizeVertex {
+    float x, y, z;      // 3D position
+    float r, g, b, a;   // RGBA color
+    float s; //dot size
+};
+
 struct PositionVertex {
     float x,y,z; // 3D position
 };
@@ -71,6 +77,9 @@ const QSGGeometry::AttributeSet &positionAttributes();
 
 // Position (3 floats) + Color (4 floats)
 const QSGGeometry::AttributeSet &colorVertexAttributes();
+
+// Position (3 floats) + Color (4 floats) + Size (1 float)
+const QSGGeometry::AttributeSet &colorSizeVertexAttributes();
 
 // Position (3 floats) + TexCoord (2 floats)
 const QSGGeometry::AttributeSet &texturedVertexAttributes();

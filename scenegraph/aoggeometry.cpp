@@ -39,6 +39,21 @@ const QSGGeometry::AttributeSet &colorVertexAttributes()
     return attributeSet;
 }
 
+const QSGGeometry::AttributeSet &colorSizeVertexAttributes()
+{
+    static QSGGeometry::Attribute attributes[] = {
+        QSGGeometry::Attribute::create(0, 3, QSGGeometry::FloatType, true),   // position (location 0)
+        QSGGeometry::Attribute::create(1, 4, QSGGeometry::FloatType, false),   // color (location 1)
+        QSGGeometry::Attribute::create(2, 1, QSGGeometry::FloatType, false)   // size (location 2)
+    };
+    static QSGGeometry::AttributeSet attributeSet = {
+        3,                         // attribute count
+        sizeof(ColorSizeVertex),       // stride (28 bytes per vertex)
+        attributes
+    };
+    return attributeSet;
+}
+
 const QSGGeometry::AttributeSet &texturedVertexAttributes()
 {
     static QSGGeometry::Attribute attributes[] = {

@@ -422,6 +422,7 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES scenegraph/sectionproperties.h scenegraph/sectionproperties.cpp
     SOURCES scenegraph/toolsnode.h scenegraph/toolsnode.cpp
     SOURCES scenegraph/roundpointmaterial.h scenegraph/roundpointmaterial.cpp
+    SOURCES scenegraph/roundpointsizematerial.h scenegraph/roundpointsizematerial.cpp
 
 )
 
@@ -540,6 +541,8 @@ qt_add_shaders(QtAgOpenGPS "rhi_shaders"
         shaders/dashedthickline.frag
         shaders/roundpoint.vert
         shaders/roundpoint.frag
+        shaders/roundpointsize.frag
+        shaders/roundpointsize.vert
 )
 
 # Compile defines
