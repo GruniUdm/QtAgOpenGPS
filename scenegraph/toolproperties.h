@@ -22,7 +22,7 @@ class ToolProperties : public QObject
     Q_OBJECT
     QML_ELEMENT
 
-    Q_PROPERTY(QQmlListProperty<SectionProperties> sections READ getSections NOTIFY sectionChanged)
+    Q_PROPERTY(QQmlListProperty<SectionProperties> sections READ getSections NOTIFY sectionsChanged)
 
 public:
     explicit ToolProperties(QObject *parent = nullptr);
@@ -45,7 +45,7 @@ public:
 
 signals:
     void toolChanged();
-    void sectionChanged();
+    void sectionsChanged();
 
 private:
     // QQmlListProperty callbacks

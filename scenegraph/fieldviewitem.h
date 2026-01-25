@@ -76,8 +76,8 @@ class FieldViewItem : public QQuickItem
     Q_PROPERTY(CameraProperties* camera READ camera CONSTANT)
     Q_PROPERTY(GridProperties* grid READ grid CONSTANT)
     Q_PROPERTY(FieldSurfaceProperties* fieldSurface READ fieldSurface CONSTANT)
-    Q_PROPERTY(VehicleProperties* vehicle READ vehicle CONSTANT)
-    Q_PROPERTY(ToolsProperties* tools READ tools CONSTANT)
+    Q_PROPERTY(VehicleProperties* vehicle READ vehicle WRITE setVehicle NOTIFY vehicleChanged)
+    Q_PROPERTY(ToolsProperties* tools READ tools WRITE setTools NOTIFY toolsChanged)
 
     // ===== Rendering State Properties =====
     Q_PROPERTY(bool showBoundary READ showBoundary WRITE setShowBoundary NOTIFY showBoundaryChanged BINDABLE bindableShowBoundary)
@@ -98,7 +98,9 @@ public:
     GridProperties * grid() const;
     FieldSurfaceProperties* fieldSurface() const;
     VehicleProperties* vehicle() const;
+    void setVehicle(VehicleProperties *vehicle);
     ToolsProperties* tools() const;
+    void setTools(ToolsProperties *tools);
 
     // ===== Visibility Property Accessors =====
     bool showBoundary() const;
@@ -136,6 +138,10 @@ public:
     Q_INVOKABLE void markAllDirty();
 
 signals:
+    // Property group signals
+    void vehicleChanged();
+    void toolsChanged();
+
     // Visibility signals
     void showBoundaryChanged();
     void showCoverageChanged();

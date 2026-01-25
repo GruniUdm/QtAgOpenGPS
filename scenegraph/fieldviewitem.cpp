@@ -99,6 +99,7 @@ FieldViewItem::FieldViewItem(QQuickItem *parent)
 
             updateVehicle();
         }
+        updateTools();
     });
 
     //Connect grid property changes to update()
@@ -153,7 +154,63 @@ FieldSurfaceProperties* FieldViewItem::fieldSurface() const { return m_fieldSurf
 
 VehicleProperties* FieldViewItem::vehicle() const { return m_vehicle; }
 
+void FieldViewItem::setVehicle(VehicleProperties *vehicle)
+{
+    if (m_vehicle == vehicle)
+        return;
+
+    // Disconnect all signals from old vehicle to us
+    if (m_vehicle) {
+        disconnect(m_vehicle, nullptr, this, nullptr);
+
+        // Delete if we own it (created with us as parent)
+        if (m_vehicle->parent() == this)
+            delete m_vehicle;
+    }
+
+    m_vehicle = vehicle;
+
+    // Connect signals from new vehicle
+    if (m_vehicle) {
+        connect(m_vehicle, &VehicleProperties::visibleChanged, this, &FieldViewItem::requestUpdate);
+        connect(m_vehicle, &VehicleProperties::colorChanged, this, &FieldViewItem::requestUpdate);
+        connect(m_vehicle, &VehicleProperties::steerAngleChanged, this, &FieldViewItem::requestUpdate);
+        connect(m_vehicle, &VehicleProperties::vehicleChanged, this, &FieldViewItem::updateVehicle);
+    }
+
+    m_vehicleDirty = true;
+    emit vehicleChanged();
+    requestUpdate();
+}
+
 ToolsProperties* FieldViewItem::tools() const { return m_tools; }
+
+void FieldViewItem::setTools(ToolsProperties *tools)
+{
+    if (m_tools == tools)
+        return;
+
+    // Disconnect all signals from old tools to us
+    if (m_tools) {
+        disconnect(m_tools, nullptr, this, nullptr);
+
+        // Delete if we own it (created with us as parent)
+        if (m_tools->parent() == this)
+            delete m_tools;
+    }
+
+    m_tools = tools;
+
+    // Connect signals from new tools
+    if (m_tools) {
+        connect(m_tools, &ToolsProperties::visibleChanged, this, &FieldViewItem::requestUpdate);
+        connect(m_tools, &ToolsProperties::toolsChanged, this, &FieldViewItem::updateTools);
+    }
+
+    m_toolsDirty = true;
+    emit toolsChanged();
+    requestUpdate();
+}
 
 // ============================================================================
 // Visibility Property Accessors

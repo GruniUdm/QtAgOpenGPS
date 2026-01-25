@@ -22,12 +22,15 @@ public:
 
     SIMPLE_BINDABLE_PROPERTY(double, leftPosition)
     SIMPLE_BINDABLE_PROPERTY(double, rightPosition)
+    SIMPLE_BINDABLE_PROPERTY(QColor, color)
 
 signals:
+    void sectionChanged();
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SectionProperties, double, m_leftPosition, 0.0, &SectionProperties::leftPositionChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SectionProperties, double, m_rightPosition, 0.0, &SectionProperties::rightPositionChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SectionProperties, double, m_color, 0.0, &SectionProperties::colorChanged)
 };
 
 #endif // SECTIONPROPERTIES_H
