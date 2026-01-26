@@ -137,6 +137,7 @@ void Tools::setAllSectionButtonsToState(int toolIndex, SectionButtonsModel::Stat
 void Tools::generateToolFromSettings() {
     int numSections;
     m_toolsList.clear();
+    m_toolsWithSectionsModel->clear();
 
     if (SettingsManager::instance()->tool_isTBT()) {
         //create a tool to represent the cart, but will
@@ -151,33 +152,33 @@ void Tools::generateToolFromSettings() {
 
         addTool(newTool);
 
-    } else {
-        if (SettingsManager::instance()->tool_isSectionsNotZones()) {
-            numSections = SettingsManager::instance()->vehicle_numSections();
-        } else {
-            QVector<int> zoneRanges;
-            zoneRanges = SettingsManager::instance()->tool_zones();
-            if (zoneRanges.size() > 0) {
-                numSections = zoneRanges[0];
-            } else {
-                qWarning() << "Zones used, not sections, but the number of zones is zero!";
-                numSections = 0;
-            }
-        }
-
-        auto *newTool = new Tool(this);
-        if (SettingsManager::instance()->tool_isToolTrailing()) {
-            newTool->set_trailing(true);
-            newTool->set_hitchLength(SettingsManager::instance()->tool_toolTrailingHitchLength());
-        } else {
-            newTool->set_trailing(false);
-            newTool->set_hitchLength(0);
-        }
-
-        //Set up the QML buttons
-        for (int i=0; i  < numSections; i++) {
-            newTool->sectionButtonsModel()->addSectionState( {i, SectionButtonsModel::Off} );
-        }
-        addTool(newTool);
     }
+
+    if (SettingsManager::instance()->tool_isSectionsNotZones()) {
+        numSections = SettingsManager::instance()->vehicle_numSections();
+    } else {
+        QVector<int> zoneRanges;
+        zoneRanges = SettingsManager::instance()->tool_zones();
+        if (zoneRanges.size() > 0) {
+            numSections = zoneRanges[0];
+        } else {
+            qWarning() << "Zones used, not sections, but the number of zones is zero!";
+            numSections = 0;
+        }
+    }
+
+    auto *newTool = new Tool(this);
+    if (SettingsManager::instance()->tool_isToolTrailing()) {
+        newTool->set_trailing(true);
+        newTool->set_hitchLength(SettingsManager::instance()->tool_toolTrailingHitchLength());
+    } else {
+        newTool->set_trailing(false);
+        newTool->set_hitchLength(0);
+    }
+
+    //Set up the QML buttons
+    for (int i=0; i  < numSections; i++) {
+        newTool->sectionButtonsModel()->addSectionState( {i, SectionButtonsModel::Off} );
+    }
+    addTool(newTool);
 }

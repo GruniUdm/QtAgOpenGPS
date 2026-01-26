@@ -5,7 +5,6 @@
 
 #include "toolsnode.h"
 #include "toolsproperties.h"
-#include "toolproperties.h"
 #include "sectionproperties.h"
 #include "texturefactory.h"
 #include "aogmaterial.h"
@@ -37,7 +36,8 @@ void ToolsNode::update(const QMatrix4x4 &mv,
                        const QMatrix4x4 &ndc,
                        const QSize &viewportSize,
                        TextureFactory *textureFactory,
-                       ToolsProperties *properties)
+                       ToolsProperties *properties,
+                       double camSetDistance)
 {
     Q_UNUSED(textureFactory)
 
@@ -49,7 +49,7 @@ void ToolsNode::update(const QMatrix4x4 &mv,
     if (childCount() < 1) {
         //set up geometry
 
-        for (ToolProperties *tool: properties->tools()) {
+        for (Tool *tool: properties->tools()) {
             offset = tool->offset();
             QList<QSGGeometryNode*> toolNodes;
 
@@ -143,32 +143,12 @@ void ToolsNode::update(const QMatrix4x4 &mv,
 
                     TexturedVertex *data = static_cast<TexturedVertex *>(geometry->vertexData());
 
-                    // Front-right (texture top-right: u=1, v=0)
-                    data[3].x = 1.5 + offset;
-                    data[3].y = tool->hitchLength() + 1;
-                    data[3].z = 0.0f;
-                    data[3].u = 1.0f;
-                    data[3].v = 0.0f;
-
-                    // Front-left (texture top-left: u=0, v=0)
-                    data[2].x = -1.5 + offset;
-                    data[2].y = tool->hitchLength() + 1;
-                    data[2].z = 0.0f;
-                    data[2].u = 0.0f;
-                    data[2].v = 0.0f;
-
-                    // Back-right (texture bottom-right: u=1, v=1)
-                    data[1].x = 1.5 + offset;
-                    data[1].y = tool->hitchLength() -1 ;
-                    data[1].z = 0.0f;
-                    data[1].u = 1.0f;
-                    data[1].v = 1.0f;
-
-                    data[0].x = -1.5 + offset;
-                    data[0].y = tool->hitchLength() -1;
-                    data[0].z = 0.0f;
-                    data[0].u = 0.0f;
-                    data[0].v = 1.0f;
+                    float hitch = static_cast<float>(tool->hitchLength());
+                    float off = static_cast<float>(offset);
+                    data[0] = { -1.5f + off, hitch - 1.0f, 0.0f, 0.0f, 1.0f };  // Back-left
+                    data[1] = {  1.5f + off, hitch - 1.0f, 0.0f, 1.0f, 1.0f };  // Back-right
+                    data[2] = { -1.5f + off, hitch + 1.0f, 0.0f, 0.0f, 0.0f };  // Front-left
+                    data[3] = {  1.5f + off, hitch + 1.0f, 0.0f, 1.0f, 0.0f };  // Front-right
 
                     texMaterial->setUseColor(true);
                     texMaterial->setColor(QColor::fromRgbF(1,1,1,0.75));
@@ -182,7 +162,21 @@ void ToolsNode::update(const QMatrix4x4 &mv,
                     toolNodes.append(geomNode);
                 }
 
+                /*
                 //now do sections
+                double hite = camSetDistance / -150;
+                if (hite > 12) hite = 12;
+                if (hite < 1) hite = 1;
+
+                for (auto &section: tool->sections()) {
+
+
+                }
+                */
+                //if zones, mark them with lines
+
+                //trams?
+
                 //TODO lookahead lines, maybe do elsewhere
 
             }
@@ -205,6 +199,7 @@ void ToolsNode::update(const QMatrix4x4 &mv,
             if (n < 3) {
                 updateNodeMvp(node, ndc * p * toolMv, viewportSize);
             } else {
+
                 //it'a section and needs the color set as well
 
             }

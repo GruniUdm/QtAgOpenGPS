@@ -26,7 +26,8 @@ public:
                 const QMatrix4x4 &ndc,
                 const QSize &viewportSize,
                 TextureFactory *textureFactory,
-                ToolsProperties *properties);
+                ToolsProperties *properties,
+                double camSetDistance);
 
     void clearChildren();
 

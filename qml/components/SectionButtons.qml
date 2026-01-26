@@ -20,6 +20,9 @@ Rectangle {
         id: aog
     }*/
 
+    // Tool index - which tool's sections to display
+    property int toolIndex: 0
+
     width: 600
     height: childrenRect.height * theme.scaleHeight
 
@@ -64,7 +67,7 @@ Rectangle {
                 console.log(qmlLog, model);
 
             }
-            property int numSections: Tools.toolsList[0].sectionButtonsModel.rowCount()
+            property int numSections: Tools.toolsList[toolIndex].sectionButtonsModel.rowCount()
             width: (sectionButtons.width / numSections) > 40 ? (sectionButtons.width / numSections) : 40
             buttonText: (model.buttonNumber + 1).toFixed(0)
             visible: (model.buttonNumber < numSections) ? true : false
@@ -88,7 +91,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.top: parent.top
 
-        model: Tools.toolsList[0].sectionButtonsModel
+        model: Tools.toolsList[toolIndex].sectionButtonsModel
 
         boundsMovement: Flickable.StopAtBounds
 

@@ -391,12 +391,14 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/steerconfig.h backend/steerconfig.cpp
     SOURCES backend/camera.h backend/camera.cpp
     SOURCES backend/worldgrid.h backend/worldgrid.cpp
+    SOURCES backend/sectionproperties.h backend/sectionproperties.cpp
     SOURCES models/recordedpathmodel.h models/recordedpathmodel.cpp
     SOURCES models/fencelinemodel.h models/fencelinemodel.cpp
     SOURCES models/flagmodel.h models/flagmodel.cpp
     SOURCES models/blockagemodel.h models/blockagemodel.cpp
     SOURCES models/sectionbuttonsmodel.h models/sectionbuttonsmodel.cpp
     SOURCES models/toolssectionbuttonsmodel.h models/toolssectionbuttonsmodel.cpp
+    SOURCES models/toolswithsectionsmodel.h models/toolswithsectionsmodel.cpp
     SOURCES models/fieldsmodel.h models/fieldsmodel.cpp
     SOURCES backendaccess.h
 
@@ -418,8 +420,6 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES scenegraph/dashedthicklinematerial.h scenegraph/dashedthicklinematerial.cpp
     SOURCES scenegraph/texturefactory.h scenegraph/texturefactory.cpp
     SOURCES scenegraph/toolsproperties.h scenegraph/toolsproperties.cpp
-    SOURCES scenegraph/toolproperties.h scenegraph/toolproperties.cpp
-    SOURCES scenegraph/sectionproperties.h scenegraph/sectionproperties.cpp
     SOURCES scenegraph/toolsnode.h scenegraph/toolsnode.cpp
     SOURCES scenegraph/roundpointmaterial.h scenegraph/roundpointmaterial.cpp
     SOURCES scenegraph/roundpointsizematerial.h scenegraph/roundpointsizematerial.cpp

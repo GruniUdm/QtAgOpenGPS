@@ -14,7 +14,7 @@
 #include <QList>
 
 #include "simpleproperty.h"
-#include "toolproperties.h"
+#include "tool.h"
 
 //Need an enum for type:
 //arrow, tractor 2wd, tractor 4wd, combine, dot
@@ -23,16 +23,16 @@ class ToolsProperties : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QQmlListProperty<ToolProperties> tools READ getTools NOTIFY toolsChanged)
+    Q_PROPERTY(QQmlListProperty<Tool> tools READ getTools NOTIFY toolsChanged)
 
 public:
     explicit ToolsProperties(QObject *parent = nullptr);
 
-    QQmlListProperty<ToolProperties> getTools();
+    QQmlListProperty<Tool> getTools();
 
     // Direct access to the list from C++
-    QList<ToolProperties*>& tools() { return m_tools; }
-    const QList<ToolProperties*>& tools() const { return m_tools; }
+    QList<Tool*>& tools() { return m_tools; }
+    const QList<Tool*>& tools() const { return m_tools; }
 
     SIMPLE_BINDABLE_PROPERTY(bool, visible)
 signals:
@@ -40,12 +40,12 @@ signals:
 
 private:
     // QQmlListProperty callbacks
-    static void appendTool(QQmlListProperty<ToolProperties> *list, ToolProperties *tool);
-    static qsizetype toolCount(QQmlListProperty<ToolProperties> *list);
-    static ToolProperties *toolAt(QQmlListProperty<ToolProperties> *list, qsizetype index);
-    static void clearTools(QQmlListProperty<ToolProperties> *list);
+    static void appendTool(QQmlListProperty<Tool> *list, Tool *tool);
+    static qsizetype toolCount(QQmlListProperty<Tool> *list);
+    static Tool *toolAt(QQmlListProperty<Tool> *list, qsizetype index);
+    static void clearTools(QQmlListProperty<Tool> *list);
 
-    QList<ToolProperties*> m_tools;
+    QList<Tool*> m_tools;
 
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(ToolsProperties, bool, m_visible, true, &ToolsProperties::visibleChanged)
 

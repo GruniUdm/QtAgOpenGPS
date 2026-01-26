@@ -67,6 +67,16 @@ void ToolsWithSectionsModel::removeToolIndex(int toolIndex)
     m_toolIndices.removeAt(pos);
     endRemoveRows();
 
+    // Decrement all subsequent indices (they shift down when a tool is removed)
+    for (int i = pos; i < m_toolIndices.count(); ++i) {
+        m_toolIndices[i]--;
+    }
+
+    // Notify that data changed for all remaining items after the removed position
+    if (pos < m_toolIndices.count()) {
+        emit dataChanged(index(pos), index(m_toolIndices.count() - 1), {ToolIndexRole});
+    }
+
     emit toolRemoved(toolIndex);
 }
 

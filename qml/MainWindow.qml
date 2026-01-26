@@ -665,7 +665,7 @@ Window {
                 // }
 
             }
-            Comp.SectionButtons {
+            Comp.ToolsSectionButtons {
                 id: sectionButtons
                 visible: Backend.isJobStarted ? true : false
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -673,6 +673,7 @@ Window {
                 anchors.bottomMargin: 8
                 height: 40 * theme.scaleHeight
                 width: 660  * theme.scaleWidth
+                toolsModel: Tools.toolsWithSectionsModel
                 //onHeightChanged: anchors.bottomMargin = (bottomButtons.height + simBarRect.height + (24 * theme.scaleHeight))
             }
             Comp.BlockageRows {
@@ -1133,14 +1134,14 @@ Window {
 
                     tools {
                         tools: [
-                            ToolProperties {
+                            Tool {
                                 trailing: true
                                 isTBTTank: true
                                 hitchLength: -2.5
                                 offset: 0.0
                                 heading: 20
                             },
-                            ToolProperties {
+                            Tool {
                                 trailing: true
                                 hitchLength: -3
                                 offset: 0.0
