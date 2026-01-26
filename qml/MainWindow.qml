@@ -1115,6 +1115,9 @@ Window {
                                    SettingsManager.display_colorFieldNight
                     }
 
+                    vehicle: VehicleInterface.vehicleProperties
+
+                    /*
                     vehicle {
                         color: SettingsManager.display_colorVehicle
                         opacity: 0.75 //only used for arrow vehicle
@@ -1131,6 +1134,7 @@ Window {
                         svennArrow: true
                         firstHeadingSet: true
                     }
+                    */
 
                     tools {
                         tools: [

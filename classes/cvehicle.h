@@ -17,6 +17,7 @@
 #include <QOpenGLBuffer>
 
 class QOpenGLFunctions;
+class VehicleProperties;
 class CYouTurn;
 class CTool;
 class CBoundary;
@@ -27,11 +28,16 @@ class CABLine;
 class CContour;
 class CTrack;
 
+Q_MOC_INCLUDE("vehicleproperties.h")
+
 class CVehicle: public QObject
 {
     Q_OBJECT
     QML_NAMED_ELEMENT(VehicleInterface)
     QML_SINGLETON
+
+    // ===== Scene Graph Properties =====
+    Q_PROPERTY(VehicleProperties* vehicleProperties READ vehicleProperties CONSTANT)
 
     // ===== QML PROPERTIES - Qt 6.8 QProperty + BINDABLE + NOTIFY =====
     Q_PROPERTY(bool isHydLiftOn READ isHydLiftOn WRITE setIsHydLiftOn NOTIFY isHydLiftOnChanged BINDABLE bindableIsHydLiftOn)
@@ -48,6 +54,9 @@ public:
     // C++ singleton access (strict singleton pattern - same as CTrack)
     static CVehicle *instance();
     static CVehicle *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
+
+    // Scene graph properties accessor
+    VehicleProperties* vehicleProperties() const { return m_vehicleProperties; }
 
     bool isSteerAxleAhead;
     bool isPivotBehindAntenna;
@@ -134,7 +143,6 @@ public:
     double UpdateGoalPointDistance();
     void DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview, QMatrix4x4 projection,
                      double steerAngle,
-                     bool isFirstHeadingSet,
                      double markLeft,
                      double markRight, double camSetDistance,
                      QRect viewport);
@@ -229,26 +237,16 @@ public slots:
 
 private:
     // Private constructor for strict singleton pattern
-    explicit CVehicle(QObject* parent = nullptr) : QObject(parent) {
-        // Initialize Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY members
-        m_isHydLiftOn = false;
-        m_hydLiftDown = false;
-        m_isChangingDirection = false;
-        m_isReverse = false;
-        m_leftTramState = 0;
-        m_rightTramState = 0;
-        m_vehicleList = QList<QVariant>{};
-
-        // Phase 6.0.24 Problem 18: Initialize avgSpeed as defense-in-depth
-        // Critical: Without this, exponential averaging preserves random memory values
-        // Formula: avgSpeed = newSpeed*0.75 + avgSpeed*0.25 means 25% of old value persists
-    }
+    explicit CVehicle(QObject* parent = nullptr);
 
     ~CVehicle() override=default;
 
     static CVehicle *s_instance;
     static QMutex s_mutex;
     static bool s_cpp_created;
+
+    // Scene graph properties
+    VehicleProperties *m_vehicleProperties = nullptr;
 
     // Qt 6.8 MIGRATION: Lazy initialization flag
     mutable bool m_settingsLoaded = false;

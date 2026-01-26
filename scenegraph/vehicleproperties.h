@@ -44,7 +44,7 @@ signals:
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, bool, m_visible, true, &VehicleProperties::visibleChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, bool, m_directionSet, true, &VehicleProperties::directionSetChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, bool, m_directionSet, false, &VehicleProperties::directionSetChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, bool, m_firstHeadingSet, false, &VehicleProperties::firstHeadingSetChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, QColor, m_color, QColor(1,0,0,1), &VehicleProperties::colorChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, int, m_type, 0, &VehicleProperties::typeChanged)
@@ -58,7 +58,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, float, m_antennaOffset, 0, &VehicleProperties::antennaOffsetChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, float, m_antennaForward, 0, &VehicleProperties::antennaForwardChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, bool, m_svennArrow, false, &VehicleProperties::svennArrowChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, float, m_opacity, 0, &VehicleProperties::opacityChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, float, m_opacity, 0.75, &VehicleProperties::opacityChanged)
 };
 
 #endif // VEHICLEPROPERTIES_H
