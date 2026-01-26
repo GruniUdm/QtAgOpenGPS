@@ -8,7 +8,11 @@
 #include <QMutex>
 #include <QVariantList>
 #include "tool.h"
-#include "toolssectionbuttonsmodel.h"
+#include "toolswithsectionsmodel.h"
+
+class ToolsProperties;
+
+Q_MOC_INCLUDE("toolsproperties.h")
 
 class Tools : public QObject
 {
@@ -18,11 +22,10 @@ class Tools : public QObject
 
     Q_PROPERTY(QVariantList toolsList READ toolsList NOTIFY toolsListChanged)
 
-    //This property is a model of models. Would be used if we had more than one tool.
-    //We would have a nested QML ListView where the outer ListView would refer to this
-    //property as the model, and the inner ListView would refer to model.sectionButtonsModel.
-    //Currently the back end only supports one toolbar, so this is not used.
-    Q_PROPERTY(ToolsSectionsButtonsModel* toolsSectionsModel READ toolsSectionsModel CONSTANT)
+    Q_PROPERTY(ToolsWithSectionsModel* toolsWithSectionsModel READ toolsWithSectionsModel CONSTANT)
+
+    // Scene graph properties for FieldViewItem
+    Q_PROPERTY(ToolsProperties* toolsProperties READ toolsProperties CONSTANT)
 
 private:
     explicit Tools(QObject *parent = nullptr);
@@ -44,7 +47,8 @@ public:
 
     // Getters
     QVariantList toolsList() const { return m_toolsList; }
-    ToolsSectionsButtonsModel* toolsSectionsModel() const { return m_toolsSectionsModel; }
+    ToolsWithSectionsModel* toolsWithSectionsModel() const { return m_toolsWithSectionsModel; }
+    ToolsProperties* toolsProperties() const { return m_toolsProperties; }
 
     // Tool management
     Q_INVOKABLE void addTool(Tool *tool);
@@ -65,7 +69,8 @@ signals:
     void toolsListChanged();
 
 private:
-    ToolsSectionsButtonsModel *m_toolsSectionsModel;
+    ToolsWithSectionsModel *m_toolsWithSectionsModel;
+    ToolsProperties *m_toolsProperties = nullptr;
 };
 
 #endif // TOOLS_H

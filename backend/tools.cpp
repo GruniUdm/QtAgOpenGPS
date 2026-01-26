@@ -4,6 +4,7 @@
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include "settingsmanager.h"
+#include "toolsproperties.h"
 
 Q_LOGGING_CATEGORY(toolsLog, "tools.qtagopengps")
 
@@ -13,19 +14,20 @@ bool Tools::s_cpp_created = false;
 
 Tools::Tools(QObject *parent)
     : QObject{parent}
-    , m_toolsSectionsModel(new ToolsSectionsButtonsModel(this))
+    , m_toolsWithSectionsModel(new ToolsWithSectionsModel(this))
+    , m_toolsProperties(new ToolsProperties(this))
 {
-    //put in a default tool to keep QML happy
+    //put create tools from settings.  CTool and FormGPS_position will fill in
+    //specific values for leftPosition, rightPosition, easting, northing, etc.
+    //eventually this will be done differently.
+
     generateToolFromSettings();
-    //addTool(new Tool(this));
-    //temporary until multiple toolbar support is added:
     connect(SettingsManager::instance(), &SettingsManager::tool_isSectionsNotZonesChanged,
             this, &Tools::generateToolFromSettings);
     connect(SettingsManager::instance(), &SettingsManager::vehicle_numSectionsChanged,
             this, &Tools::generateToolFromSettings);
     connect(SettingsManager::instance(), &SettingsManager::tool_zonesChanged,
             this, &Tools::generateToolFromSettings);
-
 }
 
 Tools *Tools::instance() {
@@ -75,9 +77,9 @@ void Tools::addTool(Tool *tool)
                 emit sectionButtonStateChanged(m_toolsList.count()-1, sectionButtonNo, new_state);
     });
 
-    // Add the tool's sections model to the ToolsSectionsModel
-    m_toolsSectionsModel->addSectionsModel(tool->sectionButtonsModel());
-
+    if (tool->sectionButtonsModel()->count()) {
+        m_toolsWithSectionsModel->addToolIndex(m_toolsList.count()-1);
+    }
     emit toolsListChanged();
 
     qDebug(toolsLog) << "Tool added. Total tools:" << m_toolsList.count();
@@ -91,7 +93,7 @@ void Tools::removeTool(int index)
     }
 
     m_toolsList.removeAt(index);
-    m_toolsSectionsModel->removeRowAt(index);
+    m_toolsWithSectionsModel->removeToolIndex(index);
 
     emit toolsListChanged();
 
@@ -101,7 +103,7 @@ void Tools::removeTool(int index)
 void Tools::clearTools()
 {
     m_toolsList.clear();
-    m_toolsSectionsModel->clear();
+    m_toolsWithSectionsModel->clear();
 
     emit toolsListChanged();
 
@@ -134,27 +136,48 @@ void Tools::setAllSectionButtonsToState(int toolIndex, SectionButtonsModel::Stat
 
 void Tools::generateToolFromSettings() {
     int numSections;
-
-    if (SettingsManager::instance()->tool_isSectionsNotZones()) {
-        numSections = SettingsManager::instance()->vehicle_numSections();
-    } else {
-        QVector<int> zoneRanges;
-        zoneRanges = SettingsManager::instance()->tool_zones();
-        if (zoneRanges.size() > 0) {
-            numSections = zoneRanges[0];
-        } else {
-            qWarning() << "Zones used, not sections, but the number of zones is zero!";
-            numSections = 0;
-        }
-    }
-
-    //we will have only one tool.
     m_toolsList.clear();
-    addTool(new Tool(this));
 
-    //Set up the QML buttons
-    for (int i=0; i  < numSections; i++) {
-        m_toolsList[0].value<Tool *>()->sectionButtonsModel()->addSectionState( {i, SectionButtonsModel::Off} );
+    if (SettingsManager::instance()->tool_isTBT()) {
+        //create a tool to represent the cart, but will
+        //have no sections associated with it.
+        auto *newTool = new Tool(this);
+
+        newTool->set_isTBTTank(true);
+        newTool->set_trailing(true);
+        newTool->set_hitchLength(SettingsManager::instance()->vehicle_tankTrailingHitchLength());
+
+        //nothing added to toolsWithSectionsModel
+
+        addTool(newTool);
+
+    } else {
+        if (SettingsManager::instance()->tool_isSectionsNotZones()) {
+            numSections = SettingsManager::instance()->vehicle_numSections();
+        } else {
+            QVector<int> zoneRanges;
+            zoneRanges = SettingsManager::instance()->tool_zones();
+            if (zoneRanges.size() > 0) {
+                numSections = zoneRanges[0];
+            } else {
+                qWarning() << "Zones used, not sections, but the number of zones is zero!";
+                numSections = 0;
+            }
+        }
+
+        auto *newTool = new Tool(this);
+        if (SettingsManager::instance()->tool_isToolTrailing()) {
+            newTool->set_trailing(true);
+            newTool->set_hitchLength(SettingsManager::instance()->tool_toolTrailingHitchLength());
+        } else {
+            newTool->set_trailing(false);
+            newTool->set_hitchLength(0);
+        }
+
+        //Set up the QML buttons
+        for (int i=0; i  < numSections; i++) {
+            newTool->sectionButtonsModel()->addSectionState( {i, SectionButtonsModel::Off} );
+        }
+        addTool(newTool);
     }
-
 }

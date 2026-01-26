@@ -6,8 +6,14 @@
 #include <QObject>
 #include <QtQml/qqml.h>
 #include <QObjectBindableProperty>
+#include <QQmlListProperty>
+#include <QColor>
 #include "sectionbuttonsmodel.h"
 #include "simpleproperty.h"
+
+class SectionProperties;
+
+Q_MOC_INCLUDE("sectionproperties.h")
 
 class Tool : public QObject
 {
@@ -15,32 +21,65 @@ class Tool : public QObject
     QML_ELEMENT
 
     Q_PROPERTY(SectionButtonsModel* sectionButtonsModel READ sectionButtonsModel CONSTANT)
+    Q_PROPERTY(QQmlListProperty<SectionProperties> sections READ getSections NOTIFY sectionsChanged)
 
 public:
     explicit Tool(QObject *parent = nullptr);
 
     SectionButtonsModel* sectionButtonsModel() const { return m_sectionButtons; }
 
+    // Sections list for scene graph rendering
+    QQmlListProperty<SectionProperties> getSections();
+    QList<SectionProperties*>& sections() { return m_sections; }
+    const QList<SectionProperties*>& sections() const { return m_sections; }
+
+    // Position and orientation (updated by core logic)
     SIMPLE_BINDABLE_PROPERTY(double, easting)
     SIMPLE_BINDABLE_PROPERTY(double, northing)
     SIMPLE_BINDABLE_PROPERTY(double, latitude)
     SIMPLE_BINDABLE_PROPERTY(double, longitude)
     SIMPLE_BINDABLE_PROPERTY(double, heading)
 
+    // Tool geometry (from settings/configuration)
+    SIMPLE_BINDABLE_PROPERTY(bool, trailing)
+    SIMPLE_BINDABLE_PROPERTY(bool, isTBTTank)
+    SIMPLE_BINDABLE_PROPERTY(double, hitchLength)
+    SIMPLE_BINDABLE_PROPERTY(double, pivotToToolLength)
+    SIMPLE_BINDABLE_PROPERTY(double, offset)
+    SIMPLE_BINDABLE_PROPERTY(QColor, color)
+
     Q_INVOKABLE void setSectionButtonState(int sectionButtonNo, SectionButtonsModel::State new_state);
     Q_INVOKABLE void setAllSectionButtonsToState(SectionButtonsModel::State new_state);
 
 signals:
     void sectionButtonStateChanged(int sectionButtonNo, SectionButtonsModel::State new_state);
+    void toolChanged();
+    void sectionsChanged();
 
 private:
-    SectionButtonsModel *m_sectionButtons;
+    // QQmlListProperty callbacks for sections
+    static void appendSection(QQmlListProperty<SectionProperties> *list, SectionProperties *section);
+    static qsizetype sectionCount(QQmlListProperty<SectionProperties> *list);
+    static SectionProperties *sectionAt(QQmlListProperty<SectionProperties> *list, qsizetype index);
+    static void clearSections(QQmlListProperty<SectionProperties> *list);
 
+    SectionButtonsModel *m_sectionButtons;
+    QList<SectionProperties*> m_sections;
+
+    // Position properties
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_easting, 0, &Tool::eastingChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_northing, 0, &Tool::northingChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_latitude, 0, &Tool::latitudeChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_longitude, 0, &Tool::longitudeChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_heading, 0, &Tool::headingChanged)
+
+    // Geometry properties
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, bool, m_trailing, true, &Tool::trailingChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, bool, m_isTBTTank, false, &Tool::isTBTTankChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_hitchLength, 0.0, &Tool::hitchLengthChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_pivotToToolLength, 0.0, &Tool::pivotToToolLengthChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_offset, 0.0, &Tool::offsetChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, QColor, m_color, QColor(255, 0, 0), &Tool::colorChanged)
 };
 
 #endif // TOOL_H

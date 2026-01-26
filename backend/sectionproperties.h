@@ -9,6 +9,7 @@
 #include <QObject>
 #include <QProperty>
 #include <QBindable>
+#include <QColor>
 #include <QtQml/qqmlregistration.h>
 
 #include "simpleproperty.h"
@@ -30,7 +31,7 @@ signals:
 private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SectionProperties, double, m_leftPosition, 0.0, &SectionProperties::leftPositionChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SectionProperties, double, m_rightPosition, 0.0, &SectionProperties::rightPositionChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SectionProperties, double, m_color, 0.0, &SectionProperties::colorChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SectionProperties, QColor, m_color, QColor::fromRgbF(0,0,0), &SectionProperties::colorChanged)
 };
 
 #endif // SECTIONPROPERTIES_H
