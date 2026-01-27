@@ -177,17 +177,22 @@ void ToolsNode::update(const QMatrix4x4 &mv,
                 for (const SectionProperties *section: std::as_const(tool->sections())) {
                     float mid = (section->rightPosition() - section->leftPosition()) / 2 + section->leftPosition();
 
-                    //Draw the red chevron
-                    auto *geometry = new QSGGeometry(AOGGeometry::positionAttributes(), 5);
+                    //Draw the red chevron as triangle fan
+                    // v[0] = center, v[1]-v[5] = outer corners, v[6] = close (repeat v[1])
+                    auto *geometry = new QSGGeometry(AOGGeometry::positionAttributes(), 7);
                     geometry->setDrawingMode(QSGGeometry::DrawTriangleFan);
-                    // Fill vertex data
                     PositionVertex *v = static_cast<PositionVertex*>(geometry->vertexData());
 
-                    v[0] = { section->leftPosition(), -trailingTool, 0.0f };
-                    v[1] = { section->rightPosition(), -trailingTool, 0.0f};
-                    v[2] = { section->rightPosition(), -trailingTool-hite, 0.0f};
-                    v[3] = { mid, -trailingTool-hite*1.5f, 0.0f};
-                    v[4] = { section->leftPosition(), -trailingTool-hite, 0.0f};
+                    // Center of the chevron shape
+                    v[0] = { mid, -trailingTool - hite * 0.75f, 0.0f };                              // CENTER
+
+                    // Vertices in clockwise order around that center
+                    v[1] = { section->leftPosition(), -trailingTool, 0.0f };        // top-left
+                    v[2] = { section->rightPosition(), -trailingTool, 0.0f };       // top-right
+                    v[3] = { section->rightPosition(), -trailingTool - hite, 0.0f };// bottom-right
+                    v[4] = { mid, -trailingTool - hite * 1.5f, 0.0f };              // chevron tip
+                    v[5] = { section->leftPosition(), -trailingTool - hite, 0.0f }; // bottom-left
+                    v[6] = { section->leftPosition(), -trailingTool, 0.0f };        // close (repeat v[1])
 
                     // Create geometry node
                     auto *geomNode = new QSGGeometryNode();
@@ -204,7 +209,7 @@ void ToolsNode::update(const QMatrix4x4 &mv,
                     appendChildNode(geomNode);
                     sectionNodes.append(geomNode);
 
-                    //draw the blach outline
+                    //draw the black outline
                     QVector<QVector3D> outline;
 
                     outline.append( { section->leftPosition(), -trailingTool, 0.0f });
@@ -213,7 +218,6 @@ void ToolsNode::update(const QMatrix4x4 &mv,
                     outline.append( { mid, -trailingTool-hite*1.5f, 0.0f});
                     outline.append( { section->leftPosition(), -trailingTool-hite, 0.0f});
 
-                    //shadow under line
                     geometry = AOGGeometry::createThickLineLoopGeometry(outline);
                     geomNode = new QSGGeometryNode();
                     geomNode->setGeometry(geometry);
@@ -228,13 +232,32 @@ void ToolsNode::update(const QMatrix4x4 &mv,
 
                     appendChildNode(geomNode);
                     toolNodes.append(geomNode);
-                    break;
                 }
 
-                if (tool->zones().count()) {
+                if (tool->zones().count() && camSetDistance > -150) {
                     //set zone divider lines
 
+                    QVector<QVector3D> dividers;
 
+                    for (int i = 0; i < tool->zones().count()-1; i++ ){
+                        int section = tool->zones()[i];
+                        dividers.append( { tool->sections()[section]->leftPosition(), -trailingTool - 0.4, 0 });
+                        dividers.append( { tool->sections()[section]->leftPosition(), -trailingTool + 0.2, 0 });
+                    }
+                    auto *geometry = AOGGeometry::createThickLinesGeometry(dividers);
+                    auto *geomNode = new QSGGeometryNode();
+                    geomNode->setGeometry(geometry);
+                    geomNode->setFlag(QSGNode::OwnsGeometry);
+
+                    auto *lineMaterial = new ThickLineMaterial();
+                    lineMaterial->setColor(QColor::fromRgbF(0.5f, 0.80f, 0.950f));
+                    lineMaterial->setLineWidth(2.0f);
+
+                    geomNode->setMaterial(lineMaterial);
+                    geomNode->setFlag(QSGNode::OwnsMaterial);
+
+                    appendChildNode(geomNode);
+                    toolNodes.append(geomNode);
                 }
 
                 //trams?

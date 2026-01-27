@@ -43,8 +43,27 @@ Tools::Tools(QObject *parent)
             this, &Tools::generateToolFromSettings);
     connect(SettingsManager::instance(), &SettingsManager::tool_trailingToolToPivotLengthChanged,
             this, &Tools::generateToolFromSettings);
-    connect(SettingsManager::instance(), &SettingsManager::vehicle_toolOffsetChanged,
-            this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::vehicle_toolOffsetChanged, this, &Tools::generateToolFromSettings);
+
+    connect(SettingsManager::instance(), &SettingsManager::tool_sectionWidthMultiChanged, this, &Tools::generateToolFromSettings);
+
+    connect(SettingsManager::instance(), &SettingsManager::section_position1Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position2Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position3Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position4Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position5Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position6Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position7Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position8Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position9Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position10Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position11Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position12Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position13Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position14Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position15Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position16Changed, this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::section_position17Changed, this, &Tools::generateToolFromSettings);
 }
 
 Tools *Tools::instance() {
@@ -164,6 +183,8 @@ void Tools::generateToolFromSettings() {
 
     }
 
+    auto *newTool = new Tool(this);
+
     if (SettingsManager::instance()->tool_isSectionsNotZones()) {
         numButtons = SettingsManager::instance()->vehicle_numSections();
         numSections = numButtons;
@@ -172,8 +193,9 @@ void Tools::generateToolFromSettings() {
     } else {
         QVector<int> zoneRanges;
         zoneRanges = SettingsManager::instance()->tool_zones();
-        if (zoneRanges.size() > 0) {
+        if (zoneRanges.size() > 1) {
             numButtons = zoneRanges[0];
+            newTool->set_zones(zoneRanges.mid(1));
         } else {
             qWarning() << "Zones used, not sections, but the number of zones is zero!";
             numButtons = 0;
@@ -183,7 +205,6 @@ void Tools::generateToolFromSettings() {
         numSections = SettingsManager::instance()->tool_numSectionsMulti();
     }
 
-    auto *newTool = new Tool(this);
     if (SettingsManager::instance()->tool_isToolTrailing()) {
         newTool->set_trailing(true);
         newTool->set_hitchLength(SettingsManager::instance()->tool_toolTrailingHitchLength());
@@ -202,9 +223,38 @@ void Tools::generateToolFromSettings() {
         newTool->sectionButtonsModel()->addSectionState( {i, SectionButtonsModel::Off} );
     }
 
+    double sectionPos[17] = {
+        SettingsManager::instance()->section_position1(),
+        SettingsManager::instance()->section_position2(),
+        SettingsManager::instance()->section_position3(),
+        SettingsManager::instance()->section_position4(),
+        SettingsManager::instance()->section_position5(),
+        SettingsManager::instance()->section_position6(),
+        SettingsManager::instance()->section_position7(),
+        SettingsManager::instance()->section_position8(),
+        SettingsManager::instance()->section_position9(),
+        SettingsManager::instance()->section_position10(),
+        SettingsManager::instance()->section_position11(),
+        SettingsManager::instance()->section_position12(),
+        SettingsManager::instance()->section_position13(),
+        SettingsManager::instance()->section_position14(),
+        SettingsManager::instance()->section_position15(),
+        SettingsManager::instance()->section_position16(),
+        SettingsManager::instance()->section_position17() };
+
     //Set up Scenegraph section structures
+    float rowUnitWidth = SettingsManager::instance()->tool_sectionWidthMulti();
+    float rowLeft = -rowUnitWidth * numSections / 2;
+
     for (i = 0 ; i < numSections; i++) {
         newTool->createSection();
+        if (SettingsManager::instance()->tool_isSectionsNotZones()) {
+            newTool->sections()[i]->set_leftPosition(sectionPos[i]);
+            newTool->sections()[i]->set_rightPosition(sectionPos[i+1]);
+        } else {
+            newTool->sections()[i]->set_leftPosition(rowLeft + i*rowUnitWidth);
+            newTool->sections()[i]->set_rightPosition(rowLeft + (i+1)*rowUnitWidth);
+        }
     }
 
     addTool(newTool);
