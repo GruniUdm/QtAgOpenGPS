@@ -20,10 +20,10 @@ Rectangle{
     visible: false
 
     // Qt 6.8 QProperty + BINDABLE: Simple properties to allow setProperty() updates from C++
-    property bool toolIsSectionsNotZones: true
-    property int vehicleMinCoverage: 100
-    property bool toolIsSectionOffWhenOut: false
-    property double vehicleSlowSpeedCutoff: 1.0
+    property bool toolIsSectionsNotZones: SettingsManager.tool_isSectionsNotZones
+    property int vehicleMinCoverage: SettingsManager.vehicle_minCoverage
+    property bool toolIsSectionOffWhenOut: SettingsManager.tool_isSectionOffWhenOut
+    property double vehicleSlowSpeedCutoff: SettingsManager.vehicle_slowSpeedCutoff
 
     Row{
         id: bottomRow
@@ -37,11 +37,7 @@ Rectangle{
         Button{
             function toggleZones(){
                 // Threading Phase 1: Toggle between sections and zones mode
-                if( toolIsSectionsNotZones){
-                    toolIsSectionsNotZones = false
-                }else{
-                    toolIsSectionsNotZones = true
-                }
+                SettingsManager.tool_isSectionsNotZones = ! SettingsManager.tool_isSectionsNotZones
             }
             width: 180 * theme.scaleWidth
             height: 130 * theme.scaleHeight
@@ -88,7 +84,7 @@ Rectangle{
             colorChecked3: "green"
             // Threading Phase 1: Section off when outside boundary
             isChecked: toolIsSectionOffWhenOut
-            onCheckedChanged: toolIsSectionOffWhenOut = checked
+            onCheckedChanged: SettingsManager.tool_isSectionOffWhenOut = checked
         }
         SpinBoxCustomized{
             //todo: this should be made english/metric
@@ -99,7 +95,7 @@ Rectangle{
             // Threading Phase 1: Slow speed cutoff for sections
             boundValue: Utils.speed_to_unit(vehicleSlowSpeedCutoff)
             anchors.bottom: parent.bottom
-            onValueModified: vehicleSlowSpeedCutoff = Utils.speed_from_unit(value)
+            onValueModified: SettingsManager.vehicle_slowSpeedCutoff = Utils.speed_from_unit(value)
             text: Utils.speed_unit()
 
             Image{
