@@ -42,7 +42,7 @@ import "components" as Comp
         //            anchors.top: parent.top
         //            anchors.left: parent.left
         //            anchors.leftMargin: 120
-        //            text: qsTr("Field: "+ (aog.isJobStarted ? Settings.f_currentDir: "None"))
+        //            text: qsTr("Field: "+ (Backend.isJobStarted ? Settings.f_currentDir: "None"))
         //            anchors.bottom: parent.verticalCenter
         //            font.bold: true
         //            font.pixelSize: 15
@@ -91,7 +91,7 @@ import "components" as Comp
                 }else if(increment == 2){
                     // Threading Phase 1: Vehicle display information
                     playText.mainString = Utils.m_to_ft_string(SettingsManager.vehicle_toolWidth) + " - " + SettingsManager.vehicle_vehicleName
-                    if(!aog.isJobStarted) //reset
+                    if(!Backend.isJobStarted) //reset
                         increment = -1
                 }else if(increment == 3){
                     // Threading Phase 1: Current field directory
@@ -107,7 +107,7 @@ import "components" as Comp
                             .arg(Utils.area_to_unit_string(Backend.currentField.workedAreaTotal, 2))
                             .arg(Utils.area_to_unit_string(Backend.currentField.actualAreaCovered, 2))
                             .arg(percentLeft)
-                            .arg(Utils.workRateString(aog.speedKph))
+                            .arg(Utils.workRateString(VehicleInterface.avgSpeed))
                 }
                 else {
                     if (TracksInterface.idx > -1) {
@@ -144,7 +144,7 @@ import "components" as Comp
                 Layout.alignment: Qt.AlignCenter
                 implicitWidth: theme.buttonSize
                 height:parent.height
-                visible: aog.isJobStarted
+                visible: Backend.isJobStarted
                 onClicked: {
                     fieldData.visible = !fieldData.visible
                     gpsData.visible = false
@@ -163,11 +163,11 @@ import "components" as Comp
                     blockageData.visible = false
                 }
                 Connections{
-                    target: aog
-                    function onFixQualityChanged() {
-                        if(Backend.fixFrame.fixQuality == 4) rtkStatus.color = "green"
-                        else if(Backend.fixFrame.fixQuality == 5) rtkStatus.color = "orange"
-                        else if(Backend.fixFrame.fixQuality == 2) rtkStatus.color = "yellow"
+                    target: Backend
+                    function onFixFrameChanged() {
+                        if(Backend.fixFrame.fixQuality === 4) rtkStatus.color = "green"
+                        else if(Backend.fixFrame.fixQuality === 5) rtkStatus.color = "orange"
+                        else if(Backend.fixFrame.fixQuality === 2) rtkStatus.color = "yellow"
                         else rtkStatus.color = "red"
                     }
                 }
@@ -194,7 +194,7 @@ import "components" as Comp
                 anchors.verticalCenter: parent.verticalCenter
                 width: 75 * theme.scaleWidth
                 height:parent.height
-                text: Utils.speed_to_unit_string(aog.speedKph, 1)
+                text: Utils.speed_to_unit_string(VehicleInterface.avgSpeed, 1)
                 font.bold: true
                 font.pixelSize: 35
                 horizontalAlignment: Text.AlignHCenter
@@ -227,7 +227,7 @@ import "components" as Comp
                 width: 75 * theme.scaleWidth
                 icon.source: prefix + "/images/WindowClose.png"
                 onClicked: {
-                    formGPS.applicationClosing = true  // Save vehicle when closing window (Qt 6.8 binding)
+                    Backend.applicationClosing = true  // Save vehicle when closing window (Qt 6.8 binding)
                     mainWindow.close()
                 }
             }

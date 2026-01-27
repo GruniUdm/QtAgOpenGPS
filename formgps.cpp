@@ -20,17 +20,14 @@
 #include "flagsinterface.h"
 #include "siminterface.h"
 #include "recordedpath.h"
-#include "cmodulecomm.h"
+#include "backendaccess.h"
+#include "modulecomm.h"
+#include "camera.h"
+#include "vehicleproperties.h"
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
     qDebug() << "FormGPS constructor START";
-
-    // Phase 6.0.24 Problem 18: Initialize Q_OBJECT_BINDABLE_PROPERTY to default values
-    // CRITICAL: Q_OBJECT_BINDABLE_PROPERTY does NOT auto-initialize to false/0
-    // Without explicit initialization, bool members contain random memory values
-    m_isJobStarted = false;          // No job started
-    m_applicationClosing = false;    // Not closing
 
     // PHASE 6.0.33: Initialize raw GPS position (two-buffer pattern)
     m_rawGpsPosition = {0.0, 0.0};   // Will be updated when first NMEA packet arrives
@@ -72,9 +69,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     connect(m_agioService, &AgIOService::machineDataReady,
             this, &FormGPS::onMachineDataReady, Qt::DirectConnection);
 
-    connect(m_agioService, &AgIOService::blockageDataReady,
-            this, &FormGPS::onBlockageDataReady, Qt::DirectConnection);
-
     qDebug() << "Phase 6.0.25: Separated NMEA/IMU/Steer signal connections established";
 
     qDebug() << "ðŸŽ¯ Initializing singletons...";
@@ -82,20 +76,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     // CTrack will be auto-initialized via QML singleton pattern
     qDebug() << "  âœ… CTrack singleton will be auto-created by Qt";
     
-    vehicle = CVehicle::instance();
-    qDebug() << "  âœ… CVehicle singleton created:" << vehicle;
-
-    qDebug() << "ðŸ”— Now calling connect_classes...";
-    connect_classes(); //make all the inter-class connections (NOW trk is initialized!)
-
-    // âš¡ CRITICAL: Initialize vehicle properties for QML access
-    qDebug() << "ðŸš— Initializing vehicle properties for QML...";
-    // Initialize with default values - will be updated by GPS position
-    m_vehicle_xy = QVariant(QPointF(0.0, 0.0));
-    m_vehicle_bounding_box = QVariant(QRectF(0.0, 0.0, 100.0, 100.0));
-    qDebug() << "  ✅ vehicle_xy initialized to QPointF";
-    qDebug() << "  ✅ vehicle_bounding_box initialized to QRectF";
-
     // Qt 6.8: Constructor ready for QML loading
     qDebug() << "âœ… FormGPS constructor core completed - ready for QML loading";
 
@@ -120,8 +100,8 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     // === CRITICAL: applicationClosing connection for save_everything fix ===
     // When applicationClosing changes → automatically save with vehicle
     // Note: Using connect() instead of setBinding() to avoid recursive binding loops
-    connect(this, &FormGPS::applicationClosingChanged, this, [this]() {
-        if (applicationClosing()) {
+    connect(Backend::instance(), &Backend::applicationClosingChanged, this, [this]() {
+        if (Backend::instance()->applicationClosing()) {
             qDebug() << "🚨 applicationClosing detected - scheduling vehicle save";
             // Defer save to avoid conflicts and allow property propagation
             QTimer::singleShot(100, this, [this]() {
@@ -139,350 +119,6 @@ FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
     // The initialization will happen via one of our three protection mechanisms
 
 }
-
-// ============================================================================
-// RECTANGLE PATTERN MANUAL IMPLEMENTATIONS (Qt 6.8 Required)
-// ============================================================================
-// Manual getters, setters, and bindables for Q_OBJECT_BINDABLE_PROPERTY
-
-// ===== Job and Application State Properties =====
-bool FormGPS::isJobStarted() const { return m_isJobStarted; }
-void FormGPS::setIsJobStarted(bool isJobStarted) { m_isJobStarted = isJobStarted; }
-QBindable<bool> FormGPS::bindableIsJobStarted() { return &m_isJobStarted; }
-
-bool FormGPS::applicationClosing() const { return m_applicationClosing; }
-void FormGPS::setApplicationClosing(bool applicationClosing) { m_applicationClosing = applicationClosing; }
-QBindable<bool> FormGPS::bindableApplicationClosing() { return &m_applicationClosing; }
-
-// ===== GPS Position Properties =====
-QVariantList FormGPS::sectionButtonState() const {
-    // Read directly from tool array - single source of truth
-    QVariantList state;
-    for (int i = 0; i < 65; i++) {
-        state.append(static_cast<int>(tool.sectionButtonState[i]));
-    }
-    return state;
-}
-void FormGPS::setSectionButtonState(const QVariantList& value) {
-    // Simple setter - update tool array and section logic directly
-    qDebug() << "DEBUG FormGPS::setSectionButtonState CALLED with" << value.size() << "elements";
-
-    for (int j = 0; j < qMin(value.size(), 65); j++) {
-        int buttonState = value[j].toInt();
-        tool.sectionButtonState[j] = static_cast<btnStates>(buttonState);
-
-        // Update section logic only for active sections
-        if (j < tool.numOfSections) {
-            bool newSectionOn = (buttonState == btnStates::Auto || buttonState == btnStates::On);
-            tool.section[j].isSectionOn = newSectionOn;
-            tool.section[j].sectionOnRequest = newSectionOn;
-            tool.section[j].sectionOffRequest = !newSectionOn;
-        }
-    }
-
-    // Simple BINDABLE notification - no recursive calls possible
-    m_sectionButtonState = value;
-}
-
-// syncSectionButtonStateToQML() REMOVED - Qt BINDABLE handles automatic synchronization
-
-QBindable<QVariantList> FormGPS::bindableSectionButtonState() { return &m_sectionButtonState; }
-
-double FormGPS::speedKph() const { return m_speedKph; }
-void FormGPS::setSpeedKph(double speedKph) {
-    m_speedKph = speedKph;
-
-    // ⚡ PHASE 6.0.20 AutoSteer Protection: Automatic speed-based deactivation
-    // Covers both simulation and real GPS modes (single entry point)
-    if (MainWindowState::instance()->isBtnAutoSteerOn()) {
-        auto* settings = SettingsManager::instance();
-        if (speedKph < settings->as_minSteerSpeed() ||
-            speedKph > settings->as_maxSteerSpeed()) {
-            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
-        }
-    }
-}
-
-QBindable<double> FormGPS::bindableSpeedKph() { return &m_speedKph; }
-
-double FormGPS::fusedHeading() const { return m_fusedHeading; }
-void FormGPS::setFusedHeading(double fusedHeading) { m_fusedHeading = fusedHeading; }
-QBindable<double> FormGPS::bindableFusedHeading() { return &m_fusedHeading; }
-
-// ===== Tool Position Properties =====
-double FormGPS::toolEasting() const { return m_toolEasting; }
-void FormGPS::setToolEasting(double toolEasting) { m_toolEasting = toolEasting; }
-QBindable<double> FormGPS::bindableToolEasting() { return &m_toolEasting; }
-
-double FormGPS::toolNorthing() const { return m_toolNorthing; }
-void FormGPS::setToolNorthing(double toolNorthing) { m_toolNorthing = toolNorthing; }
-QBindable<double> FormGPS::bindableToolNorthing() { return &m_toolNorthing; }
-
-double FormGPS::toolHeading() const { return m_toolHeading; }
-void FormGPS::setToolHeading(double toolHeading) { m_toolHeading = toolHeading; }
-QBindable<double> FormGPS::bindableToolHeading() { return &m_toolHeading; }
-
-double FormGPS::offlineDistance() const { return m_offlineDistance; }
-void FormGPS::setOfflineDistance(double offlineDistance) { m_offlineDistance = offlineDistance; }
-QBindable<double> FormGPS::bindableOfflineDistance() { return &m_offlineDistance; }
-
-// ===== Steering Properties =====
-double FormGPS::calcSteerAngleInner() const { return m_calcSteerAngleInner; }
-void FormGPS::setCalcSteerAngleInner(double calcSteerAngleInner) { m_calcSteerAngleInner = calcSteerAngleInner; }
-QBindable<double> FormGPS::bindableCalcSteerAngleInner() { return &m_calcSteerAngleInner; }
-
-double FormGPS::calcSteerAngleOuter() const { return m_calcSteerAngleOuter; }
-void FormGPS::setCalcSteerAngleOuter(double calcSteerAngleOuter) { m_calcSteerAngleOuter = calcSteerAngleOuter; }
-QBindable<double> FormGPS::bindableCalcSteerAngleOuter() { return &m_calcSteerAngleOuter; }
-
-double FormGPS::diameter() const { return m_diameter; }
-void FormGPS::setDiameter(double diameter) { m_diameter = diameter; }
-QBindable<double> FormGPS::bindableDiameter() { return &m_diameter; }
-
-// ===== Blockage Properties =====
-double FormGPS::blockage_avg() const { return m_blockage_avg; }
-void FormGPS::setBlockage_avg(double blockage_avg) { m_blockage_avg = blockage_avg; }
-QBindable<double> FormGPS::bindableBlockage_avg() { return &m_blockage_avg; }
-
-double FormGPS::blockage_min1() const { return m_blockage_min1; }
-void FormGPS::setBlockage_min1(double blockage_min1) { m_blockage_min1 = blockage_min1; }
-QBindable<double> FormGPS::bindableBlockage_min1() { return &m_blockage_min1; }
-
-double FormGPS::blockage_min2() const { return m_blockage_min2; }
-void FormGPS::setBlockage_min2(double blockage_min2) { m_blockage_min2 = blockage_min2; }
-QBindable<double> FormGPS::bindableBlockage_min2() { return &m_blockage_min2; }
-
-double FormGPS::blockage_max() const { return m_blockage_max; }
-void FormGPS::setBlockage_max(double blockage_max) { m_blockage_max = blockage_max; }
-QBindable<double> FormGPS::bindableBlockage_max() { return &m_blockage_max; }
-
-int FormGPS::blockage_min1_i() const { return m_blockage_min1_i; }
-void FormGPS::setBlockage_min1_i(int blockage_min1_i) { m_blockage_min1_i = blockage_min1_i; }
-QBindable<int> FormGPS::bindableBlockage_min1_i() { return &m_blockage_min1_i; }
-
-int FormGPS::blockage_min2_i() const { return m_blockage_min2_i; }
-void FormGPS::setBlockage_min2_i(int blockage_min2_i) { m_blockage_min2_i = blockage_min2_i; }
-QBindable<int> FormGPS::bindableBlockage_min2_i() { return &m_blockage_min2_i; }
-
-int FormGPS::blockage_max_i() const { return m_blockage_max_i; }
-void FormGPS::setBlockage_max_i(int blockage_max_i) { m_blockage_max_i = blockage_max_i; }
-QBindable<int> FormGPS::bindableBlockage_max_i() { return &m_blockage_max_i; }
-
-int FormGPS::blockage_blocked() const { return m_blockage_blocked; }
-void FormGPS::setBlockage_blocked(int blockage_blocked) { m_blockage_blocked = blockage_blocked; }
-QBindable<int> FormGPS::bindableBlockage_blocked() { return &m_blockage_blocked; }
-
-QVariantList FormGPS::blockageSecCount() const {
-
-    QVariantList state;
-    for (int i = 0; i < 65; i++) {
-        state.append(static_cast<int>(blockage.blockageseccount[i]));
-    }
-    return state;
-}
-void FormGPS::setBlockageSecCount(const QVariantList& value) { }
-QBindable<QVariantList> FormGPS::bindableBlockageSecCount() { return &m_blockageseccount; }
-
-double FormGPS::avgPivDistance() const { return m_avgPivDistance; }
-void FormGPS::setAvgPivDistance(double avgPivDistance) { m_avgPivDistance = avgPivDistance; }
-QBindable<double> FormGPS::bindableAvgPivDistance() { return &m_avgPivDistance; }
-
-// ===== Turn and Navigation Properties =====
-double FormGPS::distancePivotToTurnLine() const { return m_distancePivotToTurnLine; }
-void FormGPS::setDistancePivotToTurnLine(double distancePivotToTurnLine) { m_distancePivotToTurnLine = distancePivotToTurnLine; }
-QBindable<double> FormGPS::bindableDistancePivotToTurnLine() { return &m_distancePivotToTurnLine; }
-
-bool FormGPS::isYouTurnRight() const { return m_isYouTurnRight; }
-void FormGPS::setIsYouTurnRight(bool isYouTurnRight) { m_isYouTurnRight = isYouTurnRight; }
-QBindable<bool> FormGPS::bindableIsYouTurnRight() { return &m_isYouTurnRight; }
-
-bool FormGPS::isYouTurnTriggered() const { return m_isYouTurnTriggered; }
-void FormGPS::setIsYouTurnTriggered(bool isYouTurnTriggered) { m_isYouTurnTriggered = isYouTurnTriggered; }
-QBindable<bool> FormGPS::bindableIsYouTurnTriggered() { return &m_isYouTurnTriggered; }
-
-int FormGPS::current_trackNum() const { return m_current_trackNum; }
-void FormGPS::setCurrent_trackNum(int current_trackNum) { m_current_trackNum = current_trackNum; }
-QBindable<int> FormGPS::bindableCurrent_trackNum() { return &m_current_trackNum; }
-
-int FormGPS::track_idx() const { return m_track_idx; }
-void FormGPS::setTrack_idx(int track_idx) { m_track_idx = track_idx; }
-QBindable<int> FormGPS::bindableTrack_idx() { return &m_track_idx; }
-
-double FormGPS::lblmodeActualXTE() const { return m_lblmodeActualXTE; }
-void FormGPS::setLblmodeActualXTE(double lblmodeActualXTE) { m_lblmodeActualXTE = lblmodeActualXTE; }
-QBindable<double> FormGPS::bindableLblmodeActualXTE() { return &m_lblmodeActualXTE; }
-
-double FormGPS::lblmodeActualHeadingError() const { return m_lblmodeActualHeadingError; }
-void FormGPS::setLblmodeActualHeadingError(double lblmodeActualHeadingError) { m_lblmodeActualHeadingError = lblmodeActualHeadingError; }
-QBindable<double> FormGPS::bindableLblmodeActualHeadingError() { return &m_lblmodeActualHeadingError; }
-
-double FormGPS::toolLatitude() const { return m_toolLatitude; }
-void FormGPS::setToolLatitude(double toolLatitude) { m_toolLatitude = toolLatitude; }
-QBindable<double> FormGPS::bindableToolLatitude() { return &m_toolLatitude; }
-
-double FormGPS::toolLongitude() const { return m_toolLongitude; }
-void FormGPS::setToolLongitude(double toolLongitude) { m_toolLongitude = toolLongitude; }
-QBindable<double> FormGPS::bindableToolLongitude() { return &m_toolLongitude; }
-
-int FormGPS::sampleCount() const { return m_sampleCount; }
-void FormGPS::setSampleCount(int sampleCount) { m_sampleCount = sampleCount; }
-QBindable<int> FormGPS::bindableSampleCount() { return &m_sampleCount; }
-
-double FormGPS::confidenceLevel() const { return m_confidenceLevel; }
-void FormGPS::setConfidenceLevel(double confidenceLevel) { m_confidenceLevel = confidenceLevel; }
-QBindable<double> FormGPS::bindableConfidenceLevel() { return &m_confidenceLevel; }
-
-bool FormGPS::hasValidRecommendation() const { return m_hasValidRecommendation; }
-void FormGPS::setHasValidRecommendation(bool hasValidRecommendation) { m_hasValidRecommendation = hasValidRecommendation; }
-QBindable<bool> FormGPS::bindableHasValidRecommendation() { return &m_hasValidRecommendation; }
-
-bool FormGPS::startSA() const { return m_startSA; }
-void FormGPS::setStartSA(bool startSA) { m_startSA = startSA; }
-QBindable<bool> FormGPS::bindableStartSA() { return &m_startSA; }
-
-QVariant FormGPS::vehicle_xy() const { return m_vehicle_xy; }
-void FormGPS::setVehicle_xy(const QVariant& vehicle_xy) { m_vehicle_xy = vehicle_xy; }
-QBindable<QVariant> FormGPS::bindableVehicle_xy() { return &m_vehicle_xy; }
-
-QVariant FormGPS::vehicle_bounding_box() const { return m_vehicle_bounding_box; }
-void FormGPS::setVehicle_bounding_box(const QVariant& vehicle_bounding_box) { m_vehicle_bounding_box = vehicle_bounding_box; }
-QBindable<QVariant> FormGPS::bindableVehicle_bounding_box() { return &m_vehicle_bounding_box; }
-
-// ===== IMU and Switch Properties =====
-bool FormGPS::steerSwitchHigh() const { return m_steerSwitchHigh; }
-void FormGPS::setSteerSwitchHigh(bool steerSwitchHigh) { m_steerSwitchHigh = steerSwitchHigh; }
-QBindable<bool> FormGPS::bindableSteerSwitchHigh() { return &m_steerSwitchHigh; }
-
-bool FormGPS::imuCorrected() const { return m_imuCorrected; }
-void FormGPS::setImuCorrected(bool imuCorrected) { m_imuCorrected = imuCorrected; }
-QBindable<bool> FormGPS::bindableImuCorrected() { return &m_imuCorrected; }
-
-QString FormGPS::lblCalcSteerAngleInner() const { return m_lblCalcSteerAngleInner; }
-void FormGPS::setLblCalcSteerAngleInner(const QString &value) { m_lblCalcSteerAngleInner = value; }
-QBindable<QString> FormGPS::bindableLblCalcSteerAngleInner() { return &m_lblCalcSteerAngleInner; }
-
-QString FormGPS::lblDiameter() const { return m_lblDiameter; }
-void FormGPS::setLblDiameter(const QString &value) { m_lblDiameter = value; }
-QBindable<QString> FormGPS::bindableLblDiameter() { return &m_lblDiameter; }
-
-// ===== Button State Properties =====
-double FormGPS::latStart() const { return m_latStart.value(); }
-void FormGPS::setLatStart(double latStart) {
-    qDebug() << "[GEODETIC_DEBUG] setLatStart called with value:" << latStart;
-    m_latStart = latStart;  // ✅ Qt 6.8 Official Doc - Direct assignment emits signal
-    updateMPerDegreeLat();
-    qDebug() << "[GEODETIC_DEBUG] After set - m_latStart:" << m_latStart.value() << "mPerDegreeLat:" << m_mPerDegreeLat;
-}
-QBindable<double> FormGPS::bindableLatStart() { return &m_latStart; }
-
-double FormGPS::lonStart() const { return m_lonStart.value(); }
-void FormGPS::setLonStart(double lonStart) {
-    qDebug() << "[GEODETIC_DEBUG] setLonStart called with value:" << lonStart;
-    m_lonStart = lonStart;  // ✅ Qt 6.8 Official Doc - Direct assignment emits signal
-}
-QBindable<double> FormGPS::bindableLonStart() { return &m_lonStart; }
-
-// Geodetic Conversion - Phase 6.0.20 Task 24 Step 3.5
-// mPerDegreeLat getter is inline in .h (simple member variable, no BINDABLE overhead)
-
-void FormGPS::updateMPerDegreeLat() {
-    // WGS84 geodetic formula for meters per degree latitude
-    // Based on latStart (fixed reference point for the field)
-    double latStart = m_latStart.value();
-    m_mPerDegreeLat = 111132.92 - 559.82 * cos(2.0 * latStart * 0.01745329251994329576923690766743)
-                    + 1.175 * cos(4.0 * latStart * 0.01745329251994329576923690766743)
-                    - 0.0023 * cos(6.0 * latStart * 0.01745329251994329576923690766743);
-    // Direct assignment - no signal emission (C++ only, not exposed to QML)
-}
-
-// Geodetic Conversion Functions - Phase 6.0.20 Task 24 Step 3.5
-// Wrappers for QML - delegate to CNMEA for actual conversion logic
-QVariantList FormGPS::convertLocalToWGS84(double northing, double easting) {
-    double outLat, outLon;
-    // Call CNMEA conversion function (single source of truth)
-    pn.ConvertLocalToWGS84(northing, easting, outLat, outLon, this);
-    // Return [latitude, longitude] as QVariantList for QML
-    return QVariantList() << outLat << outLon;
-}
-
-QVariantList FormGPS::convertWGS84ToLocal(double latitude, double longitude) {
-    double outNorthing, outEasting;
-    // Call CNMEA conversion function (single source of truth)
-    pn.ConvertWGS84ToLocal(latitude, longitude, outNorthing, outEasting, this);
-    // Return [northing, easting] as QVariantList for QML
-    return QVariantList() << outNorthing << outEasting;
-}
-
-// GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2
-double FormGPS::gpsHeading() const { return m_gpsHeading; }
-void FormGPS::setGpsHeading(double value) { m_gpsHeading = value; }
-QBindable<double> FormGPS::bindableGpsHeading() { return &m_gpsHeading; }
-
-bool FormGPS::isReverseWithIMU() const { return m_isReverseWithIMU; }
-void FormGPS::setIsReverseWithIMU(bool value) { m_isReverseWithIMU = value; }
-QBindable<bool> FormGPS::bindableIsReverseWithIMU() { return &m_isReverseWithIMU; }
-
-// Module Connection - Phase 6.0.20 Task 24 Step 3.2
-int FormGPS::steerModuleConnectedCounter() const { return m_steerModuleConnectedCounter; }
-void FormGPS::setSteerModuleConnectedCounter(int value) { m_steerModuleConnectedCounter = value; }
-QBindable<int> FormGPS::bindableSteerModuleConnectedCounter() { return &m_steerModuleConnectedCounter; }
-
-int FormGPS::autoBtnState() const { return m_autoBtnState; }
-void FormGPS::setAutoBtnState(int autoBtnState) {
-    m_autoBtnState = autoBtnState;
-
-    // PHASE 6.0.36: When Master Auto button activated, set all sections to Auto mode
-    // This allows automatic section activation based on boundary and coverage
-    // Only changes sections currently in Off state - respects manual On state
-    if (autoBtnState == btnStates::Auto && isJobStarted()) {
-        for (int j = 0; j < tool.numOfSections; j++) {
-            if (tool.sectionButtonState[j] == btnStates::Off) {
-                tool.sectionButtonState[j] = btnStates::Auto;
-                tool.section[j].sectionBtnState = btnStates::Auto;
-            }
-        }
-    }
-    // When Master Auto turned off, set all Auto sections back to Off
-    // Respects manual On state
-    else if (autoBtnState == btnStates::Off && isJobStarted()) {
-        for (int j = 0; j < tool.numOfSections; j++) {
-            if (tool.sectionButtonState[j] == btnStates::Auto) {
-                tool.sectionButtonState[j] = btnStates::Off;
-                tool.section[j].sectionBtnState = btnStates::Off;
-            }
-        }
-    }
-}
-QBindable<int> FormGPS::bindableAutoBtnState() { return &m_autoBtnState; }
-
-int FormGPS::manualBtnState() const { return m_manualBtnState; }
-void FormGPS::setManualBtnState(int manualBtnState) { m_manualBtnState = manualBtnState; }
-QBindable<int> FormGPS::bindableManualBtnState() { return &m_manualBtnState; }
-
-bool FormGPS::autoTrackBtnState() const { return m_autoTrackBtnState; }
-void FormGPS::setAutoTrackBtnState(bool autoTrackBtnState) { m_autoTrackBtnState = autoTrackBtnState; }
-QBindable<bool> FormGPS::bindableAutoTrackBtnState() { return &m_autoTrackBtnState; }
-
-bool FormGPS::autoYouturnBtnState() const { return m_autoYouturnBtnState; }
-void FormGPS::setAutoYouturnBtnState(bool autoYouturnBtnState) { m_autoYouturnBtnState = autoYouturnBtnState; }
-QBindable<bool> FormGPS::bindableAutoYouturnBtnState() { return &m_autoYouturnBtnState; }
-
-bool FormGPS::isPatchesChangingColor() const { return m_isPatchesChangingColor; }
-void FormGPS::setIsPatchesChangingColor(bool isPatchesChangingColor) { m_isPatchesChangingColor = isPatchesChangingColor; }
-QBindable<bool> FormGPS::bindableIsPatchesChangingColor() { return &m_isPatchesChangingColor; }
-
-// Boundary State
-bool FormGPS::boundaryIsRecording() const { return m_boundaryIsRecording; }
-void FormGPS::setBoundaryIsRecording(bool value) { m_boundaryIsRecording = value; }
-QBindable<bool> FormGPS::bindableBoundaryIsRecording() { return &m_boundaryIsRecording; }
-
-double FormGPS::boundaryArea() const { return m_boundaryArea; }
-void FormGPS::setBoundaryArea(double value) { m_boundaryArea = value; }
-QBindable<double> FormGPS::bindableBoundaryArea() { return &m_boundaryArea; }
-
-int FormGPS::boundaryPointCount() const { return m_boundaryPointCount; }
-void FormGPS::setBoundaryPointCount(int value) { m_boundaryPointCount = value; }
-QBindable<int> FormGPS::bindableBoundaryPointCount() { return &m_boundaryPointCount; }
 
 FormGPS::~FormGPS()
 {
@@ -526,7 +162,7 @@ FormGPS::~FormGPS()
 
 void FormGPS::processOverlapCount()
 {
-    if (isJobStarted())
+    if (Backend::instance()->isJobStarted())
     {
         int once = 0;
         int twice = 0;
@@ -574,11 +210,12 @@ void FormGPS::processOverlapCount()
 // Prevents gray screen bug when toggling between simulation and real GPS
 void FormGPS::ResetGPSState(bool toSimMode)
 {
+    CNMEA &pn = *Backend::instance()->pn();
     // PHASE 6.0.42.7: Save and close field before mode switch
     // Field data is tied to current coordinate system (latStart/lonStart)
     // Switching modes changes coordinate reference → must save field before switch
     // Same logic as GPS jump detection (handleGPSJump)
-    if (isJobStarted()) {
+    if (Backend::instance()->isJobStarted()) {
         qDebug() << "Field open during mode switch - saving and closing";
         FileSaveEverythingBeforeClosingField(false);  // Save all field data
         JobClose();  // Close field properly
@@ -588,12 +225,13 @@ void FormGPS::ResetGPSState(bool toSimMode)
     // Reset initialization flags
     isGPSPositionInitialized = false;
     isFirstFixPositionSet = false;
-    isFirstHeadingSet = false;
+    CVehicle::instance()->vehicleProperties()->set_firstHeadingSet(false);
+    //isFirstHeadingSet = false;
     startCounter = 0;
 
     // PHASE 6.0.42: Reset guidance line offset when switching modes
     // Old offset from previous mode is invalid in new coordinate system
-    CVehicle::instance()->guidanceLineDistanceOff = 32000;
+    CVehicle::instance()->set_guidanceLineDistanceOff(32000);
     CVehicle::instance()->guidanceLineSteerAngle = 0;
 
     // PHASE 6.0.42: Reset stepFixPts[] for heading calculation
@@ -614,12 +252,12 @@ void FormGPS::ResetGPSState(bool toSimMode)
 
         // CRITICAL: Initialize latStart/lonStart for sim mode
         // Without this, ConvertWGS84ToLocal uses wrong reference point
-        setLatStart(pn.latitude);
-        setLonStart(pn.longitude);
-        pn.SetLocalMetersPerDegree(this);
+        pn.setLatStart(pn.latitude);
+        pn.setLonStart(pn.longitude);
+        pn.SetLocalMetersPerDegree();
 
         // Convert sim position to local coords
-        pn.ConvertWGS84ToLocal(SimInterface::instance()->latitude, SimInterface::instance()->longitude, pn.fix.northing, pn.fix.easting, this);
+        pn.ConvertWGS84ToLocal(SimInterface::instance()->latitude, SimInterface::instance()->longitude, pn.fix.northing, pn.fix.easting);
 
         // Initialize raw GPS position for sim (used for heading calculation)
         {
@@ -719,6 +357,8 @@ bool FormGPS::detectGPSJump(double newLat, double newLon)
 // 4. Update last known position for future jump detection
 void FormGPS::handleGPSJump(double newLat, double newLon)
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
     qDebug() << "GPS JUMP DETECTED - regenerating OpenGL center";
     qDebug() << "Old position: lat=" << m_lastKnownLatitude << "lon=" << m_lastKnownLongitude;
     qDebug() << "New position: lat=" << newLat << "lon=" << newLon;
@@ -726,7 +366,7 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
     // If field is open, save and close it to prevent coordinate corruption
     // Field data is tied to specific GPS coordinates (latStart/lonStart)
     // When GPS jumps, field coordinates no longer match real-world positions
-    if (isJobStarted()) {
+    if (Backend::instance()->isJobStarted()) {
         qDebug() << "Field open during GPS jump - saving and closing";
         FileSaveEverythingBeforeClosingField(false);  // Save all field data (sections, boundary, contour, flags, tracks)
         JobClose();  // Close field properly (clears boundaries, sections, resets flags)
@@ -736,16 +376,16 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
     // Update latStart/lonStart with new GPS position
     // These are the reference coordinates for WGS84->Local conversion
     // OpenGL rendering uses local meters (northing/easting) calculated from these
-    setLatStart(newLat);
-    setLonStart(newLon);
-    pn.SetLocalMetersPerDegree(this);  // Recalculate meters per degree for new latitude
+    pn.setLatStart(newLat);
+    pn.setLonStart(newLon);
+    pn.SetLocalMetersPerDegree();  // Recalculate meters per degree for new latitude
 
     // PHASE 6.0.42.1: Reset GPS initialization for reinitialization cycle
     // BUT set isFirstFixPositionSet = true because we just initialized latStart/lonStart above
     // This allows startCounter to increment immediately instead of wasting 1 cycle
     isGPSPositionInitialized = false;
     isFirstFixPositionSet = true;  // Position reference initialized above
-    isFirstHeadingSet = false;
+    CVehicle::instance()->vehicleProperties()->set_firstHeadingSet(false);
     startCounter = 0;
 
     // PHASE 6.0.42.1: Update pn structure with new GPS position
@@ -755,7 +395,7 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
 
     // CRITICAL: Convert new GPS position to local coordinates using new reference point
     // This ensures pn.fix.northing/easting are valid for the first UpdateFixPosition() call
-    pn.ConvertWGS84ToLocal(newLat, newLon, pn.fix.northing, pn.fix.easting, this);
+    pn.ConvertWGS84ToLocal(newLat, newLon, pn.fix.northing, pn.fix.easting);
 
     // PHASE 6.0.42.1: Initialize raw GPS position for heading calculation
     // Symmetric to simulation mode initialization (formgps_sim.cpp:82-85)
@@ -773,7 +413,7 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
     // PHASE 6.0.42: Reset guidance line distance offset
     // Old offset based on previous coordinate system is now invalid
     // Set to 32000 = "no guidance active" until new guidance line is calculated
-    CVehicle::instance()->guidanceLineDistanceOff = 32000;
+    CVehicle::instance()->set_guidanceLineDistanceOff(32000);
     CVehicle::instance()->guidanceLineSteerAngle = 0;
 
     // PHASE 6.0.42: Reset stepFixPts[] for heading calculation
@@ -790,6 +430,10 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
 
 void FormGPS::tmrWatchdog_timeout()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_TRACK(track);
+    BACKEND_YT(yt);
+
     //TODO: replace all this with individual timers for cleaner
 
     // PHASE 6.0.40: Detect mode change and reset GPS state
@@ -819,9 +463,9 @@ void FormGPS::tmrWatchdog_timeout()
         // Problem: onSimNewPosition() calls ConvertWGS84ToLocal() BEFORE UpdateFixPosition() initializes latStart/lonStart
         // Solution: Initialize latStart/lonStart here when simulation starts (similar to real GPS mode)
         // This ensures ConvertWGS84ToLocal() uses correct reference point from first conversion
-        this->setLatStart(pn.latitude);
-        this->setLonStart(pn.longitude);
-        pn.SetLocalMetersPerDegree(this);
+        pn.setLatStart(pn.latitude);
+        pn.setLonStart(pn.longitude);
+        pn.SetLocalMetersPerDegree();
 
         gpsHz = 10;
         SimInterface::instance()->startUp();
@@ -909,14 +553,13 @@ void FormGPS::tmrWatchdog_timeout()
 
         isFlashOnOff = !isFlashOnOff;
 
-        //the ratemap trigger
-        worldGrid.isRateTrigger = true;
-
         //Make sure it is off when it should
-        if ((!MainWindowState::instance()->isContourBtnOn() &&
-             track.idx() == -1 &&
-             MainWindowState::instance()->isBtnAutoSteerOn()) ) {
-            onStopAutoSteer();
+        if (!MainWindowState::instance()->isContourBtnOn() &&
+            track.idx() == -1 &&
+            MainWindowState::instance()->isBtnAutoSteerOn() )
+        {
+
+            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
         }
 
     } //end every 1/2 second
@@ -932,25 +575,9 @@ void FormGPS::tmrWatchdog_timeout()
     }
 }
 
-QString FormGPS::speedKPH() {
-    double spd = CVehicle::instance()->avgSpeed;
-
-    //convert to kph
-    spd *= 0.1;
-
-    return locale.toString(spd,'f',1);
-}
-
-QString FormGPS::speedMPH() {
-    double spd = CVehicle::instance()->avgSpeed;
-
-    //convert to mph
-    spd *= 0.0621371;
-
-    return locale.toString(spd,'f',1);
-}
-
 void FormGPS::SwapDirection() {
+    BACKEND_YT(yt);
+
     if (!yt.isYouTurnTriggered)
     {
         yt.isYouTurnRight = ! yt.isYouTurnRight;
@@ -965,6 +592,9 @@ void FormGPS::SwapDirection() {
 
 void FormGPS::JobClose()
 {
+    BACKEND_TRACK(track);
+    BACKEND_YT(yt);
+
     lock.lockForWrite();
     recPath.resumeState = 0;
     recPath.currentPositonIndex = 0;
@@ -972,11 +602,8 @@ void FormGPS::JobClose()
     sbGrid.clear();
 
     //reset field offsets
-    //if (!isKeepOffsetsOn)
-    //{
-        pn.fixOffset.easting = 0;
-        pn.fixOffset.northing = 0;
-    //}
+
+    Backend::instance()->pn()->set_fixOffset(Vec2(0,0));
 
     //turn off headland
     MainWindowState::instance()->set_isHeadlandOn(false); //this turns off the button
@@ -985,8 +612,8 @@ void FormGPS::JobClose()
     recPath.StopDrivingRecordedPath();
 
     //make sure hydraulic lift is off
-    CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
-    emit CModuleComm::instance()->p_239_changed();
+    ModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
+    emit ModuleComm::instance()->p_239_changed();
 
     CVehicle::instance()->setIsHydLiftOn(false); //this turns off the button also - Qt 6.8
 
@@ -997,13 +624,13 @@ void FormGPS::JobClose()
     //TODO: bnd.shpList.clear(;
 
 
-    setIsJobStarted(false);
+    Backend::instance()->set_isJobStarted(false);
 
     //fix ManualOffOnAuto buttons
-    this->setManualBtnState((int)btnStates::Off);
+    MainWindowState::instance()->set_manualBtnState(SectionState::Off);
 
     //fix auto button
-    this->setAutoBtnState((int)btnStates::Off);
+    MainWindowState::instance()->set_autoBtnState(SectionState::Off);
 
     // ⚡ PHASE 6.0.20: Disable AutoSteer when job closes (safety + clean state)
     MainWindowState::instance()->set_isBtnAutoSteerOn(false);
@@ -1129,9 +756,7 @@ void FormGPS::JobClose()
     recPath.shuttleDubinsList.clear();
 
     //FixPanelsAndMenus();
-    camera.SetZoom();
-    worldGrid.isGeoMap = false;
-    worldGrid.isRateMap = false;
+    Camera::instance()->SetZoom();
 
     //release Bing texture
     lock.unlock();
@@ -1139,22 +764,23 @@ void FormGPS::JobClose()
 
 void FormGPS::JobNew()
 {
+    BACKEND_TRACK(track);
     startCounter = 0;
 
     //btnSectionMasterManual.Enabled = true;
-    this->setManualBtnState((int)btnStates::Off);
+    MainWindowState::instance()->set_manualBtnState(SectionState::Off);
     //btnSectionMasterManual.Image = Properties.Resources.ManualOff;
 
     //btnSectionMasterAuto.Enabled = true;
-    this->setAutoBtnState((int)btnStates::Off);
+    MainWindowState::instance()->set_autoBtnState(SectionState::Off);
     //btnSectionMasterAuto.Image = Properties.Resources.SectionMasterOff;
 
     track.ABLine.abHeading = 0.00;
 
-    camera.SetZoom();
+    Camera::instance()->SetZoom();
     fileSaveCounter = 25;
     track.setIsAutoTrack(false);
-    setIsJobStarted(true);
+    Backend::instance()->set_isJobStarted(true);
 
     // PHASE 6.0.29: Reset recorded path flags when opening field
     // Prevents steer from activating due to garbage flag values (formgps_position.cpp:800)
@@ -1174,7 +800,7 @@ void FormGPS::FileSaveEverythingBeforeClosingField(bool saveVehicle)
 {
     qDebug() << "shutting down, saving field items.";
 
-    if (! isJobStarted()) return;
+    if (! Backend::instance()->isJobStarted()) return;
 
     qDebug() << "Test3";
     lock.lockForWrite();
@@ -1219,8 +845,8 @@ void FormGPS::FileSaveEverythingBeforeClosingField(bool saveVehicle)
 
     // Save vehicle settings AFTER all field operations complete (conditional)
     // Include applicationClosing property in save decision (Qt 6.8 Rectangle Pattern)
-    bool shouldSaveVehicle = saveVehicle || applicationClosing();
-    qDebug() << "Before vehicle_saveas check, saveVehicle=" << saveVehicle << "applicationClosing=" << applicationClosing() << "shouldSaveVehicle=" << shouldSaveVehicle;
+    bool shouldSaveVehicle = saveVehicle || Backend::instance()->applicationClosing();
+    qDebug() << "Before vehicle_saveas check, saveVehicle=" << saveVehicle << "applicationClosing=" << Backend::instance()->applicationClosing() << "shouldSaveVehicle=" << shouldSaveVehicle;
     if(shouldSaveVehicle && SettingsManager::instance()->vehicle_vehicleName() != "Default Vehicle") {
         QString vehicleName = SettingsManager::instance()->vehicle_vehicleName();
         qDebug() << "Scheduling async vehicle_saveas():" << vehicleName;
@@ -1232,7 +858,7 @@ void FormGPS::FileSaveEverythingBeforeClosingField(bool saveVehicle)
             qDebug() << "Async vehicle_saveas() completed";
         });
     } else {
-        qDebug() << "Skipping vehicle_saveas (saveVehicle=" << saveVehicle << "applicationClosing=" << applicationClosing() << "shouldSaveVehicle=" << shouldSaveVehicle << ")";
+        qDebug() << "Skipping vehicle_saveas (saveVehicle=" << saveVehicle << "applicationClosing=" << Backend::instance()->applicationClosing() << "shouldSaveVehicle=" << shouldSaveVehicle << ")";
     }
 
     qDebug() << "Before field cleanup";

@@ -32,6 +32,7 @@ public:
     SIMPLE_BINDABLE_PROPERTY(double, createBndOffset)
     SIMPLE_BINDABLE_PROPERTY(bool, isDrawRightSide)
 
+    SIMPLE_BINDABLE_PROPERTY(bool, isBndBeingMade)
     SIMPLE_BINDABLE_PROPERTY(bool, isRecording)
     SIMPLE_BINDABLE_PROPERTY(double, area)
     SIMPLE_BINDABLE_PROPERTY(int, pointCount)
@@ -55,10 +56,15 @@ signals:
     void setDriveThrough(int id, bool drive_thru);
     void deleteAll();
 
+    void loadBoundaryFromKML(QString filename);
+    void addBoundaryOSMPoint(double latitude, double longitude);
+
+
 private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(BoundaryInterface, bool, m_isOutOfBounds, false, &BoundaryInterface::isOutOfBoundsChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(BoundaryInterface, double, m_createBndOffset, 0, &BoundaryInterface::createBndOffsetChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(BoundaryInterface, bool, m_isDrawRightSide, false, &BoundaryInterface::isDrawRightSideChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(BoundaryInterface, bool, m_isBndBeingMade, false, &BoundaryInterface::isBndBeingMadeChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(BoundaryInterface, bool, m_isRecording, false, &BoundaryInterface::isRecordingChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(BoundaryInterface, double, m_area, false, &BoundaryInterface::areaChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(BoundaryInterface, int, m_pointCount, false, &BoundaryInterface::pointCountChanged)

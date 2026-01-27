@@ -111,14 +111,12 @@ public:
                           const CAHRS &ahrs,
                           CGuidance &gyd,
                           CNMEA &pn);
-    void DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
-                       const CCamera &camera);
+    void DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp);
 
     void DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
-                     bool isFontOn, bool isRateMapOn,
+                     bool isFontOn, bool isRateMapOn, double camSetDistance,
                      const CTrk &track,
                      CYouTurn &yt,
-                     const CCamera &camera,
                      const CGuidance &gyd);
     void BuildTram(const CTrk &track, CBoundary &bnd, CTram &tram);
 

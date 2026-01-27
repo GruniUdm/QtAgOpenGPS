@@ -14,12 +14,12 @@
 #include "cboundary.h"
 #include "cyouturn.h"
 #include "ctram.h"
-#include "ccamera.h"
 #include "cnmea.h"
 #include "cahrs.h"
 #include "cguidance.h"
 #include "ctrack.h"
 #include "classes/settingsmanager.h"
+#include "backend.h"
 
 CABCurve::CABCurve(QObject *parent) : QObject(parent)
 {
@@ -719,7 +719,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
             radiusPointCu.easting = yt.radiusPointYT.easting;
             radiusPointCu.northing = yt.radiusPointYT.northing;
             ppRadiusCu = yt.ppRadiusYT;
-            CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+            CVehicle::instance()->set_modeActualXTE((distanceFromCurrentLinePivot));
         }
         else if (vehicle_isStanleyUsed)//Stanley
         {
@@ -869,7 +869,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
 
                 //pivotErrorTotal = pivotDistanceError + pivotDerivative;
 
-                if (isBtnAutoSteerOn && CVehicle::instance()->avgSpeed > 2.5 && fabs(pivotDerivative) < 0.1)
+                if (isBtnAutoSteerOn && CVehicle::instance()->avgSpeed() > 2.5 && fabs(pivotDerivative) < 0.1)
                 {
                     //if over the line heading wrong way, rapidly decrease integral
                     if ((inty < 0 && distanceFromCurrentLinePivot < 0) || (inty > 0 && distanceFromCurrentLinePivot > 0))
@@ -937,16 +937,16 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                     {
                         if (glm::Distance(goalPointCu, curList[(curList.count() - 1)]) < 0.5)
                         {
-                            emit TimedMessage(2000,tr("Guidance Stopped"), tr("Past end of curve"));
-                            emit stopAutoSteer();
+                            emit Backend::instance()->timedMessage(2000,tr("Guidance Stopped"), tr("Past end of curve"));
+                            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
                         }
                     }
                     else
                     {
                         if (glm::Distance(goalPointCu, curList[0]) < 0.5)
                         {
-                            emit TimedMessage(2000,tr("Guidance Stopped"), tr("Past end of curve"));
-                            emit stopAutoSteer();
+                            emit Backend::instance()->timedMessage(2000,tr("Guidance Stopped"), tr("Past end of curve"));
+                            MainWindowState::instance()->set_isBtnAutoSteerOn(false);
                         }
                     }
                 }
@@ -959,8 +959,8 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
             //double localHeading = glm::twoPI - mf.fixHeading;
 
             double localHeading;
-            if (ReverseHeading) localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
-            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading - inty;
+            if (ReverseHeading) localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
+            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading() - inty;
 
             ppRadiusCu = goalPointDistanceSquared / (2 * (((goalPointCu.easting - pivot.easting) * cos(localHeading)) + ((goalPointCu.northing - pivot.northing) * sin(localHeading))));
 
@@ -977,7 +977,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
                 distanceFromCurrentLinePivot *= -1.0;
 
             //used for acquire/hold mode
-            CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+            CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot)) ;
 
             double steerHeadingError = (pivot.heading - curList[A].heading);
             //Fix the circular error
@@ -991,10 +991,10 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
             else if (steerHeadingError < -glm::PIBy2)
                 steerHeadingError += M_PI;
 
-            CVehicle::instance()->modeActualHeadingError = glm::toDegrees(steerHeadingError);
+            CVehicle::instance()->set_modeActualHeadingError (glm::toDegrees(steerHeadingError));
 
             //Convert to centimeters
-            CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+            CVehicle::instance()->set_guidanceLineDistanceOff ( (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
             CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleCu * 100);
         }
     }
@@ -1002,7 +1002,7 @@ void CABCurve::GetCurrentCurveLine(Vec3 pivot,
     {
         //invalid distance so tell AS module
         distanceFromCurrentLinePivot = 32000;
-        CVehicle::instance()->guidanceLineDistanceOff = 32000;
+        CVehicle::instance()->set_guidanceLineDistanceOff (32000);
     }
 }
 
@@ -1018,8 +1018,9 @@ void CABCurve::DrawCurveNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
 
 void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                          bool isFontOn,
+                         double camSetDistance,
                          const CTrk &track,
-                         CYouTurn &yt, const CCamera &camera)
+                         CYouTurn &yt)
 {
     //double tool_toolWidth = SettingsManager::instance()->getValue("Vehicle_toolWidth;
     //double tool_toolOverlap = SettingsManager::instance()->getValue("Vehicle_toolOverlap;
@@ -1058,8 +1059,8 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
         if (isFontOn)
         {
             color.setRgbF(0.40f, 0.90f, 0.95f);
-            drawText3D(camera, gl, mvp, track.curvePts[0].easting, track.curvePts[0].northing, "&A", 1.0, true, color);
-            drawText3D(camera, gl, mvp, track.curvePts[track.curvePts.count() - 1].easting, track.curvePts[track.curvePts.count() - 1].northing, "&B", 1.0, true, color);
+            drawText3D(gl, mvp, track.curvePts[0].easting, track.curvePts[0].northing, "&A", 1.0, true, color);
+            drawText3D(gl, mvp, track.curvePts[track.curvePts.count() - 1].easting, track.curvePts[track.curvePts.count() - 1].northing, "&B", 1.0, true, color);
         }
 
         //just draw ref and smoothed line if smoothing window is open
@@ -1096,7 +1097,7 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                     gldraw.draw(gl,mvp,color,GL_LINE_LOOP,lineWidth);
                     gl->glLineWidth(1);}
 
-                if (!vehicle_isStanleyUsed && camera.camSetDistance > -200)
+                if (!vehicle_isStanleyUsed && camSetDistance > -200)
                 {
                     gldraw.clear();
                     //Draw lookahead Point
@@ -1131,7 +1132,7 @@ void CABCurve::DrawCurve(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
             gldraw.draw(gl, mvp, QColor::fromRgbF(0.95f, 0.2f, 0.95f),GL_LINE_STRIP, lineWidth);
             gl->glLineWidth(1);
 
-            if (!vehicle_isStanleyUsed && camera.camSetDistance > -200)
+            if (!vehicle_isStanleyUsed && camSetDistance > -200)
             {
                 //Draw lookahead Point
                 gldraw.clear();

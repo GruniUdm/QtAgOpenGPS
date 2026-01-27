@@ -5,11 +5,9 @@
 #include "cboundary.h"
 #include "cyouturn.h"
 #include "ctram.h"
-#include "ccamera.h"
 #include "cahrs.h"
 #include "cguidance.h"
 #include "ctrack.h"
-#include "cworldgrid.h"
 #include <QOpenGLFunctions>
 #include <QColor>
 #include "glutils.h"
@@ -173,7 +171,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         ppRadiusAB = yt.ppRadiusYT;
 
         CVehicle::instance()->modeTimeCounter = 0;
-        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+        CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
     }
 
     //Stanley
@@ -219,7 +217,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
 
             if (isBtnAutoSteerOn
                 && fabs(pivotDerivative) < (0.1)
-                && CVehicle::instance()->avgSpeed > 2.5
+                && CVehicle::instance()->avgSpeed() > 2.5
                 && !yt.isYouTurnTriggered)
             //&& fabs(pivotDistanceError) < 0.2)
 
@@ -244,7 +242,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         else inty = 0;
 
         //Subtract the two headings, if > 1.57 its going the opposite heading as refAB
-        abFixHeadingDelta = (fabs(CVehicle::instance()->fixHeading - abHeading));
+        abFixHeadingDelta = (fabs(CVehicle::instance()->fixHeading() - abHeading));
         if (abFixHeadingDelta >= M_PI) abFixHeadingDelta = fabs(abFixHeadingDelta - glm::twoPI);
 
         // ** Pure pursuit ** - calc point on ABLine closest to current position
@@ -277,8 +275,8 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         //calculate the the new x in local coordinates and steering angle degrees based on wheelbase
         double localHeading;
 
-        if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
-        else localHeading = glm::twoPI - CVehicle::instance()->fixHeading - inty;
+        if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
+        else localHeading = glm::twoPI - CVehicle::instance()->fixHeading() - inty;
 
         ppRadiusAB = goalPointDistanceDSquared / (2 * (((goalPointAB.easting - pivot.easting) * cos(localHeading))
                                                        + ((goalPointAB.northing - pivot.northing) * sin(localHeading))));
@@ -320,7 +318,7 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
             distanceFromCurrentLinePivot *= -1.0;
 
         //used for acquire/hold mode
-        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+        CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
         double steerHeadingError = (pivot.heading - abHeading);
         //Fix the circular error
@@ -334,18 +332,17 @@ void CABLine::GetCurrentABLine(Vec3 pivot, Vec3 steer,
         else if (steerHeadingError < -glm::PIBy2)
             steerHeadingError += M_PI;
 
-        CVehicle::instance()->modeActualHeadingError = glm::toDegrees(steerHeadingError);
+        CVehicle::instance()->set_modeActualHeadingError ( glm::toDegrees(steerHeadingError));
 
         //Convert to millimeters
-        CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+        CVehicle::instance()->set_guidanceLineDistanceOff((short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
         CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleAB * 100);
     }
 
     //mf.setAngVel = 0.277777 * mf.avgSpeed * (Math.Tan(glm::toRadians(steerAngleAB))) / mf.CVehicle::instance()->wheelbase;
     //mf.setAngVel = glm::toDegrees(mf.setAngVel);
 }
-void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
-                            const CCamera &camera)
+void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
 {
     GLHelperOneColor gldraw;
     QColor color;
@@ -356,17 +353,17 @@ void CABLine::DrawABLineNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     gldraw.draw(gl, mvp, QColor::fromRgbF(0.95f, 0.70f, 0.50f), GL_LINES, lineWidth);
     gl->glLineWidth(1);
     color.setRgbF(0.2f, 0.950f, 0.20f);
-    drawText3D(camera,gl,mvp, desPtA.easting, desPtA.northing, "&A", 1.0, true, color);
+    drawText3D(gl,mvp, desPtA.easting, desPtA.northing, "&A", 1.0, true, color);
     if (isDesPtBSet)
-        drawText3D(camera,gl,mvp, desPtB.easting, desPtB.northing, "&B", 1.0, true, color);
+        drawText3D(gl,mvp, desPtB.easting, desPtB.northing, "&B", 1.0, true, color);
 }
 
 void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
                           bool isFontOn,
                           bool isRateMapOn,
+                          double camSetDistance,
                           const CTrk &track,
                           CYouTurn &yt,
-                          const CCamera &camera,
                           const CGuidance &gyd)
 {
     double tool_toolWidth = SettingsManager::instance()->vehicle_toolWidth();
@@ -397,8 +394,8 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     if (isFontOn && !isMakingABLine)
     {
         color.setRgbF(0.00990f, 0.990f, 0.095f);
-        drawText3D(camera,gl,mvp, track.ptA.easting, track.ptA.northing, "&A", 1.0, true, color);
-        drawText3D(camera,gl,mvp, track.ptB.easting, track.ptB.northing, "&B", 1.0, true, color);
+        drawText3D(gl,mvp, track.ptA.easting, track.ptA.northing, "&A", 1.0, true, color);
+        drawText3D(gl,mvp, track.ptB.easting, track.ptB.northing, "&B", 1.0, true, color);
     }
 
     //Draw reference AB line
@@ -451,7 +448,7 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
     gldraw.draw(gl,mvp,color,GL_LINES,lineWidth);
     gl->glLineWidth(1);
 
-    if (isSideGuideLines && camera.camSetDistance > tool_toolWidth * -120)
+    if (isSideGuideLines && camSetDistance > tool_toolWidth * -120)
     {
         //get the tool offset and width
         double toolOffset = tool_toolOffset * 2;
@@ -502,7 +499,7 @@ void CABLine::DrawABLines(QOpenGLFunctions *gl, const QMatrix4x4 &mvp,
         gl->glLineWidth(1);
     }
 
-    if (!isStanleyUsed && camera.camSetDistance > -200)
+    if (!isStanleyUsed && camSetDistance > -200)
     {
         //Draw lookahead Point
         gldraw.clear();

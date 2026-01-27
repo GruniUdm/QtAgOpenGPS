@@ -1,6 +1,9 @@
 #ifndef SIMPLEPROPERTY_H
 #define SIMPLEPROPERTY_H
 
+#include <QObject>
+#include <QBindable>
+
 //macro to make it easier to set up simple bindable properties
 //in a class.  WARNING! This macro should only be used in
 //the public section of the class, and it always leaves the

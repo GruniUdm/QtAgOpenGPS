@@ -19,10 +19,10 @@ Rectangle {
     border.color: "black"
     border.width: 1.5
 
-    property double timeUntilFinished: (aog.speedKph > 1 ?
+    property double timeUntilFinished: (VehicleInterface.avgSpeed > 1 ?
                                             (Backend.currentField.areaBoundaryOuterLessInner - Backend.currentField.workedAreaTotal) /
                                             // Threading Phase 1: Tool width for time calculation
-                                            SettingsManager.vehicle_toolWidth / aog.speedKph / 1000
+                                            SettingsManager.vehicle_toolWidth / VehicleInterface.avgSpeed / 1000
                                           : Number.POSITIVE_INFINITY)
 
     property int hoursUntilFinished: (timeUntilFinished != Number.POSITIVE_INFINITY ?
@@ -63,6 +63,6 @@ Rectangle {
         TextLine{ color: "white"; text: qsTr("Applied: ")+ Utils.area_to_unit_string(Backend.currentField.actualAreaCovered, 2)}
         TextLine{ color: "white"; text: qsTr("Remain: ") + Utils.area_to_unit_string((Backend.currentField.areaBoundaryOuterLessInner - Backend.currentField.actualAreaCovered), 2)}
         TextLine{ color: "white"; text: qsTr("Overlap: ") + Utils.area_to_unit_string((Backend.currentField.workedAreaTotal - Backend.currentField.actualAreaCovered), 2)}
-        TextLine{ color: "white"; text: Utils.workRateString(aog.speedKph) }
+        TextLine{ color: "white"; text: Utils.workRateString(VehicleInterface.avgSpeed) }
     }
 }

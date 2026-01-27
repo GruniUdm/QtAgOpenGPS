@@ -108,10 +108,6 @@ public:
 signals:
     void setSimStepDistance(double speed);
     void stoppedDriving();
-    //void guidanceLineDistanceOff(int);
-    //void guidanceLineSteerAngle(int);
-    //void btnSectionSet(btnStates);
-    void turnOffSectionMasterAuto();
 
 public slots:
 };

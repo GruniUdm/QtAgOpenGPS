@@ -18,7 +18,7 @@
 #include "mainwindowstate.h"
 #include "backend.h"
 #include "headlandinterface.h"
-#include "backend/fencelinemodel.h"
+#include "fencelinemodel.h"
 
 //here for now.  Put in another module for use in other places.
 void CalculateHeadings(QVector<Vec3> &xList)

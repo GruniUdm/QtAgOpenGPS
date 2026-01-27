@@ -14,10 +14,8 @@
 #include "cyouturn.h"
 #include "cboundary.h"
 #include "ctram.h"
-#include "ccamera.h"
 #include "cahrs.h"
 #include "cguidance.h"
-#include "cworldgrid.h"
 
 // Approche SomcoSoftware : Qt gère le singleton automatiquement
 
@@ -395,14 +393,14 @@ void CTrack::NudgeRefCurve(CTrk &track, double distAway)
     }
 }
 
-void CTrack::DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCamera &camera, const CVehicle &vehicle)
+void CTrack::DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp)
 {
     GLHelperOneColor gldraw;
     QColor color;
     double lineWidth = SettingsManager::instance()->display_lineWidth();
 
     if (ABLine.isMakingABLine && newMode() == TrackMode::AB) {
-        ABLine.DrawABLineNew(gl, mvp, camera);
+        ABLine.DrawABLineNew(gl, mvp);
 
         gldraw.append(QVector3D(designRefLine[0].easting, designRefLine[0].northing, 0.0));
         gldraw.append(QVector3D(designRefLine[1].easting, designRefLine[1].northing, 0.0));
@@ -417,15 +415,15 @@ void CTrack::DrawTrackNew(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, const CCa
 void CTrack::DrawTrack(QOpenGLFunctions *gl,
                        const QMatrix4x4 &mvp,
                        bool isFontOn, bool isRateMapOn,
+                       double camSetDistance,
                        CYouTurn &yt,
-                       const CCamera &camera,
                        const CGuidance &gyd)
 {
     if (idx() >= 0) {
         if (gArr[idx()].mode == TrackMode::AB)
-            ABLine.DrawABLines(gl, mvp, isFontOn, isRateMapOn, gArr[idx()], yt, camera, gyd);
+            ABLine.DrawABLines(gl, mvp, isFontOn, isRateMapOn, camSetDistance, gArr[idx()], yt, gyd);
         else if (gArr[idx()].mode == TrackMode::Curve)
-            curve.DrawCurve(gl, mvp, isFontOn, gArr[idx()], yt, camera);
+            curve.DrawCurve(gl, mvp, isFontOn, camSetDistance, gArr[idx()], yt);
     }
 }
 

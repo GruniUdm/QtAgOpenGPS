@@ -7,7 +7,7 @@
 #include "classes/settingsmanager.h"
 #include <QTimer>
 
-QString caseInsensitiveFilename(QString directory, QString filename);
+QString caseInsensitiveFilename(const QString &directory, const QString &filename);
 
 void FormGPS::vehicle_saveas(QString vehicle_name) {
 #ifdef __ANDROID__

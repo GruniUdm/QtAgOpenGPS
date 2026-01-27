@@ -38,8 +38,8 @@ if(MSVC)
     # Required for large Qt resource initialization (qrc files with embedded resources)
     # The qrc_QtAgOpenGPS_raw_res_0.cpp file (89MB) has global object constructors
     # that call qRegisterResourceData() before main(), which can exhaust the stack
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:8388608")
-    message("MSVC: Stack size increased to 8MB for large resource initialization")
+    #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:8388608")
+    #message("MSVC: Stack size increased to 8MB for large resource initialization")
 
     # Optional: Enable debug symbols for profiling even in Release builds
     # Uncomment these lines when creating profiler builds:
@@ -48,10 +48,21 @@ if(MSVC)
     # message("MSVC: Debug symbols enabled in Release for profiling")
 endif()
 
+# Android-specific linker flags
+if(ANDROID)
+    # Increase stack size to 8MB (default is 1MB on Android)
+    # Required for large Qt resource initialization (qrc files with embedded resources)
+    # The qrc_QtAgOpenGPS_raw_res_0.cpp file (89MB) has global object constructors
+    # that call qRegisterResourceData() before main(), which can exhaust the stack
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,stack-size=8388608")
+    message("Android: Stack size increased to 8MB for large resource initialization")
+endif()
+
 # Find required libraries
 #find_package(Qt6 REQUIRED COMPONENTS Core)
- find_package(Qt6 REQUIRED COMPONENTS Widgets) #used only for opengl ?
+ find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets) #used only for opengl ?
  find_package(Qt6 REQUIRED COMPONENTS Gui)
+ find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)  # Required for QRhi (rhiresources.cpp)
  find_package(Qt6 REQUIRED COMPONENTS SerialPort)
 # find_package(Qt6 REQUIRED COMPONENTS OpenGL)
 find_package(Qt6 REQUIRED COMPONENTS Quick)
@@ -61,6 +72,7 @@ find_package(Qt6 REQUIRED COMPONENTS Multimedia)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools) #for i18n internationalization support
 find_package(Qt6 REQUIRED COMPONENTS Bluetooth)
 find_package(Qt6 REQUIRED COMPONENTS Network)
+find_package(Qt6 REQUIRED COMPONENTS ShaderTools)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Positioning)
 find_package(Qt6 REQUIRED COMPONENTS PositioningQuick)
@@ -121,7 +133,7 @@ qt_add_executable(QtAgOpenGPS
     formgps_opengl.cpp
     formgps_position.cpp
     formgps_saveopen.cpp
-    formgps_sections.cpp
+
     formgps_settings.cpp
     formgps_sim.cpp
 
@@ -132,6 +144,8 @@ qt_add_executable(QtAgOpenGPS
     formheadache.h formheadache.cpp
     formheadland.h formheadland.cpp
     glutils.h glutils.cpp
+    rhiresources.h rhiresources.cpp
+    rhihelpers.h rhihelpers.cpp
     #qmlsectionbuttons.h qmlsectionbuttons.cpp
     qmlutil.h
     setter.h
@@ -140,7 +154,6 @@ qt_add_executable(QtAgOpenGPS
     classes/cahrs.h classes/cahrs.cpp
     classes/cboundary.h classes/cboundary.cpp
     classes/cboundarylist.h classes/cboundarylist.cpp
-    classes/ccamera.h classes/ccamera.cpp
     classes/ccontour.h classes/ccontour.cpp
     classes/cdubins.h classes/cdubins.cpp
     classes/cfence.cpp
@@ -149,7 +162,6 @@ qt_add_executable(QtAgOpenGPS
     classes/cguidance.h classes/cguidance.cpp
     classes/chead.cpp
     classes/cheadline.h classes/cheadline.cpp
-    classes/cmodulecomm.h classes/cmodulecomm.cpp
     classes/cnmea.h classes/cnmea.cpp
     classes/cpatches.h classes/cpatches.cpp
     classes/cpgn.h classes/cpgn.cpp
@@ -163,14 +175,12 @@ qt_add_executable(QtAgOpenGPS
     classes/cturn.cpp
     classes/cturnlines.cpp
     # classes/cvehicle.h classes/cvehicle.cpp  # MOVED to qt_add_qml_module (QML_ELEMENT)
-    classes/cworldgrid.h classes/cworldgrid.cpp
     classes/cyouturn.h classes/cyouturn.cpp
     classes/glm.h
     classes/vec2.h classes/vec2.cpp
     classes/vec3.h classes/vec3.cpp
     classes/vec4.h classes/vec4.cpp
     classes/vecfix2fix.h
-    classes/qmlblockage.h classes/qmlblockage.cpp
     # LICENSE
     # TODO.md
     # README.md
@@ -310,8 +320,10 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         PROPERTIES QT_QML_SINGLETON_TYPE TRUE
     )
 else() #LOCAL_QML ON
-    file(GLOB_RECURSE qml_files "qml/*")
-    add_custom_target(AOGQML SOURCES ${qml_files})
+    file(GLOB_RECURSE qml_files "qml/*" "images/*" "sounds/*" "shaders/*")
+    add_custom_target(AOGQML SOURCES
+        ${qml_files}
+    )
     message("Local QML is ON!")
     add_compile_definitions(LOCAL_QML)
 
@@ -369,12 +381,50 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/headlandinterface.h backend/headlandinterface.cpp
     SOURCES backend/headacheinterface.h backend/headacheinterface.cpp
     SOURCES backend/flagsinterface.h backend/flagsinterface.cpp
-    SOURCES backend/recordedpathmodel.h backend/recordedpathmodel.cpp
     SOURCES backend/recordedpath.h backend/recordedpath.cpp
     SOURCES backend/siminterface.h backend/siminterface.cpp
-    SOURCES backend/fencelinemodel.h backend/fencelinemodel.cpp
-    SOURCES backend/flagmodel.h backend/flagmodel.cpp
+    SOURCES backend/tool.h backend/tool.cpp
+    SOURCES backend/tools.h backend/tools.cpp
+    SOURCES backend/sectionstate.h
     SOURCES backend/fixframe.h
+    SOURCES backend/modulecomm.h backend/modulecomm.cpp
+    SOURCES backend/blockage.h backend/blockage.cpp
+    SOURCES backend/steerconfig.h backend/steerconfig.cpp
+    SOURCES backend/camera.h backend/camera.cpp
+    SOURCES backend/worldgrid.h backend/worldgrid.cpp
+    SOURCES backend/sectionproperties.h backend/sectionproperties.cpp
+    SOURCES models/recordedpathmodel.h models/recordedpathmodel.cpp
+    SOURCES models/fencelinemodel.h models/fencelinemodel.cpp
+    SOURCES models/flagmodel.h models/flagmodel.cpp
+    SOURCES models/blockagemodel.h models/blockagemodel.cpp
+    SOURCES models/sectionbuttonsmodel.h models/sectionbuttonsmodel.cpp
+    SOURCES models/toolssectionbuttonsmodel.h models/toolssectionbuttonsmodel.cpp
+    SOURCES models/toolswithsectionsmodel.h models/toolswithsectionsmodel.cpp
+    SOURCES models/fieldsmodel.h models/fieldsmodel.cpp
+    SOURCES backendaccess.h
+
+    # Scene graph-based renderer (Phase: QSG Migration)
+    SOURCES scenegraph/aogmaterial.h scenegraph/aogmaterial.cpp
+    SOURCES scenegraph/materials.h scenegraph/materials.cpp
+    SOURCES scenegraph/aoggeometry.h scenegraph/aoggeometry.cpp
+    SOURCES scenegraph/fieldviewitem.h scenegraph/fieldviewitem.cpp
+    SOURCES scenegraph/fieldsurfacenode.h scenegraph/fieldsurfacenode.cpp
+    SOURCES scenegraph/gridnode.h scenegraph/gridnode.cpp
+    SOURCES scenegraph/vehiclenode.h scenegraph/vehiclenode.cpp
+    SOURCES scenegraph/boundarynode.h scenegraph/boundarynode.cpp
+    SOURCES scenegraph/cameraproperties.h scenegraph/cameraproperties.cpp
+    SOURCES scenegraph/gridproperties.h scenegraph/gridproperties.cpp
+    SOURCES scenegraph/fieldsurfaceproperties.h scenegraph/fieldsurfaceproperties.cpp
+    SOURCES scenegraph/vehicleproperties.h scenegraph/vehicleproperties.cpp
+    SOURCES scenegraph/thicklinematerial.h scenegraph/thicklinematerial.cpp
+    SOURCES scenegraph/thicklinecolorsmaterial.h scenegraph/thicklinecolorsmaterial.cpp
+    SOURCES scenegraph/dashedthicklinematerial.h scenegraph/dashedthicklinematerial.cpp
+    SOURCES scenegraph/texturefactory.h scenegraph/texturefactory.cpp
+    SOURCES scenegraph/toolsproperties.h scenegraph/toolsproperties.cpp
+    SOURCES scenegraph/toolsnode.h scenegraph/toolsnode.cpp
+    SOURCES scenegraph/roundpointmaterial.h scenegraph/roundpointmaterial.cpp
+    SOURCES scenegraph/roundpointsizematerial.h scenegraph/roundpointsizematerial.cpp
+
 )
 
 ###### End Script of Handling QML in module ######
@@ -431,6 +481,8 @@ target_include_directories(QtAgOpenGPS PRIVATE
     .
     classes
     backend
+    models
+    scenegraph
 )
 
 # QtAgIO QML module disabled - migrated to qml/agio/ in Phase 4.2
@@ -441,6 +493,7 @@ target_link_libraries(QtAgOpenGPS PRIVATE
     Qt6::Core
     Qt6::Widgets
     Qt6::Gui
+    Qt6::GuiPrivate  # Required for QRhi (rhiresources.cpp)
 #   Qt6::OpenGL
     Qt6::Quick
     Qt6::QuickWidgets
@@ -451,6 +504,46 @@ target_link_libraries(QtAgOpenGPS PRIVATE
     Qt6::Positioning
     Qt6::PositioningQuick
     Qt6::Location
+)
+
+# ============================================================================
+# QRhi Shader Compilation
+# ============================================================================
+# Automatically compile GLSL shaders to .qsb format for cross-platform use
+# The .qsb files contain compiled shaders for: OpenGL, Vulkan, Metal, Direct3D
+#
+# Shaders are compiled for:
+#   - GLSL 100 ES (OpenGL ES 2.0 / WebGL)
+#   - GLSL 300 ES (OpenGL ES 3.0)
+#   - GLSL 150 (OpenGL 3.2 core)
+#   - HLSL 5.0 (Direct3D 11)
+#   - MSL 1.2 (Metal - macOS/iOS)
+#
+# Output .qsb files are embedded in resources at build time
+# ============================================================================
+
+qt_add_shaders(QtAgOpenGPS "rhi_shaders"
+    PREFIX "/AOG"
+    GLSL "100es,300es,150"
+    HLSL 50
+    MSL 12
+    FILES
+        shaders/color_vshader.vert
+        shaders/color_fshader.frag
+        shaders/colors_vshader.vert
+        shaders/colors_fshader.frag
+        shaders/colortex_vshader.vert
+        shaders/colortex_fshader.frag
+        shaders/thickline.vert
+        shaders/thickline.frag
+        shaders/thicklinecolors.vert
+        shaders/thicklinecolors.frag
+        shaders/dashedthickline.vert
+        shaders/dashedthickline.frag
+        shaders/roundpoint.vert
+        shaders/roundpoint.frag
+        shaders/roundpointsize.frag
+        shaders/roundpointsize.vert
 )
 
 # Compile defines

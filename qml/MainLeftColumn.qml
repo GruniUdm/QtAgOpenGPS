@@ -84,7 +84,7 @@ ColumnLayout {
         buttonText: qsTr("Field Tools")
         icon.source: prefix + "/images/FieldTools.png"
         onClicked: fieldTools.visible = true
-        enabled: aog.isJobStarted ? true : false
+        enabled: Backend.isJobStarted ? true : false
     }
 
     Comp.MainWindowBtns {

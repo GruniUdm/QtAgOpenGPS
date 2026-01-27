@@ -14,15 +14,18 @@
 #include "cnmea.h"
 #include "qmlutil.h"
 #include "mainwindowstate.h"
+#include "backend.h"
 #include <QElapsedTimer>
 
 CContour::CContour(QObject *parent)
     : QObject(parent)
 {
     ptList = QSharedPointer<QVector<Vec3>>(new QVector<Vec3>());
+
+    connect(Backend::instance(), &Backend::contourLock, this, &CContour::setLockToLine);
 }
 
-void CContour::SetLockToLine()
+void CContour::setLockToLine()
 {
     if (ctList.count() > 5) {
         bool currentLocked = MainWindowState::instance()->btnIsContourLocked();
@@ -194,7 +197,7 @@ void CContour::BuildContourGuidanceLine(double secondsSinceStart, CVehicle &vehi
     else return;
 
     //are we going same direction as stripList was created?
-    bool isSameWay = M_PI - fabs(fabs(CVehicle::instance()->fixHeading - (*stripList[stripNum])[pt].heading) - M_PI) < 1.57;
+    bool isSameWay = M_PI - fabs(fabs(CVehicle::instance()->fixHeading() - (*stripList[stripNum])[pt].heading) - M_PI) < 1.57;
 
     double RefDist = (distanceFromRefLine + (isSameWay ? tool_toolOffset : -tool_toolOffset))
                      / (tool_toolWidth - tool_toolOverlap);
@@ -393,7 +396,7 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             if (abFixHeadingDelta < -0.74) abFixHeadingDelta = -0.74;
 
             steerAngleCT = atan((distanceFromCurrentLinePivot * stanleyDistanceErrorGain)
-                                     / ((fabs(CVehicle::instance()->avgSpeed) * 0.277777) + 1));
+                                     / ((fabs(CVehicle::instance()->avgSpeed()) * 0.277777) + 1));
 
             if (steerAngleCT > 0.74) steerAngleCT = 0.74;
             if (steerAngleCT < -0.74) steerAngleCT = -0.74;
@@ -472,7 +475,7 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
 
                 if (isBtnAutoSteerOn
                     && fabs(pivotDerivative) < (0.1)
-                    && CVehicle::instance()->avgSpeed > 2.5
+                    && CVehicle::instance()->avgSpeed() > 2.5
                     && !yt.isYouTurnTriggered)
                 {
                     //if over the line heading wrong way, rapidly decrease integral
@@ -541,8 +544,8 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
             //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
             double localHeading;// = glm::twoPI - mf.fixHeading;
 
-            if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
-            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading - inty;
+            if (isHeadingSameWay) localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
+            else localHeading = glm::twoPI - CVehicle::instance()->fixHeading() - inty;
 
             steerAngleCT = glm::toDegrees(atan(2 * (((goalPointCT.easting - pivot.easting) * cos(localHeading))
                                                         + ((goalPointCT.northing - pivot.northing) * sin(localHeading))) * wheelbase / goalPointDistanceSquared));
@@ -556,17 +559,17 @@ void CContour::DistanceFromContourLine(bool isBtnAutoSteerOn,
         }
 
         //used for smooth mode
-        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+        CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
         //fill in the autosteer variables
-        CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+        CVehicle::instance()->set_guidanceLineDistanceOff ((short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
         CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleCT * 100);
     }
     else
     {
         //invalid distance so tell AS module
         distanceFromCurrentLinePivot = 32000; //???
-        CVehicle::instance()->guidanceLineDistanceOff = 32000;
+        CVehicle::instance()->set_guidanceLineDistanceOff (32000);
     }
 
 }
@@ -634,13 +637,13 @@ void CContour::BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCo
     spacingInt *= 0.01;
     if (bnd.bndList.count() == 0)
     {
-        emit TimedMessage(1500, tr("Boundary Contour Error"), tr("No Boundaries Made"));
+        emit Backend::instance()->timedMessage(1500, tr("Boundary Contour Error"), tr("No Boundaries Made"));
         return;
     }
 
     if (patchCounter != 0)
     {
-        emit TimedMessage(1500, tr("Section Control On"), tr("Turn Off Section Control"));
+        emit Backend::instance()->timedMessage(1500, tr("Section Control On"), tr("Turn Off Section Control"));
         return;
     }
 
@@ -674,7 +677,7 @@ void CContour::BuildFenceContours(CBoundary &bnd, double spacingInt, int patchCo
         }
     }
 
-    emit TimedMessage(1500, tr("Boundary Contour"), tr("Contour Path Created"));
+    emit Backend::instance()->timedMessage(1500, tr("Boundary Contour"), tr("Contour Path Created"));
 }
 
 //draw the red follow me line

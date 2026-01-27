@@ -23,11 +23,8 @@
 #include "vecfix2fix.h"
 #include "vec2.h"
 #include "vec3.h"
-#include "ccamera.h"
 #include "btnenum.h"
 
-#include "cworldgrid.h"
-#include "cnmea.h"
 #include "cvehicle.h"
 #include "ctool.h"
 #include "agioservice.h"
@@ -44,7 +41,6 @@
 #include "cguidance.h"
 #include "cheadline.h"
 #include "ctrack.h"
-#include "qmlblockage.h"
 #include "formheadland.h"
 #include "formheadache.h"
 
@@ -75,156 +71,6 @@ class FormGPS : public QQmlApplicationEngine
 {
     Q_OBJECT
 
-    // ===== Q_PROPERTY MIGRATION - OPTION A =====
-    // 67 properties organized in groups for 50Hz optimization
-
-    // === Core Application State (2 properties) - Critical for basic operations - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(bool isJobStarted READ isJobStarted WRITE setIsJobStarted
-               NOTIFY isJobStartedChanged BINDABLE bindableIsJobStarted)
-
-    // === CRITICAL: applicationClosing property for save_everything fix ===
-    Q_PROPERTY(bool applicationClosing READ applicationClosing WRITE setApplicationClosing
-               NOTIFY applicationClosingChanged BINDABLE bindableApplicationClosing)
-
-    // === Position GPS (6 properties) - Critical for navigation - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(QVariantList sectionButtonState READ sectionButtonState WRITE setSectionButtonState
-               NOTIFY sectionButtonStateChanged BINDABLE bindableSectionButtonState)
-
-    // Qt 6.8: Removed complex property binding - using objectCreated signal instead
-
-    // === Vehicle State (6 properties) - Critical for guidance - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double speedKph READ speedKph WRITE setSpeedKph
-               NOTIFY speedKphChanged BINDABLE bindableSpeedKph)
-    Q_PROPERTY(double fusedHeading READ fusedHeading WRITE setFusedHeading
-               NOTIFY fusedHeadingChanged BINDABLE bindableFusedHeading)
-    Q_PROPERTY(double toolEasting READ toolEasting WRITE setToolEasting
-               NOTIFY toolEastingChanged BINDABLE bindableToolEasting)
-    Q_PROPERTY(double toolNorthing READ toolNorthing WRITE setToolNorthing
-               NOTIFY toolNorthingChanged BINDABLE bindableToolNorthing)
-    Q_PROPERTY(double toolHeading READ toolHeading WRITE setToolHeading
-               NOTIFY toolHeadingChanged BINDABLE bindableToolHeading)
-    Q_PROPERTY(double offlineDistance READ offlineDistance WRITE setOfflineDistance
-               NOTIFY offlineDistanceChanged BINDABLE bindableOfflineDistance)
-    Q_PROPERTY(double avgPivDistance READ avgPivDistance WRITE setAvgPivDistance
-               NOTIFY avgPivDistanceChanged BINDABLE bindableAvgPivDistance)
-
-    // === Steering Control (6 properties) - Critical for autosteer - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double calcSteerAngleInner READ calcSteerAngleInner WRITE setCalcSteerAngleInner
-               NOTIFY calcSteerAngleInnerChanged BINDABLE bindableCalcSteerAngleInner)
-    Q_PROPERTY(double calcSteerAngleOuter READ calcSteerAngleOuter WRITE setCalcSteerAngleOuter
-               NOTIFY calcSteerAngleOuterChanged BINDABLE bindableCalcSteerAngleOuter)
-    Q_PROPERTY(double diameter READ diameter WRITE setDiameter
-               NOTIFY diameterChanged BINDABLE bindableDiameter)
-
-    // === Blockage Sensors (8 properties) - Monitoring - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double blockage_avg READ blockage_avg WRITE setBlockage_avg
-               NOTIFY blockage_avgChanged BINDABLE bindableBlockage_avg)
-    Q_PROPERTY(double blockage_min1 READ blockage_min1 WRITE setBlockage_min1
-               NOTIFY blockage_min1Changed BINDABLE bindableBlockage_min1)
-    Q_PROPERTY(double blockage_min2 READ blockage_min2 WRITE setBlockage_min2
-               NOTIFY blockage_min2Changed BINDABLE bindableBlockage_min2)
-    Q_PROPERTY(double blockage_max READ blockage_max WRITE setBlockage_max
-               NOTIFY blockage_maxChanged BINDABLE bindableBlockage_max)
-    Q_PROPERTY(int blockage_min1_i READ blockage_min1_i WRITE setBlockage_min1_i
-               NOTIFY blockage_min1_iChanged BINDABLE bindableBlockage_min1_i)
-    Q_PROPERTY(int blockage_min2_i READ blockage_min2_i WRITE setBlockage_min2_i
-               NOTIFY blockage_min2_iChanged BINDABLE bindableBlockage_min2_i)
-    Q_PROPERTY(int blockage_max_i READ blockage_max_i WRITE setBlockage_max_i
-               NOTIFY blockage_max_iChanged BINDABLE bindableBlockage_max_i)
-    Q_PROPERTY(int blockage_blocked READ blockage_blocked WRITE setBlockage_blocked
-               NOTIFY blockage_blockedChanged BINDABLE bindableBlockage_blocked)
-    Q_PROPERTY(QVariantList blockageSecCount READ blockageSecCount WRITE setBlockageSecCount
-                   NOTIFY blockageSecCountChanged BINDABLE bindableBlockageSecCount)
-
-    // === Navigation (7 properties) - Important for guidance - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double distancePivotToTurnLine READ distancePivotToTurnLine WRITE setDistancePivotToTurnLine
-               NOTIFY distancePivotToTurnLineChanged BINDABLE bindableDistancePivotToTurnLine)
-    Q_PROPERTY(bool isYouTurnRight READ isYouTurnRight WRITE setIsYouTurnRight
-               NOTIFY isYouTurnRightChanged BINDABLE bindableIsYouTurnRight)
-    Q_PROPERTY(bool isYouTurnTriggered READ isYouTurnTriggered WRITE setIsYouTurnTriggered
-               NOTIFY isYouTurnTriggeredChanged BINDABLE bindableIsYouTurnTriggered)
-    Q_PROPERTY(int current_trackNum READ current_trackNum WRITE setCurrent_trackNum
-               NOTIFY current_trackNumChanged BINDABLE bindableCurrent_trackNum)
-    Q_PROPERTY(int track_idx READ track_idx WRITE setTrack_idx
-               NOTIFY track_idxChanged BINDABLE bindableTrack_idx)
-    Q_PROPERTY(double lblmodeActualXTE READ lblmodeActualXTE WRITE setLblmodeActualXTE
-               NOTIFY lblmodeActualXTEChanged BINDABLE bindableLblmodeActualXTE)
-    Q_PROPERTY(double lblmodeActualHeadingError READ lblmodeActualHeadingError WRITE setLblmodeActualHeadingError
-               NOTIFY lblmodeActualHeadingErrorChanged BINDABLE bindableLblmodeActualHeadingError)
-
-    // === Tool Position (2 properties) - Display - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(double toolLatitude READ toolLatitude WRITE setToolLatitude
-               NOTIFY toolLatitudeChanged BINDABLE bindableToolLatitude)
-    Q_PROPERTY(double toolLongitude READ toolLongitude WRITE setToolLongitude
-               NOTIFY toolLongitudeChanged BINDABLE bindableToolLongitude)
-
-    // === Wizard/Calibration (4 properties) - Special - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(int sampleCount READ sampleCount WRITE setSampleCount
-               NOTIFY sampleCountChanged BINDABLE bindableSampleCount)
-    Q_PROPERTY(double confidenceLevel READ confidenceLevel WRITE setConfidenceLevel
-               NOTIFY confidenceLevelChanged BINDABLE bindableConfidenceLevel)
-    Q_PROPERTY(bool hasValidRecommendation READ hasValidRecommendation WRITE setHasValidRecommendation
-               NOTIFY hasValidRecommendationChanged BINDABLE bindableHasValidRecommendation)
-    Q_PROPERTY(bool startSA READ startSA WRITE setStartSA
-               NOTIFY startSAChanged BINDABLE bindableStartSA)
-
-    // === Visual Geometry (2 properties) - OpenGL - Qt 6.8 Rectangle Pattern ===
-    Q_PROPERTY(QVariant vehicle_xy READ vehicle_xy WRITE setVehicle_xy
-               NOTIFY vehicle_xyChanged BINDABLE bindableVehicle_xy)
-    Q_PROPERTY(QVariant vehicle_bounding_box READ vehicle_bounding_box WRITE setVehicle_bounding_box
-               NOTIFY vehicle_bounding_boxChanged BINDABLE bindableVehicle_bounding_box)
-
-    // === Misc Status (2 properties) - Status - Qt 6.8 QProperty + BINDABLE ===
-    Q_PROPERTY(bool steerSwitchHigh READ steerSwitchHigh WRITE setSteerSwitchHigh
-               NOTIFY steerSwitchHighChanged BINDABLE bindableSteerSwitchHigh)
-    Q_PROPERTY(bool imuCorrected READ imuCorrected WRITE setImuCorrected
-               NOTIFY imuCorrectedChanged BINDABLE bindableImuCorrected)
-    Q_PROPERTY(QString lblCalcSteerAngleInner READ lblCalcSteerAngleInner WRITE setLblCalcSteerAngleInner
-               NOTIFY lblCalcSteerAngleInnerChanged BINDABLE bindableLblCalcSteerAngleInner)
-    Q_PROPERTY(QString lblDiameter READ lblDiameter WRITE setLblDiameter
-               NOTIFY lblDiameterChanged BINDABLE bindableLblDiameter)
-
-    // GPS/NMEA Coordinates - Phase 6.0.4.2
-    // Phase 6.0.20 Task 24 Step 3.5: Read-only Q_PROPERTY (QML cannot modify field origin)
-    Q_PROPERTY(double latStart READ latStart
-               NOTIFY latStartChanged BINDABLE bindableLatStart)
-    Q_PROPERTY(double lonStart READ lonStart
-               NOTIFY lonStartChanged BINDABLE bindableLonStart)
-
-    // mPerDegreeLat: No Q_PROPERTY needed - C++ only (CNMEA/AgIOService read via getter)
-
-    // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(double gpsHeading READ gpsHeading WRITE setGpsHeading
-               NOTIFY gpsHeadingChanged BINDABLE bindableGpsHeading)
-    Q_PROPERTY(bool isReverseWithIMU READ isReverseWithIMU WRITE setIsReverseWithIMU
-               NOTIFY isReverseWithIMUChanged BINDABLE bindableIsReverseWithIMU)
-
-    // Module Connection - Phase 6.0.20 Task 24 Step 3.2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(int steerModuleConnectedCounter READ steerModuleConnectedCounter WRITE setSteerModuleConnectedCounter
-               NOTIFY steerModuleConnectedCounterChanged BINDABLE bindableSteerModuleConnectedCounter)
-
-    // Button States - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(int autoBtnState READ autoBtnState WRITE setAutoBtnState
-               NOTIFY autoBtnStateChanged BINDABLE bindableAutoBtnState)
-    Q_PROPERTY(int manualBtnState READ manualBtnState WRITE setManualBtnState
-               NOTIFY manualBtnStateChanged BINDABLE bindableManualBtnState)
-    Q_PROPERTY(bool autoTrackBtnState READ autoTrackBtnState WRITE setAutoTrackBtnState
-               NOTIFY autoTrackBtnStateChanged BINDABLE bindableAutoTrackBtnState)
-    Q_PROPERTY(bool autoYouturnBtnState READ autoYouturnBtnState WRITE setAutoYouturnBtnState
-               NOTIFY autoYouturnBtnStateChanged BINDABLE bindableAutoYouturnBtnState)
-
-    // Job Control - Phase 6.0.4.2 - Qt 6.8 QProperty + BINDABLE
-    Q_PROPERTY(bool isPatchesChangingColor READ isPatchesChangingColor WRITE setIsPatchesChangingColor
-               NOTIFY isPatchesChangingColorChanged BINDABLE bindableIsPatchesChangingColor)
-
-    // Boundary State - Phase 6.0.20 - Qt 6.8 BINDABLE
-    Q_PROPERTY(bool boundaryIsRecording READ boundaryIsRecording WRITE setBoundaryIsRecording
-               NOTIFY boundaryIsRecordingChanged BINDABLE bindableBoundaryIsRecording)
-    Q_PROPERTY(double boundaryArea READ boundaryArea WRITE setBoundaryArea
-               NOTIFY boundaryAreaChanged BINDABLE bindableBoundaryArea)
-    Q_PROPERTY(int boundaryPointCount READ boundaryPointCount WRITE setBoundaryPointCount
-               NOTIFY boundaryPointCountChanged BINDABLE bindableBoundaryPointCount)
-
 public:
     explicit FormGPS(QWidget *parent = 0);
     ~FormGPS();
@@ -232,254 +78,19 @@ public:
     // ===== Q_PROPERTY GETTERS, SETTERS AND BINDABLES =====
     // Manual declarations for all Rectangle Pattern properties
 
-    // Application State
-    bool isJobStarted() const;
-    void setIsJobStarted(bool value);
-    QBindable<bool> bindableIsJobStarted();
-
-    bool applicationClosing() const;
-    void setApplicationClosing(bool value);
-    QBindable<bool> bindableApplicationClosing();
-
-    // Position GPS
-    QVariantList sectionButtonState() const;
-    void setSectionButtonState(const QVariantList& value);
-    QBindable<QVariantList> bindableSectionButtonState();
-
-    // Vehicle State
-    double speedKph() const;
-    void setSpeedKph(double value);
-    QBindable<double> bindableSpeedKph();
-
-    double fusedHeading() const;
-    void setFusedHeading(double value);
-    QBindable<double> bindableFusedHeading();
-
-    double toolEasting() const;
-    void setToolEasting(double value);
-    QBindable<double> bindableToolEasting();
-
-    double toolNorthing() const;
-    void setToolNorthing(double value);
-    QBindable<double> bindableToolNorthing();
-
-    double toolHeading() const;
-    void setToolHeading(double value);
-    QBindable<double> bindableToolHeading();
-
-    double offlineDistance() const;
-    void setOfflineDistance(double value);
-    QBindable<double> bindableOfflineDistance();
-
-    // Steering Control
-    double calcSteerAngleInner() const;
-    void setCalcSteerAngleInner(double value);
-    QBindable<double> bindableCalcSteerAngleInner();
-
-    double calcSteerAngleOuter() const;
-    void setCalcSteerAngleOuter(double value);
-    QBindable<double> bindableCalcSteerAngleOuter();
-
-    double diameter() const;
-    void setDiameter(double value);
-    QBindable<double> bindableDiameter();
-
-    // Blockage Sensors
-    double blockage_avg() const;
-    void setBlockage_avg(double value);
-    QBindable<double> bindableBlockage_avg();
-
-    double blockage_min1() const;
-    void setBlockage_min1(double value);
-    QBindable<double> bindableBlockage_min1();
-
-    double blockage_min2() const;
-    void setBlockage_min2(double value);
-    QBindable<double> bindableBlockage_min2();
-
-    double blockage_max() const;
-    void setBlockage_max(double value);
-    QBindable<double> bindableBlockage_max();
-
-    int blockage_min1_i() const;
-    void setBlockage_min1_i(int value);
-    QBindable<int> bindableBlockage_min1_i();
-
-    int blockage_min2_i() const;
-    void setBlockage_min2_i(int value);
-    QBindable<int> bindableBlockage_min2_i();
-
-    int blockage_max_i() const;
-    void setBlockage_max_i(int value);
-    QBindable<int> bindableBlockage_max_i();
-
-    int blockage_blocked() const;
-    void setBlockage_blocked(int value);
-    QBindable<int> bindableBlockage_blocked();
-
-    QVariantList blockageSecCount() const;
-    void setBlockageSecCount(const QVariantList& value);
-    QBindable<QVariantList> bindableBlockageSecCount();
-
-    double avgPivDistance() const;
-    void setAvgPivDistance(double value);
-    QBindable<double> bindableAvgPivDistance();
-
-    // Navigation
-    double distancePivotToTurnLine() const;
-    void setDistancePivotToTurnLine(double value);
-    QBindable<double> bindableDistancePivotToTurnLine();
-
-    bool isYouTurnRight() const;
-    void setIsYouTurnRight(bool value);
-    QBindable<bool> bindableIsYouTurnRight();
-
-    bool isYouTurnTriggered() const;
-    void setIsYouTurnTriggered(bool value);
-    QBindable<bool> bindableIsYouTurnTriggered();
-
-    int current_trackNum() const;
-    void setCurrent_trackNum(int value);
-    QBindable<int> bindableCurrent_trackNum();
-
-    int track_idx() const;
-    void setTrack_idx(int value);
-    QBindable<int> bindableTrack_idx();
-
-    double lblmodeActualXTE() const;
-    void setLblmodeActualXTE(double value);
-    QBindable<double> bindableLblmodeActualXTE();
-
-    double lblmodeActualHeadingError() const;
-    void setLblmodeActualHeadingError(double value);
-    QBindable<double> bindableLblmodeActualHeadingError();
-
-    // Tool Position
-    double toolLatitude() const;
-    void setToolLatitude(double value);
-    QBindable<double> bindableToolLatitude();
-
-    double toolLongitude() const;
-    void setToolLongitude(double value);
-    QBindable<double> bindableToolLongitude();
-
-    // Wizard/Calibration
-    int sampleCount() const;
-    void setSampleCount(int value);
-    QBindable<int> bindableSampleCount();
-
-    double confidenceLevel() const;
-    void setConfidenceLevel(double value);
-    QBindable<double> bindableConfidenceLevel();
-
-    bool hasValidRecommendation() const;
-    void setHasValidRecommendation(bool value);
-    QBindable<bool> bindableHasValidRecommendation();
-
-    bool startSA() const;
-    void setStartSA(bool value);
-    QBindable<bool> bindableStartSA();
-
-    // Visual Geometry
-    QVariant vehicle_xy() const;
-    void setVehicle_xy(const QVariant& value);
-    QBindable<QVariant> bindableVehicle_xy();
-
-    QVariant vehicle_bounding_box() const;
-    void setVehicle_bounding_box(const QVariant& value);
-    QBindable<QVariant> bindableVehicle_bounding_box();
-
     // Misc Status
-    bool steerSwitchHigh() const;
-    void setSteerSwitchHigh(bool value);
-    QBindable<bool> bindableSteerSwitchHigh();
-
-    bool imuCorrected() const;
-    void setImuCorrected(bool value);
-    QBindable<bool> bindableImuCorrected();
-
-    QString lblCalcSteerAngleInner() const;
-    void setLblCalcSteerAngleInner(const QString &value);
-    QBindable<QString> bindableLblCalcSteerAngleInner();
-
-    QString lblDiameter() const;
-    void setLblDiameter(const QString &value);
-    QBindable<QString> bindableLblDiameter();
-
     void setSensorData(int value);
     QBindable<int> bindableSensorData();
 
-    // GPS/NMEA Coordinates
-    double latStart() const;
-    void setLatStart(double value);
-    QBindable<double> bindableLatStart();
-
-    double lonStart() const;
-    void setLonStart(double value);
-    QBindable<double> bindableLonStart();
-
-    // Geodetic Conversion - Phase 6.0.20 Task 24 Step 3.5
-    // Simple getter - no Q_PROPERTY (C++ only, not exposed to QML)
-    double mPerDegreeLat() const { return m_mPerDegreeLat; }
-
-    // Geodetic Conversion Functions - Phase 6.0.20 Task 24 Step 3.5
-    // Exposed to QML for coordinate transformations
-    Q_INVOKABLE QVariantList convertLocalToWGS84(double northing, double easting);
-    Q_INVOKABLE QVariantList convertWGS84ToLocal(double latitude, double longitude);
-
-    // NMEA Processing
-    uint sentenceCounter() const;
-    void setSentenceCounter(uint value);
-    QBindable<uint> bindableSentenceCounter();
-
     // GPS/IMU Heading - Phase 6.0.20 Task 24 Step 2
-    double gpsHeading() const;
-    void setGpsHeading(double value);
-    QBindable<double> bindableGpsHeading();
-
     bool isReverseWithIMU() const;
     void setIsReverseWithIMU(bool value);
     QBindable<bool> bindableIsReverseWithIMU();
-
-    // Module Connection - Phase 6.0.20 Task 24 Step 3.2
-    int steerModuleConnectedCounter() const;
-    void setSteerModuleConnectedCounter(int value);
-    QBindable<int> bindableSteerModuleConnectedCounter();
-
-    // Button States
-    int autoBtnState() const;
-    void setAutoBtnState(int value);
-    QBindable<int> bindableAutoBtnState();
-
-    int manualBtnState() const;
-    void setManualBtnState(int value);
-    QBindable<int> bindableManualBtnState();
-
-    bool autoTrackBtnState() const;
-    void setAutoTrackBtnState(bool value);
-    QBindable<bool> bindableAutoTrackBtnState();
-
-    bool autoYouturnBtnState() const;
-    void setAutoYouturnBtnState(bool value);
-    QBindable<bool> bindableAutoYouturnBtnState();
 
     // Job Control
     bool isPatchesChangingColor() const;
     void setIsPatchesChangingColor(bool value);
     QBindable<bool> bindableIsPatchesChangingColor();
-
-    // Boundary State
-    bool boundaryIsRecording() const;
-    void setBoundaryIsRecording(bool value);
-    QBindable<bool> bindableBoundaryIsRecording();
-
-    double boundaryArea() const;
-    void setBoundaryArea(double value);
-    QBindable<double> bindableBoundaryArea();
-
-    int boundaryPointCount() const;
-    void setBoundaryPointCount(int value);
-    QBindable<int> bindableBoundaryPointCount();
 
      /***********************************************
      * Qt-specific things we need to keep track of *
@@ -489,7 +100,6 @@ public:
     QSignalMapper *sectionButtonsSignalMapper;
     QTimer *tmrWatchdog;
     QTimer timerGPS;  // Phase 6.0.24: Fixed 40 Hz timer for real GPS mode (like timerSim for simulation)
-    QTimer *timer_tick;
 
     /***************************
      * Qt and QML GUI elements *
@@ -551,10 +161,6 @@ public:
 
     //bool for whether or not a job is active
     bool /*setIsJobStarted(false),*/ isAreaOnRight = true /*, setIsBtnAutoSteerOn(false)*/;
-
-    //this bool actually lives in the QML aog object.
-    // ⚡ PHASE 6.3.0: Migrated to Q_PROPERTY system above
-    // InterfaceProperty<AOGInterface,bool> isJobStarted = InterfaceProperty<AOGInterface,bool>("isJobStarted");
 
     //if we are saving a file
     bool isSavingFile = false, isLogElevation = false;
@@ -657,8 +263,6 @@ public:
     //sunrise, sunset
 
     bool isFlashOnOff = false;
-    //makes nav panel disappear after 6 seconds
-    int navPanelCounter = 0;
 
 private:
 public:
@@ -680,25 +284,6 @@ public:
     //used to update the screen status bar etc
     int statusUpdateCounter = 1;
 
-    //create the scene camera
-    CCamera camera;
-
-    //create world grid
-    //QScopedPointer <CWorldGrid> worldGrid;
-    CWorldGrid worldGrid;
-
-    //Parsing object of NMEA sentences
-    //QScopedPointer<CNMEA> pn;
-    CNMEA pn;
-
-    qmlblockage blockage;
-
-    //ABLine Instance
-    //QScopedPointer<CABLine> ABLine;
-
-    // Track management - restored from original architecture (was CTrack trk)
-    CTrack track;
-
     CGuidance gyd;
 
     CTram tram;
@@ -706,9 +291,8 @@ public:
     //Contour mode Instance
     //QScopedPointer<CContour> ct;
     CContour ct;
-    CYouTurn yt;
+    //CYouTurn yt;
 
-    CVehicle* vehicle;  // Pointeur vers singleton
     CTool tool;
 
     //boundary instance
@@ -747,7 +331,7 @@ public:
      *************************/
 public:
     //very first fix to setup grid etc
-    bool isFirstFixPositionSet = false, isGPSPositionInitialized = false, isFirstHeadingSet = false;
+    bool isFirstFixPositionSet = false, isGPSPositionInitialized = false;
     bool m_forceGPSReinitialization = false;  // PHASE 6.0.41: Force latStart/lonStart update on mode switch even if field open
     bool /*isReverse = false (CVehicle),*/ isSteerInReverse = true, isSuperSlow = false, isAutoSnaptoPivot = false;
     double startGPSHeading = 0;
@@ -763,9 +347,6 @@ public:
     double setAngVel = 0.0;  // Phase 6.0.24 Problem 18
     double actAngVel = 0.0;  // Phase 6.0.24 Problem 18
     bool isConstantContourOn;
-
-    //guidance line look ahead
-    double guidanceLookAheadTime = 2;
 
     //for heading or Atan2 as camera
     QString headingFromSource, headingFromSourceBak;
@@ -785,7 +366,6 @@ public:
 
     //headings
     double smoothCamHeading = 0, prevGPSHeading = 0.0;
-    // gpsHeading moved to Q_OBJECT_BINDABLE_PROPERTY m_gpsHeading (line 1847)
 
     //storage for the cos and sin of heading
     //moved to vehicle
@@ -819,8 +399,6 @@ public:
 
     //IMU
     double rollCorrectionDistance = 0;
-    // Phase 6.0.24 Problem 18: Initialize IMU variables to prevent garbage values causing crash
-    // If uninitialized, _imuCorrected garbage gets copied to CVehicle::fixHeading → modelview.rotate(garbage) → nan → crash
     double imuGPS_Offset = 0.0;
     double _imuCorrected = 0.0;  // Renamed to avoid Q_PROPERTY conflict
 
@@ -910,17 +488,6 @@ public:
     void ExportFieldAs_ISOXMLv3();
     void ExportFieldAs_ISOXMLv4();
 
-
-    /************************
-     * formgps_sections.cpp *
-     ************************/
-    //void SectionSetPosition();
-    //void SectionCalcWidths();
-    //void SectionCalcMulti();
-    void BuildMachineByte();
-    void DoRemoteSwitches();
-
-
     /************************
      * formgps_settimgs.cpp *
      ************************/
@@ -937,7 +504,6 @@ public:
     double camDistanceFactor = -2;
     int mouseX = 0, mouseY = 0;
     double mouseEasting = 0, mouseNorthing = 0;
-    int lastWidth=-1, lastHeight=-1;
     // Phase 6.0.24 Problem 18: Initialize field boundary variables
     double offX = 0.0, offY = 0.0;
 
@@ -945,7 +511,6 @@ public:
     //uchar grnPixels[80001];
     LookAheadPixels grnPixels[150001];
     LookAheadPixels *overPixels = new LookAheadPixels[160000]; //400x400
-    QImage grnPix; //for debugging purposes to show in a window
     QImage overPix; //for debugging purposes to show in a window
 
     /*
@@ -965,33 +530,8 @@ private:
 public:
     // ===== Q_INVOKABLE MODERN ACTIONS - Qt 6.8 Direct QML Calls =====
     // Phase 6.0.20: Modernization of button actions - replace signal/slot with direct calls
-    Q_INVOKABLE void resetTool();
-    Q_INVOKABLE void contour();
-    Q_INVOKABLE void contourLock();
-    Q_INVOKABLE void contourPriority(bool isRight);
-    // Batch 7 actions - lines 215-222
-    Q_INVOKABLE void headland();
-    Q_INVOKABLE void youSkip();
-    Q_INVOKABLE void resetDirection();
-    Q_INVOKABLE void centerOgl();
-    Q_INVOKABLE void deleteAppliedArea();
-    // Batch 2 - 7 actions You-Turn and Navigation - lines 220-226
-    Q_INVOKABLE void manualUTurn(bool isRight);
-    Q_INVOKABLE void lateral(bool isRight);
-    Q_INVOKABLE void autoYouTurn();
     // Batch 9 - 2 actions Snap Track - lines 237-238
-    Q_INVOKABLE void snapSideways(double distance);
-    Q_INVOKABLE void snapToPivot();
     // Batch 10 - 8 actions Modules & Steering - lines 253-266
-    Q_INVOKABLE void startSAAction();
-
-    // Batch 12 - 6 actions Wizard & Calibration - lines 325-330
-    Q_INVOKABLE void stopDataCollection();
-    Q_INVOKABLE void startDataCollection();
-    Q_INVOKABLE void resetData();
-    Q_INVOKABLE void applyOffsetToCollectedData(double offset);
-    Q_INVOKABLE void smartCalLabelClick();
-    Q_INVOKABLE void smartZeroWAS();
 
     // Batch 13 - 7 actions Field Management - lines 1826-1832
     Q_INVOKABLE void fieldUpdateList();
@@ -1004,20 +544,8 @@ public:
 
     // Batch 14 - 11 actions Boundary Management - lines 1843-1854
     Q_INVOKABLE void loadBoundaryFromKML(QString filename);
-    Q_INVOKABLE void addBoundaryOSMPoint(double latitude, double longitude);
 
-    Q_INVOKABLE void swapAutoYouTurnDirection();
-    Q_INVOKABLE void resetCreatedYouTurn();
-    Q_INVOKABLE void autoTrack();
     // Batch 3 - 8 actions Camera Navigation - lines 201-208
-    Q_INVOKABLE void zoomIn();
-    Q_INVOKABLE void zoomOut();
-    Q_INVOKABLE void tiltDown();
-    Q_INVOKABLE void tiltUp();
-    Q_INVOKABLE void view2D();
-    Q_INVOKABLE void view3D();
-    Q_INVOKABLE void normal2D();
-    Q_INVOKABLE void normal3D();
     // Batch 4 - 2 actions Settings - lines 227-228
     Q_INVOKABLE void settingsReload();
     Q_INVOKABLE void settingsSave();
@@ -1050,7 +578,6 @@ public:
 
     bool isHeadlandClose = false;
 
-    // steerModuleConnectedCounter moved to Q_OBJECT_BINDABLE_PROPERTY m_steerModuleConnectedCounter (line 1860)
     double lightbarDistance=0;
     QString strHeading;
     int lenth = 4;
@@ -1065,21 +592,9 @@ public:
     QVector3D mouseClickToPan(int mouseX, int mouseY);
 
     void loadGLTextures();
-    void Timer1_Tick();
 
 private:
     bool toSend = false, isSA = false;
-    int counter = 0, secondCntr = 0, cntr = 0;  // Phase 6.0.24 Problem 18
-    Vec3 startFix;
-    // Phase 6.0.24 Problem 18: Initialize steer wizard variables
-    double _diameter = 0.0;  // Renamed to avoid Q_PROPERTY conflict
-    double steerAngleRight = 0.0;
-    double dist = 0.0;
-    // DEAD CODE from C# original - lblCalcSteerAngleOuter never displayed in UI (FormSteerWiz.Designer.cs has no widget)
-    // C# FormSteer.cs lines 335, 848, 854: all assignments commented out
-    // Qt QtAgOpenGPS formgps_position.cpp:1253: setProperty() was dead code
-    // TODO Phase 7: Remove all dead code comments
-    QString lblCalcSteerAngleOuter;  // lblCalcSteerAngleInner and lblDiameter migrated to Q_PROPERTY BINDABLE
 
     // Language translation system
     QTranslator* m_translator;
@@ -1107,17 +622,8 @@ private:
      * FormGPS.cs *
      **************/
 public:
-    QString speedMPH();
-    QString speedKPH();
-
     void JobNew();
     void JobClose();
-
-    /******************************
-     * formgps_classcallbacks.cpp *
-     ******************************/
-    void connect_classes();
-
 
     /****************
      * form_sim.cpp *
@@ -1184,8 +690,6 @@ public slots:
 
     //boundary UI for recording new boundary
     void boundary_new_from_KML(QString filename);
-    void addboundaryOSMPoint(double latitude, double longitude);
-
 
     void headland_save();
     void headlines_save();
@@ -1193,51 +697,23 @@ public slots:
 
     //headland creation
 
-    void onBtnResetDirection_clicked();
-    //left column
-    void onBtnAgIO_clicked();
+    void resetDirection();
     //right column
-    void onBtnContour_clicked();
-    void onBtnAutoYouTurn_clicked();
-    void onBtnSwapAutoYouTurnDirection_clicked();
-    void onBtnContourPriority_clicked(bool isRight);
-    void onBtnContourLock_clicked();
-    void onBtnResetCreatedYouTurn_clicked();
-    void onBtnAutoTrack_clicked();
+    void contourPriority(bool isRight);
     //bottom row
-    void onBtnResetTool_clicked();
-    void onBtnHeadland_clicked();
-    void onBtnHydLift_clicked();
     void onBtnTramlines_clicked();
-    void onBtnSnapSideways_clicked(double distance);
-    void onBtnSnapToPivot_clicked();
-    //don't need ablineedit
-    void onBtnYouSkip_clicked();
 
+    void snapSideways(double distance);
+    void snapToPivot();
 
     //displaybuttons.qml
-    void onBtnTiltDown_clicked();
-    void onBtnTiltUp_clicked();
-    void onBtn2D_clicked();
-    void onBtn3D_clicked();
-    void onBtnN2D_clicked();
-    void onBtnN3D_clicked();
-
-    void onBtnZoomIn_clicked();
-    void onBtnZoomOut_clicked();
 
     void SwapDirection();
     void turnOffBoundAlarm();
 
-    void onBtnManUTurn_clicked(bool right); //TODO add the skip number as a parameter
-    void onBtnLateral_clicked(bool right); //TODO add the skip number as a parameter
-    void onBtnCenterOgl_clicked();
+    void centerOgl();
 
-    void onDeleteAppliedArea_clicked();
-
-    void btnStartSA_clicked();
-
-
+    void deleteAppliedArea();
 
     /***************************
      * from OpenGL.Designer.cs *
@@ -1282,100 +758,11 @@ public slots:
     void FileSaveTracks();
 
     /* formgps_classcallbacks.cpp */
-    void onStopAutoSteer(); //cancel autosteer and ensure button state
-    void onSectionMasterAutoOff();
-    void onSectionMasterManualOff();
     void onStoppedDriving();
 
 signals:
     void do_processSectionLookahead();
     void do_processOverlapCount();
-
-    // ===== Q_PROPERTY SIGNALS - Qt 6.8 Rectangle Pattern NOTIFY signals =====
-    // CRITICAL: All properties need NOTIFY signals for QML bindings to work properly
-
-    // Application State signals
-    void isJobStartedChanged();
-    void applicationClosingChanged();  // CRITICAL: for save_everything fix
-
-    // Position GPS signals
-    void sectionButtonStateChanged();
-
-    // Vehicle State signals
-    void speedKphChanged();
-    void fusedHeadingChanged();
-    void toolEastingChanged();
-    void toolNorthingChanged();
-    void toolHeadingChanged();
-    void offlineDistanceChanged();
-
-    // Steering Control signals
-    void calcSteerAngleInnerChanged();
-    void calcSteerAngleOuterChanged();
-    void diameterChanged();
-
-    // Blockage Sensors signals
-    void blockage_avgChanged();
-    void blockage_min1Changed();
-    void blockage_min2Changed();
-    void blockage_maxChanged();
-    void blockage_min1_iChanged();
-    void blockage_min2_iChanged();
-    void blockage_max_iChanged();
-    void blockage_blockedChanged();
-    void blockageSecCountChanged();
-    void avgPivDistanceChanged();
-
-    // Navigation signals
-    void distancePivotToTurnLineChanged();
-    void isYouTurnRightChanged();
-    void isYouTurnTriggeredChanged();
-    void current_trackNumChanged();
-    void track_idxChanged();
-    void lblmodeActualXTEChanged();
-    void lblmodeActualHeadingErrorChanged();
-
-    // All other property signals (continuing the pattern...)
-    void toolLatitudeChanged();
-    void toolLongitudeChanged();
-    void sampleCountChanged();
-    void confidenceLevelChanged();
-    void hasValidRecommendationChanged();
-    void startSAChanged();
-    void vehicle_xyChanged();
-    void vehicle_bounding_boxChanged();
-    void steerSwitchHighChanged();
-    void imuCorrectedChanged();
-    void lblCalcSteerAngleInnerChanged();
-    void lblDiameterChanged();
-    void latStartChanged();
-    void lonStartChanged();
-    void mPerDegreeLatChanged();
-    void sentenceCounterChanged();
-    void gpsHeadingChanged();
-    void isReverseWithIMUChanged();
-    void steerModuleConnectedCounterChanged();
-    void autoBtnStateChanged();
-    void manualBtnStateChanged();
-    void autoTrackBtnStateChanged();
-    void autoYouturnBtnStateChanged();
-    void isPatchesChangingColorChanged();
-    void boundaryIsRecordingChanged();
-    void boundaryAreaChanged();
-    void boundaryPointCountChanged();
-
-    // ===== SIGNALS CLEANED - Qt 6.8 Q_INVOKABLE Migration =====
-    // All button action signals migrated to Q_INVOKABLE direct calls
-    // See Q_INVOKABLE section above for modern implementations
-signals:
-    // Only non-button signals remain - no duplicates with Q_INVOKABLE
-
-public:
-
-    /*******************
-     * Tranlation function*
-     * formgps_ui.cpp *
-     *******************/
 
 private:
     // OLD translator removed - now using m_translator
@@ -1388,146 +775,6 @@ private:
 
     // ===== Q_PROPERTY MEMBER VARIABLES =====
     // 69 members for optimized properties
-
-    // Application State (3) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isJobStarted, &FormGPS::isJobStartedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_applicationClosing, &FormGPS::applicationClosingChanged)
-
-    // ⚡ PHASE 6.0.3.2: QML Interface Ready State
-
-    // Position GPS (6) - Qt 6.8 Rectangle Pattern
-    // Section button state - Qt 6.8 BINDABLE Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariantList, m_sectionButtonState, &FormGPS::sectionButtonStateChanged)
-
-    // Vehicle State (6) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_speedKph, &FormGPS::speedKphChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_fusedHeading, &FormGPS::fusedHeadingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolEasting, &FormGPS::toolEastingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolNorthing, &FormGPS::toolNorthingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolHeading, &FormGPS::toolHeadingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, short int, m_offlineDistance, &FormGPS::offlineDistanceChanged)
-    // avgPivDistance: use existing variable at line 690
-    // isReverseWithIMU: use existing variable at line 527
-
-    // Steering Control (6) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_calcSteerAngleInner, &FormGPS::calcSteerAngleInnerChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_calcSteerAngleOuter, &FormGPS::calcSteerAngleOuterChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_diameter, &FormGPS::diameterChanged)
-
-    // Blockage Sensors (8) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_avg, &FormGPS::blockage_avgChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min1, &FormGPS::blockage_min1Changed)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min2, &FormGPS::blockage_min2Changed)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_max, &FormGPS::blockage_maxChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min1_i, &FormGPS::blockage_min1_iChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_min2_i, &FormGPS::blockage_min2_iChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_max_i, &FormGPS::blockage_max_iChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_blockage_blocked, &FormGPS::blockage_blockedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariantList, m_blockageseccount, &FormGPS::blockageSecCountChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_avgPivDistance, &FormGPS::avgPivDistanceChanged)
-
-    // Navigation (7) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_distancePivotToTurnLine, &FormGPS::distancePivotToTurnLineChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isYouTurnRight, &FormGPS::isYouTurnRightChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isYouTurnTriggered, &FormGPS::isYouTurnTriggeredChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_current_trackNum, &FormGPS::current_trackNumChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_track_idx, &FormGPS::track_idxChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_lblmodeActualXTE, &FormGPS::lblmodeActualXTEChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_lblmodeActualHeadingError, &FormGPS::lblmodeActualHeadingErrorChanged)
-
-    // Tool Position (2) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolLatitude, &FormGPS::toolLatitudeChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_toolLongitude, &FormGPS::toolLongitudeChanged)
-
-    // Wizard/Calibration (4) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_sampleCount, &FormGPS::sampleCountChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_confidenceLevel, &FormGPS::confidenceLevelChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_hasValidRecommendation, &FormGPS::hasValidRecommendationChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_startSA, &FormGPS::startSAChanged)
-
-    // Visual Geometry (2) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariant, m_vehicle_xy, &FormGPS::vehicle_xyChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QVariant, m_vehicle_bounding_box, &FormGPS::vehicle_bounding_boxChanged)
-
-    // Misc Status (2) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_steerSwitchHigh, &FormGPS::steerSwitchHighChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_imuCorrected, &FormGPS::imuCorrectedChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblCalcSteerAngleInner, &FormGPS::lblCalcSteerAngleInnerChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, QString, m_lblDiameter, &FormGPS::lblDiameterChanged)
-
-    // Additional AOG Properties (9) - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_latStart, &FormGPS::latStartChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_lonStart, &FormGPS::lonStartChanged)
-    double m_mPerDegreeLat = 0.0;  // Phase 6.0.20 Task 24 Step 3.5: Simple member (no BINDABLE - C++ only)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, uint, m_sentenceCounter, &FormGPS::sentenceCounterChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_gpsHeading, &FormGPS::gpsHeadingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isReverseWithIMU, &FormGPS::isReverseWithIMUChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_steerModuleConnectedCounter, &FormGPS::steerModuleConnectedCounterChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_autoBtnState, &FormGPS::autoBtnStateChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_manualBtnState, &FormGPS::manualBtnStateChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_autoTrackBtnState, &FormGPS::autoTrackBtnStateChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_autoYouturnBtnState, &FormGPS::autoYouturnBtnStateChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_isPatchesChangingColor, &FormGPS::isPatchesChangingColorChanged)
-
-    // Boundary State Properties - Qt 6.8 Rectangle Pattern
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, bool, m_boundaryIsRecording, &FormGPS::boundaryIsRecordingChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, double, m_boundaryArea, &FormGPS::boundaryAreaChanged)
-    Q_OBJECT_BINDABLE_PROPERTY(FormGPS, int, m_boundaryPointCount, &FormGPS::boundaryPointCountChanged)
-
-
-public:
-    //bool isSimulatorMode() const { return SimInterface::instance()->isRunning(); }
-    //bool isAgIOActive() const { return m_agioService != nullptr; }
-    //bool isRealMode() const { return !isSimulatorMode() && isAgIOActive(); }
-    //bool isMixedMode() const { return isSimulatorMode() && isAgIOActive(); }
-
-    // Operational mode for NTRIP compatibility
-    //bool isNTRIPCompatible() const { return isRealMode() || isMixedMode(); }
-    // Публичные свойства was wizard
-    bool IsCollectingData = false;
-    int SampleCount = 0;
-    double RecommendedWASZero = 0;
-    double ConfidenceLevel = 0;
-    bool HasValidRecommendation = false;
-    QDateTime LastCollectionTime;
-    qint64 blockage_lastUpdate;
-
-    // Средние показатели распределения
-    double Mean;
-    double StandardDeviation;
-    double Median;
-
-    // Методы для работы с данными
-
-    int GetRecommendedWASOffsetAdjustment(int currentCPD);
-
-protected:
-    // Вектор для хранения истории углов
-    QVector<double> steerAngleHistory;
-
-    // Критерии проверки собираемых данных
-    static constexpr int MAX_SAMPLES = 2000;          // Максимальное число хранимых образцов
-    static constexpr int MIN_SAMPLES_FOR_ANALYSIS = 200; // Минимальное число образцов для анализа
-    static constexpr double MIN_SPEED_THRESHOLD = 2.0;  // км/ч — минимальная скорость для начала записи
-    static constexpr double MAX_ANGLE_THRESHOLD = 25.0; // Градусы — максимальный угол для включения записи
-
-    // Личные вспомогательные методы
-    bool ShouldCollectSample(double steerAngle, double speed);
-    void PerformStatisticalAnalysis();
-    double CalculateMedian(QVector<double> sortedData);
-    double CalculateStandardDeviation(QVector<double> data, double mean);
-    void CalculateConfidenceLevel(QVector<double> sortedData);
-    void AddSteerAngleSample(double guidanceSteerAngle, double currentSpeed);
-
-public slots:
-    void StartDataCollection();
-    void StopDataCollection();
-    void ResetData();
-    void ApplyOffsetToCollectedData(double appliedOffsetDegrees);
-    void SmartCalLabelClick();
-    void on_btnSmartZeroWAS_clicked();
-
-
 
 };
 

@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QApplication>
 #include <QWidget>
+#include <QLoggingCategory>
 #include "cyouturn.h"
 #include "classes/settingsmanager.h"
 #include "qmlutil.h"
@@ -14,9 +15,14 @@
 #include "glm.h"
 #include "cdubins.h"
 #include "glutils.h"
+#include "backend.h"
+#include "backendaccess.h"
 #include "mainwindowstate.h"
 #include "boundaryinterface.h"
 //#include "common.h"
+
+Q_LOGGING_CATEGORY (cyouturn_log, "cyouturn.qtagopengps")
+#define QDEBUG qDebug(cyouturn_log)
 
 //constructor
 CYouTurn::CYouTurn(QObject *parent) : QObject(parent)
@@ -95,7 +101,7 @@ bool CYouTurn::BuildABLineDubinsYouTurn(bool isTurnLeft,
     bool autoSteerOn = MainWindowState::instance()->isBtnAutoSteerOn();
 
     if (!autoSteerOn) trk.ABLine.isHeadingSameWay
-            = M_PI - fabs(fabs(CVehicle::instance()->fixHeading - trk.ABLine.abHeading) - M_PI) < glm::PIBy2;
+            = M_PI - fabs(fabs(CVehicle::instance()->fixHeading() - trk.ABLine.abHeading) - M_PI) < glm::PIBy2;
 
     double turnOffset = (tool_toolWidth - tool_toolOverlap) * rowSkipsWidth
                         + (isYouTurnRight ? -tool_toolOffset * 2.0 : tool_toolOffset * 2.0);
@@ -893,7 +899,7 @@ bool CYouTurn::CreateABWideTurn(bool isTurnLeft,
     bool autoSteerOn2 = MainWindowState::instance()->isBtnAutoSteerOn();
 
     if (!autoSteerOn2) trk.ABLine.isHeadingSameWay
-            = M_PI - fabs(fabs(CVehicle::instance()->fixHeading - trk.ABLine.abHeading) - M_PI) < glm::PIBy2;
+            = M_PI - fabs(fabs(CVehicle::instance()->fixHeading() - trk.ABLine.abHeading) - M_PI) < glm::PIBy2;
 
     double head = trk.ABLine.abHeading;
     if (!trk.ABLine.isHeadingSameWay) head += M_PI;
@@ -2591,7 +2597,6 @@ void CYouTurn::ResetYouTurn()
     makeUTurnCounter = 0;
     ytList.clear();
     ResetCreatedYouTurn();
-    //mf.isBoundAlarming = false;
     emit turnOffBoundAlarm();
     isTurnCreationTooClose = false;
     isTurnCreationNotCrossingError = false;
@@ -2607,6 +2612,88 @@ void CYouTurn::ResetCreatedYouTurn()
     emit uTurnReset(); //ask receiver to cancel pgn 239 uturn byte
     isOutSameCurve = false;
     isGoingStraightThrough = false;
+}
+
+void CYouTurn::swapAutoYouTurnDirection() {
+     if (!isYouTurnTriggered)
+     {
+         isYouTurnRight = !isYouTurnRight;
+         ResetCreatedYouTurn();
+     }
+}
+
+ void CYouTurn::manualUTurn(bool right)
+{
+    BACKEND_TRACK(track);
+
+    if (isYouTurnTriggered) {
+        ResetYouTurn();
+    }else {
+        loadSettings();
+        isYouTurnTriggered = true;
+        BuildManualYouTurn(right, true, track);
+   }
+}
+
+void CYouTurn::lateral(bool right)
+{
+    BACKEND_TRACK(track);
+
+    BuildManualYouLateral(right, track);
+}
+
+void CYouTurn::toggleAutoYouTurn() {
+
+    QDEBUG<<"activate youturn";
+
+    loadSettings();
+    isTurnCreationTooClose = false;
+
+
+    if (!MainWindowState::instance()->isYouTurnBtnOn())
+    {
+        //new direction so reset where to put turn diagnostic
+        ResetCreatedYouTurn();
+
+        if (!MainWindowState::instance()->isBtnAutoSteerOn()) return;
+        MainWindowState::instance()->set_isYouTurnBtnOn(true);
+        isTurnCreationTooClose = false;
+        isTurnCreationNotCrossingError = false;
+        ResetYouTurn();
+     }
+     else
+     {
+        MainWindowState::instance()->set_isYouTurnBtnOn(false);
+        ResetYouTurn();
+
+        //new direction so reset where to put turn diagnostic
+        ResetCreatedYouTurn();
+
+     }
+}
+
+void CYouTurn::toggleYouSkip() {
+    QDEBUG << "Toggle youturn skip";
+
+    alternateSkips = alternateSkips+1;
+    if (alternateSkips > 3) alternateSkips = 0;
+
+    QDEBUG<<"you skip clicked"<<alternateSkips;
+
+    if (alternateSkips > 0)
+    {
+        //btnYouSkipEnable.Image = Resources.YouSkipOn;
+        //make sure at least 1
+        if (rowSkipsWidth < 2)
+        {
+            rowSkipsWidth = 2;
+            //cboxpRowWidth.Text = "1";
+        }
+        Set_Alternate_skips();
+        ResetCreatedYouTurn();
+
+        //if (!MainWindowState::instance()->isYouTurnBtnOn()) btnAutoYouTurn.PerformClick();
+    }
 }
 
 void CYouTurn::FailCreate()
@@ -2981,7 +3068,7 @@ bool CYouTurn::DistanceFromYouTurnLine( CNMEA &pn)
             double goalPointDistanceSquared = glm::DistanceSquared(goalPointYT.northing, goalPointYT.easting, pivot.northing, pivot.easting);
 
             //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
-            double localHeading = glm::twoPI - CVehicle::instance()->fixHeading;
+            double localHeading = glm::twoPI - CVehicle::instance()->fixHeading();
             ppRadiusYT = goalPointDistanceSquared / (2 * (((goalPointYT.easting - pivot.easting) * cos(localHeading)) + ((goalPointYT.northing - pivot.northing) * sin(localHeading))));
 
             steerAngleYT = glm::toDegrees(atan(2 * (((goalPointYT.easting - pivot.easting) * cos(localHeading))
@@ -3004,10 +3091,10 @@ bool CYouTurn::DistanceFromYouTurnLine( CNMEA &pn)
         }
 
         //used for smooth mode
-        CVehicle::instance()->modeActualXTE = (distanceFromCurrentLine);
+        CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLine));
 
         //Convert to centimeters
-        CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLine * 1000.0);
+        CVehicle::instance()->set_guidanceLineDistanceOff ((short)glm::roundMidAwayFromZero(distanceFromCurrentLine * 1000.0));
         CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleYT * 100);
         return true;
     }

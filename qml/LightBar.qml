@@ -84,7 +84,7 @@ Rectangle {
         //convert to local units, print
         text: Utils.cm_to_unit_string(Math.abs(dotDistance / 100), 0)
 
-        color: (aog.avgPivDistance > 20) ?
+        color: (VehicleInterface.avgPivDistance > 20) ?
                    colorFar :
                    colorClose
         z: 2

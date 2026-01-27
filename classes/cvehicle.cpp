@@ -9,18 +9,19 @@
 #include <QDir>
 #include <QCoreApplication>
 #include "classes/settingsmanager.h"
-#include "ccamera.h"
 #include "cboundary.h"
 #include "qmlutil.h"
 #include "ctool.h"
 #include "glm.h"
 #include "glutils.h"
 #include "cnmea.h"
-#include "ccamera.h"
 #include "cabline.h"
 #include "cabcurve.h"
 #include "ccontour.h"
 #include "ctrack.h"
+#include "modulecomm.h"
+#include "vehicleproperties.h"
+#include "boundaryinterface.h"
 #include <QLoggingCategory>
 
 Q_LOGGING_CATEGORY (cvehicle, "cvehicle.qtagopengps")
@@ -60,6 +61,82 @@ CVehicle *CVehicle::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
     }
 
     return s_instance;
+}
+
+CVehicle::CVehicle(QObject* parent)
+    : QObject(parent)
+{
+    // Initialize Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY members
+    m_isHydLiftOn = false;
+    m_hydLiftDown = false;
+    m_isChangingDirection = false;
+    m_isReverse = false;
+    m_leftTramState = 0;
+    m_rightTramState = 0;
+    m_vehicleList = QList<QVariant>{};
+
+    // Create scene graph properties object
+    m_vehicleProperties = new VehicleProperties(this);
+
+    // Bind vehicle properties to SettingsManager
+    auto *settings = SettingsManager::instance();
+
+    m_vehicleProperties->bindable_type().setBinding(
+        settings->bindablevehicle_vehicleType().makeBinding()
+    );
+    m_vehicleProperties->bindable_wheelBase().setBinding([settings]() {
+        return static_cast<float>(settings->vehicle_wheelbase());
+    });
+    m_vehicleProperties->bindable_trackWidth().setBinding([settings]() {
+        return static_cast<float>(settings->vehicle_trackWidth());
+    });
+    m_vehicleProperties->bindable_drawbarLength().setBinding([settings]() {
+        if (settings->tool_isToolFront())
+            return 0.0f;
+        if (settings->tool_isToolRearFixed())
+            return 0.0f;
+        return static_cast<float>(settings->vehicle_hitchLength());
+    });
+    m_vehicleProperties->bindable_threePtLength().setBinding([settings]() {
+        if (settings->tool_isToolFront())
+            return 0.0f;
+        if (settings->tool_isToolRearFixed())
+            return static_cast<float>(settings->vehicle_hitchLength());
+        return 0.0f;
+    });
+    m_vehicleProperties->bindable_frontHitchLength().setBinding([settings]() {
+        if (settings->tool_isToolFront())
+            return static_cast<float>(settings->vehicle_hitchLength());
+        else
+            return 0.0f;
+    });
+    m_vehicleProperties->bindable_antennaOffset().setBinding([settings]() {
+        return static_cast<float>(settings->vehicle_antennaOffset());
+    });
+    m_vehicleProperties->bindable_antennaForward().setBinding([settings]() {
+        return static_cast<float>(settings->vehicle_antennaPivot());
+    });
+    m_vehicleProperties->bindable_svennArrow().setBinding(
+        settings->bindabledisplay_isSvennArrowOn().makeBinding()
+    );
+    m_vehicleProperties->bindable_steerAngle().setBinding(
+        ModuleComm::instance()->bindable_actualSteerAngleDegrees().makeBinding()
+        );
+
+    m_vehicleProperties->bindable_markBoundary().setBinding([]() {
+        float markBoundary = 0;
+
+        if (BoundaryInterface::instance()->isBndBeingMade()) {
+            markBoundary = BoundaryInterface::instance()->createBndOffset();
+
+            if (!BoundaryInterface::instance()->isDrawRightSide()) {
+                markBoundary = -markBoundary;
+            }
+
+        }
+        return markBoundary;
+    });
+
 }
 
 
@@ -193,17 +270,17 @@ double CVehicle::UpdateGoalPointDistance()
     double modeXTE = SettingsManager::instance()->as_modeXTE();
     double modeTime = SettingsManager::instance()->as_modeTime();
 
-    double xTE = fabs(modeActualXTE);
+    double xTE = fabs(m_modeActualXTE);
 
     //how far should goal point be away  - speed * seconds * kmph -> m/s then limit min value
-    double goalPointDistance = avgSpeed * goalPointLookAhead * 0.05 * goalPointLookAheadMult;
+    double goalPointDistance = m_avgSpeed * goalPointLookAhead * 0.05 * goalPointLookAheadMult;
     goalPointDistance += goalPointLookAhead;
 
     if (xTE < modeXTE)
     {
         if (modeTimeCounter > modeTime * 10)
         {
-            goalPointDistance = avgSpeed * goalPointLookAheadHold * 0.05 * goalPointLookAheadMult;
+            goalPointDistance = m_avgSpeed * goalPointLookAheadHold * 0.05 * goalPointLookAheadMult;
             goalPointDistance += goalPointLookAheadHold;
         }
         else
@@ -227,11 +304,10 @@ double CVehicle::UpdateGoalPointDistance()
 void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
                            QMatrix4x4 projection,
                            double steerAngle,
-                           bool isFirstHeadingSet,
                            double markLeft,
                            double markRight,
-                           QRect viewport,
-                           const CCamera &camera
+                           double camSetDistance,
+                           QRect viewport
                            )
 {
     ensureSettingsLoaded();  // Qt 6.8 MIGRATION: Lazy load settings
@@ -241,14 +317,14 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     bool display_isSvennArrowOn = SettingsManager::instance()->display_isSvennArrowOn();
     display_lineWidth = SettingsManager::instance()->display_lineWidth();
 
-    if (!std::isfinite(fixHeading) || fabs(fixHeading) > 1000.0) {
-        qWarning() << "DrawVehicle skipped: invalid fixHeading =" << fixHeading
+    if (!std::isfinite(m_fixHeading.value()) || fabs(m_fixHeading) > 1000.0) {
+        qWarning() << "DrawVehicle skipped: invalid fixHeading =" << m_fixHeading
                    << "(garbage not yet replaced by valid GPS/IMU data)";
         return;
     }
 
     //draw vehicle
-    modelview.rotate(glm::toDegrees(-fixHeading), 0.0, 0.0, 1.0);
+    modelview.rotate(glm::toDegrees(-m_fixHeading), 0.0, 0.0, 1.0);
 
     GLHelperColors glcolors;
     GLHelperOneColor gldraw;
@@ -268,14 +344,12 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     QVector3D p3;
     QVector3D p4;
     QVector3D s;
-    // Phase 6.0.24 Problem 18: Remove unused variables x,w (were uninitialized 0xCCCCCCCC in debugger)
-    // int x,w;  // REMOVED - never used in function
 
     s = QVector3D(0,0,0);
     p1 = s.project(modelview, projection, viewport);
-    pivot_axle_xy = QPoint(p1.x(), p1.y());
+    m_screenCoord = QPoint(p1.x(), p1.y());
 
-    if (isFirstHeadingSet && !SettingsManager::instance()->tool_isToolFront())
+    if (m_vehicleProperties->firstHeadingSet() && !SettingsManager::instance()->tool_isToolFront())
     {
         if (!SettingsManager::instance()->tool_isToolRearFixed())
         {
@@ -312,7 +386,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
 
     //draw the vehicle Body
 
-    if (!isFirstHeadingSet)
+    if (!m_vehicleProperties->firstHeadingSet())
     {
 
         //using texture 14, Textures::QUESTION_MARK
@@ -331,7 +405,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
         //vehicle for detecting when the vehicle is clicked
         s = QVector3D(0,0,0); //should be pivot axle
         p1 = s.project(modelview, projection, viewport);
-        pivot_axle_xy = QPoint(p1.x(), viewport.height() - p1.y());
+        m_screenCoord = QPoint(p1.x(), viewport.height() - p1.y());
 
         if (vehicleType == 0)
         {
@@ -373,7 +447,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
             s = QVector3D(trackWidth, -wheelbase * 0.5, 0.0); //rear right corner
             p4 = s.project(modelview, projection, viewport);
 
-            bounding_box = find_bounding_box(viewport.height(),p1, p2, p3, p4);
+            m_screenBounding = find_bounding_box(viewport.height(),p1, p2, p3, p4);
 
             //right wheel
             //push modelview... nop because savedModelView already has a copy
@@ -477,7 +551,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
             s = QVector3D(trackWidth, -wheelbase * 1.5, 0.0); //rear right corner
             p4 = s.project(modelview, projection, viewport);
 
-            bounding_box = find_bounding_box(viewport.height(),p1, p2, p3, p4);
+            m_screenBounding = find_bounding_box(viewport.height(),p1, p2, p3, p4);
         }
         else if (vehicleType == 2) //4WD tractor, articulated
         {
@@ -526,7 +600,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
             s = QVector3D(-trackWidth, wheelbase * 0.65, 0.0); //front right corner
             p2 = s.project(modelview,projection, viewport);
 
-            bounding_box = find_bounding_box(viewport.height(),p1, p2, p3, p4);
+            m_screenBounding = find_bounding_box(viewport.height(),p1, p2, p3, p4);
 
             modelview = savedModelView; //pop matrix
         }
@@ -557,10 +631,10 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
         s = QVector3D(1.0, 0, 0.0); //rear right corner
         p4 = s.project(modelview, projection, viewport);
 
-        bounding_box = find_bounding_box(viewport.height(), p1, p1, p3, p4);
+        m_screenBounding = find_bounding_box(viewport.height(), p1, p1, p3, p4);
     }
 
-    if (camera.camSetDistance > -75 && isFirstHeadingSet)
+    if (camSetDistance > -75 && m_vehicleProperties->firstHeadingSet())
     {
         //draw the bright antenna dot
         gldraw.clear();
@@ -608,10 +682,10 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
 
     //Svenn Arrow
 
-    if (display_isSvennArrowOn && camera.camSetDistance > -1000)
+    if (display_isSvennArrowOn && camSetDistance > -1000)
     {
         //double offs = mf.curve.distanceFromCurrentLinePivot * 0.3;
-        double svennDist = camera.camSetDistance * -0.07;
+        double svennDist = camSetDistance * -0.07;
         double svennWidth = svennDist * 0.22;
 
         gldraw.clear();
@@ -630,7 +704,7 @@ void CVehicle::AverageTheSpeed(double newSpeed) {
     // Phase 6.0.34: Fixed formula to match C# original (CNMEA.cs:50)
     // C#: mf.avgSpeed = (mf.avgSpeed * 0.75) + (speed * 0.25);
     // BEFORE (WRONG): avgSpeed = newSpeed * 0.75 + avgSpeed * 0.25;  // Inverted weights!
-    avgSpeed = avgSpeed * 0.75 + newSpeed * 0.25;  // ✅ CORRECTED: 75% old + 25% new
+    m_avgSpeed = m_avgSpeed * 0.75 + newSpeed * 0.25;  // ✅ CORRECTED: 75% old + 25% new
 }
 
 // ===== Qt 6.8 QProperty Migration =====

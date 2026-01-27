@@ -3,11 +3,13 @@
 #include "glutils.h"
 #include "classes/settingsmanager.h"
 #include "glutils.h"
-#include "ccamera.h"
 #include "ctram.h"
 #include "cboundary.h"
 #include "cvehicle.h"
+#include "backend.h"
 #include "mainwindowstate.h"
+#include "modulecomm.h"
+#include "tools.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
@@ -19,7 +21,21 @@
 extern QLabel *overlapPixelsWindow;
 extern QOpenGLShaderProgram *interpColorShader;
 
-Q_LOGGING_CATEGORY (ctool, "ctool.qtagopengps")
+Q_LOGGING_CATEGORY (ctool_log, "ctool.qtagopengps")
+
+#define STRINGISE_IMPL(x) #x
+#define STRINGISE(x) STRINGISE_IMPL(x)
+
+#if defined(_MSC_VER)
+// MSVC format: file(line): warning CXXXX: message
+#define FILE_LINE_LINK __FILE__ "(" STRINGISE(__LINE__) ") : "
+#define COMPILER_WARNING(msg) __pragma(message(FILE_LINE_LINK "warning: " msg))
+#elif defined(__GNUC__) || defined(__clang__)
+// GCC/Clang use _Pragma to embed #pragma GCC warning inside a macro
+#define COMPILER_WARNING(msg) _Pragma(STRINGISE(GCC warning msg))
+#else
+#define COMPILER_WARNING(msg)
+#endif
 
 struct PatchBuffer {
     QOpenGLBuffer patchBuffer;
@@ -95,7 +111,7 @@ void CTool::loadSettings()
     if (zoneRanges.size() > 0) {
         zones = zoneRanges[0];
     } else {
-        qDebug() << "ERROR: tool_zones is empty! Size:" << zoneRanges.size();
+        qWarning(ctool_log) << "ERROR: tool_zones is empty! Size:" << zoneRanges.size();
         zones = 2; // valeur par défaut
     }
     //zoneRanges.removeAt(0); //remove first element since it was a count
@@ -109,8 +125,19 @@ CTool::CTool()
 {
     // Initialize all section button states to Off
     for (int i = 0; i < 65; i++) {
-        sectionButtonState[i] = btnStates::Off;
+        sectionButtonState[i] = SectionState::Off;
     }
+
+    //get notified when the UI button changes state
+    connect(MainWindowState::instance(), &MainWindowState::autoBtnStateChanged,
+            this, &CTool::on_autoBtnChanged);
+
+    connect(Tools::instance(), &Tools::sectionButtonStateChanged,
+            this, &CTool::onSectionButtonStatechanged);
+
+    connect(Backend::instance(), &Backend::resetTool,
+            this, &CTool::resetTool);
+
     loadSettings();
 }
 
@@ -151,11 +178,11 @@ void CTool::saveSettings()
     SettingsManager::instance()->setTool_isDisplayTramControl(isDisplayTramControl);
 }
 
-void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 mv,
-                     QMatrix4x4 projection,
-                     bool isJobStarted,
-                     bool isHydLiftOn,
-                     CCamera &camera, CTram &tram)
+void CTool::DrawToolGL(QOpenGLFunctions *gl, QMatrix4x4 mv,
+                       QMatrix4x4 projection,
+                       bool isJobStarted,
+                       bool isHydLiftOn,
+                       double camSetDistance, CTram &tram)
 {
     double tram_halfWheelTrack = SettingsManager::instance()->vehicle_trackWidth() * 0.5;
     bool tool_isDisplayTramControl = SettingsManager::instance()->tool_isDisplayTramControl();
@@ -262,14 +289,14 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 mv,
     //draw the sections
     //line width 2 now
 
-    double hite = camera.camSetDistance / -150;
+    double hite = camSetDistance / -150;
     if (hite > 12) hite = 12;
     if (hite < 1) hite = 1;
 
     for (int j = 0; j < numOfSections; j++)
     {
         //if section is on, green, if off, red color
-        if (sectionButtonState[j] == btnStates::Auto)
+        if (sectionButtonState[j] == SectionState::Auto)
         {
             // Mode Auto: couleur dépend de si section vraiment active (dans le champ)
             if (section[j].isSectionOn)
@@ -282,7 +309,7 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 mv,
                 color.setRgbF(0.950f, 0.2f, 0.2f, 1.0f);  // Rouge si hors champ
             }
         }
-        else if (sectionButtonState[j] == btnStates::On)
+        else if (sectionButtonState[j] == SectionState::On)
         {
             color.setRgbF(0.97, 0.97, 0, 1.0f);  // Jaune pour On (forçé)
         }
@@ -313,7 +340,7 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 mv,
 
         gldraw.draw(gl, projection * mv, color, GL_TRIANGLE_FAN, 2.0f);
 
-        if (camera.camSetDistance > -width * 200)
+        if (camSetDistance > -width * 200)
         {
             color.setRgbF(0.0, 0.0, 0.0);
             gldraw.draw(gl,projection * mv, color, GL_LINE_LOOP, 1.0);
@@ -321,7 +348,7 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 mv,
     }
 
     //zones
-    if (!isSectionsNotZones && zones > 0 && camera.camSetDistance > -150)
+    if (!isSectionsNotZones && zones > 0 && camSetDistance > -150)
     {
         gldraw.clear();
         color.setRgbF(0.5f, 0.80f, 0.950f);
@@ -338,9 +365,9 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 mv,
     //tram Dots
     if ( tool_isDisplayTramControl && tram.displayMode != 0)
     {
-        if (camera.camSetDistance > -300)
+        if (camSetDistance > -300)
         {
-            if (camera.camSetDistance > -100)
+            if (camSetDistance > -100)
                 pointSize = 16;
             else pointSize = 12;
 
@@ -383,11 +410,11 @@ void CTool::DrawTool(QOpenGLFunctions *gl, QMatrix4x4 mv,
     }
 }
 
-void CTool::DrawPatches(QOpenGLFunctions *gl,
-                        QMatrix4x4 mvp,
-                        int patchCounter,
-                        const CCamera &camera,
-                        QElapsedTimer &swFrame)
+void CTool::DrawPatchesGL(QOpenGLFunctions *gl,
+                          QMatrix4x4 mvp,
+                          int patchCounter,
+                          double camSetDistance,
+                          QElapsedTimer &swFrame)
 {
     GLHelperOneColor gldraw1;
     int currentPatchBuffer = 0;
@@ -432,13 +459,13 @@ void CTool::DrawPatches(QOpenGLFunctions *gl,
 
     //initialize the steps for mipmap of triangles (skipping detail while zooming out)
     int mipmap = 0;
-    if (camera.camSetDistance < -800) mipmap = 2;
-    if (camera.camSetDistance < -1500) mipmap = 4;
-    if (camera.camSetDistance < -2400) mipmap = 8;
-    if (camera.camSetDistance < -5000) mipmap = 16;
+    if (camSetDistance < -800) mipmap = 2;
+    if (camSetDistance < -1500) mipmap = 4;
+    if (camSetDistance < -2400) mipmap = 8;
+    if (camSetDistance < -5000) mipmap = 16;
 
     if (mipmap > 1)
-        qDebug(ctool) << "mipmap is" << mipmap;
+        qDebug(ctool_log) << "mipmap is" << mipmap;
 
     //QVector<GLuint> indices;
     //indices.reserve(PATCHBUFFER_LENGTH / 28 * 3);  //enough to index 16 MB worth of vertices
@@ -546,7 +573,7 @@ void CTool::DrawPatches(QOpenGLFunctions *gl,
                     patchesInBuffer[j][k].offset = patchBuffer[currentPatchBuffer].length / VERTEX_SIZE;
                     patchesInBuffer[j][k].length = count2 - 1;
                     patchBuffer[currentPatchBuffer].length += (count2 - 1) * VERTEX_SIZE;
-                    qDebug(ctool) << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
+                    qDebug(ctool_log) << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
                     patchBuffer[currentPatchBuffer].patchBuffer.release();
                 }
                 //generate list of indices for this patch
@@ -612,7 +639,7 @@ void CTool::DrawPatches(QOpenGLFunctions *gl,
             }
         }
 
-        qDebug(ctool) << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
+        qDebug(ctool_log) << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
 
         if (enough_indices) {
             interpColorShader->bind();
@@ -703,11 +730,10 @@ void CTool::DrawPatches(QOpenGLFunctions *gl,
 
 }
 
-void CTool::DrawPatchesTriangles(QOpenGLFunctions *gl,
-                                 QMatrix4x4 mvp,
-                                 int patchCounter,
-                                 const CCamera &camera,
-                                 QElapsedTimer &swFrame)
+void CTool::DrawPatchesTrianglesGL(QOpenGLFunctions *gl,
+                                   QMatrix4x4 mvp,
+                                   int patchCounter,
+                                   QElapsedTimer &swFrame)
 {
     GLHelperOneColor gldraw1;
     int currentPatchBuffer = 0;
@@ -854,13 +880,13 @@ void CTool::DrawPatchesTriangles(QOpenGLFunctions *gl,
                     patchesInBuffer[j][k].offset = patchBuffer[currentPatchBuffer].length / VERTEX_SIZE;
                     patchesInBuffer[j][k].length = count2 - 1;
                     patchBuffer[currentPatchBuffer].length += (count2 - 1) * 3 * VERTEX_SIZE;
-                    qDebug() << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
+                    qDebug(ctool_log) << "buffering" << j << k << patchesInBuffer[j][k].which << ", " << patchBuffer[currentPatchBuffer].length;
                     patchBuffer[currentPatchBuffer].patchBuffer.release();
                 }
             }
         }
 
-        qDebug(ctool) << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
+        qDebug(ctool_log) << "time after preparing patches for drawing" << swFrame.nsecsElapsed() / 1000000;
 
         if (patchBuffer.size() && patchBuffer[0].length) {
             interpColorShader->bind();
@@ -934,7 +960,13 @@ void CTool::DrawPatchesTriangles(QOpenGLFunctions *gl,
     }
 }
 
-QImage CTool::DrawPatchesBackQP(const CTram &tram,
+void CTool::DrawPatchesBack(QOpenGLFunctions *gl, QMatrix4x4 mvp)
+{
+
+
+}
+
+void CTool::DrawPatchesBackQP(const CTram &tram,
                                 const CBoundary &bnd,
                                 Vec3 pivotAxlePos,
                                 bool isHeadlandOn,
@@ -943,7 +975,6 @@ QImage CTool::DrawPatchesBackQP(const CTram &tram,
 {
     QMatrix4x4 projection;
     QMatrix4x4 modelview;
-    QImage back_image;
 
     //  Load the identity.
     projection.setToIdentity();
@@ -951,10 +982,10 @@ QImage CTool::DrawPatchesBackQP(const CTram &tram,
     //projection.perspective(6.0f,1,1,6000);
     projection.perspective(glm::toDegrees((double)0.06f), 1.666666666666f, 50.0f, 520.0f);
 
-    if (back_image.isNull())
-        back_image = QImage(QSize(500,300), QImage::Format_RGBX8888);
+    if (grnPix.isNull())
+        grnPix = QImage(QSize(500,300), QImage::Format_RGBX8888);
 
-    back_image.fill(0);
+    grnPix.fill(0);
 
     //gl->glLoadIdentity();					// Reset The View
     modelview.setToIdentity();
@@ -982,9 +1013,9 @@ QImage CTool::DrawPatchesBackQP(const CTram &tram,
     QColor patchColor = QColor::fromRgbF(0.0f, 0.5f, 0.0f);
 
     QPainter painter;
-    if (!painter.begin(&back_image)) {
+    if (!painter.begin(&grnPix)) {
         qWarning() << "New GPS frame but back buffer painter is still working on the last one.";
-        return QImage();
+        return;
     }
 
     painter.setRenderHint(QPainter::Antialiasing, false);
@@ -1136,7 +1167,7 @@ QImage CTool::DrawPatchesBackQP(const CTram &tram,
 
 
         //draw 250 green for the headland
-        if (isHeadlandOn && bnd.isSectionControlledByHeadland)
+        if (MainWindowState::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
         {
             DrawPolygonBack(painter, bnd.bndList[0].hdLine,3,QColor::fromRgb(0,250,0));
         }
@@ -1145,14 +1176,16 @@ QImage CTool::DrawPatchesBackQP(const CTram &tram,
     painter.end();
 
     //TODO adjust coordinate transformations above to eliminate this step
-    back_image = back_image.flipped().convertToFormat(QImage::Format_RGBX8888);
+#if QT_VERSION < QT_VERSION_CHECK(6,9,0)
+    grnPix = grnPix.mirrored(false, true).convertToFormat(QImage::Format_RGBX8888);
+#else
+    grnPix = grnPix.flipped().convertToFormat(QImage::Format_RGBX8888);
+#endif
 
-    QImage temp = back_image.copy(rpXPosition, 0, rpWidth, 290 /*(int)rpHeight*/);
+    QImage temp = grnPix.copy(rpXPosition, 0, rpWidth, 290 /*(int)rpHeight*/);
     temp.setPixelColor(0,0,QColor::fromRgb(255,128,0));
     //grnPix = temp; //only show clipped image
     memcpy(grnPixels, temp.constBits(), temp.size().width() * temp.size().height() * 4);
-
-    return back_image;
 }
 
 
@@ -1291,14 +1324,13 @@ void CTool::sectionSetPositions()
     section[15].positionRight = section_position17 + vehicle_toolOffset;
 }
 
-void CTool::ProcessLookAhead(bool isHeadlandOn,
-                             int gpsHz,
-                             btnStates autoBtnState,
+void CTool::ProcessLookAhead(int gpsHz,
+                             SectionState::State autoBtnState,
                              const CBoundary &bnd,
                              CTram &tram)
 {
       //determine where the tool is wrt to headland
-    if (isHeadlandOn) WhereAreToolCorners(bnd);
+    if (MainWindowState::instance()->isHeadlandOn()) WhereAreToolCorners(bnd);
 
     //set the look ahead for hyd Lift in pixels per second
     hydLiftLookAheadDistanceLeft = farLeftSpeed * SettingsManager::instance()->vehicle_hydraulicLiftLookAhead() * 10;
@@ -1366,7 +1398,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
     //10 % min is required for overlap, otherwise it never would be on.
     int pixLimit = (int)((double)(section[0].rpSectionWidth * rpOnHeight) / (double)(5.0));
     //bnd.isSectionControlledByHeadland = true;
-    if ((rpOnHeight < rpToolHeight && isHeadlandOn && bnd.isSectionControlledByHeadland)) rpHeight = rpToolHeight + 2;
+    if ((rpOnHeight < rpToolHeight && MainWindowState::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)) rpHeight = rpToolHeight + 2;
     else rpHeight = rpOnHeight + 2;
     //qDebug(qpos) << bnd.isSectionControlledByHeadland << "headland sections";
 
@@ -1401,7 +1433,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
     else tram.controlByte = 0;
 
     //determine if in or out of headland, do hydraulics if on
-    if (isHeadlandOn)
+    if (MainWindowState::instance()->isHeadlandOn())
     {
         //calculate the slope
         double m = (hydLiftLookAheadDistanceRight - hydLiftLookAheadDistanceLeft) / rpWidth;
@@ -1437,19 +1469,19 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
 
     int endHeight = 1, startHeight = 1;
 
-    if (isHeadlandOn && bnd.isSectionControlledByHeadland)
+    if (MainWindowState::instance()->isHeadlandOn() && bnd.isSectionControlledByHeadland)
         WhereAreToolLookOnPoints(bnd);
 
     for (int j = 0; j < numOfSections; j++)
     {
         //Off or too slow or going backwards
-        if (sectionButtonState[j] == btnStates::Off || CVehicle::instance()->avgSpeed < SettingsManager::instance()->vehicle_slowSpeedCutoff() || section[j].speedPixels < 0)
+        if (sectionButtonState[j] == SectionState::Off || CVehicle::instance()->avgSpeed() < SettingsManager::instance()->vehicle_slowSpeedCutoff() || section[j].speedPixels < 0)
         {
             section[j].sectionOnRequest = false;
             section[j].sectionOffRequest = true;
 
             // Manual on, force the section On
-            if (sectionButtonState[j] == btnStates::On)
+            if (sectionButtonState[j] == SectionState::On)
             {
                 section[j].sectionOnRequest = true;
                 section[j].sectionOffRequest = false;
@@ -1459,7 +1491,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
         }
 
         // Manual on, force the section On
-        if (sectionButtonState[j] == btnStates::On)
+        if (sectionButtonState[j] == SectionState::On)
         {
             section[j].sectionOnRequest = true;
             section[j].sectionOffRequest = false;
@@ -1514,7 +1546,7 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
             else
             {
                 //is headland coming up
-                if (isHeadlandOn && isSectionControlledByHeadland)
+                if (MainWindowState::instance()->isHeadlandOn() && isSectionControlledByHeadland)
                 {
                     bool isHeadlandInLookOn = false;
 
@@ -1666,8 +1698,8 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
     }
 
     //Checks the workswitch or steerSwitch if required
-    ////if (ahrs.isAutoSteerAuto || mc.isRemoteWorkSystemOn)
-    ////    mc.CheckWorkAndSteerSwitch(ahrs,MainWindowState::instance()->isBtnAutoSteerOn());
+    if (SettingsManager::instance()->as_isAutoSteerAutoOn() || SettingsManager::instance()->f_isRemoteWorkSystemOn())
+        ModuleComm::instance()->CheckWorkAndSteerSwitch(MainWindowState::instance()->isBtnAutoSteerOn());
 
     // check if any sections have changed status
     number = 0;
@@ -1827,6 +1859,336 @@ void CTool::ProcessLookAhead(bool isHeadlandOn,
     }
 }
 
+void CTool::BuildMachineByte(CTram &tram) {
+    CPGN_FE &p_254 = ModuleComm::instance()->p_254;
+    CPGN_EF &p_239 = ModuleComm::instance()->p_239;
+    CPGN_E5 &p_229 = ModuleComm::instance()->p_229;
+
+    if (isSectionsNotZones)
+    {
+        p_254.pgn[CPGN_FE::sc1to8] = 0;
+        p_254.pgn[CPGN_FE::sc9to16] = 0;
+
+        int number = 0;
+        for (int j = 0; j < 8; j++)
+        {
+            if (section[j].isSectionOn)
+                number |= 1 << j;
+        }
+        p_254.pgn[CPGN_FE::sc1to8] = (char)number;
+        number = 0;
+
+        for (int j = 8; j < 16; j++)
+        {
+            if (section[j].isSectionOn)
+                number |= 1 << (j-8);
+        }
+        p_254.pgn[CPGN_FE::sc9to16] = (char)number;
+
+        //machine pgn
+        p_239.pgn[CPGN_EF::sc9to16] = p_254.pgn[CPGN_FE::sc9to16];
+        p_239.pgn[CPGN_EF::sc1to8] = p_254.pgn[CPGN_FE::sc1to8];
+        p_229.pgn[CPGN_E5::sc1to8] = p_254.pgn[CPGN_FE::sc1to8];
+        p_229.pgn[CPGN_E5::sc9to16] = p_254.pgn[CPGN_FE::sc9to16];
+        p_229.pgn[CPGN_E5::toolLSpeed] = (char)(farLeftSpeed * 10);
+        p_229.pgn[CPGN_E5::toolRSpeed] = (char)(farRightSpeed * 10);
+    }
+    else
+    {
+        //zero all the bytes - set only if on
+        for (int i = 5; i < 13; i++)
+        {
+            p_229.pgn[i] = 0;
+        }
+
+        int number = 0;
+        for (int k = 0; k < 8; k++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (section[j + k * 8].isSectionOn)
+                    number |= 1 << j;
+            }
+            p_229.pgn[5 + k] = (char)number;
+            number = 0;
+        }
+
+        //tool speed to calc ramp
+        p_229.pgn[CPGN_E5::toolLSpeed] = (char)(farLeftSpeed * 10);
+        p_229.pgn[CPGN_E5::toolRSpeed] = (char)(farRightSpeed * 10);
+
+        p_239.pgn[CPGN_EF::sc1to8] = p_229.pgn[CPGN_E5::sc1to8];
+        p_239.pgn[CPGN_EF::sc9to16] = p_229.pgn[CPGN_E5::sc9to16];
+
+        p_254.pgn[CPGN_FE::sc1to8] = p_229.pgn[CPGN_E5::sc1to8];
+        p_254.pgn[CPGN_FE::sc9to16] = p_229.pgn[CPGN_E5::sc9to16];
+
+    }
+
+    p_239.pgn[CPGN_EF::speed] = (char)(CVehicle::instance()->avgSpeed() * 10);
+    p_239.pgn[CPGN_EF::tram] = (char)tram.controlByte;
+
+    emit ModuleComm::instance()->p_239_changed();
+    emit ModuleComm::instance()->p_254_changed();
+
+}
+
+void CTool::DoRemoteSwitches() {
+    COMPILER_WARNING("This method is not called anywhere. Check AgOpenGPS or Twol to find out what we missed.")
+    ModuleComm &mc = *ModuleComm::instance();
+
+    // Check if AgIOService is ON - if OFF, skip all hardware switch processing
+    SettingsManager* settings = SettingsManager::instance();
+    if (!settings->feature_isAgIOOn()) {
+        // AgIOService is OFF - manual QML controls have priority
+        return;
+    }
+
+    bool sectionsChanged = false; // Track if any section state changed
+    if (Backend::instance()->isJobStarted())
+    {
+        //MainSW was used
+        if (mc.ss[ModuleComm::swMain] != mc.ssP[ModuleComm::swMain])
+        {
+            //Main SW pressed
+            if ((mc.ss[ModuleComm::swMain] & 1) == 1)
+            {
+                MainWindowState::instance()->set_autoBtnState(SectionState::Off);
+            } // if Main SW ON
+
+            //if Main SW in Arduino is pressed OFF
+            if ((mc.ss[ModuleComm::swMain] & 2) == 2)
+            {
+                MainWindowState::instance()->set_autoBtnState(SectionState::Auto);
+            } // if Main SW OFF
+
+            mc.ssP[ModuleComm::swMain] = mc.ss[ModuleComm::swMain];
+        }  //Main or Rate SW
+
+
+        if (isSectionsNotZones)
+        {
+            if (mc.ss[ModuleComm::swOnGr0] != 0)
+            {
+                // ON Signal from Arduino
+                if ((mc.ss[ModuleComm::swOnGr0] & 128) == 128 && numOfSections > 7)
+                {
+                    sectionButtonState[7] = SectionState::On;
+                    section[7].sectionBtnState = SectionState::On;
+                    sectionsChanged = true;
+                    //TODO: not sure why we have redundant states like that
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 64) == 64 && numOfSections > 6)
+                {
+                    sectionButtonState[6] = SectionState::On;
+                    section[6].sectionBtnState = SectionState::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 32) == 32 && numOfSections > 5)
+                {
+                    sectionButtonState[5] = SectionState::On;
+                    section[5].sectionBtnState = SectionState::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 16) == 16 && numOfSections > 4)
+                {
+                    sectionButtonState[4] = SectionState::On;
+                    section[4].sectionBtnState = SectionState::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 8) == 8 && numOfSections > 3)
+                {
+                    sectionButtonState[3] = SectionState::On;
+                    section[3].sectionBtnState = SectionState::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 4) == 4 && numOfSections > 2)
+                {
+                    sectionButtonState[2] = SectionState::On;
+                    section[2].sectionBtnState = SectionState::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 2) == 2 && numOfSections > 1)
+                {
+                    sectionButtonState[1] = SectionState::On;
+                    section[1].sectionBtnState = SectionState::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr0] & 1) == 1)
+                {
+                    sectionButtonState[0] = SectionState::On;
+                    section[0].sectionBtnState = SectionState::On;
+                    sectionsChanged = true;
+                }
+                mc.ssP[ModuleComm::swOnGr0] = mc.ss[ModuleComm::swOnGr0];
+            } //if swONLo != 0
+            else { if (mc.ssP[ModuleComm::swOnGr0] != 0) { mc.ssP[ModuleComm::swOnGr0] = 0; } }
+
+            if (mc.ss[ModuleComm::swOnGr1] != 0)
+            {
+                // sections ON signal from Arduino
+                if ((mc.ss[ModuleComm::swOnGr1] & 128) == 128 && numOfSections > 15)
+                {
+                    sectionButtonState[15] = SectionState::On;
+                    section[15].sectionBtnState = SectionState::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr1] & 64) == 64 && numOfSections > 14)
+                {
+                    sectionButtonState[14] = SectionState::On;
+                    section[14].sectionBtnState = SectionState::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr1] & 32) == 32 && numOfSections > 13)
+                {
+                    sectionButtonState[13] = SectionState::On;
+                    section[13].sectionBtnState = SectionState::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr1] & 16) == 16 && numOfSections > 12)
+                {
+                    sectionButtonState[12] = SectionState::On;
+                    section[12].sectionBtnState = SectionState::On;
+                }
+
+                if ((mc.ss[ModuleComm::swOnGr1] & 8) == 8 && numOfSections > 11)
+                {
+                    sectionButtonState[11] = SectionState::On;
+                    section[11].sectionBtnState = SectionState::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr1] & 4) == 4 && numOfSections > 10)
+                {
+                    sectionButtonState[10] = SectionState::On;
+                    section[10].sectionBtnState = SectionState::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr1] & 2) == 2 && numOfSections > 9)
+                {
+                    sectionButtonState[9] = SectionState::On;
+                    section[9].sectionBtnState = SectionState::On;
+                }
+                if ((mc.ss[ModuleComm::swOnGr1] & 1) == 1 && numOfSections > 8)
+                {
+                    sectionButtonState[8] = SectionState::On;
+                    section[8].sectionBtnState = SectionState::On;
+                }
+                mc.ssP[ModuleComm::swOnGr1] = mc.ss[ModuleComm::swOnGr1];
+            } //if swONHi != 0
+            else { if (mc.ssP[ModuleComm::swOnGr1] != 0) { mc.ssP[ModuleComm::swOnGr1] = 0; } }
+
+            // Switches have changed
+            if (mc.ss[ModuleComm::swOffGr0] != mc.ssP[ModuleComm::swOffGr0])
+            {
+                //if Main = Auto then change section to Auto if Off signal from Arduino stopped
+                if (MainWindowState::instance()->autoBtnState() == SectionState::Auto)
+                {
+
+                    for(int s=0; s< 8; s++) {
+                        if ((mc.ssP[ModuleComm::swOffGr0] & (1 << s)) && !(mc.ss[ModuleComm::swOffGr0] & (1 << s)) && (sectionButtonState[s] == SectionState::Off))
+                        {
+                            sectionButtonState[s] = SectionState::Auto;
+                            section[s].sectionBtnState = SectionState::Auto;
+                            sectionsChanged = true;
+                        }
+                    }
+                }
+                mc.ssP[ModuleComm::swOffGr0] = mc.ss[ModuleComm::swOffGr0];
+            }
+
+            if (mc.ss[ModuleComm::swOffGr1] != mc.ssP[ModuleComm::swOffGr1])
+            {
+                //if Main = Auto then change section to Auto if Off signal from Arduino stopped
+                if (MainWindowState::instance()->autoBtnState() == SectionState::Auto)
+                {
+                    for(int s=8; s< 16; s++) {
+                        if ((mc.ssP[ModuleComm::swOffGr1] & (1 << s)) && !(mc.ss[ModuleComm::swOffGr1] & (1 << s)) && (sectionButtonState[s+8] == SectionState::Off))
+                        {
+                            sectionButtonState[s+8] = SectionState::Auto;
+                            section[s+8].sectionBtnState = SectionState::Auto;
+                            sectionsChanged = true;
+                        }
+                    }
+                }
+                mc.ssP[ModuleComm::swOffGr1] = mc.ss[ModuleComm::swOffGr1];
+            }
+
+            // OFF Signal from Arduino
+            if (mc.ss[ModuleComm::swOffGr0] != 0)
+            {
+                //if section SW in Arduino is switched to OFF; check always, if switch is locked to off GUI should not change
+                for(int s=0; s< 8; s++) {
+                    if ((mc.ss[ModuleComm::swOffGr0] & (1 << s)) && sectionButtonState[s] != SectionState::Off)
+                    {
+                        // Hardware switch override
+                        sectionButtonState[s] = SectionState::Off;
+                        section[s].sectionBtnState = SectionState::Off;
+                        sectionsChanged = true;
+                    }
+                }
+            } // if swOFFLo !=0
+            if (mc.ss[ModuleComm::swOffGr1] != 0)
+            {
+                //if section SW in Arduino is switched to OFF; check always, if switch is locked to off GUI should not change
+                for (int s=0; s<8; s++) {
+                    if ((mc.ss[ModuleComm::swOffGr0] & (1 << s)) && sectionButtonState[s+8] != SectionState::Off)
+                    {
+                        sectionButtonState[s+8] = SectionState::Off;
+                        section[s+8].sectionBtnState = SectionState::Off;
+                        sectionsChanged = true;
+                    }
+                }
+            } // if swOFFHi !=0
+        }//if serial or udp port open
+        else
+        {
+            //DoZones
+            int Bit;
+            // zones to on
+            if (mc.ss[ModuleComm::swOnGr0] != 0)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    Bit = 1 << i;
+                    if ((zoneRanges[i + 1] > 0) && ((mc.ss[ModuleComm::swOnGr0] & Bit) == Bit))
+                    {
+                        section[zoneRanges[i + 1] - 1].sectionBtnState = SectionState::On;
+                        sectionButtonState[zoneRanges[i + 1] - 1] = SectionState::On;
+                        sectionsChanged = true;
+                    }
+                }
+
+                mc.ssP[ModuleComm::swOnGr0] = mc.ss[ModuleComm::swOnGr0];
+            }
+            else { if (mc.ssP[ModuleComm::swOnGr0] != 0) { mc.ssP[ModuleComm::swOnGr0] = 0; } }
+
+            // zones to auto
+            if (mc.ss[ModuleComm::swOffGr0] != mc.ssP[ModuleComm::swOffGr0])
+            {
+                if (MainWindowState::instance()->autoBtnState() == SectionState::Auto)
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        Bit = 1 << i;
+                        if ((zoneRanges[i + 1] > 0) && ((mc.ssP[ModuleComm::swOffGr0] & Bit) == Bit)
+                            && ((mc.ss[ModuleComm::swOffGr0] & Bit) != Bit) && (section[zoneRanges[i + 1] - 1].sectionBtnState == SectionState::Off))
+                        {
+                            section[zoneRanges[i + 1] - 1].sectionBtnState = SectionState::Auto;
+                            sectionButtonState[zoneRanges[i + 1] - 1] = SectionState::Auto;
+                            sectionsChanged = true;
+                        }
+                    }
+                }
+                mc.ssP[ModuleComm::swOffGr0] = mc.ss[ModuleComm::swOffGr0];
+            }
+
+            // zones to off
+            if (mc.ss[ModuleComm::swOffGr0] != 0)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    Bit = 1 << i;
+                    if ((zoneRanges[i + 1] > 0) && ((mc.ss[ModuleComm::swOffGr0] & Bit) == Bit) && (section[zoneRanges[i + 1] - 1].sectionBtnState != SectionState::Off))
+                    {
+                        section[zoneRanges[i + 1] - 1].sectionBtnState = SectionState::Off;
+                        sectionButtonState[zoneRanges[i + 1] - 1] = SectionState::Off;
+                        sectionsChanged = true;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void CTool::WhereAreToolCorners(const CBoundary &bnd)
 {
     if (bnd.bndList.count() > 0 && bnd.bndList[0].hdLine.count() > 0)
@@ -1886,4 +2248,72 @@ void CTool::WhereAreToolLookOnPoints(const CBoundary &bnd)
         }
     }
 
+}
+
+void CTool::resetTool() {
+   tankPos.heading = CVehicle::instance()->fixHeading();
+   tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(tankPos.heading) * (tankTrailingHitchLength));
+   tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(tankPos.heading) * (tankTrailingHitchLength));
+
+   toolPivotPos.heading = tankPos.heading;
+   toolPivotPos.easting = tankPos.easting + (sin(toolPivotPos.heading) * (trailingHitchLength));
+   toolPivotPos.northing = tankPos.northing + (cos(toolPivotPos.heading) * (trailingHitchLength));
+}
+
+void CTool::on_autoBtnChanged() {
+    SectionState::State autoBtnState = MainWindowState::instance()-> autoBtnState();
+
+    // When Master Auto button activated, set all sections to Auto mode
+    // This allows automatic section activation based on boundary and coverage
+    // Only changes sections currently in Off state - respects manual On state
+    if (autoBtnState == SectionState::Auto && Backend::instance()->isJobStarted()) {
+        for (int j = 0; j < numOfSections; j++) {
+            if (sectionButtonState[j] == SectionState::Off) {
+                sectionButtonState[j] = SectionState::Auto;
+                section[j].sectionBtnState = SectionState::Auto;
+            }
+        }
+    }
+    // When Master Auto turned off, set all Auto sections back to Off
+    // Respects manual On state
+    else if (autoBtnState == SectionState::Off && Backend::instance()->isJobStarted()) {
+        for (int j = 0; j < numOfSections; j++) {
+            if (sectionButtonState[j] == SectionState::Auto) {
+                sectionButtonState[j] = SectionState::Off;
+                section[j].sectionBtnState = SectionState::Off;
+            }
+        }
+    }
+}
+
+void CTool::onSectionButtonStatechanged(int toolIndex, int sectionButtonNo, SectionState::State new_state) {
+    //For now toolIndex doesn't matter. It will always 0 if no TBT, 1 with TBT
+    //in the future toolIndex will start to matter.
+    Q_UNUSED(toolIndex);
+
+    if (SettingsManager::instance()->tool_isSectionsNotZones()) {
+        //1:1 correlationb etween buttons and sections
+        sectionButtonState[sectionButtonNo] = new_state;
+    } else {
+        //Zones mode -- one button controls multiple sections
+        if (sectionButtonNo >= zones ) {
+            qWarning(ctool_log) << "ERROR! section button changed but it was out size of the number of zones defined";
+        }
+
+        int zone_left = (sectionButtonNo == 0 ? 0 : zoneRanges[sectionButtonNo]);
+        int zone_right = (sectionButtonNo + 1 < zones ? zoneRanges[sectionButtonNo + 1] : numOfSections);
+
+        //update all sections in the zone
+        if (zone_left >=0 && zone_right > zone_left && zone_right <= numOfSections) {
+            for (int j = zone_left ; j < zone_right; j++) {
+                sectionButtonState[j] = new_state;
+                bool newSectionOn = (new_state == SectionState::On || new_state == SectionState::Auto);
+                section[j].isSectionOn = newSectionOn;
+                section[j].sectionOnRequest = newSectionOn;
+                section[j].sectionOffRequest = !newSectionOn;
+            }
+        } else {
+            qWarning(ctool_log) << "Something is wrong with zones.  Zone" << sectionButtonNo << " start and end section numbers not sane.";
+        }
+    }
 }

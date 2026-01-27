@@ -9,37 +9,26 @@
 #include "siminterface.h"
 
 void FormGPS::boundary_new_from_KML(QString filename) {
+    CNMEA &pn = *Backend::instance()->pn();
 
     qDebug() << "Opening KML file:" << filename;
     QUrl fileUrl(filename);
     QString localPath = fileUrl.toLocalFile();
     FindLatLon(localPath);
 
-    // Phase 6.3.1: Use PropertyWrapper for safe property access
-    this->setLatStart(latK);
-    // Phase 6.3.1: Use PropertyWrapper for safe property access
-    this->setLonStart(lonK);
+    pn.setLatStart(latK);
+    pn.setLonStart(lonK);
     if (SimInterface::instance()->isRunning())
     {
-        pn.latitude = this->latStart();
-        pn.longitude = this->lonStart();
+        pn.latitude = pn.latStart();
+        pn.longitude = pn.lonStart();
 
-        SettingsManager::instance()->setGps_simLatitude(this->latStart());
-        SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+        SettingsManager::instance()->setGps_simLatitude(pn.latStart());
+        SettingsManager::instance()->setGps_simLongitude(pn.lonStart());
         SimInterface::instance()->reset();
     }
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.SetLocalMetersPerDegree(this);
+    pn.SetLocalMetersPerDegree();
     LoadKMLBoundary(localPath);
     bnd.stop();
-}
-void FormGPS::addboundaryOSMPoint(double latitude, double longitude)
-{   qDebug()<<"point.easting";
-    double northing;
-    double easting;
-    pn.ConvertWGS84ToLocal(latitude, longitude, northing, easting, this);
-    //save the north & east as previous
-    Vec3 point(easting,northing,0);
-    bnd.bndBeingMadePts.append(point);
-    bnd.calculateArea();
 }

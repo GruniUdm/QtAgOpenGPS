@@ -8,7 +8,7 @@
 #include <QSharedPointer>
 #include <QOpenGLBuffer>
 #include "cboundarylist.h"
-#include "btnenum.h"
+#include "mainwindowstate.h"
 #include <QObject>
 
 
@@ -17,7 +17,7 @@ class QMatrix4x4;
 class CVehicle;
 class CABLine;
 class CYouTurn;
-class CModuleComm;
+class ModuleComm;
 class CTool;
 class CPGN_EF;
 
@@ -40,8 +40,8 @@ public:
 
     QVector<Vec3> bndBeingMadePts;
 
-    //InterfaceProperty<BoundaryInterface,bool> isBndBeingMade = InterfaceProperty<BoundaryInterface,bool>("isBndBeingMade");
-    bool isBndBeingMade = false;
+    // isBndBeingMade in BoundaryInterface as property
+    //bool isBndBeingMade = false;
 
     bool isOkToAddPoints = false;
 
@@ -76,7 +76,7 @@ public:
     void BuildTurnLines();
 
     //CHead.cs
-    void SetHydPosition(btnStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle); //TODO sounds, p_239
+    void SetHydPosition(SectionState::State autoBtnState, CPGN_EF &p_239, CVehicle &vehicle); //TODO sounds, p_239
     bool IsPointInsideHeadArea(Vec2 pt) const;
 
     /*
@@ -89,6 +89,9 @@ public:
     void AddCurrentPoint(double min_dist);
     void UpdateFieldBoundaryGUIAreas();
     bool CalculateMinMax();
+    bool loadBoundary(const QString &field_path);
+    static double getSavedFieldArea(const QString &boundarytxt_path);
+
 
 public slots:
     // methods to be used by GUI.
@@ -104,6 +107,10 @@ public slots:
     void deleteBoundary(int which_boundary);
     void setDriveThrough(int which_boundary, bool drive_thru);
     void deleteAll();
+
+    void loadBoundaryFromKML(QString filename);
+    void addBoundaryOSMPoint(double latitude, double longitude);
+
 
 signals:
     void TimedMessage(int timeout, QString title, QString message);

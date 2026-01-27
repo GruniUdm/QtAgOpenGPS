@@ -79,7 +79,7 @@ ApplicationWindow {
                     Text { text: serviceAvailable ? Backend.fixFrame.heading.toFixed(2) + "°" : "N/A" }
 
                     Text { text: "Speed:" }
-                    Text { text: serviceAvailable ? aog.speedKph.toFixed(1) + " km/h" : "N/A" }
+                    Text { text: serviceAvailable ? VehicleInterface.avgSpeed.toFixed(1) + " km/h" : "N/A" }
                     
                     Text { text: "GPS Connected:" }
                     Text { 

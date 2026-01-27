@@ -8,7 +8,7 @@ import "components" as Comp
 ColumnLayout {
     id: rightColumn //buttons
 
-    visible: aog.isJobStarted
+    visible: Backend.isJobStarted
 
 
     onHeightChanged: {
@@ -30,7 +30,7 @@ ColumnLayout {
         iconChecked: prefix + "/images/ColorLocked.png"
         buttonText: qsTr("Lock")
         onClicked: {
-            aog.contourLock() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+            Backend.contourLock() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
             if (MainWindowState.btnIsContourLocked)
                 isContourLockedByUser = true
         }
@@ -44,7 +44,7 @@ ColumnLayout {
         //     // function onIsBtnAutoSteerOnChanged() {
         //     //     if (!btnContourLock.isContourLockedByUser && btnContour.checked === true){
         //     //         if(btnContourLock.checked !== aog.isBtnAutoSteerOn){
-        //     //             aog.contourLock() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        //     //             Backend.contourLock() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
         //     //         }
         //     //     }
         //     // }
@@ -57,9 +57,7 @@ ColumnLayout {
         icon.source: prefix + "/images/ContourOff.png"
         iconChecked: prefix + "/images/ContourOn.png"
         buttonText: qsTr("Contour")
-        onClicked: {
-            aog.contour() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-        }
+        onClicked: Backend.toggleContour()
         onCheckedChanged: { //gui logic
             btnTrackCycle.visible = !checked
             btnTrackCycleBk.visible = !checked
@@ -97,54 +95,60 @@ ColumnLayout {
     Comp.IconButton{
         id: btnAutoTrack
         checkable: true
-        isChecked: aog.autoTrackBtnState
+        isChecked: TracksInterface.isAutoTrack
         icon.source: prefix + "/images/AutoTrackOff.png"
         iconChecked: prefix + "/images/AutoTrack.png"
         Layout.alignment: Qt.AlignCenter
         implicitWidth: theme.buttonSize
         implicitHeight: theme.buttonSize
-        onCheckedChanged: aog.autoTrackBtnState = checked ? 1 : 0 // Qt 6.8 MODERN: Q_PROPERTY assignment
-        onClicked: aog.autoTrack() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        onCheckedChanged: TracksInterface.isAutoTrack = checked
     }
 
     Comp.MainWindowBtns {
         id: btnSectionManual
-        isChecked: aog.manualBtnState == 2 // Qt 6.8 MODERN: Q_PROPERTY access
+        isChecked: MainWindowState.manualBtnState === SectionState.On
         checkable: true
         icon.source: prefix + "/images/ManualOff.png"
         iconChecked: prefix + "/images/ManualOn.png"
         buttonText: qsTr("Manual")
         onCheckedChanged: {
+            //if tow between we work with tool #1, otherwise tool 0
+            var whichTool = SettingsManager.tool_isTBT ? 1 : 0;
+
             if (checked) {
                 btnSectionAuto.checked = false;
-                sectionButtons.setAllSectionsToState(2 /*auto*/);
-                aog.manualBtnState = 2 // Qt 6.8 MODERN: btnStates::on
+                Tools.toolsProperties.setAllSectionButtonsToState(whichTool, SectionState.On);
+                MainWindowState.manualBtnState = SectionState.On
 
             } else {
-                sectionButtons.setAllSectionsToState(0 /*off*/);
-                aog.manualBtnState = 0 // Qt 6.8 MODERN: btnStates::off
+                Tools.toolsProperties.setAllSectionButtonsToState(whichTool, SectionState.Off);
+                MainWindowState.manualBtnState = SectionState.Off
             }
         }
     }
 
     Comp.MainWindowBtns {
         id: btnSectionAuto
-        isChecked: aog.autoBtnState == 1 // Qt 6.8 MODERN: Q_PROPERTY access
+        isChecked: MainWindowState.autoBtnState == SectionState.Auto
         checkable: true
         icon.source: prefix + "/images/SectionMasterOff.png"
         iconChecked: prefix + "/images/SectionMasterOn.png"
         buttonText: qsTr("Auto")
         onCheckedChanged: {
+            //if tow between we work with tool #1, otherwise tool 0
+            var whichTool = SettingsManager.tool_isTBT ? 1 : 0;
+
             if (checked) {
                 btnSectionManual.checked = false;
-                sectionButtons.setAllSectionsToState(1 /*auto*/);
-                aog.autoBtnState = 1 // Qt 6.8 MODERN: btnStates::auto
+                Tools.toolsProperties.setAllSectionButtonsToState(whichTool,SectionState.Auto);
+                MainWindowState.autoBtnState = SectionState.Auto
             } else {
-                sectionButtons.setAllSectionsToState(0 /*off*/);
-                aog.autoBtnState = 0 // Qt 6.8 MODERN: btnStates::off
+                Tools.toolsProperties.setAllSectionButtonsToState(whichTool,SectionState.Off);
+                MainWindowState.autoBtnState = SectionState.Off
             }
         }
     }
+
     Comp.MainWindowBtns {
         id: btnAutoYouTurn
         isChecked: MainWindowState.isYouTurnBtnOn // Qt 6.8 MODERN: Q_PROPERTY access
@@ -153,9 +157,10 @@ ColumnLayout {
         iconChecked: prefix + "/images/YouTurn80.png"
         buttonText: qsTr("AutoUturn")
         visible: TracksInterface.idx > -1
-        //enabled: aog.isBtnAutoSteerOn
-        onClicked: aog.autoYouTurn() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+        onClicked: Backend.yt.toggleAutoYouTurn()
     }
+
+
     Comp.MainWindowBtns {
         id: btnAutoSteer
         icon.source: prefix + "/images/AutoSteerOff.png"
@@ -163,49 +168,21 @@ ColumnLayout {
         checkable: true
         isChecked: MainWindowState.isBtnAutoSteerOn  // ⚡ PHASE 6.0.20 FIX: Use isChecked for bidirectional binding (sync with C++ protection)
         // ⚡ PHASE 6.0.20 FIX: Require ACTIVE line (not just in memory) - currentABLine/Curve check mode === AB/Curve
-        enabled: ((aogInterface.currentABLine > -1 || aogInterface.currentABCurve > -1) || MainWindowState.isContourBtnOn) && aog.isJobStarted
+        enabled: ((aogInterface.currentABLine > -1 || aogInterface.currentABCurve > -1) || MainWindowState.isContourBtnOn) && Backend.isJobStarted
         //Is remote activation of autosteer enabled? //todo. Eliminated in 6.3.3
         // Threading Phase 1: Auto steer mode display
         buttonText: (SettingsManager.as_isAutoSteerAutoOn ? "R" : "M")
 
         onClicked: {
             // ⚡ PHASE 6.0.20 FIX: Check ACTIVE line (not just in memory)
-            if ((aogInterface.currentABLine > -1 || aogInterface.currentABCurve > -1) || btnContour.isChecked) {
+            if (((aogInterface.currentABLine > -1 || aogInterface.currentABCurve > -1) || btnContour.isChecked) &&
+                    (VehicleInterface.avgSpeed >= SettingsManager.as_minSteerSpeed &&
+                     VehicleInterface.avgSpeed <= SettingsManager.as_maxSteerSpeed) ) {
                 MainWindowState.isBtnAutoSteerOn = !MainWindowState.isBtnAutoSteerOn; // Qt 6.8 MODERN: Q_PROPERTY assignment
             } else {
                 // No active line or contour: don't allow AutoSteer
                 MainWindowState.isBtnAutoSteerOn = false; // Qt 6.8 MODERN: Q_PROPERTY assignment
             }
         }
-
-        //property bool isTrackOn: (currentABLine > -1 && aog.isJobStarted === true)  //
-
-        // ⚡ PHASE 6.0.20: Speed-based AutoSteer deactivation MOVED to C++
-        // Logic now in formgps.cpp:175 setSpeedKph() for better architecture
-        // Automatic protection in both simulation and real GPS modes
-        /*
-        Connections {
-            target: aogInterface
-            // function onIsBtnAutoSteerOnChanged() {
-            //     //TODO: use track interface in trk
-            //     if (aog.isBtnAutoSteerOn) {
-            //         btnAutoSteer.checked = true
-            //     } else {
-            //         //default to turning everything off
-            //         btnAutoSteer.checked = false
-            //     }
-            // }
-            function onSpeedKphChanged() {
-                if (btnAutoSteer.checked) {
-                    if (aog.speedKph < SettingsManager.as_minSteerSpeed) { // Qt 6.8 MODERN: Q_PROPERTY access
-                        aog.isBtnAutoSteerOn = false
-                    } else if (aog.speedKph > SettingsManager.as_maxSteerSpeed) { // Qt 6.8 MODERN: Q_PROPERTY access
-                        //timedMessage
-                        aog.isBtnAutoSteerOn = false
-                    }
-                }
-            }
-        }
-        */
     }
 }

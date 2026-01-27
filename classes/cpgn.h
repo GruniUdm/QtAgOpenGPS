@@ -30,6 +30,10 @@ public:
         return (this->pgn == other.pgn);
     }
 
+    inline bool operator!=(const CPGN_FE &other) const {
+        return !(this->pgn == other.pgn);
+    }
+
 };
 Q_DECLARE_METATYPE(CPGN_FE)
 
@@ -58,6 +62,9 @@ public:
 
     inline bool operator==(const CPGN_FD &other) const {
         return (this->pgn == other.pgn);
+    }
+    inline bool operator!=(const CPGN_FD &other) const {
+        return !(this->pgn == other.pgn);
     }
 
 };
@@ -89,6 +96,9 @@ public:
     inline bool operator==(const CPGN_FC &other) const {
         return (this->pgn == other.pgn);
     }
+    inline bool operator!=(const CPGN_FC &other) const {
+        return !(this->pgn == other.pgn);
+    }
     void loadSettings();
 };
 Q_DECLARE_METATYPE(CPGN_FC)
@@ -115,6 +125,9 @@ public:
     CPGN_FB() : pgn(QByteArray( "\x80\x81\x7f\xfb\x08\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 14)) { }
     inline bool operator==(const CPGN_FB &other) const {
         return (this->pgn == other.pgn);
+    }
+    inline bool operator!=(const CPGN_FB &other) const {
+        return !(this->pgn == other.pgn);
     }
 };
 Q_DECLARE_METATYPE(CPGN_FB)
@@ -145,6 +158,9 @@ public:
     inline bool operator==(const CPGN_EF &other) const {
         return (this->pgn == other.pgn);
     }
+    inline bool operator!=(const CPGN_EF &other) const {
+        return !(this->pgn == other.pgn);
+    }
 };
 Q_DECLARE_METATYPE(CPGN_EF)
 
@@ -173,6 +189,9 @@ public:
     CPGN_E5() : pgn(QByteArray( "\x80\x81\x7f\xe5\x0a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xCC", 16)) { }
     inline bool operator==(const CPGN_E5 &other) const {
         return (this->pgn == other.pgn);
+    }
+    inline bool operator!=(const CPGN_E5 &other) const {
+        return !(this->pgn == other.pgn);
     }
 };
 Q_DECLARE_METATYPE(CPGN_E5)
@@ -203,6 +222,9 @@ public:
     CPGN_EE();
     inline bool operator==(const CPGN_EE &other) const {
         return (this->pgn == other.pgn);
+    }
+    inline bool operator!=(const CPGN_EE &other) const {
+        return !(this->pgn == other.pgn);
     }
     void loadSettings();
     void MakeCRC();
@@ -255,6 +277,9 @@ public:
     CPGN_EC();
     inline bool operator==(const CPGN_EC &other) const {
         return (this->pgn == other.pgn);
+    }
+    inline bool operator!=(const CPGN_EC &other) const {
+        return !(this->pgn == other.pgn);
     }
     void loadSettings();
     void MakeCRC();
@@ -314,6 +339,9 @@ public:
     inline bool operator==(const CPGN_EB &other) const {
         return (this->pgn == other.pgn);
     }
+    inline bool operator!=(const CPGN_EB &other) const {
+        return !(this->pgn == other.pgn);
+    }
     void Reset() {}
 };
 Q_DECLARE_METATYPE(CPGN_EB)
@@ -339,6 +367,9 @@ public:
     CPGN_F5();
     inline bool operator==(const CPGN_F5 &other) const {
         return (this->pgn == other.pgn);
+    }
+    inline bool operator!=(const CPGN_F5 &other) const {
+        return !(this->pgn == other.pgn);
     }
     void MakeCRC();
 };

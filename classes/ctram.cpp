@@ -4,7 +4,6 @@
 #include <math.h>
 #include "glutils.h"
 #include "cboundary.h"
-#include "ccamera.h"
 #include "classes/settingsmanager.h"
 #include "glm.h"
 
@@ -35,14 +34,14 @@ void CTram::IsTramOuterOrInner()
     if ((bool)SettingsManager::instance()->tool_isTramOuterInverted()) isOuter = !isOuter;
 }
 
-void CTram::DrawTram(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, CCamera &camera)
+void CTram::DrawTram(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, double camSetDistance)
 {
     double lineWidth;
 
     GLHelperOneColor gldraw;
     QColor color;
 
-    if (camera.camSetDistance > -250) lineWidth = 4.0f;
+    if (camSetDistance > -250) lineWidth = 4.0f;
     else lineWidth=2.0f;
     color.setRgbF(0.30f, 0.93692f, 0.7520f, 0.3);
 

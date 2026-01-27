@@ -291,8 +291,14 @@ signals:
     //void setLookaheadGoal(double);
 public slots:
     void ResetYouTurn();
-
     void ResetCreatedYouTurn();
+    void swapAutoYouTurnDirection();
+
+    void manualUTurn(bool right);
+    void lateral(bool right);
+
+    void toggleAutoYouTurn();
+    void toggleYouSkip();
 
 };
 

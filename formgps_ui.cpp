@@ -25,16 +25,33 @@
 #include <algorithm>
 #include "rendering.h"
 #include "backend.h"
+#include "backendaccess.h"
 #include "boundaryinterface.h"
 #include "fieldinterface.h"
 #include "mainwindowstate.h"
 #include "flagsinterface.h"
 #include "recordedpath.h"
 #include "siminterface.h"
-#include "cmodulecomm.h"
+#include "modulecomm.h"
+#include "camera.h"
+#include "vehicleproperties.h"
 
 Q_LOGGING_CATEGORY (formgps_ui, "formgps_ui.qtagopengps")
 #define QDEBUG qDebug(formgps_ui)
+
+#define STRINGISE_IMPL(x) #x
+#define STRINGISE(x) STRINGISE_IMPL(x)
+
+#if defined(_MSC_VER)
+// MSVC format: file(line): warning CXXXX: message
+#define FILE_LINE_LINK __FILE__ "(" STRINGISE(__LINE__) ") : "
+#define COMPILER_WARNING(msg) __pragma(message(FILE_LINE_LINK "warning: " msg))
+#elif defined(__GNUC__) || defined(__clang__)
+// GCC/Clang use _Pragma to embed #pragma GCC warning inside a macro
+#define COMPILER_WARNING(msg) _Pragma(STRINGISE(GCC warning msg))
+#else
+#define COMPILER_WARNING(msg)
+#endif
 
 QString caseInsensitiveFilename(QString directory, QString filename);
 
@@ -42,6 +59,8 @@ QString caseInsensitiveFilename(QString directory, QString filename);
 
 void FormGPS::setupGui()
 {
+    BACKEND_TRACK(track);
+
     // Phase 4.5: AgIOService will be created by QML factory automatically
     QDEBUG << "🚀 AgIOService will be initialized by QML factory on first access";
 
@@ -160,6 +179,9 @@ void FormGPS::setupGui()
 
 void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 {
+    BACKEND_TRACK(track);
+    BACKEND_YT(yt);
+
     QDEBUG << "object is now created. " << url.toString();
     //get pointer to root QML object, which is the OpenGLControl,
     //store in a member variable for future use.
@@ -189,8 +211,8 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
     //initialize interface properties (MOVED to initializeQMLInterfaces() after PropertyWrapper init)
     MainWindowState::instance()->set_isBtnAutoSteerOn(false);
-    this->setLatStart(0.0);
-    this->setLonStart(0.0);
+    Backend::instance()->pn()->setLatStart(0.0);
+    Backend::instance()->pn()->setLonStart(0.0);
 
     connect(SettingsManager::instance(), &SettingsManager::menu_languageChanged, this, &FormGPS::on_language_changed);
 
@@ -235,18 +257,40 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
     connect (tmrWatchdog, SIGNAL(timeout()),this,SLOT(tmrWatchdog_timeout()));
     tmrWatchdog->start(250); //fire every 50ms.
 
-    timer_tick = new QTimer(this);
-    timer_tick->setSingleShot(false);
-    timer_tick->setInterval(250);
-    connect(timer_tick, &QTimer::timeout, this, &FormGPS::Timer1_Tick);
-    timer_tick->start(250);
-
     //SIM
-    connect_classes();
+    connect(SimInterface::instance(), &SimInterface::newPosition,
+            this, &FormGPS::onSimNewPosition, Qt::UniqueConnection);
+
+    // Phase 6.0.33: GPS timer for real GPS mode (50 Hz fixed rate)
+    // 50 Hz = 20ms interval for smooth rendering and PGN 254 AutoSteer commands
+    connect(&timerGPS, &QTimer::timeout, this, &FormGPS::onGPSTimerTimeout, Qt::UniqueConnection);
+    // Timer will be started when GPS data starts arriving (not in simulation mode)
+    timerGPS.start(100);  // 100ms = 10 Hz (synchronized with NMEA data rate)
+
+    connect(Backend::instance(), &Backend::resetDirection, this, &FormGPS::resetDirection);
+
+    connect(Backend::instance(), &Backend::centerOgl, this, &FormGPS::centerOgl);
+
+    connect(Backend::instance(), &Backend::contourPriority, this, &FormGPS::contourPriority);
+
+    connect(Backend::instance(), &Backend::snapToPivot, this, &FormGPS::snapToPivot);
+    connect(Backend::instance(), &Backend::snapSideways, this, &FormGPS::snapSideways);
+
+    connect(Camera::instance(), &Camera::updateView, [this]() {
+        if (openGLControl) {
+            QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
+        }
+    });
+
+    connect(&recPath, &CRecordedPath::stoppedDriving, this, &FormGPS::onStoppedDriving, Qt::QueuedConnection);
+
+    connect(&bnd, &CBoundary::saveBoundaryRequested, this, &FormGPS::FileSaveBoundary, Qt::DirectConnection);
+
+    connect(&track, &CTrack::saveTracks, this, &FormGPS::FileSaveTracks, Qt::QueuedConnection);
 
     loadSettings(); //load settings and properties
 
-    setIsJobStarted(false);
+    Backend::instance()->set_isJobStarted(false);
 
     // StartLoopbackServer(); // ❌ REMOVED - Phase 4.6: UDP FormGPS completely eliminated
     if (SettingsManager::instance()->menu_isSimulatorOn() == false) {
@@ -265,24 +309,26 @@ void FormGPS::on_qml_created(QObject *object, const QUrl &url)
 
 void FormGPS::onGLControl_dragged(int pressX, int pressY, int mouseX, int mouseY)
 {
+    Camera &camera = *Camera::instance();
     QVector3D from,to,offset;
 
     from = mouseClickToPan(pressX, pressY);
     to = mouseClickToPan(mouseX, mouseY);
     offset = to - from;
 
-    camera.panX += offset.x();
-    camera.panY += offset.y();
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
+    camera.set_panX(camera.panX() + offset.x());
+    camera.set_panY(camera.panY() + offset.y());
     if (openGLControl) {
         QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
     }
 }
-void FormGPS::onBtnCenterOgl_clicked(){
+
+void FormGPS::centerOgl() {
+    Camera &camera = *Camera::instance();
     QDEBUG<<"center ogl";
-    camera.panX = 0;
-    camera.panY = 0;
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
+
+    camera.set_panX(0);
+    camera.set_panY(0);
     if (openGLControl) {
         QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
     }
@@ -308,121 +354,6 @@ void FormGPS::onGLControl_clicked(const QVariant &event)
     }
 }
 
-void FormGPS::onBtnAgIO_clicked(){
-    QDEBUG<<"AgIO";
-}
-void FormGPS::onBtnResetTool_clicked(){
-    //probably should be a method of tool somehow.
-   tool.tankPos.heading = CVehicle::instance()->fixHeading;
-   tool.tankPos.easting = CVehicle::instance()->hitchPos.easting + (sin(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
-   tool.tankPos.northing = CVehicle::instance()->hitchPos.northing + (cos(tool.tankPos.heading) * (tool.tankTrailingHitchLength));
-
-   tool.toolPivotPos.heading = tool.tankPos.heading;
-   tool.toolPivotPos.easting = tool.tankPos.easting + (sin(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
-   tool.toolPivotPos.northing = tool.tankPos.northing + (cos(tool.toolPivotPos.heading) * (tool.trailingHitchLength));
-}
-
-// ===== Q_INVOKABLE MODERN ACTIONS - Qt 6.8 Implementation =====
-void FormGPS::resetTool() {
-    // Modern implementation - same logic as onBtnResetTool_clicked()
-    onBtnResetTool_clicked();
-}
-
-void FormGPS::contour() {
-    // Modern implementation - same logic as onBtnContour_clicked()
-    onBtnContour_clicked();
-}
-
-void FormGPS::contourLock() {
-    // Modern implementation - same logic as onBtnContourLock_clicked()
-    onBtnContourLock_clicked();
-}
-
-void FormGPS::contourPriority(bool isRight) {
-    // Modern implementation - same logic as onBtnContourPriority_clicked(bool)
-    onBtnContourPriority_clicked(isRight);
-}
-
-// ===== BATCH 7 ACTIONS - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::headland() {
-    onBtnHeadland_clicked();
-}
-
-void FormGPS::youSkip() {
-    onBtnYouSkip_clicked();
-}
-
-void FormGPS::resetDirection() {
-    onBtnResetDirection_clicked();
-}
-
-void FormGPS::centerOgl() {
-    onBtnCenterOgl_clicked();
-}
-
-void FormGPS::deleteAppliedArea() {
-    onDeleteAppliedArea_clicked();
-}
-
-// ===== BATCH 2 - 7 ACTIONS You-Turn Navigation - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::manualUTurn(bool isRight) {
-    onBtnManUTurn_clicked(isRight);
-}
-
-void FormGPS::lateral(bool isRight) {
-    onBtnLateral_clicked(isRight);
-}
-
-void FormGPS::autoYouTurn() {
-    onBtnAutoYouTurn_clicked();
-}
-
-void FormGPS::swapAutoYouTurnDirection() {
-    onBtnSwapAutoYouTurnDirection_clicked();
-}
-
-void FormGPS::resetCreatedYouTurn() {
-    onBtnResetCreatedYouTurn_clicked();
-}
-
-void FormGPS::autoTrack() {
-    onBtnAutoTrack_clicked();
-}
-
-// ===== BATCH 3 - 8 ACTIONS Camera Navigation - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::zoomIn() {
-    onBtnZoomIn_clicked();
-}
-
-void FormGPS::zoomOut() {
-    onBtnZoomOut_clicked();
-}
-
-void FormGPS::tiltDown() {
-    onBtnTiltDown_clicked();
-}
-
-void FormGPS::tiltUp() {
-    onBtnTiltUp_clicked();
-}
-
-void FormGPS::view2D() {
-    onBtn2D_clicked();
-}
-
-void FormGPS::view3D() {
-    onBtn3D_clicked();
-}
-
-void FormGPS::normal2D() {
-    onBtnN2D_clicked();
-}
-
-void FormGPS::normal3D() {
-    onBtnN3D_clicked();
-}
-
-// ===== BATCH 4 - 2 ACTIONS Settings - Qt 6.8 Q_INVOKABLE Implementation =====
 void FormGPS::settingsReload() {
     on_settings_reload();
 }
@@ -432,53 +363,6 @@ void FormGPS::settingsSave() {
 }
 
 // ===== BATCH 9 - 2 ACTIONS Snap Track - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::snapSideways(double distance) {
-    // Modern implementation - same logic as onBtnSnapSideways_clicked(double)
-    onBtnSnapSideways_clicked(distance);
-}
-
-void FormGPS::snapToPivot() {
-    // Modern implementation - same logic as onBtnSnapToPivot_clicked()
-    onBtnSnapToPivot_clicked();
-}
-
-void FormGPS::startSAAction() {
-    // Modern implementation - renamed to avoid conflict with Q_PROPERTY bool startSA()
-    // Call the original btnStartSA_clicked() method
-    btnStartSA_clicked();
-}
-
-// ===== BATCH 12 - 6 ACTIONS Wizard & Calibration - Qt 6.8 Q_INVOKABLE Implementation =====
-void FormGPS::stopDataCollection() {
-    // Modern implementation - same logic as StopDataCollection()
-    StopDataCollection();
-}
-
-void FormGPS::startDataCollection() {
-    // Modern implementation - same logic as StartDataCollection()
-    StartDataCollection();
-}
-
-void FormGPS::resetData() {
-    // Modern implementation - same logic as ResetData()
-    ResetData();
-}
-
-void FormGPS::applyOffsetToCollectedData(double offset) {
-    // Modern implementation - same logic as ApplyOffsetToCollectedData(double)
-    ApplyOffsetToCollectedData(offset);
-}
-
-void FormGPS::smartCalLabelClick() {
-    // Modern implementation - same logic as SmartCalLabelClick()
-    SmartCalLabelClick();
-}
-
-void FormGPS::smartZeroWAS() {
-    // Modern implementation - renamed from on_btnSmartZeroWAS_clicked() to avoid naming conflict
-    on_btnSmartZeroWAS_clicked();
-}
-
 // ===== BATCH 13 - 7 ACTIONS Field Management - Qt 6.8 Q_INVOKABLE Implementation =====
 void FormGPS::fieldUpdateList() {
     // Modern implementation - same logic as field_update_list()
@@ -519,11 +403,6 @@ void FormGPS::fieldDelete(const QString& fieldName) {
 void FormGPS::loadBoundaryFromKML(QString filename) {
     // Modern implementation
     boundary_new_from_KML(filename);
-}
-
-void FormGPS::addBoundaryOSMPoint(double latitude, double longitude) {
-    // Modern implementation
-    addboundaryOSMPoint(latitude, longitude);
 }
 
 /*
@@ -569,298 +448,26 @@ void FormGPS::recordedPathClear() {
 }
 */
 
-void FormGPS::onBtnHeadland_clicked(){
-    //TODO: this should all be done in QML; we need a way to toggle the PGN though,
-    //probably through the property setter?
-    QDEBUG<<"Headland";
-
-    //toggle the property
-    MainWindowState::instance()->set_isHeadlandOn(! MainWindowState::instance()->isHeadlandOn());
-
-
-    if (CVehicle::instance()->isHydLiftOn() && !MainWindowState::instance()->isHeadlandOn())
-        CVehicle::instance()->setIsHydLiftOn(false);
-
-    if (!MainWindowState::instance()->isHeadlandOn())
-    {
-        //shut off the hyd lift pgn
-        CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
-        emit CModuleComm::instance()->p_239_changed();
-        //btnHydLift.Image = Properties.Resources.HydraulicLiftOff;
-    }
-}
-void FormGPS::onBtnHydLift_clicked(){
-    if (MainWindowState::instance()->isHeadlandOn())
-    {
-        CVehicle::instance()->setIsHydLiftOn(!CVehicle::instance()->isHydLiftOn());
-        if (CVehicle::instance()->isHydLiftOn())
-        {
-        }
-        else
-        {
-            CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
-            emit CModuleComm::instance()->p_239_changed();
-        }
-    }
-    else
-    {
-        CModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
-        emit CModuleComm::instance()->p_239_changed();
-        CVehicle::instance()->setIsHydLiftOn(false);
-    }
-}
 void FormGPS::onBtnTramlines_clicked(){
     QDEBUG<<"tramline";
 }
-void FormGPS::onBtnYouSkip_clicked(){
-    QDEBUG<<"you skip clicked";
-    yt.alternateSkips = yt.alternateSkips+1;
-    if (yt.alternateSkips > 3) yt.alternateSkips = 0;
-    QDEBUG<<"you skip clicked"<<yt.alternateSkips;
-    if (yt.alternateSkips > 0)
-    {
-        //btnYouSkipEnable.Image = Resources.YouSkipOn;
-        //make sure at least 1
-        if (yt.rowSkipsWidth < 2)
-        {
-            yt.rowSkipsWidth = 2;
-            //cboxpRowWidth.Text = "1";
-        }
-        yt.Set_Alternate_skips();
-        yt.ResetCreatedYouTurn();
 
-        //if (!MainWindowState::instance()->isYouTurnBtnOn()) btnAutoYouTurn.PerformClick();
-    }
-
-}
-
-
-void FormGPS::onBtnResetDirection_clicked(){
+void FormGPS::resetDirection(){
     QDEBUG<<"reset Direction";
     // c#Array.Clear(stepFixPts, 0, stepFixPts.Length);
 
     std::memset(stepFixPts, 0, sizeof(stepFixPts));
-    isFirstHeadingSet = false;
+    CVehicle::instance()->vehicleProperties()->set_firstHeadingSet(false);
+    //isFirstHeadingSet = false;
 
-    //TODO: most of this should be done in QML
     CVehicle::instance()->setIsReverse(false);
     TimedMessageBox(2000, "Reset Direction", "Drive Forward > 1.5 kmh");
 }
 
-void FormGPS::onBtnContour_clicked(){
-    //TODO: make guidanceLookAheadTime a property in a gadget in Backend and
-    //do all this logic in QML
-    //toggle state here.
-    MainWindowState::instance()->set_isContourBtnOn(
-        ! MainWindowState::instance()->isContourBtnOn());
-
-    if (MainWindowState::instance()->isContourBtnOn()) {
-        guidanceLookAheadTime = 0.5;
-    }else{
-        //if (ABLine.isBtnABLineOn | curve.isBtnCurveOn){
-        //    ABLine.isABValid = false;
-        //    curve.isCurveValid = false;
-        //}
-        guidanceLookAheadTime = SettingsManager::instance()->as_guidanceLookAheadTime();
-    }
-}
-
-void FormGPS::onBtnContourPriority_clicked(bool isRight){
-
-    ct.isRightPriority = isRight;
+void FormGPS::contourPriority(bool isRight) {
+    COMPILER_WARNING ("ct.isRightPriority is never used anywhere.  bug?")
+    ct.set_isRightPriority (isRight);
     QDEBUG << "Contour isRight: " << isRight;
-}
-
-void FormGPS::onBtnContourLock_clicked(){
-    ct.SetLockToLine();
-}
-
-void FormGPS::onBtnTiltDown_clicked(){
-
-    if (camera.camPitch > -59) camera.camPitch = -60;
-    camera.camPitch += ((camera.camPitch * 0.012) - 1);
-    if (camera.camPitch < -76) camera.camPitch = -76;
-
-    lastHeight = -1; //redraw the sky
-    SettingsManager::instance()->setDisplay_camPitch(camera.camPitch);
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
-    if (openGLControl) {
-        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
-    }
-}
-
-void FormGPS::onBtnTiltUp_clicked(){
-    double camPitch = SettingsManager::instance()->display_camPitch();
-
-    lastHeight = -1; //redraw the sky
-    camera.camPitch -= ((camera.camPitch * 0.012) - 1);
-    if (camera.camPitch > -58) camera.camPitch = 0;
-
-    SettingsManager::instance()->setDisplay_camPitch(camera.camPitch);
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
-    if (openGLControl) {
-        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
-    }
-}
-
-void FormGPS::onBtn2D_clicked(){
-    camera.camFollowing = true;
-    camera.camPitch = 0;
-    navPanelCounter = 0;
-}
-
-void FormGPS::onBtn3D_clicked(){
-    camera.camFollowing = true;
-    camera.camPitch = -65;
-    navPanelCounter = 0;
-}
-void FormGPS::onBtnN2D_clicked(){
-    camera.camFollowing = false;
-    camera.camPitch = 0;
-    navPanelCounter = 0;
-}
-void FormGPS::onBtnN3D_clicked(){
-    camera.camPitch = -65;
-    camera.camFollowing = false;
-    navPanelCounter = 0;
-}
-void FormGPS::onBtnZoomIn_clicked(){
-    if (camera.zoomValue <= 20) {
-        if ((camera.zoomValue -= camera.zoomValue * 0.1) < 3.0)
-            camera.zoomValue = 3.0;
-    } else {
-        if ((camera.zoomValue -= camera.zoomValue * 0.05) < 3.0)
-            camera.zoomValue = 3.0;
-    }
-    camera.camSetDistance = camera.zoomValue * camera.zoomValue * -1;
-    camera.SetZoom();
-    //TODO save zoom to properties
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
-    if (openGLControl) {
-        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
-    }
-}
-
-void FormGPS::onBtnZoomOut_clicked(){
-    if (camera.zoomValue <= 20) camera.zoomValue += camera.zoomValue * 0.1;
-    else camera.zoomValue += camera.zoomValue * 0.05;
-    if (camera.zoomValue > 220) camera.zoomValue = 220;
-    camera.camSetDistance = camera.zoomValue * camera.zoomValue * -1;
-    camera.SetZoom();
-
-    //todo save to properties
-    // CRITICAL: Force OpenGL update in GUI thread to prevent threading violation
-    if (openGLControl) {
-        QMetaObject::invokeMethod(openGLControl, "update", Qt::QueuedConnection);
-    }
-}
-
-void FormGPS::onBtnAutoYouTurn_clicked(){
-    QDEBUG<<"activate youturn";
-
-
-    //TODO: expose properties to QML, and expose methods to QML
-    //from the CYouTurn class as a singleton?
-    yt.loadSettings();
-    yt.isTurnCreationTooClose = false;
-
-//     if (bnd.bndArr.Count == 0)    this needs to be moved to qml
-//     {
-//         TimedMessageBox(2000, gStr.gsNoBoundary, gStr.gsCreateABoundaryFirst);
-//         return;
-//     }
-
-     if (!MainWindowState::instance()->isYouTurnBtnOn())
-     {
-         //new direction so reset where to put turn diagnostic
-         yt.ResetCreatedYouTurn();
-
-         if (!MainWindowState::instance()->isBtnAutoSteerOn()) return;
-         MainWindowState::instance()->set_isYouTurnBtnOn(true);
-         yt.isTurnCreationTooClose = false;
-         yt.isTurnCreationNotCrossingError = false;
-         yt.ResetYouTurn();
-         //mc.autoSteerData[mc.sdX] = 0;
-//         mc.machineControlData[mc.cnYouTurn] = 0;
-//         btnAutoYouTurn.Image = Properties.Resources.Youturn80;
-     }
-     else
-     {
-         MainWindowState::instance()->set_isYouTurnBtnOn(false);
-//         yt.rowSkipsWidth = Properties.Vehicle.Default.set_youSkipWidth;
-//         btnAutoYouTurn.Image = Properties.Resources.YouTurnNo;
-         yt.ResetYouTurn();
-
-         //new direction so reset where to put turn diagnostic
-         yt.ResetCreatedYouTurn();
-
-         //mc.autoSteerData[mc.sdX] = 0;commented in aog
-//         mc.machineControlData[mc.cnYouTurn] = 0;
-     }
-}
-void FormGPS::onBtnSwapAutoYouTurnDirection_clicked()
- {
-     if (!yt.isYouTurnTriggered)
-     {
-         yt.isYouTurnRight = !yt.isYouTurnRight;
-         yt.ResetCreatedYouTurn();
-     }
-     //else if (MainWindowState::instance()->isYouTurnBtnOn())
-         //btnAutoYouTurn.PerformClick();
- }
-
- void FormGPS::onBtnResetCreatedYouTurn_clicked()
- {
-     QDEBUG<<"ResetCreatedYouTurnd";
-     yt.ResetYouTurn();
- }
-
- void FormGPS::onBtnAutoTrack_clicked()
- {
-     track.setIsAutoTrack(!track.isAutoTrack());
-     QDEBUG<<"isAutoTrack";
- }
-
-void FormGPS::onBtnManUTurn_clicked(bool right)
-{
-    if (yt.isYouTurnTriggered) {
-        yt.ResetYouTurn();
-    }else {
-        yt.loadSettings(); // PHASE6-0-20: Sync rowSkipsWidth with SettingsManager before manual U-turn
-        yt.isYouTurnTriggered = true;
-        yt.BuildManualYouTurn(right, true, track);
-   }
-}
-
-void FormGPS::onBtnLateral_clicked(bool right)
-{
-   yt.BuildManualYouLateral(right, track);
-}
-
-void FormGPS::btnStartSA_clicked(){
-
- QDEBUG<<"btnStartSA_clicked";
-
-    if (!isSA)
-    {
-        isSA = true;
-        startFix = CVehicle::instance()->pivotAxlePos;
-        dist = 0;
-        _diameter = 0;
-        cntr = 0;
-        //lblDiameter.Text = "0";
-        setLblCalcSteerAngleInner("Drive Steady");
-        // DEAD CODE from C# original - lblCalcSteerAngleOuter never displayed (FormSteer.cs:848 commented)
-        lblCalcSteerAngleOuter = "Consistent Steering Angle!!";
-
-    }
-    else
-    {
-        isSA = false;
-        setLblCalcSteerAngleInner("0.0 + °");
-        // DEAD CODE from C# original - lblCalcSteerAngleOuter never displayed (FormSteer.cs:854 commented)
-        lblCalcSteerAngleOuter = "0.0 + °";
-    }
 }
 
 void FormGPS::TimedMessageBox(int timeout, QString s1, QString s2)
@@ -972,431 +579,44 @@ void FormGPS::headlines_save() {
 }
 
 //Track Snap buttons
-void FormGPS::onBtnSnapToPivot_clicked(){
+void FormGPS::snapToPivot() {
+    COMPILER_WARNING("snapToPivot not yet implemented")
+    //TODO
     QDEBUG<<"snap to pivot";
 }
 
-void FormGPS::onBtnSnapSideways_clicked(double distance){
-    int blah = distance;
-
+void FormGPS::snapSideways(double distance) {
+    COMPILER_WARNING("snapSideways not yet implemented")
+    //TODO
 }
 
-void FormGPS::onDeleteAppliedArea_clicked()
-{
-    if (isJobStarted())
+void FormGPS::deleteAppliedArea() {
+    if (Backend::instance()->isJobStarted())
     {
-        /*if (autoBtnState == btnStates.Off && manualBtnState == btnStates.Off)
+        //clear out the contour Lists
+        ct.StopContourLine(contourSaveList);
+        ct.ResetContour();
+
+        Backend::instance()->currentField_setWorkedAreaTotal(0);
+
+        //clear the section lists
+        for (int j = 0; j < tool.triStrip.count(); j++)
         {
-
-            DialogResult result3 = MessageBox.Show(gStr.gsDeleteAllContoursAndSections,
-                                                   gStr.gsDeleteForSure,
-                                                   MessageBoxButtons.YesNo,
-                                                   MessageBoxIcon.Question,
-                                                   MessageBoxDefaultButton.Button2);
-            if (result3 == DialogResult.Yes)
-            {
-                //FileCreateElevation();
-
-                if (tool.isSectionsNotZones)
-                {
-                    //Update the button colors and text
-                    AllSectionsAndButtonsToState(btnStates.Off);
-
-                    //enable disable manual buttons
-                    LineUpIndividualSectionBtns();
-                }
-                else
-                {
-                    AllZonesAndButtonsToState(btnStates.Off);
-                    LineUpAllZoneButtons();
-                }
-
-                //turn manual button off
-                manualBtnState = btnStates.Off;
-                btnSectionMasterManual.Image = Properties.Resources.ManualOff;
-
-                //turn auto button off
-                autoBtnState = btnStates.Off;
-                btnSectionMasterAuto.Image = Properties.Resources.SectionMasterOff;
-               */
-
-                //clear out the contour Lists
-                ct.StopContourLine(contourSaveList);
-                ct.ResetContour();
-
-                Backend::instance()->currentField_setWorkedAreaTotal(0);
-
-                //clear the section lists
-                for (int j = 0; j < tool.triStrip.count(); j++)
-                {
-                    //clean out the lists
-                    tool.triStrip[j].patchList.clear();
-                    tool.triStrip[j].triangleList.clear();
-                }
-
-                tool.patchesBufferDirty=true;
-                //patchSaveList.clear();
-                tool.patchSaveList.clear();
-
-                FileCreateContour();
-                FileCreateSections();
-
-            /*}
-            else
-            {
-                TimedMessageBox(1500, gStr.gsNothingDeleted, gStr.gsActionHasBeenCancelled);
-            }
+            //clean out the lists
+            tool.triStrip[j].patchList.clear();
+            tool.triStrip[j].triangleList.clear();
         }
-        else
-        {
-            TimedMessageBox(1500, "Sections are on", "Turn Auto or Manual Off First");
-        }*/
+
+        tool.patchesBufferDirty=true;
+        //patchSaveList.clear();
+        tool.patchSaveList.clear();
+
+        FileCreateContour();
+        FileCreateSections();
     }
-}
-
-void FormGPS::Timer1_Tick()
-{
-    if (isSA)
-    {
-        dist = glm::Distance(startFix, CVehicle::instance()->pivotAxlePos);
-        cntr++;
-        if (dist > _diameter)
-        {
-            _diameter = dist;
-            cntr = 0;
-        }
-        //lblDiameter = _diameter.ToString("N2") + " m";
-        setLblDiameter(locale.toString(_diameter, 'g', 3) + tr(" m"));
-        QDEBUG<<"_diameter ";
-        QDEBUG<<_diameter;
-        if (cntr > 9)
-        {
-            steerAngleRight = atan(CVehicle::instance()->wheelbase / ((_diameter - CVehicle::instance()->trackWidth * 0.5) / 2));
-            steerAngleRight = glm::toDegrees(steerAngleRight);
-
-            //lblCalcSteerAngleInner = steerAngleRight.ToString("N1") + "°";
-            setLblCalcSteerAngleInner(locale.toString(steerAngleRight, 'g', 3) + tr("°"));
-            //lblDiameter.Text = diameter.ToString("N2") + " m";
-            setLblDiameter(locale.toString(_diameter, 'g', 3) + tr(" m"));
-            isSA = false;
-        }
-    }
-/*
-    double actAng = mc.actualSteerAngleDegrees * 5;
-    if (actAng > 0)
-    {
-        if (actAng > 49) actAng = 49;
-        //CExtensionMethods.SetProgressNoAnimation(pbarRight, (int)actAng);
-        //pbarLeft = 0;
-    }
-    else
-    {
-        if (actAng < -49) actAng = -49;
-       // pbarRight = 0;
-       // CExtensionMethods.SetProgressNoAnimation(pbarLeft, (int)-actAng);
-    }
-
-    lblSteerAngle = SetSteerAngle;
-    lblSteerAngleActual = locale.toString(mc.actualSteerAngleDegrees, 'g', 1) + tr("°");
-    lblActualSteerAngleUpper = lblSteerAngleActual;
-    double err = (mc.actualSteerAngleDegrees - guidanceLineSteerAngle * 0.01);
-    lblError = abs(err).ToString("N1") + "\u00B0";
-    if (err > 0) lblError.ForeColor = Color.Red;
-    else lblError.ForeColor = Color.DarkGreen;
-
-    lblAV_Act.Text = mf.actAngVel.ToString("N1");
-    lblAV_Set.Text = mf.setAngVel.ToString("N1");
-
-    counter++;
-
-    if (toSend && counter > 4)
-    {
-        p_252.pgn[p_252.countsPerDegree] = (char)hsbarCountsPerDegree;
-        p_252.pgn[p_252.ackerman] = (char)hsbarAckerman;
-
-        p_252.pgn[p_252.wasOffsetHi] = (char)(hsbarWasOffset.Value >> 8);
-        p_252.pgn[p_252.wasOffsetLo] = (char)(hsbarWasOffset.Value);
-
-        p_252.pgn[p_252.highPWM] = (char)hsbarHighSteerPWM;
-        p_252.pgn[p_252.lowPWM] = (char)(hsbarHighSteerPWM / 3);
-        p_252.pgn[p_252.gainProportional] = (char)hsbarProportionalGain;
-        p_252.pgn[p_252.minPWM] = (char)hsbarMinPWM;
-
-        // SendPgnToLoop(p_252.pgn); // ❌ REMOVED - Phase 4.6: AgIOService Workers handle PGN
-    if (m_agioService) {
-        m_agioService->sendPgn(p_252.pgn);
-    }
-        toSend = false;
-        counter = 0;
-    }
-
-    if (secondCntr++ > 2)
-    {
-        secondCntr = 0;
-
-        if (tabControl1.SelectedTab == tabPPAdv)
-        {
-            lblHoldAdv = CVehicle::instance()->goalPointLookAheadHold.ToString("N1");
-            lblAcqAdv = (CVehicle::instance()->goalPointLookAheadHold * mf.CVehicle::instance()->goalPointAcquireFactor).ToString("N1");
-            lblDistanceAdv = CVehicle::instance()->goalDistance.ToString("N1");
-            lblAcquirePP = lblAcqAdv.Text;
-        }
-    }
-
-    */
 }
 
 // OLD loadTranslation function removed - replaced by on_language_changed()
-
-// Начало сбора данных
-void FormGPS::StartDataCollection()
-{
-    IsCollectingData = true;
-    LastCollectionTime = QDateTime::currentDateTime();
-    QDEBUG<< "StartDataCollection";
-}
-
-// Завершение сбора данных
-void FormGPS::StopDataCollection()
-{
-    IsCollectingData = false;
-    QDEBUG<<"StopDataCollection";
-}
-
-// Полностью сбрасываем историю и аналитику
-void FormGPS::ResetData()
-{
-    steerAngleHistory.clear();
-    SampleCount = 0;
-    RecommendedWASZero = 0;
-    ConfidenceLevel = 0;
-    HasValidRecommendation = false;
-    Mean = 0;
-    StandardDeviation = 0;
-    Median = 0;
-}
-
-// Применяем смещение к историческим данным
-void FormGPS::ApplyOffsetToCollectedData(double appliedOffsetDegrees)
-{
-    if (steerAngleHistory.empty()) return;
-
-    for (size_t i = 0; i < steerAngleHistory.size(); ++i)
-    {
-        steerAngleHistory[i] += appliedOffsetDegrees;
-    }
-
-    if (SampleCount >= MIN_SAMPLES_FOR_ANALYSIS)
-    {
-        PerformStatisticalAnalysis();
-    }
-
-    QDEBUG << "Smart WAS: Applied " << appliedOffsetDegrees << "° offset to "
-             << steerAngleHistory.size() << " collected samples.";
-}
-
-// Добавляем новую запись угла направления
-void FormGPS::AddSteerAngleSample(double guidanceSteerAngle, double currentSpeed)
-{   //QDEBUG<<"AddSteerAngleSample";
-    if (!IsCollectingData || !ShouldCollectSample(guidanceSteerAngle, currentSpeed))
-        return;
-
-    steerAngleHistory.push_back(guidanceSteerAngle);
-    LastCollectionTime = QDateTime::currentDateTime();
-
-    if (steerAngleHistory.size() > MAX_SAMPLES)
-    {
-        steerAngleHistory.pop_front();  // удаляем самый старый элемент
-    }
-
-    SampleCount = steerAngleHistory.size();
-
-    if (SampleCount >= MIN_SAMPLES_FOR_ANALYSIS)
-    {
-        PerformStatisticalAnalysis();
-    }
-
-}
-
-// Возвращаем поправочный коэффициент на основе текущих данных
-int FormGPS::GetRecommendedWASOffsetAdjustment(int currentCPD)
-{
-    if (!HasValidRecommendation) return 0;
-
-    return static_cast<int>(std::round(RecommendedWASZero * currentCPD));
-}
-
-// Проверяем подходит ли данный образец для сбора
-bool FormGPS::ShouldCollectSample(double steerAngle, double speed)
-{
-    if (speed < MIN_SPEED_THRESHOLD) return false;
-    if (std::abs(steerAngle) > MAX_ANGLE_THRESHOLD) return false;
-    if (!MainWindowState::instance()->isBtnAutoSteerOn()) return false;
-    if (std::abs(CVehicle::instance()->guidanceLineDistanceOff) > 15000) return false;
-
-    return true;
-}
-
-// Основная процедура статистического анализа
-void FormGPS::PerformStatisticalAnalysis()
-{
-    if (steerAngleHistory.size() < MIN_SAMPLES_FOR_ANALYSIS) return;
-
-    auto sortedData = steerAngleHistory;
-    std::sort(sortedData.begin(), sortedData.end()); // сортируем массив
-
-    Mean = std::accumulate(steerAngleHistory.begin(), steerAngleHistory.end(), 0.0) /
-           steerAngleHistory.size();
-
-    Median = CalculateMedian(sortedData);
-    StandardDeviation = CalculateStandardDeviation(steerAngleHistory, Mean);
-
-    RecommendedWASZero = -Median; // отрицательная коррекция приближает к центру
-
-    CalculateConfidenceLevel(sortedData);
-
-    HasValidRecommendation = ConfidenceLevel > 50.0 &&
-                             SampleCount >= MIN_SAMPLES_FOR_ANALYSIS;
-    //QDEBUG<<"HasValidRecommendation"<<HasValidRecommendation;
-}
-
-// Функция для нахождения медианы
-double FormGPS::CalculateMedian(QVector<double> sortedData)
-{
-    int count = sortedData.size();
-    if (count == 0) return 0;
-
-    if (count % 2 == 0)
-    {
-        return (sortedData[count / 2 - 1] + sortedData[count / 2]) / 2.0;
-    }
-    else
-    {
-        return sortedData[count / 2];
-    }
-}
-
-// Расчет стандартного отклонения
-double FormGPS::CalculateStandardDeviation(QVector<double> data, double mean)
-{
-    if (data.size() < 2) return 0;
-
-    double sumOfSquares = 0.0;
-    for (double d : data)
-    {
-        sumOfSquares += std::pow(d - mean, 2);
-    }
-
-    return std::sqrt(sumOfSquares / (data.size() - 1));
-}
-
-// Подсчет коэффициента уверенности
-void FormGPS::CalculateConfidenceLevel(QVector<double> sortedData)
-{
-    if (sortedData.size() < MIN_SAMPLES_FOR_ANALYSIS)
-    {
-        ConfidenceLevel = 0;
-        return;
-    }
-
-    double oneStdDevRange = StandardDeviation;
-    double twoStdDevRange = 2 * StandardDeviation;
-
-    int withinOneStdDev = 0;
-    int withinTwoStdDev = 0;
-
-    for (double angle : sortedData)
-    {
-        double deviationFromMedian = std::abs(angle - Median);
-        if (deviationFromMedian <= oneStdDevRange) withinOneStdDev++;
-        if (deviationFromMedian <= twoStdDevRange) withinTwoStdDev++;
-    }
-
-    double oneStdDevPercentage = static_cast<double>(withinOneStdDev) / sortedData.size();
-    double twoStdDevPercentage = static_cast<double>(withinTwoStdDev) / sortedData.size();
-
-    // ожидаемое нормальное распределение данных
-    double expectedOneStdDev = 0.68;
-    double expectedTwoStdDev = 0.95;
-
-    // считаем баллы для каждой метрики
-    double oneStdDevScore = std::max(0.0, 1 - std::abs(oneStdDevPercentage - expectedOneStdDev) / expectedOneStdDev);
-    double twoStdDevScore = std::max(0.0, 1 - std::abs(twoStdDevPercentage - expectedTwoStdDev) / expectedTwoStdDev);
-    double magnitudeScore = std::max(0.0, 1 - std::abs(RecommendedWASZero) / 10.0); // штрафуем большие поправки
-    double sampleSizeFactor = std::min(1.0, static_cast<double>(sortedData.size()) / (MIN_SAMPLES_FOR_ANALYSIS * 3)); // размер выборки влияет положительно
-
-    // объединяем факторы
-    ConfidenceLevel = ((oneStdDevScore * 0.3 + twoStdDevScore * 0.3 + magnitudeScore * 0.2 + sampleSizeFactor * 0.2) * 100);
-    ConfidenceLevel = std::clamp(ConfidenceLevel, 0.0, 100.0);
-}
-
-void FormGPS::SmartCalLabelClick()
-{
-    // Сброс калибровки Smart WAS при клике на любую статусную метку
-    if (IsCollectingData)
-    {
-        ResetData();
-
-        // Покажите короткое подтверждение сброса
-        TimedMessageBox(1500, "Reset To Default", "CalibrationDataReset");
-    }
-    QDEBUG<<"SmartCalLabelClick";
-}
-
-void FormGPS::on_btnSmartZeroWAS_clicked()
-{
-    if (!IsCollectingData)
-    {   TimedMessageBox(2000, "SmartCalibrationErro", "gsSmartWASNotAvailable");
-        return;
-    }
-
-    if (!HasValidRecommendation)
-    {
-        if (SampleCount < 200)
-        {
-            TimedMessageBox(2000, tr("Need at least 200 samples for calibration. Drive on guidance lines to collect more data."), QString(tr("Insufficient Data")) + " " +
-                                                                         QString::number(SampleCount, 'f', 1));
-        }
-        else
-        {
-            TimedMessageBox(2000, tr("Calibration confidence is low. Need at least 70% confidence. Drive more consistently on guidance lines."), QString(tr("Low Confidence")) + " " +
-                                                                                                                                      QString::number(ConfidenceLevel, 'f', 1));
-        }
-        return;
-    }
-
-    // Получаем рекомендацию по смещению
-    int recommendedOffsetAdjustment = GetRecommendedWASOffsetAdjustment(SettingsManager::instance()->as_countsPerDegree());
-    int newOffset = SettingsManager::instance()->as_wasOffset() + recommendedOffsetAdjustment;
-
-    // Проверяем новое значение смещения на допустимый диапазон
-    if (std::abs(newOffset) > 3900)
-    {
-        TimedMessageBox(2000, tr("Recommended adjustment {0} exceeds safe range (±50). Please check WAS sensor alignment"), QString(tr("Exceeded Range")) + " " +
-                                                                                                                                  QString::number(newOffset, 'f', 1));
-        QDEBUG << "Smart Zero превысил диапазон:" << newOffset;
-        return;
-    }
-
-    // Применяем смещение нуля WAS
-    SettingsManager::instance()->setAs_wasOffset(newOffset);
-
-    // Критически важно: применяем смещение к ранее собранным данным
-    ApplyOffsetToCollectedData(RecommendedWASZero);
-
-    // Сообщаем об успешной настройке
-    TimedMessageBox(2000, tr("%1 образцов, %2% уверенности, коррекция %3°")
-                                  .arg(SampleCount)
-                                  .arg(QString::number(ConfidenceLevel, 'f', 1))
-                                  .arg(QString::number(RecommendedWASZero, 'f', 2)),
-    QString(tr("Смещение успешно применено")));
-
-
-    QDEBUG << "Настройка Smart WAS выполнена -"
-             << "Образцы:" << SampleCount
-             << ", Уверенность:" << QString::number(ConfidenceLevel, 'f', 1) << "%,"
-             << "Корректировка:" << QString::number(RecommendedWASZero, 'f', 2) << "°";
-}
 
 // TracksInterface and VehicleInterface now use QML_SINGLETON + QML_ELEMENT (same approach as Settings)
 
@@ -1416,9 +636,7 @@ void FormGPS::initializeQMLInterfaces()
     //no need to emit Backend::fixFrameChanged() here really.  it defaults
     //to 0 anyway
     Backend::instance()->m_fixFrame.sentenceCounter = 0;
-    this->setManualBtnState((int)btnStates::Off);
-    this->setAutoBtnState((int)btnStates::Off);
-    this->setIsPatchesChangingColor( false);
+    Backend::instance()->set_isPatchesChangingColor( false);
 
 
     auto setup_gl_callbacks = [this]() {
@@ -1515,6 +733,8 @@ void FormGPS::setCurrentABCurve(int index) {
 // ===== AB Lines Methods - Phase 6.0.20 =====
 
 void FormGPS::swapABLineHeading(int index) {
+    BACKEND_TRACK(track);
+
     if (index >= 0 && index < track.count()) {
         track.swapAB(index);
         updateABLines();
@@ -1522,6 +742,8 @@ void FormGPS::swapABLineHeading(int index) {
 }
 
 void FormGPS::deleteABLine(int index) {
+    BACKEND_TRACK(track);
+
     if (index >= 0 && index < track.count()) {
         track.delete_track(index);
         updateABLines();
@@ -1537,6 +759,8 @@ void FormGPS::addABLine(const QString& name) {
 }
 
 void FormGPS::changeABLineName(int index, const QString& newName) {
+    BACKEND_TRACK(track);
+
     if (index >= 0 && index < track.count()) {
         track.changeName(index, newName);
         updateABLines();

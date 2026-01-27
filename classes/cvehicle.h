@@ -13,11 +13,12 @@
 #include <QProperty>
 #include <QBindable>
 #include <QMutex>
+#include "simpleproperty.h"
 
 #include <QOpenGLBuffer>
 
 class QOpenGLFunctions;
-class CCamera;
+class VehicleProperties;
 class CYouTurn;
 class CTool;
 class CBoundary;
@@ -28,11 +29,16 @@ class CABLine;
 class CContour;
 class CTrack;
 
+Q_MOC_INCLUDE("vehicleproperties.h")
+
 class CVehicle: public QObject
 {
     Q_OBJECT
     QML_NAMED_ELEMENT(VehicleInterface)
     QML_SINGLETON
+
+    // ===== Scene Graph Properties =====
+    Q_PROPERTY(VehicleProperties* vehicleProperties READ vehicleProperties CONSTANT)
 
     // ===== QML PROPERTIES - Qt 6.8 QProperty + BINDABLE + NOTIFY =====
     Q_PROPERTY(bool isHydLiftOn READ isHydLiftOn WRITE setIsHydLiftOn NOTIFY isHydLiftOnChanged BINDABLE bindableIsHydLiftOn)
@@ -49,6 +55,9 @@ public:
     // C++ singleton access (strict singleton pattern - same as CTrack)
     static CVehicle *instance();
     static CVehicle *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
+
+    // Scene graph properties accessor
+    VehicleProperties* vehicleProperties() const { return m_vehicleProperties; }
 
     bool isSteerAxleAhead;
     bool isPivotBehindAntenna;
@@ -87,23 +96,16 @@ public:
     double purePursuitIntegralGain = 0.0;
 
     double modeXTE = 0.0;
-    double modeActualXTE = 0.0;
-    double modeActualHeadingError = 0.0;
     int modeTime = 0;
 
     double functionSpeedLimit = 20.0;  // Phase 6.0.24 Problem 18: Safe default speed limit
 
 
     //from pn or main form:
-    // Phase 6.0.24 Problem 18: Initialize avgSpeed to prevent exponential averaging from preserving garbage values
-    double avgSpeed = 0.0;  // Average speed - MUST be 0.0 at startup to avoid infinity decay when first NMEA arrives
     int ringCounter = 0;
 
 
     //tram indicator vars
-
-    //headings
-    double fixHeading = 0.0;
 
     //storage for the cos and sin of heading
     double cosSectionHeading = 1.0, sinSectionHeading = 0.0;
@@ -117,8 +119,6 @@ public:
     double fixNorthing = 3.0;
 
     // autosteer variables for sending serial
-    // Phase 6.0.24 Problem 18: Initialize to prevent garbage values in PGN packets
-    short int guidanceLineDistanceOff = 0;
     short int guidanceLineSteerAngle = 0;
     short int distanceDisplay = 0;
 
@@ -138,25 +138,27 @@ public:
 
     //from Position.Designer.cs
 
-    QRect bounding_box;
-    QPoint pivot_axle_xy;
-
     void loadSettings();
     void saveSettings();
 
     double UpdateGoalPointDistance();
     void DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview, QMatrix4x4 projection,
                      double steerAngle,
-                     bool isFirstHeadingSet,
                      double markLeft,
-                     double markRight,
-                     QRect viewport,
-                     const CCamera &camera
-                     );
+                     double markRight, double camSetDistance,
+                     QRect viewport);
 
     //C++ code should use Qt 6.8 QProperty setters above
     //QML bindings work automatically with BINDABLE functions
     // Legacy setters replaced by Qt 6.8 QProperty pattern
+    SIMPLE_BINDABLE_PROPERTY (double,modeActualXTE)
+    SIMPLE_BINDABLE_PROPERTY (double,modeActualHeadingError)
+    SIMPLE_BINDABLE_PROPERTY (QPoint,screenCoord)
+    SIMPLE_BINDABLE_PROPERTY (QRect,screenBounding)
+    SIMPLE_BINDABLE_PROPERTY (short int, guidanceLineDistanceOff)
+    SIMPLE_BINDABLE_PROPERTY (double, avgPivDistance)
+    SIMPLE_BINDABLE_PROPERTY (double, avgSpeed)
+    SIMPLE_BINDABLE_PROPERTY (double, fixHeading)
 
 signals:
     //void setLookAheadGoal(double);
@@ -236,27 +238,16 @@ public slots:
 
 private:
     // Private constructor for strict singleton pattern
-    explicit CVehicle(QObject* parent = nullptr) : QObject(parent) {
-        // Initialize Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY members
-        m_isHydLiftOn = false;
-        m_hydLiftDown = false;
-        m_isChangingDirection = false;
-        m_isReverse = false;
-        m_leftTramState = 0;
-        m_rightTramState = 0;
-        m_vehicleList = QList<QVariant>{};
-
-        // Phase 6.0.24 Problem 18: Initialize avgSpeed as defense-in-depth
-        // Critical: Without this, exponential averaging preserves random memory values
-        // Formula: avgSpeed = newSpeed*0.75 + avgSpeed*0.25 means 25% of old value persists
-        avgSpeed = 0.0;
-    }
+    explicit CVehicle(QObject* parent = nullptr);
 
     ~CVehicle() override=default;
 
     static CVehicle *s_instance;
     static QMutex s_mutex;
     static bool s_cpp_created;
+
+    // Scene graph properties
+    VehicleProperties *m_vehicleProperties = nullptr;
 
     // Qt 6.8 MIGRATION: Lazy initialization flag
     mutable bool m_settingsLoaded = false;
@@ -277,6 +268,14 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QList<QVariant>, m_vehicleList, &CVehicle::vehicleListChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, bool, m_isInFreeDriveMode, false, &CVehicle::isInFreeDriveModeChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_driveFreeSteerAngle, 0, &CVehicle::driveFreeSteerAngleChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_modeActualXTE, 0, &CVehicle::modeActualXTEChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_modeActualHeadingError, 0, &CVehicle::modeActualHeadingErrorChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QPoint, m_screenCoord, &CVehicle::screenCoordChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(CVehicle, QRect, m_screenBounding, &CVehicle::screenBoundingChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, short int, m_guidanceLineDistanceOff, 0, &CVehicle::guidanceLineDistanceOffChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_avgPivDistance, 32000, &CVehicle::avgPivDistanceChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_avgSpeed, 0, &CVehicle::avgSpeedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CVehicle, double, m_fixHeading, 0, &CVehicle::fixHeadingChanged)
 
 };
 

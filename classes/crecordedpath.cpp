@@ -8,6 +8,8 @@
 #include "qmlutil.h"
 #include "siminterface.h"
 #include "recordedpath.h"
+#include "sectionstate.h"
+#include "mainwindowstate.h"
 
 CRecordedPath::CRecordedPath(QObject *parent) : QObject(parent)
 {
@@ -150,12 +152,8 @@ void CRecordedPath::UpdatePosition(const CYouTurn &yt, bool isBtnAutoSteerOn)
 
             pathCount = recList.size() - C;
 
-            //section control - only if different click the button
-            //torriem: turn off sectionMasterAuto if on
-            emit turnOffSectionMasterAuto();
-            //bool autoBtn = (mf.autoBtnState == btnStates::Auto);
-            //trig = autoBtn;
-            //if (autoBtn != recList[C].autoBtnState) emit btnSectionOffAutoOnClicked();
+            //Turn off automatic sections is on
+            MainWindowState::instance()->set_autoBtnState(SectionState::Off);
         }
         else
         {
@@ -306,7 +304,7 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
 
         if (isFollowingRecPath
             && fabs(pivotDerivative) < (0.1)
-            && CVehicle::instance()->avgSpeed > 2.5)
+            && CVehicle::instance()->avgSpeed() > 2.5)
         //&& fabs(pivotDistanceError) < 0.2)
 
         {
@@ -371,7 +369,7 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
     double goalPointDistanceSquared = glm::DistanceSquared(goalPointRP.northing, goalPointRP.easting, pivotAxlePosRP.northing, pivotAxlePosRP.easting);
 
     //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
-    double localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
+    double localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
 
     ppRadiusRP = goalPointDistanceSquared / (2 * (((goalPointRP.easting - pivotAxlePosRP.easting) * cos(localHeading)) + ((goalPointRP.northing - pivotAxlePosRP.northing) * sin(localHeading))));
 
@@ -382,10 +380,10 @@ void CRecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
     if (steerAngleRP > CVehicle::instance()->maxSteerAngle) steerAngleRP = CVehicle::instance()->maxSteerAngle;
 
     //used for smooth mode
-    CVehicle::instance()->modeActualXTE = (distanceFromCurrentLinePivot);
+    CVehicle::instance()->set_modeActualXTE ( (distanceFromCurrentLinePivot));
 
     //Convert to centimeters
-    CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+    CVehicle::instance()->set_guidanceLineDistanceOff((short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
     CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleRP * 100);
 }
 
@@ -453,7 +451,7 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
 
         if (isBtnAutoSteerOn
             && fabs(pivotDerivative) < (0.1)
-            && CVehicle::instance()->avgSpeed > 2.5
+            && CVehicle::instance()->avgSpeed() > 2.5
             && !yt.isYouTurnTriggered)
 
         {
@@ -518,9 +516,9 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
     double goalPointDistanceSquared = glm::DistanceSquared(goalPointRP.northing, goalPointRP.easting, pivotAxlePosRP.northing, pivotAxlePosRP.easting);
 
     //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
-    //double localHeading = glm::twoPI - CVehicle::instance()->fixHeading;
+    //double localHeading = glm::twoPI - CVehicle::instance()->fixHeading();
 
-    double localHeading = glm::twoPI - CVehicle::instance()->fixHeading + inty;
+    double localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
 
     ppRadiusRP = goalPointDistanceSquared / (2 * (((goalPointRP.easting - pivotAxlePosRP.easting) * cos(localHeading)) + ((goalPointRP.northing - pivotAxlePosRP.northing) * sin(localHeading))));
 
@@ -548,7 +546,7 @@ void CRecordedPath::PurePursuitDubins(CVehicle &vehicle, const CYouTurn &yt, boo
     //}
 
     //Convert to centimeters
-    CVehicle::instance()->guidanceLineDistanceOff = (short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0);
+    CVehicle::instance()->set_guidanceLineDistanceOff ((short)glm::roundMidAwayFromZero(distanceFromCurrentLinePivot * 1000.0));
     CVehicle::instance()->guidanceLineSteerAngle = (short)(steerAngleRP * 100);
 
 }

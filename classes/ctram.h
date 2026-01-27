@@ -61,7 +61,7 @@ public:
     explicit CTram(QObject *parent = 0);
     void loadSettings();
     void IsTramOuterOrInner();
-    void DrawTram(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, CCamera &camera);
+    void DrawTram(QOpenGLFunctions *gl, const QMatrix4x4 &mvp, double camSetDistance);
     void BuildTramBnd(const CBoundary &bnd);
     void CreateBndInnerTramTrack(const CBoundary &bnd);
     void CreateBndOuterTramTrack(const CBoundary &bnd);

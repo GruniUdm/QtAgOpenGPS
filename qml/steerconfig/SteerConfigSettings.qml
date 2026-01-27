@@ -129,8 +129,8 @@ Window{
 					cboxEncoder.checked = true;
 				}
 
-                nudMaxCounts.value = SettingsManager.ardSteer_ardSteerMaxPulseCounts;
-                hsbarSensor.value = SettingsManager.ardSteer_ardSteerMaxPulseCounts;
+                nudMaxCounts.value = SettingsManager.ardSteer_maxPulseCounts;
+                hsbarSensor.value = SettingsManager.ardSteer_maxPulseCounts;
 
                 sett = SettingsManager.ardSteer_setting1;
 

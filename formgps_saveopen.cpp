@@ -9,10 +9,13 @@
 #include "qmlutil.h"
 #include <QString>
 #include "backend.h"
+#include "backendaccess.h"
 #include "mainwindowstate.h"
 #include "boundaryinterface.h"
 #include "flagsinterface.h"
+#include "worldgrid.h"
 #include "siminterface.h"
+#include "camera.h"
 
 enum OPEN_FLAGS {
     LOAD_MAPPING = 1,
@@ -21,7 +24,7 @@ enum OPEN_FLAGS {
     LOAD_FLAGS = 8
 };
 
-QString caseInsensitiveFilename(QString directory, QString filename)
+QString caseInsensitiveFilename(const QString &directory, const QString &filename)
 {
     //A bit of a hack to work with files from AOG that might not have
     //the exact case we are expecting. For example, Boundaries.Txt and
@@ -227,6 +230,8 @@ void FormGPS::FileLoadHeadLines()
 
 void FormGPS::FileSaveTracks()
 {
+    BACKEND_TRACK(track);
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -312,6 +317,8 @@ void FormGPS::FileSaveTracks()
 
 void FormGPS::FileLoadTracks()
 {
+    BACKEND_TRACK(track);
+
     track.gArr.clear();
 
     //current field directory should already exist
@@ -441,6 +448,8 @@ void FormGPS::FileLoadTracks()
 
 void FormGPS::FileSaveCurveLines()
 {
+    BACKEND_TRACK(track);
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -502,6 +511,8 @@ void FormGPS::FileSaveCurveLines()
 
 void FormGPS::FileLoadCurveLines()
 {
+    BACKEND_TRACK(track);
+
     //This method is only used if there is no TrackLines.txt and we are importing the old
     //CurveLines.txtfile
 
@@ -615,6 +626,8 @@ void FormGPS::FileLoadCurveLines()
 
 void FormGPS::FileSaveABLines()
 {
+    BACKEND_TRACK(track);
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -671,6 +684,8 @@ void FormGPS::FileLoadABLines()
     //run before FileLoadCurveLines().
 
     //current field directory should already exist
+    BACKEND_TRACK(track);
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -804,83 +819,28 @@ QMap<QString,QVariant> FormGPS::FileFieldInfo(QString filename)
     fieldFile.close();
 
     //Boundaries
-    //Either exit or update running save
-    filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "Boundary.txt");
+    filename = QDir(directoryName).filePath(caseInsensitiveFilename(directoryName, "Boundary.txt"));
 
-    QFile boundariesFile(filename);
-    field_info["hasBoundary"] = false;
-    field_info["boundaryArea"] = (double)-10;
+    double area = CBoundary::getSavedFieldArea(filename);
 
-    if (boundariesFile.open(QIODevice::ReadOnly)) {
-        reader.setDevice(&boundariesFile);
-        //read header
-        line = reader.readLine();//Boundary
-
-        //only look at first boundary
-        if (!reader.atEnd()) {
-            //True or False OR points from older boundary files
-            line = reader.readLine();
-
-            //Check for older boundary files, then above line string is num of points
-            if (line == "True")
-            {
-                line = reader.readLine();
-            } else if (line == "False")
-            {
-                line = reader.readLine(); //number of points
-            }
-
-            //Check for latest boundary files, then above line string is num of points
-            if (line == "True" || line == "False")
-            {
-                line = reader.readLine(); //number of points
-            }
-
-            int numPoints = line.toInt();
-
-            if (numPoints > 0)
-            {
-                QVector<Vec3> pointList;
-                pointList.reserve(numPoints);  // Phase 1.1: Pre-allocate
-                //load the line
-                for (int i = 0; i < numPoints; i++)
-                {
-                    line = reader.readLine();
-                    // Phase 1.2: Parse without QStringList allocation
-                    int comma1 = line.indexOf(',');
-                    int comma2 = line.indexOf(',', comma1 + 1);
-                    Vec3 vecPt( QStringView(line).left(comma1).toDouble(),
-                               QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
-                               QStringView(line).mid(comma2 + 1).toDouble() );
-                    pointList.append(vecPt);
-                }
-
-                if (pointList.count() > 4) {
-                    double area = 0;
-
-                    //the last vertex is the 'previous' one to the first
-                    int j = pointList.count() - 1;
-
-                    for (int i = 0; i < pointList.count() ; j = i++) {
-                        //pretend they are square; we'll divide by 2 later
-                        area += (pointList[j].easting + pointList[i].easting) *
-                                (pointList[j].northing - pointList[i].northing);
-                    }
-
-                    field_info["hasBoundary"] = true;
-                    field_info["boundaryArea"] = fabs(area)/2;
-                }
-            }
-        }
+    if (area>0) {
+        field_info["hasBoundary"] = true;
+        field_info["boundaryArea"] = area;
+    } else {
+        field_info["hasBoundary"] = false;
+        field_info["boundaryArea"] = (double)-10;
     }
-
-    boundariesFile.close();
 
     return field_info;
 }
 
 bool FormGPS::FileOpenField(QString fieldDir, int flags)
 {
+    CNMEA &pn = *Backend::instance()->pn();
+    WorldGrid &worldGrid = *WorldGrid::instance();
+    BACKEND_TRACK(track);
+    Camera &camera = *Camera::instance();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + fieldDir;
 #else
@@ -959,8 +919,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         int comma = line.indexOf(',');
         if (comma != -1) {
             // Phase 6.3.1: Use PropertyWrapper for safe property access
-            this->setLatStart(QStringView(line).left(comma).toDouble());
-            this->setLonStart(QStringView(line).mid(comma + 1).toDouble());
+            pn.setLatStart(QStringView(line).left(comma).toDouble());
+            pn.setLonStart(QStringView(line).mid(comma + 1).toDouble());
         }
 
         // Qt 6.8 TRACK RESTORATION: Load active track index if present
@@ -991,17 +951,17 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         if (SimInterface::instance()->isRunning())
         {
             // Phase 6.3.1: Use PropertyWrapper for safe property access
-            pn.latitude = this->latStart();
-            pn.longitude = this->lonStart();
+            pn.latitude = pn.latStart();
+            pn.longitude = pn.lonStart();
 
-            SettingsManager::instance()->setGps_simLatitude(this->latStart());
-            SettingsManager::instance()->setGps_simLongitude(this->lonStart());
+            SettingsManager::instance()->setGps_simLatitude(pn.latStart());
+            SettingsManager::instance()->setGps_simLongitude(pn.lonStart());
             SimInterface::instance()->reset();
 
-            pn.SetLocalMetersPerDegree(this);
+            pn.SetLocalMetersPerDegree();
         } else {
             // Phase 6.0.4: Use Q_PROPERTY direct access instead of qmlItem
-            pn.SetLocalMetersPerDegree(this);
+            pn.SetLocalMetersPerDegree();
         }
     }
 
@@ -1364,10 +1324,9 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         calculateMinMax();
         bnd.BuildTurnLines();
 
-        if(bnd.bndList.count() > 0)
-        {
-            //TODO: inform GUI btnABDraw can be seen
-        }
+        //let GUI know it can show btnABDraw
+        BoundaryInterface::instance()->set_count(bnd.bndList.count());
+
         lock.unlock();
     }
     // Headland  -------------------------------------------------------------------------------------------------
@@ -1594,8 +1553,6 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         lock.unlock();
     }
 
-    worldGrid.isGeoMap = false;
-
     filename = directoryName + "/" + caseInsensitiveFilename(directoryName, "BackPic.txt");
 
     QFile backPic(filename);
@@ -1609,23 +1566,17 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
         line = reader.readLine();
 
         line = reader.readLine();
-        worldGrid.isGeoMap = (line == "True" ? true : false);
+        worldGrid.set_isGeoMap ( (line == "True" ? true : false));
 
         line = reader.readLine();
-        worldGrid.eastingMaxGeo = line.toDouble();
+        worldGrid.set_eastingMaxGeo(line.toDouble());
         line = reader.readLine();
-        worldGrid.eastingMinGeo = line.toDouble();
+        worldGrid.set_eastingMinGeo ( line.toDouble());
         line = reader.readLine();
-        worldGrid.northingMaxGeo = line.toDouble();
+        worldGrid.set_northingMaxGeo ( line.toDouble());
         line = reader.readLine();
-        worldGrid.northingMinGeo = line.toDouble();
+        worldGrid.set_northingMinGeo ( line.toDouble());
 
-
-        if (worldGrid.isGeoMap)
-        {
-            //TODO: load map texture
-            worldGrid.isGeoMap = false;
-        }
         lock.unlock();
     }
 
@@ -1642,7 +1593,11 @@ void FormGPS::FileCreateField()
     //$Offsets
     //533172,5927719,12 - offset easting, northing, zone
 
-    if( ! isJobStarted())
+    CNMEA &pn = *Backend::instance()->pn();
+    BACKEND_TRACK(track);
+
+
+    if( ! Backend::instance()->isJobStarted())
     {
         qDebug() << "field not open";
         TimedMessageBox(3000, tr("Field Not Open"), tr("Create a new field."));
@@ -1699,7 +1654,7 @@ void FormGPS::FileCreateField()
     writer << "StartFix" << Qt::endl;
     writer << pn.latitude << "," << pn.longitude << Qt::endl;
     // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.SetLocalMetersPerDegree(this);
+    pn.SetLocalMetersPerDegree();
 
     // Qt 6.8 TRACK RESTORATION: Save active track index for restoration when reopening field
     writer << "$ActiveTrackIndex" << Qt::endl;
@@ -1715,6 +1670,8 @@ void FormGPS::FileCreateElevation()
     //Bob_Feb11
     //$Offsets
     //533172,5927719,12 - offset easting, northing, zone
+
+    CNMEA &pn = *Backend::instance()->pn();
 
     QString myFilename;
 
@@ -2129,6 +2086,8 @@ void FormGPS::FileSaveTram()
 
 void FormGPS::FileSaveBackPic()
 {
+    WorldGrid &worldGrid = *WorldGrid::instance();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -2160,13 +2119,13 @@ void FormGPS::FileSaveBackPic()
 
     writer << "$BackPic" << Qt::endl;
 
-    if (worldGrid.isGeoMap)
+    if (worldGrid.isGeoMap())
     {
         writer << "True" << Qt::endl;
-        writer << worldGrid.eastingMaxGeo << Qt::endl;
-        writer << worldGrid.eastingMinGeo << Qt::endl;
-        writer << worldGrid.northingMaxGeo << Qt::endl;
-        writer << worldGrid.northingMinGeo << Qt::endl;
+        writer << worldGrid.eastingMaxGeo() << Qt::endl;
+        writer << worldGrid.eastingMinGeo() << Qt::endl;
+        writer << worldGrid.northingMaxGeo() << Qt::endl;
+        writer << worldGrid.northingMinGeo() << Qt::endl;
     }
     else
     {
@@ -2447,6 +2406,8 @@ void FormGPS::FileSaveFlags()
 
 void FormGPS::FileSaveNMEA()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -2484,6 +2445,8 @@ void FormGPS::FileSaveNMEA()
 
 void FormGPS::FileSaveElevation()
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -2521,6 +2484,8 @@ void FormGPS::FileSaveElevation()
 
 void FormGPS::FileSaveSingleFlagKML2(int flagNumber)
 {
+    CNMEA &pn = *Backend::instance()->pn();
+
 #ifdef __ANDROID__
     QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
 #else
@@ -2559,7 +2524,7 @@ void FormGPS::FileSaveSingleFlagKML2(int flagNumber)
     FlagModel::Flag flag;
     flag = FlagsInterface::instance()->flagModel()->flagAt(flagNumber);
 
-    pn.ConvertLocalToWGS84(flag.northing, flag.easting, lat, lon, this);
+    pn.ConvertLocalToWGS84(flag.northing, flag.easting, lat, lon);
 
     writer << "<Document>" << Qt::endl;
 
@@ -2705,7 +2670,7 @@ QString FormGPS::GetBoundaryPointsLatLon(int bndNum)
     for (int i = 0; i < bnd.bndList[bndNum].fenceLine.count(); i++)
     {
         // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.ConvertLocalToWGS84(bnd.bndList[bndNum].fenceLine[i].northing, bnd.bndList[bndNum].fenceLine[i].easting, lat, lon, this);
+    Backend::instance()->pn()->ConvertLocalToWGS84(bnd.bndList[bndNum].fenceLine[i].northing, bnd.bndList[bndNum].fenceLine[i].easting, lat, lon);
         sb_writer << qSetRealNumberPrecision(7)
                   << lon << ','
                   << lat << ",0 "

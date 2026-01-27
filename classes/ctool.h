@@ -7,13 +7,13 @@
 #include "common.h"
 #include <QColor>
 #include <QElapsedTimer>
-#include "btnenum.h"
+#include <QImage>
 #include "vec3.h"
+#include "sectionstate.h"
 
 class QOpenGLFunctions;
 class QMatrix4x4;
 class CVehicle;
-class CCamera;
 class CTram;
 class CBoundary;
 
@@ -98,7 +98,7 @@ public:
 
     //moved the following from the main form to here
     CSection section[MAXSECTIONS+1];
-    btnStates sectionButtonState[65];
+    SectionState::State sectionButtonState[65];
 
     //list of patches to save to disk at next opportunity
     QVector<QSharedPointer<PatchTriangleList>> patchSaveList;
@@ -109,6 +109,8 @@ public:
 
     bool patchesBufferDirty = true;
 
+    QImage grnPix;
+
     void sectionCalcWidths();
     void sectionCalcMulti();
     void sectionSetPositions();
@@ -118,34 +120,35 @@ public:
     CTool();
     //this class needs modelview and projection as separate matrices because some
     //additiona transformations need to be done.
-    void DrawTool(QOpenGLFunctions *gl,
+    void DrawToolGL(QOpenGLFunctions *gl,
                   QMatrix4x4 modelview,
                   QMatrix4x4 projection,
                   bool isJobStarted, bool isHydLiftOn,
-                  CCamera &camera, CTram &tram);
+                  double camSetDistance, CTram &tram);
 
-    void DrawPatches(QOpenGLFunctions *gl,
+    void DrawPatchesGL(QOpenGLFunctions *gl,
                      QMatrix4x4 mvp,
                      int patchCounter,
-                     const CCamera &camera,
+                     double camSetDistance,
                      QElapsedTimer &swFrame
                      );
 
-    void DrawPatchesTriangles(QOpenGLFunctions *gl,
-                     QMatrix4x4 mvp,
-                     int patchCounter,
-                     const CCamera &camera,
-                     QElapsedTimer &swFrame
-                     );
+    void DrawPatchesTrianglesGL(QOpenGLFunctions *gl,
+                                QMatrix4x4 mvp,
+                                int patchCounter,
+                                QElapsedTimer &swFrame
+                                );
 
     void DrawPatchesBack(QOpenGLFunctions *gl,
                                QMatrix4x4 mvp);
 
-    QImage DrawPatchesBackQP(const CTram &tram, const CBoundary &bnd, Vec3 pivotAxlePos, bool isHeadlandOn, bool onTrack);
+    void DrawPatchesBackQP(const CTram &tram, const CBoundary &bnd, Vec3 pivotAxlePos, bool isHeadlandOn, bool onTrack);
 
     void NewPosition();
-    void ProcessLookAhead(bool isHeadlandOn, int gpsHz, btnStates autoBtnState,
+    void ProcessLookAhead(int gpsHz, SectionState::State autoBtnState,
                           const CBoundary &bnd, CTram &tram);
+    void BuildMachineByte(CTram &tram);
+    void DoRemoteSwitches();
 
     void clearPatches();
     void loadPatches();
@@ -160,9 +163,13 @@ private:
     QVector<PatchBuffer> patchBuffer;
     LookAheadPixels grnPixels[150001];
     LookAheadPixels *overPixels = new LookAheadPixels[160000]; //400x400
-public:
+public slots:
+    void on_autoBtnChanged();
+    void onSectionButtonStatechanged(int toolIndex, int sectionButtonNo, SectionState::State new_state);
+    void resetTool();
+
 signals:
-    void SetHydPosition(btnStates autoBtnState);
+    void SetHydPosition(SectionState::State autoBtnState);
 
 };
 
