@@ -20,6 +20,9 @@ Rectangle {
         id: aog
     }*/
 
+    // Tool index - which tool's sections to display
+    property int toolIndex: 0
+
     width: 600
     height: childrenRect.height * theme.scaleHeight
 
@@ -56,6 +59,10 @@ Rectangle {
         }
     }
 
+    Component.onCompleted: {
+        console.debug(qmlLog, "toolIndex is ", toolIndex);
+    }
+
     Component {
         id: sectionViewDelegate
         SectionButton {
@@ -64,16 +71,16 @@ Rectangle {
                 console.log(qmlLog, model);
 
             }
-            property int numSections: Tools.toolsList[0].sectionButtonsModel.rowCount()
+            property int numSections: Tools.toolsProperties.tools[toolIndex].sectionButtonsModel.rowCount()
             width: (sectionButtons.width / numSections) > 40 ? (sectionButtons.width / numSections) : 40
             buttonText: (model.buttonNumber + 1).toFixed(0)
             visible: (model.buttonNumber < numSections) ? true : false
-            color: (model.state === 0 ? offColor : (model.state === 1 ? autoColor : onColor))
-            textColor: (model.state ===0 ? offTextColor : (model.state === 1 ? autoTextColor : onTextColor))
+            color: (model.state === SectionState.Off ? offColor : (model.state === SectionState.Auto ? autoColor : onColor))
+            textColor: (model.state ===SectionState.Off ? offTextColor : (model.state === SectionState.Auto ? autoTextColor : onTextColor))
 
             onButtonClicked: {
                 //toggle tri state
-                Tools.setSectionButtonState(0,model.buttonNumber, (model.state + 1 ) % 3)
+                Tools.setSectionButtonState(toolIndex,model.buttonNumber, (model.state + 1 ) % 3)
                 console.debug(qmlLog, "button clicked: ",model.buttonNumber, " new state is ", model.state);
             }
         }
@@ -88,7 +95,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.top: parent.top
 
-        model: Tools.toolsList[0].sectionButtonsModel
+        model: Tools.toolsProperties.tools[toolIndex].sectionButtonsModel
 
         boundsMovement: Flickable.StopAtBounds
 

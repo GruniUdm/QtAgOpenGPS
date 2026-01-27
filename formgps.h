@@ -331,7 +331,7 @@ public:
      *************************/
 public:
     //very first fix to setup grid etc
-    bool isFirstFixPositionSet = false, isGPSPositionInitialized = false, isFirstHeadingSet = false;
+    bool isFirstFixPositionSet = false, isGPSPositionInitialized = false;
     bool m_forceGPSReinitialization = false;  // PHASE 6.0.41: Force latStart/lonStart update on mode switch even if field open
     bool /*isReverse = false (CVehicle),*/ isSteerInReverse = true, isSuperSlow = false, isAutoSnaptoPivot = false;
     double startGPSHeading = 0;

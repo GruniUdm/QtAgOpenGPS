@@ -320,8 +320,10 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         PROPERTIES QT_QML_SINGLETON_TYPE TRUE
     )
 else() #LOCAL_QML ON
-    file(GLOB_RECURSE qml_files "qml/*")
-    add_custom_target(AOGQML SOURCES ${qml_files})
+    file(GLOB_RECURSE qml_files "qml/*" "images/*" "sounds/*" "shaders/*")
+    add_custom_target(AOGQML SOURCES
+        ${qml_files}
+    )
     message("Local QML is ON!")
     add_compile_definitions(LOCAL_QML)
 
@@ -383,20 +385,46 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/siminterface.h backend/siminterface.cpp
     SOURCES backend/tool.h backend/tool.cpp
     SOURCES backend/tools.h backend/tools.cpp
+    SOURCES backend/sectionstate.h
     SOURCES backend/fixframe.h
     SOURCES backend/modulecomm.h backend/modulecomm.cpp
     SOURCES backend/blockage.h backend/blockage.cpp
     SOURCES backend/steerconfig.h backend/steerconfig.cpp
     SOURCES backend/camera.h backend/camera.cpp
     SOURCES backend/worldgrid.h backend/worldgrid.cpp
+    SOURCES backend/sectionproperties.h backend/sectionproperties.cpp
     SOURCES models/recordedpathmodel.h models/recordedpathmodel.cpp
     SOURCES models/fencelinemodel.h models/fencelinemodel.cpp
     SOURCES models/flagmodel.h models/flagmodel.cpp
     SOURCES models/blockagemodel.h models/blockagemodel.cpp
     SOURCES models/sectionbuttonsmodel.h models/sectionbuttonsmodel.cpp
     SOURCES models/toolssectionbuttonsmodel.h models/toolssectionbuttonsmodel.cpp
+    SOURCES models/toolswithsectionsmodel.h models/toolswithsectionsmodel.cpp
     SOURCES models/fieldsmodel.h models/fieldsmodel.cpp
     SOURCES backendaccess.h
+
+    # Scene graph-based renderer (Phase: QSG Migration)
+    SOURCES scenegraph/aogmaterial.h scenegraph/aogmaterial.cpp
+    SOURCES scenegraph/materials.h scenegraph/materials.cpp
+    SOURCES scenegraph/aoggeometry.h scenegraph/aoggeometry.cpp
+    SOURCES scenegraph/fieldviewitem.h scenegraph/fieldviewitem.cpp
+    SOURCES scenegraph/fieldsurfacenode.h scenegraph/fieldsurfacenode.cpp
+    SOURCES scenegraph/gridnode.h scenegraph/gridnode.cpp
+    SOURCES scenegraph/vehiclenode.h scenegraph/vehiclenode.cpp
+    SOURCES scenegraph/boundarynode.h scenegraph/boundarynode.cpp
+    SOURCES scenegraph/cameraproperties.h scenegraph/cameraproperties.cpp
+    SOURCES scenegraph/gridproperties.h scenegraph/gridproperties.cpp
+    SOURCES scenegraph/fieldsurfaceproperties.h scenegraph/fieldsurfaceproperties.cpp
+    SOURCES scenegraph/vehicleproperties.h scenegraph/vehicleproperties.cpp
+    SOURCES scenegraph/thicklinematerial.h scenegraph/thicklinematerial.cpp
+    SOURCES scenegraph/thicklinecolorsmaterial.h scenegraph/thicklinecolorsmaterial.cpp
+    SOURCES scenegraph/dashedthicklinematerial.h scenegraph/dashedthicklinematerial.cpp
+    SOURCES scenegraph/texturefactory.h scenegraph/texturefactory.cpp
+    SOURCES scenegraph/toolsproperties.h scenegraph/toolsproperties.cpp
+    SOURCES scenegraph/toolsnode.h scenegraph/toolsnode.cpp
+    SOURCES scenegraph/roundpointmaterial.h scenegraph/roundpointmaterial.cpp
+    SOURCES scenegraph/roundpointsizematerial.h scenegraph/roundpointsizematerial.cpp
+
 )
 
 ###### End Script of Handling QML in module ######
@@ -454,6 +482,7 @@ target_include_directories(QtAgOpenGPS PRIVATE
     classes
     backend
     models
+    scenegraph
 )
 
 # QtAgIO QML module disabled - migrated to qml/agio/ in Phase 4.2
@@ -505,6 +534,16 @@ qt_add_shaders(QtAgOpenGPS "rhi_shaders"
         shaders/colors_fshader.frag
         shaders/colortex_vshader.vert
         shaders/colortex_fshader.frag
+        shaders/thickline.vert
+        shaders/thickline.frag
+        shaders/thicklinecolors.vert
+        shaders/thicklinecolors.frag
+        shaders/dashedthickline.vert
+        shaders/dashedthickline.frag
+        shaders/roundpoint.vert
+        shaders/roundpoint.frag
+        shaders/roundpointsize.frag
+        shaders/roundpointsize.vert
 )
 
 # Compile defines

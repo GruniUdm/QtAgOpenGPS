@@ -39,7 +39,7 @@
 
 #include <QLabel>
 
-Q_LOGGING_CATEGORY (qgl, "formgps_opengl.qtagopengps")
+Q_LOGGING_CATEGORY (form_opengl_log, "formgps_opengl.qtagopengps")
 
 //TODO remote this #define
 #define mc CModuleComm::instance()
@@ -335,7 +335,7 @@ void FormGPS::oglMain_Paint()
         mainSurface.setFormat(format);
         mainSurface.create();
         auto r = mainSurface.isValid();
-        qDebug(qgl) << "main surface creation: " << r;
+        qDebug(form_opengl_log) << "main surface creation: " << r;
     }
 
     auto result = mainOpenGLContext.makeCurrent(&mainSurface);
@@ -448,7 +448,7 @@ void FormGPS::oglMain_Paint()
             tool.DrawPatchesGL(gl,projection*modelview,patchCounter, camera.camSetDistance(), swFrame);
 #endif
 
-            qDebug(qgl) << "time after painting patches " << (float)swFrame.nsecsElapsed() / 1000000;
+            qDebug(form_opengl_log) << "time after painting patches " << (float)swFrame.nsecsElapsed() / 1000000;
 
             if (tram.displayMode != 0) tram.DrawTram(gl,projection*modelview,camera.camSetDistance());
 
@@ -470,7 +470,7 @@ void FormGPS::oglMain_Paint()
                 recPath.DrawDubins(gl, projection*modelview);
             }
 
-            if (bnd.bndList.count() > 0 || bnd.isBndBeingMade == true)
+            if (bnd.bndList.count() > 0 || BoundaryInterface::instance()->isBndBeingMade() == true)
             {
                 //draw Boundaries
                 bnd.DrawFenceLines(CVehicle::instance()->pivotAxlePos, gl, projection*modelview, mainWindow);
@@ -524,7 +524,7 @@ void FormGPS::oglMain_Paint()
             else steerangle = ModuleComm::instance()->actualSteerAngleDegrees();
 
             double markLeft, markRight;
-            if (bnd.isBndBeingMade) {
+            if (BoundaryInterface::instance()->isBndBeingMade()) {
                 if (BoundaryInterface::instance()->isDrawRightSide()) {
                     markLeft = 0;
                     markRight = BoundaryInterface::instance()->createBndOffset();
@@ -539,7 +539,6 @@ void FormGPS::oglMain_Paint()
 
             CVehicle::instance()->DrawVehicle(gl, vehiclemv,
                                               projection, steerangle,
-                                              isFirstHeadingSet,
                                               markLeft, markRight,
                                               camera.camSetDistance(),
                                               QRect(0,0,width,height)
@@ -702,7 +701,7 @@ void FormGPS::oglBack_Paint()
         backSurface.setFormat(format);
         backSurface.create();
         auto r = backSurface.isValid();
-        qDebug(qgl) << "back surface creation: " << r;
+        qDebug(form_opengl_log) << "back surface creation: " << r;
     }
 
     auto result = backOpenGLContext.makeCurrent(&backSurface);
@@ -873,7 +872,7 @@ void FormGPS::oglBack_Paint()
     //finish it up - we need to read the ram of video card
     gl->glFlush();
 
-    qDebug(qgl) << "Time after drawing back buffer: " << swFrame.elapsed();
+    qDebug(form_opengl_log) << "Time after drawing back buffer: " << swFrame.elapsed();
 
     //read the whole block of pixels up to max lookahead, one read only
     //we'll use Qt's QImage function to grab it.
@@ -883,7 +882,7 @@ void FormGPS::oglBack_Paint()
     tool.grnPix = backFBO->toImage().flipped().convertToFormat(QImage::Format_RGBX8888);
 #endif
 
-    qDebug(qgl) << "Time after glReadPixels: " << swFrame.elapsed();
+    qDebug(form_opengl_log) << "Time after glReadPixels: " << swFrame.elapsed();
     //qDebug(qgl) << grnPix.size();
     //QImage temp = grnPix.copy(tool.rpXPosition, 250, tool.rpWidth, 290 /*(int)rpHeight*/);
     //TODO: is thisn right?
@@ -1032,7 +1031,7 @@ void FormGPS::MakeFlagMark(QOpenGLFunctions *gl)
 {
     leftMouseDownOnOpenGL = false;
 
-    qDebug(qgl) << "mouse down at " << mouseX << ", " << mouseY;
+    qDebug(form_opengl_log) << "mouse down at " << mouseX << ", " << mouseY;
 
     //figure out what the screen coordinates of all the flags are
     //check for clicks within a bounding box.

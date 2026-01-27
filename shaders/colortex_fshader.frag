@@ -22,10 +22,10 @@ void main()
     vec4 texColor = texture(textureSampler, vTexCoord);
 
     if (ubuf.useColor != 0) {
-        // Multiply texture with color
+        // Multiply texture with color (colorize the texture)
         fragColor = vec4(ubuf.color.rgb * texColor.rgb, texColor.a * ubuf.color.a);
     } else {
-        // Just draw texture
+        // Just draw texture without colorization
         fragColor = texColor;
     }
 }

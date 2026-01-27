@@ -23,6 +23,20 @@ extern QOpenGLShaderProgram *interpColorShader;
 
 Q_LOGGING_CATEGORY (ctool_log, "ctool.qtagopengps")
 
+#define STRINGISE_IMPL(x) #x
+#define STRINGISE(x) STRINGISE_IMPL(x)
+
+#if defined(_MSC_VER)
+// MSVC format: file(line): warning CXXXX: message
+#define FILE_LINE_LINK __FILE__ "(" STRINGISE(__LINE__) ") : "
+#define COMPILER_WARNING(msg) __pragma(message(FILE_LINE_LINK "warning: " msg))
+#elif defined(__GNUC__) || defined(__clang__)
+// GCC/Clang use _Pragma to embed #pragma GCC warning inside a macro
+#define COMPILER_WARNING(msg) _Pragma(STRINGISE(GCC warning msg))
+#else
+#define COMPILER_WARNING(msg)
+#endif
+
 struct PatchBuffer {
     QOpenGLBuffer patchBuffer;
     int length;
@@ -111,7 +125,7 @@ CTool::CTool()
 {
     // Initialize all section button states to Off
     for (int i = 0; i < 65; i++) {
-        sectionButtonState[i] = MainWindowState::ButtonStates::Off;
+        sectionButtonState[i] = SectionState::Off;
     }
 
     //get notified when the UI button changes state
@@ -282,7 +296,7 @@ void CTool::DrawToolGL(QOpenGLFunctions *gl, QMatrix4x4 mv,
     for (int j = 0; j < numOfSections; j++)
     {
         //if section is on, green, if off, red color
-        if (sectionButtonState[j] == MainWindowState::ButtonStates::Auto)
+        if (sectionButtonState[j] == SectionState::Auto)
         {
             // Mode Auto: couleur dépend de si section vraiment active (dans le champ)
             if (section[j].isSectionOn)
@@ -295,7 +309,7 @@ void CTool::DrawToolGL(QOpenGLFunctions *gl, QMatrix4x4 mv,
                 color.setRgbF(0.950f, 0.2f, 0.2f, 1.0f);  // Rouge si hors champ
             }
         }
-        else if (sectionButtonState[j] == MainWindowState::ButtonStates::On)
+        else if (sectionButtonState[j] == SectionState::On)
         {
             color.setRgbF(0.97, 0.97, 0, 1.0f);  // Jaune pour On (forçé)
         }
@@ -1311,7 +1325,7 @@ void CTool::sectionSetPositions()
 }
 
 void CTool::ProcessLookAhead(int gpsHz,
-                             MainWindowState::ButtonStates autoBtnState,
+                             SectionState::State autoBtnState,
                              const CBoundary &bnd,
                              CTram &tram)
 {
@@ -1461,13 +1475,13 @@ void CTool::ProcessLookAhead(int gpsHz,
     for (int j = 0; j < numOfSections; j++)
     {
         //Off or too slow or going backwards
-        if (sectionButtonState[j] == MainWindowState::ButtonStates::Off || CVehicle::instance()->avgSpeed() < SettingsManager::instance()->vehicle_slowSpeedCutoff() || section[j].speedPixels < 0)
+        if (sectionButtonState[j] == SectionState::Off || CVehicle::instance()->avgSpeed() < SettingsManager::instance()->vehicle_slowSpeedCutoff() || section[j].speedPixels < 0)
         {
             section[j].sectionOnRequest = false;
             section[j].sectionOffRequest = true;
 
             // Manual on, force the section On
-            if (sectionButtonState[j] == MainWindowState::ButtonStates::On)
+            if (sectionButtonState[j] == SectionState::On)
             {
                 section[j].sectionOnRequest = true;
                 section[j].sectionOffRequest = false;
@@ -1477,7 +1491,7 @@ void CTool::ProcessLookAhead(int gpsHz,
         }
 
         // Manual on, force the section On
-        if (sectionButtonState[j] == MainWindowState::ButtonStates::On)
+        if (sectionButtonState[j] == SectionState::On)
         {
             section[j].sectionOnRequest = true;
             section[j].sectionOffRequest = false;
@@ -1920,7 +1934,7 @@ void CTool::BuildMachineByte(CTram &tram) {
 }
 
 void CTool::DoRemoteSwitches() {
-#warning This method is not called anywhere. Check AgOpenGPS or Twol to find out what we missed.
+    COMPILER_WARNING("This method is not called anywhere. Check AgOpenGPS or Twol to find out what we missed.")
     ModuleComm &mc = *ModuleComm::instance();
 
     // Check if AgIOService is ON - if OFF, skip all hardware switch processing
@@ -1939,13 +1953,13 @@ void CTool::DoRemoteSwitches() {
             //Main SW pressed
             if ((mc.ss[ModuleComm::swMain] & 1) == 1)
             {
-                MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
+                MainWindowState::instance()->set_autoBtnState(SectionState::Off);
             } // if Main SW ON
 
             //if Main SW in Arduino is pressed OFF
             if ((mc.ss[ModuleComm::swMain] & 2) == 2)
             {
-                MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Auto);
+                MainWindowState::instance()->set_autoBtnState(SectionState::Auto);
             } // if Main SW OFF
 
             mc.ssP[ModuleComm::swMain] = mc.ss[ModuleComm::swMain];
@@ -1959,45 +1973,45 @@ void CTool::DoRemoteSwitches() {
                 // ON Signal from Arduino
                 if ((mc.ss[ModuleComm::swOnGr0] & 128) == 128 && numOfSections > 7)
                 {
-                    sectionButtonState[7] = MainWindowState::ButtonStates::On;
-                    section[7].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[7] = SectionState::On;
+                    section[7].sectionBtnState = SectionState::On;
                     sectionsChanged = true;
                     //TODO: not sure why we have redundant states like that
                 }
                 if ((mc.ss[ModuleComm::swOnGr0] & 64) == 64 && numOfSections > 6)
                 {
-                    sectionButtonState[6] = MainWindowState::ButtonStates::On;
-                    section[6].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[6] = SectionState::On;
+                    section[6].sectionBtnState = SectionState::On;
                 }
                 if ((mc.ss[ModuleComm::swOnGr0] & 32) == 32 && numOfSections > 5)
                 {
-                    sectionButtonState[5] = MainWindowState::ButtonStates::On;
-                    section[5].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[5] = SectionState::On;
+                    section[5].sectionBtnState = SectionState::On;
                 }
                 if ((mc.ss[ModuleComm::swOnGr0] & 16) == 16 && numOfSections > 4)
                 {
-                    sectionButtonState[4] = MainWindowState::ButtonStates::On;
-                    section[4].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[4] = SectionState::On;
+                    section[4].sectionBtnState = SectionState::On;
                 }
                 if ((mc.ss[ModuleComm::swOnGr0] & 8) == 8 && numOfSections > 3)
                 {
-                    sectionButtonState[3] = MainWindowState::ButtonStates::On;
-                    section[3].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[3] = SectionState::On;
+                    section[3].sectionBtnState = SectionState::On;
                 }
                 if ((mc.ss[ModuleComm::swOnGr0] & 4) == 4 && numOfSections > 2)
                 {
-                    sectionButtonState[2] = MainWindowState::ButtonStates::On;
-                    section[2].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[2] = SectionState::On;
+                    section[2].sectionBtnState = SectionState::On;
                 }
                 if ((mc.ss[ModuleComm::swOnGr0] & 2) == 2 && numOfSections > 1)
                 {
-                    sectionButtonState[1] = MainWindowState::ButtonStates::On;
-                    section[1].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[1] = SectionState::On;
+                    section[1].sectionBtnState = SectionState::On;
                 }
                 if ((mc.ss[ModuleComm::swOnGr0] & 1) == 1)
                 {
-                    sectionButtonState[0] = MainWindowState::ButtonStates::On;
-                    section[0].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[0] = SectionState::On;
+                    section[0].sectionBtnState = SectionState::On;
                     sectionsChanged = true;
                 }
                 mc.ssP[ModuleComm::swOnGr0] = mc.ss[ModuleComm::swOnGr0];
@@ -2009,44 +2023,44 @@ void CTool::DoRemoteSwitches() {
                 // sections ON signal from Arduino
                 if ((mc.ss[ModuleComm::swOnGr1] & 128) == 128 && numOfSections > 15)
                 {
-                    sectionButtonState[15] = MainWindowState::ButtonStates::On;
-                    section[15].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[15] = SectionState::On;
+                    section[15].sectionBtnState = SectionState::On;
                 }
                 if ((mc.ss[ModuleComm::swOnGr1] & 64) == 64 && numOfSections > 14)
                 {
-                    sectionButtonState[14] = MainWindowState::ButtonStates::On;
-                    section[14].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[14] = SectionState::On;
+                    section[14].sectionBtnState = SectionState::On;
                 }
                 if ((mc.ss[ModuleComm::swOnGr1] & 32) == 32 && numOfSections > 13)
                 {
-                    sectionButtonState[13] = MainWindowState::ButtonStates::On;
-                    section[13].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[13] = SectionState::On;
+                    section[13].sectionBtnState = SectionState::On;
                 }
                 if ((mc.ss[ModuleComm::swOnGr1] & 16) == 16 && numOfSections > 12)
                 {
-                    sectionButtonState[12] = MainWindowState::ButtonStates::On;
-                    section[12].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[12] = SectionState::On;
+                    section[12].sectionBtnState = SectionState::On;
                 }
 
                 if ((mc.ss[ModuleComm::swOnGr1] & 8) == 8 && numOfSections > 11)
                 {
-                    sectionButtonState[11] = MainWindowState::ButtonStates::On;
-                    section[11].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[11] = SectionState::On;
+                    section[11].sectionBtnState = SectionState::On;
                 }
                 if ((mc.ss[ModuleComm::swOnGr1] & 4) == 4 && numOfSections > 10)
                 {
-                    sectionButtonState[10] = MainWindowState::ButtonStates::On;
-                    section[10].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[10] = SectionState::On;
+                    section[10].sectionBtnState = SectionState::On;
                 }
                 if ((mc.ss[ModuleComm::swOnGr1] & 2) == 2 && numOfSections > 9)
                 {
-                    sectionButtonState[9] = MainWindowState::ButtonStates::On;
-                    section[9].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[9] = SectionState::On;
+                    section[9].sectionBtnState = SectionState::On;
                 }
                 if ((mc.ss[ModuleComm::swOnGr1] & 1) == 1 && numOfSections > 8)
                 {
-                    sectionButtonState[8] = MainWindowState::ButtonStates::On;
-                    section[8].sectionBtnState = MainWindowState::ButtonStates::On;
+                    sectionButtonState[8] = SectionState::On;
+                    section[8].sectionBtnState = SectionState::On;
                 }
                 mc.ssP[ModuleComm::swOnGr1] = mc.ss[ModuleComm::swOnGr1];
             } //if swONHi != 0
@@ -2056,14 +2070,14 @@ void CTool::DoRemoteSwitches() {
             if (mc.ss[ModuleComm::swOffGr0] != mc.ssP[ModuleComm::swOffGr0])
             {
                 //if Main = Auto then change section to Auto if Off signal from Arduino stopped
-                if (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto)
+                if (MainWindowState::instance()->autoBtnState() == SectionState::Auto)
                 {
 
                     for(int s=0; s< 8; s++) {
-                        if ((mc.ssP[ModuleComm::swOffGr0] & (1 << s)) && !(mc.ss[ModuleComm::swOffGr0] & (1 << s)) && (sectionButtonState[s] == MainWindowState::ButtonStates::Off))
+                        if ((mc.ssP[ModuleComm::swOffGr0] & (1 << s)) && !(mc.ss[ModuleComm::swOffGr0] & (1 << s)) && (sectionButtonState[s] == SectionState::Off))
                         {
-                            sectionButtonState[s] = MainWindowState::ButtonStates::Auto;
-                            section[s].sectionBtnState = MainWindowState::ButtonStates::Auto;
+                            sectionButtonState[s] = SectionState::Auto;
+                            section[s].sectionBtnState = SectionState::Auto;
                             sectionsChanged = true;
                         }
                     }
@@ -2074,13 +2088,13 @@ void CTool::DoRemoteSwitches() {
             if (mc.ss[ModuleComm::swOffGr1] != mc.ssP[ModuleComm::swOffGr1])
             {
                 //if Main = Auto then change section to Auto if Off signal from Arduino stopped
-                if (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto)
+                if (MainWindowState::instance()->autoBtnState() == SectionState::Auto)
                 {
                     for(int s=8; s< 16; s++) {
-                        if ((mc.ssP[ModuleComm::swOffGr1] & (1 << s)) && !(mc.ss[ModuleComm::swOffGr1] & (1 << s)) && (sectionButtonState[s+8] == MainWindowState::ButtonStates::Off))
+                        if ((mc.ssP[ModuleComm::swOffGr1] & (1 << s)) && !(mc.ss[ModuleComm::swOffGr1] & (1 << s)) && (sectionButtonState[s+8] == SectionState::Off))
                         {
-                            sectionButtonState[s+8] = MainWindowState::ButtonStates::Auto;
-                            section[s+8].sectionBtnState = MainWindowState::ButtonStates::Auto;
+                            sectionButtonState[s+8] = SectionState::Auto;
+                            section[s+8].sectionBtnState = SectionState::Auto;
                             sectionsChanged = true;
                         }
                     }
@@ -2093,11 +2107,11 @@ void CTool::DoRemoteSwitches() {
             {
                 //if section SW in Arduino is switched to OFF; check always, if switch is locked to off GUI should not change
                 for(int s=0; s< 8; s++) {
-                    if ((mc.ss[ModuleComm::swOffGr0] & (1 << s)) && sectionButtonState[s] != MainWindowState::ButtonStates::Off)
+                    if ((mc.ss[ModuleComm::swOffGr0] & (1 << s)) && sectionButtonState[s] != SectionState::Off)
                     {
                         // Hardware switch override
-                        sectionButtonState[s] = MainWindowState::ButtonStates::Off;
-                        section[s].sectionBtnState = MainWindowState::ButtonStates::Off;
+                        sectionButtonState[s] = SectionState::Off;
+                        section[s].sectionBtnState = SectionState::Off;
                         sectionsChanged = true;
                     }
                 }
@@ -2106,10 +2120,10 @@ void CTool::DoRemoteSwitches() {
             {
                 //if section SW in Arduino is switched to OFF; check always, if switch is locked to off GUI should not change
                 for (int s=0; s<8; s++) {
-                    if ((mc.ss[ModuleComm::swOffGr0] & (1 << s)) && sectionButtonState[s+8] != MainWindowState::ButtonStates::Off)
+                    if ((mc.ss[ModuleComm::swOffGr0] & (1 << s)) && sectionButtonState[s+8] != SectionState::Off)
                     {
-                        sectionButtonState[s+8] = MainWindowState::ButtonStates::Off;
-                        section[s+8].sectionBtnState = MainWindowState::ButtonStates::Off;
+                        sectionButtonState[s+8] = SectionState::Off;
+                        section[s+8].sectionBtnState = SectionState::Off;
                         sectionsChanged = true;
                     }
                 }
@@ -2127,8 +2141,8 @@ void CTool::DoRemoteSwitches() {
                     Bit = 1 << i;
                     if ((zoneRanges[i + 1] > 0) && ((mc.ss[ModuleComm::swOnGr0] & Bit) == Bit))
                     {
-                        section[zoneRanges[i + 1] - 1].sectionBtnState = MainWindowState::ButtonStates::On;
-                        sectionButtonState[zoneRanges[i + 1] - 1] = MainWindowState::ButtonStates::On;
+                        section[zoneRanges[i + 1] - 1].sectionBtnState = SectionState::On;
+                        sectionButtonState[zoneRanges[i + 1] - 1] = SectionState::On;
                         sectionsChanged = true;
                     }
                 }
@@ -2140,16 +2154,16 @@ void CTool::DoRemoteSwitches() {
             // zones to auto
             if (mc.ss[ModuleComm::swOffGr0] != mc.ssP[ModuleComm::swOffGr0])
             {
-                if (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto)
+                if (MainWindowState::instance()->autoBtnState() == SectionState::Auto)
                 {
                     for (int i = 0; i < 8; i++)
                     {
                         Bit = 1 << i;
                         if ((zoneRanges[i + 1] > 0) && ((mc.ssP[ModuleComm::swOffGr0] & Bit) == Bit)
-                            && ((mc.ss[ModuleComm::swOffGr0] & Bit) != Bit) && (section[zoneRanges[i + 1] - 1].sectionBtnState == MainWindowState::ButtonStates::Off))
+                            && ((mc.ss[ModuleComm::swOffGr0] & Bit) != Bit) && (section[zoneRanges[i + 1] - 1].sectionBtnState == SectionState::Off))
                         {
-                            section[zoneRanges[i + 1] - 1].sectionBtnState = MainWindowState::ButtonStates::Auto;
-                            sectionButtonState[zoneRanges[i + 1] - 1] = MainWindowState::ButtonStates::Auto;
+                            section[zoneRanges[i + 1] - 1].sectionBtnState = SectionState::Auto;
+                            sectionButtonState[zoneRanges[i + 1] - 1] = SectionState::Auto;
                             sectionsChanged = true;
                         }
                     }
@@ -2163,10 +2177,10 @@ void CTool::DoRemoteSwitches() {
                 for (int i = 0; i < 8; i++)
                 {
                     Bit = 1 << i;
-                    if ((zoneRanges[i + 1] > 0) && ((mc.ss[ModuleComm::swOffGr0] & Bit) == Bit) && (section[zoneRanges[i + 1] - 1].sectionBtnState != MainWindowState::ButtonStates::Off))
+                    if ((zoneRanges[i + 1] > 0) && ((mc.ss[ModuleComm::swOffGr0] & Bit) == Bit) && (section[zoneRanges[i + 1] - 1].sectionBtnState != SectionState::Off))
                     {
-                        section[zoneRanges[i + 1] - 1].sectionBtnState = MainWindowState::ButtonStates::Off;
-                        sectionButtonState[zoneRanges[i + 1] - 1] = MainWindowState::ButtonStates::Off;
+                        section[zoneRanges[i + 1] - 1].sectionBtnState = SectionState::Off;
+                        sectionButtonState[zoneRanges[i + 1] - 1] = SectionState::Off;
                         sectionsChanged = true;
                     }
                 }
@@ -2247,37 +2261,39 @@ void CTool::resetTool() {
 }
 
 void CTool::on_autoBtnChanged() {
-    MainWindowState::ButtonStates autoBtnState = MainWindowState::instance()-> autoBtnState();
+    SectionState::State autoBtnState = MainWindowState::instance()-> autoBtnState();
 
     // When Master Auto button activated, set all sections to Auto mode
     // This allows automatic section activation based on boundary and coverage
     // Only changes sections currently in Off state - respects manual On state
-    if (autoBtnState == MainWindowState::ButtonStates::Auto && Backend::instance()->isJobStarted()) {
+    if (autoBtnState == SectionState::Auto && Backend::instance()->isJobStarted()) {
         for (int j = 0; j < numOfSections; j++) {
-            if (sectionButtonState[j] == MainWindowState::ButtonStates::Off) {
-                sectionButtonState[j] = MainWindowState::ButtonStates::Auto;
-                section[j].sectionBtnState = MainWindowState::ButtonStates::Auto;
+            if (sectionButtonState[j] == SectionState::Off) {
+                sectionButtonState[j] = SectionState::Auto;
+                section[j].sectionBtnState = SectionState::Auto;
             }
         }
     }
     // When Master Auto turned off, set all Auto sections back to Off
     // Respects manual On state
-    else if (autoBtnState == MainWindowState::ButtonStates::Off && Backend::instance()->isJobStarted()) {
+    else if (autoBtnState == SectionState::Off && Backend::instance()->isJobStarted()) {
         for (int j = 0; j < numOfSections; j++) {
-            if (sectionButtonState[j] == MainWindowState::ButtonStates::Auto) {
-                sectionButtonState[j] = MainWindowState::ButtonStates::Off;
-                section[j].sectionBtnState = MainWindowState::ButtonStates::Off;
+            if (sectionButtonState[j] == SectionState::Auto) {
+                sectionButtonState[j] = SectionState::Off;
+                section[j].sectionBtnState = SectionState::Off;
             }
         }
     }
 }
 
-void CTool::onSectionButtonStatechanged(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state) {
-    if (toolIndex != 0) return ; //we can only deal with a single tool
+void CTool::onSectionButtonStatechanged(int toolIndex, int sectionButtonNo, SectionState::State new_state) {
+    //For now toolIndex doesn't matter. It will always 0 if no TBT, 1 with TBT
+    //in the future toolIndex will start to matter.
+    Q_UNUSED(toolIndex);
 
     if (SettingsManager::instance()->tool_isSectionsNotZones()) {
         //1:1 correlationb etween buttons and sections
-        sectionButtonState[sectionButtonNo] = static_cast<MainWindowState::ButtonStates>(new_state);
+        sectionButtonState[sectionButtonNo] = new_state;
     } else {
         //Zones mode -- one button controls multiple sections
         if (sectionButtonNo >= zones ) {
@@ -2290,8 +2306,8 @@ void CTool::onSectionButtonStatechanged(int toolIndex, int sectionButtonNo, Sect
         //update all sections in the zone
         if (zone_left >=0 && zone_right > zone_left && zone_right <= numOfSections) {
             for (int j = zone_left ; j < zone_right; j++) {
-                sectionButtonState[j] = static_cast<MainWindowState::ButtonStates>(new_state);
-                bool newSectionOn = (new_state == SectionButtonsModel::On || new_state == SectionButtonsModel::Auto);
+                sectionButtonState[j] = new_state;
+                bool newSectionOn = (new_state == SectionState::On || new_state == SectionState::Auto);
                 section[j].isSectionOn = newSectionOn;
                 section[j].sectionOnRequest = newSectionOn;
                 section[j].sectionOffRequest = !newSectionOn;

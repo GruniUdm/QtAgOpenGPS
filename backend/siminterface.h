@@ -43,7 +43,7 @@ public:
     static SimInterface *instance();
     static SimInterface *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
-    bool isRunning();
+    Q_INVOKABLE bool isRunning();
 
     // Properties will be added here
     SIMPLE_BINDABLE_PROPERTY(double, steerAngle)

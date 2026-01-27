@@ -23,6 +23,7 @@
 #include "backendaccess.h"
 #include "modulecomm.h"
 #include "camera.h"
+#include "vehicleproperties.h"
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
@@ -224,7 +225,8 @@ void FormGPS::ResetGPSState(bool toSimMode)
     // Reset initialization flags
     isGPSPositionInitialized = false;
     isFirstFixPositionSet = false;
-    isFirstHeadingSet = false;
+    CVehicle::instance()->vehicleProperties()->set_firstHeadingSet(false);
+    //isFirstHeadingSet = false;
     startCounter = 0;
 
     // PHASE 6.0.42: Reset guidance line offset when switching modes
@@ -383,7 +385,7 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
     // This allows startCounter to increment immediately instead of wasting 1 cycle
     isGPSPositionInitialized = false;
     isFirstFixPositionSet = true;  // Position reference initialized above
-    isFirstHeadingSet = false;
+    CVehicle::instance()->vehicleProperties()->set_firstHeadingSet(false);
     startCounter = 0;
 
     // PHASE 6.0.42.1: Update pn structure with new GPS position
@@ -625,10 +627,10 @@ void FormGPS::JobClose()
     Backend::instance()->set_isJobStarted(false);
 
     //fix ManualOffOnAuto buttons
-    MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
+    MainWindowState::instance()->set_manualBtnState(SectionState::Off);
 
     //fix auto button
-    MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
+    MainWindowState::instance()->set_autoBtnState(SectionState::Off);
 
     // ⚡ PHASE 6.0.20: Disable AutoSteer when job closes (safety + clean state)
     MainWindowState::instance()->set_isBtnAutoSteerOn(false);
@@ -766,11 +768,11 @@ void FormGPS::JobNew()
     startCounter = 0;
 
     //btnSectionMasterManual.Enabled = true;
-    MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
+    MainWindowState::instance()->set_manualBtnState(SectionState::Off);
     //btnSectionMasterManual.Image = Properties.Resources.ManualOff;
 
     //btnSectionMasterAuto.Enabled = true;
-    MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
+    MainWindowState::instance()->set_autoBtnState(SectionState::Off);
     //btnSectionMasterAuto.Image = Properties.Resources.SectionMasterOff;
 
     track.ABLine.abHeading = 0.00;

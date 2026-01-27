@@ -8,7 +8,10 @@
 #include <QMutex>
 #include <QVariantList>
 #include "tool.h"
-#include "toolssectionbuttonsmodel.h"
+#include "toolswithsectionsmodel.h"
+#include "toolsproperties.h"
+
+Q_MOC_INCLUDE("toolsproperties.h")
 
 class Tools : public QObject
 {
@@ -16,13 +19,9 @@ class Tools : public QObject
     QML_SINGLETON
     QML_ELEMENT
 
-    Q_PROPERTY(QVariantList toolsList READ toolsList NOTIFY toolsListChanged)
-
-    //This property is a model of models. Would be used if we had more than one tool.
-    //We would have a nested QML ListView where the outer ListView would refer to this
-    //property as the model, and the inner ListView would refer to model.sectionButtonsModel.
-    //Currently the back end only supports one toolbar, so this is not used.
-    Q_PROPERTY(ToolsSectionsButtonsModel* toolsSectionsModel READ toolsSectionsModel CONSTANT)
+    Q_PROPERTY(ToolsWithSectionsModel* toolsWithSectionsModel READ toolsWithSectionsModel CONSTANT)
+    // Scene graph properties for FieldViewItem
+    Q_PROPERTY(ToolsProperties* toolsProperties READ toolsProperties CONSTANT)
 
 private:
     explicit Tools(QObject *parent = nullptr);
@@ -40,11 +39,9 @@ public:
     static Tools *instance();
     static Tools *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
-    QVariantList m_toolsList;
-
     // Getters
-    QVariantList toolsList() const { return m_toolsList; }
-    ToolsSectionsButtonsModel* toolsSectionsModel() const { return m_toolsSectionsModel; }
+    ToolsWithSectionsModel* toolsWithSectionsModel() const { return m_toolsWithSectionsModel; }
+    ToolsProperties* toolsProperties() const { return m_toolsProperties; }
 
     // Tool management
     Q_INVOKABLE void addTool(Tool *tool);
@@ -52,8 +49,11 @@ public:
     Q_INVOKABLE void clearTools();
     Q_INVOKABLE Tool* toolAt(int index) const;
 
+    // Section button state methods (delegate to ToolsProperties
     Q_INVOKABLE void setSectionButtonState(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state);
     Q_INVOKABLE void setAllSectionButtonsToState(int toolIndex, SectionButtonsModel::State new_state);
+
+
 
 public slots:
     //generate a single tool from settings, which is all QtAOG supports
@@ -62,10 +62,10 @@ public slots:
 
 signals:
     void sectionButtonStateChanged(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state);
-    void toolsListChanged();
 
 private:
-    ToolsSectionsButtonsModel *m_toolsSectionsModel;
+    ToolsWithSectionsModel *m_toolsWithSectionsModel;
+    ToolsProperties *m_toolsProperties = nullptr;
 };
 
 #endif // TOOLS_H

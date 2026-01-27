@@ -19,6 +19,9 @@
 #include "cabcurve.h"
 #include "ccontour.h"
 #include "ctrack.h"
+#include "modulecomm.h"
+#include "vehicleproperties.h"
+#include "boundaryinterface.h"
 #include <QLoggingCategory>
 
 Q_LOGGING_CATEGORY (cvehicle, "cvehicle.qtagopengps")
@@ -58,6 +61,82 @@ CVehicle *CVehicle::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
     }
 
     return s_instance;
+}
+
+CVehicle::CVehicle(QObject* parent)
+    : QObject(parent)
+{
+    // Initialize Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY members
+    m_isHydLiftOn = false;
+    m_hydLiftDown = false;
+    m_isChangingDirection = false;
+    m_isReverse = false;
+    m_leftTramState = 0;
+    m_rightTramState = 0;
+    m_vehicleList = QList<QVariant>{};
+
+    // Create scene graph properties object
+    m_vehicleProperties = new VehicleProperties(this);
+
+    // Bind vehicle properties to SettingsManager
+    auto *settings = SettingsManager::instance();
+
+    m_vehicleProperties->bindable_type().setBinding(
+        settings->bindablevehicle_vehicleType().makeBinding()
+    );
+    m_vehicleProperties->bindable_wheelBase().setBinding([settings]() {
+        return static_cast<float>(settings->vehicle_wheelbase());
+    });
+    m_vehicleProperties->bindable_trackWidth().setBinding([settings]() {
+        return static_cast<float>(settings->vehicle_trackWidth());
+    });
+    m_vehicleProperties->bindable_drawbarLength().setBinding([settings]() {
+        if (settings->tool_isToolFront())
+            return 0.0f;
+        if (settings->tool_isToolRearFixed())
+            return 0.0f;
+        return static_cast<float>(settings->vehicle_hitchLength());
+    });
+    m_vehicleProperties->bindable_threePtLength().setBinding([settings]() {
+        if (settings->tool_isToolFront())
+            return 0.0f;
+        if (settings->tool_isToolRearFixed())
+            return static_cast<float>(settings->vehicle_hitchLength());
+        return 0.0f;
+    });
+    m_vehicleProperties->bindable_frontHitchLength().setBinding([settings]() {
+        if (settings->tool_isToolFront())
+            return static_cast<float>(settings->vehicle_hitchLength());
+        else
+            return 0.0f;
+    });
+    m_vehicleProperties->bindable_antennaOffset().setBinding([settings]() {
+        return static_cast<float>(settings->vehicle_antennaOffset());
+    });
+    m_vehicleProperties->bindable_antennaForward().setBinding([settings]() {
+        return static_cast<float>(settings->vehicle_antennaPivot());
+    });
+    m_vehicleProperties->bindable_svennArrow().setBinding(
+        settings->bindabledisplay_isSvennArrowOn().makeBinding()
+    );
+    m_vehicleProperties->bindable_steerAngle().setBinding(
+        ModuleComm::instance()->bindable_actualSteerAngleDegrees().makeBinding()
+        );
+
+    m_vehicleProperties->bindable_markBoundary().setBinding([]() {
+        float markBoundary = 0;
+
+        if (BoundaryInterface::instance()->isBndBeingMade()) {
+            markBoundary = BoundaryInterface::instance()->createBndOffset();
+
+            if (!BoundaryInterface::instance()->isDrawRightSide()) {
+                markBoundary = -markBoundary;
+            }
+
+        }
+        return markBoundary;
+    });
+
 }
 
 
@@ -225,7 +304,6 @@ double CVehicle::UpdateGoalPointDistance()
 void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
                            QMatrix4x4 projection,
                            double steerAngle,
-                           bool isFirstHeadingSet,
                            double markLeft,
                            double markRight,
                            double camSetDistance,
@@ -266,14 +344,12 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
     QVector3D p3;
     QVector3D p4;
     QVector3D s;
-    // Phase 6.0.24 Problem 18: Remove unused variables x,w (were uninitialized 0xCCCCCCCC in debugger)
-    // int x,w;  // REMOVED - never used in function
 
     s = QVector3D(0,0,0);
     p1 = s.project(modelview, projection, viewport);
     m_screenCoord = QPoint(p1.x(), p1.y());
 
-    if (isFirstHeadingSet && !SettingsManager::instance()->tool_isToolFront())
+    if (m_vehicleProperties->firstHeadingSet() && !SettingsManager::instance()->tool_isToolFront())
     {
         if (!SettingsManager::instance()->tool_isToolRearFixed())
         {
@@ -310,7 +386,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
 
     //draw the vehicle Body
 
-    if (!isFirstHeadingSet)
+    if (!m_vehicleProperties->firstHeadingSet())
     {
 
         //using texture 14, Textures::QUESTION_MARK
@@ -558,7 +634,7 @@ void CVehicle::DrawVehicle(QOpenGLFunctions *gl, QMatrix4x4 modelview,
         m_screenBounding = find_bounding_box(viewport.height(), p1, p1, p3, p4);
     }
 
-    if (camSetDistance > -75 && isFirstHeadingSet)
+    if (camSetDistance > -75 && m_vehicleProperties->firstHeadingSet())
     {
         //draw the bright antenna dot
         gldraw.clear();

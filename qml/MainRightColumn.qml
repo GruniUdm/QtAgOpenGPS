@@ -106,39 +106,45 @@ ColumnLayout {
 
     Comp.MainWindowBtns {
         id: btnSectionManual
-        isChecked: MainWindowState.manualBtnState === MainWindowState.On
+        isChecked: MainWindowState.manualBtnState === SectionState.On
         checkable: true
         icon.source: prefix + "/images/ManualOff.png"
         iconChecked: prefix + "/images/ManualOn.png"
         buttonText: qsTr("Manual")
         onCheckedChanged: {
+            //if tow between we work with tool #1, otherwise tool 0
+            var whichTool = SettingsManager.tool_isTBT ? 1 : 0;
+
             if (checked) {
                 btnSectionAuto.checked = false;
-                Tools.setAllSectionButtonsToState(0, MainWindowState.On);
-                MainWindowState.manualBtnState = MainWindowState.On
+                Tools.toolsProperties.setAllSectionButtonsToState(whichTool, SectionState.On);
+                MainWindowState.manualBtnState = SectionState.On
 
             } else {
-                Tools.setAllSectionButtonsToState(0, MainWindowState.Off);
-                MainWindowState.manualBtnState = MainWindowState.Off
+                Tools.toolsProperties.setAllSectionButtonsToState(whichTool, SectionState.Off);
+                MainWindowState.manualBtnState = SectionState.Off
             }
         }
     }
 
     Comp.MainWindowBtns {
         id: btnSectionAuto
-        isChecked: MainWindowState.autoBtnState == MainWindowState.Auto
+        isChecked: MainWindowState.autoBtnState == SectionState.Auto
         checkable: true
         icon.source: prefix + "/images/SectionMasterOff.png"
         iconChecked: prefix + "/images/SectionMasterOn.png"
         buttonText: qsTr("Auto")
         onCheckedChanged: {
+            //if tow between we work with tool #1, otherwise tool 0
+            var whichTool = SettingsManager.tool_isTBT ? 1 : 0;
+
             if (checked) {
                 btnSectionManual.checked = false;
-                Tools.setAllSectionButtonsToState(0,MainWindowState.Auto);
-                MainWindowState.autoBtnState = MainWindowState.Auto
+                Tools.toolsProperties.setAllSectionButtonsToState(whichTool,SectionState.Auto);
+                MainWindowState.autoBtnState = SectionState.Auto
             } else {
-                Tools.setAllSectionButtonsToState(0,MainWindowState.Off);
-                MainWindowState.autoBtnState = MainWindowState.Off
+                Tools.toolsProperties.setAllSectionButtonsToState(whichTool,SectionState.Off);
+                MainWindowState.autoBtnState = SectionState.Off
             }
         }
     }
