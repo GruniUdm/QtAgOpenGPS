@@ -612,9 +612,7 @@ Window {
             }
             RateData{ //window that displays Machine data
                 id: rateData
-                //anchors.left: parent.left
-                //anchors.verticalCenter: parent.verticalCenter
-                visible: SettingsManager.rate_confProduct0[2]||SettingsManager.rate_confProduct1[2]||SettingsManager.rate_confProduct2[2]||SettingsManager.rate_confProduct3[2]
+                visible: false
             }
 
             SimController{

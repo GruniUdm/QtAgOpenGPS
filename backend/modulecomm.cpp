@@ -197,6 +197,7 @@ void ModuleComm::modulesSend245() {
 
 void ModuleComm::modulesSend242() {
     //qDebug() << "Sending 242 message to AgIO";
+    // PID from RC to module
 
     // Получаем векторы настроек
     QVector<QVector<int>> module_settings;
@@ -220,7 +221,6 @@ void ModuleComm::modulesSend242() {
         p_242.pgn[p_242.MinPWM] = module_data[6];
         p_242.pgn[p_242.MaxPWM] = module_data[7];
         p_242.pgn[p_242.PIDScale] = module_data[8];
-        p_242.pgn[p_242.Command] = module_data[9]; // !!!!
 
         //qDebug() << "RC Module " << module_index << ": " << p_242.pgn;
 

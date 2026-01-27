@@ -89,7 +89,7 @@ void RateControl::initializeProducts()
         product.setRate = TargetRate[i];
         product.smoothRate = cSmoothRate[i];
         product.actualRate = cCurrentRate[i];
-        product.appliedRate = cRateApplied[i];
+        product.quantity = Quantity[i];
         product.pwm = ManualPWM[i];
         product.isActive = ProductOn(i);
 
@@ -154,8 +154,8 @@ void RateControl::rate_bump(bool up, int index)
         else ManualPWM[index] = -255;
     }
 
-    qWarning() << "RateControl::rate_bump - Index:" << index
-               << "ManualPWM:" << ManualPWM[index];
+    // qDebug(rc_log) << "RateControl::rate_bump - Index:" << index
+    //            << "ManualPWM:" << ManualPWM[index];
 
     // ОБНОВЛЯЕМ МОДЕЛЬ!
     updateModel(index);
@@ -171,8 +171,8 @@ void RateControl::rate_pwm_auto(int index)
 
     ManualPWM[index] = 0;
 
-    qWarning() << "RateControl::rate_pwm_auto - Index:" << index
-               << "ManualPWM reset to 0";
+    // qDebug(rc_log) << "RateControl::rate_pwm_auto - Index:" << index
+    //            << "ManualPWM reset to 0";
 
     // ОБНОВЛЯЕМ МОДЕЛЬ!
     updateModel(index);
@@ -417,6 +417,7 @@ void RateControl::loadSettings(int index)
         ControlType[index] = rateSettings[12];
         CoverageUnits[index] = rateSettings[13];
         minSpeed[index] = rateSettings[14];
+        minUPM[index] = rateSettings[15];
     }
 
     // Обновляем модель после загрузки настроек
@@ -473,6 +474,8 @@ void RateControl::modulesSend241(int index)
     p_241.pgn[CPGN_F1::ManualPWM] = (char)(ManualPWM[index]/2);
 
     AgIOService::instance()->sendPgn(p_241.pgn);
+
+
 }
 
 void RateControl::updateModel(int index)
@@ -484,24 +487,22 @@ void RateControl::updateModel(int index)
 
     // Получаем данные из Settings для имени
     QString productName = getProductNameFromSettings(index);
+    bool isActive = SensorReceiving[index];
 
     // ОБНОВЛЯЕМ ВСЕ ДАННЫЕ В МОДЕЛИ
     m_rcModel->updateName(index, productName);
     m_rcModel->updateSetRate(index, TargetRate[index]);
     m_rcModel->updateSmoothRate(index, cSmoothRate[index]);
     m_rcModel->updateActualRate(index, cCurrentRate[index]);
-    m_rcModel->updateAppliedRate(index, cRateApplied[index]);
+    m_rcModel->updateQuantity(index, Quantity[index]);
     m_rcModel->updatePWM(index, ManualPWM[index]);  // Используем ManualPWM
-
-    // Проверяем, активен ли продукт - используем правильную логику
-    bool isActive = ProductOn(index) && OnScreen[index] && SensorReceiving[index];
     m_rcModel->updateIsActive(index, isActive);
 
-    qWarning() << "RateControl::updateModel - Index:" << index
-               << "Name:" << productName
-               << "SetRate:" << TargetRate[index]
-               << "PWM:" << ManualPWM[index]
-               << "Active:" << isActive;
+    // qDebug(rc_log) << "RateControl::updateModel - Index:" << index
+    //            << "Name:" << productName
+    //            << "SetRate:" << TargetRate[index]
+    //            << "PWM:" << ManualPWM[index]
+    //            << "Active:" << isActive;
 }
 
 void RateControl::setCurrentProductIndex(int index)
@@ -542,8 +543,6 @@ void RateControl::increaseSetRate(int index, double step)
     case 3: settings = manager->rate_confProduct3(); break;
     }
 
-    // Убеждаемся, что вектор достаточно большой
-    // Если нужен индекс 10, то размер должен быть >= 11
     if (settings.size() <= 10) {
         settings.resize(11); // Увеличиваем размер до 11 элементов
         // Заполняем нулями новые элементы, если нужно
@@ -589,8 +588,6 @@ void RateControl::decreaseSetRate(int index, double step)
     case 3: settings = manager->rate_confProduct3(); break;
     }
 
-    // Убеждаемся, что вектор достаточно большой
-    // Если нужен индекс 10, то размер должен быть >= 11
     if (settings.size() <= 10) {
         settings.resize(11); // Увеличиваем размер до 11 элементов
         // Заполняем нулями новые элементы, если нужно

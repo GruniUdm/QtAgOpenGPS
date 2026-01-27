@@ -18,7 +18,7 @@ Comp.MoveablePopup {
     // Свойства для данных текущего продукта (будем обновлять их через таймер)
     property double currentSmoothRate: 0
     property double currentActualRate: 0
-    property double currentAppliedlRate: 0
+    property double currentQuantity: 0
     property double currentSetRate: 0
     property string currentProductName: ""
     property bool currentProductActive: false
@@ -39,7 +39,7 @@ Comp.MoveablePopup {
             if (data) {
                 currentSmoothRate = data.productSmoothRate || 0;
                 currentActualRate = data.productActualRate || 0;
-                currentAppliedlRate = data.productAppliedRate || 0;
+                currentQuantity = data.productQuantity || 0;
                 currentSetRate = data.productSetRate || 0;
                 currentProductName = data.productName || ("Product " + (currentProductIndex + 1));
                 currentProductActive = data.productIsActive || false;
@@ -207,7 +207,7 @@ Comp.MoveablePopup {
                 implicitWidth: parent.width / 2 - 5 * theme.scaleWidth
 
                 Text {
-                    text: target.clicked ? Math.round(currentAppliedlRate) : Math.round(currentSetRate)
+                    text: target.clicked ? Math.round(currentQuantity) : Math.round(currentSetRate)
                     font.pixelSize: 30
                     anchors.centerIn: parent
                 }

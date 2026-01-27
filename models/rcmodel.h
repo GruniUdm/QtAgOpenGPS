@@ -16,7 +16,7 @@ public:
         SetRateRole,
         SmoothRateRole,
         ActualRateRole,
-        AppliedRateRole,
+        QuantityRole,
         PWMRole,
         IsActiveRole
     };
@@ -28,7 +28,7 @@ public:
         double setRate;
         double smoothRate;
         double actualRate;
-        double appliedRate;
+        double quantity;
         int pwm;
         bool isActive;
     };
@@ -52,7 +52,7 @@ public:
     // Методы изменения данных по индексу
     void updateSmoothRate(int index, double newRate);
     void updateActualRate(int index, double newRate);
-    void updateAppliedRate(int index, double newRate);
+    void updateQuantity(int index, double newRate);
     void updatePWM(int index, int pwm);
     void updateSetRate(int index, double newRate);
     void updateName(int index, const QString &name);
@@ -69,7 +69,7 @@ signals:
     void actualRateChanged(int index, double newRate);
     void productActiveChanged(int index, bool isActive);
     void pwmChanged(int index, int pwm);
-    void appliedRateChanged(int index, double newRate);
+    void quantityChanged(int index, double newRate);
 
 private:
     QVector<Product> m_products;

@@ -359,8 +359,7 @@ public:
         KD = 8,
         MinPWM = 9,
         MaxPWM = 10,
-        PIDScale = 11,
-        Command = 12
+        PIDScale = 11
     };
     Q_ENUM(CPGN_F2_Fields)
 
