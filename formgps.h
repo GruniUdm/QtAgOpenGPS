@@ -644,6 +644,7 @@ public slots:
     void onSteerDataReady(const PGNParser::ParsedData& data);   // AutoSteer feedback
     void onMachineDataReady(const PGNParser::ParsedData& data); // Machine
     void onBlockageDataReady(const PGNParser::ParsedData& data); // Blockage data
+    void onRateControlDataReady(const PGNParser::ParsedData& data); // RateControl data
 
 
     /*******************

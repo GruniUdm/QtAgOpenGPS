@@ -113,7 +113,7 @@ import "wizards" as Wiz
             Comp.IconButtonTextBeside{
                 id: wasWiz
                 text: qsTr("Was Wizard")
-                onClicked: { wizardMenu.visible = false ; wasWizard.show()}
+                onClicked: { wizardMenu.visible = false, toolsMenu.visible = false, wasWizard.show()}
             }
 
             Comp.IconButtonTextBeside{
@@ -146,7 +146,7 @@ import "wizards" as Wiz
                 id: steerChart
                 text: qsTr("Steer Chart")
                 icon.source: prefix + "/images/AutoSteerOn.png"
-                onClicked: chartsMenu.visible = !chartsMenu.visible, toolsMenu.visible = false, steerCharta.show()
+                onClicked: chartsMenu.visible = !chartsMenu.visible, toolsMenu.visible = false, steerCharta.show(), toolsMenu.visible = false
                 visible: true
             }
             Comp.IconButtonTextBeside{

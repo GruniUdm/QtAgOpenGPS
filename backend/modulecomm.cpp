@@ -194,6 +194,39 @@ void ModuleComm::modulesSend245() {
     }
 }
 
+void ModuleComm::modulesSend242() {
+    //qDebug() << "Sending 242 message to AgIO";
+    // PID from RC to module
+
+    // Получаем векторы настроек
+    QVector<QVector<int>> module_settings;
+    module_settings.append(SettingsManager::instance()->rate_confProduct0());
+    module_settings.append(SettingsManager::instance()->rate_confProduct1());
+    module_settings.append(SettingsManager::instance()->rate_confProduct2());
+    module_settings.append(SettingsManager::instance()->rate_confProduct3());
+
+    for (int module_index = 0; module_index < 4; module_index++) {
+        const QVector<int>& module_data = module_settings[module_index];
+
+        if (module_data.size() < 16) {
+            qWarning() << "Module" << module_index << "data vector too small:" << module_data.size();
+            continue;
+        }
+
+        p_242.pgn[p_242.ID] = module_data[0];
+        p_242.pgn[p_242.KP] = module_data[3];
+        p_242.pgn[p_242.KI] = module_data[4];
+        p_242.pgn[p_242.KD] = module_data[5];
+        p_242.pgn[p_242.MinPWM] = module_data[6];
+        p_242.pgn[p_242.MaxPWM] = module_data[7];
+        p_242.pgn[p_242.PIDScale] = module_data[8];
+
+        //qDebug() << "RC Module " << module_index << ": " << p_242.pgn;
+
+        AgIOService::instance()->sendPgn(p_242.pgn);
+    }
+}
+
 void ModuleComm::setHydLiftPGN(int value) {
     p_239.pgn[CPGN_EF::hydLift] = value;
     emit p_239_changed();

@@ -368,10 +368,62 @@ public:
     inline bool operator==(const CPGN_F5 &other) const {
         return (this->pgn == other.pgn);
     }
-    inline bool operator!=(const CPGN_F5 &other) const {
-        return !(this->pgn == other.pgn);
+    void MakeCRC();
+};
+Q_DECLARE_METATYPE(CPGN_F5)
+
+//RateControl Config
+class CPGN_F2
+{
+    Q_GADGET
+    Q_PROPERTY(QByteArray pgn MEMBER pgn)
+public:
+    QByteArray pgn;
+
+    enum CPGN_F2_Fields {
+        ID = 5,
+        KP = 6,
+        KI = 7,
+        KD = 8,
+        MinPWM = 9,
+        MaxPWM = 10,
+        PIDScale = 11
+    };
+    Q_ENUM(CPGN_F2_Fields)
+
+    CPGN_F2();
+    inline bool operator==(const CPGN_F2 &other) const {
+        return (this->pgn == other.pgn);
     }
     void MakeCRC();
 };
+Q_DECLARE_METATYPE(CPGN_F2)
+
+//Data to RateControl
+class CPGN_F1
+{
+    Q_GADGET
+    Q_PROPERTY(QByteArray pgn MEMBER pgn)
+public:
+    QByteArray pgn;
+
+    enum CPGN_F1_Fields {
+        ID = 5,
+        RateSetLo = 6,
+        RateSetHI = 7,
+        FlowCalLO = 8,
+        FlowCalHI = 9,
+        Command = 10,
+        ManualPWM = 11
+    };
+    Q_ENUM(CPGN_F1_Fields)
+
+    CPGN_F1();
+    inline bool operator==(const CPGN_F1 &other) const {
+        return (this->pgn == other.pgn);
+    }
+    void MakeCRC();
+};
+Q_DECLARE_METATYPE(CPGN_F1)
 
 #endif // CPGN_H

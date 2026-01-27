@@ -389,3 +389,11 @@ mod_isMachineConnected|agio/isMachineConnected|false|bool|
 ip_localAOG|agio/localAOGIP|"127.0.0.1"|QString|
 udp_isSendNMEAToUDP|agio/sendNMEAToUDP|false|bool|
 bluetooth_deviceList|bluetooth/deviceList|""|QVariantList|
+rate_confProduct0|rate/confProduct0|0, 1, 14, 1, 0, 100, 255, 1, 800, 100, 1, 0, 0, 1, 0, 0, 1, 0|QVector<int>|
+rate_confProduct1|rate/confProduct1|1, 1, 14, 1, 0, 100, 255, 1, 800, 100, 1, 0, 0, 1, 0, 0, 1, 0|QVector<int>|
+rate_confProduct2|rate/confProduct2|2, 1, 14, 1, 0, 100, 255, 1, 800, 100, 1, 0, 0, 1, 0, 0, 1, 0|QVector<int>|
+rate_confProduct3|rate/confProduct3|3, 1, 14, 1, 0, 100, 255, 1, 800, 100, 1, 0, 0, 1, 0, 0, 1, 0|QVector<int>|
+rate_productName0|rate/productName0|"0"|QString|
+rate_productName1|rate/productName1|"1"|QString|
+rate_productName2|rate/productName2|"2"|QString|
+rate_productName3|rate/productName3|"3"|QString|

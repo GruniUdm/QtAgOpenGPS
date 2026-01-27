@@ -187,7 +187,20 @@ import "components" as Comp
                     fieldData.visible = false
                 }
             }
-
+            Comp.IconButton {
+                id: btnRateInfo
+                icon.source: prefix + "/images/spray2.png"
+                Layout.alignment: Qt.AlignCenter
+                implicitWidth: theme.buttonSize
+                height:parent.height
+                visible: AgIOService.rateControlConnected
+                onClicked: {
+                    rateData.visible = !rateData.visible
+                    //gpsData.visible = false
+                    //fieldData.visible = false
+                    //blockageData.visible = false
+                }
+            }
 
             Text{
                 id: speed
