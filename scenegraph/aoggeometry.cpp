@@ -19,7 +19,7 @@ const QSGGeometry::AttributeSet &positionAttributes()
     };
     static QSGGeometry::AttributeSet attributeSet = {
         1,                    // attribute count
-        sizeof(PositionVertex) * 3,    // stride (12 bytes per vertex)
+        sizeof(PositionVertex),    // stride (12 bytes per vertex)
         attributes
     };
     return attributeSet;
