@@ -138,6 +138,11 @@ CTool::CTool()
     connect(Backend::instance(), &Backend::resetTool,
             this, &CTool::resetTool);
 
+    //load our local cached copies whenever the settings change
+    connect(SettingsManager::instance(), &SettingsManager::toolGroupChanged, this, &CTool::loadSettings);
+    connect(SettingsManager::instance(), &SettingsManager::vehicleGroupChanged, this, &CTool::loadSettings);
+    connect(SettingsManager::instance(), &SettingsManager::colorGroupChanged, this, &CTool::loadSettings);
+
     loadSettings();
 }
 

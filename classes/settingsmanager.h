@@ -475,6 +475,44 @@ signals:
     void rate_productName1Changed();
     void rate_productName2Changed();
     void rate_productName3Changed();
+    void menuGroupChanged();
+    void featureGroupChanged();
+    void abGroupChanged();
+    void ardMacGroupChanged();
+    void ardSteerGroupChanged();
+    void asGroupChanged();
+    void bndGroupChanged();
+    void brandGroupChanged();
+    void camGroupChanged();
+    void colorGroupChanged();
+    void displayGroupChanged();
+    void fGroupChanged();
+    void gpsGroupChanged();
+    void headlandGroupChanged();
+    void imuGroupChanged();
+    void jobMenuGroupChanged();
+    void keyGroupChanged();
+    void sectionGroupChanged();
+    void seedGroupChanged();
+    void soundGroupChanged();
+    void toolGroupChanged();
+    void tramGroupChanged();
+    void vehicleGroupChanged();
+    void windowGroupChanged();
+    void youturnGroupChanged();
+    void arduinoGroupChanged();
+    void ntripGroupChanged();
+    void ethernetGroupChanged();
+    void gnssGroupChanged();
+    void serialGroupChanged();
+    void portGroupChanged();
+    void bluetoothGroupChanged();
+    void simGroupChanged();
+    void udpGroupChanged();
+    void nmeaGroupChanged();
+    void relayGroupChanged();
+    void agioGroupChanged();
+    void rateGroupChanged();
 
 
 private:

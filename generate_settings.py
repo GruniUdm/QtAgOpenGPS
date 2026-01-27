@@ -248,18 +248,20 @@ def generate_implementations_file(properties: List[Dict[str, str]], output_file:
         for prop in props:
             formatted_default = format_default_value(prop_type, prop['defaultValue'])
             setter_name = generate_setter_name(prop["name"])
+            iniGroup = prop["iniKey"].split('/')[0]
 
             # Use IMPLEMENTATION macros
             if prop_type == 'QString':
-                content += f'SETTINGS_PROPERTY_STRING_IMPL({prop["name"]}, "{prop["iniKey"]}", {formatted_default}, {setter_name})\n'
+                content += f'SETTINGS_PROPERTY_STRING_IMPL({prop["name"]}, {iniGroup}, "{prop["iniKey"]}", {formatted_default}, {setter_name})\n'
             elif prop_type == 'QColor':
-                content += f'SETTINGS_PROPERTY_COLOR_IMPL({prop["name"]}, "{prop["iniKey"]}", {formatted_default}, {setter_name})\n'
+                content += f'SETTINGS_PROPERTY_COLOR_IMPL({prop["name"]}, {iniGroup}, "{prop["iniKey"]}", {formatted_default}, {setter_name})\n'
             elif prop_type == 'QPoint':
-                content += f'SETTINGS_PROPERTY_POINT_IMPL({prop["name"]}, "{prop["iniKey"]}", {formatted_default}, {setter_name})\n'
+                content += f'SETTINGS_PROPERTY_POINT_IMPL({prop["name"]}, {iniGroup}, "{prop["iniKey"]}", {formatted_default}, {setter_name})\n'
             elif prop_type == 'QRect':
-                content += f'SETTINGS_PROPERTY_RECT_IMPL({prop["name"]}, "{prop["iniKey"]}", {formatted_default}, {setter_name})\n'
+                content += f'SETTINGS_PROPERTY_RECT_IMPL({prop["name"]}, {iniGroup}, "{prop["iniKey"]}", {formatted_default}, {setter_name})\n'
             elif prop_type == 'QVector<int>' or prop_type == 'METATYPE_QVECTOR_INT':
                 # Generate manual implementation for QVector<int> to avoid macro issues
+                iniGroup = prop["iniKey"].split('/')[0]
                 content += f'''QVector<int> SettingsManager::{prop["name"]}() const {{
     return m_{prop["name"]}.value();
 }}
@@ -269,6 +271,7 @@ void SettingsManager::{setter_name}(const QVector<int>& value) {{
     m_{prop["name"]}.setValue(value);
     m_qsettings->setValue("{prop["iniKey"]}", strList);
     m_qsettings->sync();
+    emit {iniGroup}GroupChanged();
 }}
 QBindable<QVector<int>> SettingsManager::bindable{prop["name"]}() {{
     return &m_{prop["name"]};
@@ -276,7 +279,7 @@ QBindable<QVector<int>> SettingsManager::bindable{prop["name"]}() {{
 '''
             else:
                 # Basic types (double, int, bool)
-                content += f'SETTINGS_PROPERTY_IMPL({prop_type}, {prop["name"]}, "{prop["iniKey"]}", {formatted_default}, {setter_name})\n'
+                content += f'SETTINGS_PROPERTY_IMPL({prop_type}, {prop["name"]}, {iniGroup}, "{prop["iniKey"]}", {formatted_default}, {setter_name})\n'
 
         content += '\n'
 
@@ -401,9 +404,20 @@ def update_signals_in_header_file(properties: List[Dict[str, str]]) -> None:
         signals_content += f"    // ===== GENERATED NOTIFY SIGNALS ({len(properties)} signals) =====\n"
         signals_content += f"    // Required for Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS signal references\n"
 
+        # Get groups
+        groups = []
+        for prop in properties:
+            key = prop["iniKey"].split('/')[0]
+            if key in groups: continue
+            groups.append(key);
+
+
         # Add all signals
         for prop in properties:
             signals_content += f'    void {prop["name"]}Changed();\n'
+
+        for group in groups:
+            signals_content += f'    void {group}GroupChanged();\n'
 
         # Replace the existing signals section using regex
         pattern = r'signals:\s*\n.*?// Required for Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS signal references\n.*?(?=\n\nprivate:|\nprivate:)'
@@ -448,7 +462,7 @@ def main():
             generator_func(properties, filename)
         except Exception as e:
             print(f"ERROR generating {filename}: {e}")
-            return 1
+            raise e
 
     # Update signals directly in settingsmanager.h
     try:
