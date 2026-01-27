@@ -33,6 +33,15 @@ public:
     QList<SectionProperties*>& sections() { return m_sections; }
     const QList<SectionProperties*>& sections() const { return m_sections; }
 
+    // C++ wrapper methods for sections list manipulation
+    void addSection(SectionProperties *section);
+    void removeSection(SectionProperties *section);
+    void removeSectionAt(int index);
+    void clearAllSections();
+    int numSections() const { return m_sections.count(); }
+    SectionProperties* getSection(int index) const;
+    SectionProperties* createSection();  // Creates new SectionProperties and adds it
+
     // Position and orientation (updated by core logic)
     SIMPLE_BINDABLE_PROPERTY(double, easting)
     SIMPLE_BINDABLE_PROPERTY(double, northing)
@@ -43,9 +52,9 @@ public:
     // Tool geometry (from settings/configuration)
     SIMPLE_BINDABLE_PROPERTY(bool, trailing)
     SIMPLE_BINDABLE_PROPERTY(bool, isTBTTank)
-    SIMPLE_BINDABLE_PROPERTY(double, hitchLength)
-    SIMPLE_BINDABLE_PROPERTY(double, pivotToToolLength)
-    SIMPLE_BINDABLE_PROPERTY(double, offset)
+    SIMPLE_BINDABLE_PROPERTY(float, hitchLength)
+    SIMPLE_BINDABLE_PROPERTY(float, pivotToToolLength)
+    SIMPLE_BINDABLE_PROPERTY(float, offset)
     SIMPLE_BINDABLE_PROPERTY(QColor, color)
 
     Q_INVOKABLE void setSectionButtonState(int sectionButtonNo, SectionButtonsModel::State new_state);
@@ -76,9 +85,9 @@ private:
     // Geometry properties
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, bool, m_trailing, true, &Tool::trailingChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, bool, m_isTBTTank, false, &Tool::isTBTTankChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_hitchLength, 0.0, &Tool::hitchLengthChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_pivotToToolLength, 0.0, &Tool::pivotToToolLengthChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_offset, 0.0, &Tool::offsetChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, float, m_hitchLength, 0.0, &Tool::hitchLengthChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, float, m_pivotToToolLength, 0.0, &Tool::pivotToToolLengthChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, float, m_offset, 0.0, &Tool::offsetChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, QColor, m_color, QColor(255, 0, 0), &Tool::colorChanged)
 };
 

@@ -59,8 +59,8 @@ FieldViewNode::FieldViewNode()
     appendChildNode(boundaryNode);
     appendChildNode(coverageNode);
     appendChildNode(guidanceNode);
-    appendChildNode(vehicleNode);
     appendChildNode(toolsNode);
+    appendChildNode(vehicleNode);
     appendChildNode(uiNode);
 }
 
@@ -460,12 +460,6 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         //set up mv foor the tools, based on the vehicle
         QMatrix4x4 toolMv = m_currentMv;
 
-        //move to pivot axle
-        toolMv.translate(m_renderData.vehicleX, m_renderData.vehicleY,0);
-        // translate down to the hitch pin without doing a rotate to make
-        // life easier for toolsNode to rotate from straight north
-        toolMv.translate(sin(m_renderData.vehicleHeading) * m_vehicle->drawbarLength(),
-                         cos(m_renderData.vehicleHeading) * m_vehicle->drawbarLength(), 0);
 
         rootNode->toolsNode->update(
             toolMv,
@@ -473,7 +467,8 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
             m_currentNcd,
             viewportSize,
             m_textureFactory,
-            m_tools);
+            m_tools,
+            m_camera->zoom());
 
     }
 

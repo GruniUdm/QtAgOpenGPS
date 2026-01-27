@@ -5,6 +5,7 @@
 #include <QLoggingCategory>
 #include "settingsmanager.h"
 #include "toolsproperties.h"
+#include "sectionproperties.h"
 
 Q_LOGGING_CATEGORY(toolsLog, "tools.qtagopengps")
 
@@ -22,11 +23,27 @@ Tools::Tools(QObject *parent)
     //eventually this will be done differently.
 
     generateToolFromSettings();
+    //connect to any setting that would change the configuration of the tool. Probably
+    //missed some.
     connect(SettingsManager::instance(), &SettingsManager::tool_isSectionsNotZonesChanged,
             this, &Tools::generateToolFromSettings);
     connect(SettingsManager::instance(), &SettingsManager::vehicle_numSectionsChanged,
             this, &Tools::generateToolFromSettings);
     connect(SettingsManager::instance(), &SettingsManager::tool_zonesChanged,
+            this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::tool_numSectionsMultiChanged,
+            this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::tool_toolTrailingHitchLengthChanged,
+            this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::tool_isToolFrontChanged,
+            this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::tool_isToolRearFixedChanged,
+            this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::tool_isToolTrailingChanged,
+            this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::tool_trailingToolToPivotLengthChanged,
+            this, &Tools::generateToolFromSettings);
+    connect(SettingsManager::instance(), &SettingsManager::vehicle_toolOffsetChanged,
             this, &Tools::generateToolFromSettings);
 }
 
@@ -68,75 +85,66 @@ void Tools::addTool(Tool *tool)
         return;
     }
 
-    // Add to the tools list
-    m_toolsList.append(QVariant::fromValue(tool));
+    m_toolsProperties->addTool(tool);
 
     //pass on the signals from this tool
+    int whichTool = m_toolsProperties->toolCount() - 1;
+
     connect(tool, &Tool::sectionButtonStateChanged,
-            [this](int sectionButtonNo, SectionButtonsModel::State new_state) {
-                emit sectionButtonStateChanged(m_toolsList.count()-1, sectionButtonNo, new_state);
+            [this, whichTool](int sectionButtonNo, SectionButtonsModel::State new_state) {
+                emit sectionButtonStateChanged(whichTool, sectionButtonNo, new_state);
     });
 
     if (tool->sectionButtonsModel()->count()) {
-        m_toolsWithSectionsModel->addToolIndex(m_toolsList.count()-1);
+        m_toolsWithSectionsModel->addToolIndex(whichTool);
     }
-    emit toolsListChanged();
+    //notify QML users
+    emit m_toolsProperties->toolsChanged();
 
-    qDebug(toolsLog) << "Tool added. Total tools:" << m_toolsList.count();
+    qDebug(toolsLog) << "Tool added. Total tools:" << m_toolsProperties->toolCount();
 }
 
 void Tools::removeTool(int index)
 {
-    if (index < 0 || index >= m_toolsList.count()) {
+    if (index < 0 || index >= m_toolsProperties->toolCount()) {
         qWarning(toolsLog) << "Invalid tool index:" << index;
         return;
     }
 
-    m_toolsList.removeAt(index);
+    m_toolsProperties->removeToolAt(index);
     m_toolsWithSectionsModel->removeToolIndex(index);
 
-    emit toolsListChanged();
+    //notify QML users
+    emit m_toolsProperties->toolsChanged();
 
-    qDebug(toolsLog) << "Tool removed at index" << index << ". Remaining tools:" << m_toolsList.count();
+    qDebug(toolsLog) << "Tool removed at index" << index << ". Remaining tools:" << m_toolsProperties->toolCount();
 }
 
 void Tools::clearTools()
 {
-    m_toolsList.clear();
+    m_toolsProperties->clearAllTools();
     m_toolsWithSectionsModel->clear();
 
-    emit toolsListChanged();
+    emit m_toolsProperties->toolsChanged();
 
     qDebug(toolsLog) << "All tools cleared";
 }
 
 Tool* Tools::toolAt(int index) const
 {
-    if (index < 0 || index >= m_toolsList.count()) {
+    if (index < 0 || index >= m_toolsProperties->toolCount()) {
         qWarning(toolsLog) << "Invalid tool index:" << index;
         return nullptr;
     }
 
-    return m_toolsList.at(index).value<Tool*>();
-}
-
-void Tools::setSectionButtonState(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state)
-{
-    if ( toolIndex < m_toolsList.count()) {
-        m_toolsList[toolIndex].value<Tool *>()->setSectionButtonState(sectionButtonNo, new_state);
-    }
-}
-
-void Tools::setAllSectionButtonsToState(int toolIndex, SectionButtonsModel::State new_state)
-{
-    if ( toolIndex < m_toolsList.count()) {
-        m_toolsList[toolIndex].value<Tool *>()->setAllSectionButtonsToState(new_state);
-    }
+    return m_toolsProperties->toolAt(index);
 }
 
 void Tools::generateToolFromSettings() {
+    int numButtons;
     int numSections;
-    m_toolsList.clear();
+
+    m_toolsProperties->clearAllTools();
     m_toolsWithSectionsModel->clear();
 
     if (SettingsManager::instance()->tool_isTBT()) {
@@ -146,6 +154,8 @@ void Tools::generateToolFromSettings() {
 
         newTool->set_isTBTTank(true);
         newTool->set_trailing(true);
+        newTool->set_pivotToToolLength(0);
+
         newTool->set_hitchLength(SettingsManager::instance()->vehicle_tankTrailingHitchLength());
 
         //nothing added to toolsWithSectionsModel
@@ -155,16 +165,22 @@ void Tools::generateToolFromSettings() {
     }
 
     if (SettingsManager::instance()->tool_isSectionsNotZones()) {
-        numSections = SettingsManager::instance()->vehicle_numSections();
+        numButtons = SettingsManager::instance()->vehicle_numSections();
+        numSections = numButtons;
+
+
     } else {
         QVector<int> zoneRanges;
         zoneRanges = SettingsManager::instance()->tool_zones();
         if (zoneRanges.size() > 0) {
-            numSections = zoneRanges[0];
+            numButtons = zoneRanges[0];
         } else {
             qWarning() << "Zones used, not sections, but the number of zones is zero!";
-            numSections = 0;
+            numButtons = 0;
         }
+
+        //many sections, fewer buttons
+        numSections = SettingsManager::instance()->tool_numSectionsMulti();
     }
 
     auto *newTool = new Tool(this);
@@ -175,10 +191,32 @@ void Tools::generateToolFromSettings() {
         newTool->set_trailing(false);
         newTool->set_hitchLength(0);
     }
+    newTool->set_pivotToToolLength(SettingsManager::instance()->tool_trailingToolToPivotLength());
+
+    newTool->set_offset(SettingsManager::instance()->vehicle_toolOffset());
 
     //Set up the QML buttons
-    for (int i=0; i  < numSections; i++) {
+    int i;
+
+    for (i = 0; i  < numButtons; i++) {
         newTool->sectionButtonsModel()->addSectionState( {i, SectionButtonsModel::Off} );
     }
+
+    //Set up Scenegraph section structures
+    for (i = 0 ; i < numSections; i++) {
+        newTool->createSection();
+    }
+
     addTool(newTool);
+}
+
+void Tools::setAllSectionButtonsToState(int toolIndex, SectionButtonsModel::State new_state)
+{
+    toolsProperties()->setAllSectionButtonsToState(toolIndex, new_state);
+
+}
+
+void Tools::setSectionButtonState(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state)
+{
+    toolsProperties()->setSectionButtonState(toolIndex, sectionButtonNo, new_state);
 }

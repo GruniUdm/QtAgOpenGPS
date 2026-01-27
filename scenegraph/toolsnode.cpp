@@ -44,21 +44,24 @@ void ToolsNode::update(const QMatrix4x4 &mv,
     if (!properties || !properties->visible())
         return;
 
-    double offset;
+    //mv is currently at tractor pivot axle coordinates, facing north.
 
     if (childCount() < 1) {
         //set up geometry
 
         for (Tool *tool: properties->tools()) {
-            offset = tool->offset();
             QList<QSGGeometryNode*> toolNodes;
+
+            QMatrix4x4 toolMv = mv;
+            //0,0 is the center of the tool.  Hitch goes forward from there
+            //towards the tractor
 
             if (tool->isTBTTank()) {
                 QVector<QVector3D> hitches;
 
-                hitches.append( { -0.57, tool->hitchLength(), 0 } );
-                hitches.append( {0,0,0} );
-                hitches.append( { 0.57, tool->hitchLength(), 0 } );
+                hitches.append( { -0.57, 0, 0 } );
+                hitches.append( {0, -tool->hitchLength(), 0} );
+                hitches.append( { 0.57, 0, 0 } );
 
                 //shadow under the line
                 auto *geometry = AOGGeometry::createThickLineLoopGeometry(hitches);
@@ -92,11 +95,12 @@ void ToolsNode::update(const QMatrix4x4 &mv,
 
             } else {
                 if (tool->trailing()) {
+                    float offset = tool->offset();
                     QVector<QVector3D> hitches;
 
-                    hitches.append( { -0.4f + offset, tool->hitchLength(), 0 } );
-                    hitches.append( {0.0f, 0.0f, 0.0f} );
-                    hitches.append( { 0.4f + offset, tool->hitchLength(), 0 } );
+                    hitches.append( { -0.4f + offset, 0.0f, 0.0f } );
+                    hitches.append( {0.0f, -tool->hitchLength(), 0.0f} );
+                    hitches.append( { 0.4f + offset, 0.0f, 0.0f } );
 
                     //shadow under line
                     auto *geometry = AOGGeometry::createThickLineLoopGeometry(hitches);
@@ -145,10 +149,10 @@ void ToolsNode::update(const QMatrix4x4 &mv,
 
                     float hitch = static_cast<float>(tool->hitchLength());
                     float off = static_cast<float>(offset);
-                    data[0] = { -1.5f + off, hitch - 1.0f, 0.0f, 0.0f, 1.0f };  // Back-left
-                    data[1] = {  1.5f + off, hitch - 1.0f, 0.0f, 1.0f, 1.0f };  // Back-right
-                    data[2] = { -1.5f + off, hitch + 1.0f, 0.0f, 0.0f, 0.0f };  // Front-left
-                    data[3] = {  1.5f + off, hitch + 1.0f, 0.0f, 1.0f, 0.0f };  // Front-right
+                    data[0] = { -1.5f + off, - 1.0f, 0.0f, 0.0f, 1.0f };  // Back-left
+                    data[1] = {  1.5f + off, - 1.0f, 0.0f, 1.0f, 1.0f };  // Back-right
+                    data[2] = { -1.5f + off, 1.0f, 0.0f, 0.0f, 0.0f };  // Front-left
+                    data[3] = {  1.5f + off,  1.0f, 0.0f, 1.0f, 0.0f };  // Front-right
 
                     texMaterial->setUseColor(true);
                     texMaterial->setColor(QColor::fromRgbF(1,1,1,0.75));
@@ -162,17 +166,18 @@ void ToolsNode::update(const QMatrix4x4 &mv,
                     toolNodes.append(geomNode);
                 }
 
-                /*
                 //now do sections
-                double hite = camSetDistance / -150;
+                float hite = camSetDistance / -150;
                 if (hite > 12) hite = 12;
                 if (hite < 1) hite = 1;
+
+                float trailingTool = tool->pivotToToolLength();
 
                 for (auto &section: tool->sections()) {
 
 
+
                 }
-                */
                 //if zones, mark them with lines
 
                 //trams?
@@ -184,13 +189,14 @@ void ToolsNode::update(const QMatrix4x4 &mv,
         }
     }
 
-    QMatrix4x4 toolMv = mv;
 
     //iterate through tools, setting matrices for each node
     int i=0;
     for (auto &nodeList: m_toolNodes) {
         auto &tool = properties->tools()[i];
-        //toolMv.translate(tool->easting(), tool->northing(), 0);
+        QMatrix4x4 toolMv = mv;
+
+        toolMv.translate(tool->easting(), tool->northing(), 0);
         toolMv.rotate(-tool->heading(),0,0,1);
 
         int n=0;
@@ -207,11 +213,6 @@ void ToolsNode::update(const QMatrix4x4 &mv,
             n++;
         }
 
-        //set up toolMv for the next tool in the chain
-        //move down the tool to the point where the next tool attaches
-        toolMv.translate(0, tool->hitchLength(), 0);
-        //set heading back to straight north
-        toolMv.rotate(tool->heading(),0,0,1);
         i++;
     }
 }

@@ -2287,7 +2287,9 @@ void CTool::on_autoBtnChanged() {
 }
 
 void CTool::onSectionButtonStatechanged(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state) {
-    if (toolIndex != 0) return ; //we can only deal with a single tool
+    //For now toolIndex doesn't matter. It will always 0 if no TBT, 1 with TBT
+    //in the future toolIndex will start to matter.
+    Q_UNUSED(toolIndex);
 
     if (SettingsManager::instance()->tool_isSectionsNotZones()) {
         //1:1 correlationb etween buttons and sections

@@ -112,13 +112,16 @@ ColumnLayout {
         iconChecked: prefix + "/images/ManualOn.png"
         buttonText: qsTr("Manual")
         onCheckedChanged: {
+            //if tow between we work with tool #1, otherwise tool 0
+            var whichTool = SettingsManager.tool_isTBT ? 1 : 0;
+
             if (checked) {
                 btnSectionAuto.checked = false;
-                Tools.setAllSectionButtonsToState(0, MainWindowState.On);
+                Tools.toolsProperties.setAllSectionButtonsToState(whichTool, MainWindowState.On);
                 MainWindowState.manualBtnState = MainWindowState.On
 
             } else {
-                Tools.setAllSectionButtonsToState(0, MainWindowState.Off);
+                Tools.toolsProperties.setAllSectionButtonsToState(whichTool, MainWindowState.Off);
                 MainWindowState.manualBtnState = MainWindowState.Off
             }
         }
@@ -132,12 +135,15 @@ ColumnLayout {
         iconChecked: prefix + "/images/SectionMasterOn.png"
         buttonText: qsTr("Auto")
         onCheckedChanged: {
+            //if tow between we work with tool #1, otherwise tool 0
+            var whichTool = SettingsManager.tool_isTBT ? 1 : 0;
+
             if (checked) {
                 btnSectionManual.checked = false;
-                Tools.setAllSectionButtonsToState(0,MainWindowState.Auto);
+                Tools.toolsProperties.setAllSectionButtonsToState(whichTool,MainWindowState.Auto);
                 MainWindowState.autoBtnState = MainWindowState.Auto
             } else {
-                Tools.setAllSectionButtonsToState(0,MainWindowState.Off);
+                Tools.toolsProperties.setAllSectionButtonsToState(whichTool,MainWindowState.Off);
                 MainWindowState.autoBtnState = MainWindowState.Off
             }
         }

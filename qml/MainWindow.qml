@@ -1137,6 +1137,8 @@ Window {
                     */
 
                     tools {
+                        tools: Tools.toolsProperties.tools
+                        /*
                         tools: [
                             Tool {
                                 trailing: true
@@ -1162,7 +1164,8 @@ Window {
                                     }
                                 ]
                             }
-                        ]
+                        ]*/
+
                         visible: true
                     }
 

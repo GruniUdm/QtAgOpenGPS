@@ -59,6 +59,10 @@ Rectangle {
         }
     }
 
+    Component.onCompleted: {
+        console.debug(qmlLog, "toolIndex is ", toolIndex);
+    }
+
     Component {
         id: sectionViewDelegate
         SectionButton {
@@ -67,7 +71,7 @@ Rectangle {
                 console.log(qmlLog, model);
 
             }
-            property int numSections: Tools.toolsList[toolIndex].sectionButtonsModel.rowCount()
+            property int numSections: Tools.toolsProperties.tools[toolIndex].sectionButtonsModel.rowCount()
             width: (sectionButtons.width / numSections) > 40 ? (sectionButtons.width / numSections) : 40
             buttonText: (model.buttonNumber + 1).toFixed(0)
             visible: (model.buttonNumber < numSections) ? true : false
@@ -76,7 +80,7 @@ Rectangle {
 
             onButtonClicked: {
                 //toggle tri state
-                Tools.setSectionButtonState(0,model.buttonNumber, (model.state + 1 ) % 3)
+                Tools.setSectionButtonState(toolIndex,model.buttonNumber, (model.state + 1 ) % 3)
                 console.debug(qmlLog, "button clicked: ",model.buttonNumber, " new state is ", model.state);
             }
         }
@@ -91,7 +95,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.top: parent.top
 
-        model: Tools.toolsList[toolIndex].sectionButtonsModel
+        model: Tools.toolsProperties.tools[toolIndex].sectionButtonsModel
 
         boundsMovement: Flickable.StopAtBounds
 

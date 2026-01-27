@@ -40,3 +40,78 @@ void ToolsProperties::clearTools(QQmlListProperty<Tool> *list)
     self->m_tools.clear();
     emit self->toolsChanged();
 }
+
+// ============================================================================
+// C++ wrapper methods for list manipulation
+// ============================================================================
+
+void ToolsProperties::addTool(Tool *tool)
+{
+    if (!tool)
+        return;
+
+    tool->setParent(this);
+    connect(tool, &Tool::toolChanged, this, &ToolsProperties::toolsChanged);
+    m_tools.append(tool);
+    emit toolsChanged();
+}
+
+void ToolsProperties::removeTool(Tool *tool)
+{
+    if (!tool)
+        return;
+
+    int index = m_tools.indexOf(tool);
+    if (index >= 0) {
+        m_tools.removeAt(index);
+        tool->disconnect(this);
+        emit toolsChanged();
+    }
+}
+
+void ToolsProperties::removeToolAt(int index)
+{
+    if (index < 0 || index >= m_tools.count())
+        return;
+
+    Tool *tool = m_tools.at(index);
+    m_tools.removeAt(index);
+    if (tool) {
+        tool->disconnect(this);
+    }
+    emit toolsChanged();
+}
+
+void ToolsProperties::clearAllTools()
+{
+    for (Tool *tool : m_tools) {
+        if (tool) {
+            tool->disconnect(this);
+        }
+    }
+    m_tools.clear();
+    emit toolsChanged();
+}
+
+Tool* ToolsProperties::toolAt(int index) const
+{
+    if (index < 0 || index >= m_tools.count())
+        return nullptr;
+    return m_tools.at(index);
+}
+
+void ToolsProperties::setSectionButtonState(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state)
+{
+    if (toolIndex < 0 || toolIndex >= m_tools.count())
+        return;
+
+    m_tools[toolIndex]->setSectionButtonState(sectionButtonNo, new_state);
+}
+
+void ToolsProperties::setAllSectionButtonsToState(int toolIndex, SectionButtonsModel::State new_state)
+{
+    if (toolIndex < 0 || toolIndex >= m_tools.count())
+        return;
+
+    m_tools[toolIndex]->setAllSectionButtonsToState(new_state);
+}
