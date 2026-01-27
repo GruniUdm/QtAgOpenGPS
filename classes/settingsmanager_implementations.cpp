@@ -88,7 +88,7 @@ SETTINGS_PROPERTY_IMPL(bool, display_isTermsAccepted, "display/isTermsAccepted",
 SETTINGS_PROPERTY_IMPL(bool, display_isTextureOn, "display/isTextureOn", true, setDisplay_isTextureOn)
 SETTINGS_PROPERTY_IMPL(bool, display_isVehicleImage, "display/isVehicleImage", true, setDisplay_isVehicleImage)
 SETTINGS_PROPERTY_IMPL(bool, display_showBack, "display/showBack", false, setDisplay_showBack)
-SETTINGS_PROPERTY_IMPL(bool, display_topTrackNum, "display/topTrackNum", false, setDisplay_topTrackNum)
+SETTINGS_PROPERTY_IMPL(bool, display_topTrackNum, "display/topTrackNum", true, setDisplay_topTrackNum)
 SETTINGS_PROPERTY_IMPL(bool, display_useTrackZero, "display/useTrackZero", false, setDisplay_useTrackZero)
 SETTINGS_PROPERTY_IMPL(bool, f_isRemoteWorkSystemOn, "f/isRemoteWorkSystemOn", false, setF_isRemoteWorkSystemOn)
 SETTINGS_PROPERTY_IMPL(bool, f_isSteerWorkSwitchEnabled, "f/isSteerWorkSwitchEnabled", false, setF_isSteerWorkSwitchEnabled)
@@ -423,8 +423,10 @@ QVector<int> SettingsManager::relay_pinConfig() const {
     return m_relay_pinConfig.value();
 }
 void SettingsManager::setRelay_pinConfig(const QVector<int>& value) {
+    QStringList strList;
+    for (int i : value) strList << QString::number(i);
     m_relay_pinConfig.setValue(value);
-    m_qsettings->setValue("relay/pinConfig", QVariant::fromValue(value));
+    m_qsettings->setValue("relay/pinConfig", strList);
     m_qsettings->sync();
 }
 QBindable<QVector<int>> SettingsManager::bindablerelay_pinConfig() {
@@ -434,8 +436,10 @@ QVector<int> SettingsManager::tool_zones() const {
     return m_tool_zones.value();
 }
 void SettingsManager::setTool_zones(const QVector<int>& value) {
+    QStringList strList;
+    for (int i : value) strList << QString::number(i);
     m_tool_zones.setValue(value);
-    m_qsettings->setValue("tool/zones", QVariant::fromValue(value));
+    m_qsettings->setValue("tool/zones", strList);
     m_qsettings->sync();
 }
 QBindable<QVector<int>> SettingsManager::bindabletool_zones() {
@@ -445,8 +449,10 @@ QVector<int> SettingsManager::rate_confProduct0() const {
     return m_rate_confProduct0.value();
 }
 void SettingsManager::setRate_confProduct0(const QVector<int>& value) {
+    QStringList strList;
+    for (int i : value) strList << QString::number(i);
     m_rate_confProduct0.setValue(value);
-    m_qsettings->setValue("rate/confProduct0", QVariant::fromValue(value));
+    m_qsettings->setValue("rate/confProduct0", strList);
     m_qsettings->sync();
 }
 QBindable<QVector<int>> SettingsManager::bindablerate_confProduct0() {
@@ -456,8 +462,10 @@ QVector<int> SettingsManager::rate_confProduct1() const {
     return m_rate_confProduct1.value();
 }
 void SettingsManager::setRate_confProduct1(const QVector<int>& value) {
+    QStringList strList;
+    for (int i : value) strList << QString::number(i);
     m_rate_confProduct1.setValue(value);
-    m_qsettings->setValue("rate/confProduct1", QVariant::fromValue(value));
+    m_qsettings->setValue("rate/confProduct1", strList);
     m_qsettings->sync();
 }
 QBindable<QVector<int>> SettingsManager::bindablerate_confProduct1() {
@@ -467,8 +475,10 @@ QVector<int> SettingsManager::rate_confProduct2() const {
     return m_rate_confProduct2.value();
 }
 void SettingsManager::setRate_confProduct2(const QVector<int>& value) {
+    QStringList strList;
+    for (int i : value) strList << QString::number(i);
     m_rate_confProduct2.setValue(value);
-    m_qsettings->setValue("rate/confProduct2", QVariant::fromValue(value));
+    m_qsettings->setValue("rate/confProduct2", strList);
     m_qsettings->sync();
 }
 QBindable<QVector<int>> SettingsManager::bindablerate_confProduct2() {
@@ -478,8 +488,10 @@ QVector<int> SettingsManager::rate_confProduct3() const {
     return m_rate_confProduct3.value();
 }
 void SettingsManager::setRate_confProduct3(const QVector<int>& value) {
+    QStringList strList;
+    for (int i : value) strList << QString::number(i);
     m_rate_confProduct3.setValue(value);
-    m_qsettings->setValue("rate/confProduct3", QVariant::fromValue(value));
+    m_qsettings->setValue("rate/confProduct3", strList);
     m_qsettings->sync();
 }
 QBindable<QVector<int>> SettingsManager::bindablerate_confProduct3() {

@@ -123,7 +123,7 @@ void SettingsManager::initializeFromSettings()
     m_display_lineWidth.setValue(m_qsettings->value("display/lineWidth", 2).toDouble());
     m_display_panelSimLocation.setValue(m_qsettings->value("display/panelSimLocation", QPoint(97, 600)).toPoint());
     m_display_showBack.setValue(m_qsettings->value("display/showBack", false).toBool());
-    m_display_topTrackNum.setValue(m_qsettings->value("display/topTrackNum", false).toBool());
+    m_display_topTrackNum.setValue(m_qsettings->value("display/topTrackNum", true).toBool());
     m_display_triangleResolution.setValue(m_qsettings->value("display/triangleResolution", 1).toDouble());
     m_display_useTrackZero.setValue(m_qsettings->value("display/useTrackZero", false).toBool());
     m_display_vehicleOpacity.setValue(m_qsettings->value("display/vehicleOpacity", 100).toDouble());

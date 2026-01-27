@@ -264,8 +264,10 @@ def generate_implementations_file(properties: List[Dict[str, str]], output_file:
     return m_{prop["name"]}.value();
 }}
 void SettingsManager::{setter_name}(const QVector<int>& value) {{
+    QStringList strList;
+    for (int i : value) strList << QString::number(i);
     m_{prop["name"]}.setValue(value);
-    m_qsettings->setValue("{prop["iniKey"]}", QVariant::fromValue(value));
+    m_qsettings->setValue("{prop["iniKey"]}", strList);
     m_qsettings->sync();
 }}
 QBindable<QVector<int>> SettingsManager::bindable{prop["name"]}() {{
@@ -313,7 +315,7 @@ void SettingsManager::initializeFromSettings()
         QStringList defaultList({{{default_list}}});
         QStringList list = m_qsettings->value("{prop["iniKey"]}", defaultList).toStringList();
         QVector<int> vector;
-        for (const QString& str : list) {{
+        for (const QString& str : std::as_const(list)) {{
             bool ok;
             int val = str.toInt(&ok);
             if (ok) vector.append(val);
