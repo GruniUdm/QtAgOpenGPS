@@ -34,6 +34,7 @@
 #include "siminterface.h"
 #include "modulecomm.h"
 #include "camera.h"
+#include "vehicleproperties.h"
 
 Q_LOGGING_CATEGORY (formgps_ui, "formgps_ui.qtagopengps")
 #define QDEBUG qDebug(formgps_ui)
@@ -456,7 +457,8 @@ void FormGPS::resetDirection(){
     // c#Array.Clear(stepFixPts, 0, stepFixPts.Length);
 
     std::memset(stepFixPts, 0, sizeof(stepFixPts));
-    isFirstHeadingSet = false;
+    CVehicle::instance()->vehicleProperties()->set_firstHeadingSet(false);
+    //isFirstHeadingSet = false;
 
     CVehicle::instance()->setIsReverse(false);
     TimedMessageBox(2000, "Reset Direction", "Drive Forward > 1.5 kmh");

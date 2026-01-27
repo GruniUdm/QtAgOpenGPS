@@ -23,6 +23,7 @@
 #include "backendaccess.h"
 #include "modulecomm.h"
 #include "camera.h"
+#include "vehicleproperties.h"
 
 FormGPS::FormGPS(QWidget *parent) : QQmlApplicationEngine(parent)
 {
@@ -224,7 +225,8 @@ void FormGPS::ResetGPSState(bool toSimMode)
     // Reset initialization flags
     isGPSPositionInitialized = false;
     isFirstFixPositionSet = false;
-    isFirstHeadingSet = false;
+    CVehicle::instance()->vehicleProperties()->set_firstHeadingSet(false);
+    //isFirstHeadingSet = false;
     startCounter = 0;
 
     // PHASE 6.0.42: Reset guidance line offset when switching modes
@@ -383,7 +385,7 @@ void FormGPS::handleGPSJump(double newLat, double newLon)
     // This allows startCounter to increment immediately instead of wasting 1 cycle
     isGPSPositionInitialized = false;
     isFirstFixPositionSet = true;  // Position reference initialized above
-    isFirstHeadingSet = false;
+    CVehicle::instance()->vehicleProperties()->set_firstHeadingSet(false);
     startCounter = 0;
 
     // PHASE 6.0.42.1: Update pn structure with new GPS position

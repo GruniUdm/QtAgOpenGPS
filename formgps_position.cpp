@@ -35,6 +35,7 @@
 #include "steerconfig.h"
 #include "backendaccess.h"
 #include "camera.h"
+#include "vehicleproperties.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -126,10 +127,10 @@ void FormGPS::UpdateFixPosition()
 
         prevDistFix = pn.fix;
 
-        if (fabs(CVehicle::instance()->avgSpeed()) < 1.5 && !isFirstHeadingSet)
+        if (fabs(CVehicle::instance()->avgSpeed()) < 1.5 && !CVehicle::instance()->vehicleProperties()->firstHeadingSet())
             goto byPass;
 
-        if (!isFirstHeadingSet) //set in steer settings, Stanley
+        if (!CVehicle::instance()->vehicleProperties()->firstHeadingSet()) //set in steer settings, Stanley
         {
             prevFix.easting = stepFixPts[0].easting; prevFix.northing = stepFixPts[0].northing;
 
@@ -247,7 +248,7 @@ void FormGPS::UpdateFixPosition()
                 pn.fix.easting = stepFixPts[0].easting;
                 pn.fix.northing = stepFixPts[0].northing;
 
-                isFirstHeadingSet = true;
+                CVehicle::instance()->vehicleProperties()->set_firstHeadingSet(true);
                 TimedMessageBox(2000, "Direction Reset", "Forward is Set");
 
                 lastGPS = pn.fix;
@@ -649,7 +650,7 @@ void FormGPS::UpdateFixPosition()
         TheRest();
     } else if (headingFromSource == "VTG")
     {
-        isFirstHeadingSet = true;
+        CVehicle::instance()->vehicleProperties()->set_firstHeadingSet(true);
         if (CVehicle::instance()->avgSpeed() > 1)
         {
             //use NMEA headings for camera and tractor graphic
@@ -749,7 +750,7 @@ void FormGPS::UpdateFixPosition()
 
     } else if (headingFromSource == "Dual")
     {
-        isFirstHeadingSet = true;
+        CVehicle::instance()->vehicleProperties()->set_firstHeadingSet(true);
         //use Dual Antenna heading for camera and tractor graphic
         CVehicle::instance()->set_fixHeading ( glm::toRadians(pn.headingTrueDual) );
         Backend::instance()->m_fixFrame.gpsHeading = CVehicle::instance()->fixHeading();
@@ -1210,13 +1211,10 @@ void FormGPS::UpdateFixPosition()
 
     Backend::instance()->m_fixFrame.setFrameTime(swFrame.elapsed());
 
-    // Variables for change tracking
-    bool miscChangedFlag = false;
-
     // Calculate tool position once
-    double tool_lat, tool_lon;
-    // Phase 6.3.1: Use PropertyWrapper for safe QObject access
-    pn.ConvertLocalToWGS84(CVehicle::instance()->pivotAxlePos.northing, CVehicle::instance()->pivotAxlePos.easting, tool_lat, tool_lon);
+
+    //double tool_lat, tool_lon; //not used currently
+    //pn.ConvertLocalToWGS84(CVehicle::instance()->pivotAxlePos.northing, CVehicle::instance()->pivotAxlePos.easting, tool_lat, tool_lon);
 
     CVehicle::instance()->set_avgPivDistance(CVehicle::instance()->avgPivDistance() * 0.5 + CVehicle::instance()->guidanceLineDistanceOff() * 0.5);
 
@@ -1268,22 +1266,22 @@ void FormGPS::UpdateFixPosition()
     Backend::instance()->set_imuCorrected( _imuCorrected);
 
     // === Tool Position Updates (2 properties) ===
-    Tools::instance()->m_toolsList[0].value<Tool *>()->set_easting(tool.toolPos.easting);
-    Tools::instance()->m_toolsList[0].value<Tool *>()->set_northing(tool.toolPos.northing);
-    Tools::instance()->m_toolsList[0].value<Tool *>()->set_latitude(tool_lat);
-    Tools::instance()->m_toolsList[0].value<Tool *>()->set_longitude(tool_lon);
-    Tools::instance()->m_toolsList[0].value<Tool *>()->set_heading(tool.toolPos.heading);
+    int whichTool = 0;
 
+    if (tool.isToolTBT) {
+        //qDebug(qpos) << tool.tankPos.easting << tool.tankPos.northing << tool.tankPos.heading;
+        Tools::instance()->toolsProperties()->tools()[0]->set_easting(tool.tankPos.easting);
+        Tools::instance()->toolsProperties()->tools()[0]->set_northing(tool.tankPos.northing);
+        Tools::instance()->toolsProperties()->tools()[0]->set_heading(glm::toDegrees(tool.tankPos.heading));
+        whichTool = 1;
+    }
 
+    //qDebug(qpos) << tool.toolPos.easting << tool.toolPos.northing << tool.tankPos.heading;
+    Tools::instance()->toolsProperties()->tools()[whichTool]->set_easting(tool.toolPos.easting);
+    Tools::instance()->toolsProperties()->tools()[whichTool]->set_northing(tool.toolPos.northing);
+    Tools::instance()->toolsProperties()->tools()[whichTool]->set_heading(glm::toDegrees(tool.toolPos.heading));
 
-
-    // ===== QProperty + BINDABLE AUTOMATIC NOTIFICATIONS =====
-    // Qt 6.8 QProperty system automatically handles change notifications
-    // Manual signal emissions removed to prevent binding loops and crashes
-    // Performance: QProperty automatic notifications are optimized by Qt
-
-    // Note: Change detection flags (posChangedFlag, vehChangedFlag, etc.)
-    // are kept for potential future optimizations but not used for signals
+    //qDebug(qpos) << CVehicle::instance()->pivotAxlePos.easting << CVehicle::instance()->pivotAxlePos.northing << CVehicle::instance()->pivotAxlePos.heading;
 }
 
 void FormGPS::TheRest()
@@ -1571,9 +1569,9 @@ void FormGPS::CalculatePositionHeading()
 
         tool.toolPos.heading = tool.toolPivotPos.heading;
         tool.toolPos.easting = tool.tankPos.easting +
-                                  (sin(tool.toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
+                                  (sin(tool.toolPivotPos.heading) * tool.trailingHitchLength);
         tool.toolPos.northing = tool.tankPos.northing +
-                                   (cos(tool.toolPivotPos.heading) * (tool.trailingHitchLength - tool.trailingToolToPivotLength));
+                                   (cos(tool.toolPivotPos.heading) * tool.trailingHitchLength);
 
     }
 
@@ -1620,6 +1618,7 @@ void FormGPS::CalculatePositionHeading()
     //precalc the sin and cos of heading * -1
     CVehicle::instance()->sinSectionHeading = sin(-tool.toolPivotPos.heading);
     CVehicle::instance()->cosSectionHeading = cos(-tool.toolPivotPos.heading);
+
 }
 
 //calculate the extreme tool left, right velocities, each section lookahead, and whether or not its going backwards

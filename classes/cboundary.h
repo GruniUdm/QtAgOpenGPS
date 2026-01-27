@@ -40,8 +40,8 @@ public:
 
     QVector<Vec3> bndBeingMadePts;
 
-    //InterfaceProperty<BoundaryInterface,bool> isBndBeingMade = InterfaceProperty<BoundaryInterface,bool>("isBndBeingMade");
-    bool isBndBeingMade = false;
+    // isBndBeingMade in BoundaryInterface as property
+    //bool isBndBeingMade = false;
 
     bool isOkToAddPoints = false;
 

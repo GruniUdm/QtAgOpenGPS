@@ -54,7 +54,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, float, m_drawbarLength, 1, &VehicleProperties::drawbarLengthChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, float, m_threePtLength, 0, &VehicleProperties::threePtLengthChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, float, m_frontHitchLength, 4, &VehicleProperties::frontHitchLengthChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, float, m_markBoundary, 4, &VehicleProperties::markBoundaryChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, float, m_markBoundary, 0, &VehicleProperties::markBoundaryChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, float, m_antennaOffset, 0, &VehicleProperties::antennaOffsetChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, float, m_antennaForward, 0, &VehicleProperties::antennaForwardChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(VehicleProperties, bool, m_svennArrow, false, &VehicleProperties::svennArrowChanged)

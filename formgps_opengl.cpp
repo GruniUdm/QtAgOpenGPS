@@ -470,7 +470,7 @@ void FormGPS::oglMain_Paint()
                 recPath.DrawDubins(gl, projection*modelview);
             }
 
-            if (bnd.bndList.count() > 0 || bnd.isBndBeingMade == true)
+            if (bnd.bndList.count() > 0 || BoundaryInterface::instance()->isBndBeingMade() == true)
             {
                 //draw Boundaries
                 bnd.DrawFenceLines(CVehicle::instance()->pivotAxlePos, gl, projection*modelview, mainWindow);
@@ -524,7 +524,7 @@ void FormGPS::oglMain_Paint()
             else steerangle = ModuleComm::instance()->actualSteerAngleDegrees();
 
             double markLeft, markRight;
-            if (bnd.isBndBeingMade) {
+            if (BoundaryInterface::instance()->isBndBeingMade()) {
                 if (BoundaryInterface::instance()->isDrawRightSide()) {
                     markLeft = 0;
                     markRight = BoundaryInterface::instance()->createBndOffset();
@@ -539,7 +539,6 @@ void FormGPS::oglMain_Paint()
 
             CVehicle::instance()->DrawVehicle(gl, vehiclemv,
                                               projection, steerangle,
-                                              isFirstHeadingSet,
                                               markLeft, markRight,
                                               camera.camSetDistance(),
                                               QRect(0,0,width,height)

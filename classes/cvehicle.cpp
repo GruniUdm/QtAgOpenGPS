@@ -21,6 +21,7 @@
 #include "ctrack.h"
 #include "modulecomm.h"
 #include "vehicleproperties.h"
+#include "boundaryinterface.h"
 #include <QLoggingCategory>
 
 Q_LOGGING_CATEGORY (cvehicle, "cvehicle.qtagopengps")
@@ -121,6 +122,20 @@ CVehicle::CVehicle(QObject* parent)
     m_vehicleProperties->bindable_steerAngle().setBinding(
         ModuleComm::instance()->bindable_actualSteerAngleDegrees().makeBinding()
         );
+
+    m_vehicleProperties->bindable_markBoundary().setBinding([]() {
+        float markBoundary = 0;
+
+        if (BoundaryInterface::instance()->isBndBeingMade()) {
+            markBoundary = BoundaryInterface::instance()->createBndOffset();
+
+            if (!BoundaryInterface::instance()->isDrawRightSide()) {
+                markBoundary = -markBoundary;
+            }
+
+        }
+        return markBoundary;
+    });
 
 }
 

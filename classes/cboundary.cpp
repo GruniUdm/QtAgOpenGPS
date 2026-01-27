@@ -359,7 +359,7 @@ void CBoundary::updateList() {
 void CBoundary::start() {
     double tool_width = SettingsManager::instance()->vehicle_toolWidth();
     BoundaryInterface::instance()->set_createBndOffset(tool_width * 0.5);
-    isBndBeingMade = true;
+    BoundaryInterface::instance()->set_isBndBeingMade (true);
     bndBeingMadePts.clear();
     calculateArea();
 
@@ -393,7 +393,7 @@ void CBoundary::stop() {
 
     //stop it all for adding
     isOkToAddPoints = false;
-    isBndBeingMade = false;
+    BoundaryInterface::instance()->set_isBndBeingMade (false);
     bndBeingMadePts.clear();
     updateList();
     BoundaryInterface::instance()->set_count(bndList.count());
