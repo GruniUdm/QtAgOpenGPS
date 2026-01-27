@@ -7,15 +7,15 @@ import "components" as Comp
 
 Comp.MoveablePopup {
     id: rcDataPopup
-    height: 220 * theme.scaleHeight
-    width: 220 * theme.scaleWidth
+    height: 320 * theme.scaleHeight
+    width: 240 * theme.scaleWidth
     visible: false
     modal: false
 
     property int currentProductIndex: 0
     property var rcModel: RateControl.rcModel
 
-    // Свойства для данных текущего продукта (будем обновлять их через таймер)
+    // Свойства для данных текущего продукта
     property double currentSmoothRate: 0
     property double currentActualRate: 0
     property double currentQuantity: 0
@@ -66,11 +66,9 @@ Comp.MoveablePopup {
         enabled: rcDataPopup.visible
 
         function onDataChanged(topLeft, bottomRight, roles) {
-            // Если изменился текущий продукт, обновляем данные
             if (topLeft.row <= currentProductIndex && bottomRight.row >= currentProductIndex) {
                 updateAllData();
             }
-            // Всегда обновляем активности
             updateAllData();
         }
 
@@ -92,61 +90,77 @@ Comp.MoveablePopup {
 
     Rectangle {
         id: rcData
-        width: 220 * theme.scaleWidth
-        height: 220 * theme.scaleHeight
+        width: parent.width
+        height: parent.height
         color: "#4d4d4d"
 
         Comp.TopLine {
             id: rcDataTopLine
             onBtnCloseClicked: rcDataPopup.visible = false
-            titleText: qsTr("RC")
+            titleText: currentProductName
         }
 
+        // ButtonGroup для кнопок продуктов
         ButtonGroup {
-            buttons: buttonsTop.children
+            id: productButtonGroup
+            buttons: [product1, product2, product3, product4]
         }
 
-        RowLayout {
-            id: buttonsTop
+        // Основная табличная структура
+        GridLayout {
+            id: mainGrid
             anchors.top: rcDataTopLine.bottom
-            anchors.topMargin: 5
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: parent.width - 10 * theme.scaleWidth
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.margins: 5 * theme.scaleWidth
 
+            columns: 4
+            rows: 5
+            rowSpacing: 5 * theme.scaleHeight
+            columnSpacing: 5 * theme.scaleWidth
+
+            // Строка 0: 4 кнопки продуктов
             Comp.IconButtonColor {
                 id: product1
+                Layout.row: 0
+                Layout.column: 0
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
                 checkable: true
                 colorChecked: product1Active?"green":"grey"
                 icon.source: prefix + "/images/ratec1.png"
-                implicitHeight: 50 * theme.scaleHeight
-                implicitWidth: parent.width / 4 - 5 * theme.scaleWidth
                 checked: currentProductIndex === 0
-                //enabled: product1Active
                 enabled: SettingsManager.rate_confProduct0[2]
                 onClicked: currentProductIndex = 0
-
             }
 
             Comp.IconButtonColor {
                 id: product2
+                Layout.row: 0
+                Layout.column: 1
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
                 checkable: true
                 colorChecked: product2Active?"green":"grey"
                 icon.source: prefix + "/images/ratec2.png"
-                implicitHeight: 50 * theme.scaleHeight
-                implicitWidth: parent.width / 4 - 5 * theme.scaleWidth
                 checked: currentProductIndex === 1
-                //enabled: product2Active
                 enabled: SettingsManager.rate_confProduct1[2]
                 onClicked: currentProductIndex = 1
             }
 
             Comp.IconButtonColor {
                 id: product3
+                Layout.row: 0
+                Layout.column: 2
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
                 checkable: true
                 colorChecked: product3Active?"green":"grey"
                 icon.source: prefix + "/images/ratec3.png"
-                implicitHeight: 50 * theme.scaleHeight
-                implicitWidth: parent.width / 4 - 5 * theme.scaleWidth
                 checked: currentProductIndex === 2
                 enabled: SettingsManager.rate_confProduct2[2]
                 onClicked: currentProductIndex = 2
@@ -154,115 +168,214 @@ Comp.MoveablePopup {
 
             Comp.IconButtonColor {
                 id: product4
+                Layout.row: 0
+                Layout.column: 3
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
                 checkable: true
                 colorChecked: product4Active?"green":"grey"
                 icon.source: prefix + "/images/ratec4.png"
-                implicitHeight: 50 * theme.scaleHeight
-                implicitWidth: parent.width / 4 - 5 * theme.scaleWidth
                 checked: currentProductIndex === 3
                 enabled: SettingsManager.rate_confProduct3[2]
                 onClicked: currentProductIndex = 3
             }
-        }
 
-        RowLayout {
-            id: buttonsMl
-            anchors.top: buttonsTop.bottom
-            anchors.topMargin: 17 * theme.scaleHeight
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: parent.width - 10 * theme.scaleWidth
-
+            // Строка 1: Уставка
+            // Текст "Уставка" - занимает 2 колонки, текст по центру
             Rectangle {
-                id: applied
-                property bool clicked: false
-                color: "#4d4d4d"
-                border.color: "black"
-                radius: 10
-                Layout.alignment: Qt.AlignCenter
-                implicitHeight: 50 * theme.scaleHeight
-                implicitWidth: parent.width / 2 - 5 * theme.scaleWidth
+                Layout.row: 1
+                Layout.column: 0
+                Layout.columnSpan: 2
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
+                color: "transparent"
 
                 Text {
-                    text: applied.clicked ? Math.round(currentActualRate) : Math.round(currentSmoothRate)
-                    font.pixelSize: 30
-                    anchors.centerIn: parent
+                    anchors.fill: parent
+                    text: qsTr("Уставка")
+                    font.pixelSize: 18 * theme.scaleHeight
                     color: aogInterface.backgroundColor
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+
+            // Поле уставки - занимает 2 колонки, текст по центру
+            Rectangle {
+                id: target
+                Layout.row: 1
+                Layout.column: 2
+                Layout.columnSpan: 2
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
+                property bool clicked: false
+                color: aogInterface.backgroundColor
+                border.color: "black"
+                radius: 10
+
+                Text {
+                    anchors.fill: parent
+                    text: Math.round(currentSetRate)
+                    font.pixelSize: 18 * theme.scaleHeight
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
                 }
 
                 MouseArea {
-                    id: switcher1
-                    anchors.fill: applied
+                    anchors.fill: parent
+                    onClicked: target.clicked = !target.clicked
+                }
+            }
+
+            // Строка 2: Расход
+            // Текст "Расход" - занимает 2 колонки, текст по центру
+            Rectangle {
+                Layout.row: 2
+                Layout.column: 0
+                Layout.columnSpan: 2
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
+                color: "transparent"
+
+                Text {
+                    anchors.fill: parent
+                    text: qsTr("Расход")
+                    font.pixelSize: 18 * theme.scaleHeight
+                    color: aogInterface.backgroundColor
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+
+            // Поле расхода - занимает 2 колонки, текст по центру
+            Rectangle {
+                id: applied
+                Layout.row: 2
+                Layout.column: 2
+                Layout.columnSpan: 2
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
+                property bool clicked: false
+                color: aogInterface.backgroundColor
+                border.color: "black"
+                radius: 10
+
+                Text {
+                    anchors.fill: parent
+                    text: applied.clicked ? Math.round(currentActualRate) : Math.round(currentSmoothRate)
+                    font.pixelSize: 18 * theme.scaleHeight
+                    color: "black"
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                }
+
+                MouseArea {
+                    anchors.fill: parent
                     onClicked: applied.clicked = !applied.clicked
                 }
             }
 
+            // Строка 3: Применено
+            // Текст "Применено" - занимает 2 колонки, текст по центру
             Rectangle {
-                id: target
+                Layout.row: 3
+                Layout.column: 0
+                Layout.columnSpan: 2
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
+                color: "transparent"
+
+                Text {
+                    anchors.fill: parent
+                    text: qsTr("Применено")
+                    font.pixelSize: 18 * theme.scaleHeight
+                    color: aogInterface.backgroundColor
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+
+            // Поле примененного количества - занимает 2 колонки, текст по центру
+            Rectangle {
+                id: qtty
+                Layout.row: 3
+                Layout.column: 2
+                Layout.columnSpan: 2
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
                 property bool clicked: false
                 color: aogInterface.backgroundColor
                 border.color: "black"
                 radius: 10
-                Layout.alignment: Qt.AlignCenter
-                implicitHeight: 50 * theme.scaleHeight
-                implicitWidth: parent.width / 2 - 5 * theme.scaleWidth
 
                 Text {
-                    text: target.clicked ? Math.round(currentQuantity) : Math.round(currentSetRate)
-                    font.pixelSize: 30
-                    anchors.centerIn: parent
+                    anchors.fill: parent
+                    text: qtty.clicked ? Math.round(currentQuantity) : "0 л"
+                    font.pixelSize: 18 * theme.scaleHeight
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
                 }
 
                 MouseArea {
-                    id: switcher2
-                    anchors.fill: target
-                    onClicked: target.clicked = !target.clicked
+                    anchors.fill: parent
+                    onClicked: qtty.clicked = !qtty.clicked
                 }
             }
-        }
 
-        Rectangle {
-            id: productNameRect
-            color: "#4d4d4d"
-            border.color: "black"
-            radius: 10
-            implicitHeight: 50 * theme.scaleHeight
-            implicitWidth: parent.width / 2 - 5 * theme.scaleWidth
-            anchors.left: parent.left
-            anchors.leftMargin: 5 * theme.scaleHeight
-            anchors.bottom: parent.bottom
+            // Строка 4: Нижняя панель
+            // Имя продукта - 2 колонки, текст по центру
+            Rectangle {
+                Layout.row: 4
+                Layout.column: 0
+                Layout.columnSpan: 2
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
+                color: "transparent"
 
-            Text {
-                text: currentProductName
-                font.pixelSize: 16 * theme.scaleHeight
-                anchors.centerIn: parent
-                color: aogInterface.backgroundColor
+                Text {
+                    anchors.fill: parent
+                    text: " "
+                    font.pixelSize: 18 * theme.scaleHeight
+                    color: aogInterface.backgroundColor
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    elide: Text.ElideRight
+                }
             }
-        }
 
-        Comp.IconButtonColor {
-            id: rateUp
-            icon.source: prefix + "/images/ratec-up.png"
-            implicitHeight: 50 * theme.scaleHeight
-            implicitWidth: 50 * theme.scaleWidth
-            anchors.right: parent.right
-            anchors.rightMargin: 5 * theme.scaleHeight
-            anchors.bottom: parent.bottom
-            enabled: currentProductIndex >= 0 && currentProductIndex < 4 && currentProductActive
-            onClicked: RateControl.increaseSetRate(currentProductIndex, 10);
-        }
+            // Кнопка уменьшения - 1 колонка
+            Comp.IconButtonColor {
+                id: rateDown
+                Layout.row: 4
+                Layout.column: 2
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
+                icon.source: prefix + "/images/ratec-down.png"
+                enabled: currentProductIndex >= 0 && currentProductIndex < 4 && currentProductActive
+                onClicked: RateControl.decreaseSetRate(currentProductIndex, 10);
+            }
 
-        Comp.IconButtonColor {
-            id: rateDown
-            icon.source: prefix + "/images/ratec-down.png"
-            implicitHeight: 50 * theme.scaleHeight
-            implicitWidth: 50 * theme.scaleWidth
-            anchors.right: rateUp.left
-            anchors.rightMargin: 5 * theme.scaleHeight
-            anchors.left: productNameRect.right
-            anchors.leftMargin: 5 * theme.scaleHeight
-            anchors.bottom: parent.bottom
-            enabled: currentProductIndex >= 0 && currentProductIndex < 4 && currentProductActive
-            onClicked: RateControl.decreaseSetRate(currentProductIndex, 10);
+            // Кнопка увеличения - 1 колонка
+            Comp.IconButtonColor {
+                id: rateUp
+                Layout.row: 4
+                Layout.column: 3
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredHeight: 40 * theme.scaleHeight
+                icon.source: prefix + "/images/ratec-up.png"
+                enabled: currentProductIndex >= 0 && currentProductIndex < 4 && currentProductActive
+                onClicked: RateControl.increaseSetRate(currentProductIndex, 10);
+            }
         }
     }
 }
