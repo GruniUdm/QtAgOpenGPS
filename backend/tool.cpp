@@ -47,8 +47,8 @@ void Tool::appendSection(QQmlListProperty<SectionProperties> *list, SectionPrope
 {
     auto *self = static_cast<Tool*>(list->object);
     section->setParent(self);  // Take ownership
-    self->connect(section, &SectionProperties::leftPositionChanged, self, &Tool::toolChanged);
-    self->connect(section, &SectionProperties::rightPositionChanged, self, &Tool::toolChanged);
+    self->watchSectionProperties(section);
+
     self->m_sections.append(section);
     emit self->sectionsChanged();
     emit self->toolChanged();
@@ -84,8 +84,8 @@ void Tool::addSection(SectionProperties *section)
         return;
 
     section->setParent(this);
-    connect(section, &SectionProperties::leftPositionChanged, this, &Tool::toolChanged);
-    connect(section, &SectionProperties::rightPositionChanged, this, &Tool::toolChanged);
+    watchSectionProperties(section);
+
     m_sections.append(section);
     emit sectionsChanged();
     emit toolChanged();
@@ -141,10 +141,18 @@ SectionProperties* Tool::getSection(int index) const
 SectionProperties* Tool::createSection()
 {
     auto *section = new SectionProperties(this);
-    connect(section, &SectionProperties::leftPositionChanged, this, &Tool::toolChanged);
-    connect(section, &SectionProperties::rightPositionChanged, this, &Tool::toolChanged);
+    watchSectionProperties(section);
+
     m_sections.append(section);
     emit sectionsChanged();
     emit toolChanged();
     return section;
+}
+
+void Tool::watchSectionProperties(SectionProperties *section) {
+    connect(section, &SectionProperties::leftPositionChanged, this, &Tool::toolChanged);
+    connect(section, &SectionProperties::rightPositionChanged, this, &Tool::toolChanged);
+    connect(section, &SectionProperties::stateChanged, this, &Tool::toolChanged);
+    connect(section, &SectionProperties::mappingChanged, this, &Tool::toolChanged);
+    connect(section, &SectionProperties::onChanged, this, &Tool::toolChanged);
 }

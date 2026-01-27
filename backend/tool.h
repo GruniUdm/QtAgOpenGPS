@@ -76,6 +76,8 @@ private:
     static SectionProperties *sectionAt(QQmlListProperty<SectionProperties> *list, qsizetype index);
     static void clearSections(QQmlListProperty<SectionProperties> *list);
 
+    void watchSectionProperties(SectionProperties *section);
+
     SectionButtonsModel *m_sectionButtons;
     QList<SectionProperties*> m_sections;
 

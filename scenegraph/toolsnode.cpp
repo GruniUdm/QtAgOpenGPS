@@ -241,8 +241,8 @@ void ToolsNode::update(const QMatrix4x4 &mv,
 
                     for (int i = 0; i < tool->zones().count()-1; i++ ){
                         int section = tool->zones()[i];
-                        dividers.append( { tool->sections()[section]->leftPosition(), -trailingTool - 0.4, 0 });
-                        dividers.append( { tool->sections()[section]->leftPosition(), -trailingTool + 0.2, 0 });
+                        dividers.append( { tool->sections()[section]->leftPosition(), -trailingTool - 0.4f, 0 });
+                        dividers.append( { tool->sections()[section]->leftPosition(), -trailingTool + 0.2f, 0 });
                     }
                     auto *geometry = AOGGeometry::createThickLinesGeometry(dividers);
                     auto *geomNode = new QSGGeometryNode();
@@ -273,6 +273,8 @@ void ToolsNode::update(const QMatrix4x4 &mv,
 
     //iterate through tools, setting matrices for each node
     int i=0;
+    int j=0;
+
     for (const QList<QSGGeometryNode *> &nodeList: std::as_const(m_toolNodes)) {
         auto &tool = properties->tools()[i];
         QMatrix4x4 toolMv = mv;
@@ -284,9 +286,39 @@ void ToolsNode::update(const QMatrix4x4 &mv,
             updateNodeMvp(node, ndc * p * toolMv, viewportSize);
         }
 
+
+        j = 0;
+        QColor color;
         for (QSGGeometryNode *node: m_sectionNodes[i]) {
             updateNodeMvp(node, ndc * p * toolMv, viewportSize);
-            updateNodeColor(node, QColor::fromRgbF(1,0,0));
+
+            SectionProperties *section = tool->sections()[j];
+            if (section->state() == SectionState::Auto) {
+                if (section->on()) {
+                    if (section->mapping()) {
+                        color.setRgbF(0.0f, 0.95f, 0.0f, 1.0f); //green
+                    } else {
+                        color.setRgbF(0.970f, 0.30f, 0.970f); //magenta
+                    }
+                } else {
+                    color.setRgbF(0.950f, 0.2f, 0.2f, 1.0f);  // Red
+                }
+            } else if (section->state() == SectionState::On) {
+                color.setRgbF(0.97, 0.97, 0, 1.0f);  // Yellow
+            } else if (section->on()) {
+                // Logic originale pour sections actives automatiquement
+                if (section->mapping())
+                    color.setRgbF(0.0f, 0.95f, 0.0f, 1.0f); //green
+                else
+                    color.setRgbF(0.970f, 0.30f, 0.970f); //magenta
+            } else {
+                if (!section->mapping())
+                    color.setRgbF(0.950f, 0.2f, 0.2f, 1.0f); //red
+                else
+                    color.setRgbF(0.0f, 0.250f, 0.97f, 1.0f); //blue
+            }
+            updateNodeColor(node, color);
+            j++;
         }
 
         i++;

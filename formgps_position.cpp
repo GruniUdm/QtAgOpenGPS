@@ -36,6 +36,7 @@
 #include "backendaccess.h"
 #include "camera.h"
 #include "vehicleproperties.h"
+#include "sectionproperties.h"
 #include <QtConcurrent/QtConcurrentRun>
 
 
@@ -1280,6 +1281,14 @@ void FormGPS::UpdateFixPosition()
     Tools::instance()->toolsProperties()->tools()[whichTool]->set_easting(tool.toolPos.easting);
     Tools::instance()->toolsProperties()->tools()[whichTool]->set_northing(tool.toolPos.northing);
     Tools::instance()->toolsProperties()->tools()[whichTool]->set_heading(glm::toDegrees(tool.toolPos.heading));
+
+    QList<SectionProperties *> &sectionProperties = Tools::instance()->toolsProperties()->tools()[whichTool]->sections();
+
+    for (int i=0; i < tool.numOfSections; i++) {
+        sectionProperties[i]->set_state(tool.sectionButtonState[i]);
+        sectionProperties[i]->set_mapping(tool.section[i].isMappingOn);
+        sectionProperties[i]->set_on(tool.section[i].isSectionOn);
+    }
 
     //qDebug(qpos) << CVehicle::instance()->pivotAxlePos.easting << CVehicle::instance()->pivotAxlePos.northing << CVehicle::instance()->pivotAxlePos.heading;
 }
