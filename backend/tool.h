@@ -8,6 +8,8 @@
 #include <QObjectBindableProperty>
 #include <QQmlListProperty>
 #include <QColor>
+#include <QList>
+
 #include "sectionbuttonsmodel.h"
 #include "simpleproperty.h"
 
@@ -49,6 +51,8 @@ public:
     SIMPLE_BINDABLE_PROPERTY(double, longitude)
     SIMPLE_BINDABLE_PROPERTY(double, heading)
 
+    SIMPLE_BINDABLE_PROPERTY(QList<int>, zones)
+
     // Tool geometry (from settings/configuration)
     SIMPLE_BINDABLE_PROPERTY(bool, trailing)
     SIMPLE_BINDABLE_PROPERTY(bool, isTBTTank)
@@ -81,6 +85,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_latitude, 0, &Tool::latitudeChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_longitude, 0, &Tool::longitudeChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, double, m_heading, 0, &Tool::headingChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(Tool, QList<int>, m_zones, &Tool::zonesChanged)
 
     // Geometry properties
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(Tool, bool, m_trailing, true, &Tool::trailingChanged)

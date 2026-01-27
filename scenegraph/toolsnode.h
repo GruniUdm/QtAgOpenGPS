@@ -34,6 +34,8 @@ public:
 private:
     // Each tool gets its own list of nodes
     QList<QList<QSGGeometryNode*>> m_toolNodes;
+    QList<QList<QSGGeometryNode*>> m_sectionNodes;
+
 
     void updateNodeMvp(QSGGeometryNode *node,
                        const QMatrix4x4 mvp,
