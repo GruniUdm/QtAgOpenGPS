@@ -3,19 +3,19 @@
 //
 // Boundary node implementation
 
-#include "boundarynode.h"
+#include "boundariesnode.h"
 #include "materials.h"
 #include "aoggeometry.h"
 
-BoundaryNode::BoundaryNode()
+BoundariesNode::BoundariesNode()
 {
 }
 
-BoundaryNode::~BoundaryNode()
+BoundariesNode::~BoundariesNode()
 {
 }
 
-void BoundaryNode::clearChildren()
+void BoundariesNode::clearChildren()
 {
     while (childCount() > 0) {
         QSGNode *child = firstChild();
@@ -24,7 +24,7 @@ void BoundaryNode::clearChildren()
     }
 }
 
-void BoundaryNode::update(const QMatrix4x4 &mvp,
+void BoundariesNode::update(const QMatrix4x4 &mvp,
                            const QColor &boundaryColor,
                            const QVector<QVector<QVector3D>> &boundaries)
 {

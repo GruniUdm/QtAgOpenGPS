@@ -3,8 +3,8 @@
 //
 // Boundary node - renders field boundaries
 
-#ifndef BOUNDARYNODE_H
-#define BOUNDARYNODE_H
+#ifndef BOUNDARIESNODE_H
+#define BOUNDARIESNODE_H
 
 #include <QSGNode>
 #include <QSGGeometryNode>
@@ -13,11 +13,11 @@
 #include <QVector>
 #include <QVector3D>
 
-class BoundaryNode : public QSGNode
+class BoundariesNode : public QSGNode
 {
 public:
-    BoundaryNode();
-    ~BoundaryNode() override;
+    BoundariesNode();
+    ~BoundariesNode() override;
 
     void update(const QMatrix4x4 &mvp,
                 const QColor &boundaryColor,
@@ -27,4 +27,4 @@ private:
     void clearChildren();
 };
 
-#endif // BOUNDARYNODE_H
+#endif // BOUNDARIESNODE_H

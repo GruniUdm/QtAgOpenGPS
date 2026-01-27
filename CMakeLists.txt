@@ -413,7 +413,7 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES scenegraph/fieldsurfacenode.h scenegraph/fieldsurfacenode.cpp
     SOURCES scenegraph/gridnode.h scenegraph/gridnode.cpp
     SOURCES scenegraph/vehiclenode.h scenegraph/vehiclenode.cpp
-    SOURCES scenegraph/boundarynode.h scenegraph/boundarynode.cpp
+    SOURCES scenegraph/boundariesnode.h scenegraph/boundariesnode.cpp
     SOURCES scenegraph/cameraproperties.h scenegraph/cameraproperties.cpp
     SOURCES scenegraph/gridproperties.h scenegraph/gridproperties.cpp
     SOURCES scenegraph/fieldsurfaceproperties.h scenegraph/fieldsurfaceproperties.cpp
@@ -423,6 +423,8 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES scenegraph/dashedthicklinematerial.h scenegraph/dashedthicklinematerial.cpp
     SOURCES scenegraph/texturefactory.h scenegraph/texturefactory.cpp
     SOURCES scenegraph/toolsproperties.h scenegraph/toolsproperties.cpp
+    SOURCES scenegraph/boundaryproperties.h scenegraph/boundaryproperties.cpp
+    SOURCES scenegraph/boundariesproperties.h scenegraph/boundariesproperties.cpp
     SOURCES scenegraph/toolsnode.h scenegraph/toolsnode.cpp
     SOURCES scenegraph/roundpointmaterial.h scenegraph/roundpointmaterial.cpp
     SOURCES scenegraph/roundpointsizematerial.h scenegraph/roundpointsizematerial.cpp

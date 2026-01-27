@@ -26,7 +26,7 @@ class SettingsManager;
 // Forward declarations for node classes
 class FieldSurfaceNode;
 class GridNode;
-class BoundaryNode;
+class BoundariesNode;
 class VehicleNode;
 class ToolsNode;
 class CameraProperties;
@@ -34,6 +34,7 @@ class GridProperties;
 class FieldSurfaceProperties;
 class VehicleProperties;
 class ToolsProperties;
+class BoundariesProperties;
 class TextureFactory;
 
 Q_MOC_INCLUDE("cameraproperties.h")
@@ -41,6 +42,7 @@ Q_MOC_INCLUDE("gridproperties.h")
 Q_MOC_INCLUDE("fieldsurfaceproperties.h")
 Q_MOC_INCLUDE("vehicleproperties.h")
 Q_MOC_INCLUDE("toolsproperties.h")
+Q_MOC_INCLUDE("boundariesproperties.h")
 
 // ============================================================================
 // FieldViewNode - Root node for the field view scene graph
@@ -55,7 +57,7 @@ public:
     // Child nodes for different render layers (rendered back to front)
     FieldSurfaceNode *fieldSurfaceNode = nullptr;
     GridNode *gridNode = nullptr;
-    BoundaryNode *boundaryNode = nullptr;
+    BoundariesNode *boundaryNode = nullptr;
     QSGNode *coverageNode = nullptr;     // Coverage patches (not yet refactored)
     QSGNode *guidanceNode = nullptr;     // Guidance lines (not yet refactored)
     VehicleNode *vehicleNode = nullptr;
@@ -78,6 +80,7 @@ class FieldViewItem : public QQuickItem
     Q_PROPERTY(FieldSurfaceProperties* fieldSurface READ fieldSurface CONSTANT)
     Q_PROPERTY(VehicleProperties* vehicle READ vehicle WRITE setVehicle NOTIFY vehicleChanged)
     Q_PROPERTY(ToolsProperties* tools READ tools WRITE setTools NOTIFY toolsChanged)
+    Q_PROPERTY(BoundariesProperties* boundaries READ boundaries WRITE setBoundaries NOTIFY boundariesChanged)
 
     // ===== Rendering State Properties =====
     Q_PROPERTY(bool showBoundary READ showBoundary WRITE setShowBoundary NOTIFY showBoundaryChanged BINDABLE bindableShowBoundary)
@@ -101,6 +104,8 @@ public:
     void setVehicle(VehicleProperties *vehicle);
     ToolsProperties* tools() const;
     void setTools(ToolsProperties *tools);
+    BoundariesProperties* boundaries() const;
+    void setBoundaries(BoundariesProperties *boundaries);
 
     // ===== Visibility Property Accessors =====
     bool showBoundary() const;
@@ -141,6 +146,7 @@ signals:
     // Property group signals
     void vehicleChanged();
     void toolsChanged();
+    void boundariesChanged();
 
     // Visibility signals
     void showBoundaryChanged();
@@ -213,6 +219,7 @@ private:
     FieldSurfaceProperties *m_fieldSurface = nullptr;
     VehicleProperties *m_vehicle = nullptr;
     ToolsProperties *m_tools = nullptr;
+    BoundariesProperties *m_boundaries = nullptr;
 
     // ===== Qt 6.8 Q_OBJECT_BINDABLE_PROPERTY Members =====
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(FieldViewItem, bool, m_showBoundary, true, &FieldViewItem::showBoundaryChanged)

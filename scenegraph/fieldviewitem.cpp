@@ -9,10 +9,11 @@
 #include "fieldsurfaceproperties.h"
 #include "vehicleproperties.h"
 #include "toolsproperties.h"
+#include "boundariesproperties.h"
 
 #include "fieldsurfacenode.h"
 #include "gridnode.h"
-#include "boundarynode.h"
+#include "boundariesnode.h"
 #include "vehiclenode.h"
 #include "toolsnode.h"
 #include "aogmaterial.h"
@@ -46,7 +47,7 @@ FieldViewNode::FieldViewNode()
     // Create child nodes (typed for refactored ones, generic for others)
     fieldSurfaceNode = new FieldSurfaceNode();
     gridNode = new GridNode();
-    boundaryNode = new BoundaryNode();
+    boundaryNode = new BoundariesNode();
     coverageNode = new QSGNode();   // Not yet refactored
     guidanceNode = new QSGNode();   // Not yet refactored
     vehicleNode = new VehicleNode();
@@ -85,6 +86,7 @@ FieldViewItem::FieldViewItem(QQuickItem *parent)
     m_fieldSurface = new FieldSurfaceProperties(this);
     m_vehicle = new VehicleProperties(this);
     m_tools = new ToolsProperties(this);
+    m_boundaries = new BoundariesProperties(this);
 
     // Connect camera property changes to update()
     connect(m_camera, &CameraProperties::zoomChanged, this, &FieldViewItem::requestUpdate);
@@ -184,6 +186,35 @@ void FieldViewItem::setVehicle(VehicleProperties *vehicle)
 }
 
 ToolsProperties* FieldViewItem::tools() const { return m_tools; }
+
+BoundariesProperties* FieldViewItem::boundaries() const { return m_boundaries; }
+
+void FieldViewItem::setBoundaries(BoundariesProperties *boundaries)
+{
+    if (m_boundaries == boundaries)
+        return;
+
+    // Disconnect all signals from old boundaries to us
+    if (m_boundaries) {
+        disconnect(m_boundaries, nullptr, this, nullptr);
+
+        // Delete if we own it (created with us as parent)
+        if (m_boundaries->parent() == this)
+            delete m_boundaries;
+    }
+
+    m_boundaries = boundaries;
+
+    // Connect signals from new boundaries
+    if (m_boundaries) {
+        connect(m_boundaries, &BoundariesProperties::outerChanged, this, &FieldViewItem::markBoundaryDirty);
+        connect(m_boundaries, &BoundariesProperties::innerChanged, this, &FieldViewItem::markBoundaryDirty);
+    }
+
+    m_boundaryDirty = true;
+    emit boundariesChanged();
+    requestUpdate();
+}
 
 void FieldViewItem::setTools(ToolsProperties *tools)
 {
