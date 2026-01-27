@@ -4,6 +4,7 @@
 #include "glm.h"
 #include "cvehicle.h"
 #include "backend.h"
+#include "mainwindowstate.h"
 #include "settingsmanager.h"
 
 Q_LOGGING_CATEGORY (steerconfig_log, "steerconfig.qtagopengps")

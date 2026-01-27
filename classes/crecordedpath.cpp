@@ -8,6 +8,8 @@
 #include "qmlutil.h"
 #include "siminterface.h"
 #include "recordedpath.h"
+#include "sectionstate.h"
+#include "mainwindowstate.h"
 
 CRecordedPath::CRecordedPath(QObject *parent) : QObject(parent)
 {
@@ -151,7 +153,7 @@ void CRecordedPath::UpdatePosition(const CYouTurn &yt, bool isBtnAutoSteerOn)
             pathCount = recList.size() - C;
 
             //Turn off automatic sections is on
-            MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
+            MainWindowState::instance()->set_autoBtnState(SectionState::Off);
         }
         else
         {

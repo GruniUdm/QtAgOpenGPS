@@ -5,18 +5,15 @@
 
 #include <QAbstractListModel>
 #include <QVector>
+#include "sectionstate.h"
 
 class SectionButtonsModel : public QAbstractListModel
 {
     Q_OBJECT
 
 public:
-    enum State {
-        Off = 0,
-        Auto = 1,
-        On = 2
-    };
-    Q_ENUM(State)
+    // Use SectionState::State for the state enum
+    using State = SectionState::State;
 
     enum Roles {
         IndexRole = Qt::UserRole + 1,
@@ -24,7 +21,7 @@ public:
     };
     Q_ENUM(Roles)
 
-    struct SectionState {
+    struct ButtonState {
         int index;
         State state;
     };
@@ -39,8 +36,8 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     // Data management
-    void setButtonStates(const QVector<SectionState> &new_sectionstates);
-    void addSectionState(const SectionState &sectionState);
+    void setButtonStates(const QVector<ButtonState> &new_sectionstates);
+    void addSectionState(const ButtonState &sectionState);
     void removeRowAt(int at_index);
     void clear();
 
@@ -49,9 +46,9 @@ public:
 
     // Utility
     int count() const { return buttonStates.count(); }
-    SectionState rowAt(int at_index) const;
+    ButtonState rowAt(int at_index) const;
 
-    QVector<SectionState> buttonStates;
+    QVector<ButtonState> buttonStates;
 
 signals:
     void stateChanged(int index, int state);

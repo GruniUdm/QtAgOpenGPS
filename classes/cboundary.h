@@ -76,7 +76,7 @@ public:
     void BuildTurnLines();
 
     //CHead.cs
-    void SetHydPosition(MainWindowState::ButtonStates autoBtnState, CPGN_EF &p_239, CVehicle &vehicle); //TODO sounds, p_239
+    void SetHydPosition(SectionState::State autoBtnState, CPGN_EF &p_239, CVehicle &vehicle); //TODO sounds, p_239
     bool IsPointInsideHeadArea(Vec2 pt) const;
 
     /*

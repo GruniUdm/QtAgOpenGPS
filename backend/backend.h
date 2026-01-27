@@ -29,9 +29,6 @@ class Backend : public QObject
     Q_PROPERTY(QObject *track READ track CONSTANT)
     Q_PROPERTY(QObject *yt READ yt CONSTANT)
 
-public:
-    enum class ButtonStates {Off = 0,Auto = 1,On = 2};
-
 private:
     explicit Backend(QObject *parent = nullptr);
     ~Backend() override=default;

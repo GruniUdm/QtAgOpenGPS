@@ -75,8 +75,8 @@ Rectangle {
             width: (sectionButtons.width / numSections) > 40 ? (sectionButtons.width / numSections) : 40
             buttonText: (model.buttonNumber + 1).toFixed(0)
             visible: (model.buttonNumber < numSections) ? true : false
-            color: (model.state === 0 ? offColor : (model.state === 1 ? autoColor : onColor))
-            textColor: (model.state ===0 ? offTextColor : (model.state === 1 ? autoTextColor : onTextColor))
+            color: (model.state === SectionState.Off ? offColor : (model.state === SectionState.Auto ? autoColor : onColor))
+            textColor: (model.state ===SectionState.Off ? offTextColor : (model.state === SectionState.Auto ? autoTextColor : onTextColor))
 
             onButtonClicked: {
                 //toggle tri state

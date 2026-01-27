@@ -1773,7 +1773,7 @@ void FormGPS::AddSectionOrPathPoints()
         //keep minimum speed of 1.0
         double speed = CVehicle::instance()->avgSpeed();
         if (CVehicle::instance()->avgSpeed() < 1.0) speed = 1.0;
-        bool autoBtn = (MainWindowState::instance()->autoBtnState() == MainWindowState::ButtonStates::Auto);
+        bool autoBtn = (MainWindowState::instance()->autoBtnState() == SectionState::Auto);
 
         recPath.recList.append(CRecPathPt(CVehicle::instance()->pivotAxlePos.easting, CVehicle::instance()->pivotAxlePos.northing, CVehicle::instance()->pivotAxlePos.heading, speed, autoBtn));
     }

@@ -13,6 +13,7 @@
 #include <QProperty>
 #include <QBindable>
 #include <QMutex>
+#include "simpleproperty.h"
 
 #include <QOpenGLBuffer>
 

@@ -627,10 +627,10 @@ void FormGPS::JobClose()
     Backend::instance()->set_isJobStarted(false);
 
     //fix ManualOffOnAuto buttons
-    MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
+    MainWindowState::instance()->set_manualBtnState(SectionState::Off);
 
     //fix auto button
-    MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
+    MainWindowState::instance()->set_autoBtnState(SectionState::Off);
 
     // ⚡ PHASE 6.0.20: Disable AutoSteer when job closes (safety + clean state)
     MainWindowState::instance()->set_isBtnAutoSteerOn(false);
@@ -768,11 +768,11 @@ void FormGPS::JobNew()
     startCounter = 0;
 
     //btnSectionMasterManual.Enabled = true;
-    MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
+    MainWindowState::instance()->set_manualBtnState(SectionState::Off);
     //btnSectionMasterManual.Image = Properties.Resources.ManualOff;
 
     //btnSectionMasterAuto.Enabled = true;
-    MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
+    MainWindowState::instance()->set_autoBtnState(SectionState::Off);
     //btnSectionMasterAuto.Image = Properties.Resources.SectionMasterOff;
 
     track.ABLine.abHeading = 0.00;

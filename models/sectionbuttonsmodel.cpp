@@ -19,7 +19,7 @@ QVariant SectionButtonsModel::data(const QModelIndex &index, int role) const
     if (!index.isValid() || index.row() >= buttonStates.count())
         return QVariant();
 
-    const SectionState &section = buttonStates[index.row()];
+    const ButtonState &section = buttonStates[index.row()];
 
     switch (role) {
     case IndexRole:
@@ -36,7 +36,7 @@ bool SectionButtonsModel::setData(const QModelIndex &index, const QVariant &valu
     if (!index.isValid() || index.row() >= buttonStates.count())
         return false;
 
-    SectionState &row = buttonStates[index.row()];
+    ButtonState &row = buttonStates[index.row()];
 
     switch (role) {
     case StateRole:
@@ -71,7 +71,7 @@ QHash<int, QByteArray> SectionButtonsModel::roleNames() const
     return roles;
 }
 
-void SectionButtonsModel::setButtonStates(const QVector<SectionState> &new_sectionstates)
+void SectionButtonsModel::setButtonStates(const QVector<ButtonState> &new_sectionstates)
 {
     beginResetModel();
 
@@ -83,12 +83,12 @@ void SectionButtonsModel::setButtonStates(const QVector<SectionState> &new_secti
     endResetModel();
 }
 
-void SectionButtonsModel::addSectionState(const SectionState &sectionState)
+void SectionButtonsModel::addSectionState(const ButtonState &sectionState)
 {
     beginInsertRows(QModelIndex(), buttonStates.count(), buttonStates.count());
 
     //make the secNumber the same as the actual index number
-    SectionState new_state = sectionState;
+    ButtonState new_state = sectionState;
     new_state.index = buttonStates.count();
     buttonStates.append(new_state);
 
@@ -136,9 +136,9 @@ void SectionButtonsModel::setState(int at_index, State state)
     emit stateChanged(at_index, state);
 }
 
-SectionButtonsModel::SectionState SectionButtonsModel::rowAt(int at_index) const
+SectionButtonsModel::ButtonState SectionButtonsModel::rowAt(int at_index) const
 {
     if (buttonStates.count() > at_index)
         return buttonStates[at_index];
-    return SectionState();
+    return ButtonState();
 }

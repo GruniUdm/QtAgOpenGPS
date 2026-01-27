@@ -9,8 +9,7 @@
 #include <QElapsedTimer>
 #include <QImage>
 #include "vec3.h"
-#include "mainwindowstate.h"
-#include "sectionbuttonsmodel.h"
+#include "sectionstate.h"
 
 class QOpenGLFunctions;
 class QMatrix4x4;
@@ -99,7 +98,7 @@ public:
 
     //moved the following from the main form to here
     CSection section[MAXSECTIONS+1];
-    MainWindowState::ButtonStates sectionButtonState[65];
+    SectionState::State sectionButtonState[65];
 
     //list of patches to save to disk at next opportunity
     QVector<QSharedPointer<PatchTriangleList>> patchSaveList;
@@ -146,7 +145,7 @@ public:
     void DrawPatchesBackQP(const CTram &tram, const CBoundary &bnd, Vec3 pivotAxlePos, bool isHeadlandOn, bool onTrack);
 
     void NewPosition();
-    void ProcessLookAhead(int gpsHz, MainWindowState::ButtonStates autoBtnState,
+    void ProcessLookAhead(int gpsHz, SectionState::State autoBtnState,
                           const CBoundary &bnd, CTram &tram);
     void BuildMachineByte(CTram &tram);
     void DoRemoteSwitches();
@@ -166,11 +165,11 @@ private:
     LookAheadPixels *overPixels = new LookAheadPixels[160000]; //400x400
 public slots:
     void on_autoBtnChanged();
-    void onSectionButtonStatechanged(int toolIndex, int sectionButtonNo, SectionButtonsModel::State new_state);
+    void onSectionButtonStatechanged(int toolIndex, int sectionButtonNo, SectionState::State new_state);
     void resetTool();
 
 signals:
-    void SetHydPosition(MainWindowState::ButtonStates autoBtnState);
+    void SetHydPosition(SectionState::State autoBtnState);
 
 };
 

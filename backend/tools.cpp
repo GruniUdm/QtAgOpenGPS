@@ -220,7 +220,7 @@ void Tools::generateToolFromSettings() {
     int i;
 
     for (i = 0; i  < numButtons; i++) {
-        newTool->sectionButtonsModel()->addSectionState( {i, SectionButtonsModel::Off} );
+        newTool->sectionButtonsModel()->addSectionState( {i, SectionState::Off} );
     }
 
     double sectionPos[17] = {

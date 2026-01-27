@@ -70,18 +70,18 @@ void ModuleComm::CheckWorkAndSteerSwitch(bool isBtnAutoSteerOn)
             {
                 if (isWorkSwitchManualSections)
                 {
-                    MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
+                    MainWindowState::instance()->set_manualBtnState(SectionState::Off);
                 }
                 else
                 {
-                    MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
+                    MainWindowState::instance()->set_autoBtnState(SectionState::Off);
                 }
             }
 
             else//Checks both on-screen buttons, performs click if button is not off
             {
-                MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
-                MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
+                MainWindowState::instance()->set_autoBtnState(SectionState::Off);
+                MainWindowState::instance()->set_manualBtnState(SectionState::Off);
             }
         }
 
@@ -94,18 +94,18 @@ void ModuleComm::CheckWorkAndSteerSwitch(bool isBtnAutoSteerOn)
             {
                 if (isSteerWorkSwitchManualSections)
                 {
-                    MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
+                    MainWindowState::instance()->set_manualBtnState(SectionState::Off);
                 }
                 else
                 {
-                    MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
+                    MainWindowState::instance()->set_autoBtnState(SectionState::Off);
                 }
             }
 
             else//Checks both on-screen buttons, performs click if button is not off
             {
-                MainWindowState::instance()->set_autoBtnState(MainWindowState::ButtonStates::Off);
-                MainWindowState::instance()->set_manualBtnState(MainWindowState::ButtonStates::Off);
+                MainWindowState::instance()->set_autoBtnState(SectionState::Off);
+                MainWindowState::instance()->set_manualBtnState(SectionState::Off);
             }
         }
     }

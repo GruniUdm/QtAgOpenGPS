@@ -385,6 +385,7 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/siminterface.h backend/siminterface.cpp
     SOURCES backend/tool.h backend/tool.cpp
     SOURCES backend/tools.h backend/tools.cpp
+    SOURCES backend/sectionstate.h
     SOURCES backend/fixframe.h
     SOURCES backend/modulecomm.h backend/modulecomm.cpp
     SOURCES backend/blockage.h backend/blockage.cpp
