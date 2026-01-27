@@ -621,6 +621,10 @@ Window {
                     onClicked: blockageRows.viewSwitch = !blockageRows.viewSwitch
                     }
             }
+            RateData{ //window that displays Machine data
+                id: rateData
+                visible: false
+            }
 
             SimController{
                 id: simBarRect
@@ -945,11 +949,11 @@ Window {
             }
         }
 
-        Wiz.Camera{
-            id: cam1
-            height: 300  * theme.scaleHeight
-            width: 400  * theme.scaleWidth
-        }
+        // Wiz.Camera{
+        //     id: cam1
+        //     height: 300  * theme.scaleHeight
+        //     width: 400  * theme.scaleWidth
+        // }
         Wiz.WasWizard{
             id: wasWizard
             height: 300  * theme.scaleHeight

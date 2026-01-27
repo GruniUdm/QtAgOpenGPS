@@ -116,6 +116,8 @@ PGNParser::ParsedData PGNParser::parsePGN(const QByteArray& data) {
             return parsePGN250(data);
         case 244:  // 0xFA - Blockage Data
             return parsePGN244(data);
+        case 240:  // 0xF0 - RateControl Data
+            return parsePGN240(data);
         case 211:  // 0xD3 - IMU Data (heading, roll, pitch)
             return parsePGN211(data);
         case 212:  // 0xD4 - IMU Disconnect (Phase 6.0.25)
@@ -126,6 +128,8 @@ PGNParser::ParsedData PGNParser::parsePGN(const QByteArray& data) {
             return parsePGN203(data);
         case 121:  // 0x79 - Hello IMU (heartbeat only)
             return parsePGN121(data);
+        case 122:  // 0x7B - Hello RateControl (relay status)
+            return parsePGN122(data);
         case 123:  // 0x7B - Hello Machine (relay status)
             return parsePGN123(data);
         case 124:  // 0x7B - Hello Blockage
@@ -974,6 +978,50 @@ PGNParser::ParsedData PGNParser::parsePGN253(const QByteArray& data) {
     return result;
 }
 
+PGNParser::ParsedData PGNParser::parsePGN240(const QByteArray& data) {
+    // PGN 240 (0xF0): RateControl Data
+    // Byte 0-1: Header (0x80 0x81)
+    // Byte 2: Source ID (0x7b = Machine)
+    // Byte 3: PGN (0xF0 = 240) RateControl
+    // Byte 4: Length (4 bytes)
+    // Byte 5: Module ID
+    // Byte 6-7: RateApplied
+    // Byte 8-9: AccQty
+    // Byte 10: PWM
+    // Byte 11: SensorStat
+    // Byte 12: Checksum
+
+    ParsedData result;
+
+    if (data.size() != 13) {
+        return result;
+    }
+
+    // Validate header and PGN
+    if ((unsigned char)data[0] != 0x80 || (unsigned char)data[1] != 0x81) {
+        return result;
+    }
+    if ((unsigned char)data[3] != 0xF0) {
+        return result;
+    }
+
+    qint16 RateApplied = static_cast<qint16>((static_cast<quint8>(data[7]) << 8) | static_cast<quint8>(data[6]));
+    qint16 AccQty = static_cast<qint16>((static_cast<quint8>(data[9]) << 8) | static_cast<quint8>(data[8]));
+
+    result.isValid = true;
+    result.sourceType = "PGN";
+    result.pgnNumber = 240;
+    result.sentenceType = "RateControl_Data_IN";
+    result.moduleType = "Machine";
+    result.rateControlInData[0] = static_cast<quint8>(data[5]); // ID
+    result.rateControlInData[1] = RateApplied;
+    result.rateControlInData[2] = AccQty;
+    result.rateControlInData[3] = static_cast<quint8>(data[10]); // PWM
+    result.rateControlInData[4] = static_cast<quint8>(data[11]); // Status
+
+    return result;
+}
+
 PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
     // PGN 244 (0xF4): Blockage Data
     // Byte 0-1: Header (0x80 0x81)
@@ -1151,6 +1199,39 @@ PGNParser::ParsedData PGNParser::parsePGN121(const QByteArray& data) {
     result.sentenceType = "IMU_HELLO";
 
     qDebug() << "✅ PGN 121: IMU module detected (hello response)";
+
+    return result;
+}
+
+PGNParser::ParsedData PGNParser::parsePGN122(const QByteArray& data) {
+    // PGN 122 (0x7A): Hello RC OUT
+    // Format: 0x80 0x81 0x79 0x7A 0x05 [00 00 00 00 00] [CRC]
+    // Purpose: Module identification heartbeat ONLY - NO IMU DATA
+    // Real IMU data comes via NMEA ($PANDA/$PAOGI)
+
+    ParsedData result;
+
+    if (data.size() < 11) {
+        return result;
+    }
+
+    // Validate header
+    if ((unsigned char)data[0] != 0x80 || (unsigned char)data[1] != 0x81) {
+        return result;
+    }
+
+    // Validate source and PGN
+    if ((unsigned char)data[2] != 0x7B || (unsigned char)data[3] != 0x7A) {
+        return result;
+    }
+
+    // Mark module detected (payload is always empty for PGN 122)
+    result.isValid = true;
+    result.sourceType = "PGN";
+    result.pgnNumber = 122;
+    result.sentenceType = "RateControl_HELLO";
+
+    //qDebug() << "✅ PGN 122: RC module detected (hello response)";
 
     return result;
 }

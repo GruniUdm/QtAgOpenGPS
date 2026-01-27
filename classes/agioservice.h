@@ -101,6 +101,8 @@ public:
                NOTIFY machineConnectedChanged BINDABLE bindableMachineConnected)
     Q_PROPERTY(bool blockageConnected READ blockageConnected WRITE setBlockageConnected
                NOTIFY blockageConnectedChanged BINDABLE bindableBlockageConnected)
+    Q_PROPERTY(bool rateControlConnected READ rateControlConnected WRITE setRateControlConnected
+                   NOTIFY rateControlConnectedChanged BINDABLE bindableRateControlConnected)
 
     // PHASE 6.0.22.3: Module source tracking and frequency monitoring
     Q_PROPERTY(QString gpsSource READ gpsSource WRITE setGpsSource
@@ -317,6 +319,10 @@ public:
     bool blockageConnected() const;
     void setBlockageConnected(bool blockageConnected);
     QBindable<bool> bindableBlockageConnected();
+
+    bool rateControlConnected() const;
+    void setRateControlConnected(bool rateControlConnected);
+    QBindable<bool> bindableRateControlConnected();
 
     // PHASE 6.0.22.3: Module source and frequency properties
     QString gpsSource() const;
@@ -726,6 +732,7 @@ signals:
     void steerDataReady(const PGNParser::ParsedData& data);    // AutoSteer feedback (PGN 253/250)
     void machineDataReady(const PGNParser::ParsedData& data);    // Machine
     void blockageDataReady(const PGNParser::ParsedData& data);    // Blockage data (PGN 244)
+    void rateControlDataReady(const PGNParser::ParsedData& data);    // Blockage data (PGN 240)
 
     // Rectangle Pattern NOTIFY signals for STATUS properties only
     // GPS/IMU data properties removed - moved to FormGPS
@@ -752,6 +759,7 @@ signals:
     void steerConnectedChanged();
     void machineConnectedChanged();
     void blockageConnectedChanged();
+    void rateControlConnectedChanged();
 
     // PHASE 6.0.22.3: Module source and frequency signals (8 properties)
     void gpsSourceChanged();
@@ -821,6 +829,7 @@ signals:
     void steerStatusChanged();
     void machineStatusChanged();
     void blockageStatusChanged();
+    void rateControlStatusChanged();
 
     // Phase 6.0.24: UDP communication signals
     void udpStatusChanged(bool connected);
@@ -853,6 +862,7 @@ signals:
     void steerConnectionChanged(bool connected);
     void machineConnectionChanged(bool connected);
     void blockageConnectionChanged(bool connected);
+    void rateControlConnectionChanged(bool connected);
 
     // Phase 5.1 - Module Status Real-Time signals
     void moduleStatusChanged();  // For 6 module status properties (setMod_*, setPort_was*)
@@ -863,6 +873,7 @@ signals:
     void autosteerDataReceived(const QString& data);
     void machineDataReceived(const QString& data);
     void blockageDataReceived(const QString& data);
+    void rateControlDataReceived(const QString& data);
 
     // Serial port validation signals
     void portAlreadyInUse(const QString& portName, const QString& ownerModule);
@@ -952,6 +963,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(AgIOService, bool, m_steerConnected, &AgIOService::steerConnectedChanged)
     Q_OBJECT_BINDABLE_PROPERTY(AgIOService, bool, m_machineConnected, &AgIOService::machineConnectedChanged)
     Q_OBJECT_BINDABLE_PROPERTY(AgIOService, bool, m_blockageConnected, &AgIOService::blockageConnectedChanged)
+    Q_OBJECT_BINDABLE_PROPERTY(AgIOService, bool, m_rateControlConnected, &AgIOService::rateControlConnectedChanged)
 
     // PHASE 6.0.22.3: Module source and frequency tracking
     Q_OBJECT_BINDABLE_PROPERTY(AgIOService, QString, m_gpsSource, &AgIOService::gpsSourceChanged)
@@ -1110,6 +1122,7 @@ private:
     // Phase 6.0.24: Local traffic counters (main thread)
     quint32 m_localCntrMachine;
     quint32 m_localCntrBlockage;
+    quint32 m_localCntrRateControl;
     quint32 m_localCntrSteer;
     quint32 m_localCntrIMU;
     quint32 m_localCntrUDPOut;
