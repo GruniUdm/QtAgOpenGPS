@@ -389,6 +389,7 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/fixframe.h
     SOURCES backend/modulecomm.h backend/modulecomm.cpp
     SOURCES backend/blockage.h backend/blockage.cpp
+    SOURCES backend/ratecontrol.h backend/ratecontrol.cpp
     SOURCES backend/steerconfig.h backend/steerconfig.cpp
     SOURCES backend/camera.h backend/camera.cpp
     SOURCES backend/worldgrid.h backend/worldgrid.cpp
@@ -401,6 +402,7 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES models/toolssectionbuttonsmodel.h models/toolssectionbuttonsmodel.cpp
     SOURCES models/toolswithsectionsmodel.h models/toolswithsectionsmodel.cpp
     SOURCES models/fieldsmodel.h models/fieldsmodel.cpp
+    SOURCES models/rcmodel.h models/rcmodel.cpp
     SOURCES backendaccess.h
 
     # Scene graph-based renderer (Phase: QSG Migration)

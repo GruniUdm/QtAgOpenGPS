@@ -6,10 +6,10 @@
 #include "settingsmanager_macros.h"
 
 // Generated Q_PROPERTY declarations with Qt6 bindable support
-// Total properties: 387
+// Total properties: 395
 
 
-// QString Properties (46 properties) - DECLARATIONS ONLY
+// QString Properties (50 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_STRING_DECLARATIONS(menu_language, setMenu_language)
 SETTINGS_PROPERTY_STRING_DECLARATIONS(brand_HBrand, setBrand_HBrand)
 SETTINGS_PROPERTY_STRING_DECLARATIONS(brand_TBrand, setBrand_TBrand)
@@ -56,6 +56,10 @@ SETTINGS_PROPERTY_STRING_DECLARATIONS(port_portNameRadio, setPort_portNameRadio)
 SETTINGS_PROPERTY_STRING_DECLARATIONS(port_portNameRtcm, setPort_portNameRtcm)
 SETTINGS_PROPERTY_STRING_DECLARATIONS(port_portNameTool, setPort_portNameTool)
 SETTINGS_PROPERTY_STRING_DECLARATIONS(ip_localAOG, setIp_localAOG)
+SETTINGS_PROPERTY_STRING_DECLARATIONS(rate_productName0, setRate_productName0)
+SETTINGS_PROPERTY_STRING_DECLARATIONS(rate_productName1, setRate_productName1)
+SETTINGS_PROPERTY_STRING_DECLARATIONS(rate_productName2, setRate_productName2)
+SETTINGS_PROPERTY_STRING_DECLARATIONS(rate_productName3, setRate_productName3)
 
 // bool Properties (131 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_DECLARATIONS(bool, feature_isOffsetFixOn, setFeature_isOffsetFixOn)
@@ -407,9 +411,13 @@ SETTINGS_PROPERTY_RECT_DECLARATIONS(window_abDrawLocation, setWindow_abDrawLocat
 SETTINGS_PROPERTY_RECT_DECLARATIONS(window_bingMapSize, setWindow_bingMapSize)
 SETTINGS_PROPERTY_RECT_DECLARATIONS(window_formNudgeLocation, setWindow_formNudgeLocation)
 
-// QVector<int> Properties (2 properties) - DECLARATIONS ONLY
+// QVector<int> Properties (6 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_VECTOR_INT_DECLARATIONS(relay_pinConfig, setRelay_pinConfig)
 SETTINGS_PROPERTY_VECTOR_INT_DECLARATIONS(tool_zones, setTool_zones)
+SETTINGS_PROPERTY_VECTOR_INT_DECLARATIONS(rate_confProduct0, setRate_confProduct0)
+SETTINGS_PROPERTY_VECTOR_INT_DECLARATIONS(rate_confProduct1, setRate_confProduct1)
+SETTINGS_PROPERTY_VECTOR_INT_DECLARATIONS(rate_confProduct2, setRate_confProduct2)
+SETTINGS_PROPERTY_VECTOR_INT_DECLARATIONS(rate_confProduct3, setRate_confProduct3)
 
 // QVariantList Properties (1 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_DECLARATIONS(QVariantList, bluetooth_deviceList, setBluetooth_deviceList)

@@ -102,6 +102,34 @@ void CPGN_EC::MakeCRC()
     pgn[pgn.length() - 1] = crc;
 }
 
+CPGN_F1::CPGN_F1() : pgn(QByteArray("\x80\x81\x7f\xf1\x07\x00\x00\x00\x00\x00\x00\x00\xCC", 13))
+{
+}
+
+void CPGN_F1::MakeCRC()
+{
+    int crc = 0;
+    for (int i = 2; i < pgn.length() - 1; i++)
+    {
+        crc += pgn[i];
+    }
+    pgn[pgn.length() - 1] = crc;
+}
+
+CPGN_F2::CPGN_F2() : pgn(QByteArray("\x80\x81\x7f\xf2\x08\x00\x00\x00\x00\x00\x00\x00\xCC", 13))
+{
+}
+
+void CPGN_F2::MakeCRC()
+{
+    int crc = 0;
+    for (int i = 2; i < pgn.length() - 1; i++)
+    {
+        crc += pgn[i];
+    }
+    pgn[pgn.length() - 1] = crc;
+}
+
 CPGN_F5::CPGN_F5() : pgn(QByteArray("\x80\x81\x7f\xf5\x06\x00\x00\x00\x00\x00\x00\xCC", 12))
 {
 }

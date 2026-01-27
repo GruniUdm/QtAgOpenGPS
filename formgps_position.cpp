@@ -31,6 +31,7 @@
 #include "modulecomm.h"
 #include "cpgn.h"
 #include "blockage.h"
+#include "ratecontrol.h"
 #include "tools.h"
 #include "steerconfig.h"
 #include "backendaccess.h"
@@ -1237,6 +1238,12 @@ void FormGPS::UpdateFixPosition()
 
     Blockage::instance()->current_speed = pn.speed;
 
+    RateControl::instance()->speed = pn.speed;
+    RateControl::instance()->width = tool.applyWidth;
+    RateControl::instance()->swidth = SettingsManager::instance()->vehicle_toolWidth();
+    RateControl::instance()->aBtnState = (MainWindowState::instance()->autoBtnState() == SectionState::Auto);
+    RateControl::instance()->mBtnState = (MainWindowState::instance()->manualBtnState() == SectionState::On);
+
     // === IMU Data Updates (5 properties) ===
     Backend::instance()->m_fixFrame.imuRoll = ahrs.imuRoll;
     Backend::instance()->m_fixFrame.imuPitch = ahrs.imuPitch;
@@ -2217,6 +2224,10 @@ void FormGPS::onMachineDataReady(const PGNParser::ParsedData& data)
 {}
 
 void FormGPS::onBlockageDataReady(const PGNParser::ParsedData& data)
+{
+}
+
+void FormGPS::onRateControlDataReady(const PGNParser::ParsedData& data)
 {
 }
 // Phase 6.0.24: GPS timer callback - UpdateFixPosition() at 40 Hz fixed rate

@@ -77,6 +77,7 @@ public:
 
         // Blockage
         int blockagesection[4] = {0, 0, 0, 0};
+        int rateControlInData[5] = {0, 0, 0, 0, 0};
     };
 
     explicit PGNParser(QObject *parent = nullptr);
@@ -145,10 +146,12 @@ private:
     ParsedData parsePGN214(const QByteArray& data); // GPS Main Antenna
     ParsedData parsePGN203(const QByteArray& data); // Scan Reply (subnet discovery)
     ParsedData parsePGN121(const QByteArray& data); // Hello IMU (heartbeat only)
+    ParsedData parsePGN122(const QByteArray& data); // Hello RateControl
     ParsedData parsePGN123(const QByteArray& data); // Hello Machine (relay status)
     ParsedData parsePGN124(const QByteArray& data); // Hello Blockage
     ParsedData parsePGN250(const QByteArray& data); // AutoSteer Sensor (pressure/current)
     ParsedData parsePGN244(const QByteArray& data); // Blockage Data In
+    ParsedData parsePGN240(const QByteArray& data); // RateControl Data In
 
     // Legacy PGN parsers (incorrect byte extraction - to be removed)
     ParsedData parsePGN127(const QByteArray& data); // OLD - was extracting Source ID 0x7F

@@ -7,7 +7,7 @@
 
 void SettingsManager::initializeFromSettings()
 {
-    // Load all 387 properties from QSettings with default fallback
+    // Load all 395 properties from QSettings with default fallback
     // IMPORTANT: Uses QSettings second parameter for defaults (not hardcoded 0/false)
 
     m_menu_language.setValue(m_qsettings->value("menu/language", "en").toString());
@@ -417,7 +417,55 @@ void SettingsManager::initializeFromSettings()
     m_ip_localAOG.setValue(m_qsettings->value("agio/localAOGIP", "127.0.0.1").toString());
     m_udp_isSendNMEAToUDP.setValue(m_qsettings->value("agio/sendNMEAToUDP", false).toBool());
     m_bluetooth_deviceList.setValue(m_qsettings->value("bluetooth/deviceList", QVariantList()).toList());
+    {
+        QStringList defaultList({"0", "1", "14", "1", "0", "100", "255", "1", "800", "100", "1", "0", "0", "1", "0", "0", "1", "0"});
+        QStringList list = m_qsettings->value("rate/confProduct0", defaultList).toStringList();
+        QVector<int> vector;
+        for (const QString& str : std::as_const(list)) {
+            bool ok;
+            int val = str.toInt(&ok);
+            if (ok) vector.append(val);
+        }
+        m_rate_confProduct0.setValue(vector);
+    }
+    {
+        QStringList defaultList({"1", "1", "14", "1", "0", "100", "255", "1", "800", "100", "1", "0", "0", "1", "0", "0", "1", "0"});
+        QStringList list = m_qsettings->value("rate/confProduct1", defaultList).toStringList();
+        QVector<int> vector;
+        for (const QString& str : std::as_const(list)) {
+            bool ok;
+            int val = str.toInt(&ok);
+            if (ok) vector.append(val);
+        }
+        m_rate_confProduct1.setValue(vector);
+    }
+    {
+        QStringList defaultList({"2", "1", "14", "1", "0", "100", "255", "1", "800", "100", "1", "0", "0", "1", "0", "0", "1", "0"});
+        QStringList list = m_qsettings->value("rate/confProduct2", defaultList).toStringList();
+        QVector<int> vector;
+        for (const QString& str : std::as_const(list)) {
+            bool ok;
+            int val = str.toInt(&ok);
+            if (ok) vector.append(val);
+        }
+        m_rate_confProduct2.setValue(vector);
+    }
+    {
+        QStringList defaultList({"3", "1", "14", "1", "0", "100", "255", "1", "800", "100", "1", "0", "0", "1", "0", "0", "1", "0"});
+        QStringList list = m_qsettings->value("rate/confProduct3", defaultList).toStringList();
+        QVector<int> vector;
+        for (const QString& str : std::as_const(list)) {
+            bool ok;
+            int val = str.toInt(&ok);
+            if (ok) vector.append(val);
+        }
+        m_rate_confProduct3.setValue(vector);
+    }
+    m_rate_productName0.setValue(m_qsettings->value("rate/productName0", "0").toString());
+    m_rate_productName1.setValue(m_qsettings->value("rate/productName1", "1").toString());
+    m_rate_productName2.setValue(m_qsettings->value("rate/productName2", "2").toString());
+    m_rate_productName3.setValue(m_qsettings->value("rate/productName3", "3").toString());
 
     // All properties loaded with proper defaults
-    qDebug() << "SettingsManager: initialized" << 387 << "properties from" << m_qsettings->fileName();
+    qDebug() << "SettingsManager: initialized" << 395 << "properties from" << m_qsettings->fileName();
 }
