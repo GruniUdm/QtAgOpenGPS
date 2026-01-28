@@ -11,19 +11,19 @@ Item {
     property double value
     property double to
     property string text: ""
-	property int stepSize: 1
+    property int stepSize: 1
     property bool editable
     property double boundValue
     property int fontPixelSize: 15
-	property int decimals: 0
-	property int decimalFactor: 1
+    property int decimals: 0
+    property int decimalFactor: 1
 
-	onDecimalsChanged: {
-		if (decimals > 0)
-			decimalFactor = Math.pow(10, decimals)
-		else
-			decimalFactor = 1
-	}
+    onDecimalsChanged: {
+        if (decimals > 0)
+            decimalFactor = Math.pow(10, decimals)
+        else
+            decimalFactor = 1
+    }
     signal valueModified()
 
     width: spinner.width
@@ -42,21 +42,21 @@ Item {
     }
 
     SpinBox{
-		id: spinner
-		from: spinBox_Customized.from * decimalFactor
-		to: spinBox_Customized.to * decimalFactor
-		editable: spinBox_Customized.editable
-		value: spinBox_Customized.value * decimalFactor
-		stepSize: spinBox_Customized.stepSize
-		property int decimals: spinBox_Customized.decimals
-		anchors.horizontalCenter: parent.horizontalCenter
-		anchors.verticalCenter: parent.verticalCenter
+        id: spinner
+        from: spinBox_Customized.from * decimalFactor
+        to: spinBox_Customized.to * decimalFactor
+        editable: spinBox_Customized.editable
+        value: spinBox_Customized.value * decimalFactor
+        stepSize: spinBox_Customized.stepSize
+        property int decimals: spinBox_Customized.decimals
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
         height: 40 * theme.scaleHeight
         width: 150 * theme.scaleWidth
 
-		Keys.onReturnPressed: {
-			//console.debug("enter was pressed.  ignore it.")
-		}
+        Keys.onReturnPressed: {
+            //console.debug("enter was pressed.  ignore it.")
+        }
 
         contentItem: TextInput {
             id: text_input
@@ -114,62 +114,62 @@ Item {
             implicitWidth: 150 * theme.scaleWidth
             border.color: "darkgray"
         }
-		onValueModified: {
-			//this only fires when the user interactively changes the spinbox.
+        onValueModified: {
+            //this only fires when the user interactively changes the spinbox.
 
-			if (value / decimalFactor == spinBox_Customized.from) {
-				spin_message.visible = true
-				spin_message.text = "Min:"+from / decimalFactor
-			} else if(value / decimalFactor == spinBox_Customized.to){
-				spin_message.visible = true
-				spin_message.text = "Max: " + to / decimalFactor
-			}else {
-				spin_message.visible = false
-			}
-			spinBox_Customized.value = spinner.value/ decimalFactor
-			text_input.text = spinBox_Customized.value
-			spinBox_Customized.valueModified()
+            if (value / decimalFactor == spinBox_Customized.from) {
+                spin_message.visible = true
+                spin_message.text = "Min:"+from / decimalFactor
+            } else if(value / decimalFactor == spinBox_Customized.to){
+                spin_message.visible = true
+                spin_message.text = "Max: " + to / decimalFactor
+            }else {
+                spin_message.visible = false
+            }
+            spinBox_Customized.value = spinner.value/ decimalFactor
+            text_input.text = spinBox_Customized.value
+            spinBox_Customized.valueModified()
 
-		}
-		textFromValue: function(value, locale) {
-			return Number(value / decimalFactor).toLocaleString(locale, 'f', spinner.decimals)
-		}
+        }
+        textFromValue: function(value, locale) {
+            return Number(value / decimalFactor).toLocaleString(locale, 'f', spinner.decimals)
+        }
 
-		valueFromText: function(text, locale) {
-			return Number.fromLocaleString(locale, text) * decimalFactor
-		}
-	}
+        valueFromText: function(text, locale) {
+            return Number.fromLocaleString(locale, text) * decimalFactor
+        }
+    }
 
-	Text {
-		visible: false
-		onTextChanged: {
-			visible = true
-		}
-		id: spin_text
-		text: spinBox_Customized.text
-		anchors.bottom: spinner.top
-		anchors.left: spinner.left
-		font.pixelSize: spinBox_Customized.fontPixelSize
-		onVisibleChanged: {
-			if (visible)
-			height = text.height 
-			else
-			height = 0
-		}
-	}
+    Text {
+        visible: false
+        onTextChanged: {
+            visible = true
+        }
+        id: spin_text
+        text: spinBox_Customized.text
+        anchors.bottom: spinner.top
+        anchors.left: spinner.left
+        font.pixelSize: spinBox_Customized.fontPixelSize
+        onVisibleChanged: {
+            if (visible)
+            height = text.height
+            else
+            height = 0
+        }
+    }
 
-	Text {
-		id: spin_message
-		visible: false
-		text: ""
-		color: "red"
-		anchors.top: spinner.bottom
-		anchors.left: spinner.left
-		onVisibleChanged: {
-			if (visible)
-			height = text.height 
-			else
-			height = 0
-		}
-	}
+    Text {
+        id: spin_message
+        visible: false
+        text: ""
+        color: "red"
+        anchors.top: spinner.bottom
+        anchors.left: spinner.left
+        onVisibleChanged: {
+            if (visible)
+            height = text.height
+            else
+            height = 0
+        }
+    }
 }

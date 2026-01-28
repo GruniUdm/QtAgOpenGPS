@@ -29,19 +29,22 @@ Rectangle{
         if (visible) {
             var sett = SettingsManager.ardMac_setting0
 
-            if ((sett & 1) === 0 ) cboxMachInvertRelays.checked = false
-            else cboxMachInvertRelays.checked = true
+            if ((sett & 1) === 0 ) invertRelays.checked = false
+            else invertRelays.checked = true
 
-            if ((sett & 2) === 0 ) cboxIsHydOn.checked = false
-            else cboxIsHydOn.checked = true
+            if ((sett & 2) === 0 ) plowControlOn.checked = false
+            else plowControlOn.checked = true
 
-            nudRaiseTime.value = SettingsManager.ardMac_hydRaiseTime
-            nudLowerTime.value = SettingsManager.ardMac_hydLowerTime
+            desiredWidth.value = SettingsManager.ardMac_hydRaiseTime
+            deadzonePlow.value = SettingsManager.ardMac_hydLowerTime
 
             nudUser1.value = SettingsManager.ardMac_user1
             nudUser2.value = SettingsManager.ardMac_user2
             nudUser3.value = SettingsManager.ardMac_user3
             nudUser4.value = SettingsManager.ardMac_user4
+
+            // Загружаем сохраненное значение измеренной разницы
+            measuredDiff.value = SettingsManager.vehicle_hydraulicLiftLookAhead
 
             unsaved.visible = false
         }
@@ -52,30 +55,60 @@ Rectangle{
         var reset = 2046
         var sett = 0
 
-        if (cboxMachInvertRelays.checked) sett |= set
+        if (invertRelays.checked) sett |= set
         else sett &= reset
 
         set <<=1
         reset <<= 1
         reset += 1
 
-        if(cboxIsHydOn.checked) sett |= set
+        if(plowControlOn.checked) sett |= set
         else sett &= reset
 
         SettingsManager.ardMac_setting0 = sett
-        SettingsManager.ardMac_hydRaiseTime = nudRaiseTime.value
-        SettingsManager.ardMac_hydLowerTime = nudLowerTime.value
+        SettingsManager.ardMac_hydRaiseTime = desiredWidth.value
+        SettingsManager.ardMac_hydLowerTime = deadzonePlow.value
 
         SettingsManager.ardMac_user1 = nudUser1.value
         SettingsManager.ardMac_user2 = nudUser2.value
         SettingsManager.ardMac_user3 = nudUser3.value
         SettingsManager.ardMac_user4 = nudUser4.value
 
-        SettingsManager.vehicle_hydraulicLiftLookAhead = nudHydLiftLookAhead.value
-        SettingsManager.ardMac_isHydEnabled = cboxIsHydOn.checked
+        SettingsManager.vehicle_hydraulicLiftLookAhead = measuredDiff.value
+        SettingsManager.ardMac_isHydEnabled = plowControlOn.checked
 
         ModuleComm.modulesSend238()
         //pboxSendMachine.Visible = false
+    }
+
+    // Функция для калибровки минимального значения
+    function calibrateMin() {
+        // Здесь должна быть логика калибровки минимального значения
+        console.log("Starting minimum calibration...")
+
+        // Сбрасываем измеренную разницу на 0 для новой калибровки
+        onClicked: {
+            unsaved.visible = true
+            measuredDiff.setSpinValue(0)
+        }
+
+        // TODO: Добавить логику отправки команды на калибровку
+        // ModuleComm.calibrateMin()
+    }
+
+    // Функция для калибровки максимального значения
+    function calibrateMax() {
+        // Здесь должна быть логика калибровки максимального значения
+        console.log("Starting maximum calibration...")
+
+        // Сбрасываем измеренную разницу на 0 для новой калибровки
+        onClicked: {
+            unsaved.visible = true
+            measuredDiff.setSpinValue(0)
+        }
+
+        // TODO: Добавить логику отправки команды на калибровку
+        // ModuleComm.calibrateMax()
     }
 
     ColumnLayout {
@@ -87,129 +120,243 @@ Rectangle{
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 10 * theme.scaleHeight
             Layout.bottomMargin: 20 * theme.scaleHeight
-            text: qsTr("Machine Module")
+            text: qsTr("Plough Control")
             font.bold: true
+            font.pixelSize: 18 * theme.scaleHeight
+            color: aogInterface.textColor
         }
 
-        // Основное содержимое
-        RowLayout {
+        // Основная таблица в GridLayout
+        Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 20 * theme.scaleWidth
+            color: "transparent"
+            border.color: aogInterface.textColor
+            border.width: 2 * theme.scaleHeight
 
-            // Левая часть - гидравлика
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.preferredWidth: parent.width * 0.7
+            GridLayout {
+                anchors.fill: parent
+                anchors.margins: 2 * theme.scaleHeight
+                columns: 3
+                rows: 4
+                rowSpacing: 0
+                columnSpacing: 0
 
-                // Заголовок гидравлики
-                Text {
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.bottomMargin: 15 * theme.scaleHeight
-                    text: qsTr("Hydraulic Lift Config")
-                    font.bold: true
-                    color: aogInterface.textColor
-                }
-
-                // Grid для гидравлики (3 строки × 3 столбца)
-                GridLayout {
-                    id: hydGrid
+                // === Ряд 1: Кнопка включения ===
+                // Ячейка 1.1 - Кнопка включения (занимает все 3 колонки)
+                Rectangle {
+                    Layout.row: 0
+                    Layout.column: 0
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    columns: 3
-                    rows: 2
-                    columnSpacing: 15 * theme.scaleWidth
-                    rowSpacing: 15 * theme.scaleHeight
+                    Layout.preferredHeight: 160 * theme.scaleHeight
+                    color: "transparent"
 
-                    // Первая строка
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 10 * theme.scaleWidth
+
+                        IconButtonColor {
+                            id: plowControlOn
+                            Layout.preferredWidth: 150 * theme.scaleWidth
+                            Layout.preferredHeight: 120 * theme.scaleHeight
+                            Layout.alignment: Qt.AlignCenter
+                            text: qsTr("Enable")
+                            icon.source: prefix + "/images/Config/PloughOff.png"
+                            iconChecked: prefix + "/images/Config/PloughOn.png"
+                            checkable: true
+                            onClicked: unsaved.visible = true
+                        }
+                    }
+                }
+                Item {
+                    Layout.row: 0
+                    Layout.column: 1
+                    Layout.fillWidth: true
+                    //Layout.fillHeight: true
+
                     IconButtonColor {
-                        id: cboxIsHydOn
-                        Layout.preferredWidth: 150 * theme.scaleWidth
-                        Layout.preferredHeight: 120 * theme.scaleHeight
-                        Layout.alignment: Qt.AlignCenter
-                        icon.source: prefix + "/images/Config/PloughOff.png"
-                        iconChecked: prefix + "/images/Config/PloughOn.png"
-                        checkable: true
-                        onClicked: unsaved.visible = true
-                    }
-
-                    SpinBoxCustomized {
-                        id: nudRaiseTime
-                        Layout.fillWidth: true
-                        from: 1
-                        to: 255
-                        editable: true
-                        enabled: cboxIsHydOn.checked
-                        text: qsTr("Raise Time (secs)")
-                        onValueChanged: unsaved.visible = true
-                    }
-
-                    Image {
-                        Layout.preferredWidth: 180 * theme.scaleWidth
-                        Layout.preferredHeight: 180 * theme.scaleHeight
-                        Layout.alignment: Qt.AlignCenter
-                        source: prefix + "/images/Config/ConMa_LiftRaiseTime.png"
-                        fillMode: Image.PreserveAspectFit
-                    }
-
-                    // Вторая строка
-                    SpinBoxCustomized {
-                        id: nudHydLiftLookAhead
-                        Layout.fillWidth: true
-                        from: 1
-                        to: 20
-                        editable: true
-                        enabled: cboxIsHydOn.checked
-                        text: qsTr("Look Ahead (secs)")
-                        onValueChanged: unsaved.visible = true
-                        decimals: 1
-                    }
-
-                    SpinBoxCustomized {
-                        id: nudLowerTime
-                        Layout.fillWidth: true
-                        from: 1
-                        to: 255
-                        editable: true
-                        enabled: cboxIsHydOn.checked
-                        text: qsTr("Lower Time (secs)")
-                        onValueChanged: unsaved.visible = true
-                    }
-
-                    Image {
-                        Layout.preferredWidth: 180 * theme.scaleWidth
-                        Layout.preferredHeight: 180 * theme.scaleHeight
-                        Layout.alignment: Qt.AlignCenter
-                        source: prefix + "/images/Config/ConMa_LiftLowerTime.png"
-                        fillMode: Image.PreserveAspectFit
-                    }
-
-                    // Кнопка инвертирования реле
-                    IconButtonColor {
-                        id: cboxMachInvertRelays
-                        Layout.alignment: Qt.AlignHCenter
-                        Layout.topMargin: 10 * theme.scaleHeight
-                        text: qsTr("Invert Relays")
+                        id: invertRelays
+                        anchors.centerIn: parent
+                        height: 60 * theme.scaleHeight
+                        text: qsTr("Invert Relay")
                         icon.source: prefix + "/images/Config/ConSt_InvertRelay.png"
                         checkable: true
-                        enabled: cboxIsHydOn.checked
+                        enabled: plowControlOn.checked
                         onClicked: unsaved.visible = true
+                    }
+                }
+                // Ячейка 2.3 - Изображение
+                Rectangle {
+                    Layout.row: 0
+                    Layout.column: 2
+                    Layout.rowSpan: 2
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: "transparent"
+
+                    Image {
+                        anchors.fill: parent
+                        anchors.margins: 10 * theme.scaleWidth
+                        source: prefix + "/images/Config/PloughWidth.png"
+                        fillMode: Image.PreserveAspectFit
+                    }
+                }
+
+                // === Ряд 2 ===
+                // Ячейка 2.1 - measuredDiff
+                Rectangle {
+                    Layout.row: 1
+                    Layout.column: 0
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: "transparent"
+
+
+                    SpinBoxCustomized {
+                        id: measuredDiff
+                        anchors.fill: parent
+                        anchors.margins: 5 * theme.scaleWidth
+                        from: 0
+                        to: 255
+                        editable: true
+                        enabled: plowControlOn.checked
+                        text: qsTr("Enter Measured Difference")
+                        onValueChanged: {
+                            unsaved.visible = true
+                        }
+                        decimals: 0
+
+                    }
+                }
+
+                // Ячейка 2.2 - deadzonePlow
+                Rectangle {
+                    Layout.row: 1
+                    Layout.column: 1
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: "transparent"
+
+
+                    SpinBoxCustomized {
+                        id: deadzonePlow
+                        anchors.fill: parent
+                        anchors.margins: 5 * theme.scaleWidth
+                        from: 1
+                        to: 255
+                        editable: true
+                        enabled: plowControlOn.checked
+                        text: qsTr("Deadzone in mm")
+                        onValueChanged: unsaved.visible = true
                     }
                 }
 
 
-                // Кнопка сохранения - также в своем слоте
-                Item {
+
+                // === Ряд 3 ===
+                // Ячейка 3.1 - btn_calMin
+                Rectangle {
+                    Layout.row: 2
+                    Layout.column: 0
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    color: "transparent"
 
-                    // Контейнер для кнопки и изображения
+
+                    IconButtonColor {
+                        id: btn_calMin
+                        anchors.centerIn: parent
+                        height: 60 * theme.scaleHeight
+                        text: qsTr("Min Cal")
+                        icon.source: prefix + "/images/Config/calMin.png"
+                        enabled: plowControlOn.checked
+                        onClicked: {
+                            // Вызываем функцию калибровки
+                            calibrateMin()
+                        }
+                    }
+                }
+
+                // Ячейка 3.2 - btn_calMax
+                Rectangle {
+                    Layout.row: 2
+                    Layout.column: 1
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: "transparent"
+
+                    IconButtonColor {
+                        id: btn_calMax
+                        anchors.centerIn: parent
+                        height: 60 * theme.scaleHeight
+                        text: qsTr("Max Cal")
+                        icon.source: prefix + "/images/Config/calMax.png"
+                        enabled: plowControlOn.checked
+                        onClicked: {
+                            // Вызываем функцию калибровки
+                            calibrateMax()
+                        }
+                    }
+                }
+
+                // Ячейка 3.3 - desiredWidth
+                Rectangle {
+                    Layout.row: 2
+                    Layout.column: 2
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: "transparent"
+
+
+                    SpinBoxCustomized {
+                        id: desiredWidth
+                        anchors.fill: parent
+                        anchors.margins: 5 * theme.scaleWidth
+                        from: 1
+                        to: 255
+                        editable: true
+                        enabled: plowControlOn.checked
+                        text: qsTr("Desired Plough Width")
+                        onValueChanged: unsaved.visible = true
+                    }
+                }
+
+                // === Ряд 4: Кнопка сохранения ===
+                // Ячейка 4.1 - Пустая
+                Item{
+                    Layout.row: 3
+                    Layout.column: 0
+                }
+
+                // Ячейка 4.2 - Пустая
+                Item{
+                    Layout.row: 3
+                    Layout.column: 1
+                }
+
+                // Ячейка 4.3 - Кнопка сохранения
+                Rectangle {
+                    Layout.row: 3
+                    Layout.column: 2
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: "transparent"
+
+
                     RowLayout {
                         anchors.centerIn: parent
                         spacing: 10 * theme.scaleWidth
 
-                        // Изображение несохраненных изменений (справа от кнопки)
+                        // Текст кнопки
+                        Text {
+                            id: saveButtonText
+                            text: qsTr("Send + Save")
+                            color: aogInterface.textColor
+                            font.pixelSize: 14 * theme.scaleHeight
+                        }
+
+                        // Изображение несохраненных изменений
                         Image {
                             id: unsaved
                             Layout.preferredWidth: 30 * theme.scaleWidth
@@ -219,31 +366,19 @@ Rectangle{
                             fillMode: Image.PreserveAspectFit
                         }
 
-                        // Текст кнопки
-                        Text {
-                            id: saveButtonText
-                            text: qsTr("Send + Save")
-                            color: aogInterface.textColor
-                        }
-
                         // Кнопка сохранения
                         IconButtonTransparent {
                             id: modulesSave
                             objectName: "btnModulesSave"
                             icon.source: prefix + "/images/ToolAcceptChange.png"
-                            onClicked: { save_settings(); unsaved.visible = false }
+                            onClicked: {
+                                save_settings();
+                                unsaved.visible = false
+                            }
                         }
                     }
                 }
-
-
-            }
-
-
-
-
-                }
             }
         }
-
-
+    }
+}
