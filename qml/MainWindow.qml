@@ -1106,7 +1106,7 @@ Window {
                     grid {
                         color: Qt.rgba(0,0,0,0.7)
                         //size: SettingsManager.window_gridSize
-                        visible: SettingsManager.display_isGridOn
+                        visible: SettingsManager.menu_isGridOn
                         thickness: 1
                     }
 
@@ -1169,8 +1169,27 @@ Window {
                                 ]
                             }
                         ]*/
-
                         visible: true
+                    }
+
+                    boundaries: Boundaries {
+
+                        colorInner: "yellow"
+
+                        colorOuter: "red"
+
+                        outer: [
+                            BoundaryLine {
+                                points: [
+                                    Qt.vector3d(20,20,0),
+                                    Qt.vector3d(20,-20,0),
+                                    Qt.vector3d(-20,-20,0),
+                                    Qt.vector3d(-20,20,0)//,
+                                    //Qt.vector3d(20,20,0)
+                                ]
+                                visible: true
+                            }
+                        ]
                     }
 
                     // Camera rotation from vehicle heading (radians to degrees)

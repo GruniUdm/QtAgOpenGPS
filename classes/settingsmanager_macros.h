@@ -41,7 +41,7 @@
 // ===== IMPLEMENTATIONS MACROS FOR .CPP GENERATION =====
 // These generate the actual method implementations with QSettings persistence
 
-#define SETTINGS_PROPERTY_IMPL(type, name, iniKey, defaultVal, setterName) \
+#define SETTINGS_PROPERTY_IMPL(type, name, iniGroup, iniKey, defaultVal, setterName) \
     type SettingsManager::name() const { \
         return m_##name.value(); \
     } \
@@ -49,6 +49,7 @@
         m_##name.setValue(value); \
         m_qsettings->setValue(iniKey, QVariant::fromValue(value)); \
         m_qsettings->sync(); \
+        emit iniGroup##GroupChanged(); \
         qDebug() << "SettingsManager: save" << iniKey << value; \
         saveToActiveProfile(); \
     } \
@@ -57,18 +58,18 @@
     }
 
 // Specialized implementation macros
-#define SETTINGS_PROPERTY_STRING_IMPL(name, iniKey, defaultVal, setterName) \
-    SETTINGS_PROPERTY_IMPL(QString, name, iniKey, QString(defaultVal), setterName)
+#define SETTINGS_PROPERTY_STRING_IMPL(name, iniGroup, iniKey, defaultVal, setterName) \
+    SETTINGS_PROPERTY_IMPL(QString, name, iniGroup, iniKey, QString(defaultVal), setterName)
 
-#define SETTINGS_PROPERTY_COLOR_IMPL(name, iniKey, defaultVal, setterName) \
-    SETTINGS_PROPERTY_IMPL(QColor, name, iniKey, defaultVal, setterName)
+#define SETTINGS_PROPERTY_COLOR_IMPL(name, iniGroup, iniKey, defaultVal, setterName) \
+    SETTINGS_PROPERTY_IMPL(QColor, name, iniGroup, iniKey, defaultVal, setterName)
 
-#define SETTINGS_PROPERTY_POINT_IMPL(name, iniKey, defaultVal, setterName) \
-    SETTINGS_PROPERTY_IMPL(QPoint, name, iniKey, defaultVal, setterName)
+#define SETTINGS_PROPERTY_POINT_IMPL(name, iniGroup, iniKey, defaultVal, setterName) \
+    SETTINGS_PROPERTY_IMPL(QPoint, name, iniGroup, iniKey, defaultVal, setterName)
 
-#define SETTINGS_PROPERTY_RECT_IMPL(name, iniKey, defaultVal, setterName) \
-    SETTINGS_PROPERTY_IMPL(QRect, name, iniKey, defaultVal, setterName)
+#define SETTINGS_PROPERTY_RECT_IMPL(name, iniGroup, iniKey, defaultVal, setterName) \
+    SETTINGS_PROPERTY_IMPL(QRect, name, iniGroup, iniKey, defaultVal, setterName)
 
-#define SETTINGS_PROPERTY_VECTOR_INT_IMPL(name, iniKey, defaultVal, setterName) \
-    SETTINGS_PROPERTY_IMPL(QVector<int>, name, iniKey, defaultVal, setterName)
+#define SETTINGS_PROPERTY_VECTOR_INT_IMPL(name, iniGroup, iniKey, defaultVal, setterName) \
+    SETTINGS_PROPERTY_IMPL(QVector<int>, name, iniGroup, iniKey, defaultVal, setterName)
 
