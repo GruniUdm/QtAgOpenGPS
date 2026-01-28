@@ -4,6 +4,20 @@
 # CMake 3.27 and QtCreator 12 recommended
 cmake_minimum_required(VERSION 3.22)
 
+# Compiler cache for faster rebuilds (must be before project())
+# sccache supports GCC, Clang, and MSVC; ccache supports GCC and Clang
+find_program(SCCACHE_PROGRAM sccache)
+find_program(CCACHE_PROGRAM ccache)
+if(SCCACHE_PROGRAM)
+    set(CMAKE_C_COMPILER_LAUNCHER ${SCCACHE_PROGRAM})
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${SCCACHE_PROGRAM})
+    message(STATUS "Using sccache: ${SCCACHE_PROGRAM}")
+elseif(CCACHE_PROGRAM)
+    set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
+    message(STATUS "Using ccache: ${CCACHE_PROGRAM}")
+endif()
+
 # Remove _cmake suffix when the .pro is removed.  Added here for clarity
 project(QtAgOpenGPS
     VERSION 0.0
@@ -16,6 +30,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOMOC ON)  # Required for automatic QML_ELEMENT/QML_SINGLETON registration
+
+# Build options
+option(USE_PCH "Use precompiled headers for faster compilation" ON)
 
 # Cross-compilation: Set host Qt path for tools when cross-compiling
 # This allows CMake to find host tools (like Qt6WidgetsTools) on Fedora
@@ -146,10 +163,11 @@ qt_add_executable(QtAgOpenGPS
     glutils.h glutils.cpp
     rhiresources.h rhiresources.cpp
     rhihelpers.h rhihelpers.cpp
-    #qmlsectionbuttons.h qmlsectionbuttons.cpp
     qmlutil.h
     setter.h
+
     pch.h
+
     classes/cabcurve.h classes/cabcurve.cpp
     classes/cabline.h classes/cabline.cpp
     classes/cahrs.h classes/cahrs.cpp
@@ -171,11 +189,9 @@ qt_add_executable(QtAgOpenGPS
     classes/csection.h classes/csection.cpp
 
     classes/ctool.h classes/ctool.cpp
-    # classes/ctrack.h classes/ctrack.cpp      # MOVED to qt_add_qml_module (QML_ELEMENT)
     classes/ctram.h classes/ctram.cpp
     classes/cturn.cpp
     classes/cturnlines.cpp
-    # classes/cvehicle.h classes/cvehicle.cpp  # MOVED to qt_add_qml_module (QML_ELEMENT)
     classes/cyouturn.h classes/cyouturn.cpp
     classes/glm.h
     classes/vec2.h classes/vec2.cpp
@@ -183,8 +199,6 @@ qt_add_executable(QtAgOpenGPS
     classes/vec4.h classes/vec4.cpp
     classes/vecfix2fix.h
     # LICENSE
-    # TODO.md
-    # README.md
      android/AndroidManifest.xml
     # android/build.gradle
     # android/gradle.properties
@@ -437,7 +451,11 @@ qt_add_qml_module(QtAgOpenGPS
 ###### Precompiled Headers ######
 
 # Precompiled headers for faster compilation (Qt and standard library headers)
-target_precompile_headers(QtAgOpenGPS PRIVATE pch.h)
+# Disable with: cmake -DUSE_PCH=OFF
+if(USE_PCH)
+    target_precompile_headers(QtAgOpenGPS PRIVATE pch.h)
+    message(STATUS "Precompiled headers enabled")
+endif()
 
 ###### End Precompiled Headers ######
 
