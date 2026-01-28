@@ -433,6 +433,13 @@ qt_add_qml_module(QtAgOpenGPS
 
 ###### End Script of Handling QML in module ######
 
+###### Precompiled Headers ######
+
+# Precompiled headers for faster compilation (Qt and standard library headers)
+target_precompile_headers(QtAgOpenGPS PRIVATE pch.h)
+
+###### End Precompiled Headers ######
+
 ###### Script for Translation ######
 
 # Set the output directory for the QM files
