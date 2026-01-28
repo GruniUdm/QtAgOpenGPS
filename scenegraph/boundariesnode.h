@@ -12,6 +12,7 @@
 #include <QColor>
 #include <QVector>
 #include <QVector3D>
+#include "boundariesproperties.h"
 
 class BoundariesNode : public QSGNode
 {
@@ -19,12 +20,21 @@ public:
     BoundariesNode();
     ~BoundariesNode() override;
 
-    void update(const QMatrix4x4 &mvp,
-                const QColor &boundaryColor,
-                const QVector<QVector<QVector3D>> &boundaries);
+    void update(const QMatrix4x4 &mv,
+                const QMatrix4x4 &p,
+                const QMatrix4x4 &ndc,
+                const QSize &viewportSize,
+                const BoundariesProperties *properties);
+
+    void clearChildren();
 
 private:
-    void clearChildren();
+    QList<QSGGeometryNode *> m_boundaryNodes;
+
+    void updateNodeMvp(QSGGeometryNode *node,
+                       const QMatrix4x4 mvp,
+                       const QSize &viewportSize);
+
 };
 
 #endif // BOUNDARIESNODE_H

@@ -462,14 +462,22 @@ QSGNode *FieldViewItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     }
 
     // Update boundary if visible and dirty
-    if (m_showBoundary && m_boundaryDirty) {
-        rootNode->boundaryNode->update(
-            currentMvp,
-            m_boundaryColor,
-            m_renderData.boundaries
-        );
+    if (m_boundaryDirty) {
         m_boundaryDirty = false;
+        rootNode->boundaryNode->clearChildren();
     }
+
+    //rebuild geometry if needed, otherwise update the uniforms
+    //always try to show boundaries because individual lines
+    //have their own visible state, and also if the lists are
+    //empty, no geometry is created.
+    rootNode->boundaryNode->update(
+        m_currentMv,
+        m_currentP,
+        m_currentNcd,
+        viewportSize,
+        m_boundaries
+    );
 
     // Update coverage and guidance (not yet refactored)
     if (m_showCoverage && m_coverageDirty) {

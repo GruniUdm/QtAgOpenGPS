@@ -12,12 +12,16 @@
 #include <QBindable>
 #include <QQmlListProperty>
 #include <QList>
+#include <QColor>
+#include <QtQml/qqmlregistration.h>
 
 #include "boundaryproperties.h"
+#include "simpleproperty.h"
 
 class BoundariesProperties : public QObject
 {
     Q_OBJECT
+    QML_NAMED_ELEMENT(Boundaries)
 
     Q_PROPERTY(QQmlListProperty<BoundaryProperties> outer READ getOuter NOTIFY outerChanged)
     Q_PROPERTY(QQmlListProperty<BoundaryProperties> inner READ getInner NOTIFY innerChanged)
@@ -50,6 +54,9 @@ public:
     int innerCount() const { return m_inner.count(); }
     BoundaryProperties* innerAt(int index) const;
 
+    SIMPLE_BINDABLE_PROPERTY(QColor, colorInner)
+    SIMPLE_BINDABLE_PROPERTY(QColor, colorOuter)
+
 signals:
     void outerChanged();
     void innerChanged();
@@ -69,6 +76,9 @@ private:
     static qsizetype innerCount(QQmlListProperty<BoundaryProperties> *list);
     static BoundaryProperties *innerAt(QQmlListProperty<BoundaryProperties> *list, qsizetype index);
     static void clearInner(QQmlListProperty<BoundaryProperties> *list);
+
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(BoundariesProperties, QColor, m_colorInner, QColor(1,1,0), &BoundariesProperties::colorInnerChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(BoundariesProperties, QColor, m_colorOuter, QColor(1,1,0), &BoundariesProperties::colorOuterChanged)
 };
 
 #endif // BOUNDARIESPROPERTIES_H

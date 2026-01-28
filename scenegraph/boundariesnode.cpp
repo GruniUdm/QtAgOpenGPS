@@ -4,7 +4,10 @@
 // Boundary node implementation
 
 #include "boundariesnode.h"
+#include "boundariesproperties.h"
 #include "materials.h"
+#include "thicklinematerial.h"
+#include "dashedthicklinematerial.h"
 #include "aoggeometry.h"
 
 BoundariesNode::BoundariesNode()
@@ -22,37 +25,67 @@ void BoundariesNode::clearChildren()
         removeChildNode(child);
         delete child;
     }
+
+    m_boundaryNodes.clear();
 }
 
-void BoundariesNode::update(const QMatrix4x4 &mvp,
-                           const QColor &boundaryColor,
-                           const QVector<QVector<QVector3D>> &boundaries)
+void BoundariesNode::update(const QMatrix4x4 &mv,
+                            const QMatrix4x4 &p,
+                            const QMatrix4x4 &ndc,
+                            const QSize &viewportSize,
+                            const BoundariesProperties *properties)
 {
     // Clear existing boundary geometry
     clearChildren();
 
-    // Create geometry for each boundary
-    for (const auto &boundary : boundaries) {
-        if (boundary.size() < 3)
-            continue;
+    if (childCount() < 1) {
+        // Draw outer boundaries
 
-        // Create line loop geometry
-        auto *geometry = AOGGeometry::createLineLoopGeometry(boundary);
-        if (!geometry)
-            continue;
+        // Create geometry for each boundary
+        for (const BoundaryProperties *boundary : std::as_const(properties->outer())) {
 
-        auto *geomNode = new QSGGeometryNode();
-        geomNode->setGeometry(geometry);
-        geomNode->setFlag(QSGNode::OwnsGeometry);
+            if (!boundary->visible() || boundary->points().count() < 3)
+                continue;
 
-        // Create material with MVP matrix
-        auto *material = new AOGFlatColorMaterial();
-        material->setColor(boundaryColor);
-        material->setMvpMatrix(mvp);
+            // Create line loop geometry
+            auto *geometry = AOGGeometry::createDashedThickLineLoopGeometry(boundary->points());
+            if (!geometry)
+                continue;
 
-        geomNode->setMaterial(material);
-        geomNode->setFlag(QSGNode::OwnsMaterial);
+            auto *geomNode = new QSGGeometryNode();
+            geomNode->setGeometry(geometry);
+            geomNode->setFlag(QSGNode::OwnsGeometry);
 
-        appendChildNode(geomNode);
+            // Create material with MVP matrix
+            auto *material = new DashedThickLineMaterial();
+            material->setColor(properties->colorOuter());
+            material->setDashLength(20);
+            material->setGapLength(20);
+            material->setLineWidth(1);
+
+            geomNode->setMaterial(material);
+            geomNode->setFlag(QSGNode::OwnsMaterial);
+
+            appendChildNode(geomNode);
+            m_boundaryNodes.append(geomNode);
+        }
     }
+
+    //update uniforms
+
+    for (QSGGeometryNode *node:m_boundaryNodes) {
+        updateNodeMvp(node, ndc * p * mv, viewportSize);
+    }
+}
+
+void BoundariesNode::updateNodeMvp(QSGGeometryNode *node,
+                                   const QMatrix4x4 mvp,
+                                   const QSize &viewportSize)
+{
+    auto *material = static_cast<AOGMaterial *>(node->material());
+    if (material) {
+        material->setMvpMatrix(mvp);
+        material->setViewportSize(viewportSize);
+    }
+
 }
