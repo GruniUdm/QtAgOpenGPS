@@ -4,7 +4,7 @@
 // File 3/3: Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS members for private: section
 
 // Generated property members with Qt6 bindable support
-// Total members: 395
+// Total members: 399
 
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_menu_language, "en", &SettingsManager::menu_languageChanged)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_feature_isOffsetFixOn, false, &SettingsManager::feature_isOffsetFixOnChanged)
@@ -401,5 +401,9 @@ Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_rate_productNam
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_rate_productName1, "1", &SettingsManager::rate_productName1Changed)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_rate_productName2, "2", &SettingsManager::rate_productName2Changed)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_rate_productName3, "3", &SettingsManager::rate_productName3Changed)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, int, m_plough_setting0, 0, &SettingsManager::plough_setting0Changed)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, int, m_plough_desiredWidth, 200, &SettingsManager::plough_desiredWidthChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, int, m_plough_deadzonePlough, 20, &SettingsManager::plough_deadzonePloughChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, int, m_plough_measuredDiff, 0, &SettingsManager::plough_measuredDiffChanged)
 
 // End of generated property members

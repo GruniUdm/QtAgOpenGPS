@@ -78,7 +78,7 @@ public:
     #include "settingsmanager_properties.h"
 
 signals:
-    // ===== GENERATED NOTIFY SIGNALS (395 signals) =====
+    // ===== GENERATED NOTIFY SIGNALS (399 signals) =====
     // Required for Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS signal references
     void menu_languageChanged();
     void feature_isOffsetFixOnChanged();
@@ -475,6 +475,10 @@ signals:
     void rate_productName1Changed();
     void rate_productName2Changed();
     void rate_productName3Changed();
+    void plough_setting0Changed();
+    void plough_desiredWidthChanged();
+    void plough_deadzonePloughChanged();
+    void plough_measuredDiffChanged();
     void menuGroupChanged();
     void featureGroupChanged();
     void abGroupChanged();
@@ -513,6 +517,7 @@ signals:
     void relayGroupChanged();
     void agioGroupChanged();
     void rateGroupChanged();
+    void ploughGroupChanged();
 
 
 private:

@@ -397,3 +397,7 @@ rate_productName0|rate/productName0|"0"|QString|
 rate_productName1|rate/productName1|"1"|QString|
 rate_productName2|rate/productName2|"2"|QString|
 rate_productName3|rate/productName3|"3"|QString|
+plough_setting0|plough/setting0|0|int|
+plough_desiredWidth|plough/desiredWidth|200|int|
+plough_deadzonePlough|plough/deadzonePlough|20|int|
+plough_measuredDiff|plough/measuredDiff|0|int|

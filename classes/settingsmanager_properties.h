@@ -6,7 +6,7 @@
 #include "settingsmanager_macros.h"
 
 // Generated Q_PROPERTY declarations with Qt6 bindable support
-// Total properties: 395
+// Total properties: 399
 
 
 // QString Properties (50 properties) - DECLARATIONS ONLY
@@ -300,7 +300,7 @@ SETTINGS_PROPERTY_DECLARATIONS(double, menu_youSkipWidth, setMenu_youSkipWidth)
 SETTINGS_PROPERTY_DECLARATIONS(double, sim_latitude, setSim_latitude)
 SETTINGS_PROPERTY_DECLARATIONS(double, sim_longitude, setSim_longitude)
 
-// int Properties (63 properties) - DECLARATIONS ONLY
+// int Properties (67 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_DECLARATIONS(int, ardMac_hydLowerTime, setArdMac_hydLowerTime)
 SETTINGS_PROPERTY_DECLARATIONS(int, ardMac_hydRaiseTime, setArdMac_hydRaiseTime)
 SETTINGS_PROPERTY_DECLARATIONS(int, ardMac_setting0, setArdMac_setting0)
@@ -364,6 +364,10 @@ SETTINGS_PROPERTY_DECLARATIONS(int, sound_volume, setSound_volume)
 SETTINGS_PROPERTY_DECLARATIONS(int, ntrip_packetSize, setNtrip_packetSize)
 SETTINGS_PROPERTY_DECLARATIONS(int, port_baudRateRadio, setPort_baudRateRadio)
 SETTINGS_PROPERTY_DECLARATIONS(int, port_baudRateRtcm, setPort_baudRateRtcm)
+SETTINGS_PROPERTY_DECLARATIONS(int, plough_setting0, setPlough_setting0)
+SETTINGS_PROPERTY_DECLARATIONS(int, plough_desiredWidth, setPlough_desiredWidth)
+SETTINGS_PROPERTY_DECLARATIONS(int, plough_deadzonePlough, setPlough_deadzonePlough)
+SETTINGS_PROPERTY_DECLARATIONS(int, plough_measuredDiff, setPlough_measuredDiff)
 
 // QColor Properties (29 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_COLOR_DECLARATIONS(color_sec01, setColor_sec01)

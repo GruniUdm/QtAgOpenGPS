@@ -321,4 +321,9 @@ QtObject {
 	property var test_testStrings: [ "one", "two", "trheep", "four}"  ]
 	property var test_testDoubles: [ 1.2, 1.3, 1.4 ]
 	property color test_testColorRgbF: "#ff7f7f33"
+    property int plough_setting0: 0
+    property int plough_desiredWidth: 200
+    property int plough_deadzonePlough: 20
+    property int plough_measuredDiff: 0
+
 }

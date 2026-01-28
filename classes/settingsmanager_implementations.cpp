@@ -6,7 +6,7 @@
 #include "settingsmanager.h"
 
 // Generated implementations with Qt6 + QSettings persistence
-// Total implementations: 395
+// Total implementations: 399
 
 
 // QString Implementations (50 properties)
@@ -303,7 +303,7 @@ SETTINGS_PROPERTY_IMPL(double, sim_latitude, sim, "sim/latitude", 53.2813, setSi
 SETTINGS_PROPERTY_IMPL(double, sim_longitude, sim, "sim/longitude", -110.0063, setSim_longitude)
 
 
-// int Implementations (63 properties)
+// int Implementations (67 properties)
 SETTINGS_PROPERTY_IMPL(int, ardMac_hydLowerTime, ardMac, "ardMac/hydLowerTime", 4, setArdMac_hydLowerTime)
 SETTINGS_PROPERTY_IMPL(int, ardMac_hydRaiseTime, ardMac, "ardMac/hydRaiseTime", 3, setArdMac_hydRaiseTime)
 SETTINGS_PROPERTY_IMPL(int, ardMac_setting0, ardMac, "ardMac/setting0", 0, setArdMac_setting0)
@@ -367,6 +367,10 @@ SETTINGS_PROPERTY_IMPL(int, sound_volume, sound, "sound/volume", 50, setSound_vo
 SETTINGS_PROPERTY_IMPL(int, ntrip_packetSize, agio, "agio/ntripPacketSize", 256, setNtrip_packetSize)
 SETTINGS_PROPERTY_IMPL(int, port_baudRateRadio, agio, "agio/baudRateRadio", 9600, setPort_baudRateRadio)
 SETTINGS_PROPERTY_IMPL(int, port_baudRateRtcm, agio, "agio/baudRateRtcm", 9600, setPort_baudRateRtcm)
+SETTINGS_PROPERTY_IMPL(int, plough_setting0, plough, "plough/setting0", 0, setPlough_setting0)
+SETTINGS_PROPERTY_IMPL(int, plough_desiredWidth, plough, "plough/desiredWidth", 200, setPlough_desiredWidth)
+SETTINGS_PROPERTY_IMPL(int, plough_deadzonePlough, plough, "plough/deadzonePlough", 20, setPlough_deadzonePlough)
+SETTINGS_PROPERTY_IMPL(int, plough_measuredDiff, plough, "plough/measuredDiff", 0, setPlough_measuredDiff)
 
 
 // QColor Implementations (29 properties)

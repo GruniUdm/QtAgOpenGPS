@@ -27,7 +27,7 @@ Rectangle{
     function load_settings()
     {
         if (visible) {
-            var sett = SettingsManager.ardMac_setting0
+            var sett = SettingsManager.plough_setting0
 
             if ((sett & 1) === 0 ) invertRelays.checked = false
             else invertRelays.checked = true
@@ -35,16 +35,9 @@ Rectangle{
             if ((sett & 2) === 0 ) plowControlOn.checked = false
             else plowControlOn.checked = true
 
-            desiredWidth.value = SettingsManager.ardMac_hydRaiseTime
-            deadzonePlow.value = SettingsManager.ardMac_hydLowerTime
-
-            nudUser1.value = SettingsManager.ardMac_user1
-            nudUser2.value = SettingsManager.ardMac_user2
-            nudUser3.value = SettingsManager.ardMac_user3
-            nudUser4.value = SettingsManager.ardMac_user4
-
-            // Загружаем сохраненное значение измеренной разницы
-            measuredDiff.value = SettingsManager.vehicle_hydraulicLiftLookAhead
+            desiredWidth.value = SettingsManager.plough_desiredWidth
+            deadzonePlow.value = SettingsManager.plough_deadzonePlough
+            measuredDiff.value = SettingsManager.plough_measuredDiff
 
             unsaved.visible = false
         }
@@ -65,17 +58,10 @@ Rectangle{
         if(plowControlOn.checked) sett |= set
         else sett &= reset
 
-        SettingsManager.ardMac_setting0 = sett
-        SettingsManager.ardMac_hydRaiseTime = desiredWidth.value
-        SettingsManager.ardMac_hydLowerTime = deadzonePlow.value
-
-        SettingsManager.ardMac_user1 = nudUser1.value
-        SettingsManager.ardMac_user2 = nudUser2.value
-        SettingsManager.ardMac_user3 = nudUser3.value
-        SettingsManager.ardMac_user4 = nudUser4.value
-
-        SettingsManager.vehicle_hydraulicLiftLookAhead = measuredDiff.value
-        SettingsManager.ardMac_isHydEnabled = plowControlOn.checked
+        SettingsManager.plough_setting0 = sett
+        SettingsManager.plough_desiredWidth = desiredWidth.value
+        SettingsManager.plough_deadzonePlough = deadzonePlow.value
+        SettingsManager.plough_measuredDiff = measuredDiff.value
 
         ModuleComm.modulesSend238()
         //pboxSendMachine.Visible = false
