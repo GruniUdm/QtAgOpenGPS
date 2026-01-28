@@ -149,6 +149,7 @@ qt_add_executable(QtAgOpenGPS
     #qmlsectionbuttons.h qmlsectionbuttons.cpp
     qmlutil.h
     setter.h
+    pch.h
     classes/cabcurve.h classes/cabcurve.cpp
     classes/cabline.h classes/cabline.cpp
     classes/cahrs.h classes/cahrs.cpp

@@ -10,50 +10,18 @@
 // ============================================================================
 // Qt Core
 // ============================================================================
-#include <QObject>
-#include <QString>
-#include <QStringList>
-#include <QList>
-#include <QVector>
-#include <QMap>
-#include <QHash>
-#include <QSet>
-#include <QVariant>
-#include <QVariantList>
-#include <QDebug>
-#include <QLoggingCategory>
-#include <QPointer>
-#include <QScopedPointer>
-#include <QSharedPointer>
-#include <QMutex>
-#include <QTimer>
-#include <QFile>
-#include <QDir>
-#include <QFileInfo>
+#include <QtCore>
 #include <QSettings>
-#include <QCoreApplication>
-
-// Qt 6 Bindable Properties
-#include <QProperty>
-#include <QBindable>
 
 // ============================================================================
 // Qt GUI
 // ============================================================================
-#include <QColor>
-#include <QMatrix4x4>
-#include <QVector2D>
-#include <QVector3D>
-#include <QVector4D>
-#include <QPointF>
-#include <QRectF>
-#include <QSizeF>
-#include <QImage>
-#include <QGuiApplication>
+#include <QtGui>
 
 // ============================================================================
 // Qt Quick / Scene Graph
 // ============================================================================
+/*
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QSGNode>
@@ -66,23 +34,18 @@
 #include <QSGFlatColorMaterial>
 #include <QSGTextureMaterial>
 #include <QSGOpaqueTextureMaterial>
+*/
 
 // ============================================================================
 // Qt QML
 // ============================================================================
-#include <QQmlEngine>
-#include <QQmlContext>
+/*
+#include <QtQml>
+#include <QtQuick>
+#include <QQmlProperty>
 #include <QQmlComponent>
-#include <QQmlApplicationEngine>
-#include <QQmlListProperty>
 #include <QtQml/qqmlregistration.h>
-
-// ============================================================================
-// Qt Network
-// ============================================================================
-#include <QUdpSocket>
-#include <QHostAddress>
-#include <QNetworkDatagram>
+*/
 
 // ============================================================================
 // C++ Standard Library
@@ -94,5 +57,6 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <memory>
 
 #endif // PCH_H
