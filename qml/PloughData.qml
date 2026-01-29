@@ -103,6 +103,7 @@ Comp.MoveablePopup {
                     color: aogInterface.backgroundColor
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
                 }
             }
 
@@ -152,6 +153,7 @@ Comp.MoveablePopup {
                     color: aogInterface.backgroundColor
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
                 }
             }
 
@@ -202,6 +204,7 @@ Comp.MoveablePopup {
                     color: aogInterface.backgroundColor
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
                 }
             }
 
@@ -248,6 +251,7 @@ Comp.MoveablePopup {
                                 color: getModeColor(ploughMode)
                                 verticalAlignment: Text.AlignVCenter
                                 horizontalAlignment: Text.AlignHCenter
+                                wrapMode: Text.WordWrap
                             }
 
                             function getModeColor(mode) {

@@ -78,6 +78,10 @@ public:
         // Blockage
         int blockagesection[4] = {0, 0, 0, 0};
         int rateControlInData[5] = {0, 0, 0, 0, 0};
+
+        // Plough
+        int width = 0;
+        int mode = 0;
     };
 
     explicit PGNParser(QObject *parent = nullptr);
@@ -152,6 +156,7 @@ private:
     ParsedData parsePGN250(const QByteArray& data); // AutoSteer Sensor (pressure/current)
     ParsedData parsePGN244(const QByteArray& data); // Blockage Data In
     ParsedData parsePGN240(const QByteArray& data); // RateControl Data In
+    ParsedData parsePGN237(const QByteArray& data); // Machine Plough Data In
 
     // Legacy PGN parsers (incorrect byte extraction - to be removed)
     ParsedData parsePGN127(const QByteArray& data); // OLD - was extracting Source ID 0x7F

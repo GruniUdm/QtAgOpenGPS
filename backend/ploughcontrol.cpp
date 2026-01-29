@@ -379,15 +379,17 @@ void PloughControl::updateSectionState(bool sectionOn)
 // Обработка входящих данных по протоколу
 void PloughControl::onPloughDataReady(const PGNParser::ParsedData& data)
 {
-    QMutexLocker locker(&mutex);
+    // Update data from RC modules
 
-    // // Обработка данных плуга (PGN 0xED из Arduino скетча)
-    // if (data.pgn == 0xED) {
-    //     int width = (data.data[6] << 8) + data.data[5];
-    //     int mode = data.data[7];
+    if (!data.isValid) return;
 
-    //     updatePloughData(width, mode);
-    // }
+    // PGN 237: Machine Data
+    if (data.pgnNumber == 237) {
+
+        m_currentWidth = data.width;
+        m_ploughMode = data.mode;
+        updatePloughData(m_currentWidth, m_ploughMode);
+     }
 }
 
 void PloughControl::onMachineSettingsReady(const PGNParser::ParsedData& data)

@@ -134,6 +134,8 @@ PGNParser::ParsedData PGNParser::parsePGN(const QByteArray& data) {
             return parsePGN123(data);
         case 124:  // 0x7B - Hello Blockage
             return parsePGN124(data);
+        case 237:  // 0xED - Machine Plough
+            return parsePGN237(data);
 
         // Legacy PGN (to be removed after validation)
         case 127:  // OLD - incorrectly extracted Source ID 0x7F
@@ -1269,6 +1271,41 @@ PGNParser::ParsedData PGNParser::parsePGN123(const QByteArray& data) {
     qDebug() << "✅ PGN 123: Machine module detected (relays:"
              << QString::number(relayLo, 16).toUpper()
              << QString::number(relayHi, 16).toUpper() << ")";
+
+    return result;
+}
+
+PGNParser::ParsedData PGNParser::parsePGN237(const QByteArray& data) {
+    // PGN 237 (0xED): Machine Data OUT
+    // Format: 0x80 0x81 0x7B 0xED 0x08 1   2   3   4   0   0   0   0   [CRC]
+    // Purpose: Plough Module
+
+    ParsedData result;
+
+    if (data.size() < 14) {
+        return result;
+    }
+
+    // Validate header
+    if ((unsigned char)data[0] != 0x80 || (unsigned char)data[1] != 0x81) {
+        return result;
+    }
+
+    // Validate source and PGN
+    if ((unsigned char)data[2] != 0x7B || (unsigned char)data[3] != 0xED) {
+        return result;
+    }
+
+    // Extract relay status
+    result.width = (data[6] << 8) + data[5];
+    result.mode = data[7];
+
+    result.isValid = true;
+    result.sourceType = "PGN";
+    result.pgnNumber = 237;
+    result.sentenceType = "PloughModule";
+
+    qDebug() << "✅ PGN 237: Machine Plough module detected";
 
     return result;
 }

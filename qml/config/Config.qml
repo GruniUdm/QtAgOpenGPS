@@ -218,7 +218,7 @@ Dialog {
                     }
                     MainConfigSecondaryBtns{
                         id: configPloughbtn
-                        icon.source: prefix + "/images/Config/PloughOn.png"
+                        icon.source: prefix + "/images/plow1.png"
                     }
                 }
                 MainConfigMainBtns{

@@ -42,7 +42,6 @@ Rectangle{
 
     function save_settings() {
 
-
         SettingsManager.plough_invertRelays = invertRelays.checked
         SettingsManager.plough_plowControlOn = plowControlOn.checked
         SettingsManager.plough_desiredWidth = desiredWidth.value
@@ -50,7 +49,6 @@ Rectangle{
         SettingsManager.plough_measuredDiff = measuredDiff.value
         SettingsManager.plough_maxWidth = maxWidth.value
         SettingsManager.plough_minWidth = minWidth.value
-        //PloughControl.updatePloughData()
 
         ModuleComm.modulesSend238()
         //pboxSendMachine.Visible = false

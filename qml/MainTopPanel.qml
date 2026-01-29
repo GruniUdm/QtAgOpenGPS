@@ -203,7 +203,7 @@ import "components" as Comp
             }
             Comp.IconButton {
                 id: btnPloughInfo
-                icon.source: prefix + "/images/spray2.png"
+                icon.source: prefix + "/images/plow1.png"
                 Layout.alignment: Qt.AlignCenter
                 implicitWidth: theme.buttonSize
                 height:parent.height
