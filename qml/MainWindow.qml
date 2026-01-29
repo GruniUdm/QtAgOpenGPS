@@ -621,8 +621,12 @@ Window {
                     onClicked: blockageRows.viewSwitch = !blockageRows.viewSwitch
                     }
             }
-            RateData{ //window that displays Machine data
+            RateData{ //window that displays RateControl data
                 id: rateData
+                visible: false
+            }
+            PloughData{ //window that displays Plough data
+                id: ploughData
                 visible: false
             }
 

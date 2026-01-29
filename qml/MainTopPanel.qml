@@ -201,7 +201,17 @@ import "components" as Comp
                     //blockageData.visible = false
                 }
             }
-
+            Comp.IconButton {
+                id: btnPloughInfo
+                icon.source: prefix + "/images/spray2.png"
+                Layout.alignment: Qt.AlignCenter
+                implicitWidth: theme.buttonSize
+                height:parent.height
+                visible: true
+                onClicked: {
+                    ploughData.visible = !ploughData.visible
+                }
+            }
             Text{
                 id: speed
                 anchors.verticalCenter: parent.verticalCenter

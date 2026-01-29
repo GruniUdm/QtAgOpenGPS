@@ -5,6 +5,8 @@
 #include <QJSEngine>
 #include <QMutexLocker>
 
+Q_LOGGING_CATEGORY (plough_log, "backend.qtagopengps")
+
 // Статические члены
 PloughControl *PloughControl::s_instance = nullptr;
 QMutex PloughControl::s_mutex;
@@ -64,22 +66,16 @@ PloughControl *PloughControl::instance()
     return s_instance;
 }
 
-PloughControl *PloughControl::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine)
-{
-    Q_UNUSED(qmlEngine)
+PloughControl *PloughControl::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine){
     Q_UNUSED(jsEngine)
 
     QMutexLocker locker(&s_mutex);
     if (!s_instance) {
         s_instance = new PloughControl();
-        s_cpp_created = true;
-    }
-
-    // Передаем владение QML, если создано из QML
-    if (!s_cpp_created) {
+        qDebug(plough_log) << "PloughControl singleton created by QML engine.";
+        } else if (s_cpp_created) {
         qmlEngine->setObjectOwnership(s_instance, QQmlEngine::CppOwnership);
     }
-
     return s_instance;
 }
 

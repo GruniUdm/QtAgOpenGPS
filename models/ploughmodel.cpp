@@ -9,7 +9,7 @@ PloughModel::PloughModel(QObject *parent)
     defaultPlough.id = 0;
     defaultPlough.currentWidth = 0;
     defaultPlough.targetWidth = 200;
-    defaultPlough.ploughMode = 0;
+    defaultPlough.ploughMode = 1;
     defaultPlough.ploughModeName = getModeName(0);
     defaultPlough.ploughEnabled = false;
     defaultPlough.autoWidthEnabled = false;

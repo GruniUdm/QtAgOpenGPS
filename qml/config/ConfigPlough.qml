@@ -72,9 +72,11 @@ Rectangle{
         // Здесь должна быть логика калибровки минимального значения
         console.log("Starting minimum calibration...")
 
+
         // Сбрасываем измеренную разницу на 0 для новой калибровки
         onClicked: {
             unsaved.visible = true
+            PloughControl.calibrateMin()
             measuredDiff.setSpinValue(0)
         }
 
@@ -90,6 +92,7 @@ Rectangle{
         // Сбрасываем измеренную разницу на 0 для новой калибровки
         onClicked: {
             unsaved.visible = true
+            PloughControl.calibrateMax()
             measuredDiff.setSpinValue(0)
         }
 
