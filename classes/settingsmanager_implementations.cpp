@@ -6,7 +6,7 @@
 #include "settingsmanager.h"
 
 // Generated implementations with Qt6 + QSettings persistence
-// Total implementations: 399
+// Total implementations: 405
 
 
 // QString Implementations (50 properties)
@@ -62,7 +62,7 @@ SETTINGS_PROPERTY_STRING_IMPL(rate_productName2, rate, "rate/productName2", "2",
 SETTINGS_PROPERTY_STRING_IMPL(rate_productName3, rate, "rate/productName3", "3", setRate_productName3)
 
 
-// bool Implementations (131 properties)
+// bool Implementations (135 properties)
 SETTINGS_PROPERTY_IMPL(bool, feature_isOffsetFixOn, feature, "feature/isOffsetFixOn", false, setFeature_isOffsetFixOn)
 SETTINGS_PROPERTY_IMPL(bool, ardMac_isDanFoss, ardMac, "ardMac/isDanFoss", false, setArdMac_isDanFoss)
 SETTINGS_PROPERTY_IMPL(bool, ardMac_isHydEnabled, ardMac, "ardMac/isHydEnabled", 0, setArdMac_isHydEnabled)
@@ -194,6 +194,10 @@ SETTINGS_PROPERTY_IMPL(bool, mod_isIMUConnected, agio, "agio/isIMUConnected", fa
 SETTINGS_PROPERTY_IMPL(bool, mod_isSteerConnected, agio, "agio/isSteerConnected", false, setMod_isSteerConnected)
 SETTINGS_PROPERTY_IMPL(bool, mod_isMachineConnected, agio, "agio/isMachineConnected", false, setMod_isMachineConnected)
 SETTINGS_PROPERTY_IMPL(bool, udp_isSendNMEAToUDP, agio, "agio/sendNMEAToUDP", false, setUdp_isSendNMEAToUDP)
+SETTINGS_PROPERTY_IMPL(bool, plough_invertRelays, plough, "plough/invertRelays", false, setPlough_invertRelays)
+SETTINGS_PROPERTY_IMPL(bool, plough_plowControlOn, plough, "plough/plowControlOn", false, setPlough_plowControlOn)
+SETTINGS_PROPERTY_IMPL(bool, plough_isCalibrated, plough, "plough/isCalibrated", false, setPlough_isCalibrated)
+SETTINGS_PROPERTY_IMPL(bool, plough_autoWidthEnabled, plough, "plough/autoWidthEnabled", false, setPlough_autoWidthEnabled)
 
 
 // double Implementations (104 properties)
@@ -303,7 +307,7 @@ SETTINGS_PROPERTY_IMPL(double, sim_latitude, sim, "sim/latitude", 53.2813, setSi
 SETTINGS_PROPERTY_IMPL(double, sim_longitude, sim, "sim/longitude", -110.0063, setSim_longitude)
 
 
-// int Implementations (67 properties)
+// int Implementations (69 properties)
 SETTINGS_PROPERTY_IMPL(int, ardMac_hydLowerTime, ardMac, "ardMac/hydLowerTime", 4, setArdMac_hydLowerTime)
 SETTINGS_PROPERTY_IMPL(int, ardMac_hydRaiseTime, ardMac, "ardMac/hydRaiseTime", 3, setArdMac_hydRaiseTime)
 SETTINGS_PROPERTY_IMPL(int, ardMac_setting0, ardMac, "ardMac/setting0", 0, setArdMac_setting0)
@@ -371,6 +375,8 @@ SETTINGS_PROPERTY_IMPL(int, plough_setting0, plough, "plough/setting0", 0, setPl
 SETTINGS_PROPERTY_IMPL(int, plough_desiredWidth, plough, "plough/desiredWidth", 200, setPlough_desiredWidth)
 SETTINGS_PROPERTY_IMPL(int, plough_deadzonePlough, plough, "plough/deadzonePlough", 20, setPlough_deadzonePlough)
 SETTINGS_PROPERTY_IMPL(int, plough_measuredDiff, plough, "plough/measuredDiff", 0, setPlough_measuredDiff)
+SETTINGS_PROPERTY_IMPL(int, plough_minWidth, plough, "plough/minWidth", 0, setPlough_minWidth)
+SETTINGS_PROPERTY_IMPL(int, plough_maxWidth, plough, "plough/maxWidth", 10, setPlough_maxWidth)
 
 
 // QColor Implementations (29 properties)

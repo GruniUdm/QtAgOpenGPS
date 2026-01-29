@@ -7,7 +7,7 @@
 
 void SettingsManager::initializeFromSettings()
 {
-    // Load all 399 properties from QSettings with default fallback
+    // Load all 405 properties from QSettings with default fallback
     // IMPORTANT: Uses QSettings second parameter for defaults (not hardcoded 0/false)
 
     m_menu_language.setValue(m_qsettings->value("menu/language", "en").toString());
@@ -469,7 +469,13 @@ void SettingsManager::initializeFromSettings()
     m_plough_desiredWidth.setValue(m_qsettings->value("plough/desiredWidth", 200).toInt());
     m_plough_deadzonePlough.setValue(m_qsettings->value("plough/deadzonePlough", 20).toInt());
     m_plough_measuredDiff.setValue(m_qsettings->value("plough/measuredDiff", 0).toInt());
+    m_plough_invertRelays.setValue(m_qsettings->value("plough/invertRelays", false).toBool());
+    m_plough_plowControlOn.setValue(m_qsettings->value("plough/plowControlOn", false).toBool());
+    m_plough_isCalibrated.setValue(m_qsettings->value("plough/isCalibrated", false).toBool());
+    m_plough_autoWidthEnabled.setValue(m_qsettings->value("plough/autoWidthEnabled", false).toBool());
+    m_plough_minWidth.setValue(m_qsettings->value("plough/minWidth", 0).toInt());
+    m_plough_maxWidth.setValue(m_qsettings->value("plough/maxWidth", 10).toInt());
 
     // All properties loaded with proper defaults
-    qDebug() << "SettingsManager: initialized" << 399 << "properties from" << m_qsettings->fileName();
+    qDebug() << "SettingsManager: initialized" << 405 << "properties from" << m_qsettings->fileName();
 }

@@ -4,7 +4,7 @@
 // File 3/3: Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS members for private: section
 
 // Generated property members with Qt6 bindable support
-// Total members: 399
+// Total members: 405
 
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, QString, m_menu_language, "en", &SettingsManager::menu_languageChanged)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_feature_isOffsetFixOn, false, &SettingsManager::feature_isOffsetFixOnChanged)
@@ -405,5 +405,11 @@ Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, int, m_plough_setting0, 0,
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, int, m_plough_desiredWidth, 200, &SettingsManager::plough_desiredWidthChanged)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, int, m_plough_deadzonePlough, 20, &SettingsManager::plough_deadzonePloughChanged)
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, int, m_plough_measuredDiff, 0, &SettingsManager::plough_measuredDiffChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_plough_invertRelays, false, &SettingsManager::plough_invertRelaysChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_plough_plowControlOn, false, &SettingsManager::plough_plowControlOnChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_plough_isCalibrated, false, &SettingsManager::plough_isCalibratedChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, bool, m_plough_autoWidthEnabled, false, &SettingsManager::plough_autoWidthEnabledChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, int, m_plough_minWidth, 0, &SettingsManager::plough_minWidthChanged)
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SettingsManager, int, m_plough_maxWidth, 10, &SettingsManager::plough_maxWidthChanged)
 
 // End of generated property members

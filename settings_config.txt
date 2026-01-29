@@ -401,3 +401,10 @@ plough_setting0|plough/setting0|0|int|
 plough_desiredWidth|plough/desiredWidth|200|int|
 plough_deadzonePlough|plough/deadzonePlough|20|int|
 plough_measuredDiff|plough/measuredDiff|0|int|
+plough_invertRelays|plough/invertRelays|false|bool|
+plough_plowControlOn|plough/plowControlOn|false|bool|
+plough_isCalibrated|plough/isCalibrated|false|bool|
+plough_autoWidthEnabled|plough/autoWidthEnabled|false|bool|
+plough_minWidth|plough/minWidth|0|int|
+plough_maxWidth|plough/maxWidth|10|int|
+

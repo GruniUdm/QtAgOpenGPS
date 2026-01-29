@@ -27,41 +27,30 @@ Rectangle{
     function load_settings()
     {
         if (visible) {
-            var sett = SettingsManager.plough_setting0
-
-            if ((sett & 1) === 0 ) invertRelays.checked = false
-            else invertRelays.checked = true
-
-            if ((sett & 2) === 0 ) plowControlOn.checked = false
-            else plowControlOn.checked = true
-
+            invertRelays.checked = SettingsManager.plough_invertRelays
+            plowControlOn.checked = SettingsManager.plough_plowControlOn
             desiredWidth.value = SettingsManager.plough_desiredWidth
             deadzonePlow.value = SettingsManager.plough_deadzonePlough
             measuredDiff.value = SettingsManager.plough_measuredDiff
+            maxWidth.value = SettingsManager.plough_maxWidth
+            minWidth.value = SettingsManager.plough_minWidth
+
 
             unsaved.visible = false
         }
     }
 
     function save_settings() {
-        var set = 1
-        var reset = 2046
-        var sett = 0
 
-        if (invertRelays.checked) sett |= set
-        else sett &= reset
 
-        set <<=1
-        reset <<= 1
-        reset += 1
-
-        if(plowControlOn.checked) sett |= set
-        else sett &= reset
-
-        SettingsManager.plough_setting0 = sett
+        SettingsManager.plough_invertRelays = invertRelays.checked
+        SettingsManager.plough_plowControlOn = plowControlOn.checked
         SettingsManager.plough_desiredWidth = desiredWidth.value
         SettingsManager.plough_deadzonePlough = deadzonePlow.value
         SettingsManager.plough_measuredDiff = measuredDiff.value
+        SettingsManager.plough_maxWidth = maxWidth.value
+        SettingsManager.plough_minWidth = minWidth.value
+        //PloughControl.updatePloughData()
 
         ModuleComm.modulesSend238()
         //pboxSendMachine.Visible = false
@@ -313,15 +302,47 @@ Rectangle{
 
                 // === Ряд 4: Кнопка сохранения ===
                 // Ячейка 4.1 - Пустая
-                Item{
+                Rectangle {
                     Layout.row: 3
                     Layout.column: 0
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: "transparent"
+
+
+                    SpinBoxCustomized {
+                        id: minWidth
+                        anchors.fill: parent
+                        anchors.margins: 5 * theme.scaleWidth
+                        from: 1
+                        to: 255
+                        editable: true
+                        enabled: plowControlOn.checked
+                        text: qsTr("min Width")
+                        onValueChanged: unsaved.visible = true
+                    }
                 }
 
                 // Ячейка 4.2 - Пустая
-                Item{
+                Rectangle {
                     Layout.row: 3
                     Layout.column: 1
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: "transparent"
+
+
+                    SpinBoxCustomized {
+                        id: maxWidth
+                        anchors.fill: parent
+                        anchors.margins: 5 * theme.scaleWidth
+                        from: 1
+                        to: 255
+                        editable: true
+                        enabled: plowControlOn.checked
+                        text: qsTr("max Width")
+                        onValueChanged: unsaved.visible = true
+                    }
                 }
 
                 // Ячейка 4.3 - Кнопка сохранения

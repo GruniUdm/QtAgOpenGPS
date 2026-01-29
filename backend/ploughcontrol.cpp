@@ -190,16 +190,14 @@ void PloughControl::saveSettings()
 
 void PloughControl::loadSettings()
 {
-    m_settings.beginGroup("Plough");
-    m_targetWidth = m_settings.value("targetWidth", 200).toInt();
-    m_ploughEnabled = m_settings.value("ploughEnabled", false).toBool();
-    m_autoWidthEnabled = m_settings.value("autoWidthEnabled", false).toBool();
+    m_targetWidth = SettingsManager::instance()->plough_desiredWidth();
+    m_ploughEnabled = SettingsManager::instance()->plough_plowControlOn();
+    m_autoWidthEnabled = SettingsManager::instance()->plough_autoWidthEnabled();
     m_autoLiftEnabled = m_settings.value("autoLiftEnabled", false).toBool();
-    m_deadBand = m_settings.value("deadBand", 10).toInt();
-    m_minWidth = m_settings.value("minWidth", 0).toInt();
-    m_maxWidth = m_settings.value("maxWidth", 400).toInt();
-    m_isCalibrated = m_settings.value("isCalibrated", false).toBool();
-    m_settings.endGroup();
+    m_deadBand = SettingsManager::instance()->plough_deadzonePlough();
+    m_minWidth = SettingsManager::instance()->plough_minWidth();
+    m_maxWidth = SettingsManager::instance()->plough_maxWidth();
+    m_isCalibrated = SettingsManager::instance()->plough_isCalibrated();
 
     // Обновляем модель из загруженных настроек
     updateModelFromSettings();
@@ -225,6 +223,8 @@ void PloughControl::setTargetWidth(int width)
 {
     if (width >= m_minWidth && width <= m_maxWidth && m_targetWidth != width) {
         m_targetWidth = width;
+
+        SettingsManager::instance()->setPlough_desiredWidth(width);
 
         // Обновляем модель с индексом 0
         m_ploughModel->updateTargetWidth(0, width);

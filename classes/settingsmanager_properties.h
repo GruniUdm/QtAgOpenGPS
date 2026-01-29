@@ -6,7 +6,7 @@
 #include "settingsmanager_macros.h"
 
 // Generated Q_PROPERTY declarations with Qt6 bindable support
-// Total properties: 399
+// Total properties: 405
 
 
 // QString Properties (50 properties) - DECLARATIONS ONLY
@@ -61,7 +61,7 @@ SETTINGS_PROPERTY_STRING_DECLARATIONS(rate_productName1, setRate_productName1)
 SETTINGS_PROPERTY_STRING_DECLARATIONS(rate_productName2, setRate_productName2)
 SETTINGS_PROPERTY_STRING_DECLARATIONS(rate_productName3, setRate_productName3)
 
-// bool Properties (131 properties) - DECLARATIONS ONLY
+// bool Properties (135 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_DECLARATIONS(bool, feature_isOffsetFixOn, setFeature_isOffsetFixOn)
 SETTINGS_PROPERTY_DECLARATIONS(bool, ardMac_isDanFoss, setArdMac_isDanFoss)
 SETTINGS_PROPERTY_DECLARATIONS(bool, ardMac_isHydEnabled, setArdMac_isHydEnabled)
@@ -193,6 +193,10 @@ SETTINGS_PROPERTY_DECLARATIONS(bool, mod_isIMUConnected, setMod_isIMUConnected)
 SETTINGS_PROPERTY_DECLARATIONS(bool, mod_isSteerConnected, setMod_isSteerConnected)
 SETTINGS_PROPERTY_DECLARATIONS(bool, mod_isMachineConnected, setMod_isMachineConnected)
 SETTINGS_PROPERTY_DECLARATIONS(bool, udp_isSendNMEAToUDP, setUdp_isSendNMEAToUDP)
+SETTINGS_PROPERTY_DECLARATIONS(bool, plough_invertRelays, setPlough_invertRelays)
+SETTINGS_PROPERTY_DECLARATIONS(bool, plough_plowControlOn, setPlough_plowControlOn)
+SETTINGS_PROPERTY_DECLARATIONS(bool, plough_isCalibrated, setPlough_isCalibrated)
+SETTINGS_PROPERTY_DECLARATIONS(bool, plough_autoWidthEnabled, setPlough_autoWidthEnabled)
 
 // double Properties (104 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_DECLARATIONS(double, ab_lineLength, setAb_lineLength)
@@ -300,7 +304,7 @@ SETTINGS_PROPERTY_DECLARATIONS(double, menu_youSkipWidth, setMenu_youSkipWidth)
 SETTINGS_PROPERTY_DECLARATIONS(double, sim_latitude, setSim_latitude)
 SETTINGS_PROPERTY_DECLARATIONS(double, sim_longitude, setSim_longitude)
 
-// int Properties (67 properties) - DECLARATIONS ONLY
+// int Properties (69 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_DECLARATIONS(int, ardMac_hydLowerTime, setArdMac_hydLowerTime)
 SETTINGS_PROPERTY_DECLARATIONS(int, ardMac_hydRaiseTime, setArdMac_hydRaiseTime)
 SETTINGS_PROPERTY_DECLARATIONS(int, ardMac_setting0, setArdMac_setting0)
@@ -368,6 +372,8 @@ SETTINGS_PROPERTY_DECLARATIONS(int, plough_setting0, setPlough_setting0)
 SETTINGS_PROPERTY_DECLARATIONS(int, plough_desiredWidth, setPlough_desiredWidth)
 SETTINGS_PROPERTY_DECLARATIONS(int, plough_deadzonePlough, setPlough_deadzonePlough)
 SETTINGS_PROPERTY_DECLARATIONS(int, plough_measuredDiff, setPlough_measuredDiff)
+SETTINGS_PROPERTY_DECLARATIONS(int, plough_minWidth, setPlough_minWidth)
+SETTINGS_PROPERTY_DECLARATIONS(int, plough_maxWidth, setPlough_maxWidth)
 
 // QColor Properties (29 properties) - DECLARATIONS ONLY
 SETTINGS_PROPERTY_COLOR_DECLARATIONS(color_sec01, setColor_sec01)
