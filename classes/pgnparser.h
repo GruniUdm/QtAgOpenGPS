@@ -82,6 +82,7 @@ public:
         // Plough
         int width = 0;
         int mode = 0;
+        int deadBand = 0;
     };
 
     explicit PGNParser(QObject *parent = nullptr);

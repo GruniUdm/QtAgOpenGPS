@@ -4,6 +4,10 @@
 #include <QQmlEngine>
 #include <QJSEngine>
 #include <QMutexLocker>
+#include "agioservice.h"
+#include "pgnparser.h"
+#include "cpgn.h"
+#include "modulecomm.h"
 
 Q_LOGGING_CATEGORY (plough_log, "backend.qtagopengps")
 
@@ -388,6 +392,7 @@ void PloughControl::onPloughDataReady(const PGNParser::ParsedData& data)
 
         m_currentWidth = data.width;
         m_ploughMode = data.mode;
+        m_deadBand = data.deadBand;
         updatePloughData(m_currentWidth, m_ploughMode);
      }
 }
@@ -452,13 +457,28 @@ void PloughControl::updatePloughMode()
     }
 }
 
-void PloughControl::sendCurrentSettings()
-{
-    // Формируем и отправляем настройки на устройство
-    // В реальной системе здесь будет формирование PGN пакета
-    QByteArray settings;
-    // ... заполнение settings ...
-    emit sendSettingsCommand(settings);
+// void PloughControl::sendCurrentSettings()
+// {
+//     // Формируем и отправляем настройки на устройство
+//     // В реальной системе здесь будет формирование PGN пакета
+//     QByteArray settings;
+//     // ... заполнение settings ...
+//     emit sendSettingsCommand(settings);
+// }
+
+void PloughControl::sendCurrentSettings() {
+
+    CPGN_EE &p_238 = ModuleComm::instance()->p_238;
+    p_238.pgn[p_238.set0] = SettingsManager::instance()->ardMac_setting0();
+    p_238.pgn[p_238.raiseTime] = SettingsManager::instance()->ardMac_hydRaiseTime();
+    p_238.pgn[p_238.lowerTime] = SettingsManager::instance()->ardMac_hydLowerTime();
+
+    p_238.pgn[p_238.user1] = (SettingsManager::instance()->plough_desiredWidth()-200)/10;
+    p_238.pgn[p_238.user2] = SettingsManager::instance()->ardMac_user2();
+    p_238.pgn[p_238.user3] = (uint8_t)(m_calibrationValue & 0xFF),
+    p_238.pgn[p_238.user4] = (uint8_t)(m_calibrationValue >> 8),
+
+    AgIOService::instance()->sendPgn(p_238.pgn);
 }
 
 void PloughControl::updateModelFromSettings()
