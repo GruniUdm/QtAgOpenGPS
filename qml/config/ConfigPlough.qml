@@ -27,8 +27,20 @@ Rectangle{
     function load_settings()
     {
         if (visible) {
-            invertRelays.checked = SettingsManager.plough_invertRelays
-            plowControlOn.checked = SettingsManager.plough_plowControlOn
+            var sett = SettingsManager.m_plough_setting0
+
+            if ((sett & 1) === 0 ) invertRelays.checked = false
+            else invertRelays.checked = true
+
+            if ((sett & 2) === 0 ) plowControlOn.checked = false
+            else plowControlOn.checked = true
+
+            if ((sett & 4) === 0 ) autoWidth.checked = false
+            else autoWidth.checked = true
+
+            if ((sett & 8) === 0 ) autoLift.checked = false
+            else autoLift.checked = true
+
             desiredWidth.value = SettingsManager.plough_desiredWidth
             deadzonePlow.value = SettingsManager.plough_deadzonePlough
             measuredDiff.value = SettingsManager.plough_measuredDiff
@@ -41,7 +53,32 @@ Rectangle{
     }
 
     function save_settings() {
+        var set = 1;
+        var reset = 2046;
+        var sett = 0;
 
+        if (invertRelays.checked) sett |= set;
+        else sett &= reset;
+
+        set <<= 1;
+        reset <<= 1;
+        reset += 1;
+        if (plowControlOn.checked) sett |= set;
+        else sett &= reset;
+
+        set <<= 1;
+        reset <<= 1;
+        reset += 1;
+        if (autoWidth.checked) sett |= set;
+        else sett &= reset;
+
+        set <<= 1;
+        reset <<= 1;
+        reset += 1;
+        if (autoLift.checked) sett |= set;
+        else sett &= reset;
+
+        SettingsManager.m_plough_setting0 = sett
         SettingsManager.plough_invertRelays = invertRelays.checked
         SettingsManager.plough_plowControlOn = plowControlOn.checked
         SettingsManager.plough_desiredWidth = desiredWidth.value
@@ -162,20 +199,21 @@ Rectangle{
                         onClicked: unsaved.visible = true
                     }
                 }
-                // Ячейка 2.3 - Изображение
-                Rectangle {
+                Item {
                     Layout.row: 0
                     Layout.column: 2
-                    Layout.rowSpan: 2
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    color: "transparent"
+                    //Layout.fillHeight: true
 
-                    Image {
-                        anchors.fill: parent
-                        anchors.margins: 10 * theme.scaleWidth
-                        source: prefix + "/images/Config/PloughWidth.png"
-                        fillMode: Image.PreserveAspectFit
+                    IconButtonColor {
+                        id: autoWidth
+                        anchors.centerIn: parent
+                        height: 60 * theme.scaleHeight
+                        text: qsTr("Auto Width")
+                        icon.source: prefix + "/images/Config/arrows-horizontal.png"
+                        checkable: true
+                        enabled: plowControlOn.checked
+                        onClicked: unsaved.visible = true
                     }
                 }
 
@@ -225,6 +263,24 @@ Rectangle{
                         enabled: plowControlOn.checked
                         text: qsTr("Deadzone in mm")
                         onValueChanged: unsaved.visible = true
+                    }
+                }
+
+                Item {
+                    Layout.row: 1
+                    Layout.column: 2
+                    Layout.fillWidth: true
+                    //Layout.fillHeight: true
+
+                    IconButtonColor {
+                        id: autoLift
+                        anchors.centerIn: parent
+                        height: 60 * theme.scaleHeight
+                        text: qsTr("Auto Lift")
+                        icon.source: prefix + "/images/Config/arrows-down-up.png"
+                        checkable: true
+                        enabled: plowControlOn.checked
+                        onClicked: unsaved.visible = true
                     }
                 }
 

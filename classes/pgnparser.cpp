@@ -1297,9 +1297,12 @@ PGNParser::ParsedData PGNParser::parsePGN237(const QByteArray& data) {
     }
 
     // Extract relay status
-    result.width = (data[6] << 8) + data[5];
+    qint16 widthraw = static_cast<qint16>(
+        (static_cast<quint8>(data[6]) << 8) | static_cast<quint8>(data[5])
+        );
+    result.width = widthraw;
     result.mode = data[7];
-    result.deadBand = data[13];
+    result.deadBand = data[12];
 
     result.isValid = true;
     result.sourceType = "PGN";

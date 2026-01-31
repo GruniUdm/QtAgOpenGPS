@@ -98,11 +98,7 @@ bool PloughControl::isCalibrated() const { return m_isCalibrated; }
 bool PloughControl::sectionOn() const { return m_sectionOn; }
 int PloughControl::lineDistance() const { return m_lineDistance; }
 int PloughControl::error() const { return m_error; }
-
-QString PloughControl::ploughModeName() const
-{
-    return modeToString(m_ploughMode);
-}
+QString PloughControl::ploughModeName() const { return modeToString(m_ploughMode); }
 
 QString PloughControl::modeToString(int mode) const
 {
@@ -128,6 +124,11 @@ void PloughControl::calibrateMin()
 
         // Отправляем команду калибровки
         emit sendCalibrationCommand(111, m_calibrationValue);
+        CPGN_EE &p_238 = ModuleComm::instance()->p_238;
+        p_238.pgn[p_238.user3] = 111,
+        p_238.pgn[p_238.user4] = (uint8_t)(m_calibrationValue),
+        emit ModuleComm::instance()->p_239_changed();
+        AgIOService::instance()->sendPgn(p_238.pgn);
 
         // Сохраняем калибровку
         m_minWidth = m_calibrationValue;
@@ -154,6 +155,11 @@ void PloughControl::calibrateMax()
 
         // Отправляем команду калибровки
         emit sendCalibrationCommand(222, m_calibrationValue);
+        CPGN_EE &p_238 = ModuleComm::instance()->p_238;
+        p_238.pgn[p_238.user3] = 222,
+        p_238.pgn[p_238.user4] = (uint8_t)(m_calibrationValue),
+        emit ModuleComm::instance()->p_239_changed();
+        AgIOService::instance()->sendPgn(p_238.pgn);
 
         // Сохраняем калибровку
         m_maxWidth = m_calibrationValue;
@@ -395,17 +401,10 @@ void PloughControl::onPloughDataReady(const PGNParser::ParsedData& data)
         m_deadBand = data.deadBand;
         updatePloughData(m_currentWidth, m_ploughMode);
      }
-}
+    CPGN_EF &p_239 = ModuleComm::instance()->p_239;
+    p_239.pgn[CPGN_EF::user] = m_lineDistance;
 
-void PloughControl::onMachineSettingsReady(const PGNParser::ParsedData& data)
-{
-    QMutexLocker locker(&mutex);
-
-    // Обработка настроек машины (PGN 0xEE из Arduino скетча)
-    // if (data.pgn == 0xEE) {
-    //     // Здесь можно обработать подтверждение калибровки или других настроек
-    //     // Например, если устройство подтвердило получение калибровки
-    // }
+    AgIOService::instance()->sendPgn(p_239.pgn);
 }
 
 // Вспомогательные методы
@@ -457,22 +456,13 @@ void PloughControl::updatePloughMode()
     }
 }
 
-// void PloughControl::sendCurrentSettings()
-// {
-//     // Формируем и отправляем настройки на устройство
-//     // В реальной системе здесь будет формирование PGN пакета
-//     QByteArray settings;
-//     // ... заполнение settings ...
-//     emit sendSettingsCommand(settings);
-// }
-
 void PloughControl::sendCurrentSettings() {
 
     CPGN_EE &p_238 = ModuleComm::instance()->p_238;
     p_238.pgn[p_238.set0] = SettingsManager::instance()->ardMac_setting0();
     p_238.pgn[p_238.raiseTime] = SettingsManager::instance()->ardMac_hydRaiseTime();
     p_238.pgn[p_238.lowerTime] = SettingsManager::instance()->ardMac_hydLowerTime();
-
+    p_238.pgn[p_238.enableHyd] = SettingsManager::instance()->plough_deadzonePlough();
     p_238.pgn[p_238.user1] = (SettingsManager::instance()->plough_desiredWidth()-200)/10;
     p_238.pgn[p_238.user2] = SettingsManager::instance()->ardMac_user2();
     p_238.pgn[p_238.user3] = (uint8_t)(m_calibrationValue & 0xFF),

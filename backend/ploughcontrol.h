@@ -120,7 +120,6 @@ signals:
 public slots:
     // Слот для обработки входящих данных по протоколу
     void onPloughDataReady(const PGNParser::ParsedData& data);
-    void onMachineSettingsReady(const PGNParser::ParsedData& data);
 
 private:
     // Вспомогательные методы

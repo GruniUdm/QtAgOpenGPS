@@ -148,6 +148,7 @@ public:
         hydLift = 7,
         tram = 8,
         geoStop = 9, //out of bounds etc
+        user = 10,
         sc1to8 = 11,
         sc9to16 = 12
     };
