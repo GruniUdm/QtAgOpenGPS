@@ -39,6 +39,52 @@ Window {
         onActivated: toggleFieldViewTest()
     }
 
+    signal zoomOutPressed()
+    signal zoomInPressed()
+    signal nudgeLeftPressed()
+    signal nudgeRightPressed()
+    signal autoSteerPressed()
+
+
+    Item {
+                anchors.fill: parent
+                focus: true
+
+                Component.onCompleted: forceActiveFocus()
+
+                onActiveFocusChanged: {
+                    if (!activeFocus) {
+                        forceActiveFocus()
+                    }
+                }
+
+        Keys.onPressed: function(event) {
+            console.log(qmlLog, "Клавиша:", event.key)
+
+            switch (event.key) {
+                case 16777264: // верх
+                    zoomOutPressed()
+                    break
+                case 16777265: // низ
+                    zoomInPressed()
+                    break
+                case 16777346: // лево
+                    nudgeLeftPressed()
+                    break
+                case 16777347: // право
+                    nudgeRightPressed()
+                    break
+                case 16777350: // середина
+                    autoSteerPressed()
+                    break
+                default:
+                    return
+            }
+            event.accepted = true
+        }
+        }
+
+
     LoggingCategory {
         id: qmlLog
 

@@ -9,7 +9,17 @@ ColumnLayout {
     id: rightColumn //buttons
 
     visible: Backend.isJobStarted
+    property bool statAutoSteer: false
 
+    Connections {
+            target: mainWindow
+            function onAutoSteerPressed() {
+                statAutoSteer = !statAutoSteer
+                btnAutoSteer.clicked()
+                btnAutoSteer.checked = statAutoSteer
+                console.log(qmlLog, "AutoSteer Pressed from keyboard")
+            }
+        }
 
     onHeightChanged: {
         theme.btnSizes[0] = height / (children.length)
