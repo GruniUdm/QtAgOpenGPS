@@ -401,6 +401,8 @@ qt_add_qml_module(QtAgOpenGPS
     RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
     SOURCES rendering.h
     SOURCES backend/backend.h backend/backend.cpp
+    SOURCES backend/brightnesscontroller.h backend/brightnesscontroller.cpp
+    SOURCES backend/screenbrightness.h backend/screenbrightness.cpp
     SOURCES backend/guidance.h backend/guidance.cpp
     SOURCES simpleproperty.h
     #SOURCES globals.h globals.cpp

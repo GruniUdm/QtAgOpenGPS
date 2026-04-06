@@ -32,8 +32,7 @@ Comp.TimedRectangle{
         anchors.topMargin: 5
         spacing: 6
         flow: Grid.TopToBottom
-        //rows:6
-		rows: 5
+        rows: SettingsManager.display_isBrightnessOn?6:5
         columns:2
         onChildrenChanged: console.log("childrenChanged")
         Comp.IconButtonTransparent {
@@ -100,8 +99,10 @@ Comp.TimedRectangle{
             height: 70
             radius: 10
             icon.source: prefix + "/images/BrightnessDn.png"
-            onClicked: displayButtons.resetTimer()
-            // Threading Phase 1: Brightness control visibility
+            onClicked: {
+                BrightnessController.brightnessDown()
+                displayButtons.resetTimer()
+            }
             visible: SettingsManager.display_isBrightnessOn
         }
         Comp.IconButtonTransparent {
@@ -156,13 +157,14 @@ Comp.TimedRectangle{
         }
         Comp.IconButtonTransparent {
             id: btnBrightnessUp
-            //visible: false //todo
             width: 70
             height: 70
             radius: 10
             icon.source: prefix + "/images/BrightnessUp.png"
-            onClicked: displayButtons.resetTimer()
-            // Threading Phase 1: Brightness control visibility
+            onClicked: {
+                BrightnessController.brightnessUp()
+                displayButtons.resetTimer()
+            }
             visible: SettingsManager.display_isBrightnessOn
         }
     }

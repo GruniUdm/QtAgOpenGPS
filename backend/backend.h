@@ -12,6 +12,8 @@
 #include "vec2.h"
 #include "simpleproperty.h"
 #include "cnmea.h"
+#include "screenbrightness.h"
+#include "settingsmanager.h"
 
 class Backend : public QObject
 {
