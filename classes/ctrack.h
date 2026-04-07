@@ -273,6 +273,12 @@ public slots:
     Q_INVOKABLE void nudge_center();
     Q_INVOKABLE void nudge(double dist_m);
 
+    Q_INVOKABLE void smoothAB(int smPts);
+    Q_INVOKABLE void smoothABSmoothMore();
+    Q_INVOKABLE void smoothABSmoothLess();
+    Q_INVOKABLE void smoothABSmoothSave();
+    Q_INVOKABLE void smoothABSmoothCancel();
+
 private:
     // Used by QML model interface
     QHash<int, QByteArray> m_roleNames;

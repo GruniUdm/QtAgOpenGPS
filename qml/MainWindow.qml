@@ -1112,6 +1112,10 @@ Window {
             id: refNudge
             visible: false
         }
+        Tracks.SmoothAB{
+            id: smoothABDialog
+            visible: false
+        }
         SetSimCoords{
             id: setSimCoords
             anchors.fill: parent

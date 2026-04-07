@@ -1034,6 +1034,53 @@ void CTrack::nudge(double dist_m)
     NudgeTrack(dist_m);
 }
 
+void CTrack::smoothAB(int smPts)
+{
+    if (idx() < 0) return;
+    if (idx() >= gArr.length()) return;
+
+    curve.isSmoothWindowOpen = true;
+    curve.SmoothAB(smPts, gArr[idx()]);
+}
+
+void CTrack::smoothABSmoothMore()
+{
+    if (idx() < 0) return;
+    if (idx() >= gArr.length()) return;
+
+    static int smoothCount = 20;
+    smoothCount++;
+    if (smoothCount > 100) smoothCount = 100;
+    curve.SmoothAB(smoothCount * 2, gArr[idx()]);
+}
+
+void CTrack::smoothABSmoothLess()
+{
+    if (idx() < 0) return;
+    if (idx() >= gArr.length()) return;
+
+    static int smoothCount = 20;
+    smoothCount--;
+    if (smoothCount < 2) smoothCount = 2;
+    curve.SmoothAB(smoothCount * 2, gArr[idx()]);
+}
+
+void CTrack::smoothABSmoothSave()
+{
+    if (idx() < 0) return;
+    if (idx() >= gArr.length()) return;
+
+    curve.isSmoothWindowOpen = false;
+    curve.SaveSmoothList(gArr[idx()]);
+    curve.smooList.clear();
+}
+
+void CTrack::smoothABSmoothCancel()
+{
+    curve.isSmoothWindowOpen = false;
+    curve.smooList.clear();
+}
+
 void CTrack::delete_track(int index)
 {
     //if we are using the track we are deleting, cancel

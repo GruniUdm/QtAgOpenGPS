@@ -73,8 +73,18 @@ import "wizards" as Wiz
                 id: smABCurve
                 icon.source: prefix + "/images/ABSmooth.png"
                 text: qsTr("Smooth AB Curve")
-                // Threading Phase 1: AB smooth feature visibility
                 visible: SettingsManager.feature_isABSmoothOn
+                enabled: !!Backend.isJobStarted && TracksInterface.idx > -1
+                onClicked: {
+                    if (!Backend.isJobStarted) {
+                        aogInterface.timedMessage(2000, qsTr("Field Not Open"), qsTr("Start a new field"))
+                    } else if (TracksInterface.idx < 0) {
+                        aogInterface.timedMessage(2000, qsTr("Curve Not On"), qsTr("Turn AB Curve on"))
+                    } else {
+                        smoothABDialog.show()
+                        toolsMenu.visible = false
+                    }
+                }
             }
 
             Comp.IconButtonTextBeside {
