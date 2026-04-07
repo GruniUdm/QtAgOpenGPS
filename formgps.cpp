@@ -725,6 +725,7 @@ void FormGPS::JobClose()
     //tracks
     track.gArr.clear();
     track.setIdx(-1);
+    track.reloadModel();
 
     //clean up tram
     tram.displayMode = 0;
