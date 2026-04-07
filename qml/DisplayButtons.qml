@@ -37,9 +37,6 @@ Comp.TimedRectangle{
         onChildrenChanged: console.log("childrenChanged")
         Comp.IconButtonTransparent {
             id: btnTiltDown
-            width: 70
-            height: 70
-            radius: 10
             icon.source: prefix + "/images/TiltDown.png"
             onClicked: {
                 Backend.tiltDown() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
@@ -48,9 +45,6 @@ Comp.TimedRectangle{
         }
         Comp.IconButtonTransparent {
             id: btnCamera2d
-            width: 70
-            height: 70
-            radius: 10
             icon.source: prefix + "/images/Camera2D64.png"
             onClicked: {
                 Backend.view2D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
@@ -59,9 +53,6 @@ Comp.TimedRectangle{
         }
         Comp.IconButtonTransparent {
             id: btnCameraNorth2d
-            width: 70
-            height: 70
-            radius: 10
             icon.source: prefix + "/images/CameraNorth2D.png"
             onClicked: {
                 Backend.normal2D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
@@ -70,9 +61,6 @@ Comp.TimedRectangle{
         }
         Comp.IconButtonTransparent {
             id: btnZoomOut
-            width: 70
-            height: 70
-            radius: 10
             icon.source: prefix + "/images/ZoomOut48.png"
             onClicked: {
                 Backend.zoomOut() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
@@ -81,9 +69,6 @@ Comp.TimedRectangle{
         }
         Comp.IconButtonTransparent {
             id: btnWindowDayNight
-            width: 70
-            height: 70
-            radius: 10
             icon.source: prefix + "/images/WindowDayMode.png"
             iconChecked: prefix + "/images/WindowNightMode.png"
             checkable: true
@@ -95,9 +80,6 @@ Comp.TimedRectangle{
         }
         Comp.IconButtonTransparent {
             id: btnBrightnessDown
-            width: 70
-            height: 70
-            radius: 10
             icon.source: prefix + "/images/BrightnessDn.png"
             onClicked: {
                 BrightnessController.brightnessDown()
@@ -107,9 +89,6 @@ Comp.TimedRectangle{
         }
         Comp.IconButtonTransparent {
             id: btnTiltUp
-            width: 70
-            height: 70
-            radius: 10
             icon.source: prefix + "/images/TiltUp.png"
             onClicked: {
                 Backend.tiltUp() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
@@ -118,9 +97,6 @@ Comp.TimedRectangle{
         }
         Comp.IconButtonTransparent {
             id: btnCamera3d
-            width: 70
-            height: 70
-            radius: 10
             icon.source: prefix + "/images/Camera3D64.png"
             onClicked: {
                 Backend.view3D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
@@ -129,9 +105,6 @@ Comp.TimedRectangle{
         }
         Comp.IconButtonTransparent {
             id: btnCameraNorth3d
-            width: 70
-            height: 70
-            radius: 10
             icon.source: prefix + "/images/CameraNorth64.png"
             onClicked: {
                 Backend.normal3D() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
@@ -140,9 +113,6 @@ Comp.TimedRectangle{
         }
         Comp.IconButtonTransparent {
             id: btnZoomIn
-            width: 70
-            height: 70
-            radius: 10
             icon.source: prefix + "/images/ZoomIn48.png"
             onClicked: {
                 Backend.zoomIn() // Qt 6.8 MODERN: Direct Q_INVOKABLE call
@@ -151,15 +121,12 @@ Comp.TimedRectangle{
         }
         Rectangle {
             id: btnHZ
-            width: 70
-            height: 70
+            width: btnCameraNorth3d.width
+            height: btnCameraNorth3d.height
             radius: 10
         }
         Comp.IconButtonTransparent {
             id: btnBrightnessUp
-            width: 70
-            height: 70
-            radius: 10
             icon.source: prefix + "/images/BrightnessUp.png"
             onClicked: {
                 BrightnessController.brightnessUp()

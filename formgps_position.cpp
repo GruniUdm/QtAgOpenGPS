@@ -1122,6 +1122,7 @@ void FormGPS::UpdateFixPosition()
                     if (yt.isTurnCreationTooClose && !yt.turnTooCloseTrigger)
                     {
                         yt.turnTooCloseTrigger = true;
+                        Backend::instance()->set_turnTooCloseTrigger(true);
                         //if (sounds.isTurnSoundOn) sounds.sndUTurnTooClose.Play(); Implemented in QML
                     }
                 }

@@ -26,7 +26,6 @@ Item {
     property bool isRTK: false
     property double gpsAgeAlarm: 5.0
 
-    property bool hydLiftInitialized: false
     property int defaultHeight: 768
     property int defaultWidth: 1024
     property double scaleHeight: mainWindow.height / defaultHeight
@@ -42,6 +41,12 @@ Item {
         buttonSize = Math.min(...btnSizes) - 2.5
         //console.log("Button size is now " + buttonSize)
     }
+
+    property bool hydLiftInitialized: false
+    property bool turnTooCloseInitialized: false
+    property bool distancePivotInitialized: false
+    property bool approachingYouTurnInitialized: false
+    property bool isBoundAlarming: false
     property color whiteDayBlackNight: "white"
 
 
@@ -74,7 +79,11 @@ Item {
         }
     }
 
-    Component.onCompleted: updateTheme()
+    Component.onCompleted: {
+        updateTheme()
+        turnTooCloseInitialized = true
+        distancePivotInitialized = true
+    }
 
     // Threading Phase 1: Monitor SettingsManager changes via signals
     // Note: SettingsManager doesn't provide property change signals
@@ -131,9 +140,36 @@ Item {
     Connections{//sounds for youturn
         target: Backend
         function onDistancePivotToTurnLineChanged(){
-            if(Backend.distancePivotToTurnLine == 20)
-                if(SettingsManager.sound_isUturnOn)
-                    approachingYouTurn.play()
+            if(distancePivotInitialized) {
+                // Play sound when approaching turn zone (18-20m) and not yet triggered
+                if(Backend.distancePivotToTurnLine <= 20 && Backend.distancePivotToTurnLine >= 18 && !Backend.isYouTurnTriggered)
+                    if(!isBoundAlarming)
+                        if(SettingsManager.sound_isUturnOn) {
+                            approachingYouTurn.play()
+                            isBoundAlarming = true
+                        }
+                // Reset alarm when triggered (distance <= 1m)
+                if(Backend.distancePivotToTurnLine <= 1)
+                    isBoundAlarming = false
+            }
+        }
+    }
+
+    Connections{
+        target: Backend
+        function onIsYouTurnTriggeredChanged(){
+            if(Backend.isYouTurnTriggered)
+                isBoundAlarming = false
+        }
+    }
+
+    Connections{
+        target: Backend
+        function onTurnTooCloseTriggerChanged(){
+            if(turnTooCloseInitialized)
+                if(Backend.turnTooCloseTrigger)
+                    if(SettingsManager.sound_isUturnOn)
+                        youturnFail.play()
         }
     }
 
