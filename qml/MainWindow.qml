@@ -259,12 +259,7 @@ Window {
 
     // FieldViewItem content area
     FieldViewItem {
-        //id: testFieldView
-        //anchors.top: titleBar.bottom
-        //anchors.left: parent.left
-        //anchors.right: parent.right
-        //anchors.bottom: controlsRow.top
-        //anchors.margins: 4
+        id: fieldView
 
         camera {
             x: Backend.fixFrame.easting
@@ -463,9 +458,9 @@ Window {
         // Vehicle color from settings
 
         // Boundary and guidance colors (yellow and green)
+        //id: glcontrolrect
+        //objectName: "openglcontrol"
         guidanceColor: Qt.rgba(0, 1, 0, 1)
-        id: glcontrolrect
-        objectName: "openglcontrol"
 
         anchors.top: topLine.bottom
         anchors.left: parent.left
@@ -476,7 +471,7 @@ Window {
         Component.onCompleted: {
             //Let the backend have access to this item to
             //set properties and render callbacks
-            Backend.aogRenderer = glcontrolrect;
+            Backend.aogRenderer = fieldView;
         }
 
         //for moving the center of the view around
@@ -511,10 +506,12 @@ Window {
                        }
 
             onPositionChanged: if(panButton.checked){
-                                   parent.dragged(fromX, fromY, mouseX, mouseY)
-                                   fromX = mouseX
-                                   fromY = mouseY
-                               }
+                                    var scale = fieldView.width * (fieldView.camera.zoom)/2000000
+                                    fieldView.camera.panOffsetX += (mouseX - fromX) * scale
+                                    fieldView.camera.panOffsetY += (fromY - mouseY) * scale
+                                    fromX = mouseX
+                                    fromY = mouseY
+                                }
 
             onWheel:(wheel)=>{
                         if (wheel.angleDelta.y > 0) {
@@ -565,7 +562,7 @@ Window {
 
     Rectangle{
         id: noGPS
-        anchors.fill: glcontrolrect
+        anchors.fill: fieldView
         color: "#0d0d0d"
         visible: Backend.fixFrame.sentenceCounter> 29
         onVisibleChanged: if(visible){
@@ -686,7 +683,8 @@ Window {
                 iconChecked: prefix + "/images/SwitchOff.png"
                 onClicked: {
                     if (!checked) {
-                        Backend.centerOgl()
+                        fieldView.camera.panOffsetX = 0
+                        fieldView.camera.panOffsetY = 0
                     }
 
                 }

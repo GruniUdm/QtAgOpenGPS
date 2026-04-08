@@ -34,9 +34,11 @@ public:
     static SteerConfig *create (QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
     SIMPLE_BINDABLE_PROPERTY(bool, isSA)
+    SIMPLE_BINDABLE_PROPERTY(bool, isSALeft)
     SIMPLE_BINDABLE_PROPERTY(double, calcSteerAngleInner)
-    SIMPLE_BINDABLE_PROPERTY(double, calcSteerAngleOuter)
+    SIMPLE_BINDABLE_PROPERTY(double, calcSteerAngleLeft)
     SIMPLE_BINDABLE_PROPERTY(double, diameter)
+    SIMPLE_BINDABLE_PROPERTY(double, diameterLeft)
     SIMPLE_BINDABLE_PROPERTY(bool, haveSteerAngle)
     SIMPLE_BINDABLE_PROPERTY(bool, hasValidRecommendation)
     SIMPLE_BINDABLE_PROPERTY(int, sampleCount)
@@ -44,6 +46,8 @@ public:
 
     Q_INVOKABLE void startSA();
     Q_INVOKABLE void stopSA();
+    Q_INVOKABLE void startSALeft();
+    Q_INVOKABLE void stopSALeft();
 
      // Методы для работы с данными
     Q_INVOKABLE int getRecommendedWASOffsetAdjustment(int currentCPD);
@@ -67,8 +71,10 @@ private:
     QElapsedTimer elapsed;
 
     Vec3 startFix;
+    Vec3 startFixLeft;
     double dist = 0.0;
-    int counter = 0, secondCntr = 0, cntr = 0;  // Phase 6.0.24 Problem 18
+    double distLeft = 0.0;
+    int counter = 0, secondCntr = 0, cntr = 0, cntrLeft = 0;
 
     // Публичные свойства was wizard
     double recommendedWASZero = 0;
@@ -96,9 +102,11 @@ private:
     void CalculateConfidenceLevel(QVector<double> sortedData);
 
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, bool, m_isSA, false, &SteerConfig::isSAChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, bool, m_isSALeft, false, &SteerConfig::isSALeftChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_calcSteerAngleInner, 0, &SteerConfig::calcSteerAngleInnerChanged)
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_calcSteerAngleOuter, 0, &SteerConfig::calcSteerAngleOuterChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_calcSteerAngleLeft, 0, &SteerConfig::calcSteerAngleLeftChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_diameter, 0, &SteerConfig::diameterChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_diameterLeft, 0, &SteerConfig::diameterLeftChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, bool, m_haveSteerAngle, false, &SteerConfig::haveSteerAngleChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, bool, m_hasValidRecommendation, false, &SteerConfig::hasValidRecommendationChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, int, m_sampleCount, false, &SteerConfig::sampleCountChanged)

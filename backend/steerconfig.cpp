@@ -6,6 +6,7 @@
 #include "backend.h"
 #include "mainwindowstate.h"
 #include "settingsmanager.h"
+#include "modulecomm.h"
 
 Q_LOGGING_CATEGORY (steerconfig_log, "steerconfig.qtagopengps")
 #define QDEBUG qDebug(steerconfig_log)
@@ -74,10 +75,27 @@ void SteerConfig::stopSA(){
         m_isSA = false;
 }
 
+void SteerConfig::startSALeft() {
+    qDebug(steerconfig_log) << "Starting SA Left (Ackermann)";
+
+    m_isSALeft = true;
+    startFixLeft = CVehicle::instance()->pivotAxlePos;
+    distLeft = 0;
+    m_diameterLeft = 0;
+    cntrLeft = 0;
+}
+
+void SteerConfig::stopSALeft(){
+        m_isSALeft = false;
+}
+
 void SteerConfig::on_timer() {
+    auto *vehicle = CVehicle::instance();
+    auto *settings = SettingsManager::instance();
+
     if (m_isSA)
     {
-        dist = glm::Distance(startFix, CVehicle::instance()->pivotAxlePos);
+        dist = glm::Distance(startFix, vehicle->pivotAxlePos);
         cntr++;
         if (dist > m_diameter)
         {
@@ -86,16 +104,49 @@ void SteerConfig::on_timer() {
         }
         if (cntr > 9)
         {
-            double steerAngleRight = atan(CVehicle::instance()->wheelbase / ((m_diameter - CVehicle::instance()->trackWidth * 0.5) / 2));
+            double steerAngleRight = atan(vehicle->wheelbase / ((m_diameter - vehicle->trackWidth * 0.5) / 2));
             m_calcSteerAngleInner = glm::toDegrees(steerAngleRight);
 
-            /*
-            //lblCalcSteerAngleInner = steerAngleRight.ToString("N1") + "°";
-            setLblCalcSteerAngleInner(locale.toString(steerAngleRight, 'g', 3) + tr("°"));
-            //lblDiameter.Text = diameter.ToString("N2") + " m";
-            setLblDiameter(locale.toString(_diameter, 'g', 3) + tr(" m"));
-            */
+            // Calculate CPD: actualAngle / calculatedAngle * currentCPD * 0.9
+            double actualAngle = ModuleComm::instance()->actualSteerAngleDegrees();
+            if (steerAngleRight > 0.001) {
+                double cpd = (actualAngle / m_calcSteerAngleInner) * settings->as_countsPerDegree() * 0.9;
+                int newCPD = static_cast<int>(std::round(cpd));
+                newCPD = std::clamp(newCPD, 1, 255);
+                settings->setAs_countsPerDegree(newCPD);
+                qDebug(steerconfig_log) << "CPD calculated:" << newCPD;
+            }
+
             m_isSA = false;
+        }
+    }
+
+    // Ackermann measurement (drive left circles)
+    if (m_isSALeft)
+    {
+        distLeft = glm::Distance(startFixLeft, vehicle->pivotAxlePos);
+        cntrLeft++;
+        if (distLeft > m_diameterLeft)
+        {
+            m_diameterLeft = distLeft;
+            cntrLeft = 0;
+        }
+        if (cntrLeft > 9)
+        {
+            double steerAngleLeft = atan(vehicle->wheelbase / ((m_diameterLeft - vehicle->trackWidth * 0.5) / 2));
+            m_calcSteerAngleLeft = glm::toDegrees(steerAngleLeft);
+
+            // Calculate Ackermann: (calculatedAngle / |startAngle|) * 100
+            // startAngleLeft is stored when we started the measurement
+            double startAngleLeft = ModuleComm::instance()->actualSteerAngleDegrees();
+            if (std::abs(startAngleLeft) > 0.1) {
+                int ackerman = static_cast<int>((m_calcSteerAngleLeft / std::abs(startAngleLeft)) * 100);
+                ackerman = std::clamp(ackerman, 1, 200);
+                settings->setAs_ackerman(ackerman);
+                qDebug(steerconfig_log) << "Ackermann calculated:" << ackerman;
+            }
+
+            m_isSALeft = false;
         }
     }
 }

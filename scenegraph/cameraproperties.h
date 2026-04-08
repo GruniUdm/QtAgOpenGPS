@@ -20,6 +20,8 @@ class CameraProperties : public QObject
     Q_PROPERTY(double rotation READ rotation WRITE setRotation NOTIFY rotationChanged BINDABLE bindableRotation)
     Q_PROPERTY(double pitch READ pitch WRITE setPitch NOTIFY pitchChanged BINDABLE bindablePitch)
     Q_PROPERTY(double fov READ fov WRITE setFov NOTIFY fovChanged BINDABLE bindableFov)
+    Q_PROPERTY(double panOffsetX READ panOffsetX WRITE setPanOffsetX NOTIFY panOffsetXChanged BINDABLE bindablePanOffsetX)
+    Q_PROPERTY(double panOffsetY READ panOffsetY WRITE setPanOffsetY NOTIFY panOffsetYChanged BINDABLE bindablePanOffsetY)
 
 public:
     explicit CameraProperties(QObject *parent = nullptr);
@@ -48,6 +50,14 @@ public:
     void setFov(double value);
     QBindable<double> bindableFov();
 
+    double panOffsetX() const;
+    void setPanOffsetX(double value);
+    QBindable<double> bindablePanOffsetX();
+
+    double panOffsetY() const;
+    void setPanOffsetY(double value);
+    QBindable<double> bindablePanOffsetY();
+
 signals:
     void zoomChanged();
     void xChanged();
@@ -55,6 +65,8 @@ signals:
     void rotationChanged();
     void pitchChanged();
     void fovChanged();
+    void panOffsetXChanged();
+    void panOffsetYChanged();
 
 private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CameraProperties, double, m_zoom, 15.0, &CameraProperties::zoomChanged)
@@ -63,6 +75,8 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CameraProperties, double, m_rotation, 0.0, &CameraProperties::rotationChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CameraProperties, double, m_pitch, -20.0, &CameraProperties::pitchChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CameraProperties, double, m_fov, 40.1, &CameraProperties::fovChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CameraProperties, double, m_panOffsetX, 0.0, &CameraProperties::panOffsetXChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(CameraProperties, double, m_panOffsetY, 0.0, &CameraProperties::panOffsetYChanged)
 };
 
 #endif // CAMERAPROPERTIES_H

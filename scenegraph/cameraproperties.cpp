@@ -33,3 +33,11 @@ QBindable<double> CameraProperties::bindablePitch() { return &m_pitch; }
 double CameraProperties::fov() const { return m_fov; }
 void CameraProperties::setFov(double value) { m_fov = value; }
 QBindable<double> CameraProperties::bindableFov() { return &m_fov; }
+
+double CameraProperties::panOffsetX() const { return m_panOffsetX; }
+void CameraProperties::setPanOffsetX(double value) { m_panOffsetX = value; }
+QBindable<double> CameraProperties::bindablePanOffsetX() { return &m_panOffsetX; }
+
+double CameraProperties::panOffsetY() const { return m_panOffsetY; }
+void CameraProperties::setPanOffsetY(double value) { m_panOffsetY = value; }
+QBindable<double> CameraProperties::bindablePanOffsetY() { return &m_panOffsetY; }

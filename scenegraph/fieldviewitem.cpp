@@ -803,7 +803,8 @@ QMatrix4x4 FieldViewItem::buildViewMatrix() const
     view.rotate(static_cast<float>(-m_camera->rotation()), 0.0f, 0.0f, 1.0f);
 
     // Translate to camera position (center on vehicle/target)
-    view.translate(static_cast<float>(-m_camera->x()), static_cast<float>(-m_camera->y()), 0.0f);
+    view.translate(static_cast<float>(-m_camera->x() - m_camera->panOffsetX()), 
+                  static_cast<float>(-m_camera->y() - m_camera->panOffsetY()), 0.0f);
 
     return view;
 }
