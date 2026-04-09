@@ -55,20 +55,30 @@ bool ScreenBrightness::setBrightnessWindows(int percent)
                          "powershell -Command \"(Get-WmiObject -Namespace root\\WMI -Class "
                          "WmiMonitorBrightnessMethods).WmiSetBrightness(1,%1)\"")
                          .arg(percent);
-    process.start(script);
-    process.waitForFinished(2000);
-    return process.exitCode() == 0;
+    process.setProgram("cmd");
+    process.setArguments({"/c", script});
+    process.start();
+    bool finished = process.waitForFinished(3000);
+    if (!finished) {
+        process.kill();
+        process.waitForFinished();
+    }
+    return finished && process.exitCode() == 0;
 }
 
 int ScreenBrightness::getBrightnessWindows()
 {
     QProcess process;
-    process.start(
-        "powershell -Command \"(Get-WmiObject -Namespace root\\WMI -Class "
-        "WmiMonitorBrightness).CurrentBrightness\"");
-    process.waitForFinished(2000);
+    process.setProgram("cmd");
+    process.setArguments({"/c", "powershell -Command \"(Get-WmiObject -Namespace root\\WMI -Class WmiMonitorBrightness).CurrentBrightness\""});
+    process.start();
+    bool finished = process.waitForFinished(3000);
+    if (!finished) {
+        process.kill();
+        process.waitForFinished();
+    }
 
-    if (process.exitCode() == 0) {
+    if (finished && process.exitCode() == 0) {
         QString output = process.readAllStandardOutput().trimmed();
         bool ok = false;
         int brightness = output.toInt(&ok);
@@ -93,7 +103,9 @@ bool ScreenBrightness::setBrightnessLinux(int percent)
     };
 
     for (const QString &candidate : candidates) {
-        if (QFile::exists(candidate)) {
+        QFile testFile(candidate);
+        if (testFile.exists() && testFile.open(QIODevice::WriteOnly)) {
+            testFile.close();
             brightnessFile = candidate;
             break;
         }
@@ -101,28 +113,33 @@ bool ScreenBrightness::setBrightnessLinux(int percent)
 
     if (brightnessFile.isEmpty()) {
         QProcess process;
-        process.start("xrandr --verbose");
+        process.setProgram("xrandr");
+        process.setArguments({"--verbose"});
+        process.start();
         process.waitForFinished(2000);
 
         if (process.exitCode() == 0) {
             QString output = process.readAllStandardOutput();
-            QRegularExpression re("(\\S+) connected.*?Brightness: ([0-9.]+)");
+            QRegularExpression re("(\\S+)\\s+connected[^:]*:.*?\\s+Brightness:\\s+([0-9.]+)",
+                               QRegularExpression::DotMatchesEverythingOption);
             QRegularExpressionMatch match = re.match(output);
             if (match.hasMatch()) {
                 QString display = match.captured(1);
-                float current = match.captured(2).toFloat();
-                Q_UNUSED(current);
                 float newBrightness = percent / 100.0;
-                process.start(QString("xrandr --output %1 --brightness %2")
-                                 .arg(display)
-                                 .arg(newBrightness, 0, 'f', 2));
-                process.waitForFinished(1000);
-                return process.exitCode() == 0;
+                QProcess processXrandr;
+                processXrandr.setProgram("xrandr");
+                processXrandr.setArguments({"--output", display, "--brightness",
+                                           QString::number(newBrightness, 'f', 2)});
+                processXrandr.start();
+                processXrandr.waitForFinished(2000);
+                return processXrandr.exitCode() == 0;
             }
         }
 
         QProcess processDdc;
-        processDdc.start(QString("ddcutil setvcp 10 %1").arg(percent));
+        processDdc.setProgram("ddcutil");
+        processDdc.setArguments({"setvcp", "10", QString::number(percent)});
+        processDdc.start();
         processDdc.waitForFinished(2000);
         return processDdc.exitCode() == 0;
     }
@@ -191,15 +208,18 @@ int ScreenBrightness::getBrightnessLinux()
     }
 
     QProcess process;
-    process.start("xrandr --verbose");
+    process.setProgram("xrandr");
+    process.setArguments({"--verbose"});
+    process.start();
     process.waitForFinished(2000);
 
     if (process.exitCode() == 0) {
         QString output = process.readAllStandardOutput();
-        QRegularExpression re("Brightness: ([0-9.]+)");
+        QRegularExpression re("(\\S+)\\s+connected[^:]*:.*?\\s+Brightness:\\s+([0-9.]+)",
+                           QRegularExpression::DotMatchesEverythingOption);
         QRegularExpressionMatch match = re.match(output);
         if (match.hasMatch()) {
-            return qRound(match.captured(1).toFloat() * 100);
+            return qRound(match.captured(2).toFloat() * 100);
         }
     }
 
