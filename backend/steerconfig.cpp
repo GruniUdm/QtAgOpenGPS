@@ -115,6 +115,38 @@ void SteerConfig::stopAutoTune() {
     qDebug(steerconfig_log) << "Auto Tune stopped, Kp set to:" << finalKp;
 }
 
+void SteerConfig::startPwmAutoTune() {
+    qDebug(steerconfig_log) << "Starting PWM Auto Tune";
+
+    m_isPwmAutoTuning = true;
+    set_pwmTestValue(0);
+    set_pwmDirection(1);
+    set_pwmTunePhase(1);
+    set_pwmMinAngle(0);
+    set_pwmMaxAngle(0);
+    set_foundMinPwmLeft(0);
+    set_foundMinPwmRight(0);
+    set_foundMaxPwmLeft(0);
+    set_foundMaxPwmRight(0);
+    set_maxAngleLeft(0);
+    set_maxAngleRight(0);
+
+    prevPwmAngle = 0;
+    prevPwmAcceleration = 0;
+    pwmSamplesTaken = 0;
+    minPwmFound = false;
+    maxPwmFound = false;
+    leftMaxAngle = 0;
+    rightMaxAngle = 0;
+    currentMaxAngle = 0;
+}
+
+void SteerConfig::stopPwmAutoTune() {
+    qDebug(steerconfig_log) << "PWM Auto Tune stopped";
+
+    m_isPwmAutoTuning = false;
+}
+
 void SteerConfig::on_timer() {
     auto *vehicle = CVehicle::instance();
     auto *settings = SettingsManager::instance();
@@ -238,6 +270,130 @@ void SteerConfig::on_timer() {
         } else {
             accumulatedError += error;
         }
+    }
+
+    // PWM Auto-tune
+    if (m_isPwmAutoTuning) {
+        auto *modComm = ModuleComm::instance();
+        double currentAngle = modComm->actualSteerAngleDegrees();
+        int currentPwm = modComm->pwmDisplay();
+
+        // Use local variables since m_* properties don't work with ()
+        static int localPwmDirection = 1;
+        static int localPwmTunePhase = 1;
+        static int localMinPwmLeft = 0, localMinPwmRight = 0;
+        static int localMaxPwmLeft = 0, localMaxPwmRight = 0;
+        static double localMaxAngleLeft = 0, localMaxAngleRight = 0;
+        static bool localMinFound = false;
+        static bool localMaxFound = false;
+
+        int phase = localPwmTunePhase;
+
+        // Phase 1: Find minPwm (turning starts)
+        if (phase == 1) {
+            set_pwmTestValue(currentPwm);
+
+            // Track max angle for current direction
+            if (localPwmDirection > 0 && currentAngle > currentMaxAngle) {
+                currentMaxAngle = currentAngle;
+            } else if (localPwmDirection < 0 && currentAngle < currentMaxAngle) {
+                currentMaxAngle = currentAngle;
+            }
+
+            // Detect when wheel starts turning (angle > 0.5 degrees)
+            if (std::abs(currentAngle) > 0.5 && !localMinFound) {
+                if (localPwmDirection > 0) {
+                    localMinPwmRight = currentPwm;
+                    set_foundMinPwmRight(currentPwm);
+                } else {
+                    localMinPwmLeft = std::abs(currentPwm);
+                    set_foundMinPwmLeft(std::abs(currentPwm));
+                }
+                localMinFound = true;
+
+                // Switch to finding maxPwm
+                localPwmDirection = -localPwmDirection;
+                set_pwmDirection(localPwmDirection);
+                localPwmTunePhase = 2;
+                set_pwmTunePhase(2);
+                pwmSamplesTaken = 0;
+                currentMaxAngle = 0;
+                qDebug(steerconfig_log) << "Min PWM found:" << currentPwm << ", switching to max";
+            }
+        }
+        // Phase 2: Find maxPwm (acceleration stops increasing)
+        else if (phase == 2) {
+            // Track max angle for current direction
+            if (localPwmDirection > 0 && currentAngle > currentMaxAngle) {
+                currentMaxAngle = currentAngle;
+            } else if (localPwmDirection < 0 && currentAngle < currentMaxAngle) {
+                currentMaxAngle = currentAngle;
+            }
+
+            // Calculate acceleration (change in angle)
+            double acceleration = 0;
+            if (pwmSamplesTaken > 0) {
+                acceleration = (currentAngle - prevPwmAngle);
+            }
+            prevPwmAngle = currentAngle;
+            pwmSamplesTaken++;
+
+            // Check for diminishing returns (acceleration dropping)
+            if (pwmSamplesTaken > 10 && std::abs(acceleration) < std::abs(prevPwmAcceleration) * 0.5) {
+                if (localPwmDirection > 0) {
+                    localMaxPwmRight = currentPwm;
+                    localMaxAngleRight = std::abs(currentMaxAngle);
+                    set_foundMaxPwmRight(currentPwm);
+                    set_maxAngleRight(localMaxAngleRight);
+                } else {
+                    localMaxPwmLeft = std::abs(currentPwm);
+                    localMaxAngleLeft = std::abs(currentMaxAngle);
+                    set_foundMaxPwmLeft(std::abs(currentPwm));
+                    set_maxAngleLeft(localMaxAngleLeft);
+                }
+                localMaxFound = true;
+
+                qDebug(steerconfig_log) << "Max PWM found:" << currentPwm << ", angle:" << currentMaxAngle;
+
+                // Check if both directions done
+                if (localPwmDirection < 0 && localMaxFound) {
+                    // Done - calculate final values
+                    int minPwm = std::max(localMinPwmLeft, localMinPwmRight);
+                    int maxPwm = std::min(localMaxPwmLeft, localMaxPwmRight);
+                    double maxAngle = std::min(localMaxAngleLeft, localMaxAngleRight);
+
+                    settings->setAs_minSteerPWM(minPwm);
+                    settings->setAs_highSteerPWM(maxPwm);
+
+                    // Calculate max steer angle from PWM values
+                    double currentMaxSteer = settings->vehicle_maxSteerAngle();
+                    if (maxAngle > 0 && maxAngle < currentMaxSteer) {
+                        settings->setVehicle_maxSteerAngle(static_cast<int>(std::round(maxAngle)));
+                    }
+
+                    qDebug(steerconfig_log) << "PWM Auto-tune complete: minPwm=" << minPwm << ", maxPwm=" << maxPwm << ", maxAngle=" << maxAngle;
+                    m_isPwmAutoTuning = false;
+
+                    // Reset local variables
+                    localPwmTunePhase = 1;
+                    localPwmDirection = 1;
+                    localMinFound = false;
+                    localMaxFound = false;
+                } else if (localPwmDirection > 0 && localMinFound) {
+                    // Switch to left direction
+                    localPwmDirection = -1;
+                    set_pwmDirection(localPwmDirection);
+                    pwmSamplesTaken = 0;
+                    currentMaxAngle = 0;
+                    localMinFound = false;
+                    localMaxFound = false;
+                }
+            }
+            prevPwmAcceleration = acceleration;
+        }
+
+        set_pwmMinAngle(currentAngle);
+        set_pwmMaxAngle(currentMaxAngle);
     }
 }
 

@@ -52,12 +52,28 @@ public:
     SIMPLE_BINDABLE_PROPERTY(double, kuValue)
     SIMPLE_BINDABLE_PROPERTY(bool, oscillationDetected)
 
+    // PWM auto-tune properties
+    SIMPLE_BINDABLE_PROPERTY(bool, isPwmAutoTuning)
+    SIMPLE_BINDABLE_PROPERTY(int, pwmTestValue)
+    SIMPLE_BINDABLE_PROPERTY(double, pwmMinAngle)
+    SIMPLE_BINDABLE_PROPERTY(double, pwmMaxAngle)
+    SIMPLE_BINDABLE_PROPERTY(int, pwmDirection)
+    SIMPLE_BINDABLE_PROPERTY(int, foundMinPwmLeft)
+    SIMPLE_BINDABLE_PROPERTY(int, foundMinPwmRight)
+    SIMPLE_BINDABLE_PROPERTY(int, foundMaxPwmLeft)
+    SIMPLE_BINDABLE_PROPERTY(int, foundMaxPwmRight)
+    SIMPLE_BINDABLE_PROPERTY(double, maxAngleLeft)
+    SIMPLE_BINDABLE_PROPERTY(double, maxAngleRight)
+    SIMPLE_BINDABLE_PROPERTY(int, pwmTunePhase)
+
     Q_INVOKABLE void startSA();
     Q_INVOKABLE void stopSA();
     Q_INVOKABLE void startSALeft();
     Q_INVOKABLE void stopSALeft();
     Q_INVOKABLE void startAutoTune();
     Q_INVOKABLE void stopAutoTune();
+    Q_INVOKABLE void startPwmAutoTune();
+    Q_INVOKABLE void stopPwmAutoTune();
 
      // Методы для работы с данными
     Q_INVOKABLE int getRecommendedWASOffsetAdjustment(int currentCPD);
@@ -91,6 +107,16 @@ private:
     int oscillationCount = 0;
     double accumulatedError = 0;
     int errorSampleCount = 0;
+
+    // PWM auto-tune state
+    double prevPwmAngle = 0;
+    double prevPwmAcceleration = 0;
+    int pwmSamplesTaken = 0;
+    bool minPwmFound = false;
+    bool maxPwmFound = false;
+    double leftMaxAngle = 0;
+    double rightMaxAngle = 0;
+    double currentMaxAngle = 0;
 
     // Публичные свойства was wizard
     double recommendedWASZero = 0;
@@ -135,6 +161,20 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_currentError, 0, &SteerConfig::currentErrorChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_kuValue, 0, &SteerConfig::kuValueChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, bool, m_oscillationDetected, false, &SteerConfig::oscillationDetectedChanged)
+
+    // PWM auto-tune Q_OBJECT_BINDABLE properties
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, bool, m_isPwmAutoTuning, false, &SteerConfig::isPwmAutoTuningChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, int, m_pwmTestValue, 0, &SteerConfig::pwmTestValueChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_pwmMinAngle, 0, &SteerConfig::pwmMinAngleChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_pwmMaxAngle, 0, &SteerConfig::pwmMaxAngleChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, int, m_pwmDirection, 0, &SteerConfig::pwmDirectionChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, int, m_foundMinPwmLeft, 0, &SteerConfig::foundMinPwmLeftChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, int, m_foundMinPwmRight, 0, &SteerConfig::foundMinPwmRightChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, int, m_foundMaxPwmLeft, 0, &SteerConfig::foundMaxPwmLeftChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, int, m_foundMaxPwmRight, 0, &SteerConfig::foundMaxPwmRightChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_maxAngleLeft, 0, &SteerConfig::maxAngleLeftChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_maxAngleRight, 0, &SteerConfig::maxAngleRightChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, int, m_pwmTunePhase, 0, &SteerConfig::pwmTunePhaseChanged)
 };
 
 #endif // STEERCONFIG_H

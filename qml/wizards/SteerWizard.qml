@@ -426,7 +426,7 @@ Dialog {
                                 id: smartWAS
 
                                 onVisibleChanged: {if (visible){ SteerConfig.startDataCollection()}
-                                                  else {SteerConfig.stopDataCollection()}}
+                                    else {SteerConfig.stopDataCollection()}}
 
                                 ColumnLayout {
                                     anchors.fill: parent
@@ -585,72 +585,72 @@ Dialog {
                                     anchors.fill: parent
                                     anchors.margins: 10
                                     spacing: 20 * theme.scaleWidth
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    Layout.fillHeight: true
-                                    anchors.margins: 10
-                                    spacing: 5
-                                    SteerConfigSliderCustomized {
-                                        id: propGainlider
-                                        centerTopText: qsTr("Proportional Gain")
-                                        from: 0
-                                        leftText: value
-                                        onValueChanged: SettingsManager.as_Kp = value, sendUdptimer.running = true
-                                        stepSize: 1
-                                        to: 200
-                                        value: Math.round(SettingsManager.as_Kp, 0)
-                                        Layout.maximumWidth: 180 * theme.scaleWidth
-                                        Layout.alignment: Qt.AlignLeft
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+                                        anchors.margins: 10
+                                        spacing: 5
+                                        SteerConfigSliderCustomized {
+                                            id: propGainlider
+                                            centerTopText: qsTr("Proportional Gain")
+                                            from: 0
+                                            leftText: value
+                                            onValueChanged: SettingsManager.as_Kp = value, sendUdptimer.running = true
+                                            stepSize: 1
+                                            to: 200
+                                            value: Math.round(SettingsManager.as_Kp, 0)
+                                            Layout.maximumWidth: 180 * theme.scaleWidth
+                                            Layout.alignment: Qt.AlignLeft
+                                        }
+
+                                        SteerConfigSliderCustomized {
+                                            id: maxLimitSlider
+                                            centerTopText: qsTr("Maximum Limit")
+                                            from: 0
+                                            leftText: value
+                                            onValueChanged: SettingsManager.as_highSteerPWM = value, sendUdptimer.running = true
+                                            stepSize: 1
+                                            to: 254
+                                            value: Math.round(SettingsManager.as_highSteerPWM, 0)
+                                            Layout.maximumWidth: 180 * theme.scaleWidth
+                                            Layout.alignment: Qt.AlignLeft
+                                        }
+
+                                        SteerConfigSliderCustomized {
+                                            id: min2moveSlider
+                                            centerTopText: qsTr("Minimum to Move")
+                                            from: 0
+                                            leftText: value
+                                            onValueChanged: SettingsManager.as_minSteerPWM = value, sendUdptimer.running = true
+                                            stepSize: 1
+                                            to: 100
+                                            value: Math.round(SettingsManager.as_minSteerPWM, 0)
+                                            Layout.maximumWidth: 180 * theme.scaleWidth
+                                            Layout.alignment: Qt.AlignLeft
+                                        }
+
                                     }
 
-                                    SteerConfigSliderCustomized {
-                                        id: maxLimitSlider
-                                        centerTopText: qsTr("Maximum Limit")
-                                        from: 0
-                                        leftText: value
-                                        onValueChanged: SettingsManager.as_highSteerPWM = value, sendUdptimer.running = true
-                                        stepSize: 1
-                                        to: 254
-                                        value: Math.round(SettingsManager.as_highSteerPWM, 0)
-                                        Layout.maximumWidth: 180 * theme.scaleWidth
-                                        Layout.alignment: Qt.AlignLeft
-                                    }
 
-                                    SteerConfigSliderCustomized {
-                                        id: min2moveSlider
-                                        centerTopText: qsTr("Minimum to Move")
-                                        from: 0
-                                        leftText: value
-                                        onValueChanged: SettingsManager.as_minSteerPWM = value, sendUdptimer.running = true
-                                        stepSize: 1
-                                        to: 100
-                                        value: Math.round(SettingsManager.as_minSteerPWM, 0)
-                                        Layout.maximumWidth: 180 * theme.scaleWidth
-                                        Layout.alignment: Qt.AlignLeft
-                                    }
-
-                                }
-
-
-
+                                    ColumnLayout {
                                         RowLayout {
                                             ColumnLayout {
-                                            Text {
-                                                text: qsTr("Test Kp: %1").arg(SteerConfig.currentTestKp)
+                                                Text {
+                                                    text: qsTr("Test Kp: %1").arg(SteerConfig.currentTestKp)
 
-                                            }
-                                            Text {
-                                                text: qsTr("Error: %1").arg(SteerConfig.currentError.toFixed(2))
+                                                }
+                                                Text {
+                                                    text: qsTr("Error: %1").arg(SteerConfig.currentError.toFixed(2))
 
-                                                color: SteerConfig.oscillationDetected ? "green" : "black"
-                                            }
-                                            Text {
-                                                text: SteerConfig.isAutoTuning ? qsTr("Testing...") :
-                                                      SteerConfig.kuValue > 0 ? qsTr("Ku: %1, Kp: %2").arg(SteerConfig.kuValue).arg(SettingsManager.as_Kp) :
-                                                      qsTr("Ready")
+                                                    color: SteerConfig.oscillationDetected ? "green" : "black"
+                                                }
+                                                Text {
+                                                    text: SteerConfig.isAutoTuning ? qsTr("Testing...") :
+                                                                                     SteerConfig.kuValue > 0 ? qsTr("Ku: %1, Kp: %2").arg(SteerConfig.kuValue).arg(SettingsManager.as_Kp) :
+                                                                                                               qsTr("Ready")
 
-                                                font.bold: true
-                                            }
+                                                    font.bold: true
+                                                }
                                             }
                                             IconButton {
                                                 text: SteerConfig.isAutoTuning ? qsTr("Stop") : qsTr("Auto Tune")
@@ -664,9 +664,43 @@ Dialog {
                                                 }
                                             }
                                         }
+
+
+
+                                        RowLayout {
+                                            ColumnLayout {
+                                                Text {
+                                                    text: qsTr("Phase: %1").arg(SteerConfig.pwmTunePhase === 1 ? qsTr("Find Min") : qsTr("Find Max"))
+                                                }
+                                                Text {
+                                                    text: qsTr("PWM: %1").arg(SteerConfig.pwmTestValue)
+                                                }
+                                                Text {
+                                                    text: qsTr("Angle: %1°").arg(SteerConfig.pwmMinAngle.toFixed(1))
+                                                }
+                                                Text {
+                                                    text: SteerConfig.isPwmAutoTuning ? qsTr("Testing...") :
+                                                                                        (SteerConfig.foundMaxPwmRight > 0 ? qsTr("Done: Min %1, Max %2").arg(Math.max(SteerConfig.foundMinPwmLeft, SteerConfig.foundMinPwmRight)).arg(Math.min(SteerConfig.foundMaxPwmLeft, SteerConfig.foundMaxPwmRight)) :
+                                                                                                                            qsTr("Ready"))
+                                                    font.bold: true
+                                                    color: SteerConfig.foundMaxPwmRight > 0 ? "green" : "black"
+                                                }
+                                            }
+                                            IconButton {
+                                                text: SteerConfig.isPwmAutoTuning ? qsTr("Stop PWM") : qsTr("PWM Auto Tune")
+                                                icon.source: SteerConfig.isPwmAutoTuning ? prefix + "/images/Stop.png" : prefix + "/images/BoundaryRecord.png"
+                                                onClicked: {
+                                                    if (SteerConfig.isPwmAutoTuning) {
+                                                        SteerConfig.stopPwmAutoTune();
+                                                    } else {
+                                                        SteerConfig.startPwmAutoTune();
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
-
+                            }
 
                             // Page 11: Controller Settings
                             Item {
