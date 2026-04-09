@@ -44,10 +44,20 @@ public:
     SIMPLE_BINDABLE_PROPERTY(int, sampleCount)
     SIMPLE_BINDABLE_PROPERTY(double, confidenceLevel)
 
+    // Auto-tune properties
+    SIMPLE_BINDABLE_PROPERTY(bool, isAutoTuning)
+    SIMPLE_BINDABLE_PROPERTY(int, currentTestKp)
+    SIMPLE_BINDABLE_PROPERTY(double, minError)
+    SIMPLE_BINDABLE_PROPERTY(double, currentError)
+    SIMPLE_BINDABLE_PROPERTY(double, kuValue)
+    SIMPLE_BINDABLE_PROPERTY(bool, oscillationDetected)
+
     Q_INVOKABLE void startSA();
     Q_INVOKABLE void stopSA();
     Q_INVOKABLE void startSALeft();
     Q_INVOKABLE void stopSALeft();
+    Q_INVOKABLE void startAutoTune();
+    Q_INVOKABLE void stopAutoTune();
 
      // Методы для работы с данными
     Q_INVOKABLE int getRecommendedWASOffsetAdjustment(int currentCPD);
@@ -75,6 +85,12 @@ private:
     double dist = 0.0;
     double distLeft = 0.0;
     int counter = 0, secondCntr = 0, cntr = 0, cntrLeft = 0;
+
+    // Auto-tune state
+    double prevError = 0;
+    int oscillationCount = 0;
+    double accumulatedError = 0;
+    int errorSampleCount = 0;
 
     // Публичные свойства was wizard
     double recommendedWASZero = 0;
@@ -111,6 +127,14 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, bool, m_hasValidRecommendation, false, &SteerConfig::hasValidRecommendationChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, int, m_sampleCount, false, &SteerConfig::sampleCountChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_confidenceLevel, 0, &SteerConfig::confidenceLevelChanged)
+
+    // Auto-tune Q_OBJECT_BINDABLE properties
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, bool, m_isAutoTuning, false, &SteerConfig::isAutoTuningChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, int, m_currentTestKp, 1, &SteerConfig::currentTestKpChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_minError, 999.0, &SteerConfig::minErrorChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_currentError, 0, &SteerConfig::currentErrorChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, double, m_kuValue, 0, &SteerConfig::kuValueChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(SteerConfig, bool, m_oscillationDetected, false, &SteerConfig::oscillationDetectedChanged)
 };
 
 #endif // STEERCONFIG_H

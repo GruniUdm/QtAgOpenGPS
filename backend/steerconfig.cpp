@@ -89,6 +89,32 @@ void SteerConfig::stopSALeft(){
         m_isSALeft = false;
 }
 
+void SteerConfig::startAutoTune() {
+    qDebug(steerconfig_log) << "Starting Auto Tune";
+
+    auto *settings = SettingsManager::instance();
+
+    m_isAutoTuning = true;
+    set_currentTestKp(1);
+    set_kuValue(0);
+    set_oscillationDetected(false);
+    prevError = 0;
+    oscillationCount = 0;
+    accumulatedError = 0;
+    errorSampleCount = 0;
+
+    settings->setAs_Kp(1);
+}
+
+void SteerConfig::stopAutoTune() {
+    auto *settings = SettingsManager::instance();
+
+    m_isAutoTuning = false;
+    int finalKp = settings->as_Kp();
+    set_currentTestKp(finalKp);
+    qDebug(steerconfig_log) << "Auto Tune stopped, Kp set to:" << finalKp;
+}
+
 void SteerConfig::on_timer() {
     auto *vehicle = CVehicle::instance();
     auto *settings = SettingsManager::instance();
@@ -147,6 +173,70 @@ void SteerConfig::on_timer() {
             }
 
             m_isSALeft = false;
+        }
+    }
+
+    // Auto-tune Ziegler-Nichols method
+    if (m_isAutoTuning) {
+        double setAngle = vehicle->driveFreeSteerAngle();
+        double actualAngle = ModuleComm::instance()->actualSteerAngleDegrees();
+        double error = std::abs(setAngle - actualAngle);
+
+        set_currentError(error);
+        errorSampleCount++;
+
+        // Use local variable for minError since m_minError() doesn't work
+        static double localMinError = 999.0;
+        if (error < localMinError) {
+            localMinError = error;
+        }
+
+        // Check for oscillation (sign change in error derivative)
+        if (prevError != 0 && error > localMinError * 1.5) {
+            oscillationCount++;
+        }
+        prevError = error;
+
+        // Every 50 samples, adjust Kp
+        if (errorSampleCount >= 50) {
+            double avgError = accumulatedError / errorSampleCount;
+
+            // Use local variables for Ku and test Kp
+            static int localTestKp = 1;
+            static double localKu = 0;
+
+            if (oscillationCount >= 3) {
+                // Oscillation detected - this is Ku
+                localKu = localTestKp;
+                set_kuValue(localKu);
+                set_oscillationDetected(true);
+
+                // Calculate optimal Kp = 0.5 * Ku
+                int optimalKp = static_cast<int>(std::round(localKu * 0.5));
+                optimalKp = std::clamp(optimalKp, 1, 200);
+                settings->setAs_Kp(optimalKp);
+
+                qDebug(steerconfig_log) << "Oscillation detected! Ku =" << localKu << ", Optimal Kp =" << optimalKp;
+                m_isAutoTuning = false;
+                localMinError = 999.0;
+            } else if (localTestKp >= 200) {
+                // Max Kp reached, use last value
+                qDebug(steerconfig_log) << "Max Kp reached, stopping auto-tune";
+                m_isAutoTuning = false;
+                localMinError = 999.0;
+            } else {
+                // Increase Kp for next test
+                localTestKp += 5;
+                set_currentTestKp(localTestKp);
+                settings->setAs_Kp(localTestKp);
+                oscillationCount = 0;
+                localMinError = 999.0;
+            }
+
+            accumulatedError = 0;
+            errorSampleCount = 0;
+        } else {
+            accumulatedError += error;
         }
     }
 }

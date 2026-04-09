@@ -20,7 +20,7 @@ Dialog {
     modal: true
 
     property int currentPage: 0
-    readonly property int totalPages: 13
+    readonly property int totalPages: 14
 
     function show() {
         steerWizardDialog.visible = true
@@ -107,12 +107,13 @@ Dialog {
                                 if (steerWizardDialog.currentPage === 4) steerWizardTopLine.titleText =  qsTr("Hardware Configuration");
                                 if (steerWizardDialog.currentPage === 5) steerWizardTopLine.titleText =  qsTr("Sensor Type");
                                 if (steerWizardDialog.currentPage === 6) steerWizardTopLine.titleText =  qsTr("Wheel Angle Sensor");
-                                if (steerWizardDialog.currentPage === 7) steerWizardTopLine.titleText =  qsTr("PWM Settings");
+                                if (steerWizardDialog.currentPage === 7) steerWizardTopLine.titleText =  qsTr("Smart WAS");
                                 if (steerWizardDialog.currentPage === 8) steerWizardTopLine.titleText =  qsTr("CPD Settings");
                                 if (steerWizardDialog.currentPage === 9) steerWizardTopLine.titleText =  qsTr("Ackermann Settings");
-                                if (steerWizardDialog.currentPage === 10) steerWizardTopLine.titleText =  SettingsManager.vehicle_isStanleyUsed ? qsTr("Stanley Controller") : qsTr("Pure Pursuit Controller");
-                                if (steerWizardDialog.currentPage === 11) steerWizardTopLine.titleText =  qsTr("IMU / Roll Settings");
-                                if (steerWizardDialog.currentPage === 12) steerWizardTopLine.titleText =  qsTr("Test Steering");
+                                if (steerWizardDialog.currentPage === 10) steerWizardTopLine.titleText =  qsTr("PWM Settings");
+                                if (steerWizardDialog.currentPage === 11) steerWizardTopLine.titleText =  SettingsManager.vehicle_isStanleyUsed ? qsTr("Stanley Controller") : qsTr("Pure Pursuit Controller");
+                                if (steerWizardDialog.currentPage === 12) steerWizardTopLine.titleText =  qsTr("IMU / Roll Settings");
+                                if (steerWizardDialog.currentPage === 13) steerWizardTopLine.titleText =  qsTr("Test Steering");
                             }
 
                             // Page 0: Start
@@ -416,13 +417,69 @@ Dialog {
                                             onClicked: SettingsManager.as_wasOffset = 0
                                         }
                                     }
+                                    Item { Layout.fillHeight: true }
+                                }
+                            }
+
+                            // Page 7: smartWAS Settings
+                            Item {
+                                id: smartWAS
+
+                                onVisibleChanged: {if (visible){ SteerConfig.startDataCollection()}
+                                                  else {SteerConfig.stopDataCollection()}}
+
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 10
+                                    spacing: 10 * theme.scaleHeight
+
+                                    Text {
+                                        text: qsTr("Smart WAS Calibration")
+                                        font.bold: true
+                                        font.pixelSize: 13
+                                    }
+
+                                    Text {
+                                        text: (SteerConfig.hasValidRecommendation?qsTr("Ready for Calibration"):(SteerConfig.sampleCount>=200?qsTr("Low Confidence"):qsTr("Collecting Data")))
+                                        font.pixelSize: 11
+                                        color: (SteerConfig.hasValidRecommendation?"darkGreen":(SteerConfig.sampleCount>=200?"orange":"red"))
+                                    }
+
+                                    RowLayout {
+                                        Text {
+                                            text: qsTr("Samples: %1").arg(SteerConfig.sampleCount)
+                                            font.pixelSize: 11
+                                        }
+                                        Text {
+                                            text: qsTr("Confidence: %1%").arg(Math.round(SteerConfig.confidenceLevel * 100) / 100)
+                                            font.pixelSize: 11
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        IconButtonTransparent{
+                                            icon.source: prefix + "/images/Trash.png"
+                                            onClicked: SteerConfig.smartCalLabelClick()
+                                        }
+                                        IconButtonTransparent{
+                                            id: btnSmartZeroWAS
+                                            icon.source: prefix + "/images/SteerZeroSmall.png"
+                                            enabled: SteerConfig.hasValidRecommendation
+                                            onClicked: SteerConfig.zeroWAS()
+                                        }
+                                        Text {
+                                            text: qsTr("Drive on AB line to collect samples")
+                                            font.pixelSize: 10
+                                            wrapMode: Text.WordWrap
+                                        }
+                                    }
 
 
                                     Item { Layout.fillHeight: true }
                                 }
                             }
 
-                            // Page 7: CPD Settings
+                            // Page 8: CPD Settings
                             Item {
                                 id: pageCPD
                                 ColumnLayout {
@@ -469,7 +526,7 @@ Dialog {
                                 }
                             }
 
-                            // Page 8: Ackermann Settings
+                            // Page 9: Ackermann Settings
                             Item {
                                 id: pageAckerman
                                 ColumnLayout {
@@ -487,7 +544,7 @@ Dialog {
                                         IconButton {
                                             text: qsTr("Start Ackermann")
                                             icon.source: SteerConfig.isSALeft ? prefix + "/images/Stop.png" : prefix + "/images/BoundaryRecord.png"
-                                            enabled: SettingsManager.as_ackerman === 100
+                                            //enabled: SettingsManager.as_ackerman === 100
                                             onClicked: {
                                                 if (SteerConfig.isSALeft) {
                                                     SteerConfig.stopSALeft();
@@ -520,11 +577,17 @@ Dialog {
                                 }
                             }
 
-                            // Page 9: PWM Settings
+                            // Page 10: PWM Settings
                             Item {
                                 id: pagePWM
-                                ColumnLayout {
+
+                                RowLayout {
                                     anchors.fill: parent
+                                    anchors.margins: 10
+                                    spacing: 20 * theme.scaleWidth
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
                                     anchors.margins: 10
                                     spacing: 5
                                     SteerConfigSliderCustomized {
@@ -565,10 +628,47 @@ Dialog {
                                         Layout.maximumWidth: 180 * theme.scaleWidth
                                         Layout.alignment: Qt.AlignLeft
                                     }
-                                }
-                            }
 
-                            // Page 10: Controller Settings
+                                }
+
+
+
+                                        RowLayout {
+                                            ColumnLayout {
+                                            Text {
+                                                text: qsTr("Test Kp: %1").arg(SteerConfig.currentTestKp)
+
+                                            }
+                                            Text {
+                                                text: qsTr("Error: %1").arg(SteerConfig.currentError.toFixed(2))
+
+                                                color: SteerConfig.oscillationDetected ? "green" : "black"
+                                            }
+                                            Text {
+                                                text: SteerConfig.isAutoTuning ? qsTr("Testing...") :
+                                                      SteerConfig.kuValue > 0 ? qsTr("Ku: %1, Kp: %2").arg(SteerConfig.kuValue).arg(SettingsManager.as_Kp) :
+                                                      qsTr("Ready")
+
+                                                font.bold: true
+                                            }
+                                            }
+                                            IconButton {
+                                                text: SteerConfig.isAutoTuning ? qsTr("Stop") : qsTr("Auto Tune")
+                                                icon.source: SteerConfig.isAutoTuning ? prefix + "/images/Stop.png" : prefix + "/images/BoundaryRecord.png"
+                                                onClicked: {
+                                                    if (SteerConfig.isAutoTuning) {
+                                                        SteerConfig.stopAutoTune();
+                                                    } else {
+                                                        SteerConfig.startAutoTune();
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+
+                            // Page 11: Controller Settings
                             Item {
                                 id: pageController
                                 ColumnLayout {
@@ -653,7 +753,7 @@ Dialog {
                                 }
                             }
 
-                            // Page 11: IMU/Roll Settings
+                            // Page 12: IMU/Roll Settings
                             Item {
                                 id: pageIMU
                                 ColumnLayout {
@@ -696,7 +796,7 @@ Dialog {
                                 }
                             }
 
-                            // Page 12: Free Drive / Test
+                            // Page 13: Free Drive / Test
                             Item {
                                 id: pageTest
                                 ColumnLayout {
