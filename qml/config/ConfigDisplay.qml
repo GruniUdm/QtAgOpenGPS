@@ -84,6 +84,13 @@ Item {
                 onClicked: Backend.toggleLogNMEA()
             }
             DisplayAndFeaturesBtns{
+                id:logElevation
+                text: qsTr("Log Elevation")
+                icon.source: prefix + "/images/Config/ConD_LogElevation.png"
+                isChecked: SettingsManager.display_isLogElevation
+                onCheckedChanged: SettingsManager.display_isLogElevation
+            }
+            DisplayAndFeaturesBtns{
                 id: guideLines
                 text: qsTr("GuideLines")
                 icon.source: prefix + "/images/Config/ConD_ExtraGuides.png"

@@ -634,6 +634,7 @@ public slots:
     void onBlockageDataReady(const PGNParser::ParsedData& data); // Blockage data
     void onRateControlDataReady(const PGNParser::ParsedData& data); // Rate control data
     void onAhrsSettingsChanged(); // Update ahrs when IMU settings change
+    void onLogElevationSettingsChanged(); // Update isLogElevation when settings change
 
 
     /*******************

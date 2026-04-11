@@ -42,6 +42,7 @@ void FormGPS::loadSettings()
     isSpeedoOn = SettingsManager::instance()->menu_isSpeedoOn();
     isSideGuideLines = SettingsManager::instance()->menu_isSideGuideLines();
     isSvennArrowOn = SettingsManager::instance()->display_isSvennArrowOn();
+    isLogElevation = SettingsManager::instance()->display_isLogElevation();
 
     lightbarCmPerPixel = SettingsManager::instance()->display_lightbarCmPerPixel();
 
@@ -115,6 +116,9 @@ void FormGPS::loadSettings()
     connect(SettingsManager::instance(), &SettingsManager::imu_rollZeroChanged, this, &FormGPS::onAhrsSettingsChanged);
     connect(SettingsManager::instance(), &SettingsManager::imu_invertRollChanged, this, &FormGPS::onAhrsSettingsChanged);
     connect(SettingsManager::instance(), &SettingsManager::imu_rollFilterChanged, this, &FormGPS::onAhrsSettingsChanged);
+
+    // Connect SettingsManager signals to update isLogElevation when settings change
+    connect(SettingsManager::instance(), &SettingsManager::display_isLogElevationChanged, this, &FormGPS::onLogElevationSettingsChanged);
 }
 
 void FormGPS::onAhrsSettingsChanged()
@@ -137,4 +141,9 @@ void FormGPS::onAhrsSettingsChanged()
         // Also update for QML display
         Backend::instance()->m_fixFrame.imuRoll = rollK;
     }
+}
+
+void FormGPS::onLogElevationSettingsChanged()
+{
+    isLogElevation = SettingsManager::instance()->display_isLogElevation();
 }
