@@ -215,8 +215,9 @@ int main(int argc, char *argv[])
         "*.debug=false\n"
         "agioservice.debug=false\n"  // Change to true to enable AgIOService debug logs
         "*.qtagopengps.debug=true\n"
-        "formgps_position.qtagopengps=false\n"
-        "ctool.qtagopengps=false\n"
+        "formgps_position.qtagopengps=true\n"
+        "formgps_saveopen.qtagopengps=true\n"
+        "formgps_settings.qtagopengps=true\n"
         "formgps_opengl.qtagopengps=false\n"
         "qt.scenegraph.general=true\n"
         "*.warning=true\n"

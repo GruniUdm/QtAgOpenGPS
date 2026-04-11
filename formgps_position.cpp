@@ -1331,17 +1331,21 @@ void FormGPS::TheRest()
     contourTriggerDistance = glm::Distance(pn.fix, prevContourPos);
     gridTriggerDistance = glm::DistanceSquared(pn.fix, prevGridPos);
 
-    //NOTE: Michael, maybe verify this is all good
-    if ( isLogElevation && gridTriggerDistance > 2.9 && patchCounter !=0 && Backend::instance()->isJobStarted())
-    {
-        //grab fix and elevation
+    if ( isLogElevation && gridTriggerDistance > 2.9 && patchCounter != 0 && Backend::instance()->isJobStarted()) {
+        //grab fix and elevation (local coordinates relative to field origin)
+        //Elevation = altitude relative to first elevation point
+        double currentElevation = pn.altitude - CVehicle::instance()->antennaHeight;
+        if (!isFirstElevationSet) {
+            firstElevation = currentElevation;
+            isFirstElevationSet = true;
+        }
+        double relativeElevation = currentElevation - firstElevation;
+
         sbGrid.append(
-            QString::number(pn.latitude, 'f', 7).toUtf8() + ","
-            + QString::number(pn.longitude, 'f', 7).toUtf8() + ","
-            + QString::number(pn.altitude - CVehicle::instance()->antennaHeight, 'f', 3).toUtf8() + ","
-            + QString::number(pn.fixQuality).toUtf8() + ","
-            + QString::number(pn.fix.easting, 'f', 2).toUtf8() + ","
+            QString::number(pn.fix.easting, 'f', 2).toUtf8() + ","
             + QString::number(pn.fix.northing, 'f', 2).toUtf8() + ","
+            + QString::number(relativeElevation, 'f', 2).toUtf8() + ","
+            + QString::number(pn.fixQuality).toUtf8() + ","
             + QString::number(CVehicle::instance()->pivotAxlePos.heading, 'f', 3).toUtf8() + ","
             + QString::number(ahrs.imuRoll, 'f', 3).toUtf8()
             + "\r\n");
@@ -1439,7 +1443,7 @@ void FormGPS::processSectionLookahead() {
             FileSaveContour();   // Now < 50ms with buffering
 
             //NMEA log file
-            //TODO: if (isLogElevation) FileSaveElevation(;
+            if (isLogElevation && !sbGrid.isEmpty()) FileSaveElevation();
             //ExportFieldAs_KML(;
         }
 

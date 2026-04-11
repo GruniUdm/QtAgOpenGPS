@@ -795,6 +795,7 @@ void FormGPS::JobNew()
     Camera::instance()->SetZoom();
     fileSaveCounter = 25;
     track.setIsAutoTrack(false);
+    isFirstElevationSet = false;
     Backend::instance()->set_isJobStarted(true);
 
     // PHASE 6.0.29: Reset recorded path flags when opening field

@@ -364,6 +364,8 @@ public:
     Vec2 prevSectionPos;
     Vec2 prevContourPos;
     Vec2 prevGridPos;
+    double firstElevation = 0.0;
+    bool isFirstElevationSet = false;
     int patchCounter = 0;
 
     Vec2 prevBoundaryPos;

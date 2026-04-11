@@ -88,7 +88,7 @@ Item {
                 text: qsTr("Log Elevation")
                 icon.source: prefix + "/images/Config/ConD_LogElevation.png"
                 isChecked: SettingsManager.display_isLogElevation
-                onCheckedChanged: SettingsManager.display_isLogElevation
+                onCheckedChanged: SettingsManager.display_isLogElevation = checked
             }
             DisplayAndFeaturesBtns{
                 id: guideLines

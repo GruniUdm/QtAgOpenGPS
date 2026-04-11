@@ -1900,7 +1900,7 @@ void FormGPS::FileCreateElevation()
 
     writer << "StartFix" << Qt::endl;
     writer << pn.latitude << "," << pn.longitude << Qt::endl;
-    writer << "Latitude,Longitude,Elevation,Quality,Easting,Northing,Heading,Roll";
+    writer << "Easting,Northing,Elevation,Quality,Heading,Roll" << Qt::endl;
 
     fieldFile.close();
 }
