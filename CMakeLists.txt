@@ -225,6 +225,7 @@ qt_add_executable(QtAgOpenGPS
     # android/res/xml/qtprovider_paths.xml
     classes/agioservice.cpp
     classes/pgnparser.cpp
+    classes/satellitemodel.cpp
     classes/ctraffic.cpp
     classes/ntripworker.cpp
     classes/serialworker.cpp

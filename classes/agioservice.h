@@ -20,6 +20,7 @@
 #include "ntripworker.h"
 #include "serialworker.h"
 #include "pgnparser.h"  // Phase 6.0.21: Centralized NMEA + PGN parser
+#include "satellitemodel.h"  // Satellite info model
 
 // Phase 6.0.24: Logging category for AgIOService debug control
 Q_DECLARE_LOGGING_CATEGORY(agioservice)
@@ -136,6 +137,8 @@ public:
 
     // CTraffic is owned by AgIOService - read-only access for QML
     Q_PROPERTY(CTraffic* traffic READ traffic CONSTANT)
+    // Satellite model for GPS info display
+    Q_PROPERTY(SatelliteModel* satelliteModel READ satelliteModel CONSTANT)
     // Configuration properties removed - use SettingsManager singleton directly
     // QML access: settingsManager.setNTRIP_ipAddress, settingsManager.setMenu_isMetric, etc.
 
@@ -411,6 +414,7 @@ public:
     QBindable<QString> bindableNtripStatusText();
 
     CTraffic* traffic() const;  // Read-only proxy to AgIOService->m_traffic
+    SatelliteModel* satelliteModel() const;  // Satellite info model
 
     QString gpsStatusText() const;
     void setGpsStatusText(const QString& gpsStatusText);
@@ -1014,6 +1018,7 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(AgIOService, QString, m_ntripStatusText, &AgIOService::ntripStatusTextChanged)
     // CTraffic proxy pointer - points to UDPWorker->m_traffic (not owned by AgIOService)
     CTraffic* m_traffic;
+    SatelliteModel* m_satelliteModel;
     // m_ntripIPAddress Q_OBJECT_BINDABLE_PROPERTY removed - internal C++ only, no QML exposure needed
     Q_OBJECT_BINDABLE_PROPERTY(AgIOService, QString, m_gpsStatusText, &AgIOService::gpsStatusTextChanged)
     Q_OBJECT_BINDABLE_PROPERTY(AgIOService, QString, m_moduleStatusText, &AgIOService::moduleStatusTextChanged)

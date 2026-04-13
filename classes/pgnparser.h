@@ -10,6 +10,7 @@
 #include <QString>
 #include <QByteArray>
 #include <QStringList>
+#include <QList>
 
 /**
  * @brief Centralized PGN & NMEA parser
@@ -28,6 +29,17 @@ class PGNParser : public QObject {
 
 public:
     /**
+     * @brief Satellite information structure
+     */
+    struct SatelliteInfo {
+        int prn = 0;           // PRN satellite ID
+        int elevation = 0;     // Elevation in degrees
+        int azimuth = 0;       // Azimuth in degrees
+        int snr = 0;           // Signal strength (dBHz)
+        int systemId = 0;      // 1=GPS, 2=GLONASS, 3=Galileo, 4=BeiDou
+    };
+
+    /**
      * @brief Parsed data structure (unified for NMEA + PGN)
      */
     struct ParsedData {
@@ -42,6 +54,12 @@ public:
         int quality = 0;              // Fix quality (0-9)
         int satellites = 0;
         double hdop = 0.0;
+
+        QList<SatelliteInfo> satellitesData;  // Satellites from GSV
+        QList<int> satellitesInUse;           // PRN of satellites used in solution (from GSA)
+        int gsvTotalMessages = 0;             // Total GSV messages in group
+        int gsvCurrentMessage = 0;             // Current GSV message number
+        int gsvTotalSatellites = 0;            // Total satellites in view
         double age = 0.0;             // Age of differential (seconds)
 
         // IMU data (from $PANDA field 12-15 OR PGN 129)
@@ -103,6 +121,13 @@ public:
      * @return ParsedData with GPS/IMU data
      */
     ParsedData parseNMEA(const QString& sentence);
+
+    /**
+     * @brief Parse multi-message NMEA buffer (splits by \r\n or \n)
+     * @param buffer Raw buffer containing multiple NMEA sentences
+     * @return Merged ParsedData with combined satellite info
+     */
+    ParsedData parseMultiNMEA(const QString& buffer);
 
     /**
      * @brief Parse PGN binary data (auto-detects PGN number)

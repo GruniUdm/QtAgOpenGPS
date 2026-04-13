@@ -37,6 +37,7 @@ AgIOService::AgIOService(QObject *parent)
     , m_ntripWorker(nullptr)
     , m_serialWorker(nullptr)
     , m_traffic(nullptr)  // Phase 6.0.21.2: Initialized FIRST (matches .h line 794 order)
+    , m_satelliteModel(nullptr)  // Satellite info model
     , m_pgnParser(nullptr)  // Phase 6.0.21: Centralized NMEA + PGN parser
     , m_heartbeatTimer(nullptr)
     , m_moduleStatusUpdateTimer(nullptr)  // PHASE 6.0.22: Throttle property updates
@@ -53,6 +54,15 @@ AgIOService::AgIOService(QObject *parent)
     // NO PARENT (nullptr) for explicit lifecycle management
     m_traffic = new CTraffic(nullptr);
     qDebug() << "✅ CTraffic created in Main Thread (thread-safe for QML)";
+
+    // Satellite model for GPS info display - create singleton for QML
+    m_satelliteModel = SatelliteModel::instance();
+    if (!m_satelliteModel) {
+        SatelliteModel::s_instance = new SatelliteModel(this);
+        m_satelliteModel = SatelliteModel::s_instance;
+    }
+    qCDebug(agioservice) << "✅ SatelliteModel ready:" << m_satelliteModel;
+    qCDebug(agioservice) << "🔍 AgIOService GPS data path - checking if data arrives...";
 
     qDebug() << "🔧 AgIOService constructor - Main Thread:" << QThread::currentThread();
     
@@ -523,6 +533,11 @@ QBindable<QString> AgIOService::bindableNtripStatusText() { return &m_ntripStatu
 // CTraffic read-only proxy to UDPWorker->m_traffic
 CTraffic* AgIOService::traffic() const {
     return m_traffic;  // Returns pointer to UDPWorker-owned CTraffic instance
+}
+
+// Satellite model for GPS info display
+SatelliteModel* AgIOService::satelliteModel() const {
+    return m_satelliteModel;
 }
 
 QString AgIOService::gpsStatusText() const { return m_gpsStatusText.value(); }

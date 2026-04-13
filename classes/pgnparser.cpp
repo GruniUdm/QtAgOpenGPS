@@ -6,14 +6,18 @@
 #include "pgnparser.h"
 #include <QDebug>
 #include <QtMath>
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY(pgnparser, "pgnparser")
 
 PGNParser::PGNParser(QObject *parent) : QObject(parent) {
-    qDebug() << "PGNParser created - Centralized NMEA + PGN binary parsing";
+    qCDebug(pgnparser) << "PGNParser created - Centralized NMEA + PGN binary parsing";
 }
 
 // ========== MAIN PARSERS ==========
 
 // Phase 6.0.21.1: Auto-detection entry point
+// Phase 6.0.??: FIXED - Handle multi-message NMEA buffers (e.g., "$GNGGA...*41\r\n$GNGSA...*3C\r\n$GPGSV...")
 PGNParser::ParsedData PGNParser::parse(const QByteArray& data) {
     ParsedData result;
 
@@ -26,7 +30,16 @@ PGNParser::ParsedData PGNParser::parse(const QByteArray& data) {
 
     if (firstByte == '$') {
         // NMEA text format (ASCII, starts with '$')
-        QString nmea = QString::fromUtf8(data).trimmed();
+        QString rawNmea = QString::fromUtf8(data);
+        
+        // Check if this is a multi-message buffer (contains \r\n or \n between sentences)
+        if (rawNmea.contains("\r\n") || (rawNmea.contains('\n') && !rawNmea.contains("\r\n"))) {
+            // Multi-message buffer - split and parse each sentence
+            return parseMultiNMEA(rawNmea);
+        }
+        
+        // Single NMEA sentence
+        QString nmea = rawNmea.trimmed();
         result.originalSentence = nmea;
         ParsedData parsed = parseNMEA(nmea);
         parsed.originalSentence = nmea;
@@ -39,10 +52,130 @@ PGNParser::ParsedData PGNParser::parse(const QByteArray& data) {
     }
     else {
         // Unknown format
-        qDebug() << "PGNParser::parse() - Unknown format, first byte: 0x"
+        qCDebug(pgnparser) << "PGNParser::parse() - Unknown format, first byte: 0x"
                  << QString::number(firstByte, 16);
         return result;
     }
+}
+
+// Phase 6.0.??: NEW - Parse multi-message NMEA buffer by splitting on \r\n or \n
+PGNParser::ParsedData PGNParser::parseMultiNMEA(const QString& buffer) {
+    ParsedData result;
+    result.sourceType = "NMEA";
+    
+    // Split by \r\n or \n
+    QStringList sentences;
+    QString cleanedBuffer = buffer;
+    cleanedBuffer.replace("\r\n", "\n");  // Normalize to \n
+    sentences = cleanedBuffer.split('\n', Qt::SkipEmptyParts);
+    
+    if (sentences.isEmpty()) {
+        return result;
+    }
+    
+    // TEMP DEBUG: Log multi-message parsing
+    static int multiLogCounter = 0;
+    if (++multiLogCounter % 20 == 1) {
+        qCDebug(pgnparser) << "=== parseMultiNMEA: Split into" << sentences.size() << "sentences ===";
+        for (int i = 0; i < qMin(5, sentences.size()); i++) {
+            qCDebug(pgnparser) << "  [" << i << "]:" << sentences[i].trimmed().left(60);
+        }
+        if (sentences.size() > 5) {
+            qCDebug(pgnparser) << "  ... and" << (sentences.size() - 5) << "more";
+        }
+    }
+    
+    // Track GSV message progress across multiple sentences
+    int runningTotalMessages = 0;
+    int runningCurrentMessage = 0;
+    int runningTotalSatellites = 0;
+    QList<SatelliteInfo> runningSatellitesData;
+    QList<int> runningSatellitesInUse;
+    bool firstValidSentence = true;
+    
+    for (const QString& sentence : sentences) {
+        QString trimmedSentence = sentence.trimmed();
+        if (trimmedSentence.isEmpty()) continue;
+        
+        ParsedData parsed = parseNMEA(trimmedSentence);
+        
+        if (!parsed.isValid) continue;
+        
+        // Merge data from this sentence
+        if (firstValidSentence) {
+            // Copy primary fields from first valid sentence
+            result.latitude = parsed.latitude;
+            result.longitude = parsed.longitude;
+            result.altitude = parsed.altitude;
+            result.speed = parsed.speed;
+            result.heading = parsed.heading;
+            result.headingDual = parsed.headingDual;
+            result.headingHDT = parsed.headingHDT;
+            result.quality = parsed.quality;
+            result.satellites = parsed.satellites;
+            result.hdop = parsed.hdop;
+            result.age = parsed.age;
+            result.imuHeading = parsed.imuHeading;
+            result.imuRoll = parsed.imuRoll;
+            result.imuPitch = parsed.imuPitch;
+            result.yawRate = parsed.yawRate;
+            result.hasIMU = parsed.hasIMU;
+            result.sentenceType = parsed.sentenceType;
+            result.originalSentence = trimmedSentence;
+            firstValidSentence = false;
+        } else {
+            // For subsequent sentences, only update if not already set
+            if (result.latitude == 0.0 && parsed.latitude != 0.0) {
+                result.latitude = parsed.latitude;
+            }
+            if (result.longitude == 0.0 && parsed.longitude != 0.0) {
+                result.longitude = parsed.longitude;
+            }
+            if (result.quality == 0 && parsed.quality != 0) {
+                result.quality = parsed.quality;
+            }
+            if (result.satellites == 0 && parsed.satellites != 0) {
+                result.satellites = parsed.satellites;
+            }
+            if (result.hdop == 0.0 && parsed.hdop != 0.0) {
+                result.hdop = parsed.hdop;
+            }
+            if (parsed.hasIMU && !result.hasIMU) {
+                result.hasIMU = true;
+                result.imuHeading = parsed.imuHeading;
+                result.imuRoll = parsed.imuRoll;
+                result.imuPitch = parsed.imuPitch;
+                result.yawRate = parsed.yawRate;
+            }
+        }
+        
+        // Accumulate GSV data (may span multiple messages)
+        if (parsed.sentenceType == "GSV") {
+            runningTotalMessages = parsed.gsvTotalMessages;
+            runningCurrentMessage = parsed.gsvCurrentMessage;
+            runningTotalSatellites = parsed.gsvTotalSatellites;
+            runningSatellitesData.append(parsed.satellitesData);
+        }
+
+        // Accumulate GSA data (satellites in use)
+        if (parsed.sentenceType == "GSA") {
+            for (int prn : parsed.satellitesInUse) {
+                if (!runningSatellitesInUse.contains(prn)) {
+                    runningSatellitesInUse.append(prn);
+                }
+            }
+        }
+    }
+    
+    // Copy accumulated satellite data
+    result.satellitesData = runningSatellitesData;
+    result.satellitesInUse = runningSatellitesInUse;
+    result.gsvTotalMessages = runningTotalMessages;
+    result.gsvCurrentMessage = runningCurrentMessage;
+    result.gsvTotalSatellites = runningTotalSatellites;
+    
+    result.isValid = true;
+    return result;
 }
 
 PGNParser::ParsedData PGNParser::parseNMEA(const QString& sentence) {
@@ -74,10 +207,10 @@ PGNParser::ParsedData PGNParser::parseNMEA(const QString& sentence) {
     else if (type == "PAOGI") {
         return parsePAOGI(sentence);  // PHASE 6.0.22.12: AgOpenGPS dual antenna + IMU
     }
-    else if (type == "GSA" || type == "GPGSA") {
+    else if (type == "GSA" || type == "GPGSA" || type == "GNGSA" || type == "GBGSA" || type == "GLGSA") {
         return parseGSA(sentence);
     }
-    else if (type == "GSV" || type == "GPGSV") {
+    else if (type == "GSV" || type == "GPGSV" || type == "GNGSV" || type == "GBGSV" || type == "GLGSV" || type == "GAGSV") {
         return parseGSV(sentence);
     }
     else if (type == "HDT" || type == "GPHDT" || type == "GNHDT") {
@@ -141,17 +274,17 @@ PGNParser::ParsedData PGNParser::parsePGN(const QByteArray& data) {
 
         // Legacy PGN (to be removed after validation)
         case 127:  // OLD - incorrectly extracted Source ID 0x7F
-            qDebug() << "Warning: PGN 127 detected (should be 126 - check byte extraction)";
+            qCDebug(pgnparser) << "Warning: PGN 127 detected (should be 126 - check byte extraction)";
             return result;
         case 128:  // OLD - incorrectly extracted header byte 0x80
-            qDebug() << "Warning: PGN 128 detected (invalid - check byte extraction)";
+            qCDebug(pgnparser) << "Warning: PGN 128 detected (invalid - check byte extraction)";
             return result;
         case 129:  // OLD - incorrectly extracted header byte 0x81
-            qDebug() << "Warning: PGN 129 detected (invalid - check byte extraction)";
+            qCDebug(pgnparser) << "Warning: PGN 129 detected (invalid - check byte extraction)";
             return result;
 
         default:
-            qDebug() << "Unknown PGN:" << pgn << "(0x" << QString::number(pgn, 16) << ")";
+            qCDebug(pgnparser) << "Unknown PGN:" << pgn << "(0x" << QString::number(pgn, 16) << ")";
             return result;
     }
 }
@@ -163,7 +296,7 @@ PGNParser::ParsedData PGNParser::parseGGA(const QString& sentence) {
     QStringList fields = splitNMEA(sentence);
 
     if (fields.size() < 15) {
-        qDebug() << "GGA sentence too short:" << fields.size();
+        qCDebug(pgnparser) << "GGA sentence too short:" << fields.size();
         return data;
     }
 
@@ -171,7 +304,7 @@ PGNParser::ParsedData PGNParser::parseGGA(const QString& sentence) {
     // C# checks: !string.IsNullOrEmpty(words[2/3/4/5]) before parsing
     // Reject sentence if lat/lon fields empty (GPS fix lost momentarily)
     if (fields[2].isEmpty() || fields[3].isEmpty() || fields[4].isEmpty() || fields[5].isEmpty()) {
-        qDebug() << "GGA critical fields empty - rejecting sentence (GPS fix lost)";
+        qCDebug(pgnparser) << "GGA critical fields empty - rejecting sentence (GPS fix lost)";
         return data;  // Return invalid data (isValid = false)
     }
 
@@ -213,7 +346,7 @@ PGNParser::ParsedData PGNParser::parseRMC(const QString& sentence) {
 
     // PHASE 6.0.22.12: Accept partial RMC sentences (ModSim sends only 11 fields)
     if (fields.size() < 9) {
-        qDebug() << "RMC sentence too short:" << fields.size();
+        qCDebug(pgnparser) << "RMC sentence too short:" << fields.size();
         return data;
     }
 
@@ -281,7 +414,7 @@ PGNParser::ParsedData PGNParser::parsePANDA(const QString& sentence) {
     if (isNmeaFormat) {
         // AgIO NMEA format: $PANDA,time,lat_DDMM,N/S,lon_DDDMM,E/W,quality,sats,hdop,alt,...
         if (fields.size() < 10) {
-            qDebug() << "PANDA NMEA sentence too short:" << fields.size();
+            qCDebug(pgnparser) << "PANDA NMEA sentence too short:" << fields.size();
             return data;
         }
 
@@ -289,7 +422,7 @@ PGNParser::ParsedData PGNParser::parsePANDA(const QString& sentence) {
         // C# checks: !string.IsNullOrEmpty(words[1/2/3/5]) before parsing
         // Reject sentence if lat/lon fields empty (GPS fix lost momentarily)
         if (fields[2].isEmpty() || fields[3].isEmpty() || fields[4].isEmpty() || fields[5].isEmpty()) {
-            qDebug() << "PANDA NMEA critical fields empty - rejecting sentence (GPS fix lost)";
+            qCDebug(pgnparser) << "PANDA NMEA critical fields empty - rejecting sentence (GPS fix lost)";
             return data;  // Return invalid data (isValid = false)
         }
 
@@ -360,7 +493,7 @@ PGNParser::ParsedData PGNParser::parsePANDA(const QString& sentence) {
     } else {
         // New decimal format (original code)
         if (fields.size() < 15) {
-            qDebug() << "PANDA decimal sentence too short:" << fields.size();
+            qCDebug(pgnparser) << "PANDA decimal sentence too short:" << fields.size();
             return data;
         }
 
@@ -437,7 +570,16 @@ PGNParser::ParsedData PGNParser::parseGSA(const QString& sentence) {
     ParsedData data;
     QStringList fields = splitNMEA(sentence);
 
+    // TEMP DEBUG: Log GSA parsing
+    static int gsaLogCounter = 0;
+    if (++gsaLogCounter % 50 == 1) {
+        qCDebug(pgnparser) << "GSA DEBUG - fields:" << fields.size() << "sentence:" << sentence;
+    }
+
     if (fields.size() < 18) {
+        if (gsaLogCounter % 50 == 1) {
+            qCDebug(pgnparser) << "GSA rejected - too few fields:" << fields.size() << "need 18";
+        }
         return data;
     }
 
@@ -446,9 +588,17 @@ PGNParser::ParsedData PGNParser::parseGSA(const QString& sentence) {
         data.hdop = fields[16].toDouble();
     }
 
+    // Fields 3-14: PRN of satellites used in solution
+    for (int i = 3; i <= 14; i++) {
+        if (!fields[i].isEmpty() && fields[i] != "") {
+            data.satellitesInUse.append(fields[i].toInt());
+        }
+    }
+
     data.isValid = true;
     data.sentenceType = "GSA";
     data.sourceType = "NMEA";
+
     return data;
 }
 
@@ -456,17 +606,80 @@ PGNParser::ParsedData PGNParser::parseGSV(const QString& sentence) {
     ParsedData data;
     QStringList fields = splitNMEA(sentence);
 
-    if (fields.size() < 4) {
+    // TEMP DEBUG: Log GSV parsing
+    static int gsvLogCounter = 0;
+    if (++gsvLogCounter % 50 == 1) {
+        qCDebug(pgnparser) << "GSV DEBUG - fields:" << fields.size() << "sentence:" << sentence;
+    }
+
+    if (fields.size() < 8) {
+        if (gsvLogCounter % 50 == 1) {
+            qCDebug(pgnparser) << "GSV rejected - too few fields:" << fields.size() << "need 8";
+        }
         return data;
     }
 
-    // Field 3: Satellites in view
-    data.satellites = fields[3].toInt();
+    // Determine satellite system by talker ID
+    int systemId = 1; // GPS by default
+    QString talker = fields[0].mid(1, 2); // GP, GL, GA, BD, GN
+    if (talker == "GL") {
+        systemId = 2; // GLONASS
+    } else if (talker == "GA") {
+        systemId = 3; // Galileo
+    } else if (talker == "BD" || talker == "GB") {
+        systemId = 4; // BeiDou
+    } else if (talker == "GN") {
+        // Mixed GNSS - try to determine from PRN range
+        // GPS: 1-32, GLONASS: 65-96, Galileo: 1-36 (with prefix), BeiDou: 1-63
+        // For GN mixed, we'll set default GPS and let it be determined per-satellite
+        systemId = 1;
+    }
+
+    // GSV metadata
+    data.gsvTotalMessages = fields[1].toInt();
+    data.gsvCurrentMessage = fields[2].toInt();
+    data.gsvTotalSatellites = fields[3].toInt();
+    data.satellites = data.gsvTotalSatellites;
+
+    // Extract satellites (up to 4 per message, starting at field 4)
+    // Format per satellite: PRN, Elevation, Azimuth, SNR
+    for (int i = 0; i < 4 && (4 + i * 4) < fields.size(); i++) {
+        int baseIdx = 4 + i * 4;
+        if (baseIdx + 3 >= fields.size()) break;
+
+        SatelliteInfo sat;
+        sat.prn = fields[baseIdx].toInt();
+        if (sat.prn == 0) continue;
+
+        sat.elevation = fields[baseIdx + 1].toInt();
+        sat.azimuth = fields[baseIdx + 2].toInt();
+        sat.snr = fields[baseIdx + 3].toInt();
+        sat.systemId = systemId;
+
+        // Fix systemId based on PRN for mixed GNSS
+        if (talker == "GN") {
+            if (sat.prn >= 65 && sat.prn <= 96) {
+                sat.systemId = 2; // GLONASS
+            } else if (sat.prn >= 1 && sat.prn <= 36) {
+                // Could be GPS or Galileo - GPS by default for GP-style PRNs
+                sat.systemId = 1;
+            } else if (sat.prn >= 301 && sat.prn <= 336) {
+                sat.systemId = 3; // Galileo (extended)
+                sat.prn = sat.prn - 300;
+            } else if (sat.prn >= 401 && sat.prn <= 563) {
+                sat.systemId = 4; // BeiDou (extended)
+                sat.prn = sat.prn - 400;
+            }
+        }
+
+        data.satellitesData.append(sat);
+    }
 
     data.isValid = true;
     data.sentenceType = "GSV";
     data.sourceType = "NMEA";
     return data;
+
 }
 
 // PHASE 6.0.22.12: Additional NMEA parsers for ModSim compatibility
@@ -607,7 +820,7 @@ PGNParser::ParsedData PGNParser::parseKSXT(const QString& sentence) {
         // Throttled log (every 200 messages = 5 sec at 40Hz)
         static int noFixLogCounter = 0;
         if (++noFixLogCounter % 200 == 0) {
-            qDebug() << "KSXT: GPS no fix (quality=0, lat=0, lon=0) - marking invalid";
+            qCDebug(pgnparser) << "KSXT: GPS no fix (quality=0, lat=0, lon=0) - marking invalid";
         }
         data.isValid = false;
         data.sentenceType = "KSXT";
@@ -632,7 +845,7 @@ PGNParser::ParsedData PGNParser::parsePAOGI(const QString& sentence) {
 
     // Minimum fields: position + quality + IMU data (at least 16 fields)
     if (fields.size() < 16) {
-        qDebug() << "PAOGI sentence too short:" << fields.size() << "- need minimum 16 fields";
+        qCDebug(pgnparser) << "PAOGI sentence too short:" << fields.size() << "- need minimum 16 fields";
         return data;
     }
 
@@ -717,7 +930,7 @@ PGNParser::ParsedData PGNParser::parsePAOGI(const QString& sentence) {
         // Throttled log (every 200 messages = 5 sec at 40Hz)
         static int noFixLogCounter = 0;
         if (++noFixLogCounter % 200 == 0) {
-            qDebug() << "PAOGI: GPS no fix (quality=0, lat=0, lon=0) - marking invalid";
+            qCDebug(pgnparser) << "PAOGI: GPS no fix (quality=0, lat=0, lon=0) - marking invalid";
         }
         data.isValid = false;
         data.sentenceType = "PAOGI";
@@ -763,7 +976,7 @@ PGNParser::ParsedData PGNParser::parsePGN128(const QByteArray& data) {
     ParsedData result;
 
     if (data.size() < 21) {
-        qDebug() << "PGN 128 too short:" << data.size();
+        qCDebug(pgnparser) << "PGN 128 too short:" << data.size();
         return result;
     }
 
@@ -816,7 +1029,7 @@ PGNParser::ParsedData PGNParser::parsePGN129(const QByteArray& data) {
     ParsedData result;
 
     if (data.size() < 10) {
-        qDebug() << "PGN 129 too short:" << data.size();
+        qCDebug(pgnparser) << "PGN 129 too short:" << data.size();
         return result;
     }
 
@@ -884,7 +1097,7 @@ PGNParser::ParsedData PGNParser::parsePGN126(const QByteArray& data) {
     ParsedData result;
 
     if (data.size() < 11) {
-        qDebug() << "PGN 126 too short:" << data.size();
+        qCDebug(pgnparser) << "PGN 126 too short:" << data.size();
         return result;
     }
 
@@ -903,7 +1116,7 @@ PGNParser::ParsedData PGNParser::parsePGN126(const QByteArray& data) {
     // Log for validation
     static int logCounter = 0;
     if (++logCounter % 50 == 0) {
-        qDebug() << "PGN 126 - WAS angle:" << wasAngle << "degrees";
+        qCDebug(pgnparser) << "PGN 126 - WAS angle:" << wasAngle << "degrees";
     }
 
     return result;
@@ -975,7 +1188,7 @@ PGNParser::ParsedData PGNParser::parsePGN253(const QByteArray& data) {
     // Debug log (throttled to prevent spam at 40 Hz)
     static int logCounter = 0;
     if (++logCounter % 200 == 0) {  // Log every 200th message (5 sec at 40Hz)
-        qDebug() << "PGN 253 - SteerAngle:" << (steerAngleRaw * 0.01)
+        qCDebug(pgnparser) << "PGN 253 - SteerAngle:" << (steerAngleRaw * 0.01)
                  << "deg, PWM:" << result.pwmDisplay
                  << ", Switch:" << QString::number(result.switchByte, 16);
     }
@@ -1068,7 +1281,7 @@ PGNParser::ParsedData PGNParser::parsePGN244(const QByteArray& data) {
     // // Debug log (throttled to prevent spam at 40 Hz)
     // static int logCounter = 0;
     // if (++logCounter % 200 == 0) {  // Log every 200th message (5 sec at 40Hz)
-    //qDebug() << "PGN 244 - Blockage:" ;
+    //qCDebug(pgnparser) << "PGN 244 - Blockage:" ;
     //              << "deg, PWM:" << result.pwmDisplay
     //              << ", Switch:" << QString::number(result.switchByte, 16);
     // }
@@ -1135,7 +1348,7 @@ PGNParser::ParsedData PGNParser::parsePGN212(const QByteArray& data) {
     result.pgnNumber = 212;
 
     if (data.size() < 7) {
-        qDebug() << "Invalid PGN 212 packet size:" << data.size();
+        qCDebug(pgnparser) << "Invalid PGN 212 packet size:" << data.size();
         return result;
     }
 
@@ -1203,7 +1416,7 @@ PGNParser::ParsedData PGNParser::parsePGN121(const QByteArray& data) {
     result.pgnNumber = 121;
     result.sentenceType = "IMU_HELLO";
 
-    qDebug() << "✅ PGN 121: IMU module detected (hello response)";
+    qCDebug(pgnparser) << "✅ PGN 121: IMU module detected (hello response)";
 
     return result;
 }
@@ -1236,7 +1449,7 @@ PGNParser::ParsedData PGNParser::parsePGN122(const QByteArray& data) {
     result.pgnNumber = 122;
     result.sentenceType = "RateControl_HELLO";
 
-    //qDebug() << "✅ PGN 122: RC module detected (hello response)";
+    //qCDebug(pgnparser) << "✅ PGN 122: RC module detected (hello response)";
 
     return result;
 }
@@ -1271,7 +1484,7 @@ PGNParser::ParsedData PGNParser::parsePGN123(const QByteArray& data) {
     result.pgnNumber = 123;
     result.sentenceType = "MACHINE_HELLO";
 
-    qDebug() << "✅ PGN 123: Machine module detected (relays:"
+    qCDebug(pgnparser) << "✅ PGN 123: Machine module detected (relays:"
              << QString::number(relayLo, 16).toUpper()
              << QString::number(relayHi, 16).toUpper() << ")";
 
@@ -1346,7 +1559,7 @@ PGNParser::ParsedData PGNParser::parsePGN250(const QByteArray& data) {
     // Debug log (throttled to prevent spam at 10 Hz)
     static int logCounter = 0;
     if (++logCounter % 50 == 0) {  // Log every 50th message (~5 sec at 10Hz)
-        qDebug() << "PGN 250 - Sensor value:" << result.sensorValue;
+        qCDebug(pgnparser) << "PGN 250 - Sensor value:" << result.sensorValue;
     }
 
     return result;
@@ -1393,7 +1606,7 @@ bool PGNParser::validateChecksum(const QString& sentence) {
     quint8 expectedChecksum = checksumStr.toUInt(&ok, 16);
 
     if (!ok) {
-        qDebug() << "⚠️ Invalid checksum format:" << checksumStr;
+        qCDebug(pgnparser) << "⚠️ Invalid checksum format:" << checksumStr;
         return false;
     }
 
@@ -1404,7 +1617,7 @@ bool PGNParser::validateChecksum(const QString& sentence) {
     // Debug checksum validation (reduced frequency)
     static int checksumCounter = 0;
     if (!valid || (++checksumCounter % 100 == 0)) {
-        qDebug() << (valid ? "✅" : "❌") << "Checksum:"
+        qCDebug(pgnparser) << (valid ? "✅" : "❌") << "Checksum:"
                  << "Expected:" << QString("%1").arg(expectedChecksum, 2, 16, QChar('0')).toUpper()
                  << "Calculated:" << QString("%1").arg(calculatedChecksum, 2, 16, QChar('0')).toUpper()
                  << "Sentence:" << sentence;

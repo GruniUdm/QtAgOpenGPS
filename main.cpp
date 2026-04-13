@@ -213,11 +213,13 @@ int main(int argc, char *argv[])
     // Phase 6.0.24: Allow selective debug logging for AgIOService (change agioservice.debug=false to true)
     QLoggingCategory::setFilterRules(QStringLiteral(
         "*.debug=false\n"
-        "agioservice.debug=false\n"  // Change to true to enable AgIOService debug logs
+        "agioservice.debug=false\n"  // Change to false to disable AgIOService debug logs
+        "satellite.debug=false\n"   // Change to false to disable SatelliteModel debug logs
+        "pgnparser.debug=false\n"  // Change to false to disable PGNParser debug logs
         "*.qtagopengps.debug=true\n"
-        "formgps_position.qtagopengps=true\n"
-        "formgps_saveopen.qtagopengps=true\n"
-        "formgps_settings.qtagopengps=true\n"
+        "formgps_position.qtagopengps=false\n"
+        "formgps_saveopen.qtagopengps=false\n"
+        "formgps_settings.qtagopengps=false\n"
         "formgps_opengl.qtagopengps=false\n"
         "qt.scenegraph.general=true\n"
         "*.warning=true\n"

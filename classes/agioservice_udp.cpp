@@ -274,6 +274,7 @@ void AgIOService::onUdpDataReady()
     static QMap<quint16, int> packetsPerPort;  // Port → packet count
     static int packetsThisSecond = 0;
     static qint64 lastPacketCountReset = 0;
+    static int callCounter = 0;
 
     // qCDebug(agioservice) << "📥 onUdpDataReady() called - Pending datagrams:" << m_udpSocket->pendingDatagramSize();
 
@@ -289,6 +290,59 @@ void AgIOService::onUdpDataReady()
         // qCDebug(agioservice) << "📦 Received" << datagram.size() << "bytes from" << sender.toString() << ":" << senderPort;
 
         if (datagram.isEmpty()) continue;
+
+        // Phase 6.0.??: Handle fragmented NMEA messages
+        // GPS receivers sometimes split NMEA sentences across UDP packets
+        static QString nmeaBuffer;  // Accumulator for incomplete NMEA messages
+        static int bufferCounter = 0;
+        
+        QString datagramStr = QString::fromUtf8(datagram);
+        bool datagramStartsWithDollar = datagramStr.trimmed().startsWith('$');
+        
+        // If datagram doesn't start with '$', it might be a continuation
+        if (!datagramStartsWithDollar && !nmeaBuffer.isEmpty()) {
+            // Prepend buffered data to this continuation
+            datagramStr = nmeaBuffer + datagramStr;
+            nmeaBuffer.clear();
+            if (++bufferCounter % 20 == 1) {
+                qCDebug(agioservice) << "📦 Fragmented NMEA - prepended buffer, combined size:" << datagramStr.size();
+            }
+        } else if (!datagramStartsWithDollar) {
+            // No buffer but no $ - start buffering
+            nmeaBuffer = datagramStr;
+            if (++bufferCounter % 20 == 1) {
+                qCDebug(agioservice) << "📦 No $ prefix - buffering:" << datagramStr.size() << "bytes";
+            }
+            continue;  // Wait for more data
+        }
+        
+        datagram = datagramStr.toUtf8();
+        
+        // Check if this is a multi-NMEA buffer
+        bool isMultiNmea = datagramStr.contains("\r\n") || datagramStr.contains('\n');
+        
+        // If it's multi-NMEA, split and check for incomplete trailing message
+        if (isMultiNmea) {
+            QStringList lines = datagramStr.replace("\r\n", "\n").split('\n', Qt::SkipEmptyParts);
+            if (!datagramStr.endsWith("\n")) {
+                // Last line might be incomplete - buffer it
+                QString lastLine = lines.takeLast();
+                nmeaBuffer = lastLine;
+                // Reconstruct datagram without the trailing incomplete line
+                datagramStr = lines.join("\n") + "\n";
+                datagram = datagramStr.toUtf8();
+            }
+        } else {
+            // Single message - check if it ends with checksum
+            // Incomplete if doesn't have *XX at the end
+            if (!datagramStr.contains('*')) {
+                nmeaBuffer = datagramStr;
+                if (++bufferCounter % 20 == 1) {
+                    qCDebug(agioservice) << "📦 Incomplete NMEA (no checksum) - buffering:" << datagramStr.size() << "bytes";
+                }
+                continue;  // Skip this packet, wait for more data
+            }
+        }
 
         // Debug: Count packets by port and display rate every second
         qint64 now = QDateTime::currentMSecsSinceEpoch();
@@ -410,9 +464,36 @@ void AgIOService::onUdpDataReady()
         static int propertyUpdateCounter = 0;
         if (++propertyUpdateCounter % 4 == 0) {
             if (parsedData.isValid && parsedData.sourceType == "NMEA") {
+                // Phase 6.0.??: GSV/GSA only for SatelliteModel - skip GPS properties update
+                if (parsedData.sentenceType == "GSV" || parsedData.sentenceType == "GSA") {
+                    qCDebug(agioservice) << "📡 GSV/GSA only for SatelliteModel, skipping GPS properties update";
+                    if (parsedData.sentenceType == "GSV") {
+                        if (m_satelliteModel) {
+                            m_satelliteModel->updateSatellites(
+                                parsedData.satellitesData,
+                                parsedData.gsvTotalMessages,
+                                parsedData.gsvCurrentMessage
+                            );
+                        }
+                    }
+                    else if (parsedData.sentenceType == "GSA") {
+                        if (m_satelliteModel) {
+                            m_satelliteModel->setSatellitesInUse(parsedData.satellitesInUse);
+                        }
+                    }
+                    continue;  // Skip GPS properties update for GSA/GSV
+                }
+
                 // qCDebug(agioservice) << "📝 Updating GPS properties - Quality:" << parsedData.quality
                 //                      << "Satellites:" << parsedData.satellites
                 //                      << "Lat:" << parsedData.latitude << "Lon:" << parsedData.longitude;
+
+                // TEMP: Log all NMEA sentence types to debug GSV/GSA parsing
+                static QSet<QString> loggedTypes;
+                if (!loggedTypes.contains(parsedData.sentenceType)) {
+                    qCDebug(agioservice) << "📡 NMEA sentenceType:" << parsedData.sentenceType;
+                    loggedTypes.insert(parsedData.sentenceType);
+                }
 
                 setGpsQuality(parsedData.quality);
                 setSatellites(parsedData.satellites);
@@ -465,6 +546,12 @@ void AgIOService::onUdpDataReady()
 
         // Phase 6.0.25: Route data to specialized signals
         if (parsedData.sourceType == "NMEA") {
+            // Phase 6.0.??: GSV/GSA only for SatelliteModel - skip FormGPS signals
+            if (parsedData.sentenceType == "GSV" || parsedData.sentenceType == "GSA") {
+                qCDebug(agioservice) << "📡 GSV/GSA - only for SatelliteModel, skipping FormGPS";
+                continue;
+            }
+            
             // NMEA sentences → GPS position data (~8 Hz)
             emit nmeaDataReady(parsedData);
 

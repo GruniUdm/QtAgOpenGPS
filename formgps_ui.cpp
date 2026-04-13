@@ -18,6 +18,7 @@
 #include "aogrenderer.h"
 //include "qmlsectionbuttons.h"
 #include "cboundarylist.h"
+#include "classes/satellitemodel.h"
 #include <cmath>
 #include <cstring>
 #include <QTranslator>
@@ -112,6 +113,9 @@ void FormGPS::setupGui()
 
     // Only tram still uses setContextProperty (not yet modernized)
     rootContext()->setContextProperty("tram", &tram);
+
+    // SatelliteModel singleton registration
+    qmlRegisterSingletonInstance("AOG", 1, 0, "SatelliteModel", SatelliteModel::instance());
 
 #ifdef LOCAL_QML
     // Look for QML files relative to our current directory
