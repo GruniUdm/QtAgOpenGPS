@@ -36,6 +36,7 @@ Comp.MoveablePopup{
         height: parent.height-20
         anchors.centerIn: parent
         Comp.IconButtonTransparent{
+            id: playBtn
             enabled: !recordPathBtn.checked
             checkable: true
             icon.source: prefix + "/images/Play.png"
@@ -43,7 +44,7 @@ Comp.MoveablePopup{
             onClicked: RecordedPathInterface.recPathFollowStop()
         }
         Comp.IconButtonTransparent{
-            enabled: !recordPathBtn.checked
+            enabled: !recordPathBtn.checked && !playBtn.checked
             property int mode: 0
             icon.source: prefix + "/images/pathResumeStart.png"
             //onClicked: RecordedPathInterface.recPathResumeStyle()
@@ -68,17 +69,20 @@ Comp.MoveablePopup{
         }
         Comp.IconButtonTransparent{
             id: recordPathBtn
+            enabled: !playBtn.checked
             checkable: true
             icon.source: prefix + "/images/BoundaryRecord.png"
             iconChecked: prefix + "/images/boundaryStop.png"
             onClicked: RecordedPathInterface.recPathRecordStop()
         }
         Comp.IconButtonTransparent{
-            enabled: !recordPathBtn.checked
+            enabled: !recordPathBtn.checked && !playBtn.checked
             icon.source: prefix + "/images/FileExplorerWindows.png"
+            onClicked: {
+                recPathOpen.visible = true;
+            }
         }
         Comp.IconButtonTransparent{
-            enabled: !recordPathBtn.checked
             icon.source: prefix + "/images/ABSwapPoints.png"
             onClicked: RecordedPathInterface.recPathSwapAB()
         }

@@ -863,6 +863,10 @@ Window {
                 id: pathNew
             }
 
+            RecPathModule.PathOpen{
+                id: recPathOpen
+            }
+
             Comp.OutlineText{ //displays time on bottom right of GL
                 id: timeText
                 anchors.bottom: parent.bottom
