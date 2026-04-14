@@ -11,7 +11,7 @@ import AOG
 import "agio" as AgIOModule
 
 
-import "interfaces" as Interfaces
+import "recpath" as RecPathModule
 import "boundary" as Boundary
 import "steerconfig" as SteerConfig
 import "config" as ConfigSettings //"Config" causes errors
@@ -224,10 +224,7 @@ Window {
         else return false
     }
 
-    Interfaces.RecordedPathInterface {
-        id: recordedPathInterface
-        objectName: "recordedPathInterface"
-    }
+    // Interfaces removed - now using AOG singleton
 
     Comp.TimedMessage {
         //This is a popup message that dismisses itself after a timeout
@@ -857,9 +854,13 @@ Window {
                 height: 60 * theme.scaleHeight
                 onHeightChanged: anchors.bottomMargin = (8 * theme.scaleHeight)
             }
-            RecPath{// recorded path menu
+            RecPathModule.RecPath{// recorded path menu
                 id: recPath
                 visible: false
+            }
+
+            RecPathModule.PathNew{
+                id: pathNew
             }
 
             Comp.OutlineText{ //displays time on bottom right of GL

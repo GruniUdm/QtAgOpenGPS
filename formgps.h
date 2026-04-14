@@ -465,6 +465,7 @@ public:
     void FileCreateRecPath();
     void FileSaveHeadland();
     void FileSaveRecPath();
+    void FileSaveRecPath(const QString &filename);
     void FileLoadRecPath();
     void FileSaveFlags();
     void FileSaveNMEA();
@@ -544,6 +545,9 @@ public:
     Q_INVOKABLE void updateABLines();
     Q_INVOKABLE void updateCurves();
     Q_INVOKABLE void setCurrentABCurve(int index);
+
+    // Recorded Path management - Qt 6.8 additions
+    Q_INVOKABLE void pathNew(const QString& pathName);
 
     // AB Lines Methods - Phase 6.0.20
     Q_INVOKABLE void swapABLineHeading(int index);

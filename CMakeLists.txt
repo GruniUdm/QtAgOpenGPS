@@ -321,6 +321,7 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/interfaces" INTERFACES_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/steerconfig" STEERCONFIG_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/tracks" TRACKS_REL_PATHS)
+    process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/recpath" RECPATH_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/wizards" WIZARDS_REL_PATHS)
     process_qml_files("${CMAKE_CURRENT_SOURCE_DIR}/qml/singletons" SINGLETONS_REL_PATHS) #adding singletons
 
@@ -339,6 +340,7 @@ if(NOT LOCAL_QML) #LOCAL_QML OFF or ANDROID
         ${INTERFACES_REL_PATHS}
         ${STEERCONFIG_REL_PATHS}
         ${TRACKS_REL_PATHS}
+        ${RECPATH_REL_PATHS}
         ${WIZARDS_REL_PATHS}
         ${SINGLETONS_REL_PATHS} # adding singletons relative paths
     )
@@ -417,6 +419,7 @@ qt_add_qml_module(QtAgOpenGPS
     SOURCES backend/trackinterface.h backend/trackinterface.cpp
     SOURCES backend/flagsinterface.h backend/flagsinterface.cpp
     SOURCES backend/recordedpath.h backend/recordedpath.cpp
+    SOURCES backend/recordedpathinterface.h backend/recordedpathinterface.cpp
     SOURCES backend/siminterface.h backend/siminterface.cpp
     SOURCES backend/tool.h backend/tool.cpp
     SOURCES backend/tools.h backend/tools.cpp

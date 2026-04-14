@@ -2455,6 +2455,56 @@ void FormGPS::FileSaveRecPath()
 
 }
 
+void FormGPS::FileSaveRecPath(const QString &filename)
+{
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
+    QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
+
+    QDir saveDir(directoryName);
+    if (!saveDir.exists()) {
+        bool ok = saveDir.mkpath(directoryName);
+        if (!ok) {
+            qWarning() << "Couldn't create path " << directoryName;
+            return;
+        }
+    }
+
+    QString filepath = directoryName + "/" + filename;
+
+    QFile recpathfile(filepath);
+    if (!recpathfile.open(QIODevice::WriteOnly))
+    {
+        qWarning() << "Couldn't open " << filepath << "for writing!";
+        return;
+    }
+
+    QTextStream writer(&recpathfile);
+    writer.setLocale(QLocale::C);
+    writer.setRealNumberNotation(QTextStream::FixedNotation);
+
+    writer << "$RecPath" << Qt::endl;
+    writer << RecordedPath::instance()->recList.count() << Qt::endl;
+
+    if (RecordedPath::instance()->recList.count() > 0)
+    {
+        for (int j = 0; j < RecordedPath::instance()->recList.count(); j++)
+            writer << qSetRealNumberPrecision(3)
+                   << RecordedPath::instance()->recList[j].easting << ","
+                   << RecordedPath::instance()->recList[j].northing << ","
+                   << RecordedPath::instance()->recList[j].heading << ","
+                   << qSetRealNumberPrecision(1)
+                   << RecordedPath::instance()->recList[j].speed << ","
+                   << RecordedPath::instance()->recList[j].autoBtnState << Qt::endl;
+    }
+
+    recpathfile.close();
+    qDebug() << "Path saved to:" << filepath;
+}
+
 void FormGPS::FileLoadRecPath()
 {
     //current field directory should already exist

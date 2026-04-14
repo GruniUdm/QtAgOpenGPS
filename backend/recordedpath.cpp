@@ -33,6 +33,8 @@ RecordedPath::RecordedPath(QObject *parent)
     trig = false;
 
     m_recordedPathProperties = new RecordedPathProperties(this);
+
+    counter2 = 0;
 }
 
 RecordedPath *RecordedPath::instance() {
@@ -161,7 +163,7 @@ void RecordedPath::UpdatePosition(const CYouTurn &yt, bool isBtnAutoSteerOn)
         pathCount = cnt - B;
         if (pathCount < 8)
         {
-            double distSqr = glm::DistanceSquared(pivotAxlePosRP.northing, pivotAxlePosRP.easting, recList[0].northing, recList[0].easting);
+            double distSqr = glm::DistanceSquared(pivotAxlePosRP.northing, pivotAxlePosRP.easting, recList[starPathIndx].northing, recList[starPathIndx].easting);
             if (distSqr < 2)
             {
                 isFollowingRecPath = true;

@@ -28,6 +28,7 @@
 #include "backend.h"
 #include "backendaccess.h"
 #include "boundaryinterface.h"
+#include "recordedpathinterface.h"
 #include "fieldinterface.h"
 #include "trackinterface.h"
 #include "mainwindowstate.h"
@@ -110,6 +111,8 @@ void FormGPS::setupGui()
   //  rootContext()->setContextProperty("TracksInterface", &track);
     qmlRegisterSingletonInstance("AOG", 1, 0, "TracksInterface", &track);
     qmlRegisterSingletonInstance("AOG", 1, 0, "TrackInterface", TrackInterface::instance());
+    qmlRegisterSingletonInstance("AOG", 1, 0, "RecordedPathInterface", RecordedPathInterface::instance());
+    rootContext()->setContextProperty("RecordedPathInterface", RecordedPathInterface::instance());
 
     // Only tram still uses setContextProperty (not yet modernized)
     rootContext()->setContextProperty("tram", &tram);
@@ -405,6 +408,22 @@ void FormGPS::fieldNewFromKML(const QString& fieldName, const QString& kmlPath) 
     // Modern implementation - same logic as field_new_from_KML(QString,QString)
     QDEBUG << fieldName << " " << kmlPath;
     field_new_from_KML(fieldName, kmlPath);
+}
+
+void FormGPS::pathNew(const QString& pathName) {
+    if (!Backend::instance()->isJobStarted()) {
+        qWarning() << "Cannot save path: No job started";
+        return;
+    }
+
+    if (RecordedPath::instance()->recList.isEmpty()) {
+        qWarning() << "Cannot save path: No points recorded";
+        return;
+    }
+
+    QString filename = pathName + ".rec";
+    FileSaveRecPath(filename);
+    qDebug() << "Path saved as:" << filename;
 }
 
 void FormGPS::fieldDelete(const QString& fieldName) {

@@ -104,7 +104,7 @@ public:
     double steerAngleRP, rEastRP, rNorthRP, ppRadiusRP;
     Vec2 radiusPointRP = Vec2(0,0);
 
-    bool isEndOfTheRecLine, isRecordOn;
+    bool isBtnFollowOn, isEndOfTheRecLine, isRecordOn;
     bool isFollowingDubinsToPath, isFollowingRecPath, isFollowingDubinsHome;
 
     double pivotDistanceError, pivotDistanceErrorLast, pivotDerivative, pivotDerivativeSmoothed;
