@@ -66,13 +66,18 @@ RecordedPath *RecordedPath::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine) {
 }
 
 bool RecordedPath::StartDrivingRecordedPath(CVehicle &vehicle,
-                                             const CYouTurn &yt
-                                             )
+                                              const CYouTurn &yt
+                                              )
 {
+    qDebug() << "StartDrivingRecordedPath called";
+    qDebug() << "  recList.count():" << recList.count();
     //create the dubins path based on start and goal to start of recorded path
     A = B = C = 0;
 
-    if (recList.count() < 5) return false;
+    if (recList.count() < 5) {
+        qWarning() << "  Not enough points (< 5)";
+        return false;
+    }
 
     //save a copy of where we started.
     homePos = CVehicle::instance()->pivotAxlePos;
@@ -149,11 +154,13 @@ void RecordedPath::UpdatePosition(const CYouTurn &yt, bool isBtnAutoSteerOn)
 {
     if (isFollowingDubinsToPath)
     {
+        qWarning() << "UpdatePosition: Following Dubins, pathCount:" << pathCount << "shuttleListCount:" << shuttleListCount;
+        
         //set a speed of 10 kmh
         SimInterface::instance()->set_stepDistance(shuttleDubinsList[C].speed / 50);
         //mf.sim.stepDistance = shuttleDubinsList[C].speed / 50;
 
-        pivotAxlePosRP = CVehicle::instance()->steerAxlePos;
+        pivotAxlePosRP = CVehicle::instance()->pivotAxlePos;
 
         //StanleyDubinsPath(*CVehicle::instance(), pn, shuttleListCount);
         PurePursuitDubins(*CVehicle::instance(), yt, isBtnAutoSteerOn, shuttleListCount);
@@ -161,11 +168,14 @@ void RecordedPath::UpdatePosition(const CYouTurn &yt, bool isBtnAutoSteerOn)
         //check if close to recorded path
         int cnt = shuttleDubinsList.size();
         pathCount = cnt - B;
-        if (pathCount < 8)
+        qWarning() << "  pathCount:" << pathCount << "cnt:" << cnt << "B:" << B;
+        if (pathCount < 8 && !recList.isEmpty() && starPathIndx < recList.size())
         {
             double distSqr = glm::DistanceSquared(pivotAxlePosRP.northing, pivotAxlePosRP.easting, recList[starPathIndx].northing, recList[starPathIndx].easting);
+            qWarning() << "  distSqr:" << distSqr << "starPathIndx:" << starPathIndx;
             if (distSqr < 2)
             {
+                qWarning() << "  -> Switching to recorded path!";
                 isFollowingRecPath = true;
                 isFollowingDubinsToPath = false;
                 shuttleDubinsList.clear();
@@ -179,10 +189,15 @@ void RecordedPath::UpdatePosition(const CYouTurn &yt, bool isBtnAutoSteerOn)
 
     if (isFollowingRecPath)
     {
-        pivotAxlePosRP = CVehicle::instance()->steerAxlePos;
+        qWarning() << "UpdatePosition: Following recorded path, currentPositonIndex:" << currentPositonIndex << "isBtnAutoSteerOn:" << isBtnAutoSteerOn;
 
-        //StanleyRecPath(*CVehicle::instance(), pn, recListCount);
-        PurePursuitRecPath(*CVehicle::instance(), recListCount);
+        pivotAxlePosRP = CVehicle::instance()->pivotAxlePos;
+
+        PurePursuitRecPath(*CVehicle::instance(), recList.size());
+
+        qWarning() << "  PurePursuitRecPath done, A:" << A << "B:" << B << "C:" << C
+                  << "steerAngle set to:" << CVehicle::instance()->guidanceLineSteerAngle
+                  << "distanceOff:" << CVehicle::instance()->guidanceLineDistanceOff();
 
         //if end of the line then stop
         if (!isEndOfTheRecLine)
@@ -215,7 +230,7 @@ void RecordedPath::UpdatePosition(const CYouTurn &yt, bool isBtnAutoSteerOn)
 
         SimInterface::instance()->set_stepDistance(shuttleDubinsList[C].speed / 35);
         //mf.sim.stepDistance = shuttleDubinsList[C].speed / 35;
-        pivotAxlePosRP = CVehicle::instance()->steerAxlePos;
+        pivotAxlePosRP = CVehicle::instance()->pivotAxlePos;
 
         PurePursuitDubins(*CVehicle::instance(), yt, isBtnAutoSteerOn, shuttleListCount);
     }
@@ -317,11 +332,14 @@ void RecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
 
     if (fabs(dx) < glm::DOUBLE_EPSILON && fabs(dz) < glm::DOUBLE_EPSILON) return;
 
+    //add debug to PurePursuitRecPath to see dx, dz, distanceFromCurrentLinePivot
     //how far from current AB Line is fix
     distanceFromCurrentLinePivot =
         ((dz * pivotAxlePosRP.easting) - (dx * pivotAxlePosRP.northing) + (recList[B].easting
                 * recList[A].northing) - (recList[B].northing * recList[A].easting))
                     / sqrt((dz * dz) + (dx * dx));
+
+    qWarning() << "  DEBUG: dx:" << dx << "dz:" << dz << "distance:" << distanceFromCurrentLinePivot;
 
     //integral slider is set to 0
     if (CVehicle::instance()->purePursuitIntegralGain != 0)
@@ -378,6 +396,12 @@ void RecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
     rEastRP = recList[A].easting + (U * dx);
     rNorthRP = recList[A].northing + (U * dz);
 
+    qWarning() << "  DEBUG U: U:" << U << "A:" << A << "B:" << B;
+    qWarning() << "  DEBUG U: pivot:" << pivotAxlePosRP.easting << "," << pivotAxlePosRP.northing;
+    qWarning() << "  DEBUG U: recA:" << recList[A].easting << "," << recList[A].northing;
+    qWarning() << "  DEBUG U: recB:" << recList[B].easting << "," << recList[B].northing;
+    qWarning() << "  DEBUG U: projected:" << rEastRP << "," << rNorthRP;
+
     //update base on autosteer settings and distance from line
     double goalPointDistance = CVehicle::instance()->UpdateGoalPointDistance();
 
@@ -386,6 +410,7 @@ void RecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
     int count = ReverseHeading ? 1 : -1;
     CRecPathPt start(rEastRP, rNorthRP, 0, 0, false);
     double distSoFar = 0;
+    qWarning() << "  DEBUG loop: start:" << start.easting << "," << start.northing << "goalDist:" << goalPointDistance << "B:" << B << "ptCount:" << ptCount;
 
     for (int i = ReverseHeading ? B : A; i < ptCount && i >= 0; i += count)
     {
@@ -400,17 +425,25 @@ void RecordedPath::PurePursuitRecPath(CVehicle &vehicle, int ptCount)
 
             goalPointRP.easting = (((1 - j) * start.easting) + (j * recList[i].easting));
             goalPointRP.northing = (((1 - j) * start.northing) + (j * recList[i].northing));
+            qWarning() << "  DEBUG loop: FOUND i:" << i << "j:" << j << "pt:" << recList[i].easting << "," << recList[i].northing;
             break;
         }
         else distSoFar += tempDist;
         start = recList[i];
     }
+    qWarning() << "  DEBUG loop: AFTER goalPt:" << goalPointRP.easting << "," << goalPointRP.northing << "distSoFar:" << distSoFar;
 
     //calc "D" the distance from pivotAxlePosRP axle to lookahead point
     double goalPointDistanceSquared = glm::DistanceSquared(goalPointRP.northing, goalPointRP.easting, pivotAxlePosRP.northing, pivotAxlePosRP.easting);
+    qWarning() << "  DEBUG: goalPt:" << goalPointRP.easting << "," << goalPointRP.northing << "pivot:" << pivotAxlePosRP.easting << "," << pivotAxlePosRP.northing;
 
     //calculate the the delta x in local coordinates and steering angle degrees based on wheelbase
     double localHeading = glm::twoPI - CVehicle::instance()->fixHeading() + inty;
+    qWarning() << "  DEBUG: fixHeading:" << CVehicle::instance()->fixHeading() << "localHead:" << localHeading << "inty:" << inty;
+
+    double x = (goalPointRP.easting - pivotAxlePosRP.easting) * cos(localHeading) + (goalPointRP.northing - pivotAxlePosRP.northing) * sin(localHeading);
+    qWarning() << "  DEBUG: deltaE:" << (goalPointRP.easting - pivotAxlePosRP.easting) << "deltaN:" << (goalPointRP.northing - pivotAxlePosRP.northing);
+    qWarning() << "  DEBUG: x:" << x << "wheelbase:" << CVehicle::instance()->wheelbase;
 
     ppRadiusRP = goalPointDistanceSquared / (2 * (((goalPointRP.easting - pivotAxlePosRP.easting) * cos(localHeading)) + ((goalPointRP.northing - pivotAxlePosRP.northing) * sin(localHeading))));
 
@@ -653,12 +686,21 @@ void RecordedPath::updateInterface()
     props->set_dubinsPath(dubins);
 
     // Lookahead point (shown during playback, not during recording)
+    // Only show lookahead when actually driving the path
     bool showLookahead = !isRecordOn && ptCount > 0
                          && currentPositonIndex >= 0
-                         && currentPositonIndex < ptCount;
+                         && currentPositonIndex < ptCount
+                         && isDrivingRecordedPath();  // Only when driving!
     props->set_showLookahead(showLookahead);
     if (showLookahead) {
         props->set_lookaheadPoint(QVector3D(recList[currentPositonIndex].easting,
                                             recList[currentPositonIndex].northing, 0));
     }
+    
+    // Visibility: path visible when recording or driving (not just because points exist)
+    // Menu controls visibility separately via menuOpen property
+    bool pathVisible = isRecordOn || isDrivingRecordedPath();
+    props->set_visible(pathVisible);
+    
+    // DON'T reset menuOpen here - it's called too often from position updates
 }

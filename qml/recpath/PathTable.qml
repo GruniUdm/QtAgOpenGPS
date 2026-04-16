@@ -3,6 +3,7 @@
 //
 // Loaded by PathOpen.qml. Contains the list of Paths
 import QtQuick
+import QtQuick.Controls
 import AOG
 import "../" //bring in Utils
 
@@ -27,17 +28,25 @@ ListView {
     }
 
     function update_model() {
-        var distance = 0.0
-
         pathsModel.clear()
-        for( var i=0; i < RecordedPathInterface.Path_list.length ;i++)  {
-            distance = Utils.distanceLatLon(Backend.fixFrame.latitude, Backend.fixFrame.longitude, RecordedPathInterface.Path_list[i].latitude, RecordedPathInterface.Path_list[i].longitude)
-            pathsModel.append( { index: i,
-                                  name: RecordedPathInterface.Path_list[i].name,
-                                  distance: distance,
-                                  boundaryArea: RecordedPathInterface.Path_list[i].boundaryArea
-                              } )
-        }
+        
+        // Scan for path files in fields directory
+        var pathFiles = RecordedPathInterface.scanPathFiles()
+        console.log("Path files found:", pathFiles.length)
+        
+        if (pathFiles && pathFiles.length > 0) {
+            for( var i=0; i < pathFiles.length ; i++) {
+                var fileName = pathFiles[i]
+                if (fileName) {
+                    pathsModel.append( { 
+                        index: i,
+                        name: String(fileName),
+                        distance: 0,
+                        boundaryArea: 0
+                    } )
+                }
+            }
+        } 
         sort()
     }
 
@@ -65,6 +74,12 @@ ListView {
     }
 
     function sort() {
+        if (pathsModel.count <= 1) {
+            currentIndex = -1
+            currentPathName = ""
+            return
+        }
+        
         if (sortBy === -1) {
             listModelSort( pathsModel, (a, b) => - a.name.localeCompare(b.name) )
         } else {
@@ -75,22 +90,8 @@ ListView {
         currentPathName = ""
     }
 
-    //TODO implement a model sort function
-
-    Connections {
-        target: RecordedPathInterface
-        function onPath_listChanged() {
-            tableView.update_model()
-        }
-    }
-
     property string currentPathName: ""
     property int adjustWidth: -10
-
-    //Layout.minimumWidth: 200
-    //Layout.minimumHeight: 200
-    //Layout.preferredWidth: 400
-    //Layout.preferredHeight: 400
 
     keyNavigationEnabled: true
 
@@ -122,7 +123,6 @@ ListView {
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.leftMargin: 5
-                //anchors.verticalCenter: parent.verticalCenter
 
                 text: qsTr("Path name")
                 font.pixelSize: 20
@@ -143,55 +143,21 @@ ListView {
 
     spacing: 2
 
-    delegate: Rectangle {
-        id: pathDelegate
-        height: childrenRect.height
-        implicitWidth: tableView.width + tableView.adjustWidth
-
-        required property double boundaryArea
-        required property double distance
-        required property string name
+    delegate: ItemDelegate {
         required property int index
+        required property string name
+        
+        width: tableView.width + tableView.adjustWidth
 
-        color: ListView.isCurrentItem ? "light blue" : "light grey" //TODO: use AOGTheme item
+        text: name
 
-        Text {
-            id: pathName
-            anchors.top: parent.top
-            anchors.left: parent.left
-            width: parent.width * 0.5
-
-            anchors.topMargin: 5
-            anchors.leftMargin: 5
-
-            text: pathDelegate.name
-            elide: Text.ElideRight
-            font.pixelSize: 18
-        }
-
-        MouseArea {
-            id: thisisdumb
-            anchors.fill: parent
-            onClicked: {
-                tableView.currentIndex = pathDelegate.index
-                tableView.currentPathName = pathDelegate.name
-            }
+        onClicked: {
+            tableView.currentIndex = index
+            tableView.currentPathName = name
         }
     }
 
     ListModel {
         id: pathsModel
-        ListElement {
-            index: 0
-            name: "Path 1"
-        }
-        ListElement {
-            index: 1
-            name: "Path 2"
-        }
-        ListElement {
-            index: 2
-            name: "Path 3"
-        }
     }
 }

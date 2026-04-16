@@ -10,6 +10,7 @@ import "../components" as Comp
 
 Comp.MoveablePopup{
     id: recPath
+    objectName: "recPath"
     height: 500  * theme.scaleHeight
     width: 100  * theme.scaleWidth
     x: 40
@@ -20,8 +21,9 @@ Comp.MoveablePopup{
     }
     onVisibleChanged: if(visible)
                           RecordedPathInterface.recPathLoad()
-                      else
+                      else {
                           RecordedPathInterface.recPathClear()
+                          playBtn.checked = false}
 
     Connections {
         target: RecordedPathInterface
@@ -39,33 +41,23 @@ Comp.MoveablePopup{
             id: playBtn
             enabled: !recordPathBtn.checked
             checkable: true
+            checked: RecordedPathInterface.isDriving
             icon.source: prefix + "/images/Play.png"
             iconChecked: prefix + "/images/boundaryStop.png"
             onClicked: RecordedPathInterface.recPathFollowStop()
         }
         Comp.IconButtonTransparent{
+            id: resumeBtn
             enabled: !recordPathBtn.checked && !playBtn.checked
-            property int mode: 0
-            icon.source: prefix + "/images/pathResumeStart.png"
-            //onClicked: RecordedPathInterface.recPathResumeStyle()
-            onClicked: {
-                RecordedPathInterface.recPathResumeStyle()
-                if (mode < 2) {
-                    mode++;
-                } else {
-                    mode = 0;
-                }
-                console.log("Режим:", mode);
-
-                // Обновление отображения
-                if (mode === 0) {
-                    icon.source = prefix + "/images/pathResumeStart.png"
-                } else if (mode === 1) {
-                    icon.source = prefix + "/images/pathResumeLast.png"
-                } else {
-                    icon.source = prefix + "/images/pathResumeClose.png"
+            icon.source: {
+                switch(RecordedPathInterface.resumeState) {
+                case 0: return prefix + "/images/pathResumeStart.png"
+                case 1: return prefix + "/images/pathResumeLast.png"
+                case 2: return prefix + "/images/pathResumeClose.png"
+                default: return prefix + "/images/pathResumeStart.png"
                 }
             }
+            onClicked: RecordedPathInterface.recPathResumeStyle()
         }
         Comp.IconButtonTransparent{
             id: recordPathBtn

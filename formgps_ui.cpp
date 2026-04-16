@@ -113,6 +113,8 @@ void FormGPS::setupGui()
     qmlRegisterSingletonInstance("AOG", 1, 0, "TrackInterface", TrackInterface::instance());
     qmlRegisterSingletonInstance("AOG", 1, 0, "RecordedPathInterface", RecordedPathInterface::instance());
     rootContext()->setContextProperty("RecordedPathInterface", RecordedPathInterface::instance());
+    // Expose RecordedPath singleton to QML for properties access
+    rootContext()->setContextProperty("RecordedPath", RecordedPath::instance());
 
     // Only tram still uses setContextProperty (not yet modernized)
     rootContext()->setContextProperty("tram", &tram);

@@ -11,4 +11,6 @@ RecordedPathProperties::RecordedPathProperties(QObject *parent) : QObject(parent
     connect(this, &RecordedPathProperties::dubinsPathChanged, this, &RecordedPathProperties::recordedPathPropertiesChanged);
     connect(this, &RecordedPathProperties::lookaheadPointChanged, this, &RecordedPathProperties::recordedPathPropertiesChanged);
     connect(this, &RecordedPathProperties::showLookaheadChanged, this, &RecordedPathProperties::recordedPathPropertiesChanged);
+    connect(this, &RecordedPathProperties::visibleChanged, this, &RecordedPathProperties::recordedPathPropertiesChanged);
+    connect(this, &RecordedPathProperties::menuOpenChanged, this, &RecordedPathProperties::recordedPathPropertiesChanged);
 }

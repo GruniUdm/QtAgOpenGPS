@@ -1720,6 +1720,8 @@ bool FormGPS::FileOpenField(QString fieldDir, int flags)
 
         if (RecordedPath::instance()->recList.count() > 0)
         {
+            // Update QSG rendering when path loaded from field
+            RecordedPath::instance()->updateInterface();
             //TODO: panelDrag.Visible = true;
         } else {
             //TODO: panelDrag.Visible = false;
@@ -2570,6 +2572,72 @@ void FormGPS::FileLoadRecPath()
             RecordedPath::instance()->recList.append(point);
         }
     }
+}
+
+void FormGPS::FileLoadRecPath(const QString &filename)
+{
+    qWarning() << "FileLoadRecPath called with:" << filename;
+    qWarning() << "FileLoadRecPath currentFieldDirectory:" << currentFieldDirectory;
+    
+    // Load specific path file
+#ifdef __ANDROID__
+    QString directoryName = androidDirectory + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#else
+    QString directoryName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                            + "/" + QCoreApplication::applicationName() + "/Fields/" + currentFieldDirectory;
+#endif
+
+    QString filepath = directoryName + "/" + filename;
+    qWarning() << "FileLoadRecPath filepath:" << filepath;
+
+    QFile recFile(filepath);
+    if (!recFile.open(QIODevice::ReadOnly))
+    {
+        qWarning() << "Couldn't open " << filepath << " for reading!";
+        return;
+    }
+
+    QTextStream reader(&recFile);
+    reader.setLocale(QLocale::C);
+
+    //read header
+    QString line = reader.readLine();
+    line = reader.readLine();
+    int numPoints = line.toInt();
+    RecordedPath::instance()->recList.clear();
+    RecordedPath::instance()->recList.reserve(numPoints);
+
+    while (!reader.atEnd())
+    {
+        for (int v = 0; v < numPoints; v++)
+        {
+            line = reader.readLine();
+            int comma1 = line.indexOf(',');
+            int comma2 = line.indexOf(',', comma1 + 1);
+            int comma3 = line.indexOf(',', comma2 + 1);
+            int comma4 = line.indexOf(',', comma3 + 1);
+            if (comma1 == -1 || comma2 == -1 || comma3 == -1 || comma4 == -1) {
+                RecordedPath::instance()->recList.clear();
+                qWarning() << "Ignoring " << filepath << " because it is corrupt";
+                return;
+            }
+
+            CRecPathPt point(
+                QStringView(line).left(comma1).toDouble(),
+                QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
+                QStringView(line).mid(comma2 + 1, comma3 - comma2 - 1).toDouble(),
+                QStringView(line).mid(comma3 + 1, comma4 - comma3 - 1).toDouble(),
+                (QStringView(line).mid(comma4 + 1) == u"True"));
+
+            RecordedPath::instance()->recList.append(point);
+        }
+    }
+
+    recFile.close();
+    qDebug() << "Path loaded from:" << filepath << "with" << numPoints << "points";
+    
+    // Update QSG properties to show the path
+    RecordedPath::instance()->updateInterface();
 }
 
 void FormGPS::FileSaveFlags()

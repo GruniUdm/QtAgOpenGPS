@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team
+// Copyright (C) 2024 Michael Torrie and the QtAgOpenGPS Dev Team
 // SPDX-License-Identifier: GNU General Public License v3.0 or later
 //
 // Main class where everything is initialized
@@ -20,6 +20,7 @@
 #include "flagsinterface.h"
 #include "siminterface.h"
 #include "recordedpath.h"
+#include "recordedpathproperties.h"
 #include "backendaccess.h"
 #include "modulecomm.h"
 #include "camera.h"
@@ -601,6 +602,10 @@ void FormGPS::JobClose()
     lock.lockForWrite();
     RecordedPath::instance()->resumeState = 0;
     RecordedPath::instance()->currentPositonIndex = 0;
+    
+    // Reset recorded path visibility for new field
+    RecordedPath::instance()->m_recordedPathProperties->set_menuOpen(false);
+    RecordedPath::instance()->m_recordedPathProperties->set_visible(false);
 
     sbGrid.clear();
 

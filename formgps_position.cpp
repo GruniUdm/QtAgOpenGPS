@@ -919,7 +919,14 @@ void FormGPS::UpdateFixPosition()
 
         else p_254.pgn[CPGN_FE::status] = 1;  // PHASE 6.0.29: ON → send 1 (match C# original)
 
-        if (RecordedPath::instance()->isDrivingRecordedPath() || RecordedPath::instance()->isFollowingDubinsToPath) p_254.pgn[CPGN_FE::status] = 1;  // PHASE 6.0.29: Force ON (match C# original)
+        if (RecordedPath::instance()->isDrivingRecordedPath() || RecordedPath::instance()->isFollowingDubinsToPath || RecordedPath::instance()->isFollowingRecPath)
+        {
+            qWarning() << "XXX Force status=1: isDriving:" << RecordedPath::instance()->isDrivingRecordedPath()
+                      << "isDubinsToPath:" << RecordedPath::instance()->isFollowingDubinsToPath
+                      << "isRecPath:" << RecordedPath::instance()->isFollowingRecPath;
+            p_254.pgn[CPGN_FE::status] = 1;  // PHASE 6.0.29: Force ON (match C# original)
+        }
+        qWarning() << "YYY Final status before send:" << (int)p_254.pgn[CPGN_FE::status] << "steerAngle:" << CVehicle::instance()->guidanceLineSteerAngle;
 
         // PHASE 6.0.42.8: Auto-snap track to pivot when autosteer turns ON
         // C# original: OpenGL.Designer.cs:1858-1876

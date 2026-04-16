@@ -22,7 +22,13 @@ Dialog {
         radius: 10
      }
     function show(){
-        parent.visible = true
+        pathTable.update_model()
+    }
+
+    onVisibleChanged: {
+        if (visible) {
+            pathTable.update_model()
+        }
     }
 
     property int sortBy: 1
@@ -42,13 +48,9 @@ Dialog {
         anchors.leftMargin: 5
         anchors.rightMargin: 15
         anchors.bottomMargin: 10
-
         adjustWidth: - scrollbar.width
-
         sortBy: pathOpen.sortBy
-
         anchors.right: topLine.right
-
         ScrollBar.vertical: ScrollBar {
             id: scrollbar
             anchors.left: pathOpen.right
@@ -72,21 +74,15 @@ Dialog {
         Row {
             anchors.fill: parent
             spacing: 4
-            //flow: Grid.TopToBottom
-            //rows: 1
             IconButtonTransparent {
                 id: deletePath
                 objectName: "btnDeletePath"
                 icon.source: prefix + "/images/skull.png"
                 text: qsTr("Delete Path")
-                //radius: 0
-                //color3: "white"
-                //border: 1
-                //height: 75
                 enabled: pathTable.currentIndex > -1
                 onClicked: {
-                    PathInterface.deletePath(pathTable.currentPathName) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
-                    //backend should update the list
+                    RecordedPathInterface.pathDelete(pathTable.currentPathName)
+                    pathTable.update_model()
                 }
             }
         }
@@ -96,12 +92,7 @@ Dialog {
             IconButtonTransparent {
                 id: sort
                 icon.source: prefix + "/images/Sort.png"
-                //color3: "white"
-                //height: 75
                 text: qsTr("Toggle Sort")
-                //radius: 0
-
-                //border: 1
                 onClicked: {
                     pathTable.sortBy = (pathTable.sortBy % 3) + 1
                 }
@@ -112,14 +103,9 @@ Dialog {
                 objectName: "btnCancel"
                 icon.source: prefix + "/images/Cancel64.png"
                 text: qsTr("Cancel")
-                //color3: "white"
-                //radius: 0
-                //border: 1
-                //height: 75
                 onClicked: {
                     pathTable.clear_selection()
                     pathOpen.close()
-                    //closeDialog()
                 }
             }
             IconButtonTransparent {
@@ -127,13 +113,11 @@ Dialog {
                 objectName: "btnUseSelected"
                 icon.source: prefix + "/images/FileOpen.png"
                 text: qsTr("Use Selected")
-                //radius: 0
-                //color3: "white"
-                //border: 1
-                //height: 75
                 enabled: pathTable.currentIndex > -1
                 onClicked: {
-                    PathInterface.openPath(pathTable.currentPathName) // Qt 6.8 MODERN: Direct Q_INVOKABLE call
+                    // Add .rec extension like original
+                    var fullPathName = pathTable.currentPathName + ".rec"
+                    RecordedPathInterface.pathOpen(fullPathName)
                     pathTable.clear_selection()
                     pathOpen.close()
                 }

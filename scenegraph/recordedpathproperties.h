@@ -26,6 +26,8 @@ public:
     SIMPLE_BINDABLE_PROPERTY(QVector<QVector3D>, dubinsPath)
     SIMPLE_BINDABLE_PROPERTY(QVector3D, lookaheadPoint)
     SIMPLE_BINDABLE_PROPERTY(bool, showLookahead)
+    SIMPLE_BINDABLE_PROPERTY(bool, visible)
+    SIMPLE_BINDABLE_PROPERTY(bool, menuOpen)
 
 signals:
     void recordedPathPropertiesChanged();
@@ -35,6 +37,8 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(RecordedPathProperties, QVector<QVector3D>, m_dubinsPath, &RecordedPathProperties::dubinsPathChanged)
     Q_OBJECT_BINDABLE_PROPERTY(RecordedPathProperties, QVector3D, m_lookaheadPoint, &RecordedPathProperties::lookaheadPointChanged)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(RecordedPathProperties, bool, m_showLookahead, false, &RecordedPathProperties::showLookaheadChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(RecordedPathProperties, bool, m_visible, false, &RecordedPathProperties::visibleChanged)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(RecordedPathProperties, bool, m_menuOpen, false, &RecordedPathProperties::menuOpenChanged)
 };
 
 #endif // RECORDEDPATHPROPERTIES_H

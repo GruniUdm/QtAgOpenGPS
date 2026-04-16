@@ -468,10 +468,8 @@ void FormGPS::oglMain_Paint()
 
             track.DrawTrackNew(gl, projection*modelview);
 
-            if (RecordedPath::instance()->isRecordOn) {
-                RecordedPath::instance()->DrawRecordedLine(gl, projection*modelview);
-                RecordedPath::instance()->DrawDubins(gl, projection*modelview);
-            }
+            // Recorded path is now handled by QSG (FieldViewItem) via menuOpen property
+            // Visibility: recording OR driving OR menu open
 
             if (bnd.bndList.count() > 0 || BoundaryInterface::instance()->isBndBeingMade() == true)
             {

@@ -467,6 +467,7 @@ public:
     void FileSaveRecPath();
     void FileSaveRecPath(const QString &filename);
     void FileLoadRecPath();
+    void FileLoadRecPath(const QString &filename);
     void FileSaveFlags();
     void FileSaveNMEA();
     void FileSaveElevation();
@@ -532,6 +533,8 @@ public:
     Q_INVOKABLE void fieldNewFrom(const QString& fieldName, const QString& sourceField, int fieldType);
     Q_INVOKABLE void fieldNewFromKML(const QString& fieldName, const QString& kmlPath);
     Q_INVOKABLE void fieldDelete(const QString& fieldName);
+
+    Q_INVOKABLE QString getCurrentFieldDirectory() const { return currentFieldDirectory; }
 
     // Batch 14 - 11 actions Boundary Management - lines 1843-1854
     Q_INVOKABLE void loadBoundaryFromKML(QString filename);
