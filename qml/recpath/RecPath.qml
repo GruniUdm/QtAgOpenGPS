@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Fusion
 
+import AOG
 import "../components" as Comp
 
 Comp.MoveablePopup{

@@ -77,19 +77,15 @@ void RecordedPathInterface::recPathClear()
 
 void RecordedPathInterface::recPathFollowStop()
 {
-    qWarning() << "recPathFollowStop called, isDriving:" << isDriving() << "actualDriving:" << RecordedPath::instance()->isDrivingRecordedPath();
     if (RecordedPath::instance()->isDrivingRecordedPath())
     {
-        qWarning() << "  Stopping driving";
         RecordedPath::instance()->StopDrivingRecordedPath();
         set_isDriving(false);
     }
     else
     {
-        qWarning() << "  Starting driving, recList count:" << RecordedPath::instance()->recList.count();
         CYouTurn *yt = qobject_cast<CYouTurn*>(Backend::instance()->yt());
         bool started = RecordedPath::instance()->StartDrivingRecordedPath(*CVehicle::instance(), *yt);
-        qWarning() << "  Started result:" << started;
         set_isDriving(started);
     }
 }
@@ -117,6 +113,19 @@ void RecordedPathInterface::recPathResumeStyle()
         RecordedPath::instance()->resumeState = 0;
 
     set_resumeState(RecordedPath::instance()->resumeState);
+
+    // Show timed message matching C# original
+    switch (RecordedPath::instance()->resumeState) {
+    case 1:
+        Backend::instance()->timedMessage(1500, "Resume Style", "Last Stopped Position");
+        break;
+    case 2:
+        Backend::instance()->timedMessage(1500, "Resume Style", "Closest Point");
+        break;
+    default:
+        Backend::instance()->timedMessage(1500, "Resume Style", "Start At Beginning");
+        break;
+    }
 }
 
 void RecordedPathInterface::recPathSwapAB()
@@ -146,83 +155,60 @@ void RecordedPathInterface::recPathPick()
 
 void RecordedPathInterface::pathOpen(const QString &pathName)
 {
-    qDebug() << "pathOpen called with:" << pathName;
-    
     // Get current field directory from SettingsManager
     QString currentFieldDir = SettingsManager::instance()->f_currentDir();
-    
+
     if (currentFieldDir.isEmpty()) {
-        qWarning() << "pathOpen: no current field";
         return;
     }
-    
+
     // Build full file paths (matching original C# behavior)
     QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     QString appName = QCoreApplication::applicationName();
     QString fieldDir = documentsPath + "/" + appName + "/Fields/" + currentFieldDir;
     QString sourceFile = fieldDir + "/" + pathName;
     QString recPathFile = fieldDir + "/RecPath.txt";
-    
-    qDebug() << "pathOpen: source:" << sourceFile;
-    qDebug() << "pathOpen: dest:" << recPathFile;
-    
+
     // Copy selected .rec file to RecPath.txt (like original C#)
     if (QFile::exists(sourceFile)) {
         // Remove existing RecPath.txt first (QFile::copy won't overwrite)
         if (QFile::exists(recPathFile)) {
             QFile::remove(recPathFile);
         }
-        if (QFile::copy(sourceFile, recPathFile)) {
-            qDebug() << "Copied path to RecPath.txt";
-        } else {
+        if (!QFile::copy(sourceFile, recPathFile)) {
             qWarning() << "Failed to copy to RecPath.txt";
         }
     }
-    
+
     // Call FileLoadRecPath to load the path into memory
-    qWarning() << "pathOpen: calling FileLoadRecPath with:" << pathName;
     QQmlEngine *engine = qmlEngine(this);
     QObject *formGPS = nullptr;
     if (engine) {
         QVariant aogVariant = engine->rootContext()->property("formGPS");
         formGPS = aogVariant.value<QObject*>();
     }
-    qWarning() << "pathOpen: formGPS object:" << formGPS;
     if (formGPS) {
-        bool ok = QMetaObject::invokeMethod(formGPS, "FileLoadRecPath", Qt::DirectConnection, Q_ARG(QString, pathName));
-        qWarning() << "pathOpen: invokeResult:" << ok;
+        QMetaObject::invokeMethod(formGPS, "FileLoadRecPath", Qt::DirectConnection, Q_ARG(QString, pathName));
     } else {
-        qWarning() << "pathOpen: formGPS is null! Loading directly in interface";
         // Load directly - same as FileLoadRecPath but inline
-        QString currentFieldDir = SettingsManager::instance()->f_currentDir();
-        if (currentFieldDir.isEmpty()) {
-            qWarning() << "pathOpen: no current field";
-            return;
-        }
-        
-        QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-        QString appName = QCoreApplication::applicationName();
         QString directoryName = documentsPath + "/" + appName + "/Fields/" + currentFieldDir;
         QString filepath = directoryName + "/" + pathName;
-        
-        qWarning() << "pathOpen: loading from:" << filepath;
-        
+
         QFile recFile(filepath);
         if (!recFile.open(QIODevice::ReadOnly)) {
-            qWarning() << "Couldn't open" << filepath;
             return;
         }
-        
+
         QTextStream reader(&recFile);
         reader.setLocale(QLocale::C);
-        
+
         QString line = reader.readLine();
         line = reader.readLine();
         int numPoints = line.toInt();
-        
+
         RecordedPath::instance()->recList.clear();
         RecordedPath::instance()->recList.reserve(numPoints);
-        
+
         while (!reader.atEnd()) {
             for (int v = 0; v < numPoints; v++) {
                 line = reader.readLine();
@@ -230,20 +216,19 @@ void RecordedPathInterface::pathOpen(const QString &pathName)
                 int comma2 = line.indexOf(',', comma1 + 1);
                 int comma3 = line.indexOf(',', comma2 + 1);
                 int comma4 = line.indexOf(',', comma3 + 1);
-                
+
                 CRecPathPt point(
                     QStringView(line).left(comma1).toDouble(),
                     QStringView(line).mid(comma1 + 1, comma2 - comma1 - 1).toDouble(),
                     QStringView(line).mid(comma2 + 1, comma3 - comma2 - 1).toDouble(),
                     QStringView(line).mid(comma3 + 1, comma4 - comma3 - 1).toDouble(),
                     (QStringView(line).mid(comma4 + 1) == u"True"));
-                
+
                 RecordedPath::instance()->recList.append(point);
             }
         }
-        
+
         recFile.close();
-        qWarning() << "pathOpen: loaded" << numPoints << "points";
 
         // Update QSG
         RecordedPath::instance()->updateInterface();
@@ -255,12 +240,11 @@ void RecordedPathInterface::pathOpen(const QString &pathName)
 
     // Set the current path name (like original stores in RecPath.txt)
     RecordedPath::instance()->set_currentPathName(pathName);
-    
+
     // Set menu open AFTER updateInterface (which resets menuOpen)
     // This makes the selected path visible in QSG
-    qWarning() << "pathOpen: setting menuOpen = true";
     RecordedPath::instance()->m_recordedPathProperties->set_menuOpen(true);
-    
+
     emit pathListChanged();
 }
 
@@ -269,88 +253,74 @@ void RecordedPathInterface::pathDelete(const QString &pathName)
     // Get fields directory
     QString fieldsDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
                         + "/" + QCoreApplication::applicationName() + "/Fields";
-    
+
     // Ensure we have .rec extension (like pathOpen does)
     QString fileName = pathName;
     if (!fileName.endsWith(".rec", Qt::CaseInsensitive)) {
         fileName += ".rec";
     }
-    
-    qDebug() << "pathDelete: looking for" << fileName;
-    
+
     // Get current field directory
     QString currentFieldDir = SettingsManager::instance()->f_currentDir();
-    
+
     if (currentFieldDir.isEmpty()) {
-        qWarning() << "pathDelete: no current field";
         return;
     }
-    
+
     // Look only in current field directory (matching scanPathFiles behavior)
     QString filePath = fieldsDir + "/" + currentFieldDir + "/" + fileName;
     QFileInfo fi(filePath);
-    
+
     if (fi.exists()) {
         if (QFile::remove(filePath)) {
-            qDebug() << "Deleted path:" << filePath;
             emit pathListChanged();
             return;
-        } else {
-            qWarning() << "Failed to delete:" << filePath;
         }
     }
-    
+
     // Also check RecPath.txt in current field
     QString recPathFile = fieldsDir + "/" + currentFieldDir + "/RecPath.txt";
     QFileInfo recFi(recPathFile);
     if (recFi.exists()) {
         if (QFile::remove(recPathFile)) {
-            qDebug() << "Deleted RecPath.txt:" << recPathFile;
             emit pathListChanged();
             return;
         }
     }
-    
-    qWarning() << "pathDelete: file not found:" << filePath;
+
     emit pathListChanged();
 }
 
 QStringList RecordedPathInterface::scanPathFiles()
 {
     QStringList pathFiles;
-    
+
     // Get current field directory from SettingsManager (like original)
     QString currentFieldDir = SettingsManager::instance()->f_currentDir();
-    
+
     if (currentFieldDir.isEmpty()) {
-        qWarning() << "scanPathFiles: no current field";
         return pathFiles;
     }
-    
+
     // Get fields directory
     QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     QString appName = QCoreApplication::applicationName();
     QString fieldDirPath = documentsPath + "/" + appName + "/Fields/" + currentFieldDir;
-    
-    qWarning() << "scanPathFiles: fieldDirPath:" << fieldDirPath;
-    
+
     QDir fieldDir(fieldDirPath);
     if (!fieldDir.exists()) {
-        qWarning() << "scanPathFiles: field directory doesn't exist:" << fieldDirPath;
         return pathFiles;
     }
-    
+
     // Scan only .rec files (like original)
     QFileInfoList files = fieldDir.entryInfoList(QStringList() << "*.rec", QDir::Files);
-    qWarning() << "scanPathFiles: .rec files found:" << files.count();
-    
+
     for (const QFileInfo &fi : files) {
         // Get filename without extension like original
         QString baseName = fi.completeBaseName();
         pathFiles.append(baseName);
     }
-    
-    qWarning() << "scanPathFiles: Found path files:" << pathFiles;
+
     emit pathListChanged();
     return pathFiles;
 }
