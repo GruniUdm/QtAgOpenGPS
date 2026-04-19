@@ -13,7 +13,6 @@ class RecordedPathInterface : public QObject
 {
     Q_OBJECT
     QML_SINGLETON
-    QML_ELEMENT
 private:
     explicit RecordedPathInterface(QObject *parent = nullptr);
     ~RecordedPathInterface() override = default;
