@@ -5,7 +5,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Fusion
-import QtQuick.Controls.Material
 import QtQuick.Dialogs
 import AOG
 
@@ -18,6 +17,10 @@ Dialog {
     width:700  * theme.scaleWidth
     anchors.centerIn: parent
     visible: false
+    background: Rectangle {
+        color: aogInterface.backgroundColor
+        radius: 10
+    }
     function show(){
         parent.visible = true
     }

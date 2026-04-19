@@ -39,17 +39,14 @@ void RecordedPathNode::update(const QMatrix4x4 &mv,
     bool isDriving = properties->showLookahead();
     bool menuOpen = properties->menuOpen();
     bool hasPoints = properties->recordedLine().count() > 0;
-    qWarning() << "QSG update: isRecording:" << isRecording << "isDriving:" << isDriving << "menuOpen:" << menuOpen << "hasPoints:" << hasPoints;
     
     if (!isRecording && !isDriving && !menuOpen) {
-        qWarning() << "  -> NOT drawing (all conditions false)";
         if (childCount() > 0) {
             clearChildren();
         }
         return;
     }
 
-    qWarning() << "  -> DRAWING";
     if (childCount() < 1) {
         // Phase 1: Build geometry from properties
 

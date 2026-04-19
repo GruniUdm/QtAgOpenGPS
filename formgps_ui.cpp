@@ -474,6 +474,10 @@ void FormGPS::recordedPathClear() {
     RecordedPath::instance()->recList.clear();
     RecordedPath::instance()->recListCount = 0;
     RecordedPath::instance()->isFollowingRecPath = false;
+    RecordedPath::instance()->updateInterface();
+
+    // Clear the RecPath.txt file
+    FileCreateRecPath();
 
     // Reset properties
     setRecordedPathName("");

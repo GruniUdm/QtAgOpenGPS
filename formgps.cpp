@@ -618,6 +618,8 @@ void FormGPS::JobClose()
 
     RecordedPath::instance()->recList.clear();
     RecordedPath::instance()->StopDrivingRecordedPath();
+    RecordedPath::instance()->updateInterface();
+    FileCreateRecPath();
 
     //make sure hydraulic lift is off
     ModuleComm::instance()->p_239.pgn[CPGN_EF::hydLift] = 0;
@@ -769,6 +771,8 @@ void FormGPS::JobClose()
     RecordedPath::instance()->recList.clear();
     RecordedPath::instance()->shortestDubinsList.clear();
     RecordedPath::instance()->shuttleDubinsList.clear();
+    RecordedPath::instance()->updateInterface();
+    FileCreateRecPath();
 
     //FixPanelsAndMenus();
     Camera::instance()->SetZoom();

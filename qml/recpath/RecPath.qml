@@ -30,6 +30,23 @@ Comp.MoveablePopup{
         function onShowPathNewDialog() {
             pathNew.visible = true
         }
+        function onIsDrivingChanged(isDriving) {
+            playBtn.checked = isDriving
+        }
+    }
+
+    Connections {
+        target: RecordedPathInterface
+        function onRecordStateChanged(isRecording) {
+            recordPathBtn.checked = isRecording
+        }
+    }
+
+    Connections {
+        target: RecordedPath
+        function onStoppedDriving() {
+            playBtn.checked = false
+        }
     }
 
     Comp.ScrollViewExpandableColumn{
